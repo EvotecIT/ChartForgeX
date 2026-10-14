@@ -16,7 +16,7 @@ internal static partial class VisualMapCompiler {
         foreach (var point in series.RenderPoints) ValidateCoordinate(point);
         var weights = new double?[series.RenderPoints.Count];
         for (var index = 0; index < weights.Length; index++) {
-            weights[index] = index < series.PointValues.Count ? series.PointValues[index] : null;
+            weights[index] = series.MapPoints[index].Value;
             if (weights[index].HasValue && (!Finite(weights[index]!.Value) || weights[index]!.Value < 0)) throw new InvalidOperationException("Dotted map weights must be finite and non-negative.");
         }
         var valued = weights.Where(value => value.HasValue).Select(value => value!.Value).ToArray();
@@ -43,7 +43,7 @@ internal static partial class VisualMapCompiler {
             }
             for (var index = 0; index < series.RenderPoints.Count; index++) {
                 var source = series.RenderPoints[index]; var visible = Visible(source, viewport); var point = Geographic(source, viewport, map);
-                var category = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, index + 1) ?? "Point " + (index + 1);
+                var category = series.MapPoints[index].Label;
                 var formatted = weights[index].HasValue ? ChartNumericFormatter.FormatValue(chart.Options, weights[index]!.Value) : "";
                 var full = category + (formatted.Length > 0 ? ": " + formatted : "") + "; " + N(source.X) + ", " + N(source.Y);
                 var id = "series-0-point-" + index; var radius = series.MarkerRadius ?? PointRadius(dot, weights[index], min, max);
@@ -56,8 +56,8 @@ internal static partial class VisualMapCompiler {
                 })) {
                     if (!visible) continue;
                     var color = index < series.PointColors.Count && series.PointColors[index].HasValue ? series.PointColors[index]!.Value
-                        : series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Status.Pass.Fill);
-                    var paint = SvgPaint.Of(color, series.Color.HasValue || index < series.PointColors.Count && series.PointColors[index].HasValue ? SvgColorRole.Series : SvgColorRole.Status);
+                        : series.MapPoints[index].Color ?? series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Status.Pass.Fill);
+                    var paint = SvgPaint.Of(color, series.Color.HasValue || series.MapPoints[index].Color.HasValue || index < series.PointColors.Count && series.PointColors[index].HasValue ? SvgColorRole.Series : SvgColorRole.Status);
                     var halo = Math.Max(dot * 2.45, radius * 1.85);
                     builder.Ellipse(point.X, point.Y, halo, halo, ChartColorMath.WithOpacity(color, .18), role: "dotted-map-point-halo", paint: VisualChartPaint.Fill(paint.WithOpacity(ChartColorMath.WithOpacity(color, .18), .18)));
                     builder.Ellipse(point.X, point.Y, radius, radius, color, colors.Surface, Math.Max(1, dot * .55), "dotted-map-point", paint: new VisualScenePaintBinding(paint, SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));

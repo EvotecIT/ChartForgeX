@@ -32,6 +32,32 @@ Option callbacks now clone, configure and install an independent result. Callbac
 
 The [API conventions](api-conventions.md#one-theme-and-an-explicit-mode) contain current examples and ownership details. Migrate and qualify real consumers against candidate packages before delivering the break; source compilation does not establish public availability or installed-host readiness.
 
+## Maps and calendar observations
+
+Use `ChartSeries.CreateDottedMap`, `CreateCalendarHeatmap`, `CreateRegionMap` or `CreateTileMap` with an explicit ID when retaining a configurable series. Attach it through `chart.AddSeries(series)`. Their `Points` view is empty and read-only; use complete `MapPoints`, `CalendarItems` or `RegionValues` instead of editing encoded numeric points and parallel labels, values or colors. `PointValues` is removed. An observation's optional color belongs to the typed item; `WithPointColor` remains a presentation override.
+
+Region and tile series own their immutable `RegionMapDefinition` or `TileMapDefinition`. Remove assignments to the former `ChartOptions` geometry properties. Moving a detached explicit-ID series to another chart carries its geometry and values. Map viewport, layers, paint and color scales remain chart options. Axis labels no longer carry map keys or dotted-map labels.
+
+Factories and full replacements normalize calendar and region inputs: duplicate dates or canonical regions are summed, the last explicit color wins, and items are sorted by key. Region names and aliases resolve through the series' definition. Counts, observation IDs and point overrides index these normalized items. Dotted maps retain every input item in order, including repeated coordinates.
+
+Use `UpdateMapPoint`, `UpdateCalendarItem` or `UpdateRegionValue` for one complete observation. Updates preserve its index, ID and point styling; changing a date or region to one already owned by another observation is rejected. Use the corresponding `Replace*` operation for a complete sequence. Replacement clears observation metadata only after validation succeeds. Empty retained series export a no-data state and can be refilled; the fluent `Add*` conveniences still require nonempty input. Dotted-map route conveniences capture coordinates at the time the route is added.
+
+Move the former `AddCalendarHeatmap` arguments `firstDayOfWeek`, `dayNames` and `monthNames`, and `WithCalendarHeatmapCells` settings, to `ConfigureCalendar`. `chart.Options.Calendar` exposes the installed `ChartCalendarOptions`. Weekday names contain seven entries indexed by `DayOfWeek`, Sunday first; month names contain twelve entries, January first. Assign null to restore invariant names or automatic cell sizing. Unassigned callback properties retain their current settings, so explicitly assign null when resetting a former cell setting. Invalid names or a throwing callback leave the installed presentation unchanged.
+
+```csharp
+var activity = ChartSeries.CreateCalendarHeatmap(
+    new ChartSeriesId("activity"), "Activity", items);
+chart.ConfigureCalendar(options => {
+    options.FirstDayOfWeek = DayOfWeek.Monday;
+    options.DayNames = new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" };
+    options.MaximumCellSize = 18;
+    options.Gap = 4;
+});
+chart.AddSeries(activity);
+activity.UpdateCalendarItem(0,
+    new ChartCalendarHeatmapItem(activity.CalendarItems[0].Date, 12));
+```
+
 ## Typed configuration callbacks
 
 Replace `With*` calls that accept typed configuration callbacks with `Configure*`. Rebuild callers compiled against the former methods. The value and object overloads keep their `With*` names; there are no forwarding aliases.

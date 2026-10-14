@@ -37,7 +37,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
             var initial = values.Length > 0 ? values : new double?[] { 0 };
             chart.AddCalendarHeatmap("Observed", initial.Select((value, index) => (value, index))
                 .Where(item => item.value.HasValue).Select(item => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5).AddDays(item.index), item.value!.Value)));
-            if (values.Length == 0) chart.Series[0].Points.Clear();
+            if (values.Length == 0) chart.Series[0].ReplaceCalendarItems(Array.Empty<ChartCalendarHeatmapItem>());
         }
         else if (family is "treemap" or "sunburst") {
             var leaves = values.Select((value, index) => new ChartHierarchyItem("leaf-" + index, "Observation " + index,
@@ -51,7 +51,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
             var initial = items.Length > 0 ? items : new[] { new ChartRegionMapItem(codes[0], 0) };
             if (family == "region-map") chart.AddRegionMap("Observed", ChartMapCatalog.Get("us-states"), initial);
             else chart.AddTileMap("Observed", ChartTileMapCatalog.Get("us-states"), initial);
-            if (items.Length == 0) chart.Series[0].Points.Clear();
+            if (items.Length == 0) chart.Series[0].ReplaceRegionValues(Array.Empty<ChartRegionMapItem>());
             chart.WithMapLabels(false);
         }
         return chart;

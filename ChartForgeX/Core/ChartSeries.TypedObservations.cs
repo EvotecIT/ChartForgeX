@@ -219,7 +219,7 @@ public sealed partial class ChartSeries {
     }
 
     private void ClearObservationMetadata() {
-        PointColors.Clear(); PointFillPatterns.Clear(); PointValues.Clear(); PointLabels.Clear();
+        PointColors.Clear(); PointFillPatterns.Clear(); PointLabels.Clear();
         PointDataLabelStyles.Clear(); PointSliceOffsets.Clear(); ClearObservationKeys();
     }
 

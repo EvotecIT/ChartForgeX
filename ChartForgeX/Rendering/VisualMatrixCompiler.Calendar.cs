@@ -26,7 +26,7 @@ internal static partial class VisualMatrixCompiler {
         var scaleGap = Math.Min(gap, scaleHeight / 3);
         var area = new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height - top - scaleHeight));
         var grid = model.Layout(area);
-        var sourceIndices = model.Series.Points.Select((point, index) => new { Date = DateTime.FromOADate(point.X).Date, Index = index })
+        var sourceIndices = model.Series.CalendarItems.Select((item, index) => new { Date = item.Date, Index = index })
             .GroupBy(item => item.Date).ToDictionary(group => group.Key, group => group.Select(item => item.Index).ToArray());
         using (builder.PushGroup("calendar", "calendar-heatmap", new Dictionary<string, string> {
             ["aria-label"] = model.Summary(), ["role"] = "group", ["data-cfx-label-level"] = chart.Options.Labels.Level,
@@ -60,10 +60,8 @@ internal static partial class VisualMatrixCompiler {
                         metadata["data-cfx-label-value"] = presentation.Name;
                     }
                     if (scale == null) metadata["data-cfx-level"] = model.Level(day.Value).ToString();
-                    var sources = sourceIndices[date];
-                    metadata["data-cfx-source-points"] = string.Join(",", sources);
-                    // Ingestion normalizes dates to one authored observation. Later numeric edits can still create aggregates.
-                    if (sources.Length == 1) metadata["data-cfx-observation-index"] = sources[0].ToString(CultureInfo.InvariantCulture);
+                    metadata["data-cfx-source-points"] = string.Join(",", sourceIndices[date]);
+                    metadata["data-cfx-observation-index"] = sourceIndices[date][0].ToString(CultureInfo.InvariantCulture);
                 }
                 using (VisualStateSceneTools.Mark(builder, id, "calendar-cell", bounds, label, metadata))
                 using (builder.PushClip(area)) builder.Rect(bounds, blend.Color, radius: Math.Min(grid.Radius, context.Theme.BarRadius), role: "calendar-cell-shape", paint: VisualChartPaint.Fill(blend.Paint));

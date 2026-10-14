@@ -72,9 +72,11 @@ public sealed class V2MatrixTests {
     [Fact]
     public void CalendarRetainsZeroMissingLocalizedDatesAndSizingAcrossBothBackends() {
         var start = new DateTime(2026, 9, 28);
-        var chart = Chart.Create().AddCalendarHeatmap("Activity", new[] { new ChartCalendarHeatmapItem(start, 0), new ChartCalendarHeatmapItem(start.AddDays(2), 5) },
-            firstDayOfWeek: DayOfWeek.Monday, dayNames: new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" });
-        chart.WithCalendarHeatmapCells(maximumSize: 18, gap: 4);
+        var chart = Chart.Create().ConfigureCalendar(options => {
+            options.FirstDayOfWeek = DayOfWeek.Monday;
+            options.DayNames = new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" };
+            options.MaximumCellSize = 18; options.Gap = 4;
+        }).AddCalendarHeatmap("Activity", new[] { new ChartCalendarHeatmapItem(start, 0), new ChartCalendarHeatmapItem(start.AddDays(2), 5) });
         chart.Options.Labels.DateFormatter = date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         var cells = prepared.Regions.Where(region => region.Role == "calendar-cell").ToArray(); Assert.Equal(7, cells.Length);

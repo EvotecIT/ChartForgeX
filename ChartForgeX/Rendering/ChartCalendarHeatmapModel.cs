@@ -8,23 +8,23 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>
 /// Renderer-neutral days, weeks, colours, words, and cell geometry of a calendar heatmap, so SVG and PNG draw the
-/// same calendar. Weeks start on the series' first day of week. Default coloring gives zero its own neutral paint;
+/// same calendar. Weeks start on the chart's configured first day of week. Default coloring gives zero its own neutral paint;
 /// an explicit numeric scale instead maps every present value, including zero, over the complete observed domain.
 /// </summary>
 internal sealed class ChartCalendarHeatmapModel {
     private static readonly string[] InvariantDays = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
     private static readonly string[] InvariantMonths = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
     private readonly Dictionary<DateTime, ChartCalendarDay> _byDate;
-    private readonly string[] _dayNames;
-    private readonly string[] _monthNames;
+    private readonly IReadOnlyList<string> _dayNames;
+    private readonly IReadOnlyList<string> _monthNames;
 
     private ChartCalendarHeatmapModel(Chart chart, ChartSeries series, Dictionary<DateTime, ChartCalendarDay> byDate, DateTime minDate, DateTime maxDate, double min, double max, double rampMin, int zeroDays) {
         Chart = chart;
         Series = series;
         _byDate = byDate;
-        FirstDay = series.CalendarFirstDay;
-        _dayNames = series.CalendarDayNames ?? InvariantDays;
-        _monthNames = series.CalendarMonthNames ?? InvariantMonths;
+        FirstDay = chart.Options.Calendar.FirstDayOfWeek;
+        _dayNames = chart.Options.Calendar.DayNames ?? InvariantDays;
+        _monthNames = chart.Options.Calendar.MonthNames ?? InvariantMonths;
         MinDate = minDate;
         MaxDate = maxDate;
         Start = minDate.AddDays(-Row(minDate));
@@ -93,9 +93,9 @@ internal sealed class ChartCalendarHeatmapModel {
         var max = double.NegativeInfinity;
         var minNonZero = double.PositiveInfinity;
         for (var i = 0; i < series.RenderPoints.Count; i++) {
-            var date = DateTime.FromOADate(series.RenderPoints[i].X).Date;
-            var value = series.RenderPoints[i].Y;
-            byDate[date] = new ChartCalendarDay(date, value, i < series.PointColors.Count ? series.PointColors[i] : null);
+            var date = series.CalendarItems[i].Date;
+            var value = series.CalendarItems[i].Value;
+            byDate[date] = new ChartCalendarDay(date, value, i < series.PointColors.Count && series.PointColors[i].HasValue ? series.PointColors[i] : series.CalendarItems[i].Color);
             if (date < minDate) minDate = date;
             if (date > maxDate) maxDate = date;
             min = Math.Min(min, value);
@@ -199,14 +199,14 @@ internal sealed class ChartCalendarHeatmapModel {
     /// unless a preferred size fits or a maximum size applies; the grid is centred.
     /// </summary>
     public ChartCalendarLayout Layout(ChartRect plot) {
-        var options = Chart.Options;
-        var gap = options.CalendarCellGap ?? (Columns > 32 ? 2.5 : 3.5);
+        var options = Chart.Options.Calendar;
+        var gap = options.Gap ?? (Columns > 32 ? 2.5 : 3.5);
         // A preferred gap cannot consume the frame before its cells are drawn.
         gap = Math.Max(0, Math.Min(gap, Math.Min(Columns > 1 ? Math.Max(0, plot.Width - Columns) / (Columns - 1) : gap, Math.Max(0, plot.Height - 7) / 6)));
         var fit = Math.Max(0, Math.Min((plot.Width - gap * (Columns - 1)) / Columns, (plot.Height - gap * 6) / 7));
         var cell = fit;
-        if (options.CalendarMaximumCellSize.HasValue) cell = Math.Min(cell, options.CalendarMaximumCellSize.Value);
-        if (options.CalendarCellSize.HasValue) cell = Math.Min(options.CalendarCellSize.Value, fit);
+        if (options.MaximumCellSize.HasValue) cell = Math.Min(cell, options.MaximumCellSize.Value);
+        if (options.CellSize.HasValue) cell = Math.Min(options.CellSize.Value, fit);
         var gridWidth = Columns * cell + (Columns - 1) * gap;
         var gridHeight = 7 * cell + 6 * gap;
         return new ChartCalendarLayout(cell, gap, plot.Left + Math.Max(0, (plot.Width - gridWidth) / 2), plot.Top + Math.Max(0, (plot.Height - gridHeight) / 2), gridWidth, gridHeight);

@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
     private static void Regions(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
-        var definition = chart.Options.RegionMapDefinition ?? throw new InvalidOperationException("A region map requires a geometry definition.");
+        var definition = chart.Series[0].RegionMapDefinition ?? throw new InvalidOperationException("A region map requires a geometry definition.");
         var source = chart.Options.RegionMapBounds ?? definition.Bounds;
         if (!Finite(source.Left) || !Finite(source.Top) || !Finite(source.Width) || !Finite(source.Height) || source.Width <= 0 || source.Height <= 0)
             throw new InvalidOperationException("Region map bounds must be finite and have positive dimensions.");
@@ -70,7 +70,7 @@ internal static partial class VisualMapCompiler {
     }
 
     private static void Tiles(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
-        var definition = chart.Options.TileMapDefinition ?? throw new InvalidOperationException("A tile map requires a tile definition.");
+        var definition = chart.Series[0].TileMapDefinition ?? throw new InvalidOperationException("A tile map requires a tile definition.");
         var values = Values(chart, key => definition.TryResolveRegion(key, out var code) ? code : null);
         var width = chart.Options.MapRegionStrokeWidth;
         var gap = TileGap(chart, context, builder, definition, plot, width);

@@ -33,7 +33,12 @@ internal static class ReportingExamples {
             .WithTheme(VisualTheme.Report())
             .WithSize(760, 360)
             .WithPngOutputScale(pngOutputScale)
-            .WithCalendarHeatmapCells(maximumSize: 30)
+            .ConfigureCalendar(options => {
+                options.MaximumCellSize = 30;
+                options.FirstDayOfWeek = DayOfWeek.Monday;
+                options.DayNames = new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" };
+                options.MonthNames = new[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+            })
             .ConfigureLabels(labels => {
                 labels.Less = "Weniger";
                 labels.More = "Mehr";
@@ -44,9 +49,7 @@ internal static class ReportingExamples {
                     _ => null
                 };
             })
-            .AddCalendarHeatmap("Änderungen", items, ChartColor.FromHex("#2a78d6"), DayOfWeek.Monday,
-                new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" },
-                new[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" });
+            .AddCalendarHeatmap("Änderungen", items, ChartColor.FromHex("#2a78d6"));
 
         chart.SaveSvg(Path.Combine(output, "reporting-change-calendar.svg"));
         chart.SaveHtml(Path.Combine(output, "reporting-change-calendar.html"));

@@ -103,15 +103,19 @@ internal static class ReportHostExamples {
             .WithTheme(VisualTheme.Report())
             .WithSize(760, 230)
             .WithPngOutputScale(pngOutputScale)
-            .WithCalendarHeatmapCells(maximumSize: 18)
+            .ConfigureCalendar(options => {
+                options.MaximumCellSize = 18;
+                options.FirstDayOfWeek = french.DateTimeFormat.FirstDayOfWeek;
+                options.DayNames = french.DateTimeFormat.AbbreviatedDayNames;
+                options.MonthNames = french.DateTimeFormat.AbbreviatedMonthNames.Take(12).ToArray();
+            })
             .ConfigureLabels(labels => {
                 labels.Less = "Moins";
                 labels.More = "Plus";
                 labels.NoData = "Aucune donnée";
                 labels.DateFormatter = day => day.ToString("D", french);
             })
-            .AddCalendarHeatmap("Changements", items, ChartColor.FromHex("#2a78d6"), french.DateTimeFormat.FirstDayOfWeek,
-                french.DateTimeFormat.AbbreviatedDayNames, french.DateTimeFormat.AbbreviatedMonthNames.Take(12).ToArray());
+            .AddCalendarHeatmap("Changements", items, ChartColor.FromHex("#2a78d6"));
 
         chart.SaveSvg(Path.Combine(output, "report-host-short-calendar.svg"));
         chart.SaveHtml(Path.Combine(output, "report-host-short-calendar.html"));

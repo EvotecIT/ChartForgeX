@@ -202,11 +202,13 @@ public sealed class V2MapTests {
     public void MutatedInvalidMapInputsFailBeforeExportAndScaleVisibilityIsIndependent() {
         var chart = Chart.Create().AddDottedMap("Point", new[] { new ChartMapPoint("A", 0, 0) });
         chart.Options.MapViewport = default; Assert.Throws<InvalidOperationException>(() => Compile(chart));
-        chart.Options.MapViewport = ChartMapViewport.World(); chart.Series[0].Points[0] = new ChartPoint(200, 0);
-        Assert.Throws<InvalidOperationException>(() => Compile(chart));
+        chart.Options.MapViewport = ChartMapViewport.World();
+        Assert.Throws<ArgumentException>(() => chart.Series[0].UpdateMapPoint(0, default));
+        Assert.Equal(0, chart.Series[0].MapPoints[0].Longitude);
         var region = Chart.Create().AddRegionMap("Area", Definition(), new[] { new ChartRegionMapItem("A", 20) }).WithMapLabels(false).ConfigureMapColorDimension(options => options.ShowLegend = false);
         Assert.DoesNotContain(Compile(region).Nodes, node => node.Role is "region-map-label" or "map-scale-step");
-        region.Options.XAxisLabels[0] = new ChartAxisLabel(1, "Unknown"); Assert.Throws<InvalidOperationException>(() => Compile(region));
+        Assert.Throws<ArgumentException>(() => region.Series[0].UpdateRegionValue(0, new ChartRegionMapItem("Unknown", 1)));
+        Assert.NotEmpty(Compile(region).Nodes);
     }
 
     private static ChartMapDefinition Definition() => new("test", "Test", 100, 100, new[] {

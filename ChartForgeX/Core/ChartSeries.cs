@@ -78,11 +78,6 @@ public sealed partial class ChartSeries {
     public List<ChartFillPattern?> PointFillPatterns { get; } = new();
 
     /// <summary>
-    /// Gets optional point-level numeric values for specialized renderers that need per-point metadata.
-    /// </summary>
-    public List<double?> PointValues { get; } = new();
-
-    /// <summary>
     /// Gets or sets the full heatmap column span for masked matrix rows.
     /// </summary>
     internal int? HeatmapColumnCount { get; set; }
@@ -95,15 +90,6 @@ public sealed partial class ChartSeries {
 
     /// <summary>Gets or sets the group header a Gantt lane is listed under.</summary>
     internal string? LaneGroup { get; set; }
-
-    /// <summary>Gets or sets the weekday of the top row of a calendar heatmap.</summary>
-    internal DayOfWeek CalendarFirstDay { get; set; }
-
-    /// <summary>Gets or sets the calendar weekday names indexed by <see cref="DayOfWeek"/>, or null for invariant abbreviations.</summary>
-    internal string[]? CalendarDayNames { get; set; }
-
-    /// <summary>Gets or sets the calendar month names, January first, or null for invariant abbreviations.</summary>
-    internal string[]? CalendarMonthNames { get; set; }
 
     /// <summary>
     /// Gets optional point-level data labels. Null entries use the formatted point value.

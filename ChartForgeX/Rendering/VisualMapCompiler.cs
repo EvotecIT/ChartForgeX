@@ -42,10 +42,10 @@ internal static partial class VisualMapCompiler {
     }
 
     private static Dictionary<string, int> Values(Chart chart, Func<string, string?> resolve) {
-        var values = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var values = new Dictionary<string, int>(StringComparer.Ordinal);
         for (var index = 0; index < chart.Series[0].RenderPoints.Count; index++) {
-            var key = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, chart.Series[0].RenderPoints[index].X);
-            var code = key == null ? null : resolve(key);
+            var key = chart.Series[0].RegionValues[index].Region;
+            var code = resolve(key);
             if (code == null) throw new InvalidOperationException("A map observation must identify a known, unambiguous region.");
             if (values.ContainsKey(code)) throw new InvalidOperationException("Map observations must contain one aggregated value per region.");
             values.Add(code, index);
@@ -59,7 +59,7 @@ internal static partial class VisualMapCompiler {
         if (!index.HasValue) return ChartHeatmapSurface.MapNoDataBlend(chart, colors);
         var series = chart.Series[0]; var point = index.Value;
         return ChartHeatmapSurface.MapBlend(chart, colors,
-            point < series.PointColors.Count ? series.PointColors[point] : null, High(series, colors), series.RenderPoints[point].Y, min, max, VisualChartPaint.SeriesRole(series));
+            point < series.PointColors.Count && series.PointColors[point].HasValue ? series.PointColors[point] : series.RegionValues[point].Color, High(series, colors), series.RenderPoints[point].Y, min, max, VisualChartPaint.SeriesRole(series));
     }
     private static ChartFillPattern Pattern(ChartSeries series, int? index) => index.HasValue && index.Value < series.PointFillPatterns.Count && series.PointFillPatterns[index.Value].HasValue
         ? series.PointFillPatterns[index.Value]!.Value : series.FillPattern;

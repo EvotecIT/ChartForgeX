@@ -15,6 +15,9 @@ public sealed partial class ChartSeries {
             if (IsCategoricalHeatmapRow) return HeatmapCells.Count;
             if (IsTypedWaterfall) return WaterfallItems.Count;
             return Kind switch {
+                ChartSeriesKind.DottedMap => MapPoints.Count,
+                ChartSeriesKind.CalendarHeatmap => CalendarItems.Count,
+                ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap => RegionValues.Count,
                 ChartSeriesKind.Bubble => Bubbles.Count,
                 ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc => FinancialValues.Count,
                 ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea => Ranges.Count,
