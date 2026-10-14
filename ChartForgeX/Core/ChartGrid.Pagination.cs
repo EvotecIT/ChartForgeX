@@ -32,7 +32,8 @@ public sealed partial class ChartGrid {
                 PanelSize = PanelSize,
                 PanelFit = PanelFit,
                 Theme = Theme,
-                ThemeMode = ThemeMode
+                ThemeMode = ThemeMode,
+                UsePanelThemes = UsePanelThemes
             };
             grid.TitleStyle = TitleStyle.Clone();
             grid.SubtitleStyle = SubtitleStyle.Clone();

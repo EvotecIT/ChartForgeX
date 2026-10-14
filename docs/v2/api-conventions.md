@@ -69,6 +69,20 @@ chart.WithTheme(theme, VisualThemeMode.Dark);
 
 Use `theme.ToJson()` and `VisualTheme.FromJson(json)` for the versioned full-theme format. Use `VisualTheme.FromPaletteJson(json)` for the generated HtmlForgeX color document. These formats have different purposes and validation.
 
+Chart grids share their own theme, mode and font across all panels by default. Use `WithPanelThemes()` for a theme comparison or a report containing independently styled charts:
+
+```csharp
+var grid = ChartGrid.Create()
+    .WithTheme(VisualTheme.Report())
+    .WithPanelThemes()
+    .Add(sales.WithTheme(VisualTheme.Executive()))
+    .Add(readership.WithTheme(VisualTheme.Editorial(), VisualThemeMode.Dark));
+```
+
+With panel themes enabled, every child uses its chart's `Theme`, `ThemeMode`, typography and native font-file request. The grid context controls the outer frame, layout, visibility permissions and legend limits. An explicit context theme or font therefore applies to the outer frame; call `WithPanelThemes(false)` to impose that presentation on every panel. A context `LegendStyle` remains an explicit common legend override, and chart text-style overrides remain authoritative. Pagination copies this choice. The grid never infers its presentation from the first child.
+
+SVG color variables follow the same boundary. Shared panels use `ChartGrid.SvgColorVariables`. Independent panels retain their own chart mappings, or literal colors when none are authored, so an outer CSS token cannot replace a child's palette merely because their RGB values match. These mappings are captured with the prepared scene and apply to SVG and HTML; native PNG retains the resolved colors.
+
 ## Stable series handles and observations
 
 See [chart combinations, orientation and axes](chart-combinations.md) before combining families or selecting a horizontal/radial layout.

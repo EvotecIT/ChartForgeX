@@ -36,10 +36,11 @@ internal abstract class VisualSceneNode {
 internal sealed class VisualSceneGroup : VisualSceneNode {
     internal VisualSceneGroup(string? role, string? id, ChartRect? clip, IReadOnlyDictionary<string, string>? metadata,
         VisualScenePath? pathClip = null, VisualRotation? rotation = null, string? href = null, string? tooltip = null,
-        ChartPoint? translation = null, VisualSceneImageResource? imageResource = null)
+        ChartPoint? translation = null, VisualSceneImageResource? imageResource = null, VisualSceneColorScope? colorScope = null)
         : base(role, id) {
         Clip = clip;
         PathClip = pathClip; Rotation = rotation; Href = href; Tooltip = tooltip; Translation = translation; ImageResource = imageResource;
+        ColorScope = colorScope;
         var copy = new SortedDictionary<string, string>(StringComparer.Ordinal);
         if (metadata != null) foreach (var item in metadata) copy.Add(item.Key, item.Value);
         Metadata = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(copy);
@@ -52,6 +53,13 @@ internal sealed class VisualSceneGroup : VisualSceneNode {
     internal string? Href { get; }
     internal string? Tooltip { get; }
     internal VisualSceneImageResource? ImageResource { get; }
+    internal VisualSceneColorScope? ColorScope { get; }
+}
+
+/// <summary>Isolates a composed child's host paint mapping; null variables retain literal native colors.</summary>
+internal sealed class VisualSceneColorScope {
+    internal VisualSceneColorScope(SvgColorVariables? variables) { Variables = variables?.Clone(); }
+    internal SvgColorVariables? Variables { get; }
 }
 
 internal sealed class VisualSceneEndGroup : VisualSceneNode {

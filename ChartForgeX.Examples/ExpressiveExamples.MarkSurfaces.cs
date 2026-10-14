@@ -35,7 +35,7 @@ internal static partial class ExpressiveExamples {
         pie.Options.Theme = pie.Options.Theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { color, ChartColor.FromRgba(234, 88, 12, 144), ChartColor.FromRgba(22, 163, 74, 144) }; });
         pie.Series[0].WithPointSliceOffset(0, 0.08);
         return ChartGrid.Create().WithTitle("Chart mark surfaces").WithSubtitle("Shared opacity, fills, hatching and closed outlines in SVG and PNG")
-            .WithTheme(VisualTheme.Report()).WithColumns(2).WithPanelSize(440, 280).WithPadding(24)
+            .WithTheme(VisualTheme.Report()).WithPanelThemes().WithColumns(2).WithPanelSize(440, 280).WithPadding(24)
             .Add(box).Add(price).Add(error).Add(band).Add(bars).Add(pie);
     }
 

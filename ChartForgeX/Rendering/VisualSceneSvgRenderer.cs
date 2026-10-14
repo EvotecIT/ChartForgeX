@@ -32,10 +32,12 @@ internal static partial class VisualSceneSvgRenderer {
         writer.EndStartElement();
         if (!decorative && !string.IsNullOrEmpty(title)) writer.StartElement("title").Attribute("id", prefix + "-title").Text(title!).EndElement();
         if (!decorative && !string.IsNullOrEmpty(description)) writer.StartElement("desc").Attribute("id", prefix + "-description").Text(description!).EndElement();
-        var clipAliases = WriteClips(writer, scene, prefix, options);
+        var colorScopes = ColorScopeOptions(scene, options);
+        var clipAliases = WriteClips(writer, scene, prefix, options, colorScopes);
         WriteFontPalettes(writer, scene);
         for (var i = 0; i < scene.Nodes.Count; i++) {
             var node = scene.Nodes[i];
+            var paintOptions = colorScopes == null ? options : colorScopes[i];
             if (node is VisualSceneGroup group) {
                 writer.StartElement(group.Href == null ? "g" : "a"); Semantics(writer, group, prefix, i);
                 if (group.Href != null) {
@@ -73,13 +75,13 @@ internal static partial class VisualSceneSvgRenderer {
             else if (node is VisualSceneRectangle rect) {
                 writer.StartElement("rect").Attribute("x", rect.Bounds.X).Attribute("y", rect.Bounds.Y)
                     .Attribute("width", rect.Bounds.Width).Attribute("height", rect.Bounds.Height).Attribute("rx", rect.Radius);
-                Paint(writer, rect, prefix, i, options: options); writer.EndEmptyElement();
+                Paint(writer, rect, prefix, i, options: paintOptions); writer.EndEmptyElement();
             } else if (node is VisualSceneEllipse ellipse) {
                 writer.StartElement("ellipse").Attribute("cx", ellipse.Cx).Attribute("cy", ellipse.Cy).Attribute("rx", ellipse.Rx).Attribute("ry", ellipse.Ry);
-                Paint(writer, ellipse, prefix, i, options: options); writer.EndEmptyElement();
+                Paint(writer, ellipse, prefix, i, options: paintOptions); writer.EndEmptyElement();
             } else if (node is VisualSceneLine line) {
                 writer.StartElement("line").Attribute("x1", line.Start.X).Attribute("y1", line.Start.Y).Attribute("x2", line.End.X).Attribute("y2", line.End.Y);
-                Paint(writer, line, prefix, i, options: options);
+                Paint(writer, line, prefix, i, options: paintOptions);
                 if (line.Dash != null) {
                     writer.Attribute("stroke-dasharray", DashValue(line.Dash));
                     var phase = ChartStrokeDashes.NormalizeOffset(line.Dash, line.DashOffset);
@@ -87,25 +89,26 @@ internal static partial class VisualSceneSvgRenderer {
                 }
                 writer.EndEmptyElement();
             } else if (node is VisualScenePath path) {
-                writer.StartElement("path").Attribute("d", PathData(path)); Paint(writer, path, prefix, i, options: options); writer.EndEmptyElement();
+                writer.StartElement("path").Attribute("d", PathData(path)); Paint(writer, path, prefix, i, options: paintOptions); writer.EndEmptyElement();
             } else if (node is VisualSceneSlice slice) {
                 if (slice.Outer <= 0 || slice.Sweep <= 0) continue;
                 writer.StartElement("path").Attribute("d", ChartSlicePathGeometry.BuildPath(slice.Cx, slice.Cy, slice.Outer,
                     slice.Inner, slice.Start, slice.Start + slice.Sweep));
-                Paint(writer, slice, prefix, i, options: options); writer.EndEmptyElement();
+                Paint(writer, slice, prefix, i, options: paintOptions); writer.EndEmptyElement();
             } else if (node is VisualSceneImage image) {
                 writer.StartElement("image").Attribute("x", image.Bounds.X).Attribute("y", image.Bounds.Y)
                     .Attribute("width", image.Bounds.Width).Attribute("height", image.Bounds.Height)
                     .Attribute("preserveAspectRatio", "none").Attribute("href", image.DataUri);
                 if (image.Opacity != 1) writer.Attribute("opacity", image.Opacity);
                 Semantics(writer, image, prefix, i); writer.EndEmptyElement();
-            } else if (node is VisualSceneGradient gradient) WriteGradientShape(writer, gradient, prefix, i, options);
-            else if (node is VisualSceneText text) WriteText(writer, text, prefix, i, options);
+            } else if (node is VisualSceneGradient gradient) WriteGradientShape(writer, gradient, prefix, i, paintOptions);
+            else if (node is VisualSceneText text) WriteText(writer, text, prefix, i, paintOptions);
         }
         writer.EndElement(); return writer.Build();
     }
 
-    private static Dictionary<int, int> WriteClips(SvgMarkupWriter writer, VisualScene scene, string prefix, VisualSvgOptions? options) {
+    private static Dictionary<int, int> WriteClips(SvgMarkupWriter writer, VisualScene scene, string prefix, VisualSvgOptions? options,
+        VisualSvgOptions?[]? colorScopes) {
         var opened = false;
         var rectangleClips = new Dictionary<(double X, double Y, double Width, double Height), int>();
         var aliases = new Dictionary<int, int>();
@@ -113,7 +116,7 @@ internal static partial class VisualSceneSvgRenderer {
             var node = scene.Nodes[i];
             if (node is VisualSceneGradient gradient) {
                 if (!opened) { writer.StartElement("defs").EndStartElement(); opened = true; }
-                WriteGradientDefinition(writer, gradient, prefix, i, options);
+                WriteGradientDefinition(writer, gradient, prefix, i, colorScopes == null ? options : colorScopes[i]);
                 continue;
             }
             if (!(node is VisualSceneGroup group) || !group.Clip.HasValue && group.PathClip == null) continue;
@@ -238,6 +241,7 @@ internal static partial class VisualSceneSvgRenderer {
                 Text(writer, node.Id); Text(writer, node.Role);
                 if (node is VisualSceneMark mark) { Color(writer, mark.Fill); Color(writer, mark.Stroke); writer.Write(mark.StrokeWidth); PaintIdentity(writer, mark.Paint); }
                 if (node is VisualSceneGroup group) {
+                    if (group.ColorScope != null) writer.Write("svg-color-scope");
                     writer.Write(group.Clip.HasValue);
                     if (group.Clip.HasValue) Rectangle(writer, group.Clip.Value);
                     writer.Write(group.PathClip != null);

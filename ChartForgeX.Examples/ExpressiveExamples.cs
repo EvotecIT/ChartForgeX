@@ -336,6 +336,7 @@ internal static partial class ExpressiveExamples {
             .WithTitle("Word Cloud Control Showcase")
             .WithSubtitle("Term limits and density controls tune clouds from calm editorial summaries to dense poster layouts")
             .WithTheme(VisualTheme.Editorial())
+            .WithPanelThemes()
             .WithColumns(2)
             .WithPadding(28)
             .WithPanelSize(430, 280)

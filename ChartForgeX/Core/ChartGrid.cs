@@ -111,19 +111,24 @@ public sealed partial class ChartGrid {
     }
 
     /// <summary>
-    /// Gets or sets the paired theme shared by the grid frame and every panel.
+    /// Gets or sets the paired theme for the grid frame and, by default, every panel.
     /// </summary>
     public VisualTheme Theme {
         get => _theme;
         set { _theme = value ?? throw new ArgumentNullException(nameof(value)); _resolvedTheme = null; }
     }
 
-    /// <summary>Gets or sets the explicit palette mode for the complete comparison.</summary>
+    /// <summary>Gets or sets the explicit palette mode for the grid frame and shared panels.</summary>
     public VisualThemeMode ThemeMode {
         get => _themeMode;
         set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; _resolvedTheme = null; }
     }
     internal ResolvedVisualTheme ResolvedTheme => _resolvedTheme ??= Theme.ResolvePresentation(ThemeMode);
+
+    /// <summary>Gets or sets whether each panel retains its chart's authored theme, mode and font request.</summary>
+    /// <remarks>False shares the grid render context's presentation across panels. True reserves that context's
+    /// theme and font for the outer frame; panel visibility and legend limits still follow the common frame.</remarks>
+    public bool UsePanelThemes { get; set; }
 
     /// <summary>
     /// Gets the text style used for the grid title.
@@ -256,6 +261,11 @@ public sealed partial class ChartGrid {
     }
     /// <summary>Sets the explicit palette mode for the comparison.</summary>
     public ChartGrid WithThemeMode(VisualThemeMode mode) { ThemeMode = mode; return this; }
+
+    /// <summary>Retains each chart's authored theme, mode and font inside the grid.</summary>
+    /// <param name="enabled">True uses panel presentation; false shares the grid context's theme, mode and font.</param>
+    /// <returns>The current chart grid.</returns>
+    public ChartGrid WithPanelThemes(bool enabled = true) { UsePanelThemes = enabled; return this; }
 
     /// <summary>
     /// Adds a chart to the grid.

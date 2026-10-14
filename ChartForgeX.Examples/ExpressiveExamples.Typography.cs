@@ -165,6 +165,7 @@ internal static partial class ExpressiveExamples {
         return ChartGrid.Create()
             .WithTitle("Theme and Font Showcase")
             .WithSubtitle("Built-in themes combine palettes, typography, strokes, and radii")
+            .WithPanelThemes()
             .WithColumns(2)
             .WithPadding(28)
             .WithPanelSize(420, 260)

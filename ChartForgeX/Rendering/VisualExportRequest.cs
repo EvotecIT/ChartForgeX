@@ -35,13 +35,15 @@ internal sealed partial class VisualExportRequest {
             padding = new ChartPadding(Math.Min(padding.Left, options.Size.Width / 4), Math.Min(padding.Top, options.Size.Height / 4),
                 Math.Min(padding.Right, options.Size.Width / 4), Math.Min(padding.Bottom, options.Size.Height / 4));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(options.Size.Width, options.Size.Height), padding),
-            theme, options.ThemeMode, frame: frame, font: new FontSpec {
-                Family = theme.Typography.Family, FilePath = options.PngFontPath,
-                FaceName = options.PngFontFaceName, CollectionIndex = options.PngFontCollectionIndex
-            });
+            theme, options.ThemeMode, frame: frame, font: ChartFont(options));
         return new VisualExportRequest(context, new VisualRenderOptions(options.PngOutputScale, options.PngSupersamplingScale,
             textHinting: options.PngTextHinting));
     }
+
+    internal static FontSpec ChartFont(ChartOptions options) => new() {
+        Family = options.Theme.Typography.Family, FilePath = options.PngFontPath,
+        FaceName = options.PngFontFaceName, CollectionIndex = options.PngFontCollectionIndex
+    };
 
     internal static VisualExportRequest ForGrid(ChartGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
