@@ -12,31 +12,42 @@ public sealed class MapObservationIdentityBrowserTests {
     [InlineData(ChartSeriesKind.DottedMap)]
     [InlineData(ChartSeriesKind.RegionMap)]
     [InlineData(ChartSeriesKind.TileMap)]
-    public async Task SelectionAndReadoutsRetainNormalizedObservationIds(ChartSeriesKind kind) {
+    public async Task SelectionAndReadoutsRetainObservationIdsAfterTypedUpdates(ChartSeriesKind kind) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(640, 360).WithTitle("Observed activity");
         switch (kind) {
             case ChartSeriesKind.CalendarHeatmap:
                 chart.AddCalendarHeatmap("Days", new[] {
-                    new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 3),
-                    new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 4)
+                    new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 1),
+                    new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 2)
                 }, id: new ChartSeriesId("activity"));
                 break;
             case ChartSeriesKind.DottedMap:
-                chart.AddDottedMap("Locations", new[] { new ChartMapPoint("Warsaw", 21, 52, 7) });
+                chart.AddDottedMap("Locations", new[] { new ChartMapPoint("Warsaw", 21, 52, 3) });
                 break;
             case ChartSeriesKind.RegionMap:
                 chart.AddRegionMap("Regions", new ChartMapDefinition("regions", "Regions", 100, 50, new[] {
                     new ChartMapRegion("A", "Alpha", "M0 0H50V50H0Z"), new ChartMapRegion("B", "Beta", "M50 0H100V50H50Z")
-                }), new[] { new ChartRegionMapItem("A", 7) }, id: new ChartSeriesId("activity"));
+                }), new[] { new ChartRegionMapItem("A", 3) }, id: new ChartSeriesId("activity"));
                 break;
             default:
                 chart.AddTileMap("Tiles", new ChartTileMapDefinition("tiles", "Tiles", new[] {
                     new ChartTileMapRegion("A", "Alpha", 0, 0), new ChartTileMapRegion("B", "Beta", 1, 0)
-                }), new[] { new ChartRegionMapItem("A", 7) }, id: new ChartSeriesId("activity"));
+                }), new[] { new ChartRegionMapItem("A", 3) }, id: new ChartSeriesId("activity"));
                 break;
         }
-        chart.Series[0].WithObservationId(0, new ChartObservationId("observed-a"));
+        var series = chart.Series[0].WithObservationId(0, new ChartObservationId("observed-a"));
+        switch (kind) {
+            case ChartSeriesKind.CalendarHeatmap:
+                series.UpdateCalendarItem(0, new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 7));
+                break;
+            case ChartSeriesKind.DottedMap:
+                series.UpdateMapPoint(0, new ChartMapPoint("Warsaw", 21, 52, 7));
+                break;
+            default:
+                series.UpdateRegionValue(0, new ChartRegionMapItem("Alpha", 7));
+                break;
+        }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 540);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var target = page.Locator("[data-cfx-observation-id='observed-a']");

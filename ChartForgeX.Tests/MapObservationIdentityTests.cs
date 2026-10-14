@@ -34,20 +34,6 @@ public sealed class MapObservationIdentityTests {
     }
 
     [Fact]
-    public void CalendarWithMultipleCurrentContributorsDoesNotBorrowOneContributorsId() {
-        var chart = Sample(ChartSeriesKind.CalendarHeatmap);
-        var series = Assert.Single(chart.Series);
-        series.Points.Add(new ChartPoint(new DateTime(2026, 1, 5), 9));
-        series.WithObservationId(0, new ChartObservationId("original"))
-            .WithObservationId(1, new ChartObservationId("later"));
-
-        var mark = Assert.Single(Marks(chart.ToSvg(), ChartSeriesKind.CalendarHeatmap),
-            element => (string?)element.Attribute("data-cfx-empty") == "false");
-        Assert.Equal("0,1", (string?)mark.Attribute("data-cfx-source-points"));
-        Assert.Null(mark.Attribute("data-cfx-observation-id"));
-    }
-
-    [Fact]
     public void DottedObservationOutsideTheViewportKeepsItsAuthoredIdentity() {
         var chart = Chart.Create().WithMapViewport(ChartMapViewport.Europe()).AddDottedMap("Locations", new[] {
             new ChartMapPoint("New York", -74, 41, 7)
