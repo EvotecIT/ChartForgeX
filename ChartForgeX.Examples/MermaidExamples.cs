@@ -6,6 +6,8 @@ internal static class MermaidExamples {
     internal static void Write(string output) {
         const string mindMap = "mindmap\n    root((Roadmap))\n          plan[Planning]\n            tasks[Tasks]\n                review[Review]\n          delivery[Delivery]\n              releases[Releases]\n                support[Support]\n";
         var examples = new Dictionary<string, string> {
+            ["mermaid-theme-timeline-dark"] = "%%{init: {'theme':'dark'}}%%\ntimeline\ntitle Rendering history\n2024 : Fluent chart API : SVG and PNG output\n2025 : Topology diagrams\n",
+            ["mermaid-theme-packet-dark"] = "---\ntitle: Packet fields\nconfig:\n  theme: dark\n---\npacket-beta\n0-7: \"Header\"\n8-15: \"Payload\"\n",
             ["mermaid-radar-theme"] = "---\nconfig:\n  themeVariables:\n    titleColor: '#7C3AED'\n    cScale0: '#2563EB'\n    cScale1: '#EA580C'\n    radar:\n      axisColor: '#16A34A'\n      axisStrokeWidth: 3\n      axisLabelFontSize: 15\n      graticuleColor: '#64748B'\n      graticuleOpacity: 0.12\n      graticuleStrokeWidth: 1.5\n      curveOpacity: 0.25\n      curveStrokeWidth: 4\n      legendFontSize: 16\n---\nradar-beta\ntitle Authored radar paint\naxis a[\"Coverage\"], b[\"Policy\"], c[\"Response\"], d[\"Recovery\"]\ncurve current[\"Current\"]{90,45,80,60}\ncurve target[\"Target\"]{95,85,90,80}\nmin 0\nmax 100\ngraticule circle\n",
             ["mermaid-mindmap-branch-light"] = "---\nconfig:\n  mindmap:\n    colorBy: branch\n---\n" + mindMap,
             ["mermaid-mindmap-depth-light"] = "---\nconfig:\n  mindmap:\n    colorBy: depth\n---\n" + mindMap,

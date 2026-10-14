@@ -9840,6 +9840,54 @@
         "minDistinctColors": 1416,
         "maxEdgeInkPixels": 0
       }
+    },
+    {
+      "name": "mermaid-theme-packet-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 900,
+      "height": 420,
+      "logicalWidth": 900.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 6,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 189000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 408,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-theme-timeline-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 560,
+      "logicalWidth": 960.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 268798,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 404,
+        "maxEdgeInkPixels": 0
+      }
     }
   ]
 }
