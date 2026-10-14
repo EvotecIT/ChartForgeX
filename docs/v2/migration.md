@@ -190,6 +190,8 @@ Numeric radial axes honor each axis's existing `LabelDensity`. `Auto` preserves 
 Native compact exports prepare the chart at compact dimensions. Text that cannot fit may be shortened or omitted with `numeric-radial.label-overflow`; descriptive regions retain the full observation. The HTML adapter's `Readable` layout preserves a minimum width in a contained horizontal viewport. `Fit` scales a fixed design, including its text, and may require a larger host viewport for legibility.
 ## Numeric color presentation
 
+Color-scaled Scatter and Bubble markers use a neutral theme-foreground outline, including at the scale midpoint and for missing measurements. Remove redundant same-fill outline configuration when the default is suitable. Explicit marker strokes and widths, including zero, retain precedence; Bubble keeps its existing family and series-width defaults. This changes the outline only: mapped fills, fill opacity, raw measurements and source identity are unchanged. See [point markers](api-conventions.md#point-markers-and-radial-forms) for configuration.
+
 Treemap and Sunburst replace `ColorLegendTitle` with `ColorDimension.Name`:
 
 ```csharp

@@ -21,8 +21,7 @@ public static class BubbleColorScaleRecipe {
                 new ChartColorBand(0, colors.Palette[0], "Cold"),
                 new ChartColorBand(15, colors.Status.Medium.Fill, "Mild"),
                 new ChartColorBand(null, colors.Status.Critical.Fill, "Warm")
-            }).WithNoDataColor(colors.Border))
-            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+            }).WithNoDataColor(colors.Border));
         var target = ChartSeries.CreateLine(new ChartSeriesId("target-duration"), "Target duration", new[] { new ChartPoint(0, 30), new ChartPoint(100, 30) })
             .ConfigureMarkers(markers => markers.Enabled = false);
         return NumericAxes().ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; })

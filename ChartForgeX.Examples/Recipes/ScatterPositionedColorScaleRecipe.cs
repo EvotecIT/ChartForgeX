@@ -12,8 +12,7 @@ public static class ScatterPositionedColorScaleRecipe {
         var minutes = new[] { 24d, 36, 45, 20, 32, 50, 28, 41, 18, 35, 22, 48 };
         var recorded = ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", temperatures.Select((value, index) =>
             new ChartPoint((index + 1) * 8, minutes[index]).WithColorValue(value)));
-        recorded.WithColorScale(TemperatureScale().WithNoDataColor(colors.Border))
-            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+        recorded.WithColorScale(TemperatureScale().WithNoDataColor(colors.Border));
         return NumericAxes().ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; }).AddSeries(recorded);
     }
 

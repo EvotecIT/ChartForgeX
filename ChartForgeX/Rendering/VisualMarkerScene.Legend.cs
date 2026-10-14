@@ -63,7 +63,8 @@ internal static partial class VisualMarkerScene {
             }
             Draw(builder, series, point, x, y, Math.Min(bounds.Width, bounds.Height) * .4, markerFill, markerPaint,
                 "legend-swatch", stroke, strokeWidth > 0 ? strokeWidth : 1, strokePaint, pattern,
-                ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "legend-pattern");
+                ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "legend-pattern",
+                quantitativeOutline: QuantitativeOutline(series, colors));
         };
     }
 }

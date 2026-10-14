@@ -19,8 +19,7 @@ public static class ScatterColorScaleRecipe {
             samples.Select(sample => new ChartPoint(sample.Batch, sample.Minutes).WithColorValue(sample.Temperature)));
         recorded.WithColorScale(ChartColorScale.Diverging(new[] { colors.Palette[0] }, colors.Surface,
                 new[] { ChartColor.FromHex("#D9A441"), ChartColor.FromHex("#CF6A42"), colors.Status.Critical.Fill }, 0)
-                .WithValueRange(-15, 30).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border))
-            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Circle; markers.StrokeWidth = 1; });
+                .WithValueRange(-15, 30).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border));
         var target = ChartSeries.CreateLine(new ChartSeriesId("target-duration"), "Target duration", new[] { new ChartPoint(0, 30), new ChartPoint(100, 30) })
             .ConfigureMarkers(markers => markers.Enabled = false);
         return NumericAxes().ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; })

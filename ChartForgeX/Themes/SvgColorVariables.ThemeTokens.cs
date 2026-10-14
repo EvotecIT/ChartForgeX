@@ -26,4 +26,10 @@ public sealed partial class SvgColorVariables {
     /// <summary>Resolves a token's validated CSS reference using the selected theme's concrete color as fallback.</summary>
     internal string ResolveThemeToken(VisualThemeColorToken token, ChartColor fallback) =>
         _themeTokens.TryGetValue(token, out var name) ? "var(" + name + ", " + fallback.ToCss() + ")" : fallback.ToCss();
+
+    /// <summary>Resolves a deferred canonical paint only when this SVG scope binds its authored token.</summary>
+    internal bool TryThemeTokenPaint(VisualThemeColorToken token, ChartColor fallback, out string paint) {
+        paint = _themeTokens.TryGetValue(token, out var name) ? "var(" + name + ", " + fallback.ToCss() + ")" : string.Empty;
+        return paint.Length > 0;
+    }
 }

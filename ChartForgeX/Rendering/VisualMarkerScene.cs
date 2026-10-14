@@ -22,10 +22,19 @@ internal static partial class VisualMarkerScene {
 
     internal static double FamilyStrokeWidth(ChartSeries series) => series.Kind switch {
         ChartSeriesKind.Bubble => series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BubbleStrokeWidth,
+        ChartSeriesKind.Scatter when UsesQuantitativeOutline(series) => 1,
         ChartSeriesKind.Lollipop => ChartVisualPrimitives.LollipopMarkerStrokeWidth,
         ChartSeriesKind.Radar or ChartSeriesKind.Polar => 1,
         _ => 0
     };
+
+    internal static bool UsesQuantitativeOutline(ChartSeries series) =>
+        series.ColorScale != null && series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
+
+    /// <summary>Shares the neutral theme outline between numeric-color marks and their marker legends.</summary>
+    internal static (ChartColor Color, SvgPaint Paint)? QuantitativeOutline(ChartSeries series, VisualThemeColors colors) =>
+        UsesQuantitativeOutline(series)
+            ? (colors.Foreground, SvgPaint.ThemeToken(colors.Foreground, VisualThemeColorToken.Foreground, SvgColorRole.Text)) : null;
 
     internal static double StrokeWidth(ChartSeries series, bool familyOutline, double familyWidth = 1) {
         if (!familyOutline && !series.Markers.Stroke.HasValue && !series.Markers.StrokeWidth.HasValue) return 0;
@@ -50,9 +59,14 @@ internal static partial class VisualMarkerScene {
     internal static void Draw(VisualSceneBuilder builder, ChartSeries series, int point, double x, double y, double radius,
         ChartColor fill, SvgPaint fillPaint, string role, ChartColor? stroke = null, double strokeWidth = 1,
         SvgPaint? strokePaint = null, ChartFillPattern pattern = ChartFillPattern.None, ChartColor? backdrop = null,
-        string? patternRole = null) {
+        string? patternRole = null, (ChartColor Color, SvgPaint Paint)? quantitativeOutline = null) {
         if (radius <= 0 || !Enabled(series)) return;
         (fill, fillPaint) = ResolveFill(series, point, fill, fillPaint);
+        if (UsesQuantitativeOutline(series) && quantitativeOutline.HasValue) {
+            stroke = quantitativeOutline.Value.Color;
+            strokePaint = quantitativeOutline.Value.Paint;
+            strokeWidth = FamilyStrokeWidth(series);
+        }
         var width = StrokeWidth(series, stroke.HasValue, strokeWidth);
         if (series.Markers.Stroke.HasValue) {
             stroke = series.Markers.Stroke.Value;

@@ -502,6 +502,8 @@ chart.Series[0].ConfigureMarkers(markers => {
 
 `Enabled = false` hides glyphs while retaining source descriptions and connected lines or areas. Ordinary marker radii of zero also hide glyphs. Different shapes can paint different areas at the same logical radius. SVG, native PNG and legend markers use the same shape geometry. Custom marker paths and dashed marker outlines remain separate options.
 
+Scatter and Bubble series with a numeric color scale use the theme foreground for their default marker outlines, so pale midpoint and missing-value fills remain visible. Scatter uses a one-pixel outline; Bubble keeps its family width and series-width override. The mapped fill and its alpha remain unchanged. Set `Markers.Stroke` for a chosen outline color or `Markers.StrokeWidth = 0` to remove it; a positive width without a stroke color keeps the neutral default. Source marks and point-legend glyphs share the same paint and width.
+
 `ChartForgeX.Core.ChartLineAreaForm` is the shared form type for `ChartSeries.Radar.Form` and `MetricCard.MiniSparklineStyle`. Its values are `Area = 0` and `Line = 1`; both models default to Area. Metric cards select the same form through `WithMiniSparklineStyle`.
 
 `AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `ConfigureRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity. Missing categories retain the existing zero-imputation behavior; an explicit missing-category policy is separate work.

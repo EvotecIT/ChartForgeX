@@ -65,6 +65,7 @@ internal static partial class VisualCartesianCompiler {
             }
         }
         var radius = ResolveMarkerRadius(series, context);
+        var quantitativeOutline = VisualMarkerScene.QuantitativeOutline(series, colors);
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
@@ -85,7 +86,8 @@ internal static partial class VisualCartesianCompiler {
                     VisualMarkerScene.Draw(builder, series, pointIndex, point.X, point.Y, radius, pointColor,
                         pointPaint,
                         series.Kind == ChartSeriesKind.Scatter && !string.IsNullOrWhiteSpace(series.SemanticRole) ? series.SemanticRole! : "marker",
-                        pattern: pattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "marker-pattern");
+                        pattern: pattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "marker-pattern",
+                        quantitativeOutline: quantitativeOutline);
                 }
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));

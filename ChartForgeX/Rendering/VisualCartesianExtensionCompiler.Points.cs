@@ -18,6 +18,7 @@ internal static partial class VisualCartesianCompiler {
         }
         var stride = ObservationStride(series.Kind);
         var count = series.RenderPoints.Count / stride;
+        var quantitativeOutline = VisualMarkerScene.QuantitativeOutline(series, colors);
         for (var item = 0; item < count; item++) {
             var raw = item * stride;
             var point = series.RenderPoints[raw];
@@ -37,7 +38,8 @@ internal static partial class VisualCartesianCompiler {
                     var outline = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleStrokeOpacity);
                     VisualMarkerScene.Draw(builder, series, item, x, y, radius, fill, fillPaint,
                         "bubble", outline, VisualMarkerScene.FamilyStrokeWidth(series), sourcePaint.WithOpacity(outline, ChartVisualPrimitives.BubbleStrokeOpacity),
-                        ObservationPattern(series, item), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "bubble-pattern");
+                        ObservationPattern(series, item), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "bubble-pattern",
+                        quantitativeOutline: quantitativeOutline);
                 }
                 var actualFill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, item, fill, fillPaint)
                     : ((ChartColor Color, SvgPaint Paint)?)null;
