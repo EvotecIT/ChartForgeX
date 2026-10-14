@@ -5,10 +5,6 @@
   --cfx-hero-ink: #f3f5f7;
   --cfx-hero-ink-2: #b4bcc6;
   --cfx-hero-line: rgba(255, 255, 255, .1);
-  --cfx-s1: #3987e5;
-  --cfx-s2: #179c89;
-  --cfx-s3: #8a74ee;
-  --cfx-s4: #c9579f;
   --cfx-glow: #37c9b8;
 }
 
@@ -357,21 +353,19 @@
 .cfx-ps__art figcaption { padding: 8px 14px; border-top: 1px solid rgba(255, 255, 255, .08); color: #8d96a2; font-family: var(--cfx-mono); font-size: .75rem; }
 .cfx-ps__map { position: absolute; right: -24px; bottom: 0; width: 50%; }
 
-.cfx-ps__label { margin: 26px 0 6px; color: var(--cfx-hero-ink-2); font-size: .8125rem; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
+.cfx-ps__label { margin: 26px 0 6px; color: var(--cfx-hero-ink-2); font-size: .875rem; font-weight: 650; }
 .cfx-ps__featured { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--cfx-hero-line); }
 .cfx-ps__featured a { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 2px; border-bottom: 1px solid var(--cfx-hero-line); color: #fff; font-weight: 560; text-decoration: none; }
 .cfx-ps__featured code { flex: none; color: #8d96a2; font-size: .75rem; }
 .cfx-ps__featured a:hover span, .cfx-ps__featured a:focus-visible span { color: #8fd8ff; }
 
-/* Terminal output and PowerShell code, shared by the home band and the PowerShell page. Always dark. */
-.cfx-term { min-width: 0; margin: 0; overflow: hidden; border: 1px solid #262b33; border-radius: 12px; background: #0b0d10; color: #d7dbe0; }
-.cfx-term figcaption { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid #1d2128; color: #8d96a2; font-family: var(--cfx-mono); font-size: .75rem; }
-.cfx-term figcaption i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: #37c9b8; box-shadow: 0 0 8px rgba(55, 201, 184, .6); }
-.cfx-term pre { margin: 0; overflow-x: auto; padding: 12px 14px; color: #d7dbe0; font-size: .75rem; line-height: 1.55; }
-pre.cfx-pscode { min-width: 0; margin: 0; overflow: auto; padding: 16px 18px; border-radius: 12px; background: var(--cfx-code-bg); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06); color: var(--cfx-code-ink); font-size: .78rem; line-height: 1.6; tab-size: 4; }
-.cfx-pscode code { font-family: inherit; white-space: pre; }
-.cfx-pscode .token.variable { color: #c4b5fd; }
-.cfx-pscode .token.function { color: var(--cfx-code-type); }
+/* Console output, shared by the home band and the PowerShell page. A terminal stays dark in both themes; its caption
+   bar matches the code block component. */
+.cfx-term { min-width: 0; margin: 0; overflow: hidden; border: 1px solid #262b33; border-radius: var(--cfx-r); background: #0b0d10; color: #d7dbe0; }
+.cfx-term figcaption { display: flex; align-items: center; gap: 8px; height: 37px; padding: 0 14px; border-bottom: 1px solid #1d2128; background: #101317; color: #a3a9b2; font-family: var(--cfx-mono); font-size: var(--cfx-t-micro); }
+.cfx-term figcaption i { flex: none; width: 8px; height: 8px; border-radius: 2px; background: #37c9b8; }
+.cfx-term pre { margin: 0; overflow-x: auto; padding: 14px 16px; color: #d7dbe0; font-size: .75rem; line-height: 1.6; --cfx-scroll-thumb: rgba(242, 243, 245, .24); }
+.cfx-psp .cfx-codeblock pre { font-size: .78rem; }
 
 /* PowerShell page: hero band, the complete script, example cards, commands and the coverage band. */
 .cfx-psh { margin-top: 0; padding-block: clamp(48px, 7vw, 96px) clamp(56px, 7vw, 96px); }
@@ -388,7 +382,6 @@ pre.cfx-pscode { min-width: 0; margin: 0; overflow: auto; padding: 16px 18px; bo
 .cfx-psh__board figcaption { padding: 8px 14px; border-top: 1px solid rgba(255, 255, 255, .08); color: #8d96a2; font-family: var(--cfx-mono); font-size: .75rem; }
 .cfx-psh__term { border-color: rgba(255, 255, 255, .12); }
 
-.cfx-psp__kicker { color: var(--cfx-accent); font-size: .8125rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
 .cfx-psp .cfx-section + .cfx-section { border-top: 1px solid var(--cfx-line); }
 .cfx-psp .cfx-section { scroll-margin-top: 72px; }
 .cfx-psflag__grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
@@ -435,7 +428,7 @@ pre.cfx-pscode { min-width: 0; margin: 0; overflow: auto; padding: 16px 18px; bo
 .cfx-psroad__head p { margin-top: 14px; color: var(--cfx-hero-ink-2); }
 .cfx-ps.cfx-psroad .cfx-ipg { margin: 32px 0; }
 .cfx-psroad__legend { display: flex; flex-wrap: wrap; gap: 10px 24px; margin: 0 0 24px; padding: 0; list-style: none; color: var(--cfx-hero-ink-2); font-size: .875rem; }
-.cfx-status { display: inline-block; padding: 2px 9px; border: 1px solid; border-radius: 999px; font-size: .6875rem; font-style: normal; font-weight: 700; letter-spacing: .04em; line-height: 1.5; text-align: center; text-transform: uppercase; white-space: nowrap; }
+.cfx-status { display: inline-block; padding: 1px 9px; border: 1px solid; border-radius: 999px; font-size: .75rem; font-style: normal; font-weight: 650; line-height: 1.5; text-align: center; white-space: nowrap; }
 .cfx-status--available { border-color: rgba(55, 201, 184, .4); background: rgba(55, 201, 184, .12); color: #5fe0cf; }
 .cfx-status--partial { border-color: rgba(238, 182, 64, .45); background: rgba(238, 182, 64, .1); color: #f3c766; }
 .cfx-status--planned { border-color: rgba(180, 188, 198, .35); border-style: dashed; background: transparent; color: #b4bcc6; }
@@ -615,14 +608,20 @@ pre.cfx-pscode { min-width: 0; margin: 0; overflow: auto; padding: 16px 18px; bo
 .cfx-mermaid__pair {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  overflow: hidden;
+  gap: 14px;
+  align-items: stretch;
+}
+.cfx-mermaid__pair .cfx-codeblock pre { height: 100%; font-size: .75rem; }
+.cfx-mermaid__render {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 16px;
   border: 1px solid var(--cfx-line);
-  border-radius: 14px;
+  border-radius: var(--cfx-r);
   background: var(--cfx-card);
 }
-.cfx-code--mermaid { border-radius: 0; font-size: .75rem; }
-.cfx-mermaid__render { display: grid; place-items: center; padding: 16px; }
-.cfx-mermaid__render img { width: 100%; }
+.cfx-mermaid__render img { align-self: center; width: 100%; }
 
 /* Comparison */
 .cfx-table-wrap { overflow-x: auto; border: 1px solid var(--cfx-line); border-radius: 14px; background: var(--cfx-card); }
@@ -749,4 +748,4 @@ pre.cfx-pscode { min-width: 0; margin: 0; overflow: auto; padding: 16px 18px; bo
 @media (max-width: 900px) { .cfx-ipg { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 560px) { .cfx-ipg__libs { grid-template-columns: minmax(0, 1fr); } }
 /* Mermaid samples link to the same source in the playground. */
-.cfx-mermaid__edit { grid-column: 1 / -1; margin: 0; padding: 0 16px 14px; font-size: .875rem; }
+.cfx-mermaid__edit { margin: 0; padding-top: 10px; border-top: 1px solid var(--cfx-line); font-size: .875rem; }

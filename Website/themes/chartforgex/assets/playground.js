@@ -544,8 +544,7 @@ function start(root) {
     ui.snippetIntro.textContent = snippet.intro;
     ui.packageText.textContent = snippet.package;
     ui.snippet.textContent = snippet.code(ui.source.value);
-    ui.snippet.classList.remove('prism-highlighted');
-    if (window.Prism && typeof window.Prism.highlightElement === 'function') window.Prism.highlightElement(ui.snippet);
+    if (typeof window.cfxHighlight === 'function') window.cfxHighlight(ui.snippet);
   }
 
   function writeStorage() {

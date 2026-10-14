@@ -83,7 +83,7 @@
       "baseUrl": "/api",
       "format": "both",
       "template": "docs",
-      "css": "/themes/chartforgex/assets/base.css,/themes/chartforgex/assets/api-base.css,/themes/chartforgex/assets/api.css",
+      "css": "/themes/chartforgex/assets/tokens.css,/themes/chartforgex/assets/base.css,/themes/chartforgex/assets/api-base.css,/themes/chartforgex/assets/api.css",
       "nav": "./site.json",
       "navContextPath": "/",
       "sourceRoot": "..",

@@ -25,7 +25,10 @@
         </ul>
       </div>
       <div class="cfx-pscard__run">
-        <pre class="cfx-pscode"><code class="language-powershell">{{ e.script | html.escape }}</code></pre>
+        <figure class="cfx-codeblock" data-lang="powershell">
+          <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ e.id }}.ps1</span><span class="cfx-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ e.script | html.escape }}</code></pre>
+        </figure>
         <figure class="cfx-term">
           <figcaption><i aria-hidden="true"></i>PS&gt; ./{{ e.id }}.ps1</figcaption>
           <pre>{{ e.console | html.escape }}</pre>

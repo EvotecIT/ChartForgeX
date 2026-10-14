@@ -4,7 +4,10 @@
     <div class="cfx-psflag__copy">
       <h2 id="cfx-psflag-title">{{ flag.title }}</h2>
       <p>{{ flag.body }}</p>
-      <pre class="cfx-pscode"><code class="language-powershell">{{ flag.script | html.escape }}</code></pre>
+      <figure class="cfx-codeblock" data-lang="powershell">
+        <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ flag.id }}.ps1</span><span class="cfx-codeblock__actions"></span></figcaption>
+        <pre><code class="language-powershell">{{ flag.script | html.escape }}</code></pre>
+      </figure>
     </div>
     <aside class="cfx-psflag__side" aria-labelledby="cfx-psflag-files">
       <h3 id="cfx-psflag-files">What it wrote</h3>
