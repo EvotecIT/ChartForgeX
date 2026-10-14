@@ -1,6 +1,5 @@
 // Thumbnails for the header navigation panels: one small ChartForgeX render per destination, in both themes.
 // Menu items in site.json name their thumbnail with their Id (static/site/nav/<id>-light.svg and -dark.svg).
-using System.Text.Json;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -17,12 +16,15 @@ internal static class NavVisuals {
         var figures = (SortedDictionary<string, object>)docs["figures"];
         var thumbs = new SortedDictionary<string, object>(StringComparer.Ordinal) {
             ["gallery"] = output.Pair("nav/gallery", (tokens, _) => GalleryGrid(tokens).ToSvg("cfx-nav-gallery")),
-            ["mermaid"] = output.Pair("nav/mermaid", (_, dark) => MermaidAtlas.Render("nav-mermaid", """
+            ["mermaid"] = output.Pair("nav/mermaid", (_, dark) => VisualOutput.Fit(MermaidAtlas.Render("nav-mermaid", """
+                ---
+                title: Mermaid to SVG
+                ---
                 flowchart LR
                   src([Mermaid]) --> parse{Parse}
                   parse --> svg[SVG]
                   parse --> png[PNG]
-                """, dark, new List<string>())),
+                """, dark, new List<string>()), 1.6)),
             ["playground"] = output.Pair("nav/playground", (_, dark) => VisualOutput.Playground("chartforgex", """
                 ```chartforgex chart v1 {#nav title="Live preview" type="donut"}
                 series "Checks"
@@ -36,7 +38,10 @@ internal static class NavVisuals {
             // The terminal SVG types itself out; the PNG is the finished console, which suits a still thumbnail.
             ["powershell"] = output.PngPair("nav/powershell", (_, dark) => Terminal(output.Website, dark).ToPng()),
             ["docs"] = VisualOutput.Reuse((Dictionary<string, object>)figures["topology"]),
-            ["api"] = output.Pair("nav/api", (_, dark) => MermaidAtlas.Render("nav-api", """
+            ["api"] = output.Pair("nav/api", (_, dark) => VisualOutput.Fit(MermaidAtlas.Render("nav-api", """
+                ---
+                title: Chart API
+                ---
                 classDiagram
                   class Chart {
                     +WithTitle(title)
@@ -46,40 +51,11 @@ internal static class NavVisuals {
                   class ChartGrid
                   ChartGrid o-- Chart
                   Chart *-- ChartSeries
-                """, dark, new List<string>())),
+                """, dark, new List<string>()), 1.6)),
             ["examples"] = output.Pair("nav/examples", (tokens, _) => SmallMultiples(tokens).ToSvg("cfx-nav-examples"))
         };
 
-        WriteNavIndex(output, thumbs);
         return new Dictionary<string, object> { ["thumbs"] = thumbs };
-    }
-
-    // The API reference header comes from the API docs generator, which renders menus without descriptions.
-    // site.js enriches it from this index, built from the same site.json menu the theme header uses.
-    private static void WriteNavIndex(VisualOutput output, SortedDictionary<string, object> thumbs) {
-        using var site = JsonDocument.Parse(File.ReadAllText(Path.Combine(output.Website, "site.json")));
-        var menus = site.RootElement.GetProperty("Navigation").GetProperty("Menus");
-        var main = menus.EnumerateArray().Single(menu => menu.GetProperty("Name").GetString() == "main");
-        var groups = new List<object>();
-        foreach (var group in main.GetProperty("Items").EnumerateArray()) {
-            if (!group.TryGetProperty("Items", out var items)) continue;
-            groups.Add(new {
-                title = group.GetProperty("Title").GetString(),
-                id = group.GetProperty("Id").GetString(),
-                description = group.GetProperty("Description").GetString(),
-                items = items.EnumerateArray().Select(item => new {
-                    id = item.GetProperty("Id").GetString(),
-                    title = item.GetProperty("Title").GetString(),
-                    url = item.GetProperty("Url").GetString(),
-                    description = item.GetProperty("Description").GetString(),
-                    key = item.GetProperty("Meta").GetProperty("key").GetInt32(),
-                    hollow = item.GetProperty("Meta").TryGetProperty("hollow", out var hollow) && hollow.GetBoolean(),
-                    thumb = thumbs[item.GetProperty("Id").GetString()!]
-                }).ToArray()
-            });
-        }
-
-        output.Text("nav/nav.json", JsonSerializer.Serialize(new { groups }, new JsonSerializerOptions { WriteIndented = true }) + "\n");
     }
 
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();

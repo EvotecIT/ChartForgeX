@@ -74,62 +74,7 @@
     });
   }
 
-  // The API reference header is generated with plain dropdowns. Rebuild it into the same panels from the index the
-  // site generator writes beside the thumbnails (static/site/nav/nav.json, read from the site.json main menu).
-  function escapeHtml(value) {
-    return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-
-  function navMarkup(nav) {
-    var path = location.pathname;
-    var key = function (item) { return '--key: var(--cfx-s' + item.key + ')'; };
-    var keyClass = function (item) { return 'cfx-key' + (item.hollow ? ' cfx-key--hollow' : ''); };
-    return nav.groups.map(function (group) {
-      var current = null;
-      group.items.forEach(function (item) { if (path.indexOf(item.url) === 0) current = item; });
-      var id = 'cfx-nav-' + escapeHtml(group.id);
-      var items = group.items.map(function (item) {
-        var t = item.thumb;
-        var img = function (mode) {
-          return '<img class="cfx-only-' + mode + '" src="' + escapeHtml(t.base + '-' + mode + '.' + t.ext) + '" width="' + t.w +
-            '" height="' + t.h + '" loading="lazy" decoding="async" alt="" />';
-        };
-        var here = item === current;
-return '<li class="cfx-navitem' + (here ? ' is-current' : '') + '" style="' + key(item) + '">' +
-          '<span class="cfx-navitem__thumb" aria-hidden="true">' + img('light') + img('dark') + '</span>' +
-          '<a class="cfx-navitem__link" href="' + escapeHtml(item.url) + '" aria-describedby="cfx-nav-' + escapeHtml(item.id) + '-desc"' +
-          (here ? ' aria-current="true"' : '') + '><span class="' + keyClass(item) + '" aria-hidden="true"></span>' + escapeHtml(item.title) + '</a>' +
-          '<span class="cfx-navitem__desc" id="cfx-nav-' + escapeHtml(item.id) + '-desc">' + escapeHtml(item.description) + '</span></li>';
-      }).join('');
-      return '<li class="cfx-navgroup' + (current ? ' is-current' : '') + '" data-cfx-navgroup>' +
-        '<button type="button" class="cfx-navgroup__trigger" id="' + id + '-trigger" aria-expanded="false" aria-controls="' + id + '">' +
-        '<span class="cfx-navgroup__label">' + escapeHtml(group.title) + '</span>' +
-        (current ? '<span class="cfx-navgroup__current" style="' + key(current) + '"><span class="' + keyClass(current) +
-          '" aria-hidden="true"></span><span class="cfx-visually-hidden">, current section: </span>' + escapeHtml(current.title) + '</span>' : '') +
-        '<svg class="cfx-navgroup__chevron" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" ' +
-        'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
-        '<div class="cfx-navpanel" id="' + id + '" data-count="' + group.items.length + '"><p class="cfx-navpanel__lede">' +
-        escapeHtml(group.description) + '</p><ul class="cfx-navpanel__items">' + items + '</ul></div></li>';
-    }).join('');
-  }
-
-  if (header) {
-    var generatedNav = header.querySelector('.cfx-nav__links');
-    if (generatedNav && window.fetch) {
-      fetch('/site/nav/nav.json').then(function (response) { return response.ok ? response.json() : Promise.reject(); })
-        .then(function (nav) {
-          var list = document.createElement('ul');
-          list.className = 'cfx-nav__groups';
-          list.innerHTML = navMarkup(nav);
-          generatedNav.parentNode.replaceChild(list, generatedNav);
-          wireNav();
-        }, function () { /* the generated dropdowns keep working */ });
-    } else if (header.querySelector('[data-cfx-navgroup]')) {
-      wireNav();
-    }
-  }
+  if (header && header.querySelector('[data-cfx-navgroup]')) wireNav();
 
   function copyText(text, button) {
     var label = button.getAttribute('data-label') || button.textContent;

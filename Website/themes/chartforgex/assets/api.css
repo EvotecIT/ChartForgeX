@@ -20,7 +20,6 @@ body.pf-api-docs {
   font-family: var(--cfx-font);
 }
 [data-theme="dark"] body.pf-api-docs { --pf-shade-rgb: 9, 10, 13; --pf-ink-rgb: 242, 243, 245; }
-body.pf-api-docs .cfx-header a:hover { color: var(--cfx-ink); }
 
 /* Shell */
 .cfx-api-shell { width: min(100% - 2 * var(--cfx-gutter), 1440px); margin: 0 auto; padding: 0 0 48px; }
@@ -298,12 +297,6 @@ body.pf-api-docs .param-meta-chip.required { border-color: color-mix(in srgb, va
 body.pf-api-docs .param-meta-chip.optional { border-color: color-mix(in srgb, var(--cfx-signal) 50%, transparent); color: var(--cfx-ink-2); }
 body.pf-api-docs pre { border: 1px solid var(--cfx-code-line); border-radius: var(--cfx-r); background: var(--cfx-code-bg); color: var(--cfx-code-ink); }
 
-/* Footer */
-.cfx-api-footer { border-top: 1px solid var(--cfx-line); background: var(--cfx-card-alt); }
-.cfx-api-footer__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; width: min(100% - 2 * var(--cfx-gutter), var(--cfx-max)); margin: 0 auto; padding: 24px 0; color: var(--cfx-ink-2); font-size: .875rem; }
-.cfx-api-footer__links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
-.cfx-api-footer__links a { color: var(--cfx-ink-2); text-decoration: none; }
-.cfx-api-footer__links a:hover { color: var(--cfx-accent); }
 
 @media (max-width: 900px) {
   body.pf-api-docs .api-content { padding: 0; }

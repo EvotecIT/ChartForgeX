@@ -1,7 +1,8 @@
 {{~ ## Grouped navigation from the "main" menu in site.json. Each group opens a panel of destinations with a description
      and a thumbnail ChartForgeX rendered for it (data.visuals.nav.thumbs, keyed by menu item Id). Without JavaScript the
      panels open on focus and hover and every destination stays a plain link. ## ~}}
-{{~ navmenu = pf.menu "main"; thumbs = data.visuals.nav.thumbs ~}}
+{{~ navmenu = pf.menu "main"; thumbs = data.visuals.nav.thumbs; here_item = null
+    for g in navmenu.items; for it in g.items; if it.is_active || it.is_ancestor; here_item = it; end; end; end ~}}
 <a class="cfx-skip" href="#main">Skip to content</a>
 <header class="cfx-header" data-cfx-header>
   <div class="cfx-header__inner">
@@ -14,10 +15,8 @@
         {{~ current = null; for it in g.items; if it.is_active || it.is_ancestor; current = it; end; end ~}}
         <li class="cfx-navgroup{{ if current }} is-current{{ end }}" data-cfx-navgroup>
           <button type="button" class="cfx-navgroup__trigger" id="cfx-nav-{{ g.id }}-trigger" aria-expanded="false" aria-controls="cfx-nav-{{ g.id }}">
-            <span class="cfx-navgroup__label">{{ g.title }}</span>
-            {{~ if current ~}}
-            <span class="cfx-navgroup__current" style="--key: var(--cfx-s{{ current.meta.key }})"><span class="cfx-key{{ if current.meta.hollow }} cfx-key--hollow{{ end }}" aria-hidden="true"></span><span class="cfx-visually-hidden">, current section: </span>{{ current.title }}</span>
-            {{~ end ~}}
+            <span class="cfx-navgroup__mark"{{ if current }} style="--key: var(--cfx-s{{ current.meta.key }})"{{ end }} aria-hidden="true"></span>
+            <span class="cfx-navgroup__label">{{ g.title }}</span>{{ if current }}<span class="cfx-visually-hidden">, holds the current page</span>{{ end }}
             <svg class="cfx-navgroup__chevron" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <div class="cfx-navpanel" id="cfx-nav-{{ g.id }}" data-count="{{ g.items.size }}">
@@ -39,6 +38,10 @@
             </ul>
           </div>
         </li>
+        {{~ end ~}}
+        {{~ ## The current page sits after both groups, so marking it never moves another header element. ## ~}}
+        {{~ if here_item ~}}
+        <li class="cfx-nav__here" style="--key: var(--cfx-s{{ here_item.meta.key }})"><span class="cfx-key{{ if here_item.meta.hollow }} cfx-key--hollow{{ end }}" aria-hidden="true"></span><span class="cfx-visually-hidden">Current section: </span>{{ here_item.title }}</li>
         {{~ end ~}}
       </ul>
       <div class="cfx-nav__actions">

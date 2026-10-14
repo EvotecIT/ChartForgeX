@@ -1,7 +1,7 @@
 /* PowerForge.Web API docs base styles (PSPublishModule PowerForge.Web/Assets/ApiDocs/fallback.css), recoloured for ChartForgeX. api.css maps the --pf-* variables onto the site tokens. */
 body.pf-api-docs{margin:0;font-family:var(--cfx-font,system-ui,sans-serif);background:var(--pf-bg,var(--pf-raised));color:var(--pf-ink,var(--pf-ink));overflow-x:clip;scrollbar-width:thin;scrollbar-color:rgba(148,163,184,.34) rgba(var(--pf-shade-rgb),.75)}
-body.pf-api-docs a{color:inherit;text-decoration:none}
-body.pf-api-docs a:hover{color:var(--pf-accent,var(--pf-accent,#37c9b8))}
+body.pf-api-docs a:not(.cfx-header a,.cfx-footer a){color:inherit;text-decoration:none}
+body.pf-api-docs a:not(.cfx-header a,.cfx-footer a):hover{color:var(--pf-accent,var(--pf-accent,#37c9b8))}
 body.pf-api-docs::-webkit-scrollbar{width:12px;height:12px}
 body.pf-api-docs::-webkit-scrollbar-track{background:rgba(var(--pf-shade-rgb),.78)}
 body.pf-api-docs::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(148,163,184,.5),rgba(148,163,184,.28));border-radius:999px;border:2px solid rgba(var(--pf-shade-rgb),.78)}

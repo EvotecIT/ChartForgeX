@@ -36,23 +36,27 @@
 .cfx-navgroup__chevron { flex: none; color: var(--cfx-ink-3); transition: transform .18s ease; }
 .cfx-navgroup__trigger[aria-expanded="true"] .cfx-navgroup__chevron { transform: rotate(180deg); }
 
-/* The current page, set as a selected legend entry inside its group's button. */
-.cfx-navgroup__current {
+/* The current page: its group's button carries a key in the page's series colour, and the page itself is set as a
+   selected legend entry after the groups. Every slot keeps its size on every page, so nothing in the header moves. */
+.cfx-navgroup__mark { flex: none; width: 8px; height: 8px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--cfx-line-strong); }
+.cfx-navgroup.is-current .cfx-navgroup__mark { background: var(--key); box-shadow: none; }
+.cfx-nav__here {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 24px;
-  padding: 0 8px 0 7px;
-  border-radius: 6px;
+  align-self: center;
+  gap: 7px;
+  min-height: 28px;
+  margin-left: 6px;
+  padding: 0 10px 0 9px;
+  border-radius: 7px;
   background: color-mix(in srgb, var(--key) 15%, var(--cfx-card));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--key) 55%, transparent);
   color: var(--cfx-ink);
   font-size: .8125rem;
   font-weight: 680;
-  font-stretch: 100%;
+  white-space: nowrap;
 }
-.cfx-navgroup__current .cfx-key { width: 8px; height: 8px; }
-
+.cfx-nav__here .cfx-key { width: 8px; height: 8px; }
 /* Panel */
 .cfx-navpanel {
   position: absolute;
@@ -162,43 +166,6 @@
 .cfx-nav-toggle { position: absolute; opacity: 0; pointer-events: none; }
 .cfx-nav-toggle__label { display: none; }
 
-/* The API reference header comes from the API docs generator; site.js rebuilds it into the panels above. Until then
-   (and without JavaScript) its dropdowns open on hover and focus. */
-.cfx-nav__links { display: flex; gap: 4px; }
-.cfx-nav__links > a[href="/"] { display: none; }
-.cfx-nav__links .nav-dropdown { position: relative; }
-.cfx-nav__links .nav-dropdown-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--cfx-ink-2);
-  font: inherit;
-  font-size: .9375rem;
-  font-weight: 620;
-  cursor: pointer;
-}
-.cfx-nav__links .nav-dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 30;
-  display: none;
-  min-width: 200px;
-  padding: 8px;
-  border: 1px solid var(--cfx-line-strong);
-  border-radius: var(--cfx-r);
-  background: var(--cfx-card);
-  box-shadow: var(--cfx-shadow-float);
-}
-.cfx-nav__links .nav-dropdown:is(:hover, :focus-within) .nav-dropdown-menu { display: grid; }
-.cfx-nav__links .nav-dropdown-menu a { padding: 8px 10px; border-radius: 8px; color: var(--cfx-ink); text-decoration: none; }
-.cfx-nav__links .nav-dropdown-menu a:hover { background: var(--cfx-card-alt); }
-
 /* Phones and small tablets: the toggle opens a sheet that lists every destination with its thumbnail. */
 @media (max-width: 960px) {
   .cfx-nav-toggle__label {
@@ -242,6 +209,7 @@
   .cfx-navgroup__trigger:hover,
   .cfx-navgroup__trigger[aria-expanded="true"] { background: transparent; }
   .cfx-navgroup__chevron { margin-left: auto; }
+  .cfx-nav__here { display: none; }
   .cfx-navpanel,
   :root:not(.cfx-js) .cfx-navgroup .cfx-navpanel {
     position: static;
@@ -268,5 +236,4 @@
   .cfx-navitem__thumb { grid-row: 1 / span 2; margin: 0; }
   .cfx-navitem__link { align-self: end; }
   .cfx-nav__actions { padding-top: 12px; border-top: 1px solid var(--cfx-line); }
-  .cfx-nav__links { flex-direction: column; }
 }

@@ -7,28 +7,12 @@
   --cfx-hero-line: rgba(255, 255, 255, .1);
 }
 
-/* Header floats over the dark hero on the home page. */
-.cfx-body--home .cfx-header { background: rgba(7, 9, 12, .72); border-bottom-color: var(--cfx-hero-line); }
-.cfx-body--home .cfx-brand { color: var(--cfx-hero-ink); }
-@media (min-width: 961px) {
-  .cfx-body--home .cfx-navgroup__trigger { color: var(--cfx-hero-ink-2); }
-  .cfx-body--home .cfx-navgroup__trigger:hover,
-  .cfx-body--home .cfx-navgroup__trigger[aria-expanded="true"] { color: #fff; background: rgba(255, 255, 255, .06); border-color: var(--cfx-hero-line); }
-}
-.cfx-body--home .cfx-icon-link,
-.cfx-body--home .cfx-theme-toggle { color: var(--cfx-hero-ink-2); }
-.cfx-body--home .cfx-icon-link:hover,
-.cfx-body--home .cfx-theme-toggle:hover { color: #fff; background: rgba(255, 255, 255, .06); border-color: var(--cfx-hero-line); }
-.cfx-body--home .cfx-header .cfx-btn { background: var(--cfx-glow); border-color: var(--cfx-glow); color: #04201d; }
-.cfx-body--home .cfx-nav-toggle__label span { background: var(--cfx-hero-ink); }
-
 /* Hero */
 .cfx-hero {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  margin-top: -65px;
-  padding: calc(65px + clamp(48px, 7vw, 104px)) 0 clamp(56px, 7vw, 96px);
+  padding: clamp(48px, 7vw, 104px) 0 clamp(56px, 7vw, 96px);
   background:
     radial-gradient(55% 45% at 12% 8%, rgba(55, 201, 184, .2), transparent 70%),
     radial-gradient(50% 45% at 88% 6%, rgba(57, 135, 229, .26), transparent 70%),
