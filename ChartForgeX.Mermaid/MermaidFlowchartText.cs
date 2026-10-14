@@ -2,6 +2,11 @@ namespace ChartForgeX.Mermaid;
 
 /// <summary>Shares quoted-text boundaries between flowchart statement and label readers.</summary>
 internal static class MermaidFlowchartText {
+    // Mermaid's HTML line-break spelling is display text, never executable markup.
+    // The document and node metadata retain the exact source caption.
+    internal static string DisplayCaption(string source) => System.Text.RegularExpressions.Regex.Replace(
+        source, "<br\\s*/?>", "\n", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
     internal static bool ReadQuotedCharacter(string text, ref int index, ref char quote, bool metadata = false) {
         var ch = text[index];
         if (quote != '\0') {

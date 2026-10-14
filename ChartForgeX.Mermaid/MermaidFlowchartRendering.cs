@@ -47,18 +47,19 @@ public static class MermaidFlowchartRendering {
 
         for (var index = 0; index < document.Nodes.Count; index++) {
             var node = document.Nodes[index];
-            var label = string.IsNullOrWhiteSpace(node.Text) ? node.Id : node.Text!;
+            var sourceLabel = string.IsNullOrWhiteSpace(node.Text) ? node.Id : node.Text!;
+            var label = MermaidFlowchartText.DisplayCaption(sourceLabel);
             var nodeWidth = ToNodeWidth(node.Shape, label, options.FitContent);
             chart.AddAutoNode(
                 node.Id,
                 label,
-                ToNodeKind(node.Shape),
+                TopologyNodeKind.Generic,
                 TopologyHealthStatus.Unknown,
                 groupId: node.SubgraphId,
                 href: node.Href,
                 tooltip: node.Tooltip,
                 width: nodeWidth,
-                height: node.Shape is MermaidFlowchartNodeShape.Circle or MermaidFlowchartNodeShape.DoubleCircle ? nodeWidth : ToNodeHeight(node.Shape),
+                height: node.Shape is MermaidFlowchartNodeShape.Circle or MermaidFlowchartNodeShape.DoubleCircle ? nodeWidth : ToNodeHeight(node.Shape, label),
                 color: StyleValue(node.Styles, "stroke") ?? StyleValue(node.Styles, "color"),
                 cssClass: "cfx-mermaid-node cfx-mermaid-shape-" + ToShapeToken(node.Shape));
 
@@ -69,9 +70,9 @@ public static class MermaidFlowchartRendering {
             target.ShowStatusBadge = false;
             target.DisplayMode = TopologyNodeDisplayMode.Card;
             target.PreserveDisplayModeSize = true;
-            target.MaximumLabelCharacters = 28;
             target.BackgroundColor = StyleValue(node.Styles, "fill");
             target.Metadata["mermaid.id"] = node.Id;
+            target.Metadata["mermaid.label"] = sourceLabel;
             target.Metadata["mermaid.shape"] = node.Shape.ToString();
             target.Metadata["mermaid.shapeToken"] = ToShapeToken(node.Shape);
             target.Metadata["mermaid.source.line"] = node.Span.Line.ToString(CultureInfo.InvariantCulture);
@@ -232,28 +233,13 @@ public static class MermaidFlowchartRendering {
         foreach (var item in styles) metadata[prefix + item.Key] = item.Value;
     }
 
-    private static TopologyNodeKind ToNodeKind(MermaidFlowchartNodeShape shape) {
-        switch (shape) {
-            case MermaidFlowchartNodeShape.Cloud:
-                return TopologyNodeKind.Cloud;
-            case MermaidFlowchartNodeShape.Cylinder:
-                return TopologyNodeKind.Database;
-            case MermaidFlowchartNodeShape.Circle:
-            case MermaidFlowchartNodeShape.DoubleCircle:
-                return TopologyNodeKind.Hub;
-            case MermaidFlowchartNodeShape.Rhombus:
-            case MermaidFlowchartNodeShape.Hexagon:
-                return TopologyNodeKind.Process;
-            default:
-                return TopologyNodeKind.Generic;
-        }
-    }
-
     private static double ToNodeWidth(MermaidFlowchartNodeShape shape, string label, bool fitContent) {
         var shapeWidth = BaseNodeWidth(shape);
         if (!fitContent) return shapeWidth;
-        var labelWidth = 70 + Math.Min(28, Math.Max(0, label.Length)) * 7.1;
-        return Clamp(Math.Max(shapeWidth, labelWidth), shapeWidth, 268);
+        var longestLine = label.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Max(line => line.Length);
+        var labelWidth = 24 + longestLine * 7.1;
+        if (shape == MermaidFlowchartNodeShape.Rhombus) labelWidth *= 1.5;
+        return Clamp(Math.Max(shapeWidth, labelWidth), shapeWidth, 560);
     }
 
     private static double BaseNodeWidth(MermaidFlowchartNodeShape shape) {
@@ -318,7 +304,10 @@ public static class MermaidFlowchartRendering {
     private static double Clamp(double value, double minimum, double maximum) =>
         Math.Max(minimum, Math.Min(maximum, value));
 
-    private static double ToNodeHeight(MermaidFlowchartNodeShape shape) {
+    private static double ToNodeHeight(MermaidFlowchartNodeShape shape, string label) {
+        // Cylinder captions occupy the body below its cap. Reserve both ordinary
+        // native rows when a source caption explicitly requests a second line.
+        if (shape == MermaidFlowchartNodeShape.Cylinder && label.IndexOf('\n') >= 0) return 82;
         switch (shape) {
             case MermaidFlowchartNodeShape.Actor: return 108;
             case MermaidFlowchartNodeShape.Ellipse: return 70;

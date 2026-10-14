@@ -9,6 +9,23 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
+    private void BuildShapeCaption(TopologyNode node, bool active) {
+        var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
+        var lines = _options.WrapNodeLabels ? Math.Max(1, _options.MaxNodeLabelLines)
+            : Math.Min(Math.Max(1, _options.MaxNodeLabelLines), _options.AllowMultilineNodeLabels ? label.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Length : 1);
+        var size = _context.Theme.Typography.DataLabelSize;
+        ChartRect CaptionBounds(double candidate) => TopologyNodeShapeGeometry.CaptionBounds(node,
+            _builder.MeasureText("Ag", candidate * _scale, 600).LineHeight / _scale * lines);
+        if (size > VisualTextFitting.MaximumOrdinaryFontSize) size = ChartTextFitting.FitFontSize(Math.Min(11, size), size, candidate => {
+            var bounds = CaptionBounds(candidate);
+            var measured = _builder.MeasureText(label, candidate * _scale, 600);
+            return measured.Width <= bounds.Width * _scale && measured.LineHeight * lines <= bounds.Height * _scale;
+        });
+        var content = CaptionBounds(size);
+        Text(label, Bounds(content.X, content.Y, content.Width, content.Height), size, Highlight(_colors.Foreground, active), 600,
+            "topology-node-label", _options.MaxNodeLabelLines, centered: true, id: node.Id + "-label", opacity: HighlightFactor(active), verticallyCentered: true);
+    }
+
     private void BuildIconCaption(TopologyNode node, ChartColor accent, bool active) {
         var size = IconLabelFontSize(node, _chart.TextMeasurement, _options.ResolvedIconLabelFontSize);
         var text = IconLabelText(node, _chart.TextMeasurement, size);

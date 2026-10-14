@@ -65,6 +65,8 @@ internal sealed partial class VisualTopologyCompiler {
                     if (mode == TopologyNodeDisplayMode.Tile) BuildTileCaption(node, accent, active);
                     else if (mode == TopologyNodeDisplayMode.Icon) BuildIconCaption(node, accent, active);
                     else if (node.Shape == TopologyNodeShape.Actor) BuildDiagramCaption(node, active);
+                    else if (node.Shape.HasValue && !hasGlyph && !caption && string.IsNullOrEmpty(node.Subtitle) && node.Details.Count == 0)
+                        BuildShapeCaption(node, active);
                     else if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
                 }
             }
@@ -164,7 +166,7 @@ internal sealed partial class VisualTopologyCompiler {
         return Math.Min(Math.Max(1, maximum), count);
     }
 
-    private ChartRect? Text(string value, ChartRect bounds, double size, ChartColor color, int weight, string role, int maxLines = 1, bool centered = false, string? id = null, SvgPaint? paint = null, double opacity = 1, bool fitSingleLine = false) {
+    private ChartRect? Text(string value, ChartRect bounds, double size, ChartColor color, int weight, string role, int maxLines = 1, bool centered = false, string? id = null, SvgPaint? paint = null, double opacity = 1, bool fitSingleLine = false, bool verticallyCentered = false) {
         if (string.IsNullOrEmpty(value) || bounds.Width <= 0 || bounds.Height <= 0) return null;
         size *= _scale;
         if (fitSingleLine) {
@@ -215,7 +217,8 @@ internal sealed partial class VisualTopologyCompiler {
             } else { lines.Add(length == 0 ? string.Empty : text.Substring(0, length) + "…"); _builder.AddDiagnostic(new VisualDiagnostic("topology.label-truncated", "A topology label was shortened; complete source text remains in semantic interchange.")); }
         }
         if (queue.Count > 0) _builder.AddDiagnostic(new VisualDiagnostic("topology.label-lines", "A topology label exceeds its configured line count; complete source text remains in semantic interchange."));
-        var baseline = bounds.Y + _builder.TextAscent(size, weight);
+        var textTop = bounds.Y + (verticallyCentered ? Math.Max(0, bounds.Height - lineHeight * lines.Count) / 2 : 0);
+        var baseline = textTop + _builder.TextAscent(size, weight);
         var halo = role == "topology-endpoint-label" || role == "topology-edge-label-text" && IsMonitoringDashboardStyle(_options) && !_options.IncludeEdgeLabelBackplates;
         var haloColor = ChartColorMath.WithOpacity(_colors.Background, opacity);
         foreach (var line in lines) {
@@ -229,7 +232,7 @@ internal sealed partial class VisualTopologyCompiler {
         }
         if (lines.Count == 0) return null;
         var width = lines.Max(line => _builder.MeasureText(line, size, weight).Width);
-        return new ChartRect(centered ? bounds.X + (bounds.Width - width) / 2 : bounds.X, bounds.Y, width, lineHeight * lines.Count);
+        return new ChartRect(centered ? bounds.X + (bounds.Width - width) / 2 : bounds.X, textTop, width, lineHeight * lines.Count);
     }
 
     private ChartPath Transform(ChartPath path, Func<ChartPoint, ChartPoint>? projection = null) => new(path.Commands.Select(command => {
