@@ -78,11 +78,19 @@ public sealed class HtmlChartSectionTests {
         Assert.Equal(new[] { "0", "1", "2" }, points.Select(node => (string?)node.Attribute("data-cfx-source-point")));
         Assert.All(points, point => Assert.Equal("observations", (string?)point.Attribute("data-cfx-series-key")));
         Assert.Empty(points[0].Elements()); Assert.NotEmpty(points[1].Elements()); Assert.Empty(points[2].Elements());
+        Assert.Equal("false", (string?)points[0].Attribute("data-cfx-visible"));
+        Assert.Null(points[1].Attribute("data-cfx-visible"));
+        Assert.Equal("false", (string?)points[2].Attribute("data-cfx-visible"));
         Assert.Equal(3, section.PreparedVisual.Regions.Count(region => region.Role == "point"));
         using var metadata = Metadata(section.Html);
         var series = metadata.RootElement.GetProperty("series")[0];
         Assert.Equal("observations", series.GetProperty("key").GetString());
         Assert.Equal(chart.Series[0].SourcePointIndices, series.GetProperty("indices").EnumerateArray().Select(value => value.GetInt32()));
+        chart.Series[0].ConfigureMarkers(markers => markers.Enabled = false);
+        var markerFree = EmbeddedSvg(new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartXViewport(3, 7)).Html)
+            .Descendants().Single(node => (string?)node.Attribute("data-cfx-observation-id") == "inside-window");
+        Assert.Empty(markerFree.Elements());
+        Assert.Null(markerFree.Attribute("data-cfx-visible"));
     }
 
     [Fact]

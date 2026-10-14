@@ -218,7 +218,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-fill-point-start"] = Number(start), ["data-cfx-fill-point-count"] = Number(count)
         });
 
-    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null) {
+    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null, bool visible = true) {
         var point = series.RenderPoints[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
         var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + ChartNumericFormatter.FormatCoordinate(point.X) + ", " + ChartNumericFormatter.FormatCoordinate(point.Y) + ")";
@@ -234,6 +234,8 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         };
+        // Retained off-window facts must not acquire browser hit areas. Marker-free in-window points remain targets.
+        if (!visible) metadata["data-cfx-visible"] = "false";
         if (colorSurface != null) label = colorSurface.AddFacts(metadata, pointIndex, label);
         metadata["aria-label"] = label;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));
