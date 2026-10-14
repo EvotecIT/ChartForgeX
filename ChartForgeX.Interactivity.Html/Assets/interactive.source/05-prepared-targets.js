@@ -119,7 +119,7 @@
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
       // Retained numeric facts have keyboard semantics without a pointer surface.
-      if (retainedGeometryFact(node)) return;
+      if (retainedGeometryFact(node) || data.cfxVisible === 'false') return;
       // A hollow candle's unpainted interior still belongs to its observation's browser target.
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');

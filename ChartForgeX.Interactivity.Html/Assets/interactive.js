@@ -1487,7 +1487,7 @@
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
       // Retained numeric facts have keyboard semantics without a pointer surface.
-      if (retainedGeometryFact(node)) return;
+      if (retainedGeometryFact(node) || data.cfxVisible === 'false') return;
       // A hollow candle's unpainted interior still belongs to its observation's browser target.
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
@@ -1704,7 +1704,9 @@
     svg.querySelectorAll('[data-cfx-series][data-cfx-point]').forEach((mark) => {
       const markData = mark.dataset || {};
       if (markData.cfxEmpty === 'true' || markData.cfxSeries !== data.cfxSeries || values.has(markData.cfxPoint) || mark.closest('[data-cfx-role="legend-item"]')) return;
-      const value = Number(markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue);
+      const rawValue = markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue;
+      if (rawValue === undefined || rawValue === '') return;
+      const value = Number(rawValue);
       if (!Number.isFinite(value)) return;
       values.set(markData.cfxPoint, { point: Number(markData.cfxPoint), value, label: markData.cfxXLabel || markData.cfxCategory || '',
         formatted: markData.cfxFormattedValue, valueLabel: rowName(mark, 'value', 'Value') });
@@ -2501,7 +2503,8 @@
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
-    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
+    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node)
+      || pointUnits && data.cfxPoint === String(target.point));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
   const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
@@ -2518,7 +2521,8 @@
     const hoverMode = hoverModeForTarget(root, localNode, mode);
     if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
-    const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
+    const itemUnit = hoverMode === 'series' && (legendItemUnit(root, localTarget)
+      || pointUnits && referencedTargetNode(root, { ...localTarget, targetKind: 'point' }));
     let matched = false;
     nodes.forEach((node) => {
       const hovered = matchesTargetIdentity(node, localTarget);

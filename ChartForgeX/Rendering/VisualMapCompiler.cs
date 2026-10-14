@@ -11,10 +11,6 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Compiles geographic points, reusable region geometry and categorical hex tiles into one numeric scene.</summary>
 internal static partial class VisualMapCompiler {
-    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
-        chart.Series.Where(series => series.ShowInLegend).Select(series => new VisualLegendEntry(series.Name,
-            ChartSeriesColours.Resolve(series, 0, colors), "series-0", series.Kind, series.FillPattern, series.StateRole, series.InteractionIdentityKey)).ToArray();
-
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartColorPresentation? presentation = null) {
         if (chart.Series.Count != 1) throw new InvalidOperationException("Prepared map charts require one map series.");
         var series = chart.Series[0];

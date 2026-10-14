@@ -55,9 +55,7 @@ internal static partial class VisualMapCompiler {
                     ["data-cfx-visible"] = visible ? "true" : "false", ["aria-label"] = full
                 })) {
                     if (!visible) continue;
-                    var color = index < series.PointColors.Count && series.PointColors[index].HasValue ? series.PointColors[index]!.Value
-                        : series.MapPoints[index].Color ?? series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Status.Pass.Fill);
-                    var paint = SvgPaint.Of(color, series.Color.HasValue || series.MapPoints[index].Color.HasValue || index < series.PointColors.Count && series.PointColors[index].HasValue ? SvgColorRole.Series : SvgColorRole.Status);
+                    var (color, paint) = DottedPaint(series, index, colors);
                     var halo = Math.Max(dot * 2.45, radius * 1.85);
                     builder.Ellipse(point.X, point.Y, halo, halo, ChartColorMath.WithOpacity(color, .18), role: "dotted-map-point-halo", paint: VisualChartPaint.Fill(paint.WithOpacity(ChartColorMath.WithOpacity(color, .18), .18)));
                     builder.Ellipse(point.X, point.Y, radius, radius, color, colors.Surface, Math.Max(1, dot * .55), "dotted-map-point", paint: new VisualScenePaintBinding(paint, SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
@@ -86,6 +84,16 @@ internal static partial class VisualMapCompiler {
         map.Top + (viewport.MaximumLatitude - point.Y) / (viewport.MaximumLatitude - viewport.MinimumLatitude) * map.Height);
     private static double PointRadius(double dot, double? value, double min, double max) => value.HasValue
         ? Math.Max(Math.Min(3, dot * 1.35), dot * (1.15 + VisualRadialPrimitives.Clamp((value.Value - min) / (max > min ? max - min : 1)) * 1.05)) : dot * 1.35;
+
+    // A series key uses the map default; observation keys and marks also honor their own literal overrides.
+    private static (ChartColor Color, SvgPaint Paint) DottedPaint(ChartSeries series, int? index, VisualThemeColors colors) {
+        var pointOverride = index.HasValue && index.Value < series.PointColors.Count ? series.PointColors[index.Value] : null;
+        var itemColor = index.HasValue ? series.MapPoints[index.Value].Color : null;
+        var color = pointOverride ?? itemColor ?? series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Status.Pass.Fill);
+        var role = pointOverride.HasValue || itemColor.HasValue || series.Color.HasValue ? SvgColorRole.Series : SvgColorRole.Status;
+        return (color, SvgPaint.Of(color, role));
+    }
+
     private static bool Same(ChartMapViewport a, ChartMapViewport b) => ChartMath.SameCoordinate(a.MinimumLongitude, b.MinimumLongitude) && ChartMath.SameCoordinate(a.MaximumLongitude, b.MaximumLongitude)
         && ChartMath.SameCoordinate(a.MinimumLatitude, b.MinimumLatitude) && ChartMath.SameCoordinate(a.MaximumLatitude, b.MaximumLatitude);
 }

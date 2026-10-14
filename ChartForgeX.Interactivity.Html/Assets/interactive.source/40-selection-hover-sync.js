@@ -59,7 +59,8 @@
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
-    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
+    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node)
+      || pointUnits && data.cfxPoint === String(target.point));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
   const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
@@ -76,7 +77,8 @@
     const hoverMode = hoverModeForTarget(root, localNode, mode);
     if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
-    const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
+    const itemUnit = hoverMode === 'series' && (legendItemUnit(root, localTarget)
+      || pointUnits && referencedTargetNode(root, { ...localTarget, targetKind: 'point' }));
     let matched = false;
     nodes.forEach((node) => {
       const hovered = matchesTargetIdentity(node, localTarget);
