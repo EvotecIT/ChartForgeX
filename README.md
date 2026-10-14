@@ -984,9 +984,9 @@ chart.Series[0]
 
 ## Website Content
 
-The product site is [chartforgex.com](https://chartforgex.com), built with PowerForge.Web from `Website/`. ChartForgeX is also listed on the Evotec project hub at `https://evotec.xyz/projects/chartforgex/`, with the curated demo tour at `https://evotec.xyz/demos/chartforgex/` and the complete generated gallery at `https://evotec.xyz/demos/chartforgex/gallery/`.
+The product site is [chartforgex.com](https://chartforgex.com), built with PowerForge.Web from `Website/`: the gallery, Mermaid support, the live playground, PowerShell examples, documentation and the .NET API reference. evotec.xyz lists ChartForgeX as a product and redirects its former project hub and demo pages to chartforgex.com.
 
-`Website/` holds the chartforgex.com site (`site.json`, `pipeline.json`, `themes/chartforgex`) and the content both sites share: project docs, examples, `static/examples/promoted-cases.json` for the curated tour, and `data/gallery.json` plus `static/examples/generated/` for the complete gallery. The Evotec website owns the hub build, its source lock and deployment. See [Website/AGENTS.md](Website/AGENTS.md) for the site workflow.
+`Website/` holds the chartforgex.com site (`site.json`, `pipeline.json`, `themes/chartforgex`) and its content: project docs, examples, `static/examples/promoted-cases.json` for the curated tour, and `data/gallery.json` plus `static/examples/generated/` for the complete gallery. See [Website/AGENTS.md](Website/AGENTS.md) for the site workflow.
 
 To refresh the gallery from generated examples without publishing packages or a site, run from the repository root:
 
@@ -1015,7 +1015,7 @@ ChartForgeX
 |-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction and graph explorer adapter
 |-- ChartForgeX.Examples            # generated gallery and smoke examples
 |-- ChartForgeX.Tests               # smoke and repository quality tests
-|-- Website                         # chartforgex.com site and content shared with evotec.xyz
+|-- Website                         # chartforgex.com site, docs, examples and gallery
 |-- docs                            # focused reference notes
 |-- AGENTS.md                       # contributor/agent expectations
 |-- CONTRIBUTING.md                 # development and release workflow

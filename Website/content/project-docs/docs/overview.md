@@ -26,5 +26,5 @@ The core `ChartForgeX` package stays deterministic, script-free, and free of run
 - [Choose a rendering surface](../choosing-a-surface/)
 - [Topology and hierarchy](../topology-and-hierarchy/)
 - [Interactive HTML](../interactivity/)
-- [.NET API](https://evotec.xyz/projects/chartforgex/api/)
+- [.NET API](/api/)
 - [Examples](../../examples/)
