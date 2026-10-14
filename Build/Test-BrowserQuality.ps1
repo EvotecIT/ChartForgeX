@@ -22,6 +22,7 @@ if ($LASTEXITCODE) { throw 'Fresh browser gallery generation failed.' }
 if (-not (Test-Path -LiteralPath (Join-Path $gallery 'manifest.json'))) { throw 'The generated gallery has no manifest.' }
 
 $addressFile = Join-Path $output 'gallery-address.txt'
+$serverLog = Join-Path $output 'gallery-server.log'
 [IO.File]::WriteAllText($addressFile, '')
 $start = [Diagnostics.ProcessStartInfo]::new('node')
 $start.CreateNoWindow = $true
@@ -31,15 +32,21 @@ $start.RedirectStandardError = $true
 $start.ArgumentList.Add((Join-Path $PSScriptRoot 'Serve-BrowserGallery.cjs'))
 $start.ArgumentList.Add($gallery)
 $start.ArgumentList.Add($addressFile)
-$server = [Diagnostics.Process]::Start($start)
+$server = $null
 $variables = @('HFX_TEST_ENABLE_PLAYWRIGHT', 'CFX_TEST_REQUIRE_BROWSER', 'CFX_V2_GALLERY_URL', 'CFX_V2_CAPTURE_ROOT', 'CFX_BROWSER_CAPTURE_DIRECTORY')
 $saved = @{}
 foreach ($name in $variables) { $saved[$name] = [Environment]::GetEnvironmentVariable($name) }
 try {
-    $deadline = [DateTime]::UtcNow.AddSeconds(15)
+    $server = [Diagnostics.Process]::Start($start)
+    $standardOutput = $server.StandardOutput.ReadToEndAsync()
+    $standardError = $server.StandardError.ReadToEndAsync()
+    $startupTimeoutSeconds = 60
+    $startupTimer = [Diagnostics.Stopwatch]::StartNew()
     while ([IO.File]::ReadAllText($addressFile).Length -eq 0) {
-        if ($server.HasExited) { throw ('Gallery server failed: ' + $server.StandardError.ReadToEnd()) }
-        if ([DateTime]::UtcNow -gt $deadline) { throw 'Gallery server did not become ready within 15 seconds.' }
+        if ($server.HasExited) { throw "Gallery server exited with code $($server.ExitCode) before readiness. See $serverLog." }
+        if ($startupTimer.Elapsed.TotalSeconds -ge $startupTimeoutSeconds) {
+            throw "Gallery server did not become ready within $startupTimeoutSeconds seconds (PID $($server.Id); readiness file: $addressFile). See $serverLog."
+        }
         Start-Sleep -Milliseconds 100
     }
     $env:HFX_TEST_ENABLE_PLAYWRIGHT = '1'
@@ -98,7 +105,15 @@ try {
     Write-Host "Required browser proof passed: $($counters.total) executed tests. Evidence: $output"
 } finally {
     foreach ($name in $variables) { [Environment]::SetEnvironmentVariable($name, $saved[$name]) }
-    if (-not $server.HasExited) { $server.Kill(); $server.WaitForExit() }
-    [IO.File]::WriteAllText((Join-Path $output 'gallery-server.log'), $server.StandardOutput.ReadToEnd() + $server.StandardError.ReadToEnd())
-    $server.Dispose()
+    if ($server) {
+        try {
+            if (-not $server.HasExited) { $server.Kill(); [void] $server.WaitForExit(10000) }
+            if (-not $server.HasExited) { Write-Warning "Gallery server PID $($server.Id) did not exit within 10 seconds after termination." }
+            $capturedOutput = if ($standardOutput.Wait(5000)) { $standardOutput.Result } else { '[stdout capture did not finish]' }
+            $capturedError = if ($standardError.Wait(5000)) { $standardError.Result } else { '[stderr capture did not finish]' }
+            [IO.File]::WriteAllText($serverLog, $capturedOutput + $capturedError)
+            if ($capturedOutput -or $capturedError) { Write-Host ($capturedOutput + $capturedError) }
+            else { Write-Host 'Gallery server produced no stdout or stderr.' }
+        } finally { $server.Dispose() }
+    }
 }
