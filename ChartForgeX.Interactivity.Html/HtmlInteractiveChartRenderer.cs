@@ -86,11 +86,28 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
     /// <returns>An embeddable interactive HTML fragment that expects the caller to register interactive chart assets.</returns>
     public string RenderFragmentWithoutAssets(Chart chart, Action<HtmlChartInteractionOptions>? configure) {
+        return PrepareSection(chart, configure: configure).Html;
+    }
+
+    /// <summary>Prepares an asset-free interactive section and its matching detached native scene once.</summary>
+    /// <param name="chart">The chart to prepare.</param>
+    /// <param name="viewport">An optional explicit numeric X window for supported vertical Line and StepLine charts.
+    /// Null prepares the full domain, including when resetting a previous viewport.</param>
+    /// <param name="configure">An optional callback configuring the HTML interaction adapter.</param>
+    /// <returns>The section markup and the prepared scene used to render it.</returns>
+    /// <remarks>The host owns native re-preparation after a browser viewport request. Use the returned
+    /// PreparedVisual.XProjection to convert logical gesture positions through its ConstrainViewport method,
+    /// then prepare the next section. Unsupported and empty charts have no X projection.</remarks>
+    /// <exception cref="ArgumentNullException">The chart is null.</exception>
+    /// <exception cref="NotSupportedException">An explicit viewport is requested for an unsupported chart.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">An explicit viewport extends outside the full X domain or cannot be mapped.</exception>
+    /// <exception cref="InvalidOperationException">An explicit viewport is requested without observations or a usable plot.</exception>
+    public HtmlChartSection PrepareSection(Chart chart, ChartXViewport? viewport = null, Action<HtmlChartInteractionOptions>? configure = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var options = new HtmlChartInteractionOptions();
         configure?.Invoke(options);
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
-        return BuildChartSection(chart, options, title, "host");
+        return PrepareChartSection(chart, options, title, "host", viewport);
     }
 
     /// <summary>
@@ -114,13 +131,16 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
     internal static string InteractiveScript => HtmlInteractiveAssets.Script;
 
-    internal static string BuildChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource) {
+    internal static string BuildChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource) =>
+        PrepareChartSection(chart, options, titleFallback, assetSource, null).Html;
+
+    private static HtmlChartSection PrepareChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource, ChartXViewport? viewport) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (options == null) throw new ArgumentNullException(nameof(options));
         var scope = options.IdScope ?? options.Interaction.ChartId ?? Slugify(ChartTitle(chart, titleFallback));
         var chartId = options.Interaction.ChartId ?? scope;
         var request = VisualExportRequest.ForChart(chart);
-        var prepared = chart.Prepare(request.Context);
+        var prepared = viewport == null ? chart.Prepare(request.Context) : chart.Prepare(request.Context, viewport);
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
         if (!Enum.IsDefined(typeof(HtmlChartTooltipMode), options.Tooltip.Mode)) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.Mode));
@@ -184,7 +204,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line()
             .EndElement();
-        return writer.Build();
+        return new HtmlChartSection(writer.Build(), prepared);
     }
 
     private static string BuildCompareTray(HtmlChartInteractionOptions options) {

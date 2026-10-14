@@ -9,6 +9,7 @@ using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
@@ -18,6 +19,7 @@ using ChartForgeX.VisualBlocks;
 internal static class Program {
     private static void Main() {
         PackageAssertions.CoreFixtures();
+        NativeViewportSection();
         var values = ChartSeries.CreateLine(new ChartSeriesId("package-values"), "Values",
             new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
         var bubble = ChartSeries.CreateBubble(new ChartSeriesId("0"), "Values", new[] { new ChartBubble(1.5, 2.5, 7) })
@@ -137,5 +139,31 @@ internal static class Program {
         PackageAssertions.Payload("ChartForgeX", "ChartForgeX.Visuals", "ChartForgeX.Interactivity",
             "ChartForgeX.Interactivity.Html", "ChartForgeX.Markup", "ChartForgeX.Mermaid", "ChartForgeX.Markup.Mermaid");
         Console.WriteLine("Adapter package consumer and Markup table producer passed.");
+    }
+
+    private static void NativeViewportSection() {
+        var observations = ChartSeries.CreateLine(new ChartSeriesId("native-values"), "Native values",
+            new[] { new ChartPoint(0, -100), new ChartPoint(5, 4), new ChartPoint(10, 100) })
+            .WithObservationId(1, new ChartObservationId("native-middle"));
+        var chart = Chart.Create().WithSize(520, 320).WithLegend(false).WithXAxisBounds(0, 10).AddSeries(observations);
+        var renderer = new HtmlInteractiveChartRenderer();
+        var full = renderer.PrepareSection(chart);
+        var projection = full.PreparedVisual.XProjection ?? throw new InvalidOperationException("Packed HTML section omitted its native X projection.");
+        var requested = projection.ConstrainViewport(projection.Project(3), projection.Project(7));
+        PackageAssertions.Require(requested is not null && Math.Abs(requested.Minimum - 3) < 1e-9 && Math.Abs(requested.Maximum - 7) < 1e-9,
+            "Packed logical gesture did not produce the source X window.");
+        var narrowed = renderer.PrepareSection(chart, requested);
+        PackageAssertions.Require(narrowed.PreparedVisual.XProjection is ChartXProjection window && window.Minimum > 2.99 && window.Maximum < 7.01 &&
+            narrowed.Html.Contains("data-cfx-observation-id=\"native-middle\"", StringComparison.Ordinal) &&
+            !narrowed.Html.Contains("<script", StringComparison.OrdinalIgnoreCase), "Packed native section lost its window, source identity or asset-free contract.");
+        PackageAssertions.Require(!full.PreparedVisual.Regions.Where(region => region.Role == "axis-x-label").Select(region => region.Label)
+            .SequenceEqual(narrowed.PreparedVisual.Regions.Where(region => region.Role == "axis-x-label").Select(region => region.Label)),
+            "Packed viewport retained full-domain X tick captions.");
+        PackageAssertions.Require(full.PreparedVisual.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label)
+            .SequenceEqual(narrowed.PreparedVisual.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label)),
+            "Packed viewport changed the full-data Y domain.");
+        PackageAssertions.Png(narrowed.PreparedVisual.ToPng());
+        PackageAssertions.Require(renderer.PrepareSection(chart).Html == full.Html && chart.Options.XAxis.Minimum == 0 && chart.Options.XAxis.Maximum == 10,
+            "Packed native reset did not recover the full section or mutated authored bounds.");
     }
 }
