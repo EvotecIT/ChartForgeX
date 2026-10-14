@@ -209,7 +209,9 @@
           stage.setPointerCapture(event.pointerId);
         } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
           const point = stagePointer(stage, event, true);
-          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y };
+          const previousBrush = { hidden: brush.hidden, left: brush.style.left, top: brush.style.top,
+            width: brush.style.width, height: brush.style.height };
+          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y, previousBrush };
           brush.hidden = false;
           brush.style.left = drag.left + 'px';
           brush.style.top = drag.top + 'px';
@@ -264,7 +266,14 @@
         hideTip(root, tip, false);
       });
       listenChart(root, stage, 'pointercancel', (event) => {
-        if (drag && drag.id === event.pointerId) drag = null;
+        if (drag && drag.id === event.pointerId) {
+          // Cancel only the provisional gesture; a previously committed selection and box remain current.
+          if (drag.mode === 'brush' && brush) {
+            brush.hidden = drag.previousBrush.hidden;
+            for (const name of ['left', 'top', 'width', 'height']) brush.style[name] = drag.previousBrush[name];
+          }
+          drag = null;
+        }
         if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
@@ -285,7 +294,6 @@
       refreshKeyboardNavigation(root);
       clearFocusTrail(root);
       clearReveals(root);
-      if (brush) brush.hidden = true;
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
       if (root._cfxBranchHighlights) clearHover(root, true, true);

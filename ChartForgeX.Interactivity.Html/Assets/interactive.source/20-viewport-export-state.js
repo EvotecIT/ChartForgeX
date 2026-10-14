@@ -81,6 +81,8 @@
   const resetViewport = (root) => {
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
     root.dataset.cfxBrush = '';
+    const brush = root.querySelector('.cfx-brush-box');
+    if (brush) brush.hidden = true;
     root.dataset.cfxMode = '';
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
     syncResetControl(root);
