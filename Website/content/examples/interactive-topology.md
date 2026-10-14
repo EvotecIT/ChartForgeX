@@ -1,5 +1,6 @@
 ---
 title: "Interactive topology explorer"
+order: 4
 description: "Turn a GraphScene into a self-contained searchable and navigable HTML explorer."
 layout: docs
 ---

@@ -1,5 +1,6 @@
 ---
 title: "Install ChartForgeX"
+order: 2
 description: "Install the core ChartForgeX package and add optional adapters only when needed."
 layout: docs
 ---

@@ -1,5 +1,6 @@
 ---
 title: "ChartForgeX overview"
+order: 1
 description: "Understand where ChartForgeX fits and what its deterministic rendering model provides."
 layout: docs
 ---
@@ -25,5 +26,5 @@ The core `ChartForgeX` package stays deterministic, script-free, and free of run
 - [Choose a rendering surface](../choosing-a-surface/)
 - [Topology and hierarchy](../topology-and-hierarchy/)
 - [Interactive HTML](../interactivity/)
-- [.NET API](/projects/chartforgex/api/)
-- [Examples](/projects/chartforgex/examples/)
+- [.NET API](https://evotec.xyz/projects/chartforgex/api/)
+- [Examples](../../examples/)

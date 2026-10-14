@@ -1,0 +1,25 @@
+{{~ m = data.mermaid ~}}
+<section class="cfx-section cfx-mermaid" aria-labelledby="cfx-mermaid-title">
+  <div class="cfx-mermaid__intro">
+    <h2 id="cfx-mermaid-title">Mermaid diagrams without a browser</h2>
+    <p>{{ m.summary }}</p>
+    <p class="cfx-muted">{{ m.note }}</p>
+    <p><a class="cfx-link" href="/mermaid/">See all supported Mermaid diagrams</a></p>
+  </div>
+  <div class="cfx-mermaid__demo" data-cfx-tabs>
+    <div class="cfx-segment" role="tablist" aria-label="Mermaid sample">
+      {{~ for s in m.samples ~}}
+      <button type="button" role="tab" id="cfx-mm-tab-{{ s.id }}" aria-controls="cfx-mm-{{ s.id }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}" tabindex="{{ if for.first }}0{{ else }}-1{{ end }}">{{ s.label }}</button>
+      {{~ end ~}}
+    </div>
+    {{~ for s in m.samples ~}}
+    <div class="cfx-mermaid__pair" role="tabpanel" id="cfx-mm-{{ s.id }}" aria-labelledby="cfx-mm-tab-{{ s.id }}"{{ if !for.first }} hidden{{ end }}>
+      <pre class="cfx-code cfx-code--mermaid"><code>{{ include ("generated/mermaid-" + s.id) }}</code></pre>
+      <div class="cfx-mermaid__render">
+        <img class="cfx-only-light" src="/site/mermaid-{{ s.id }}-light.svg" loading="lazy" decoding="async" alt="{{ s.label }} diagram rendered by ChartForgeX from the Mermaid source." />
+        <img class="cfx-only-dark" src="/site/mermaid-{{ s.id }}-dark.svg" loading="lazy" decoding="async" alt="{{ s.label }} diagram rendered by ChartForgeX from the Mermaid source, dark theme." />
+      </div>
+    </div>
+    {{~ end ~}}
+  </div>
+</section>

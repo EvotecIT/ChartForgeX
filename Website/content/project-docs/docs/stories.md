@@ -1,10 +1,9 @@
 ---
 title: "Stories and recorded replays"
+order: 6
 description: "Present source edits, terminal sessions, and visible results with a shared playback clock."
 layout: docs
 ---
-
-# Authoring and playing visual stories
 
 `ChartForgeX.Stories` presents source, terminal output, text and resolved media on one deterministic timeline. Use it for a coding demonstration, a build replay, an API walkthrough or an image comparison. A story declares its outcomes, and its final scene must contain every referenced outcome panel.
 
@@ -103,7 +102,7 @@ Complete text transcripts support up to 16 Mi UTF-16 characters. Authored termin
 
 `FrameSource(format, options)` creates a repeatable producer for `RasterAnimationEncoder`, with the same format-specific timing and validation as direct Stories exports. `Frames(format, options)` returns owning frames on that schedule. The overloads without a format retain the exact tick cadence; a generic encoder applies its container rules, including GIF's 10 millisecond minimum, while the format overload also enforces Stories' browser-friendly delay and chapter visibility limits. GIF makes two passes to choose a stable global palette; APNG releases each frame as it proceeds. The story declares its retained assets and render working buffers so they share the encoder's 256 MiB payload budget, including complete story transcripts, repeated shared-panel content, generated replay transcripts and terminal images held together during panel rendering and cross-fades. Resolved vector media is encoded only for SVG output; raster rendering uses its native fallback. Streaming avoids retaining every scene, sampled frame or complete encoded file. Returned byte arrays also reserve space for the encoded result. The complete animated SVG document is limited to 64 MiB of characters, including escaped transcript text, frame payloads, metadata and CSS.
 
-Caller-owned streams remain open. Cancellation, rendering or I/O failure can leave partial output; use a temporary destination and replace the final file after success when atomic saving matters. Caller-authored generic producers must return identical pixels and durations for each index and declare additional working memory when appropriate. See [RGBA animation encoding](raster-animation.md).
+Caller-owned streams remain open. Cancellation, rendering or I/O failure can leave partial output; use a temporary destination and replace the final file after success when atomic saving matters. Caller-authored generic producers must return identical pixels and durations for each index and declare additional working memory when appropriate. See [RGBA animation encoding](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/raster-animation.md).
 
 The optional `ChartForgeX.Interactivity.Html` adapter adds play/pause, restart, seeking, chapter buttons, playback rate and a readable transcript. Automatic chapter highlighting follows authored scene boundaries. A chapter button seeks its first readable frame and keeps that chapter selected until the displayed frame changes or the user seeks:
 

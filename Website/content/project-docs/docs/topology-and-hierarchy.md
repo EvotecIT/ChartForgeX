@@ -1,5 +1,6 @@
 ---
 title: "Topology and hierarchy"
+order: 4
 description: "Render product-neutral service maps, ownership trees, routes, and dense hierarchies."
 layout: docs
 ---

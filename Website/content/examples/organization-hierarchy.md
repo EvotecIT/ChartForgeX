@@ -1,5 +1,7 @@
 ---
 title: "Organization hierarchy with branch layout policies"
+meta.seo_title: "Organization hierarchy layouts | ChartForgeX"
+order: 3
 description: "Mix standard, compact, and vertical branches in one deterministic hierarchy."
 layout: docs
 ---

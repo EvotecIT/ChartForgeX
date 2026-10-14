@@ -1,5 +1,6 @@
 ---
 title: "ChartForgeX examples"
+order: 0
 description: "Build static charts, organization hierarchies, interactive topology, and report compositions."
 layout: docs
 ---

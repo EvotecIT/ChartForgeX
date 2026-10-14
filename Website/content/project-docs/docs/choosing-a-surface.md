@@ -1,5 +1,6 @@
 ---
 title: "Choose a rendering surface"
+order: 3
 description: "Match ChartForgeX charts, visual blocks, canvases, topology, and explorers to the job."
 layout: docs
 ---

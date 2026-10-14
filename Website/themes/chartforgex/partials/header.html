@@ -1,0 +1,18 @@
+<a class="cfx-skip" href="#main">Skip to content</a>
+<header class="cfx-header">
+  <div class="cfx-header__inner">
+    <a class="cfx-brand" href="/" aria-label="ChartForgeX home">{{ include "logo" }}<span>ChartForgeX</span></a>
+    <input type="checkbox" id="cfx-nav-toggle" class="cfx-nav-toggle" />
+    <label for="cfx-nav-toggle" class="cfx-nav-toggle__label" aria-label="Toggle navigation"><span></span><span></span></label>
+    <nav class="cfx-nav" aria-label="Main">
+      <div class="cfx-nav__links">{{ pf.nav_links "main" }}</div>
+      <div class="cfx-nav__actions">
+        <button type="button" class="cfx-theme-toggle" data-cfx-theme-toggle aria-label="Switch between light and dark theme">
+          <svg class="cfx-theme-toggle__sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <svg class="cfx-theme-toggle__moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 14.6A8 8 0 0 1 9.4 4a8 8 0 1 0 10.6 10.6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </button>
+        {{ pf.nav_actions }}
+      </div>
+    </nav>
+  </div>
+</header>

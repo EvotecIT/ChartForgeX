@@ -1,0 +1,46 @@
+<style>
+/* Evotec Graphite tokens (ChartForgeX/Themes/Tokens/evotec.chartforgex.tokens.json) so the page and its charts share one palette. */
+:root {
+  --cfx-page: #f2f3f4;
+  --cfx-card: #ffffff;
+  --cfx-card-alt: #f8f9fa;
+  --cfx-line: #e2e4e7;
+  --cfx-line-strong: #cdd0d5;
+  --cfx-ink: #16181c;
+  --cfx-ink-2: #4d525b;
+  --cfx-ink-3: #626770;
+  --cfx-accent: #11776f;
+  --cfx-accent-ink: #ffffff;
+  --cfx-accent-soft: #d6f0ec;
+  --cfx-signal: #c78404;
+  --cfx-code-bg: #16181c;
+  --cfx-code-ink: #e6e8eb;
+  --cfx-code-muted: #8a8f98;
+  --cfx-code-key: #37c9b8;
+  --cfx-code-str: #eeb640;
+  --cfx-code-num: #f7924f;
+  --cfx-code-type: #74a2f7;
+  --cfx-shadow: 0 1px 0 rgba(22, 24, 28, .04), 0 18px 40px -24px rgba(22, 24, 28, .28);
+  --cfx-max: {{ data.theme.tokens.layout.maxWidth ?? "1240px" }};
+  --cfx-font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cfx-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --cfx-page: #0c0d10;
+  --cfx-card: #16181c;
+  --cfx-card-alt: #111317;
+  --cfx-line: #272a30;
+  --cfx-line-strong: #363a42;
+  --cfx-ink: #f2f3f5;
+  --cfx-ink-2: #b0b4bc;
+  --cfx-ink-3: #8a8f98;
+  --cfx-accent: #37c9b8;
+  --cfx-accent-ink: #07211e;
+  --cfx-accent-soft: #10302d;
+  --cfx-signal: #eeb640;
+  --cfx-code-bg: #07080a;
+  --cfx-shadow: 0 1px 0 rgba(0, 0, 0, .4), 0 22px 48px -26px rgba(0, 0, 0, .8);
+  color-scheme: dark;
+}
+</style>

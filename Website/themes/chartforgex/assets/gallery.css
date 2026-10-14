@@ -1,0 +1,32 @@
+/* Gallery page filters. Cards and the viewer dialog live in base.css. */
+
+.cfx-gallery-page .cfx-section__head h1 { font-size: clamp(2rem, 1.3rem + 2.4vw, 3rem); }
+
+.cfx-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.cfx-filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--cfx-line);
+  border-radius: 999px;
+  background: var(--cfx-card);
+  color: var(--cfx-ink-2);
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 600;
+  font-stretch: 92%;
+  cursor: pointer;
+}
+.cfx-filters button span { color: var(--cfx-ink-3); font-weight: 500; font-variant-numeric: tabular-nums; }
+.cfx-filters button:hover { border-color: var(--cfx-ink-3); color: var(--cfx-ink); }
+.cfx-filters button[aria-pressed="true"] { border-color: var(--cfx-accent); background: var(--cfx-accent); color: var(--cfx-accent-ink); }
+.cfx-filters button[aria-pressed="true"] span { color: inherit; opacity: .8; }
+
+.cfx-gallery-page__note { margin-top: 40px; font-size: .9375rem; }

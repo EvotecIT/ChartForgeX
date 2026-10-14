@@ -1,6 +1,7 @@
 ---
 title: "Your first static chart"
-description: "Render the same typed ChartForgeX chart as SVG, HTML, and PNG."
+order: 1
+description: "Render the same typed ChartForgeX chart as SVG, HTML, and PNG from one C# definition."
 layout: docs
 ---
 

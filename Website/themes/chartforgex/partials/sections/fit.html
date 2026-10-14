@@ -1,0 +1,54 @@
+{{~ c = data.home.comparison ~}}
+<section class="cfx-section cfx-fit" aria-labelledby="cfx-fit-title">
+  <div class="cfx-section__head">
+    <h2 id="cfx-fit-title">Built for the places a browser can't reach</h2>
+    <p>Browser chart libraries are excellent inside a web app. Reports, mail, documents and CI jobs need the picture before anyone opens a page.</p>
+  </div>
+  <div class="cfx-table-wrap">
+    <table class="cfx-table">
+      <thead>
+        <tr><th scope="col">You need</th>{{ for col in c.columns }}<th scope="col">{{ col }}</th>{{ end }}</tr>
+      </thead>
+      <tbody>
+        {{~ for row in c.rows ~}}
+        <tr><th scope="row">{{ row.need }}</th>{{ for cell in row.cells }}<td>{{ cell }}</td>{{ end }}</tr>
+        {{~ end ~}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="cfx-section cfx-packages" aria-labelledby="cfx-packages-title">
+  <div class="cfx-section__head">
+    <h2 id="cfx-packages-title">Install only what you render</h2>
+    <p>Start with the core package. Add the others when a project needs canvases, animation, Mermaid, Markdown or browser interaction.</p>
+  </div>
+  <ul class="cfx-packages__list">
+    {{~ for p in data.home.packages ~}}
+    <li>
+      <a href="https://www.nuget.org/packages/{{ p.id }}" aria-label="{{ p.id }} on NuGet"><code>{{ p.id }}</code></a>
+      <span>{{ p.use }}</span>
+    </li>
+    {{~ end ~}}
+  </ul>
+</section>
+
+<section class="cfx-section cfx-family" aria-labelledby="cfx-family-title">
+  <div class="cfx-section__head">
+    <h2 id="cfx-family-title">Works with the rest of the Evotec toolkit</h2>
+  </div>
+  <ul class="cfx-family__list">
+    {{~ for f in data.home.family ~}}
+    <li><a href="{{ f.url }}"><strong>{{ f.name }}</strong><span>{{ f.body }}</span></a></li>
+    {{~ end ~}}
+  </ul>
+</section>
+
+<section class="cfx-cta" aria-labelledby="cfx-cta-title">
+  <h2 id="cfx-cta-title">Render your first chart in a minute</h2>
+  <div class="cfx-install cfx-install--large">
+    <code><span class="cfx-install__prompt" aria-hidden="true">&gt;</span> {{ data.home.hero.install }}</code>
+    <button type="button" class="cfx-copy" data-cfx-copy="{{ data.home.hero.install }}">Copy</button>
+  </div>
+  <p><a class="cfx-link" href="/docs/install/">Choose packages and targets</a></p>
+</section>

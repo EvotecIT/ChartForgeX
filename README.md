@@ -13,6 +13,8 @@ ChartForgeX renders polished charts, animated visual stories, visual blocks, top
 [![license](https://img.shields.io/github/license/EvotecIT/ChartForgeX.svg)](https://github.com/EvotecIT/ChartForgeX)
 [![quality](https://github.com/EvotecIT/ChartForgeX/actions/workflows/quality.yml/badge.svg)](https://github.com/EvotecIT/ChartForgeX/actions/workflows/quality.yml)
 
+Website: [chartforgex.com](https://chartforgex.com) for the gallery, documentation and Mermaid support.
+
 ## Author & Social
 
 [![Twitter follow](https://img.shields.io/twitter/follow/PrzemyslawKlys.svg?label=Twitter%20%40PrzemyslawKlys&style=social)](https://twitter.com/PrzemyslawKlys)
@@ -982,9 +984,9 @@ chart.Series[0]
 
 ## Website Content
 
-ChartForgeX is presented on the Evotec project hub at `https://evotec.xyz/projects/chartforgex/`, with the curated demo tour at `https://evotec.xyz/demos/chartforgex/` and the complete generated gallery at `https://evotec.xyz/demos/chartforgex/gallery/`. There is no separate ChartForgeX website.
+The product site is [chartforgex.com](https://chartforgex.com), built with PowerForge.Web from `Website/`. ChartForgeX is also listed on the Evotec project hub at `https://evotec.xyz/projects/chartforgex/`, with the curated demo tour at `https://evotec.xyz/demos/chartforgex/` and the complete generated gallery at `https://evotec.xyz/demos/chartforgex/gallery/`.
 
-`Website/` holds the content the hub ingests: project docs, examples, `static/examples/promoted-cases.json` for the curated tour, and `data/gallery.json` plus `static/examples/generated/` for the complete gallery. The Evotec website owns the site build and deployment; ChartForgeX does not maintain a separate site configuration.
+`Website/` holds the chartforgex.com site (`site.json`, `pipeline.json`, `themes/chartforgex`) and the content both sites share: project docs, examples, `static/examples/promoted-cases.json` for the curated tour, and `data/gallery.json` plus `static/examples/generated/` for the complete gallery. The Evotec website owns the hub build, its source lock and deployment. See [Website/AGENTS.md](Website/AGENTS.md) for the site workflow.
 
 To refresh the gallery from generated examples without publishing packages or a site, run from the repository root:
 
@@ -1013,7 +1015,7 @@ ChartForgeX
 |-- ChartForgeX.Interactivity.Html  # self-contained HTML interaction and graph explorer adapter
 |-- ChartForgeX.Examples            # generated gallery and smoke examples
 |-- ChartForgeX.Tests               # smoke and repository quality tests
-|-- Website                         # content and generated assets for evotec.xyz
+|-- Website                         # chartforgex.com site and content shared with evotec.xyz
 |-- docs                            # focused reference notes
 |-- AGENTS.md                       # contributor/agent expectations
 |-- CONTRIBUTING.md                 # development and release workflow

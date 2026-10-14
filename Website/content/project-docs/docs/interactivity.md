@@ -1,5 +1,6 @@
 ---
 title: "Interactive HTML"
+order: 5
 description: "Add self-contained browser interaction without changing ChartForgeX's static rendering contract."
 layout: docs
 ---

@@ -159,7 +159,7 @@ record Sample(double Index, double Value);
 ## Links
 
 - Repository: https://github.com/EvotecIT/ChartForgeX
-- Project page and documentation: https://evotec.xyz/projects/chartforgex/
+- Website, gallery and documentation: https://chartforgex.com
 - Curated demos: https://evotec.xyz/demos/chartforgex/
 - Complete gallery: https://evotec.xyz/demos/chartforgex/gallery/
 - Issues: https://github.com/EvotecIT/ChartForgeX/issues

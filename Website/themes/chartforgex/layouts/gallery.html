@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--gallery{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-main">
+  <section class="cfx-section cfx-gallery-page" aria-labelledby="cfx-gallery-page-title">
+    <div class="cfx-section__head">
+      <h1 id="cfx-gallery-page-title">{{ page.title }}</h1>
+      <p>{{ page.description }}</p>
+    </div>
+    <div class="cfx-filters" role="group" aria-label="Filter by category" data-cfx-filters>
+      <button type="button" aria-pressed="true" data-filter="all">All <span>{{ data.gallery.items.size }}</span></button>
+      {{~ for cat in data.gallery.categories ~}}
+      {{~ count = 0 ~}}
+      {{~ for item in data.gallery.items ~}}{{~ if item.category == cat.id ~}}{{~ count = count + 1 ~}}{{~ end ~}}{{~ end ~}}
+      <button type="button" aria-pressed="false" data-filter="{{ cat.id }}">{{ cat.label }} <span>{{ count }}</span></button>
+      {{~ end ~}}
+    </div>
+    <ul class="cfx-grid" data-cfx-gallery>
+      {{~ for item in data.gallery.items ~}}
+      {{ include "gallery-card" }}
+      {{~ end ~}}
+    </ul>
+    <div class="cfx-prose cfx-gallery-page__note">
+{{ content }}
+    </div>
+    {{ include "gallery-dialog" }}
+  </section>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

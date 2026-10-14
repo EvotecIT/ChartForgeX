@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--docs{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-main cfx-docs">
+  {{ include "docs-sidebar" }}
+  <article class="cfx-docs__article">
+    <header class="cfx-page__head">
+      <h1>{{ page.title }}</h1>
+      {{ if page.description != "" }}<p class="cfx-lede">{{ page.description }}</p>{{ end }}
+    </header>
+    <div class="cfx-prose">
+{{ content }}
+    </div>
+    {{ if edit_url != "" }}<p class="cfx-docs__edit"><a href="{{ edit_url }}">Edit this page on GitHub</a></p>{{ end }}
+  </article>
+  {{ if toc != "" }}<aside class="cfx-docs__toc" aria-label="On this page">{{ toc }}</aside>{{ end }}
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

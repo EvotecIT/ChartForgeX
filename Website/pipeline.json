@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.web.pipelinespec.schema.json",
+  "extends": "./config/presets/pipeline.web-quality.json",
+  "steps": [
+    {
+      "task": "llms",
+      "id": "build-llms",
+      "dependsOn": "build-site",
+      "siteRoot": "./_site",
+      "name": "ChartForgeX",
+      "packageId": "ChartForgeX",
+      "license": "MIT",
+      "targets": ".NET Framework 4.7.2, .NET Standard 2.0, .NET 8, .NET 10"
+    },
+    {
+      "task": "optimize",
+      "id": "optimize-site",
+      "dependsOn": "build-site",
+      "modes": ["ci"],
+      "siteRoot": "./_site",
+      "config": "./site.json",
+      "criticalCss": "./themes/chartforgex/critical.css",
+      "minifyHtml": true,
+      "minifyCss": true,
+      "minifyJs": true
+    }
+  ]
+}

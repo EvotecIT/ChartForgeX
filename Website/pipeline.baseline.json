@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.web.pipelinespec.schema.json",
+  "steps": [
+    {
+      "task": "build",
+      "id": "build-site",
+      "config": "./site.json",
+      "out": "./_site",
+      "clean": true
+    },
+    {
+      "task": "sitemap",
+      "id": "sitemap",
+      "dependsOn": "build-site",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "baseUrl": "https://chartforgex.com",
+      "excludePatterns": [
+        "examples/generated/**",
+        "site/**"
+      ]
+    },
+    {
+      "task": "seo-doctor",
+      "dependsOn": "build-site",
+      "siteRoot": "./_site",
+      "exclude": "examples/generated/**,site/**",
+      "checkContentLeaks": true,
+      "requireCanonical": true,
+      "baseline": "./.powerforge/seo-baseline.json",
+      "baselineGenerate": true,
+      "reportPath": "./_reports/seo-baseline-run.json",
+      "summaryPath": "./_reports/seo-baseline-run.md"
+    },
+    {
+      "task": "verify",
+      "dependsOn": "build-site",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "baseline": "./.powerforge/verify-baseline.json",
+      "baselineGenerate": true
+    },
+    {
+      "task": "audit",
+      "dependsOn": "build-site",
+      "siteRoot": "./_site",
+      "exclude": "examples/generated/**,site/**",
+      "requiredRoutes": "/404.html,/",
+      "requireExplicitChecks": true,
+      "checkSeoMeta": false,
+      "checkNetworkHints": true,
+      "checkRenderBlockingResources": true,
+      "checkHeadingOrder": true,
+      "checkLinkPurposeConsistency": true,
+      "checkMediaEmbeds": true,
+      "checkAgentContentSecurity": false,
+      "rendered": false,
+      "baseline": "./.powerforge/audit-baseline.json",
+      "baselineGenerate": true,
+      "summary": true,
+      "summaryPath": "./_reports/audit-baseline-run.md",
+      "summaryMaxIssues": 40
+    }
+  ]
+}

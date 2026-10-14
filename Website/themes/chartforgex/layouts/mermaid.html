@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--mermaid{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-main">
+  <article class="cfx-page cfx-page--wide">
+    <header class="cfx-page__head">
+      <h1>{{ page.title }}</h1>
+      <p class="cfx-lede">{{ data.mermaid.summary }}</p>
+    </header>
+    <div class="cfx-families">
+      {{~ for g in data.mermaid.groups ~}}
+      <section class="cfx-families__group">
+        <h2>{{ g.name }}</h2>
+        <ul>{{ for f in g.families }}<li>{{ f }}</li>{{ end }}</ul>
+      </section>
+      {{~ end ~}}
+    </div>
+    <p class="cfx-muted">Recognised with a diagnostic and no output yet: {{ data.mermaid.recognised | array.join ", " }}. {{ data.mermaid.reference }}</p>
+    <div class="cfx-prose">
+{{ content }}
+    </div>
+  </article>
+  {{ include "sections/mermaid" }}
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

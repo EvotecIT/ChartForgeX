@@ -1,6 +1,7 @@
 ---
 title: "Small-multiple report grid"
-description: "Facet typed records into a deterministic multi-panel chart report."
+order: 2
+description: "Facet typed records into a deterministic multi-panel chart report with shared axes and pages."
 layout: docs
 ---
 
