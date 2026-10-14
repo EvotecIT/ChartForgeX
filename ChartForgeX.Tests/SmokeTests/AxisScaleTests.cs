@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -82,7 +83,7 @@ internal static partial class SmokeTests {
     }
 
     private static void LogarithmicBarsKeepPositiveBaselinesAndPadding() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(420, 260)
             .WithXAxisScale(ChartScaleKind.Logarithmic)
             .WithYAxisScale(ChartScaleKind.Logarithmic)
@@ -95,7 +96,7 @@ internal static partial class SmokeTests {
         var bar = SvgDocument.Parse(svg).Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "bar");
         Assert(double.Parse(bar.GetAttribute("height")!, CultureInfo.InvariantCulture) > 1, "The smallest logarithmic bar should retain visible height above a positive baseline.");
 
-        var horizontal = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var horizontal = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(420, 260)
             .WithXAxisScale(ChartScaleKind.Logarithmic)
             .WithYAxisScale(ChartScaleKind.Logarithmic)
@@ -110,7 +111,7 @@ internal static partial class SmokeTests {
         var horizontalBar = SvgDocument.Parse(horizontalSvg).Root.FindByTag("rect").First(element => element.GetAttribute("data-cfx-role") == "horizontal-bar");
         Assert(double.Parse(horizontalBar.GetAttribute("width")!, CultureInfo.InvariantCulture) > 1, "The smallest horizontal logarithmic bar should retain visible width above a positive baseline.");
 
-        var stackedBars = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var stackedBars = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(420, 260)
             .WithYAxisScale(ChartScaleKind.Logarithmic)
             .WithStackedBars()
@@ -119,7 +120,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(stackedBars.ToSvg(), "data-cfx-role=\"bar\"") == 4, "Stacked logarithmic bars should map their first zero base to the shared positive baseline.");
         Assert(stackedBars.ToPng().Length > 200, "Stacked logarithmic bars should preserve SVG and PNG rendering parity.");
 
-        var stackedAreas = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var stackedAreas = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(420, 260)
             .WithYAxisScale(ChartScaleKind.Logarithmic)
             .AddStackedArea("Base", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) })
@@ -129,7 +130,7 @@ internal static partial class SmokeTests {
             "Stacked logarithmic areas should produce two finite bands above the shared positive baseline.");
         Assert(stackedAreas.ToPng().Length > 200, "Stacked logarithmic areas should preserve SVG and PNG rendering parity.");
 
-        var mixedMarks = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var mixedMarks = Chart.Create().WithTheme(VisualTheme.Report())
             .WithXAxisScale(ChartScaleKind.Logarithmic)
             .AddLine("Earlier", new[] { new ChartPoint(0.1, 10) })
             .AddBar("Later", new[] { new ChartPoint(10, 20) });

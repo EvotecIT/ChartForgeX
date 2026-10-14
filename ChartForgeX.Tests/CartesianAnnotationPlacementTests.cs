@@ -15,7 +15,7 @@ public sealed class CartesianAnnotationPlacementTests {
         const string caption = "Review concentration";
         var values = new[] { 3d, 1, 3, 1, 0, 0, 0, 9, 10, 9, 7, 0, 0 };
         var chart = Chart.Create().WithSize(656, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithTheme(ChartTheme.DashboardLight()).WithDashboardBarPanelStyle()
+            .WithTheme(VisualTheme.Dashboard()).WithDashboardBarPanelStyle()
             .WithYAxisBounds(0, 10).WithDataLabels(dataLabels)
             .AddVerticalBand(7.5, 11.5, caption, opacity: .08)
             .AddBar("Reviews", Points(values));
@@ -42,7 +42,7 @@ public sealed class CartesianAnnotationPlacementTests {
         Assert.Equal("11.5", (string?)group.Attribute("data-cfx-end-value"));
         Assert.Equal(caption, (string?)group.Attribute("data-cfx-label"));
         Assert.Contains(caption, Assert.Single(prepared.Regions, region => region.Role == "annotation").Label);
-        chart.Series.Clear(); chart.Annotations.Clear();
+        chart.ClearSeries(); chart.Annotations.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -54,7 +54,7 @@ public sealed class CartesianAnnotationPlacementTests {
         var chart = Chart.Create().WithSize(520, 300).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithDataLabels(false)
             .AddLine("Observed", new[] { new ChartPoint(0, 9), new ChartPoint(10, 9) });
-        chart.Series[0].WithMarkerRadius(0);
+        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 0);
         if (band) chart.AddVerticalBand(5, 7, caption, opacity: .08);
         else chart.AddVerticalLine(5, caption);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

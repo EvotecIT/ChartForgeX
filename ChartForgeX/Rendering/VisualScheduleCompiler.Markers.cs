@@ -8,7 +8,7 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualScheduleCompiler {
-    private static bool IsMarker(ChartSeries series) => series.Kind == ChartSeriesKind.Gantt && series.Points.Count > 2 && series.Points[2].Y >= .5;
+    private static bool IsMarker(ChartSeries series) => series.Kind == ChartSeriesKind.Gantt && series.GanttItems.Count == 1 && series.GanttItems[0].IsVerticalMarker;
     private static ChartColor MarkerColor(ChartSeries series, VisualThemeColors colors) => ChartSeriesColours.Point(series, 0, colors, colors.MutedForeground);
     private static SvgColorRole MarkerColorRole(ChartSeries series) => VisualChartPaint.SeriesRole(series, 0, fallbackRole: SvgColorRole.Text);
 
@@ -26,6 +26,7 @@ internal static partial class VisualScheduleCompiler {
                 var id = VisualStateSceneTools.SourceId(item.Index, 0);
                 var metadata = new Dictionary<string, string> {
                         ["data-cfx-series"] = item.Index.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
                         ["data-cfx-start"] = VisualStateSceneTools.Number(item.Start),
                         ["data-cfx-end"] = VisualStateSceneTools.Number(item.End),
                         ["data-cfx-value"] = VisualStateSceneTools.Number(item.Start),

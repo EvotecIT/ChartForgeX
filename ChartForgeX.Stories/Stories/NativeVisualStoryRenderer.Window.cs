@@ -8,13 +8,13 @@ namespace ChartForgeX.Stories;
 
 internal static partial class NativeVisualStoryRenderer {
     private static void DrawStoryWindowHeader(VisualSceneBuilder builder, ChartRect bounds, TerminalWindowStyle style,
-        TerminalTheme theme, string title) {
+        ResolvedTerminalStyle theme, string title) {
         DrawStoryWindowFrame(builder, bounds, style, theme);
         DrawStoryWindowTitle(builder, bounds, style, theme, title);
     }
 
     // Frame and controls are painted once; tab-specific titles may cross-fade separately.
-    private static void DrawStoryWindowFrame(VisualSceneBuilder builder, ChartRect bounds, TerminalWindowStyle style, TerminalTheme theme) {
+    private static void DrawStoryWindowFrame(VisualSceneBuilder builder, ChartRect bounds, TerminalWindowStyle style, ResolvedTerminalStyle theme) {
         var height = TerminalWindowChrome.HeaderHeight(style);
         if (bounds.Width < (style == TerminalWindowStyle.WindowsTerminal ? 208 : 144))
             throw new System.InvalidOperationException("The desktop title bar cannot fit its controls. Enlarge the panel, rebalance its weight or choose Minimal window chrome.");
@@ -45,7 +45,7 @@ internal static partial class NativeVisualStoryRenderer {
     }
 
     private static void DrawStoryWindowTitle(VisualSceneBuilder builder, ChartRect bounds, TerminalWindowStyle style,
-        TerminalTheme theme, string title, double opacity = 1) {
+        ResolvedTerminalStyle theme, string title, double opacity = 1) {
         var y = bounds.Y + TerminalWindowChrome.HeaderHeight(style) / 2;
         var text = ChartColorMath.WithOpacity(theme.Text, opacity);
         if (style == TerminalWindowStyle.MacOS) DrawCenteredWindowTitle(builder, title, bounds, y, text, 144);
@@ -54,7 +54,7 @@ internal static partial class NativeVisualStoryRenderer {
         else FitText(builder, title, bounds.X + 14, y + 5, bounds.Width - 140, 12, text, 600);
     }
 
-    private static void DrawStoryWindowHeaderBackground(VisualSceneBuilder builder, ChartRect bounds, double height, TerminalTheme theme) {
+    private static void DrawStoryWindowHeaderBackground(VisualSceneBuilder builder, ChartRect bounds, double height, ResolvedTerminalStyle theme) {
         builder.Rect(new ChartRect(bounds.X, bounds.Y, bounds.Width, height), theme.HeaderBackground, radius: 9);
         builder.Rect(new ChartRect(bounds.X, bounds.Y + height - 9, bounds.Width, 9), theme.HeaderBackground);
         builder.Line(bounds.X, bounds.Y + height, bounds.X + bounds.Width, bounds.Y + height, theme.Border);

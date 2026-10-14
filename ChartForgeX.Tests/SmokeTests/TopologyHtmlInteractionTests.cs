@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
@@ -165,9 +166,9 @@ internal static partial class SmokeTests {
         Assert(defaultHtml.Contains("@media print", StringComparison.Ordinal) && defaultHtml.Contains("background:transparent", StringComparison.Ordinal), "Topology HTML pages should include print-friendly framing.");
 
         var cssBackgroundChart = CreateSampleTopologyChart()
-            .ConfigureTheme(theme => theme.Background = "rgb(245, 247, 250)");
+            .ConfigureTheme(builder => builder.Light.Background = ChartColor.FromRgb(245, 247, 250));
         var cssBackgroundHtml = cssBackgroundChart.ToHtmlPage(new TopologyRenderOptions { IncludeLegend = false });
-        Assert(cssBackgroundHtml.Contains("background:rgb(245, 247, 250)", StringComparison.Ordinal), "Topology HTML pages should preserve caller-provided CSS background values.");
+        Assert(cssBackgroundHtml.Contains("#F5F7FA", StringComparison.Ordinal), "Topology HTML pages should preserve authored theme background colors.");
 
         var html = CreateSampleTopologyChart().ToInteractiveHtmlPage(new TopologyRenderOptions { IncludeLegend = false });
         Assert(html.Contains("data-cfx-interactive=\"true\"", StringComparison.Ordinal), "Topology HTML pages should mark interactive wrappers.");
@@ -263,7 +264,7 @@ internal static partial class SmokeTests {
 
         var assetlessOptions = new TopologyRenderOptions { IncludeLegend = false, EnableHtmlInteractions = true, EnableHtmlViewportControls = true, CssClassPrefix = "report-topology" };
         var assetlessFragment = CreateSampleTopologyChart().ToInteractiveHtmlFragmentWithoutAssets(assetlessOptions);
-        var assetlessStyle = TopologyHtmlRenderer.BuildFragmentStyle(assetlessOptions, TopologyTheme.Dark());
+        var assetlessStyle = TopologyHtmlRenderer.BuildFragmentStyle(assetlessOptions, VisualTheme.Graphite());
         var assetlessScript = HtmlInteractiveTopologyRenderer.BuildInteractionScript(assetlessOptions);
         Assert(assetlessFragment.Contains("class=\"report-topology-wrapper\"", StringComparison.Ordinal), "Asset-light topology fragments should still render the requested wrapper prefix.");
         Assert(!assetlessFragment.Contains("data-cfx-topology-assets=\"true\"", StringComparison.Ordinal), "Asset-light topology fragments should omit inline topology CSS assets.");

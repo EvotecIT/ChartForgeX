@@ -171,9 +171,9 @@ public sealed class V2FramePolicyTests {
             "categorical" => chart.WithStateCategories(states).WithXLabels("First", "Second")
                 .AddHeatmapCategoryRow("Checks", new ChartHeatmapCell("pass"), new ChartHeatmapCell("fail")),
             "numeric" => chart.WithXLabels("First", "Second", "Third").AddHeatmapRow("Count", new[] { 0d, 20, 100 }),
-            "calendar" => chart.AddCalendarHeatmap("Activity", new[] {
+            "calendar" => chart.ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday).AddCalendarHeatmap("Activity", new[] {
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 0), new ChartCalendarHeatmapItem(new DateTime(2026, 1, 7), 5)
-            }, firstDayOfWeek: DayOfWeek.Monday),
+            }),
             "map" => chart.AddTileMap("Count", new ChartTileMapDefinition("frame-policy", "Regions", new[] {
                 new ChartTileMapRegion("A", "First", 0, 0), new ChartTileMapRegion("B", "Second", 1, 0)
             }), new[] { new ChartRegionMapItem("A", 30), new ChartRegionMapItem("B", 80) }),

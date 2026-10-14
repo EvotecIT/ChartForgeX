@@ -9,10 +9,11 @@ using ChartForgeX.Themes;
 public static class WallpaperOwnerExamples {
     /// <summary>Creates one example layout; the layout names describe consumer policy, not engine presets.</summary>
     public static VisualCanvas Create(string layout, int width, int height) {
-        var tokens = VisualDesignTokens.GraphiteDark();
-        var canvas = VisualCanvas.Create(width, height).WithTitle("System overview").WithDesignTokens(tokens)
-            .WithBackdrop(VisualCanvasBackdropStyle.Plain).WithBackground(tokens.Background);
-        var accent = tokens.Accent;
+        var theme = VisualTheme.Graphite();
+        var colors = theme.Resolve(VisualThemeMode.Dark);
+        var canvas = VisualCanvas.Create(width, height).WithTitle("System overview").WithTheme(theme, VisualThemeMode.Dark)
+            .WithBackdrop(VisualCanvasBackdropStyle.Plain).WithBackground(colors.Background);
+        var accent = colors.Accent;
         if (layout == "CenterRight") {
             canvas.AddInfoTile(VisualCanvasPlacement.At(VisualCanvasAnchor.MiddleRight, 34, -140), 560, 132,
                 "PC", "HOST", "DEV-WKS-01", detail: "Windows workstation", accent: accent);
@@ -43,16 +44,13 @@ public static class WallpaperOwnerExamples {
 
     /// <summary>Creates a transparent fixed-viewport topology suitable for a wallpaper overlay.</summary>
     public static TopologyChart CreateTopology() => TopologyChart.Create().WithId("wallpaper-topology").WithViewport(560, 310, 20)
-        .WithLegend(null).WithTheme(OverlayTheme())
+        .WithLegend(null).WithTheme(OverlayTheme(), VisualThemeMode.Dark)
         .AddNode("workstation", "Workstation", 34, 110, width: 140, height: 70)
         .AddNode("gateway", "Gateway", 330, 110, TopologyNodeKind.Gateway, width: 140, height: 70)
         .AddEdge("network", "workstation", "gateway", "Network", routing: TopologyEdgeRouting.Straight);
 
-    private static TopologyTheme OverlayTheme() {
-        var theme = VisualDesignTokens.GraphiteDark().ApplyTo(new TopologyTheme());
-        theme.Background = "#00000000";
-        return theme;
-    }
+    private static VisualTheme OverlayTheme() => VisualTheme.Graphite().Configure(builder =>
+        builder.Dark.Background = ChartColor.Transparent);
 
     internal static void Write(string output) {
         foreach (var size in new[] { (Width: 2560, Height: 1080), (Width: 3840, Height: 2160) }) {

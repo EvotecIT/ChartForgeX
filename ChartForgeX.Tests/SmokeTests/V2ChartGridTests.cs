@@ -31,7 +31,7 @@ public sealed class V2ChartGridTests {
         var image = prepared.ToRgba(new VisualRenderOptions(scale: 2, supersampling: 1));
         Assert.Equal(1280, image.Width); Assert.Equal(960, image.Height);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        first.Series.Clear(); second.Title = "Changed"; grid.WithColumns(1).WithGap(100);
+        first.ClearSeries(); second.Title = "Changed"; grid.WithColumns(1).WithGap(100);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 

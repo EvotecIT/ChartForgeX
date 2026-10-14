@@ -35,8 +35,8 @@ internal readonly struct ChartWordCloudTerm {
 internal static class ChartWordCloudLayout {
     public static List<ChartWordCloudTerm> Compute(Chart chart, ChartRect plot, Func<int, string, double, TextMetrics>? measure = null) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.WordCloud);
-        if (series == null || series.Points.Count == 0) return new List<ChartWordCloudTerm>();
-        var valuesQuery = series.Points
+        if (series == null || series.RenderPoints.Count == 0) return new List<ChartWordCloudTerm>();
+        var valuesQuery = series.RenderPoints
             .Select((point, index) => new { Point = point, Index = index })
             .Where(item => item.Point.Y > 0)
             .OrderByDescending(item => item.Point.Y);

@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveDerivedLegendBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, false)]
     [InlineData(720, true, false)]
     [InlineData(360, false, true)]
@@ -20,9 +20,8 @@ public sealed class InteractiveDerivedLegendBrowserTests {
         Chart Histogram(string title, double[] boundaries, ChartHistogramAggregation aggregation = ChartHistogramAggregation.Count,
             ChartHistogramEncoding encoding = ChartHistogramEncoding.Value) {
             var chart = Chart.Create().WithSize(640, 360).WithTitle(title).WithPointLegend()
-                .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-                .AddHistogram("Observations", source, ChartHistogramBinLayout.FromBoundaries(boundaries), aggregation, encoding);
-            chart.Series[0].WithInteractionKey("shared-observations");
+                .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+                .AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("shared-observations"), "Observations", source, ChartHistogramBinLayout.FromBoundaries(boundaries), aggregation, encoding));
             return chart;
         }
         await using var session = await OpenAsync(Dashboard(new[] {
@@ -60,7 +59,7 @@ public sealed class InteractiveDerivedLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -70,13 +69,11 @@ public sealed class InteractiveDerivedLegendBrowserTests {
         Chart Radial(double value) {
             var chart = Chart.Create().WithSize(640, 360).WithTitle(value == 0 ? "Zero radial source" : "Nonzero radial peer").WithXLabels("A", "B");
             var points = new[] { new ChartPoint(1, value), new ChartPoint(2, 4) };
-            if (donut) chart.AddDonut("Radial values", points); else chart.AddPie("Radial values", points);
-            chart.Series[0].WithInteractionKey("radial-raw-sibling");
+            if (donut) chart.AddSeries(new ChartSeries(new ChartSeriesId("radial-raw-sibling"), "Radial values", ChartSeriesKind.Donut, points)); else chart.AddSeries(new ChartSeries(new ChartSeriesId("radial-raw-sibling"), "Radial values", ChartSeriesKind.Pie, points));
             return chart;
         }
         var raw = Chart.Create().WithSize(640, 360).WithTitle("Raw peer").WithPointLegend()
-            .AddBar("Raw values", new[] { new ChartPoint(1, 2), new ChartPoint(2, 4) });
-        raw.Series[0].WithInteractionKey("radial-raw-sibling");
+            .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("radial-raw-sibling"), "Raw values", new[] { new ChartPoint(1, 2), new ChartPoint(2, 4) }));
         await using var session = await OpenAsync(Dashboard(new[] { Radial(0), raw, Radial(2) }), 700, 1000);
         var roots = session.Page.Locator(".cfx-interactive-chart");
         var legend = roots.Nth(0).Locator(PointLegend(0));
@@ -91,14 +88,14 @@ public sealed class InteractiveDerivedLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task OtherLegendControlsMatchContributorSetsAcrossGroupingPolicies() {
         if (!Enabled) return;
         Chart Pie(int maximum) {
             var chart = Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C", "D")
-                .AddPie("Parts", new[] { new ChartPoint(1, 8), new ChartPoint(2, 4), new ChartPoint(3, 2), new ChartPoint(4, 1) });
+                .AddSeries(new ChartSeries(new ChartSeriesId("shared-parts"), "Parts", ChartSeriesKind.Pie, new[] { new ChartPoint(1, 8), new ChartPoint(2, 4), new ChartPoint(3, 2), new ChartPoint(4, 1) }));
             chart.Options.MaximumPieSlices = maximum;
-            chart.Series[0].WithInteractionKey("shared-parts"); return chart;
+            return chart;
         }
         await using var session = await OpenAsync(Dashboard(new[] { Pie(2), Pie(3), Pie(2) }), 700, 1000);
         var roots = session.Page.Locator(".cfx-interactive-chart");

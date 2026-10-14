@@ -14,13 +14,28 @@ public sealed class V2ModelValidationTests {
         Reject(Chart.Create().AddPie("First", new[] { new ChartPoint(1, 2) }).AddDonut("Second", new[] { new ChartPoint(1, 2) }));
     }
 
+    [Theory]
+    [InlineData(0d)]
+    [InlineData(4e-16)]
+    public void RadarRejectsEquivalentCategoriesWithinOneSeriesBeforeAnyExport(double offset) {
+        Reject(Chart.Create().AddRadar("Ambiguous", new[] {
+            new ChartPoint(1, 10), new ChartPoint(1 + offset, 90), new ChartPoint(2, 40), new ChartPoint(3, 60)
+        }));
+    }
+
+    [Fact]
+    public void RadarMinimumCountsSharedCoordinateGroupsRatherThanDistinctDoubleSpellings() {
+        Reject(Chart.Create().AddRadar("First", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) })
+            .AddRadar("Second", new[] { new ChartPoint(1 + 4e-16, 30), new ChartPoint(2 + 8e-16, 50) }));
+    }
+
     [Fact]
     public void SharedMutableCollectionsAreValidatedForSpecializedFamilies() {
         var gauge = Chart.Create().AddGauge("Score", 70);
         gauge.Annotations.Add(null!);
         Reject(gauge);
-        var radial = Raw(ChartSeriesKind.LayeredRadial);
-        radial.Series[0].RadialLayers.Add(null!);
+        var radial = Chart.Create().AddLayeredRadial("Layer", new[] { new ChartRadialLayer("Value", 40) });
+        radial.Series[0].RadialLayers[0].Maximum = 0;
         Reject(radial);
     }
 
@@ -36,15 +51,10 @@ public sealed class V2ModelValidationTests {
     }
 
     [Theory]
-    [InlineData(ChartSeriesKind.Bubble)]
-    [InlineData(ChartSeriesKind.ErrorBar)]
-    [InlineData(ChartSeriesKind.Candlestick)]
-    [InlineData(ChartSeriesKind.RangeArea)]
-    [InlineData(ChartSeriesKind.BoxPlot)]
     [InlineData(ChartSeriesKind.Gantt)]
     [InlineData(ChartSeriesKind.Gauge)]
-    public void PreparationDoesNotTreatIncompleteTuplesAsEmptyData(ChartSeriesKind kind) {
-        Reject(Raw(kind, new ChartPoint(0, 1)));
+    public void TypedScalarAndScheduleFamiliesRejectNumericEncodings(ChartSeriesKind kind) {
+        Assert.Throws<ArgumentException>(() => Raw(kind, new ChartPoint(0, 1)));
     }
 
     [Theory]
@@ -53,7 +63,7 @@ public sealed class V2ModelValidationTests {
     [InlineData(ChartSeriesKind.Sankey)]
     [InlineData(ChartSeriesKind.Treemap)]
     public void TypedRelationshipFamiliesRejectRawPointsAtConstruction(ChartSeriesKind kind) {
-        Assert.Throws<ArgumentException>(() => new ChartSeries("Raw relationship", kind, new[] { new ChartPoint(0, 1) }));
+        Assert.Throws<ArgumentException>(() => new ChartSeries(new ChartSeriesId("fixture-series"), "Raw relationship", kind, new[] { new ChartPoint(0, 1) }));
     }
 
     [Theory]
@@ -106,7 +116,7 @@ public sealed class V2ModelValidationTests {
 
     private static Chart Raw(ChartSeriesKind kind, params ChartPoint[] points) {
         var chart = Chart.Create();
-        chart.Series.Add(new ChartSeries("Source", kind, points));
+        chart.AddSeries(new ChartSeries(new ChartSeriesId("fixture-series"), "Source", kind, points));
         return chart;
     }
 

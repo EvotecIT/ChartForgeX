@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX;
 using ChartForgeX.Core;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void OverlaySvgElementsExposeDataMetadata() {
-        var annotations = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var annotations = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .AddLine("Values", Points(42, 84, 126))
             .AddHorizontalLine(100, "target")
@@ -22,7 +23,7 @@ internal static partial class SmokeTests {
         Assert((string?)(band.Attribute("data-cfx-end-value") ?? band.Attribute("data-cfx-end")) == "2.5", "The annotation group should retain its full end coordinate.");
         Assert(overlays.All(element => element.Descendants().Any(child => (string?)child.Attribute("data-cfx-role") == "annotation-label")), "Visible annotation labels should remain associated with their source annotation group.");
 
-        var secondary = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var secondary = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .WithSecondaryYAxis("Rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .WithSecondaryYAxisBounds(0, 100)
@@ -33,12 +34,12 @@ internal static partial class SmokeTests {
         Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-label" && region.Label == "100% (100)"), "Secondary axis ticks should retain displayed text and raw values.");
         Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-title" && region.Label == "Rate"), "Secondary axis titles should retain the full configured label.");
 
-        var legend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
-            .AddBar("Logged", Points(12, 18))
-            .AddLine("Trend", Points(10, 20))
+        var legend = Chart.Create().WithTheme(VisualTheme.Report())
+            .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("logged"), "Logged", Points(12, 18)))
+            .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("trend"), "Trend", Points(10, 20)))
             .ToSvg();
         var entries = XDocument.Parse(legend).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "legend-entry").ToArray();
-        Assert(entries.Length == 2 && entries.Any(entry => (string?)entry.Attribute("data-cfx-series-key") == "Logged") && entries.Any(entry => (string?)entry.Attribute("data-cfx-series-key") == "Trend"), "Legend entries should retain their source series identities.");
+        Assert(entries.Length == 2 && entries.Any(entry => (string?)entry.Attribute("data-cfx-series-key") == "logged") && entries.Any(entry => (string?)entry.Attribute("data-cfx-series-key") == "trend"), "Legend entries should retain their source series identities.");
         Assert(entries.All(entry => entry.Descendants().Any(label => (string?)label.Attribute("data-cfx-role") == "legend-label")), "Each legend entry should contain its own visible label.");
     }
 }

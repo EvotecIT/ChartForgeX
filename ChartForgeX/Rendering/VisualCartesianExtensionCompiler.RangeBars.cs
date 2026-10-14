@@ -13,7 +13,7 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawRangeBars(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
         IReadOnlyDictionary<double, string> categories) {
-        var series = chart.Series[index]; var count = series.Points.Count / 2;
+        var series = chart.Series[index]; var count = series.RenderPoints.Count / 2;
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
         var style = chart.Options.ResolvePreparedBarVisualStyle();
         var segmented = style.Kind == ChartBarStyle.SegmentedCapsule;
@@ -22,7 +22,7 @@ internal static partial class VisualCartesianCompiler {
         var endpoints = chart.Options.RangeBar.LabelContent == ChartRangeBarLabelContent.Endpoints;
         var endpointFormatter = chart.Options.RangeBar.EndpointLabelFormatter;
         for (var item = 0; item < count; item++) {
-            var first = series.Points[item * 2]; var second = series.Points[item * 2 + 1];
+            var first = series.RenderPoints[item * 2]; var second = series.RenderPoints[item * 2 + 1];
             var category = (horizontal ? map.Y(first.X) : map.X(first.X)) + layout.Offset;
             var start = horizontal ? map.X(first.Y) : map.Y(first.Y);
             var end = horizontal ? map.X(second.Y) : map.Y(second.Y);
@@ -81,7 +81,7 @@ internal static partial class VisualCartesianCompiler {
         var style = chart.Options.ResolvePreparedBarVisualStyle();
         var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.RangeBar).ToArray();
         padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth);
-        return ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].Points.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
+        return ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].RenderPoints.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
             horizontal ? plot.Height : plot.Width, context.Theme.Spacing, participants.Length, Array.IndexOf(participants, index), requireMinimumFootprint: true,
             maximumThickness: 28, footprintRatio: 1.5, footprintPadding: padding,
             measuredFootprint: style.Kind == ChartBarStyle.SegmentedCapsule ? width => ChartSegmentedBarGeometry.RangeCategoryFootprint(style, width) : null);
@@ -108,9 +108,9 @@ internal static partial class VisualCartesianCompiler {
 
     private static IReadOnlyList<VisualLegendEntry> RangeBarLegendEntries(Chart chart, ChartSeries series, VisualThemeColors colors, ChartAxisValueFormatter.Cache cache) {
         var entries = new List<VisualLegendEntry>();
-        var categories = ChartCartesianCategoryLabels.Resolve(chart, series.Points.Select(point => point.X), cache);
+        var categories = ChartCartesianCategoryLabels.Resolve(chart, series.RenderPoints.Select(point => point.X), cache);
         for (var item = 0; item < series.AuthoredObservationCount; item++) {
-            var category = categories[series.Points[item * 2].X]; var pattern = ObservationPattern(series, item);
+            var category = categories[series.RenderPoints[item * 2].X]; var pattern = ObservationPattern(series, item);
             var color = PointColor(series, 0, item, colors); var paint = VisualChartPaint.Series(series, color, item);
             entries.Add(new VisualLegendEntry(category, color, PointId(0, item), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
                 marker: VisualMarkerScene.Legend(chart, series, color, paint, item, pattern), paint: paint, metadata: RangeBarMetadata(chart, category)));

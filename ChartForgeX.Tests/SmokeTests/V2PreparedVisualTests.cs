@@ -29,7 +29,7 @@ public sealed class V2PreparedVisualTests {
         var context = new VisualRenderContext(theme: theme);
         var prepared = chart.Prepare(context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Title = "Changed"; chart.Series.Clear(); chart.Accessibility.Name = "Changed";
+        chart.Title = "Changed"; chart.ClearSeries(); chart.Accessibility.Name = "Changed";
         light.Background = ChartColor.Black; light.Palette = new[] { ChartColor.Black };
         context.Font.Family = "Changed"; prepared.Accessibility.Name = "Changed";
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());

@@ -10,7 +10,7 @@ internal static class PagedFacetExamples {
         var report = ChartGrid.FromFacets(samples, sample => sample.Site, (site, rows) => Chart.Create()
                 .WithTitle("Site " + site.ToString("00"))
                 .WithSize(440, 280)
-                .WithTheme(ChartTheme.ReportLight())
+                .WithTheme(VisualTheme.Report())
                 .WithDashboardTrendPanelStyle(showLegend: false, showYAxis: true)
                 .ConfigureTitleStyle(style => style.WithFontSize(20))
                 .WithXAxis("Hour")

@@ -17,7 +17,7 @@ public static class MermaidWardleyRendering {
         options ??= new MermaidWardleyRenderOptions();
         var block = WardleyMapBlock.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(ResolveWidth(document, options), ResolveHeight(document, options))
             .WithPadding(options.Padding);
 
@@ -77,14 +77,7 @@ public static class MermaidWardleyRendering {
         document.ToWardleyMapBlock(options).ToPng();
 
     private static string ResolveTitle(MermaidWardleyDocument document, MermaidWardleyRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid Wardley";
-    }
-
-    private static string ResolveSubtitle(MermaidWardleyDocument document, MermaidWardleyRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid Wardley");
     }
 
     private static int ResolveWidth(MermaidWardleyDocument document, MermaidWardleyRenderOptions options) => options.Width > 0 ? options.Width : document.CanvasWidth ?? 900;

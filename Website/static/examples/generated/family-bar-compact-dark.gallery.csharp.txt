@@ -1,0 +1,60 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = BarRecipe.Create("compact", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Completed orders by region", "The same data in a compact view", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Builds regional order bars and normalized grouped stacks.</summary>
+public static class BarRecipe {
+    /// <summary>Creates the selected vertical-bar example.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant is "options" or "compact-options") {
+            chart.WithXLabels("North", "South", "East", "West").WithYAxis("Share (%)");
+            var names = new[] { "First half · Completed", "First half · Remaining", "Second half · Completed", "Second half · Remaining" };
+            var ids = new[] { "first-half-completed", "first-half-remaining", "second-half-completed", "second-half-remaining" };
+            var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
+            for (var index = 0; index < names.Length; index++) {
+                var points = values[index].Select((value, point) => new ChartPoint(point + 1, value));
+                var series = ChartSeries.CreateBar(new ChartSeriesId(ids[index]), names[index], points)
+                    .WithStackGroup(index < 2 ? "first-half" : "second-half").WithNormalization(100);
+                chart.AddSeries(series);
+            }
+            chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == "compact-options");
+            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+        }
+        else {
+            var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
+                .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
+            chart.WithXLabels("North", "South", "East", "West", "Central", "Online")
+                .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", points));
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";
+}

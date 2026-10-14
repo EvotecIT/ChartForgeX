@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -24,7 +25,7 @@ internal static partial class SmokeTests {
 
     private static void HistogramBinWidthPreservesRequestedIntervals() {
         var layout = ChartHistogramBinLayout.FromWidth(0, 10, 3, roundBounds: false);
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .AddHistogram("Requested width", new[] { 0d, 1d, 3d, 5d, 6d, 9d, 10d }, layout);
 
@@ -44,13 +45,13 @@ internal static partial class SmokeTests {
         Assert(remainderLayout.Count == 15, "Histogram layouts should retain a final bin when the range has a real remainder.");
         Assert(tinyRemainderLayout.Count == 2, "Histogram layouts should retain representable remainder bins beyond floating-point rounding noise.");
         var boundaryLayout = ChartHistogramBinLayout.FromWidth(0.1, 0.5, 0.1);
-        var boundaryChart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddHistogram("Decimal boundaries", new[] { 0.1, 0.2, 0.3, 0.4, 0.5 }, boundaryLayout);
+        var boundaryChart = Chart.Create().WithTheme(VisualTheme.Report()).AddHistogram("Decimal boundaries", new[] { 0.1, 0.2, 0.3, 0.4, 0.5 }, boundaryLayout);
         Assert(boundaryChart.Series[0].Points.Select(point => point.Y).SequenceEqual(new[] { 1d, 1d, 1d, 2d }), "Decimal values on exact bin boundaries should be assigned to the following bin.");
         var belowHalf = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(0.5) - 1);
-        var adjacentBoundaryChart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddHistogram("Adjacent boundary values", new[] { belowHalf, 0.5 }, ChartHistogramBinLayout.FromWidth(0, 1, 0.1));
+        var adjacentBoundaryChart = Chart.Create().WithTheme(VisualTheme.Report()).AddHistogram("Adjacent boundary values", new[] { belowHalf, 0.5 }, ChartHistogramBinLayout.FromWidth(0, 1, 0.1));
         Assert(adjacentBoundaryChart.Series[0].Points[4].Y == 1 && adjacentBoundaryChart.Series[0].Points[5].Y == 1, "Histogram binning should preserve a representable value immediately below a boundary without moving it into the following bin.");
         var subDecimalLayout = ChartHistogramBinLayout.FromCount(0, 1e-28, 2, roundBounds: false);
-        var subDecimalChart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddHistogram("Sub-decimal widths", new[] { 2e-29, 7e-29 }, subDecimalLayout);
+        var subDecimalChart = Chart.Create().WithTheme(VisualTheme.Report()).AddHistogram("Sub-decimal widths", new[] { 2e-29, 7e-29 }, subDecimalLayout);
         Assert(subDecimalChart.Series[0].Points.Select(point => point.Y).SequenceEqual(new[] { 1d, 1d }), "Histogram widths below decimal precision should fall back to binary bin assignment without division by zero.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(1e16, 1e16 + 2, 1), "Width-based histogram layouts should reject internal bounds that cannot advance at the requested magnitude.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromCount(1e16, 1e16 + 2, 2, roundBounds: false), "Count-based histogram layouts should reject internal bounds that cannot advance at the requested magnitude.");
@@ -60,12 +61,12 @@ internal static partial class SmokeTests {
         var largeExactLayout = ChartHistogramBinLayout.FromCount(Math.Pow(2, 52), Math.Pow(2, 52) + 2_000_000_000, 1_000_000_000);
         Assert(largeExactLayout.Count == 1_000_000_000 && largeExactLayout.GetWidth(0) == 2, "Large layouts with clearly separated exact bounds should avoid per-bin validation.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartHistogramBinLayout.FromWidth(0, 10, 0), "Histogram layouts should reject zero bin widths.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddHistogram("Outside", new[] { 11d }, layout), "Shared histogram layouts should reject values outside their bounds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).AddHistogram("Outside", new[] { 11d }, layout), "Shared histogram layouts should reject values outside their bounds.");
     }
 
     private static void HistogramBarsGroupWithRegularBars() {
         var layout = ChartHistogramBinLayout.FromWidth(0, 2, 1);
-        var grouped = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var grouped = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .AddHistogram("Observed", new[] { 0.25, 0.75, 1.25, 1.75 }, layout)
             .AddBar("Target", new[] { new ChartPoint(0.5, 3), new ChartPoint(1.5, 2) });
@@ -79,7 +80,7 @@ internal static partial class SmokeTests {
         Assert(grouped.ToPng().Length > 64, "Mixed histogram and regular bars should preserve PNG rendering parity.");
 
         var decimalLayout = ChartHistogramBinLayout.FromWidth(0.1, 0.3, 0.1);
-        var stacked = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var stacked = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .WithStackedBars()
             .WithStackTotals()
@@ -97,7 +98,7 @@ internal static partial class SmokeTests {
         Assert(stacked.ToPng().Length > 64, "Decimal-equivalent mixed stack totals should preserve PNG rendering parity.");
 
         var narrowLayout = ChartHistogramBinLayout.FromWidth(0, 0.00000002, 0.00000001);
-        var narrow = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var narrow = Chart.Create().WithTheme(VisualTheme.Report())
             .WithStackedBars()
             .AddHistogram("Narrow bins", new[] { 0.000000001, 0.000000002, 0.000000015 }, narrowLayout)
             .AddBar("Narrow target", new[] { new ChartPoint(0.000000015, 2) });
@@ -110,7 +111,7 @@ internal static partial class SmokeTests {
         var centerBits = BitConverter.DoubleToInt64Bits(center);
         var leftOfCenter = BitConverter.Int64BitsToDouble(centerBits - 3);
         var rightOfCenter = BitConverter.Int64BitsToDouble(centerBits + 3);
-        var transitive = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var transitive = Chart.Create().WithTheme(VisualTheme.Report())
             .WithStackedBars()
             .WithStackTotals()
             .AddHistogram("Center", new[] { center }, ChartHistogramBinLayout.FromWidth(1, 2, 1))
@@ -128,7 +129,7 @@ internal static partial class SmokeTests {
 
         var countLayout = ChartHistogramBinLayout.FromCount(0, 0.3, 3, roundBounds: false);
         var widthLayout = ChartHistogramBinLayout.FromWidth(0, 0.3, 0.1);
-        var equivalentLayouts = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var equivalentLayouts = Chart.Create().WithTheme(VisualTheme.Report())
             .WithStackedBars()
             .WithStackTotals()
             .AddHistogram("Count layout", new[] { 0.01 }, countLayout)
@@ -146,7 +147,7 @@ internal static partial class SmokeTests {
         var chainBits = BitConverter.DoubleToInt64Bits(chainCenter);
         var chainMiddle = BitConverter.Int64BitsToDouble(chainBits + 3);
         var chainEnd = BitConverter.Int64BitsToDouble(chainBits + 6);
-        var chainedLayouts = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chainedLayouts = Chart.Create().WithTheme(VisualTheme.Report())
             .WithStackedBars()
             .WithStackTotals()
             .AddHistogram("Chain start", new[] { chainCenter }, ChartHistogramBinLayout.FromCount(0, chainCenter * 2, 1, roundBounds: false))
@@ -161,7 +162,7 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(chainedSvg, "data-cfx-role=\"stack-total-label\"") == 1, "Transitive coordinate chains should emit one combined stack-total label.");
         Assert(chainedLayouts.ToPng().Length > 64, "Transitive coordinate chain aggregation should preserve PNG rendering parity.");
 
-        var groupedChain = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var groupedChain = Chart.Create().WithTheme(VisualTheme.Report())
             .AddHistogram("Grouped chain start", new[] { chainCenter }, ChartHistogramBinLayout.FromCount(0, chainCenter * 2, 1, roundBounds: false))
             .AddHistogram("Grouped chain middle", new[] { chainMiddle }, ChartHistogramBinLayout.FromCount(0, chainMiddle * 2, 1, roundBounds: false))
             .AddHistogram("Grouped chain end", new[] { chainEnd }, ChartHistogramBinLayout.FromCount(0, chainEnd * 2, 1, roundBounds: false));
@@ -178,7 +179,7 @@ internal static partial class SmokeTests {
         var adjacentMinimum = 1.0;
         var adjacentMaximum = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(adjacentMinimum) + 8);
         var adjacentLayout = ChartHistogramBinLayout.FromCount(adjacentMinimum, adjacentMaximum, 2, roundBounds: false);
-        var adjacentBins = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var adjacentBins = Chart.Create().WithTheme(VisualTheme.Report())
             .WithStackedBars()
             .WithStackTotals()
             .AddHistogram("Adjacent first", new[] { adjacentMinimum, adjacentMaximum, adjacentMaximum }, adjacentLayout)
@@ -195,7 +196,7 @@ internal static partial class SmokeTests {
 
         var epsilonLayout = ChartHistogramBinLayout.FromCount(0, double.Epsilon * 8, 2, roundBounds: false);
         var epsilonBoundary = double.Epsilon * 4;
-        var mixedBoundary = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var mixedBoundary = Chart.Create().WithTheme(VisualTheme.Report())
             .WithStackedBars()
             .AddHistogram("Epsilon bins", new[] { 0d, double.Epsilon * 8, double.Epsilon * 8 }, epsilonLayout)
             .AddBar("Boundary target", new[] { new ChartPoint(epsilonBoundary, 3) });
@@ -207,15 +208,16 @@ internal static partial class SmokeTests {
             "Mixed ultra-narrow bar geometry should use the coordinate map's selected histogram slot.");
         Assert(mixedBoundary.ToPng().Length > 64, "Mixed ultra-narrow slot identity should preserve PNG rendering parity.");
 
-        var reorderedHistogram = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddHistogram("Reordered", new[] { 0d, 1d }, ChartHistogramBinLayout.FromCount(0, 1, 2, roundBounds: false));
-        reorderedHistogram.Series[0].Points.Reverse();
+        var reorderedHistogram = Chart.Create().WithTheme(VisualTheme.Report()).AddHistogram("Reordered", new[] { 0d, 1d }, ChartHistogramBinLayout.FromCount(0, 1, 2, roundBounds: false));
+        var reorderedPoints = reorderedHistogram.Series[0].Points;
+        (reorderedPoints[0], reorderedPoints[1]) = (reorderedPoints[1], reorderedPoints[0]);
         AssertThrows<InvalidOperationException>(() => reorderedHistogram.ToSvg(), "Histogram rendering should reject point order that no longer matches the stored layout.");
-        var resizedHistogram = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddHistogram("Resized", new[] { 0d, 1d }, ChartHistogramBinLayout.FromCount(0, 1, 2, roundBounds: false));
+        var resizedHistogram = Chart.Create().WithTheme(VisualTheme.Report()).AddHistogram("Resized", new[] { 0d, 1d }, ChartHistogramBinLayout.FromCount(0, 1, 2, roundBounds: false));
         resizedHistogram.Series[0].Points.RemoveAt(0);
         AssertThrows<InvalidOperationException>(() => resizedHistogram.ToPng(), "Histogram rendering should reject point counts that no longer match the stored layout.");
 
         var constantLayout = ChartHistogramBinLayout.FromCount(5, 5, 1, roundBounds: false);
-        var constant = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var constant = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .AddHistogram("First constant", new[] { 5d, 5d }, constantLayout)
             .AddHistogram("Second constant", new[] { 5d }, constantLayout)

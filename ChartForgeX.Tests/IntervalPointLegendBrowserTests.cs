@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class IntervalPointLegendBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -17,14 +17,14 @@ public sealed class IntervalPointLegendBrowserTests {
     public async Task PointLegendAndMarkReadoutsRetainLocalizedTupleAndActualSeriesName(bool boxPlot, bool horizontal) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(360, 440).WithTitle("Delivery observations")
-            .WithTheme(horizontal ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), horizontal ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXLabels("Express", "Standard").WithPointLegend().WithLegend();
         var seriesName = boxPlot ? "Distribution" : "Delivery window";
-        if (boxPlot) chart.AddBoxPlot(seriesName, new[] {
+        if (boxPlot) chart.AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery"), seriesName, new[] {
             new ChartBoxPlot(1, 0, 10, 15, 25, 35), new ChartBoxPlot(2, 2, 6, 9, 11, 15)
-        });
-        else chart.AddRangeBar(seriesName, new[] { new ChartInterval(1, 30, 0), new ChartInterval(2, 10, 35) });
-        chart.Series[0].WithInteractionKey("delivery").WithPointLabel(1, "Promised observation");
+        }));
+        else chart.AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("delivery"), seriesName, new[] { new ChartInterval(1, 30, 0), new ChartInterval(2, 10, 35) }));
+        chart.Series[0].WithPointLabel(1, "Promised observation");
         if (horizontal) {
             if (boxPlot) chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
             else chart.ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal);
@@ -75,7 +75,7 @@ public sealed class IntervalPointLegendBrowserTests {
         }
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ComparisonPointLegendsRetainBothEndpointsOrUncertaintyBounds(bool errorBar) {

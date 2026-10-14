@@ -534,7 +534,7 @@ function Invoke-MermaidConformance {
         throw "Mermaid conformance package was not found: $conformanceRoot"
     }
 
-    Invoke-NodeCommand -FileName 'npm' -Arguments @('ci', '--ignore-scripts', '--no-audit', '--no-fund') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance restore' -TimeoutSeconds $TimeoutSeconds -Quiet
+    Invoke-NodeCommand -FileName 'npm' -Arguments @('ci', '--engine-strict', '--ignore-scripts', '--no-audit', '--no-fund') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance restore' -TimeoutSeconds $TimeoutSeconds -Quiet
     Invoke-NodeCommand -FileName 'node' -Arguments @('validate-mermaid.mjs') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance validation' -TimeoutSeconds $TimeoutSeconds
 }
 
@@ -724,6 +724,16 @@ try {
             $packageProject.Version = $packageVersion.Trim()
             Invoke-DotNetCommand -Arguments @('pack', $packageProject.Project, '-c', $Configuration, '--no-build', '--output', $packageRoot) -Description "$($packageProject.Id) package creation" -TimeoutSeconds $DotNetCommandTimeoutSeconds
         }
+
+        # The CLI uses a .NET tool payload instead of the four-framework library and symbol contract below.
+        $markupCliProject = Join-Path $root 'ChartForgeX.Markup.Cli/ChartForgeX.Markup.Cli.csproj'
+        $markupCliVersion = Invoke-DotNetCommand -Arguments @('msbuild', $markupCliProject, '-nologo', '-getProperty:PackageVersion', "-p:Configuration=$Configuration") -Description 'ChartForgeX.Markup.Cli package-version evaluation' -TimeoutSeconds $DotNetCommandTimeoutSeconds -Quiet -PassThruOutput
+        if ([string]::IsNullOrWhiteSpace($markupCliVersion)) {
+            throw "Package version is missing for $markupCliProject."
+        }
+        $markupCliVersion = $markupCliVersion.Trim()
+        Invoke-DotNetCommand -Arguments @('pack', $markupCliProject, '-c', $Configuration, '--no-build', '--output', $packageRoot) -Description 'ChartForgeX.Markup.Cli package creation' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+        Get-Item -LiteralPath (Join-Path $packageRoot "ChartForgeX.Markup.Cli.$markupCliVersion.nupkg") -ErrorAction Stop | Out-Null
 
         $packages = @($packageProjects | ForEach-Object { Get-Item -LiteralPath (Join-Path $packageRoot "$($_.Id).$($_.Version).nupkg") -ErrorAction Stop })
         if ($packages.Count -ne $packageProjects.Count) {

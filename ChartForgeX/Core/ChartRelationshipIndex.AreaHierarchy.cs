@@ -21,8 +21,7 @@ internal sealed partial class ChartRelationshipIndex {
     internal static ChartRelationshipIndex AreaHierarchy(IEnumerable<ChartHierarchyItem> items, bool allowForest, bool requireNullGroups) {
         if (items == null) throw new ArgumentNullException(nameof(items));
         var authored = items.ToArray();
-        if (authored.Length == 0) throw new ArgumentException("Area hierarchies require at least one item.", nameof(items));
-        var nodes = SnapshotNodes(authored.Select(item => item.Node), out var indexes, nameof(items));
+        var nodes = SnapshotNodes(authored.Select(item => item.Node), out var indexes, nameof(items), allowEmpty: true);
         var sources = new List<int>(); var targets = new List<int>();
         foreach (var item in authored) if (item.ParentId != null) {
             var edge = Resolve(indexes, item.ParentId, item.Id, nameof(items));

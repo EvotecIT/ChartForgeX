@@ -69,14 +69,14 @@ public sealed class ChartThemeFontTests {
     [Fact]
     public void GridAndBlockPngsFollowTheThemeFamily() {
         if (!HasFace("Segoe UI", 400) || !HasFace("Georgia", 400)) return;
-        var sans = ChartGrid.Create().WithTitle("Operations").WithTheme(ChartTheme.ReportDark().WithFontFamily("Segoe UI")).Add(BarChart("Segoe UI"));
-        var serif = ChartGrid.Create().WithTitle("Operations").WithTheme(ChartTheme.ReportDark().WithFontFamily("Georgia")).Add(BarChart("Segoe UI"));
+        var sans = ChartGrid.Create().WithTitle("Operations").WithTheme(VisualTheme.Report().WithFontFamily("Segoe UI"), VisualThemeMode.Dark).Add(BarChart("Segoe UI"));
+        var serif = ChartGrid.Create().WithTitle("Operations").WithTheme(VisualTheme.Report().WithFontFamily("Georgia"), VisualThemeMode.Dark).Add(BarChart("Segoe UI"));
         Assert.NotEqual(sans.ToPng(), serif.ToPng());
     }
 
     private static Chart BarChart(string family) => Chart.Create()
         .WithTitle("Readership")
-        .WithTheme(ChartTheme.ReportDark().WithFontFamily(family))
+        .WithTheme(VisualTheme.Report().WithFontFamily(family), VisualThemeMode.Dark)
         .WithSize(360, 220)
         .WithXLabels("A", "B", "C")
         .AddBar("Issues", ChartPoints.FromValues(12, 18, 9));

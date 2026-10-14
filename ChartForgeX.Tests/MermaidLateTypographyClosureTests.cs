@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidLateTypographyClosureTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(32)]
     [InlineData(256)]
@@ -25,13 +26,14 @@ public sealed class MermaidLateTypographyClosureTests {
         await Capture(svg, png, "class-members-font-" + size, 960, 720);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(18, false)]
     [InlineData(18, true)]
     [InlineData(64, false)]
     [InlineData(64, true)]
     public async Task DenseVennRegionsRetainEveryAcceptedTextNode(int count, bool graphite) {
-        var theme = ChartTheme.Light(); theme.FontFamily = "Arial"; theme.UseGraphiteLayout = graphite;
+        var theme = VisualTheme.Report().WithFontFamily("Arial");
         var block = VennDiagramBlock.Create().WithSize(800, 600).WithTheme(theme).WithCard(false)
             .AddSet("A", "A", 60).AddSet("B", "B", 55);
         var expected = Enumerable.Range(1, count).Select(index => "N" + index).ToArray();

@@ -1,0 +1,40 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = BulletRecipe.Create("wide", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Reviewed work against its targets", "Explore the data, then download the chart", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Reviewed and verified work compared with separate targets and qualitative ranges.</summary>
+public static class BulletRecipe {
+    /// <summary>Creates two measured values, each with its own target and range boundaries.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var reviewed = ChartSeries.CreateBullet(new ChartSeriesId("reviewed"), "Reviewed", 76, 85, rangeEnds: new[] { 50d, 80d });
+        var verified = ChartSeries.CreateBullet(new ChartSeriesId("verified"), "Verified", 58, 75, rangeEnds: new[] { 40d, 70d });
+        return Chart.Create().WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(reviewed).AddSeries(verified)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+}

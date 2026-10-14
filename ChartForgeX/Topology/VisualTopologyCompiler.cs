@@ -18,7 +18,7 @@ internal sealed partial class VisualTopologyCompiler {
     private readonly TopologyRenderOptions _options;
     private VisualSceneBuilder _builder;
     private readonly VisualThemeColors _colors;
-    private readonly TopologyTheme? _svgTheme;
+    private readonly TopologyPaint _svgTheme;
     private readonly bool _resolvedLayout;
     private readonly bool _naturalSize;
     private readonly Dictionary<TopologyEdge, IReadOnlyList<ChartPoint>> _routes = new();
@@ -37,9 +37,9 @@ internal sealed partial class VisualTopologyCompiler {
     private double _offsetX;
     private double _offsetY;
 
-    internal VisualTopologyCompiler(TopologyChart source, VisualRenderContext context, TopologyRenderOptions options, bool resolvedLayout = false, bool naturalSize = false, TopologyTheme? svgTheme = null) {
+    internal VisualTopologyCompiler(TopologyChart source, VisualRenderContext context, TopologyRenderOptions options, bool resolvedLayout = false, bool naturalSize = false) {
         _source = source;
-        _svgTheme = svgTheme?.Clone();
+        _svgTheme = new TopologyPaint(context.Theme, context.ThemeMode, options.SvgColorVariables?.Clone());
         _context = ResolveFrame(context, source, options);
         _options = options.CloneForRendering();
         _options.ResolvedIconLabelFontSize = context.Theme.Typography.DataLabelSize * (10.5 / 11);
@@ -95,7 +95,7 @@ internal sealed partial class VisualTopologyCompiler {
             Width = _plot.Width + _context.Layout.Padding * 2, Height = _plot.Height + _context.Layout.Padding * 2,
             Padding = _context.Layout.Padding
         };
-        input.Theme = Theme();
+        input.Theme = _context.Theme; input.ThemeMode = _context.ThemeMode;
         var layoutOptions = _options.CloneForRendering();
         layoutOptions.IncludeTitle = false; layoutOptions.IncludeLegend = false;
         // A view selects data and identity here. Its headings were already measured by the
@@ -185,11 +185,5 @@ internal sealed partial class VisualTopologyCompiler {
         : ChartForgeX.SvgRaster.SvgRasterColor.TryParse(value, out var parsed) ? parsed
         : SvgPaint.TryCssVariable(value, fallback, out var resolved, out _) ? resolved : ChartColor.Parse(value!);
     private ChartColor Highlight(ChartColor color, bool highlighted) => color.WithOpacity(color.A / 255d * (highlighted || !_highlight.IsActive ? 1 : _highlight.DimmedOpacity));
-    private static string ThemeToken(ChartColor color) => color.A == 255 ? color.ToHex() : color.ToHexRgba();
-    private TopologyTheme Theme() => new() {
-        Background = ThemeToken(_colors.Background), Foreground = ThemeToken(_colors.Foreground), MutedForeground = ThemeToken(_colors.MutedForeground),
-        Card = ThemeToken(_colors.Surface), Surface = ThemeToken(_colors.Surface), Border = ThemeToken(_colors.Border), Accent = ThemeToken(_colors.Accent),
-        Healthy = ThemeToken(_colors.Status.Pass.Fill), Warning = ThemeToken(_colors.Status.Medium.Fill), Critical = ThemeToken(_colors.Status.Critical.Fill),
-        Unknown = ThemeToken(_colors.Status.Neutral.Fill), Disabled = ThemeToken(_colors.Status.Maintenance.Fill), FontFamily = _context.Font.Family
-    };
+    private TopologyPaint Theme() => new(_context.Theme, _context.ThemeMode);
 }

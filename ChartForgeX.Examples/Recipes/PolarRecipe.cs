@@ -1,0 +1,35 @@
+/// <summary>Directional readings with numeric angles, degree captions and optional reversed angles.</summary>
+public static class PolarRecipe {
+    /// <summary>Creates directional observations or compares irregularly spaced readings with expected values.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "angular-reversal" or "compact-angular-reversal"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is "angular-reversal" or "compact-angular-reversal") return Reversed();
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Polar,
+            Enumerable.Range(0, 6).Select(index => new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
+        var chart = Chart.Create().AddSeries(observed).ConfigureXAxis(axis => axis.LabelFormatter = Degrees)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        if (variant == "options") {
+            chart.Options.YAxis.WithBounds(0, 100);
+            chart.Options.YAxis.TickCount = 6;
+            chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, "20 · Target"));
+        }
+        return chart;
+    }
+
+    private static Chart Reversed() {
+        var angles = new[] { 0d, .55, 1.35, 2.8, 3.65, 5.4 };
+        var readings = new[] { 84d, 62, 96, 58, 78, 69 };
+        var expected = new[] { 72d, 76, 82, 70, 74, 80 };
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Polar,
+            angles.Select((angle, index) => new ChartPoint(angle, readings[index])));
+        var target = new ChartSeries(new ChartSeriesId("target"), "Expected", ChartSeriesKind.Polar,
+            angles.Select((angle, index) => new ChartPoint(angle, expected[index])));
+        return Chart.Create().WithYAxisBounds(0, 100).WithDataLabels(false)
+            .ConfigureXAxis(axis => { axis.LabelFormatter = Degrees; axis.WithReversal(); })
+            .AddSeries(observed).AddSeries(target)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    private static string Degrees(double angle) => (angle * 180 / Math.PI).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "°";
+}

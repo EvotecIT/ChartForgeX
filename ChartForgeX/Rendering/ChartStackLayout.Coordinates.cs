@@ -7,7 +7,7 @@ namespace ChartForgeX.Rendering;
 
 internal sealed partial class ChartStackLayout {
     private static int[][] CoordinateIds(Chart chart, ChartBarCoordinateMap bars, out double[] horizontalCategories) {
-        var ids = chart.Series.Select(series => Supports(series.Kind) ? new int[series.Points.Count] : Array.Empty<int>()).ToArray();
+        var ids = chart.Series.Select(series => Supports(series.Kind) ? new int[series.RenderPoints.Count] : Array.Empty<int>()).ToArray();
         var horizontal = new List<double>();
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             if (chart.Series[seriesIndex].Kind != ChartSeriesKind.Bar && chart.Series[seriesIndex].Kind != ChartSeriesKind.RadialBar
@@ -19,8 +19,8 @@ internal sealed partial class ChartStackLayout {
         foreach (var kind in new[] { ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea }) {
             var active = new List<CoordinateGroup>(); var ordinal = 0;
             var observations = Enumerable.Range(0, chart.Series.Count).Where(index => chart.Series[index].Kind == kind)
-                .SelectMany(series => Enumerable.Range(0, chart.Series[series].Points.Count)
-                    .Select(point => (Series: series, Point: point, Coordinate: chart.Series[series].Points[point].X)))
+                .SelectMany(series => Enumerable.Range(0, chart.Series[series].RenderPoints.Count)
+                    .Select(point => (Series: series, Point: point, Coordinate: chart.Series[series].RenderPoints[point].X)))
                 .OrderBy(point => point.Coordinate).ThenBy(point => point.Series).ThenBy(point => point.Point);
             foreach (var observation in observations) {
                 active.RemoveAll(group => !ChartMath.SameCoordinate(group.Last, observation.Coordinate));

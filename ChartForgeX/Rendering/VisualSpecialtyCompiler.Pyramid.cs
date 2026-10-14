@@ -16,12 +16,12 @@ internal static partial class VisualSpecialtyCompiler {
         var rail = 0d;
         var sideRail = placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right
             || placement is not (ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below) && options.Orientation == ChartOrientation.Vertical;
-        if (show) for (var index = 0; index < series.Points.Count; index++) {
+        if (show) for (var index = 0; index < series.RenderPoints.Count; index++) {
             var measured = builder.MeasureText(PyramidLabel(chart, index), Style(chart, context, index, colors.Foreground));
             rail = Math.Max(rail, (sideRail ? measured.Width : measured.Height) + context.Theme.Spacing);
         }
         if (show && placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center) {
-            var candidate = ChartPyramidLayout.Compute(series.Points, plot, options, 0, placement, context.Theme.Spacing);
+            var candidate = ChartPyramidLayout.Compute(series.RenderPoints, plot, options, 0, placement, context.Theme.Spacing);
             var needsRail = false;
             foreach (var stage in candidate.Stages) {
                 var measured = builder.MeasureText(PyramidLabel(chart, stage.SourceIndex), Style(chart, context, stage.SourceIndex, colors.Foreground));
@@ -29,7 +29,7 @@ internal static partial class VisualSpecialtyCompiler {
             }
             if (!needsRail) rail = 0;
         }
-        var layout = ChartPyramidLayout.Compute(series.Points, plot, options, rail, placement, context.Theme.Spacing);
+        var layout = ChartPyramidLayout.Compute(series.RenderPoints, plot, options, rail, placement, context.Theme.Spacing);
         var encoding = options.ValueEncoding == ChartPyramidValueEncoding.Height ? "height" : "area";
         var collapsed = false;
         using var group = builder.PushGroup("pyramid-chart", "pyramid-chart", new Dictionary<string, string> {
@@ -40,10 +40,10 @@ internal static partial class VisualSpecialtyCompiler {
         });
         foreach (var stage in layout.Stages) {
             var index = stage.SourceIndex; var color = Color(series, index, colors);
-            var belowPrecision = series.Points[index].Y > 0 && !stage.HasGeometry;
+            var belowPrecision = series.RenderPoints[index].Y > 0 && !stage.HasGeometry;
             collapsed |= belowPrecision;
             var metadata = new Dictionary<string, string> {
-                ["data-cfx-zero"] = series.Points[index].Y == 0 ? "true" : "false", ["data-cfx-value-encoding"] = encoding,
+                ["data-cfx-zero"] = series.RenderPoints[index].Y == 0 ? "true" : "false", ["data-cfx-value-encoding"] = encoding,
                 ["data-cfx-geometry-collapsed"] = belowPrecision ? "true" : "false",
                 ["data-cfx-value-fraction-defined"] = layout.Total > 0 ? "true" : "false",
                 ["data-cfx-value-fraction"] = N(stage.ValueFraction), ["data-cfx-length-fraction"] = N(stage.LengthFraction),
@@ -70,7 +70,7 @@ internal static partial class VisualSpecialtyCompiler {
     }
 
     private static string PyramidLabel(Chart chart, int index) => Category(chart, index) + ": "
-        + VisualStateSceneTools.Value(chart, chart.Series[0], index, chart.Series[0].Points[index].Y);
+        + VisualStateSceneTools.Value(chart, chart.Series[0], index, chart.Series[0].RenderPoints[index].Y);
 
     private static void PyramidLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartPyramidStageLayout stage,
         ChartDataLabelPlacement side, ChartDataLabelPlacement placement, ChartColor color, VisualThemeColors colors) {

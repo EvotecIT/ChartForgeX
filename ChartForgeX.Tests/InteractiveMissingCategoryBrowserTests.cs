@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Imputed geometry identifies a category, without inventing an authored observation.</summary>
 public sealed class InteractiveMissingCategoryBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(true, true)]
     public async Task ImputedRadarCategoriesHaveIndependentRegionIdentityAndSynchronizeByCategory(bool compactDark, bool hiddenMarkers) {
@@ -109,15 +109,16 @@ public sealed class InteractiveMissingCategoryBrowserTests {
     private static Chart Create(bool peer, bool dark, bool hiddenMarkers) {
         var observed = new[] { new ChartPoint(1, 3), new ChartPoint(2, 4), new ChartPoint(3, 5), new ChartPoint(4, 4) };
         var target = new[] { new ChartPoint(1, 0), new ChartPoint(4, 8) };
+        var actualSeries = new ChartSeries(new ChartSeriesId("actual-source"), "Actual", ChartSeriesKind.Radar,
+            peer ? observed.Concat(new[] { new ChartPoint(1.5, 6) }) : observed);
+        var targetSeries = new ChartSeries(new ChartSeriesId("target-source"), "Target", ChartSeriesKind.Radar,
+            peer ? target.AsEnumerable().Reverse() : target).ConfigureRadar(options => options.Form = ChartLineAreaForm.Line);
         var chart = Chart.Create().WithSize(620, 430).WithYAxisBounds(0, 10)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle(peer ? "Peer with another category" : "Imputed Radar categories")
             .WithSubtitle("Missing categories retain distinct identities without source observations")
-            .AddRadarArea("Actual", peer ? observed.Concat(new[] { new ChartPoint(1.5, 6) }) : observed)
-            .AddRadarLine("Target", peer ? target.AsEnumerable().Reverse() : target);
-        chart.Series[0].WithInteractionKey("actual-source");
-        chart.Series[1].WithInteractionKey("target-source");
-        if (hiddenMarkers) chart.Series[1].ConfigureMarkers(markers => markers.Enabled = false);
+            .AddSeries(actualSeries).AddSeries(targetSeries);
+        if (hiddenMarkers) targetSeries.ConfigureMarkers(markers => markers.Enabled = false);
         return chart;
     }
 

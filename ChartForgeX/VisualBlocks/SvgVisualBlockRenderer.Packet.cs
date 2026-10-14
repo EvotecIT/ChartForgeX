@@ -9,7 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgVisualBlockRenderer {
     private static void RenderPacketLayout(SvgMarkupWriter writer, PacketLayoutBlock packet) {
         var options = packet.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, packet, ref y, content.X, content.Width);
@@ -45,7 +45,7 @@ public sealed partial class SvgVisualBlockRenderer {
         }
     }
 
-    private static void WritePacketBitLabels(SvgMarkupWriter writer, PacketLayoutBlock packet, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartForgeX.Themes.ChartTheme theme, double fontSize) {
+    private static void WritePacketBitLabels(SvgMarkupWriter writer, PacketLayoutBlock packet, VisualBlockRendering.PacketLayoutSlice slice, double x, double y, double width, ChartForgeX.Themes.ResolvedVisualTheme theme, double fontSize) {
         var inset = VisualBlockRendering.PacketBitInset(width);
         var descending = packet.BitOrder == PacketBitOrder.Descending;
         var start = slice.StartBit.ToString(CultureInfo.InvariantCulture);

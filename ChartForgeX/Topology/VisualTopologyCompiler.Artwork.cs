@@ -27,7 +27,7 @@ internal sealed partial class VisualTopologyCompiler {
                 using (_builder.PushImageResource(href, bounds, artwork.PreserveAspectRatio, imageOpacity, "topology-node-artwork")) {
                     var centerX = (bounds.X + bounds.Width / 2 - _offsetX) / _scale;
                     var centerY = (bounds.Y + bounds.Height / 2 - _offsetY) / _scale;
-                    var color = fallbackColor ?? Highlight(Color(node.Color ?? ResolveNodeIcon(node, _options)?.Color, Status(node.Status)), active);
+                    var color = fallbackColor ?? Highlight(NodeAccent(node), active);
                     BuildGlyph(node, centerX, centerY, color, Math.Min(bounds.Width, bounds.Height) / (26 * _scale),
                         artworkOpacity: imageOpacity, allowArtwork: false);
                 }
@@ -53,7 +53,7 @@ internal sealed partial class VisualTopologyCompiler {
 
     private void ArtworkSelection(TopologyNode node, ChartRect bounds, bool active, bool enabled) {
         if (!enabled || !_options.SelectedNodeIds.Contains(node.Id)) return;
-        var color = Highlight(Color(node.Color ?? ResolveNodeIcon(node, _options)?.Color, Status(node.Status)), active);
+        var color = Highlight(NodeAccent(node), active);
         _builder.Rect(bounds, null, color, 2.8 * _scale, _context.Theme.BarRadius * _scale, "topology-node-artwork-selection",
             paint: new VisualScenePaintBinding(stroke: NodeAccentPaint(node, color, active)));
     }

@@ -99,7 +99,7 @@ public static partial class VisualArtifactInterchangeMapping {
         envelope.Width = artifact.PreserveNaturalSize ? artifact.NaturalSize!.Value.Width : prepared.Viewport.Width;
         envelope.Height = artifact.PreserveNaturalSize ? artifact.NaturalSize!.Value.Height : prepared.Viewport.Height;
         envelope.Presentation = new VisualArtifactInterchangePresentation {
-            Theme = MapTheme(prepared.Theme ?? TopologyTheme.Light()),
+            Theme = MapTheme(prepared.ResolvedTheme),
             Legend = MapLegend(prepared)
         };
         if (prepared.LayoutMode == TopologyLayoutMode.Geographic) {

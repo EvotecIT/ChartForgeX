@@ -45,7 +45,7 @@ public sealed partial class Chart {
 
         Add(name, ChartSeriesKind.Bar, bars, barColor);
         Series[Series.Count - 1].ShowDataLabels = false;
-        Add("Cumulative " + name, ChartSeriesKind.Line, cumulative, cumulativeColor ?? Options.Theme.Warning);
+        Add("Cumulative " + name, ChartSeriesKind.Line, cumulative, cumulativeColor ?? Options.ResolvedTheme.Warning);
         return this;
     }
 

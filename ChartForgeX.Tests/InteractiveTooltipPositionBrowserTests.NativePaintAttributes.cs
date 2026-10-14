@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer, false)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, true)]
     [InlineData(HtmlChartTooltipAnchor.Node, false)]
@@ -18,7 +18,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     public Task NativePaintAttributeOpacityDismissesReadoutAcrossAnchorsAndPinStates(HtmlChartTooltipAnchor anchor, bool pinned) =>
         AssertNativePaintAttributeLifetimeAsync(anchor, pinned, "opacity");
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Node, false, "fill-opacity")]
     [InlineData(HtmlChartTooltipAnchor.Chart, true, "fill")]
     [InlineData(HtmlChartTooltipAnchor.Node, true, "stroke")]

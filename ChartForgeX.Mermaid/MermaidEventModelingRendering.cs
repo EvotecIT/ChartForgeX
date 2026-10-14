@@ -18,8 +18,8 @@ public static class MermaidEventModelingRendering {
         options ??= new MermaidTopologyRenderOptions();
         var chart = TopologyChart.Create()
             .WithId(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-event-modeling" : options.Id!.Trim())
-            .WithTitle(string.IsNullOrWhiteSpace(options.Title) ? "Mermaid Event Modeling" : options.Title!)
-            .WithSubtitle(string.IsNullOrWhiteSpace(options.Subtitle) ? document.Header : options.Subtitle!)
+            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid Event Modeling"))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
 

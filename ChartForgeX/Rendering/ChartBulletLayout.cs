@@ -21,20 +21,20 @@ internal readonly struct ChartBulletLayout {
     internal static ChartBulletLayout Create(Chart chart, ChartRect basePlot) {
         var widestLabel = 0d; var widestValue = 0d; var rows = 0; var labeled = false;
         foreach (var series in chart.Series) {
-            if (series.Kind != ChartSeriesKind.Bullet || series.Points.Count < 2) continue;
+            if (series.Kind != ChartSeriesKind.Bullet || series.RenderPoints.Count < 2) continue;
             rows++;
             if (series.ShowDataLabels == false) continue;
             labeled = true;
             var style = series.PointDataLabelStyles.Count > 0 && series.PointDataLabelStyles[0]?.HasOverrides == true ? series.PointDataLabelStyles[0]!
                 : series.DataLabelStyle.HasOverrides ? series.DataLabelStyle : chart.Options.DataLabelStyle;
             double Width(string text, double size, int weight) {
-                var resolved = ChartLabelScene.ResolveTextStyle(size, style.WithDefaultFontFamily(chart.Options.Theme.FontFamily), weight);
+                var resolved = ChartLabelScene.ResolveTextStyle(size, style.WithDefaultFontFamily(chart.Options.ResolvedTheme.FontFamily), weight);
                 resolved.Font.FilePath = chart.Options.PngFontPath; resolved.Font.CollectionIndex = chart.Options.PngFontCollectionIndex; resolved.Font.FaceName = chart.Options.PngFontFaceName;
                 return ChartLabelScene.MeasureText(style.TransformText(text, System.Globalization.CultureInfo.InvariantCulture), resolved).Width;
             }
-            widestLabel = Math.Max(widestLabel, Width(series.Name, style.FontSize ?? chart.Options.Theme.LegendFontSize, 700));
-            var value = ChartNumericFormatter.FormatValue(chart.Options, series.Points[0].Y);
-            widestValue = Math.Max(widestValue, Width(value, style.FontSize ?? chart.Options.Theme.DataLabelFontSize, 800));
+            widestLabel = Math.Max(widestLabel, Width(series.Name, style.FontSize ?? chart.Options.ResolvedTheme.LegendFontSize, 700));
+            var value = ChartNumericFormatter.FormatValue(chart.Options, series.RenderPoints[0].Y);
+            widestValue = Math.Max(widestValue, Width(value, style.FontSize ?? chart.Options.ResolvedTheme.DataLabelFontSize, 800));
         }
         var labelReserve = !labeled ? 10 : Math.Min(240, Math.Max(128, widestLabel + 34));
         var valueReserve = !labeled ? 12 : Math.Min(142, Math.Max(84, widestValue + 38));

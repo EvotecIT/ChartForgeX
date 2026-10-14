@@ -1,0 +1,32 @@
+/// <summary>Builds stacked request volumes and normalized stepped capacity shares.</summary>
+public static class StackedAreaRecipe {
+    /// <summary>Creates the selected stacked-area example.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant is "options" or "compact-options") {
+            var completed = new ChartSeries(new ChartSeriesId("completed"), "Completed", ChartSeriesKind.StackedArea,
+                new[] { 45d, 70, 80, 55, 90 }.Select((value, point) => new ChartPoint(point + 1, value)))
+                .WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            var remaining = new ChartSeries(new ChartSeriesId("remaining"), "Remaining", ChartSeriesKind.StackedArea,
+                new[] { 55d, 45, 20, 45, 30 }.Select((value, point) => new ChartPoint(point + 1, value)))
+                .WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Share (%)")
+                .AddSeries(completed).AddSeries(remaining);
+            chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent);
+        }
+        else {
+            var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.StackedArea, Observations(variant, 0));
+            var followUps = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.StackedArea, Observations(variant, -10));
+            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(requests).AddSeries(followUps);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static ChartPoint[] Observations(string variant, double offset) =>
+        Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
+            .Select(index => new ChartPoint(index, 20 + offset + index * 7 % 29, variant == "sparse" && index == 6)).ToArray();
+
+    private static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";
+}

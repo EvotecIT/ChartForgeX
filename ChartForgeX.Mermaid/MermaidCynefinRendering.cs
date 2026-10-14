@@ -11,7 +11,7 @@ public static class MermaidCynefinRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
         var chart = TopologyChart.Create().WithId(options.Id ?? "mermaid-cynefin")
-            .WithTitle(options.Title ?? document.Title ?? "Cynefin").WithViewport(options.Width, options.Height, options.Padding);
+            .WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Cynefin")).WithViewport(options.Width, options.Height, options.Padding);
         var domainNames = new[] { "complex", "complicated", "chaotic", "clear", "confusion" };
         var width = Math.Max(960, options.Width);
         var maxItems = 0;

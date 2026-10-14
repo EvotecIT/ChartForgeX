@@ -17,17 +17,18 @@ internal static partial class VisualCartesianCompiler {
             return;
         }
         var stride = ObservationStride(series.Kind);
-        var count = series.Points.Count / stride;
+        var count = series.RenderPoints.Count / stride;
+        var quantitativeOutline = VisualMarkerScene.QuantitativeOutline(series, colors);
         for (var item = 0; item < count; item++) {
             var raw = item * stride;
-            var point = series.Points[raw];
+            var point = series.RenderPoints[raw];
             var x = map.X(point.X); var y = map.Y(point.Y);
             var color = PointColor(series, index, item, colors);
             var sourcePaint = VisualChartPaint.Series(series, color, item);
             if (colorSurface != null) (color, sourcePaint) = colorSurface.Paint(series, index, item, colors);
             var radius = ResolveMarkerRadius(series, context);
             if (series.Kind == ChartSeriesKind.Bubble) {
-                var size = series.Points[raw + 1].Y;
+                var size = series.RenderPoints[raw + 1].Y;
                 radius = VisualMarkerScene.Enabled(series) ? bubbleScale!.Radius(size, plot) : 0;
                 var bounds = Extents(x, y, x, y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, size));
@@ -37,14 +38,15 @@ internal static partial class VisualCartesianCompiler {
                     var outline = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleStrokeOpacity);
                     VisualMarkerScene.Draw(builder, series, item, x, y, radius, fill, fillPaint,
                         "bubble", outline, VisualMarkerScene.FamilyStrokeWidth(series), sourcePaint.WithOpacity(outline, ChartVisualPrimitives.BubbleStrokeOpacity),
-                        ObservationPattern(series, item), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "bubble-pattern");
+                        ObservationPattern(series, item), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "bubble-pattern",
+                        quantitativeOutline: quantitativeOutline);
                 }
                 var actualFill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, item, fill, fillPaint)
                     : ((ChartColor Color, SvgPaint Paint)?)null;
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y - radius), bounds, size, label, labels, obstacles,
                     markFill: actualFill?.Color, markFillPaint: actualFill?.Paint);
             } else if (series.Kind == ChartSeriesKind.ErrorBar) {
-                var lower = series.Points[raw + 1].Y; var upper = series.Points[raw + 2].Y;
+                var lower = series.RenderPoints[raw + 1].Y; var upper = series.RenderPoints[raw + 2].Y;
                 var lowerY = map.Y(lower); var upperY = map.Y(upper);
                 var cap = Math.Max(9, Math.Min(24, plot.Width / Math.Max(1, count * 8)));
                 var extent = Math.Max(radius, VisualMarkerScene.Extent(series, radius));
@@ -62,7 +64,7 @@ internal static partial class VisualCartesianCompiler {
                 }
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, y), bounds, point.Y, label, labels, obstacles);
             } else if (series.Kind == ChartSeriesKind.Dumbbell) {
-                var end = series.Points[raw + 1].Y; var endY = map.Y(end);
+                var end = series.RenderPoints[raw + 1].Y; var endY = map.Y(end);
                 var bounds = Extents(x, y, x, endY, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
                 var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y) + "–" + Value(chart, end));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("start", point.Y), ("end", end), ("delta", end - point.Y))) {
@@ -95,8 +97,8 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawEndpointLine(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
         var series = chart.Series[index];
-        if (series.Points.Count < 2) return;
-        var first = series.Points[0]; var last = series.Points[series.Points.Count - 1];
+        if (series.RenderPoints.Count < 2) return;
+        var first = series.RenderPoints[0]; var last = series.RenderPoints[series.RenderPoints.Count - 1];
         var points = new[] { new ChartPoint(map.X(first.X), map.Y(first.Y)), new ChartPoint(map.X(last.X), map.Y(last.Y)) };
         var path = ChartPathBuilder.FromPoints(points, ChartInterpolation.Linear);
         var trend = series.Kind == ChartSeriesKind.TrendLine;
@@ -113,7 +115,7 @@ internal static partial class VisualCartesianCompiler {
         obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(new[] { points.ToList() }, false, SeriesStroke(series, context), plot)));
         var radius = ResolveMarkerRadius(series, context);
         for (var endpoint = 0; endpoint < 2; endpoint++) {
-            var raw = endpoint == 0 ? 0 : series.Points.Count - 1; var source = series.Points[raw]; var point = points[endpoint];
+            var raw = endpoint == 0 ? 0 : series.RenderPoints.Count - 1; var source = series.RenderPoints[raw]; var point = points[endpoint];
             var bounds = Extents(point.X, point.Y, point.X, point.Y, trend ? 0 : Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
             var label = ResolveObservationLabel(chart, context, series, endpoint, colors, () => Value(chart, source.Y));
             using (ObservationGroup(builder, series, index, endpoint, raw, 1, bounds, label, ("x", source.X), ("value", source.Y))) {

@@ -14,8 +14,8 @@ internal static partial class VisualCartesianCompiler {
         var series = chart.Series[index];
         var layout = ResolveHorizontalBarLayout(chart, context, plot, map, stacks, index);
         var height = layout.Height; var offset = layout.Offset;
-        for (var item = 0; item < series.Points.Count; item++) {
-            var point = series.Points[item]; var stack = stacks.Point(index, item);
+        for (var item = 0; item < series.RenderPoints.Count; item++) {
+            var point = series.RenderPoints[item]; var stack = stacks.Point(index, item);
             var startX = stack.Base == 0 ? map.XBaseline() : map.X(stack.Base); var endX = map.X(stack.End);
             var y = map.Y(point.X) + offset;
             var direction = MappedBarDirection(chart.Options.XAxis, stack.Value, startX, endX, horizontal: true);
@@ -85,7 +85,7 @@ internal static partial class VisualCartesianCompiler {
         foreach (var category in categories) widest = Math.Max(widest, VisualAxisText.RotatedMetrics(builder.MeasureText(cache.Format(axes.Category, category, null, categories), style), axes.Category.LabelAngle).Width);
         var left = chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .35, widest + spacing) : 0;
         var bottom = chart.Options.XAxis.Visible ? TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache).Height + spacing : 0;
-        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground });
+        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
         var xTitle = XAxisTitle(chart);
         if (chart.Options.XAxis.Visible && xTitle.Length > 0) bottom += builder.MeasureText(xTitle, titleStyle).Height + spacing;
         var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
@@ -118,7 +118,7 @@ internal static partial class VisualCartesianCompiler {
             var title = XAxisTitle(chart);
             var available = Math.Max(0, viewport.Bottom - plot.Bottom - spacing);
             var titleHeight = title.Length == 0 ? 0 : builder.MeasureText(title,
-                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground })).Height + spacing;
+                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground })).Height + spacing;
             titleHeight = FitAxisTitleReservation(tickHeight, titleHeight, available);
             var bounds = new ChartRect(plot.Left, plot.Bottom + spacing, plot.Width, Math.Max(0, Math.Min(tickHeight, available - titleHeight)));
             DrawAxisLabels(builder, chart.Options, axes.Value, xTicks, map.X, true, false, bounds, style, spacing, chart.Options.ValueFormatter, cache);

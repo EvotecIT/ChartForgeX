@@ -23,9 +23,9 @@ public sealed class VisualThemeJsonTests {
             scalarValueSize: 41.25, centerValueSize: 23.75);
         var original = new VisualTheme(light, dark, typography, 13.5, 2.75, 4.25, 0.375, 5.5, 0.5, 1.25, cardRadius: 17,
             cardShadowOpacity: .22, cardShadowColor: ChartColor.FromHex("#7C3AED80"), gaugeStrokeWidth: 15.75, gaugeBandWidth: 3.25);
-        string json = original.ToThemeJson();
-        var imported = VisualTheme.FromThemeJson(json);
-        Assert.Equal(json, imported.ToThemeJson());
+        string json = original.ToJson();
+        var imported = VisualTheme.FromJson(json);
+        Assert.Equal(json, imported.ToJson());
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var expected = original.Resolve(mode);
             var actual = imported.Resolve(mode);
@@ -81,16 +81,16 @@ public sealed class VisualThemeJsonTests {
             spacing: 15, seriesStrokeWidth: 2.75, markerRadius: 4, areaOpacity: .25, barRadius: 5,
             gridStrokeWidth: .75, axisStrokeWidth: 1.5, cardRadius: 11, cardShadowOpacity: .3,
             cardShadowColor: ChartColor.FromHex("#23456789"), gaugeStrokeWidth: 18, gaugeBandWidth: 6);
-        var sourceJson = original.ToThemeJson();
+        var sourceJson = original.ToJson();
         var replacement = new VisualTypography("Compact family", 19, 14, 15, 16, 17, 32, 21);
 
         var changed = original.WithTypography(replacement);
         var expected = JsonNode.Parse(sourceJson)!;
-        expected["typography"] = JsonNode.Parse(new VisualTheme(light, dark, replacement).ToThemeJson())!["typography"]!.DeepClone();
+        expected["typography"] = JsonNode.Parse(new VisualTheme(light, dark, replacement).ToJson())!["typography"]!.DeepClone();
 
         Assert.NotSame(original, changed);
-        Assert.True(JsonNode.DeepEquals(expected, JsonNode.Parse(changed.ToThemeJson())));
-        Assert.Equal(sourceJson, original.ToThemeJson());
+        Assert.True(JsonNode.DeepEquals(expected, JsonNode.Parse(changed.ToJson())));
+        Assert.Equal(sourceJson, original.ToJson());
         Assert.Throws<ArgumentNullException>(() => original.WithTypography(null!));
     }
 
@@ -99,13 +99,13 @@ public sealed class VisualThemeJsonTests {
         var original = new VisualTheme(VisualDesignTokens.GraphiteLight(), VisualDesignTokens.GraphiteDark(),
             new VisualTypography("Older theme", 28, 15, 14, 16, 13, scalarValueSize: 48, centerValueSize: 30),
             gaugeStrokeWidth: 18, gaugeBandWidth: 6);
-        var document = JsonNode.Parse(original.ToThemeJson())!;
+        var document = JsonNode.Parse(original.ToJson())!;
         document["typography"]!.AsObject().Remove("scalarValueSize");
         document["typography"]!.AsObject().Remove("centerValueSize");
         document["geometry"]!.AsObject().Remove("gaugeStrokeWidth");
         document["geometry"]!.AsObject().Remove("gaugeBandWidth");
 
-        var imported = VisualTheme.FromThemeJson(document.ToJsonString());
+        var imported = VisualTheme.FromJson(document.ToJsonString());
         Assert.Equal("Older theme", imported.Typography.Family);
         Assert.Equal(new[] { 28d, 15, 14, 16, 13 }, new[] { imported.Typography.TitleSize,
             imported.Typography.SubtitleSize, imported.Typography.AxisSize,
@@ -119,15 +119,15 @@ public sealed class VisualThemeJsonTests {
 
     [Fact]
     public void CanonicalPaletteImportRemainsSeparateFromVersionedThemeImport() {
-        var document = JsonNode.Parse(VisualTheme.Graphite().ToThemeJson())!;
+        var document = JsonNode.Parse(VisualTheme.Graphite().ToJson())!;
         document.AsObject().Remove("schemaVersion");
         document.AsObject().Remove("typography");
         document.AsObject().Remove("geometry");
         string palette = document.ToJsonString();
-        var imported = VisualTheme.FromJson(palette, new VisualTypography(titleSize: 30));
+        var imported = VisualTheme.FromPaletteJson(palette, new VisualTypography(titleSize: 30));
         Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Palette, imported.Resolve(VisualThemeMode.Dark).Palette);
         Assert.Equal(30, imported.Typography.TitleSize);
-        Assert.Throws<ArgumentException>(() => VisualTheme.FromThemeJson(palette));
+        Assert.Throws<ArgumentException>(() => VisualTheme.FromJson(palette));
     }
 
     [Fact]
@@ -135,10 +135,10 @@ public sealed class VisualThemeJsonTests {
         var light = new VisualDesignTokens { Muted = null, Grid = null, Axis = null,
             Neutral = null, Neutral2 = null, Neutral3 = null };
         var original = new VisualTheme(light, light);
-        var imported = VisualTheme.FromThemeJson(original.ToThemeJson());
+        var imported = VisualTheme.FromJson(original.ToJson());
         Assert.Empty(imported.Resolve(VisualThemeMode.Light).SequentialRamp);
         Assert.Null(imported.Resolve(VisualThemeMode.Dark).DivergingRamp);
-        Assert.Equal(original.ToThemeJson(), imported.ToThemeJson());
+        Assert.Equal(original.ToJson(), imported.ToJson());
         var colors = imported.Resolve(VisualThemeMode.Light);
         Assert.Equal(colors.Surface, colors.Neutral);
         Assert.Equal(colors.Border, colors.Neutral2);
@@ -150,9 +150,9 @@ public sealed class VisualThemeJsonTests {
     [InlineData(2)]
     [InlineData(1.5)]
     public void UnsupportedSchemaVersionsCannotSilentlyDropThemeSettings(double version) {
-        var document = JsonNode.Parse(VisualTheme.Graphite().ToThemeJson())!;
+        var document = JsonNode.Parse(VisualTheme.Graphite().ToJson())!;
         document["schemaVersion"] = version;
-        Assert.ThrowsAny<ArgumentException>(() => VisualTheme.FromThemeJson(document.ToJsonString()));
+        Assert.ThrowsAny<ArgumentException>(() => VisualTheme.FromJson(document.ToJsonString()));
     }
 
     [Theory]
@@ -161,40 +161,41 @@ public sealed class VisualThemeJsonTests {
     [InlineData("spacing", -1)]
     [InlineData("seriesStrokeWidth", -1)]
     [InlineData("cardRadius", -1)]
+    [InlineData("plotRadius", -1)]
     [InlineData("gaugeStrokeWidth", -1)]
     [InlineData("gaugeBandWidth", -1)]
     public void InvalidGeometryIsRejectedAtTheThemeBoundary(string property, double value) {
-        var document = JsonNode.Parse(VisualTheme.Graphite().ToThemeJson())!;
+        var document = JsonNode.Parse(VisualTheme.Graphite().ToJson())!;
         document["geometry"]![property] = value;
-        Assert.ThrowsAny<ArgumentException>(() => VisualTheme.FromThemeJson(document.ToJsonString()));
+        Assert.ThrowsAny<ArgumentException>(() => VisualTheme.FromJson(document.ToJsonString()));
     }
 
     [Theory]
     [InlineData("scalarValueSize")]
     [InlineData("centerValueSize")]
     public void InvalidSpecializedValueSizesAreRejectedInsteadOfReplacingAuthoredSettings(string property) {
-        var document = JsonNode.Parse(VisualTheme.Graphite().ToThemeJson())!;
+        var document = JsonNode.Parse(VisualTheme.Graphite().ToJson())!;
         document["typography"]![property] = 0;
-        Assert.ThrowsAny<ArgumentException>(() => VisualTheme.FromThemeJson(document.ToJsonString()));
+        Assert.ThrowsAny<ArgumentException>(() => VisualTheme.FromJson(document.ToJsonString()));
     }
 
     [Fact]
     public void MalformedOrUnboundedThemeDocumentsAreRejectedBeforeProjection() {
-        string json = VisualTheme.Graphite().ToThemeJson();
-        Assert.Throws<ArgumentException>(() => VisualTheme.FromThemeJson(json.Replace("\"schemaVersion\":1", "\"schemaVersion\":1,\"schemaVersion\":1", StringComparison.Ordinal)));
+        string json = VisualTheme.Graphite().ToJson();
+        Assert.Throws<ArgumentException>(() => VisualTheme.FromJson(json.Replace("\"schemaVersion\":1", "\"schemaVersion\":1,\"schemaVersion\":1", StringComparison.Ordinal)));
         var document = JsonNode.Parse(json)!;
         document["typography"]!["titleSize"] = 0;
-        Assert.ThrowsAny<ArgumentException>(() => VisualTheme.FromThemeJson(document.ToJsonString()));
+        Assert.ThrowsAny<ArgumentException>(() => VisualTheme.FromJson(document.ToJsonString()));
         document = JsonNode.Parse(json)!;
         document["geometry"]!.AsObject().Remove("markerRadius");
-        Assert.Throws<ArgumentException>(() => VisualTheme.FromThemeJson(document.ToJsonString()));
+        Assert.Throws<ArgumentException>(() => VisualTheme.FromJson(document.ToJsonString()));
         document = JsonNode.Parse(json)!;
         document["light"]!["roles"]!["positive"] = "rgba(1,2,3,0.4)";
-        Assert.Throws<ArgumentException>(() => VisualTheme.FromThemeJson(document.ToJsonString()));
-        Assert.Throws<ArgumentException>(() => VisualTheme.FromThemeJson(new string(' ', 1024 * 1024 + 1)));
-        Assert.Throws<ArgumentException>(() => VisualTheme.FromThemeJson("{\"ignored\":" + new string('[', 33) + "0" + new string(']', 33) + "}"));
+        Assert.Throws<ArgumentException>(() => VisualTheme.FromJson(document.ToJsonString()));
+        Assert.Throws<ArgumentException>(() => VisualTheme.FromJson(new string(' ', 1024 * 1024 + 1)));
+        Assert.Throws<ArgumentException>(() => VisualTheme.FromJson("{\"ignored\":" + new string('[', 33) + "0" + new string(']', 33) + "}"));
         var colors = Enumerable.Repeat(ChartColor.FromHex("#0000FF"), 257).ToArray();
-        Assert.Throws<ArgumentException>(() => new VisualTheme(new VisualDesignTokens { Palette = colors }, new VisualDesignTokens()).ToThemeJson());
+        Assert.Throws<ArgumentException>(() => new VisualTheme(new VisualDesignTokens { Palette = colors }, new VisualDesignTokens()).ToJson());
     }
 
     private static VisualTokenColor[] StatusPairs(VisualStatusTokens status) =>

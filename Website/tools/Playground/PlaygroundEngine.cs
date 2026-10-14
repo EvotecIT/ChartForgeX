@@ -200,10 +200,10 @@ public static class PlaygroundEngine {
     private static string? RenderThemed(VisualArtifact artifact, PageTheme theme, string scope) {
         switch (artifact.Model) {
             case Chart chart:
-                chart.WithDesignTokens(theme.Tokens);
+                chart.WithThemeMode(theme.Mode);
                 return artifact.ToSvg(null, scope);
             case TopologyChart topology:
-                topology.WithDesignTokens(theme.Tokens);
+                topology.WithThemeMode(theme.Mode);
                 return artifact.ToSvg(null, scope);
             case SequenceArtifact sequence:
                 sequence.ThemeMode = theme.Mode;
@@ -215,10 +215,10 @@ public static class PlaygroundEngine {
                 return flow.Prepare(context).ToSvg(new VisualSvgOptions(scope));
             case TableArtifact table:
                 var preview = table.ToPreviewBlock();
-                theme.Tokens.ApplyTo(preview.Options.Theme);
+                preview.Options.ThemeMode = theme.Mode;
                 return preview.RenderSvg(scope);
             case IVisualBlock block when artifact.RenderSource == null:
-                theme.Tokens.ApplyTo(block.Options.Theme);
+                block.Options.ThemeMode = theme.Mode;
                 return artifact.ToSvg(null, scope);
             default:
                 return null;
@@ -276,11 +276,9 @@ public static class PlaygroundEngine {
     private sealed class PageTheme {
         public PageTheme(bool dark) {
             Mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
-            Tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
         }
 
         public VisualThemeMode Mode { get; }
-        public VisualDesignTokens Tokens { get; }
     }
 
     private sealed class RenderOutcome {

@@ -18,7 +18,7 @@ public static class MermaidRadarRendering {
         options ??= new MermaidRadarRenderOptions();
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width ?? document.Configuration.Radar?.Width ?? 760, options.Height ?? document.Configuration.Radar?.Height ?? 620)
             .WithLegend(document.ShowLegend)
             .WithXLabels(AxisLabels(document))
@@ -69,14 +69,7 @@ public static class MermaidRadarRendering {
         document.ToChart(options).ToPng();
 
     private static string ResolveTitle(MermaidRadarDocument document, MermaidRadarRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid radar";
-    }
-
-    private static string ResolveSubtitle(MermaidRadarDocument document, MermaidRadarRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid radar");
     }
 
     private static string[] AxisLabels(MermaidRadarDocument document) {

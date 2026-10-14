@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class CartesianPlotRegionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 740)]
     [InlineData(true, 390)]
     public async Task ScenarioElementChildrenRevealWithoutBecomingIndependentInteractiveMarks(bool dark, int width) {
@@ -47,7 +47,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 740)]
     [InlineData(true, 390)]
     public async Task ScenarioExplicitIdsAndRolesKeepPassiveGroupsAndCaptionsOutOfEmphasisAndReveals(bool dark, int width) {
@@ -78,7 +78,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
 
     private static string ScenarioFixture(bool dark, int width) {
         var chart = PassiveChart().WithSize(width < 500 ? 350 : 600, 360).WithLegend(true)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Features = ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.FocusTrail;
             options.Interaction.AddScenario("element-route", "Element route", scenario => scenario

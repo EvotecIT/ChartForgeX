@@ -224,15 +224,14 @@ public sealed class PyramidGeometryTests {
         }
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ReversedPyramidUsesAuthoredSourceIdentityForRealKeyboardSelection(bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Pyramid(50, 30, 20, 0).WithSize(596, 338).WithDataLabels()
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .ConfigurePyramid(options => { options.Orientation = ChartOrientation.Horizontal; options.Reversed = true; });
-        chart.Series[0].WithInteractionKey("allocation");
         await using var session = await InteractiveChartBrowser.OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         var stage = page.Locator("g[data-cfx-role='pyramid-stage'][data-cfx-point='1']");
@@ -253,7 +252,7 @@ public sealed class PyramidGeometryTests {
     }
 
     private static Chart Pyramid(params double[] values) {
-        var chart = Chart.Create().WithXLabels(values.Select((_, index) => "Stage " + index).ToArray()).AddPyramid("Allocation", Points(values));
+        var chart = Chart.Create().WithXLabels(values.Select((_, index) => "Stage " + index).ToArray()).AddSeries(new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid, Points(values)));
         var colors = new[] { "#2468AC", "#BA7542", "#34957A", "#8762A3", "#7297AA" };
         for (var index = 0; index < values.Length; index++) chart.Series[0].WithPointColor(index, colors[index % colors.Length]);
         return chart;

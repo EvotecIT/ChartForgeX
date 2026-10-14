@@ -21,7 +21,7 @@ public static class MermaidSequenceRendering {
         var artifactId = string.IsNullOrWhiteSpace(options.Id) ? "mermaid-sequence" : options.Id!.Trim();
         var sequence = SequenceArtifact.Create(artifactId)
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height);
         sequence.Padding = options.Padding;
         sequence.Metadata["mermaid.kind"] = document.Kind.ToString();
@@ -164,30 +164,8 @@ public static class MermaidSequenceRendering {
         return null;
     }
 
-    private static string ResolveTitle(MermaidSequenceDocument document, MermaidSequenceRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        var frontMatterTitle = FindFrontMatterValue(document.FrontMatter, "title");
-        return string.IsNullOrWhiteSpace(frontMatterTitle) ? "Mermaid sequence" : frontMatterTitle!;
-    }
-
-    private static string ResolveSubtitle(MermaidSequenceDocument document, MermaidSequenceRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
-    }
-
-    private static string? FindFrontMatterValue(string? frontMatter, string key) {
-        if (string.IsNullOrWhiteSpace(frontMatter)) return null;
-        var lines = frontMatter!.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
-        var prefix = key + ":";
-        foreach (var line in lines) {
-            var trimmed = line.Trim();
-            if (!trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
-            var value = trimmed.Substring(prefix.Length).Trim();
-            return value.Trim('"', '\'');
-        }
-
-        return null;
-    }
+    private static string ResolveTitle(MermaidSequenceDocument document, MermaidSequenceRenderOptions options) =>
+        MermaidHeading.Title(document, options.Title, null, "Mermaid sequence");
 
     private static SequenceArtifactMessageLineStyle ToLineStyle(string messageOperator) =>
         messageOperator.StartsWith("--", StringComparison.Ordinal) ? SequenceArtifactMessageLineStyle.Dashed : SequenceArtifactMessageLineStyle.Solid;

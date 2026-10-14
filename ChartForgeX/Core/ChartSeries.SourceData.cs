@@ -24,9 +24,9 @@ public sealed partial class ChartSeries {
 
     /// <summary>Gets the raw box plot's immutable sample values in original input order; empty for authored summaries or other series.</summary>
     /// <remarks>
-    /// The collection retains unsorted input values rather than the five-number summary in <see cref="Points"/>.
-    /// Input and summary edits do not rewrite this ingestion snapshot. Preparation captures summary mark facts;
-    /// callers retaining original samples use this typed snapshot rather than semantic region labels.
+    /// The collection retains unsorted input values rather than the five-number summary in <see cref="BoxPlots"/>.
+    /// Updating or replacing a summary clears this provenance; the supplied summary becomes the authored observation.
+    /// Preparation captures detached summary mark facts and the sample count; raw samples remain separately inspectable here.
     /// </remarks>
     public IReadOnlyList<double> BoxPlotSourceSamples { get; private set; } = Array.Empty<double>();
 

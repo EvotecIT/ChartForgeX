@@ -6,13 +6,13 @@ Install `ChartForgeX.Visuals` for the canvas API. Add `ChartForgeX.Stories` when
 
 Use it when the output needs explicit placement, layered backgrounds, side rails, central hero typography, badges, or host-provided image slots. `VisualGrid` remains the right surface for rows and columns of charts or visual blocks.
 
-Omit the color in `AddText(x, y, width, text, fontSize)` or the five-argument `VisualCanvasTextLayer` constructor to follow the canvas primary foreground (`VisualCanvasTheme.HeroTitleColor`). Shared design tokens map that role to their foreground, so existing uncolored layers follow a later light/dark theme change in SVG, PNG and HTML. The existing color-taking overloads and subsequent `Color` assignments remain explicit, including white, transparent and custom colors.
+Omit the color in `AddText(x, y, width, text, fontSize)` or the five-argument `VisualCanvasTextLayer` constructor to follow `canvas.Theme.Resolve(canvas.ThemeMode).Foreground`. Existing uncolored layers follow a later theme or light/dark mode change in SVG, PNG and HTML. The color-taking overloads and subsequent `Color` assignments remain explicit, including white, transparent and custom colors.
 
-The first canvas primitives are intentionally generic:
+Canvas layers support:
 
 - vertical background color treatment
 - optional technology horizon backdrop
-- reusable `VisualCanvasTheme` colors for accents, tile text, glass fills, badge fills, feature strips, placeholders, and backdrop highlights
+- shared `VisualTheme` colors and fonts, with `VisualCanvasStyleOptions` for glass fills, badge fills, placeholders and backdrop details
 - absolute text layers
 - multi-color hero title layers
 - key/value text blocks with measured label columns, wrapped value text, per-row color overrides, and anchor-based placement
@@ -32,13 +32,20 @@ using ChartForgeX;
 using ChartForgeX.Composition;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using ChartForgeX.Raster;
 using System.IO;
 using ChartForgeX.VisualBlocks;
 
+var theme = VisualTheme.Graphite().Configure(builder => {
+    builder.Dark.Accent = ChartColor.FromHex("#2F80FF");
+    builder.Dark.Foreground = ChartColor.FromHex("#F8FAFC");
+});
+
 var cpuChart = Chart.Create()
     .WithSize(220, 120)
+    .WithTheme(theme, VisualThemeMode.Dark)
     .WithTransparentBackground()
     .WithHeader(false)
     .WithCard(false)
@@ -52,6 +59,7 @@ var cpuChart = Chart.Create()
 
 var ramCard = MetricCard.Create()
     .WithSize(180, 104)
+    .WithTheme(theme, VisualThemeMode.Dark)
     .WithTransparentBackground()
     .WithCard(false)
     .WithMetric("RAM", "41%")
@@ -59,11 +67,7 @@ var ramCard = MetricCard.Create()
 
 var canvas = VisualCanvas.CreateSocialPreview()
     .WithTitle("PowerBGInfo social preview")
-    .WithTheme(new VisualCanvasTheme {
-        Accent = ChartColor.FromHex("#2F80FF"),
-        HeroTitleAccentColor = ChartColor.FromHex("#2F80FF"),
-        TileValueColor = ChartColor.FromHex("#F8FAFC")
-    })
+    .WithTheme(theme, VisualThemeMode.Dark)
     .WithBackground(ChartColor.FromHex("#020713"), ChartColor.FromHex("#071A35"))
     .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon)
     .AddInfoTile(58, 92, 250, 82, "PC", "HOSTNAME", "DEV-Workstation", accent: ChartColor.FromHex("#2F80FF"), iconKind: VisualCanvasInfoTileIconKind.Computer)
@@ -109,7 +113,16 @@ canvas
 
 `Contain`, `Cover`, and `Stretch` use the same design-space transform in SVG and PNG. This lets a host reuse one wallpaper, report-cover, or social-preview composition without recalculating every layer position.
 
-The generated example gallery includes a native 1920x1080 endpoint wallpaper and a 1200x630 social preview. Both are rendered as SVG, static HTML, and 2x-density PNG and participate in the shared visual baseline, so layout and renderer parity are checked at the dimensions real hosts consume.
+The generated example gallery includes a native 1920x1080 endpoint wallpaper and a 1200x630 social preview, each as SVG, static HTML and 2x-density PNG. Use these examples to inspect composition at the dimensions your host consumes. SVG display uses the browser's fonts and rasterization; PNG uses ChartForgeX's renderer, so matching geometry does not imply identical pixels.
+
+`VisualCanvas` starts in dark mode. Share one immutable theme with its chart and block layers and pass the mode explicitly, as above. `WithThemeMode(VisualThemeMode.Light)` selects the other palette. Explicit layer colors and `WithBackground` remain authored overrides. To customize canvas chrome without creating another theme type, use local style options:
+
+```csharp
+canvas.ConfigureStyle(style => {
+    style.TileGlassTop = ChartColor.FromHex("#243247");
+    style.ImagePlaceholderStroke = ChartColor.FromHex("#60A5FA");
+});
+```
 
 To start from an existing background image without `System.Drawing` or platform-specific graphics APIs, decode it through the reusable raster input path and place it as the first canvas layer:
 
@@ -251,9 +264,9 @@ The canonical font reader applies `avar` version 1 mapping, TrueType `gvar` cont
 
 SVG `<text>` rasterized by `SvgRasterizer` picks its face the same way from its computed `font-family` stack, `font-weight` (numbers from 1 to 1000, `normal`, `bold`, and `bolder`/`lighter` relative to the parent), and `font-style` (`italic` or `oblique`), whether they come from attributes, `style="..."`, a stylesheet, an ancestor `<g>`, or a `<tspan>`. Text without a `font-family` uses the sans-serif fallback. Each run is placed so its face's own baseline sits on the `y` coordinate, as a browser places it.
 
-`VisualCanvas` defaults to `VisualCanvasTheme.TextMeasurementMode = TextMeasurementMode.PortableEstimate`. Its fitting uses portable estimates or explicitly registered faces, independently of installed fonts. Set `TextMeasurementMode.InstalledFonts` to opt into host-dependent metrics. Register the application's font files when layout must remain identical across generating hosts; unresolved fonts retain the portable fallback.
+`VisualCanvas` defaults to `canvas.Style.TextMeasurementMode = TextMeasurementMode.PortableEstimate`. Its fitting uses portable estimates or explicitly registered faces, independently of installed fonts. Call `canvas.ConfigureStyle(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts)` to opt into host-dependent metrics. Register the application's font files when layout must remain identical across generating hosts; unresolved fonts retain the portable fallback.
 
-`VisualCanvasTheme.FontFamily` (set directly or through `VisualDesignTokens`), a key/value block's `FontFamilyName`, and `MonospaceFontFamily` for hero badge symbols are resolved at the weights the SVG output writes: 500 for plain text and values, 800 for emphasized text, tile icons, and feature icons, 850 for hero titles and badges, and 700, 650, and 500 for tile labels, values, and details. PNG draws the matching registered or installed face. Only a family without a bold face is emboldened. Call `block.MeasureHeight(canvas.Theme)` to measure a key/value block with the canvas's measurement mode.
+`canvas.Theme.Typography.Family`, a key/value block's `FontFamilyName`, and `canvas.Theme.Typography.MonospaceFamily` for hero badge symbols are resolved at the weights the SVG output writes: 500 for plain text and values, 800 for emphasized text, tile icons, and feature icons, 850 for hero titles and badges, and 700, 650, and 500 for tile labels, values, and details. Set shared fonts with `theme.WithFontFamily(...)` or a new `VisualTypography` in `theme.Configure(...)`, then assign the returned snapshot. PNG draws the matching registered or installed face. Only a family without a bold face is emboldened. Call `block.MeasureHeight(canvas)` to measure a key/value block with the canvas's theme, mode and measurement settings.
 
 #### Characters the face does not have, right-to-left text, and Arabic
 
@@ -292,7 +305,7 @@ Text drawn at 12 output pixels or smaller is lightly hinted, independently of th
 
 On a host with no fonts at all, such as a bare `mcr.microsoft.com/dotnet/aspnet` container, nothing throws: text is drawn with a small built-in bitmap font. That is legible but not presentable, so containers should either install a font package or ship `.ttf` files with the application and register them.
 
-`FontRegistry` registers font faces once, process-wide and thread-safely, and every raster path then finds them by family name: chart, grid, topology, and visual block themes, VisualCanvas themes and design tokens, `FontSpec.FromFamily`, and SVG `font-family`:
+`FontRegistry` registers font faces once, process-wide and thread-safely, and every raster path then finds them by family name: the shared `VisualTheme.Typography` used by charts, grids, topology, visual blocks and canvases, `FontSpec.FromFamily`, and SVG `font-family`:
 
 ```csharp
 FontRegistry.Register("Inter", Path.Combine(fonts, "Inter-Regular.ttf"));
@@ -300,7 +313,8 @@ FontRegistry.Register("Inter", Path.Combine(fonts, "Inter-Bold.ttf"), weight: 70
 FontRegistry.RegisterDirectory(Path.Combine(fonts, "brand")); // each file under its own family, weight, and slant
 FontRegistry.Register("sans-serif", Path.Combine(fonts, "Inter-Regular.ttf")); // fallback for stacks ending in sans-serif, and for hosts with no fonts
 
-var chart = Chart.Create().WithTheme(ChartTheme.ReportDark().WithFontFamily("Inter, sans-serif"));
+var chart = Chart.Create().WithTheme(
+    VisualTheme.Report().WithFontFamily("Inter, sans-serif"), VisualThemeMode.Dark);
 ```
 
 Hosts without filesystem font assets can register the same faces from bytes or embedded resource streams:

@@ -11,7 +11,7 @@ public sealed partial class Chart {
     /// <param name="color">Optional marker ink.</param>
     /// <returns>The current chart.</returns>
     public Chart AddGanttMarker(string name, DateTime when, DateTime? rangeEnd = null, ChartColor? color = null) {
-        AddGanttRange(name, when.ToOADate(), (rangeEnd ?? when).ToOADate(), 0, -1, false, color, verticalMarker: true);
+        AddGanttRange(name, when.ToOADate(), (rangeEnd ?? when).ToOADate(), 0, null, false, color, verticalMarker: true);
         Options.XAxis.UseTimeScaleByDefault();
         return this;
     }
@@ -23,5 +23,5 @@ public sealed partial class Chart {
     /// <param name="color">Optional marker ink.</param>
     /// <returns>The current chart.</returns>
     public Chart AddGanttMarker(string name, double when, double? rangeEnd = null, ChartColor? color = null) =>
-        AddGanttRange(name, when, rangeEnd ?? when, 0, -1, false, color, verticalMarker: true);
+        AddGanttRange(name, when, rangeEnd ?? when, 0, null, false, color, verticalMarker: true);
 }

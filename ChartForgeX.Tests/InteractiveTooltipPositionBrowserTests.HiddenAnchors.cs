@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "target", false)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "target", true)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "ancestor", false)]
@@ -66,7 +66,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "inner", false)]
     [InlineData(HtmlChartTooltipAnchor.Node, "outer", true)]
     [InlineData(HtmlChartTooltipAnchor.Chart, "inner", false)]
@@ -93,7 +93,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartTooltipAnchor.Node, false)]
     [InlineData(HtmlChartTooltipAnchor.Node, true)]
     [InlineData(HtmlChartTooltipAnchor.Chart, false)]
@@ -101,7 +101,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     public async Task PinnedKeyboardOnlyFactKeepsReadoutAvailabilityWhilePointerMoves(HtmlChartTooltipAnchor anchor, bool precision) {
         if (!Enabled) return;
         var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440).WithHeader(false)
-            .WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false).WithTheme(ChartTheme.GraphiteLight()), false, "Observed",
+            .WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false).WithTheme(VisualTheme.Graphite()), false, "Observed",
             new ChartPoint(1, precision ? 1 : 0), new ChartPoint(2, 100000000));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

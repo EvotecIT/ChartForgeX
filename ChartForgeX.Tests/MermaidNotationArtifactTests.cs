@@ -35,7 +35,7 @@ public sealed class MermaidNotationArtifactTests {
         Assert.Equal(chart.Edges.Count, semantics.Edges.Count);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("classDiagram\ndirection RL\nA --> B", "class-rl", 960, "RL")]
     [InlineData("erDiagram\ndirection TB\nA ||--o{ B : contains", "er-tb", 960, "TB")]
     [InlineData("stateDiagram-v2\ndirection BT\nA --> B", "state-bt", 960, "BT")]

@@ -1,0 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = RadialBarScalesRecipe.Create("dual-axes", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Requests and resolution rate", "Request counts and percentages use independent scales", showLegend: true, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Request counts and resolution rates on independent radial value scales.</summary>
+public static class RadialBarScalesRecipe {
+    /// <summary>Creates count and percentage measures from a rightward start ray.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "dual-axes" or "compact-dual-axes")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialBar, new[] { new ChartPoint(1, 800) });
+        var resolved = new ChartSeries(new ChartSeriesId("resolved"), "Resolved (%)", ChartSeriesKind.RadialBar, new[] { new ChartPoint(1, 85) })
+            .UseSecondaryYAxis();
+        var chart = Chart.Create().WithXLabels("Overall").WithDataLabels(false)
+            .WithRadialGeometry(new ChartRadialGeometryOptions(0, 270, .2, .25, .1)).AddSeries(requests).AddSeries(resolved)
+            .WithYAxisBounds(0, 1000).WithSecondaryYAxisBounds(0, 100)
+            .WithSecondaryYAxis("Resolved (%)", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%");
+        chart.Options.YAxis.TickCount = 5;
+        chart.Options.SecondaryYAxis.TickCount = 5;
+        return chart;
+    }
+}

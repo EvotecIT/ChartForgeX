@@ -15,6 +15,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             var series = chart.Series[index];
             json.Append("{\"name\":").Append(HtmlJsonString.Encode(series.Name))
                 .Append(",\"key\":").Append(HtmlJsonString.Encode(series.InteractionIdentityKey))
+                .Append(",\"local\":").Append(series.Id.IsAutomatic ? "true" : "false")
                 .Append(",\"kind\":").Append(HtmlJsonString.Encode(series.Kind.ToString().ToLowerInvariant()))
                 .Append(",\"state\":").Append(HtmlJsonString.Encode(series.StateRole.ToString().ToLowerInvariant()))
                 .Append(",\"indices\":[");
@@ -56,6 +57,19 @@ public sealed partial class HtmlInteractiveChartRenderer {
             }
             json.Append('}');
         }
-        return json.Append("]}").ToString();
+        json.Append(']');
+        if (prepared.XProjection is ChartXProjection projection) {
+            var plot = projection.PlotBounds;
+            json.Append(",\"xProjection\":{\"fullMinimum\":").Append(projection.FullMinimum.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"fullMaximum\":").Append(projection.FullMaximum.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"minimum\":").Append(projection.Minimum.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"maximum\":").Append(projection.Maximum.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"reversed\":").Append(projection.Reversed ? "true" : "false")
+                .Append(",\"plotBounds\":{\"x\":").Append(plot.X.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"y\":").Append(plot.Y.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"width\":").Append(plot.Width.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"height\":").Append(plot.Height.ToString("R", CultureInfo.InvariantCulture)).Append("}}");
+        }
+        return json.Append('}').ToString();
     }
 }

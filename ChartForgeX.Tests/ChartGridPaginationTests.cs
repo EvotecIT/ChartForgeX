@@ -43,6 +43,7 @@ public sealed class ChartGridPaginationTests {
         var grid = ChartGrid.Create().WithTitle("Fleet").WithSubtitle("Daily")
             .WithColumns(3).WithGap(12).WithPadding(20).WithPngOutputScale(2)
             .WithPanelSize(320, 200).WithPanelFit(VisualPanelFit.Contain)
+            .WithPanelThemes()
             .ConfigureTitleStyle(style => style.WithFontSize(21).WithItalic().WithUnderline(TextDecorationStyle.Double))
             .ConfigureSubtitleStyle(style => style.WithWeight("600").WithSuperscript().WithStrikethrough());
         for (var i = 0; i < 7; i++) grid.Add(Chart.Create().WithSize(320, 200).AddLine("Value", new[] { new ChartPoint(0, i), new ChartPoint(1, i + 1) }), i == 6 ? 2 : 1, i == 6 ? 2 : 1);
@@ -57,6 +58,7 @@ public sealed class ChartGridPaginationTests {
         Assert.Equal(2, last.PngOutputScale);
         Assert.Equal(grid.PanelSize, last.PanelSize);
         Assert.Equal(grid.PanelFit, last.PanelFit);
+        Assert.True(last.UsePanelThemes);
         Assert.Same(grid.Charts[0].Options.Theme, last.Theme);
         Assert.Equal(2, last.PanelSpans[0].ColumnSpan);
         Assert.Equal(2, last.PanelSpans[0].RowSpan);

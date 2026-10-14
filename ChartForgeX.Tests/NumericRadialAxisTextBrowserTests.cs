@@ -15,7 +15,7 @@ public sealed class NumericRadialAxisTextBrowserTests {
     private const string ProofFont = "CFX Radial Axis Carlito";
     private static readonly Lazy<string> ProofFontCss = new(CreateProofFontCss);
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360, false)]
     [InlineData(false, 360, true)]
     [InlineData(false, 800, false)]
@@ -28,7 +28,6 @@ public sealed class NumericRadialAxisTextBrowserTests {
         if (!Enabled) return;
         var chart = NumericRadialAxisTextTests.Configured(bars, width, dark);
         UseProofFonts(chart);
-        chart.Series[0].WithInteractionKey("requests"); chart.Series[1].WithInteractionKey("resolved");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var mark = NumericRadialSeriesTests.Marks(prepared.Scene)[0];
         var angle = mark.Start + mark.Sweep / 2; var radius = (mark.Inner + mark.Outer) / 2;
@@ -74,7 +73,7 @@ public sealed class NumericRadialAxisTextBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task InsufficientSpaceRetainsKeyboardFactsWithoutInventingAPointerSurface() {
         if (!Enabled) return;
         var chart = NumericRadialAxisTextTests.LongTitles(true);

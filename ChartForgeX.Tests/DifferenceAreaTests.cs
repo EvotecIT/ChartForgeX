@@ -21,22 +21,20 @@ public sealed partial class DifferenceAreaTests {
         var facts = Group(prepared, "series-0-point-1");
         Assert.Equal("2", facts["data-cfx-first"]); Assert.Equal("5", facts["data-cfx-second"]);
         Assert.Equal("Actual", facts["data-cfx-label-first"]); Assert.Equal("Forecast", facts["data-cfx-label-second"]);
-        Assert.Equal("2", facts["data-cfx-source-count"]);
-        Assert.Equal("2", facts["data-cfx-source-0-index"]); Assert.Equal("3", facts["data-cfx-source-1-index"]);
+        Assert.Equal("1", facts["data-cfx-source-count"]);
+        Assert.Equal("1", facts["data-cfx-source-point"]);
         Assert.Contains("Actual: 2; Forecast: 5", facts["aria-label"]);
-        Assert.Equal("true", Group(prepared, "series-0-point-2")["data-cfx-source-1-break"]);
+        Assert.Equal("true", Group(prepared, "series-0-point-2")["data-cfx-break-before"]);
         var markers = prepared.Scene.Nodes.OfType<VisualSceneMark>().Where(node => node.Role == "difference-marker").ToArray();
         Assert.Equal(2, markers.Length); Assert.All(markers, marker => Assert.Equal(Red, marker.Fill));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
-        chart.Series[0].Points.Clear();
+        chart.Series[0].ReplaceDifferencePoints(Array.Empty<ChartDifferencePoint>());
         chart.Series[0].DifferenceArea.FirstName = "Changed"; chart.Series[0].DifferenceArea.NegativeFill = Red;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
     [Theory]
-    [InlineData("incomplete")]
-    [InlineData("unequal-x")]
     [InlineData("duplicate-x")]
     [InlineData("backtracking")]
     [InlineData("log-x")]
@@ -47,10 +45,8 @@ public sealed partial class DifferenceAreaTests {
     public void UnsupportedOrAmbiguousMutablePairsFailAtPreparation(string invalid) {
         var chart = Model(new(0, 8, 2), new(1, 2, 5)); var series = chart.Series[0];
         switch (invalid) {
-            case "incomplete": series.Points.RemoveAt(3); break;
-            case "unequal-x": series.Points[1] = new ChartPoint(.1, 2); break;
-            case "duplicate-x": series.Points[2] = new ChartPoint(0, 2); series.Points[3] = new ChartPoint(0, 5); break;
-            case "backtracking": series.Points[2] = new ChartPoint(-1, 2); series.Points[3] = new ChartPoint(-1, 5); break;
+            case "duplicate-x": series.UpdateDifferencePoint(1, new ChartDifferencePoint(0, 2, 5)); break;
+            case "backtracking": series.UpdateDifferencePoint(1, new ChartDifferencePoint(-1, 2, 5)); break;
             case "log-x": chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic; break;
             case "log-y": chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic; break;
             case "secondary-log-y": series.UseSecondaryYAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; break;
@@ -68,8 +64,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Throws<ArgumentException>(() => Chart.Create().AddDifferenceArea("Empty", Array.Empty<ChartDifferencePoint>()));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartRangeBand(0, 8, 2));
         var range = Chart.Create().AddRangeArea("Interval", new[] { new ChartRangeBand(0, 2, 8) });
-        range.Series[0].Points[0] = new ChartPoint(0, 9);
-        Assert.Throws<InvalidOperationException>(() => Prepare(range));
+        Assert.Throws<ArgumentOutOfRangeException>(() => range.Series[0].UpdateRange(0, new ChartRangeBand(0, 9, 8)));
         var line = Chart.Create().AddLine("Line", new[] { new ChartPoint(0, 1) });
         line.Series[0].DifferenceArea.FirstName = "Actual";
         Assert.Throws<InvalidOperationException>(() => Prepare(line));
@@ -99,7 +94,7 @@ public sealed partial class DifferenceAreaTests {
         if (variant.Contains("dated", StringComparison.Ordinal)) {
             Assert.Equal(ChartScaleKind.Time, chart.Options.XAxis.Scale);
             Assert.Equal(ChartAxisSide.Secondary, series.YAxis);
-            Assert.Contains(series.Points, point => point.BreakBefore);
+            Assert.Contains(series.DifferencePoints, point => point.BreakBefore);
         }
     }
 

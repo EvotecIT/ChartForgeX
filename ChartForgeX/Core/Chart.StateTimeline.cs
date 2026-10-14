@@ -42,31 +42,11 @@ public sealed partial class Chart {
     /// <param name="group">Optional group the lane is listed under. Consecutive lanes with the same group share one
     /// header row; a lane without a group after a grouped one is set apart by a small gap. Group names are lane labels and are
     /// hidden with the y-axis.</param>
+    /// <param name="id">Optional stable series identity. When omitted, the chart assigns a local ID.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments, string? summary = null, string? group = null) {
-        if (name == null) throw new ArgumentNullException(nameof(name));
-        if (segments == null) throw new ArgumentNullException(nameof(segments));
-        var ordered = new List<ChartStateTimelineSegment>();
-        foreach (var segment in segments) {
-            if (segment.State == null) throw new ArgumentException("Segments must be created with a state.", nameof(segments));
-            ordered.Add(segment);
-        }
-
-        // Stable order: start, then end, then the caller's order, so overlapping segments draw predictably.
-        ordered = ordered.Select((segment, index) => (Segment: segment, Index: index))
-            .OrderBy(item => item.Segment.Start).ThenBy(item => item.Segment.End).ThenBy(item => item.Index)
-            .Select(item => item.Segment).ToList();
-        var series = new ChartSeries(name, ChartSeriesKind.StateTimeline, ordered.ConvertAll(segment => new ChartPoint(segment.Start, segment.End))) {
-            ShowInLegend = false,
-            LaneSummary = summary,
-            LaneGroup = string.IsNullOrWhiteSpace(group) ? null : group
-        };
-        foreach (var segment in ordered) {
-            series.PointLabels.Add(segment.State);
-            series.StateTimelineDetails.Add(segment.Detail);
-        }
-
-        AppendSeries(series);
+    public Chart AddStateTimelineLane(string name, IEnumerable<ChartStateTimelineSegment> segments, string? summary = null, string? group = null, ChartSeriesId? id = null) {
+        AppendSeries(id.HasValue ? ChartSeries.CreateStateTimelineLane(id.Value, name, segments, summary, group)
+            : ChartSeries.CreateStateTimelineLane(name, segments, summary, group));
         return this;
     }
 }

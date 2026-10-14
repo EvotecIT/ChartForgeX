@@ -40,8 +40,8 @@ internal static class DocVisuals {
         Dictionary<string, object> Example(string slug) => VisualOutput.Reuse((Dictionary<string, object>)examples[slug]);
         var topology = output.Pair("docs/topology", (_, dark) => VisualOutput.Playground("chartforgex", ServiceMap, dark));
         var figures = new SortedDictionary<string, object>(StringComparer.Ordinal) {
-            ["overview"] = output.Pair("docs/overview", (tokens, _) => Overview(tokens).ToSvg("cfx-doc-overview")),
-            ["install"] = output.Pair("docs/install", (tokens, _) => Packages(tokens).ToSvg("cfx-doc-install")),
+            ["overview"] = output.Pair("docs/overview", (mode, _) => Overview(mode).ToSvg("cfx-doc-overview")),
+            ["install"] = output.Pair("docs/install", (mode, _) => Packages(mode).ToSvg("cfx-doc-install")),
             ["topology"] = topology,
             ["hierarchy"] = Example("organization-hierarchy"),
             ["interactivity"] = Example("interactive-topology")
@@ -56,10 +56,10 @@ internal static class DocVisuals {
 
         // One output per row of the surface table, in table order.
         var surfaces = new SortedDictionary<string, object>(StringComparer.Ordinal) {
-            ["chart"] = output.Pair("docs/surface-chart", (tokens, _) => SurfaceChart(tokens).ToSvg("cfx-sf-chart")),
+            ["chart"] = output.Pair("docs/surface-chart", (mode, _) => SurfaceChart(mode).ToSvg("cfx-sf-chart")),
             ["grid"] = Example("report-grid"),
-            ["blocks"] = output.Pair("docs/surface-blocks", (tokens, _) => Blocks(tokens).ToSvg("cfx-sf-blocks")),
-            ["canvas"] = output.Pair("docs/surface-canvas", (tokens, _) => Canvas(tokens).ToSvg("cfx-sf-canvas")),
+            ["blocks"] = output.Pair("docs/surface-blocks", (mode, _) => Blocks(mode).ToSvg("cfx-sf-blocks")),
+            ["canvas"] = output.Pair("docs/surface-canvas", (mode, _) => Canvas(mode).ToSvg("cfx-sf-canvas")),
             ["topology"] = VisualOutput.Reuse(topology),
             ["graph"] = Example("interactive-topology"),
             ["markup"] = output.Pair("docs/surface-markup", (_, dark) => VisualOutput.Fit(MermaidAtlas.Render("surface-markup", """
@@ -78,23 +78,23 @@ internal static class DocVisuals {
 
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
 
-    private static ChartGrid Overview(VisualDesignTokens tokens) {
-        var trend = Chart.Create().WithDesignTokens(tokens).WithTitle("Deployment health").WithSubtitle("Checks per run")
+    private static ChartGrid Overview(VisualThemeMode mode) {
+        var trend = Chart.Create().WithThemeMode(mode).WithTitle("Deployment health").WithSubtitle("Checks per run")
             .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
             .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120))
             .AddSmoothLine("Failed", Points(220, 300, 280, 210, 180));
-        var share = Chart.Create().WithDesignTokens(tokens).WithTitle("Results").WithSubtitle("This week")
+        var share = Chart.Create().WithThemeMode(mode).WithTitle("Results").WithSubtitle("This week")
             .WithXLabels("Passed", "Warnings", "Failed").AddDonut("Checks", Points(1260, 68, 10));
-        var coverage = Chart.Create().WithDesignTokens(tokens).WithTitle("MFA coverage").WithSubtitle("Against a 95% target")
+        var coverage = Chart.Create().WithThemeMode(mode).WithTitle("MFA coverage").WithSubtitle("Against a 95% target")
             .AddGauge("Coverage", 87).ConfigureGauge(options => options.Target = 95);
-        var teams = Chart.Create().WithDesignTokens(tokens).WithTitle("Open findings").WithSubtitle("By team")
+        var teams = Chart.Create().WithThemeMode(mode).WithTitle("Open findings").WithSubtitle("By team")
             .WithXLabels("Identity", "Network", "Endpoints", "Mail", "Data")
             .AddBar("Open", Points(14, 9, 21, 6, 11));
         return ChartGrid.Create().WithColumns(3).WithGap(12).WithPanelSize(320, 240).WithPanelFit(VisualPanelFit.Stretch)
             .Add(trend, 2).Add(share).Add(coverage).Add(teams, 2);
     }
 
-    private static ChartTable Packages(VisualDesignTokens tokens) {
+    private static ChartTable Packages(VisualThemeMode mode) {
         var table = ChartTable.Create()
             .WithTitle("Packages")
             .AddColumn("Package")
@@ -106,31 +106,31 @@ internal static class DocVisuals {
             .AddRow("ChartForgeX.Markup", "Charts and diagrams from Markdown fences", "Optional")
             .AddRow("ChartForgeX.Mermaid", "Native Mermaid diagrams", "Optional")
             .WithSize(760, 300);
-        tokens.ApplyTo(table.Options.Theme);
+        table.Options.ThemeMode = mode;
         return table;
     }
 
-    private static Chart SurfaceChart(VisualDesignTokens tokens) => Chart.Create().WithDesignTokens(tokens)
+    private static Chart SurfaceChart(VisualThemeMode mode) => Chart.Create().WithThemeMode(mode)
         .WithTitle("Orders by region").WithSize(480, 300)
         .WithXLabels("North", "South", "East", "West")
         .AddBar("This year", Points(48, 61, 57, 72))
         .AddBar("Last year", Points(41, 55, 60, 63));
 
-    private static VisualGrid Blocks(VisualDesignTokens tokens) {
+    private static VisualGrid Blocks(VisualThemeMode mode) {
         var cards = new[] {
             MetricCard.Create().WithMetric("CPU load", "38%").WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
             MetricCard.Create().WithMetric("Memory used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
         };
-        foreach (var card in cards) tokens.ApplyTo(card.Options.Theme);
+        foreach (var card in cards) card.Options.ThemeMode = mode;
         return VisualGrid.CreateMetricStrip("Endpoint snapshot", cards, columns: 2, panelWidth: 260, panelHeight: 150);
     }
 
-    private static VisualCanvas Canvas(VisualDesignTokens tokens) {
-        var trend = Chart.Create().WithDesignTokens(tokens).WithSize(420, 220).WithTransparentBackground().WithHeader(false).WithCard(false)
+    private static VisualCanvas Canvas(VisualThemeMode mode) {
+        var trend = Chart.Create().WithThemeMode(mode).WithSize(420, 220).WithTransparentBackground().WithHeader(false).WithCard(false)
             .WithLegend(false).AddSmoothArea("Sign-ins", Points(18, 31, 24, 45, 39, 52, 61));
         return VisualCanvas.CreateSocialPreview()
             .WithTitle("Release notes cover")
-            .WithDesignTokens(tokens)
+            .WithThemeMode(mode)
             .AddText(72, 96, 620, "Release 2.0", 64, emphasized: true)
             .AddText(72, 196, 620, "Charts, topology and Mermaid diagrams, rendered in .NET.", 28)
             .AddChart(640, 300, 500, 260, trend);
@@ -140,23 +140,23 @@ internal static class DocVisuals {
     // The terminal transcript is authored; stories present a session, they never execute it.
     private static string StoryFrame(bool dark, TimeSpan at) {
         const string program = "var chart = Chart.Create()\n    .WithTitle(\"Sign-ins by method\")\n    .AddStackedArea(\"Passkey\", passkey)\n    .AddStackedArea(\"Password\", password);\nchart.SaveSvg(\"sign-ins.svg\");";
+        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
         var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
             .Type(program, TimeSpan.FromSeconds(3))
             .Pause(TimeSpan.FromSeconds(1));
         var terminal = TerminalStory.Create()
             .WithDialect(TerminalDialect.PowerShell)
-            .WithTheme(dark ? TerminalTheme.GraphiteDark() : TerminalTheme.GraphiteLight())
+            .WithThemeMode(mode)
             .WithWorkingDirectory(@"C:\Reports")
             .Command("dotnet run")
             .Output("Wrote sign-ins.svg", TerminalTextTone.Success);
-        var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
-        var chart = Chart.Create().WithDesignTokens(tokens).WithTitle("Sign-ins by method").WithSize(800, 520)
+        var chart = Chart.Create().WithThemeMode(mode).WithTitle("Sign-ins by method").WithSize(800, 520)
             .WithXLabels("W1", "W2", "W3", "W4", "W5", "W6")
             .AddStackedArea("Passkey", Points(800, 1700, 3000, 4700, 6400, 8100))
             .AddStackedArea("Password", Points(5600, 4900, 4100, 3300, 2500, 1800));
 
         var story = VisualStory.Create("From source to chart")
-            .WithTheme(dark ? VisualStoryTheme.GraphiteDark() : VisualStoryTheme.GraphiteLight())
+            .WithThemeMode(mode)
             .WithFormat(VisualStoryFormat.Widescreen);
         story.Scene("write", "Write the chart", 4)
             .Panel("source", new VisualStorySourceSurface(editor, options: new VisualStorySourceOptions("Report.cs", fontSize: 30)));
@@ -165,7 +165,7 @@ internal static class DocVisuals {
         story.Scene("result", "Read the result", 3, VisualStorySceneLayout.Split)
             .Panel("code", new VisualStorySourceSurface(StorySourceText.Create(program, "csharp"), options: new VisualStorySourceOptions("Report.cs", fontSize: 22)))
             .Panel("chart", new VisualStoryMediaSurface(chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 520)),
-                themeMode: dark ? VisualThemeMode.Dark : VisualThemeMode.Light)), "Sign-ins by method, passkey sign-ins rising"));
+                themeMode: mode)), "Sign-ins by method, passkey sign-ins rising"));
         story.Outcome("chart", "Sign-ins chart", "chart");
         var prepared = story.Prepare(new VisualStoryPlaybackOptions(endHold: TimeSpan.FromSeconds(2), playCount: 1));
         return prepared.ToSvg(at);

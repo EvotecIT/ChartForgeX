@@ -9,7 +9,7 @@ public sealed partial class Chart {
     /// <remarks>Horizontal range bars use the primary X value axis and Y category axis, and require only range-bar series. Configure before or after adding the series.</remarks>
     public Chart ConfigureRangeBar(Action<ChartRangeBarOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.RangeBar);
+        Options.RangeBar = ChartOptionConfiguration.Configure(Options.RangeBar, configure, options => options.Clone());
         return this;
     }
 
@@ -21,14 +21,9 @@ public sealed partial class Chart {
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddRangeBar(string name, IEnumerable<ChartInterval> intervals, ChartColor? color = null) {
-        if (intervals == null) throw new ArgumentNullException(nameof(intervals));
-        var points = new List<ChartPoint>();
-        foreach (var interval in intervals) {
-            points.Add(new ChartPoint(interval.X, interval.Start));
-            points.Add(new ChartPoint(interval.X, interval.End));
-        }
-
-        if (points.Count == 0) throw new ArgumentException("Range bar intervals must contain at least one interval.", nameof(intervals));
-        return Add(name, ChartSeriesKind.RangeBar, points, color);
+        var series = ChartSeries.CreateRangeBar(name, intervals, color);
+        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(intervals));
+        AppendSeries(series);
+        return this;
     }
 }

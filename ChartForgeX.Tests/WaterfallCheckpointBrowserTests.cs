@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class WaterfallCheckpointBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, false, null)]
     [InlineData(360, true, false, null)]
     [InlineData(900, false, false, null)]
@@ -197,17 +197,17 @@ public sealed class WaterfallCheckpointBrowserTests {
     private static Chart Create(int width, bool dark, bool horizontal, double? opening) {
         var sign = opening < 0 ? -1 : 1;
         var chart = Chart.Create().WithSize(width, 440).WithTitle(opening.HasValue ? "Waterfall opening balance" : "Waterfall checkpoints")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithFontFamily("Carlito")
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithFontFamily("Carlito")
             .WithPointLegend().WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside).WithBarStyle(ChartBarStyle.Flat)
             .WithXLabels("Open", "Adjust", "Stage", "Cost", "Costs", "Recover", "Balance", "Late", "Late sum")
-            .AddWaterfall("Movement", new[] {
+            .AddSeries(ChartSeries.CreateWaterfall(new ChartSeriesId("movement"), "Movement", new[] {
                 opening.HasValue ? ChartWaterfallItem.OpeningBalance(1, opening.Value) : ChartWaterfallItem.Delta(1, 120),
                 ChartWaterfallItem.Delta(2, -30 * sign), ChartWaterfallItem.Subtotal(3),
                 ChartWaterfallItem.Delta(4, -130 * sign), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70 * sign),
                 ChartWaterfallItem.Total(7), ChartWaterfallItem.Delta(8, -20 * sign), ChartWaterfallItem.Subtotal(9)
-            });
+            }));
         chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
-        chart.Series[0].WithInteractionKey("movement").WithPointColor(4, "#A5358A").WithPointFillPattern(4, ChartFillPattern.Crosshatch);
+        chart.Series[0].WithPointColor(4, "#A5358A").WithPointFillPattern(4, ChartFillPattern.Crosshatch);
         if (horizontal) {
             chart.ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
                 .WithDataLabelPlacement(ChartDataLabelPlacement.Auto);

@@ -17,7 +17,7 @@ public static class MermaidVennRendering {
         options ??= new MermaidVennRenderOptions();
         var block = VennDiagramBlock.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithPadding(options.Padding);
 
@@ -78,14 +78,7 @@ public static class MermaidVennRendering {
         document.ToVennDiagramBlock(options).ToPng();
 
     private static string ResolveTitle(MermaidVennDocument document, MermaidVennRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid Venn";
-    }
-
-    private static string ResolveSubtitle(MermaidVennDocument document, MermaidVennRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid Venn");
     }
 }
 

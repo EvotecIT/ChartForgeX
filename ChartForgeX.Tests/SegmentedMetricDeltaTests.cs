@@ -10,7 +10,7 @@ public sealed class SegmentedMetricDeltaTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ProgressRowsPreserveExactDeltaTextWithResolvedPlatformFonts(bool graphite) {
-        var theme = graphite ? ChartTheme.GraphiteLight() : ChartTheme.ReportLight();
+        var theme = graphite ? VisualTheme.Graphite() : VisualTheme.Report();
         var block = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows).WithTheme(theme).WithSize(620, 260)
             .AddItem(new SegmentedMetricItem("Posts", 86).WithProgress(100, 44).WithDisplayValue("132,034").WithDelta("+4.3%").WithStatus(VisualStatus.Positive))
             .AddItem(new SegmentedMetricItem("Replies", 62).WithProgress(100, 44).WithDisplayValue("56,234").WithDelta("-6.4%").WithStatus(VisualStatus.Negative));

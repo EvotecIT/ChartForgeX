@@ -29,7 +29,7 @@ public static class ChartBenchmarkCases {
 
     private static Chart Report(int width, int height) {
         var tokens = VisualDesignTokens.GraphiteLight();
-        return Chart.Create().WithSize(width, height).WithTheme(tokens.ApplyTo(ChartTheme.Light()))
+        return Chart.Create().WithSize(width, height).WithTheme(new VisualTheme(tokens, VisualDesignTokens.GraphiteDark()))
             .WithSvgColorVariables(tokens.ToSvgColorVariables(path => "--bench-" + path.Replace('.', '-')));
     }
 

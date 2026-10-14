@@ -85,8 +85,8 @@ public sealed class AxisReversalTests {
             var observation = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Id == region.Id);
             Assert.Equal("90", observation.Metadata["data-cfx-high"]);
             Assert.Equal("10", observation.Metadata["data-cfx-low"]);
-            Assert.Equal("90", observation.Metadata["data-cfx-source-1-y"]);
-            Assert.Equal("10", observation.Metadata["data-cfx-source-2-y"]);
+            Assert.Equal("1", observation.Metadata["data-cfx-source-count"]);
+            Assert.Equal("0", observation.Metadata["data-cfx-source-point"]);
         }
     }
 

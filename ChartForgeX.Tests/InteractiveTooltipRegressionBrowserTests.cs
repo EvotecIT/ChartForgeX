@@ -11,13 +11,13 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTooltipRegressionBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task SharedDuplicateXUsesTheInteractedObservationAndDeterministicCounterparts() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(ChartTheme.GraphiteLight()).WithTitle("Observations sharing X")
-            .AddScatter("Observed", new[] { new ChartPoint(1, 10), new ChartPoint(1, 20), new ChartPoint(2, 15) })
+        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite()).WithTitle("Observations sharing X")
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed", new[] { new ChartPoint(1, 10), new ChartPoint(1, 20), new ChartPoint(2, 15) }))
             .AddScatter("Comparison", new[] { new ChartPoint(1, 30), new ChartPoint(1, 40), new ChartPoint(2, 25) });
-        chart.Series[0].WithInteractionKey("observations").WithPointColor(1, "#7b61e8");
+        chart.Series[0].WithPointColor(1, "#7b61e8");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Disable(ChartInteractionFeatures.Crosshair)));
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
@@ -26,8 +26,11 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         await MoveToAsync(page, Point(0, 1));
         var hovered = await ObservationAsync(page, "observations");
         await RecordAsync(page, "tooltip-duplicate-x", new { focused, hovered });
-        Assert.Equal(new[] { "20", "1", "1", "rgb(123, 97, 232)" }, focused);
-        Assert.Equal(focused, hovered);
+        Assert.Equal(4, focused.Length); Assert.Equal(4, hovered.Length);
+        Assert.Equal(new[] { "20", "1", "1" }, focused.Take(3));
+        Assert.Equal(focused.Take(3), hovered.Take(3));
+        await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", focused[3]);
+        await AssertCssColorsEqualAsync(page, focused[3], hovered[3]);
         Assert.Equal("30", await page.Locator("dt[data-cfx-tooltip-series='1'] + dd").InnerTextAsync());
         await page.Locator(Point(0, 1)).FocusAsync();
         await page.Keyboard.PressAsync("ArrowUp");
@@ -35,7 +38,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartTooltipMode.Single, 700)]
     [InlineData(false, HtmlChartTooltipMode.SharedX, 340)]
     [InlineData(true, HtmlChartTooltipMode.Single, 340)]
@@ -43,7 +46,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
     public async Task SolidBarSwatchesUseThePaintedGradientInsteadOfWhiteDecoration(bool dark, HtmlChartTooltipMode mode, int width) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithBarStyle(ChartBarStyle.Solid).WithTitle("Decorated bar observations")
-            .WithTheme((dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithPalette("#176eaf", "#df4263"))
+            .WithTheme(VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263")), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Previous", ChartPoints.FromValues(1, 2, 1));
         chart.Series[0].WithPointColor(1, "#7b61e8").WithPointFillPattern(1, ChartFillPattern.Crosshatch);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode), width, 560);
@@ -54,7 +57,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         var colour = await page.Locator(swatch).EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor");
         await RecordAsync(page, "tooltip-solid-bar-" + (dark ? "dark" : "light") + "-" + mode + "-" + width, new { gradient, colour });
         Assert.StartsWith("url(", gradient[0], StringComparison.Ordinal);
-        Assert.Equal(gradient[1], colour);
+        await AssertCssColorsEqualAsync(page, gradient[1], colour);
         Assert.Equal(1, await page.Locator(Point(0, 1) + " [data-cfx-role='bar-highlight']").CountAsync());
         Assert.True(await page.Locator(Point(0, 1) + " [data-cfx-role='bar-pattern']").CountAsync() > 0);
         Assert.True(await page.EvaluateAsync<bool>("() => { const box = document.querySelector('.cfx-tooltip').getBoundingClientRect(); return box.left >= 0 && box.right <= innerWidth && box.top >= 0 && box.bottom <= innerHeight; }"));
@@ -63,12 +66,12 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task HorizontalAndRangeBarGradientsRemainAuthoritativeWithoutALegend(bool range) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithLegend(false).WithTheme(ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(596, 338).WithLegend(false).WithTheme(VisualTheme.Graphite())
             .WithBarStyle(ChartBarStyle.Solid);
         if (range) chart.AddRangeBar("Expected", new[] { new ChartInterval(1, 2, 8), new ChartInterval(2, 3, 9) });
         else chart.AddHorizontalBar("Expected", ChartPoints.FromValues(3, 7, 5));
@@ -79,7 +82,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
         await page.Locator(mark).EvaluateAsync("node => document.getElementById(node.getAttribute('fill').slice(5, -1)).querySelector('stop').setAttribute('stop-opacity', '0')");
         await page.Locator(Point(0, 0)).FocusAsync();
         var gradient = await GradientPaintAsync(page, mark, 1);
-        Assert.Equal(gradient[1], await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        await AssertCssColorsEqualAsync(page, gradient[1], await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         Assert.Equal(0, await page.Locator("[data-cfx-role='legend-item']").CountAsync());
         AssertNoConsoleErrors(session);
     }

@@ -1,24 +1,11 @@
-using System.Text;
 using ChartForgeX.Themes;
 
 public static partial class V2Examples {
-    private static string ModelSnippet(string expression, string title, string subtitle, VisualThemeMode mode, int width, int height, bool? legend, string artifactKind) {
-        var source = new StringBuilder("using System;\nusing System.Linq;\nusing System.Globalization;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\nusing ChartForgeX.Typography;\nusing ChartForgeX.VisualArtifacts;\nusing ChartForgeX.VisualBlocks;\n\n");
-        source.Append(ProofFontSetup);
-        source.Append("var model = ").Append(expression).Append(";\nvar context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(").Append(width).Append(", ").Append(height)
-            .Append(")), VisualTheme.Graphite(), VisualThemeMode.").Append(mode).Append(",\n    new VisualFrame(").Append(Literal(title)).Append(", ").Append(Literal(subtitle))
-            .Append(", showLegend: ").Append(legend.HasValue ? (legend.Value ? "true" : "false") : "null").Append("), FontSpec.FromFamily(\"").Append(ProofFont).Append("\"));\n")
-            .Append("var prepared = model.Prepare(context);\nSystem.IO.File.WriteAllText(\"visual.svg\", prepared.ToSvg());\nSystem.IO.File.WriteAllBytes(\"visual.png\", prepared.ToPng());\n")
-            .Append("System.IO.File.WriteAllText(\"visual.html\", prepared.ToArtifact(\"example\", VisualArtifactKind.").Append(artifactKind).Append(").ToHtmlPage());\n\n");
-        // Embed the compiled factory sources, so the downloadable program cannot drift from the model used to render its row.
-        var assembly = typeof(V2Examples).Assembly;
-        foreach (var resource in assembly.GetManifestResourceNames().Where(name => name.StartsWith("ChartForgeX.Examples.V2GalleryModels", StringComparison.Ordinal)
-            && name.EndsWith(".cs", StringComparison.Ordinal)).OrderBy(name => name, StringComparer.Ordinal)) {
-            using var stream = assembly.GetManifestResourceStream(resource)
-                ?? throw new InvalidOperationException("Gallery model source is missing: " + resource);
-            using var reader = new StreamReader(stream);
-            foreach (var line in reader.ReadToEnd().Split('\n')) if (!line.StartsWith("using ", StringComparison.Ordinal)) source.AppendLine(line.TrimEnd('\r'));
-        }
-        return source.ToString().TrimEnd() + "\n";
+    private static void WriteRecipe(string output, string id, ExampleRecipe recipe, string variant, string title, string subtitle,
+        VisualThemeMode mode, int width, int height, bool? legend, string artifactKind = "Chart", bool surface = false, bool viewport = false) {
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"),
+            ExampleRecipeSource.Emit(recipe, variant, title, subtitle, mode, width, height, legend, artifactKind, surface, viewport));
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".gallery.csharp.txt"),
+            ExampleRecipeSource.Emit(recipe, variant, title, subtitle, mode, width, height, legend, artifactKind, surface, viewport, galleryTypography: true));
     }
 }

@@ -49,6 +49,7 @@ public sealed class EmptyHorizontalBaselineCompanionTests {
         Assert.Equal(expected.MinY, actual.MinY); Assert.Equal(expected.MaxY, actual.MaxY);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

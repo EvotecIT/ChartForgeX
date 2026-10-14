@@ -46,7 +46,7 @@ internal sealed class ReplayState {
 }
 internal sealed class ReplayTabState {
     internal ReplayTabState(TerminalTab tab) {
-        Tab = new TerminalTab(tab.Id, tab.Title, tab.Dialect, tab.WorkingDirectory, tab.CustomPrompt, tab.Theme, tab.Icon);
+        Tab = new TerminalTab(tab.Id, tab.Title, tab.Dialect, tab.WorkingDirectory, tab.CustomPrompt, tab.Theme, tab.Icon, tab.ThemeMode, tab.Style);
     }
     internal TerminalTab Tab { get; }
     internal List<TerminalViewportLine> Lines { get; } = new();

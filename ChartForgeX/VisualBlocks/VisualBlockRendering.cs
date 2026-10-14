@@ -13,14 +13,14 @@ namespace ChartForgeX.VisualBlocks;
 internal static partial class VisualBlockRendering {
 
     // Native block roles retain their relative sizes while sharing the chart body's typography setting.
-    public static double BodyFontSize(ChartTheme theme, double defaultSize) => defaultSize * theme.DataLabelFontSize / ChartTheme.DefaultDataLabelFontSize;
+    public static double BodyFontSize(ResolvedVisualTheme theme, double defaultSize) => defaultSize * theme.DataLabelFontSize / ResolvedVisualTheme.DefaultDataLabelFontSize;
 
     // Headings share a bounded portion of a fixed viewport; the remaining space belongs to the body.
     public static BlockHeadingMetrics Headings(IVisualBlock block) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         var titleGap = block.Title.Length > 0 ? 7 + (block.Subtitle.Length == 0 ? 8 : 0) : 0;
         var subtitleGap = block.Subtitle.Length > 0 ? 13 : 0;
-        var titleStyle = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = theme.UseGraphiteLayout ? 700 : 800 }, FontSize = theme.TitleFontSize, LineHeight = 1 };
+        var titleStyle = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 }, FontSize = theme.TitleFontSize, LineHeight = 1 };
         var subtitleStyle = new TextStyle { Font = new FontSpec { Family = theme.FontFamily }, FontSize = theme.SubtitleFontSize, LineHeight = 1 };
         var titleHeight = block.Title.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Title), titleStyle).Height : 0;
         var subtitleHeight = block.Subtitle.Length > 0 ? TextLayoutEngine.Measure(SingleLineText(block.Subtitle), subtitleStyle).Height : 0;
@@ -83,7 +83,7 @@ internal static partial class VisualBlockRendering {
 
     }
 
-    public static ChartColor StatusColor(ChartTheme theme, VisualStatus status) {
+    public static ChartColor StatusColor(ResolvedVisualTheme theme, VisualStatus status) {
         switch (status) {
             case VisualStatus.Positive: return theme.Positive;
             case VisualStatus.Warning: return theme.Warning;
@@ -104,7 +104,7 @@ internal static partial class VisualBlockRendering {
         return VisualStatus.Neutral;
     }
 
-    public static ChartColor PaletteAt(ChartTheme theme, int index) {
+    public static ChartColor PaletteAt(ResolvedVisualTheme theme, int index) {
         var palette = theme.Palette;
         return palette.Length == 0 ? theme.Text : palette[Math.Abs(index) % palette.Length];
     }
@@ -157,6 +157,11 @@ internal static partial class VisualBlockRendering {
         return ChartTextFitting.FitEnd(value, maxWidth, text => TextLayoutEngine.Measure(text, style).Width, "...");
     }
 
+    public static double MeasureTextWidth(string value, double fontSize, string fontFamily, int weight) {
+        var style = new TextStyle { Font = new FontSpec { Family = fontFamily, Weight = weight }, FontSize = fontSize, LineHeight = 1 };
+        return TextLayoutEngine.Measure(SingleLineText(value), style).Width;
+    }
+
     // These block captions are emitted as a single SVG text run. Match its default XML whitespace rules in both backends.
     public static string SingleLineText(string value) {
         var result = new StringBuilder(value.Length);
@@ -188,9 +193,9 @@ internal static partial class VisualBlockRendering {
     }
 
     public static ChartColor SurfaceBackground(VisualBlockOptions options) =>
-        options.TransparentBackground ? ChartColor.Transparent : options.Theme.Background.A == 0 ? options.Theme.CardBackground : options.Theme.Background;
+        options.TransparentBackground ? ChartColor.Transparent : options.ResolvedTheme.Background.A == 0 ? options.ResolvedTheme.CardBackground : options.ResolvedTheme.Background;
 
-    public static ChartColor CardBackground(VisualBlockOptions options) => options.Theme.CardBackground;
+    public static ChartColor CardBackground(VisualBlockOptions options) => options.ResolvedTheme.CardBackground;
 
     public static double SegmentRatio(double value, double maximum) => maximum <= 0 ? 0 : Math.Max(0, Math.Min(1, value / maximum));
 

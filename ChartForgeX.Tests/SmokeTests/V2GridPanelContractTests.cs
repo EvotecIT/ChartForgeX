@@ -43,12 +43,14 @@ public sealed class V2GridPanelContractTests {
         Assert.False(hidden.Options.ShowHeader); Assert.False(hidden.Options.ShowLegend); Assert.False(hidden.Options.ShowCard);
     }
 
-    [Fact]
-    public void ExplicitContextHidesPanelFeaturesAndCapsModelLegendRowsWithoutChangingTheModels() {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExplicitContextHidesPanelFeaturesAndCapsModelLegendRowsWithoutChangingTheModels(bool usePanelThemes) {
         var chart = Sample("Panel").WithHeader(false).WithLegend().WithPlotBackground();
         for (var i = 0; i < 6; i++) chart.AddLine("Extra " + i, new[] { new ChartPoint(0, i), new ChartPoint(1, i + 1) });
         chart.Options.LegendMaximumRows = 3;
-        var grid = ChartGrid.Create().WithColumns(1).Add(chart);
+        var grid = ChartGrid.Create().WithColumns(1).WithPanelThemes(usePanelThemes).Add(chart);
         var layout = new VisualLayoutOptions(new VisualSize(400, 300), 8);
         var capped = grid.Prepare(new VisualRenderContext(layout, frame: new VisualFrame(showLegend: true,
             legendMaximumRows: 1, legendMaximumHeightFraction: .5)));

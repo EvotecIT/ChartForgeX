@@ -74,7 +74,7 @@ internal readonly struct ChartStateMark {
     /// </summary>
     public static ChartColor Backdrop(Chart chart) {
         var options = chart.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var backdrop = ChartColorMath.RelativeLuminance(theme.Text) > 0.5 ? ChartColor.FromRgb(0, 0, 0) : ChartColor.White;
         switch (options.MarkBackdrop) {
             case ChartMarkBackdrop.Background:
@@ -86,7 +86,7 @@ internal readonly struct ChartStateMark {
         }
 
         backdrop = Over(theme.Background, backdrop);
-        if (options.ShowCard && theme.UseCard) backdrop = Over(theme.CardBackground, backdrop);
+        if (options.ShowCard) backdrop = Over(theme.CardBackground, backdrop);
         if (options.ShowPlotBackground) backdrop = Over(theme.PlotBackground, backdrop);
         return backdrop;
     }

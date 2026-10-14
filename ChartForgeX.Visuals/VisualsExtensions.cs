@@ -19,17 +19,15 @@ namespace ChartForgeX;
 /// </summary>
 public static partial class VisualsExtensions {
     /// <summary>
-    /// Configures the current visual grid theme in place, creating a light theme when the grid is currently automatic.
+    /// Creates and applies an immutable theme snapshot customized for the visual grid.
     /// </summary>
     /// <param name="grid">The visual grid to configure.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current visual grid.</returns>
-    public static VisualGrid ConfigureTheme(this VisualGrid grid, Action<ChartTheme> configure) {
+    public static VisualGrid ConfigureTheme(this VisualGrid grid, Action<VisualThemeBuilder> configure) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        var theme = grid.Theme ?? ChartTheme.Light();
-        configure(theme);
-        grid.Theme = theme;
+        grid.Theme = grid.Theme.Configure(configure);
         return grid;
     }
 

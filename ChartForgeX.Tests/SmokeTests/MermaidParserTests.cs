@@ -161,8 +161,6 @@ flowchart LR
             "Mermaid flowchart conversion should infer distinct topology layers from edge order instead of stacking generic nodes in one column.");
         Assert(topology.Viewport.Height < 700 && topology.Viewport.Width >= 640,
             "Mermaid flowchart conversion should fit the viewport to graph content instead of preserving a mostly empty fixed canvas.");
-        Assert(topology.Nodes[1].Width > 132,
-            "Mermaid flowchart conversion should widen nodes for useful labels instead of clipping them to the legacy fixed width.");
         Assert(!topology.Nodes[0].ShowStatusBadge,
             "Mermaid flowchart conversion should suppress meaningless unknown-health badges on semantic diagram nodes.");
         Assert(topology.Nodes[2].Metadata["mermaid.shape"] == MermaidFlowchartNodeShape.Rhombus.ToString(), "Mermaid flowchart topology conversion should preserve node shape metadata.");

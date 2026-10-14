@@ -25,9 +25,13 @@ public static partial class LegacySceneBenchmarkCases {
         if (Phase3Fixtures.Contains(fixture)) return CreatePhase3Chart(fixture);
         if (!Fixtures.Contains(fixture)) throw new ArgumentOutOfRangeException(nameof(fixture));
         var tokens = VisualDesignTokens.FromJson(_tokens);
+#if LEGACY_CHART_API
         tokens.UseGraphiteLayout = true;
         var theme = tokens.ApplyTo(ChartTheme.GraphiteLight()).WithFontFamily("CFX Proof Carlito")
             .WithTypography(22, 13, 11, 11, 12, 11);
+#else
+        var theme = CurrentTheme();
+#endif
         var chart = Chart.Create().WithSize(Width, Height).WithTheme(theme).WithTitle(Title)
             .WithSubtitle("One prepared scene for SVG and native PNG").WithLegend().WithPadding(24, 24, 24, 24).WithPngOutputScale(1)
             .WithXLabels(Enumerable.Range(1, fixture.EndsWith("bars", StringComparison.Ordinal) ? 24 : 7).Select(index => "Day " + index).ToArray());
@@ -49,6 +53,12 @@ public static partial class LegacySceneBenchmarkCases {
         if (fixture == "scatter" || fixture == "dense-line") chart.Options.XAxisLabels.Clear();
         return chart;
     }
+
+#if !LEGACY_CHART_API
+    private static VisualTheme CurrentTheme() => VisualTheme.FromPaletteJson(_tokens,
+        new VisualTypography("CFX Proof Carlito", titleSize: 22, subtitleSize: 13, axisSize: 11,
+            legendSize: 12, dataLabelSize: 11, axisTitleSize: 11));
+#endif
 
     /// <summary>The bounded proof matrix includes sparse, signed, numeric and dense models.</summary>
     public static readonly string[] Fixtures = { "cartesian", "donut", "grouped-bars", "stacked-bars", "scatter", "dense-line" };

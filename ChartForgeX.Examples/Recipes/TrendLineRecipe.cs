@@ -1,0 +1,19 @@
+/// <summary>Builds a least-squares trend while retaining the observations used to fit it.</summary>
+public static class TrendLineRecipe {
+    /// <summary>Creates the selected trend example, including the small-drift precision case.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "precision" or "compact-precision"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is "precision" or "compact-precision") {
+            var drift = ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-drift"), "Least-squares drift",
+                Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)));
+            return Chart.Create().WithXAxis("Measurement").WithYAxis("Fitted drift").AddSeries(drift);
+        }
+        var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
+            .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6)).ToArray();
+        var observations = ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observations", points);
+        var trend = ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-trend"), "Least-squares trend", points);
+        return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(observations).AddSeries(trend)
+            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

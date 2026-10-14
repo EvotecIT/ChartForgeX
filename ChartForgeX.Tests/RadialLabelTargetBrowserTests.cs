@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class RadialLabelTargetBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Pie, false)]
     [InlineData(ChartSeriesKind.Pie, true)]
     [InlineData(ChartSeriesKind.Donut, false)]
@@ -70,7 +70,7 @@ public sealed class RadialLabelTargetBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task DashboardCaptionsResolveRepeatedPointIdsWithinTheirOwnScopedChart() {
         if (!Enabled) return;
         var first = Create(ChartSeriesKind.Pie, true).WithTitle("First chart");
@@ -123,7 +123,7 @@ public sealed class RadialLabelTargetBrowserTests {
 
     internal static Chart Create(ChartSeriesKind kind, bool outside) {
         var chart = Chart.Create().WithSize(outside ? 640 : 360, outside ? 420 : 360)
-            .WithTheme(outside ? ChartTheme.GraphiteLight() : ChartTheme.GraphiteDark())
+            .WithTheme(VisualTheme.Graphite(), outside ? VisualThemeMode.Light : VisualThemeMode.Dark)
             .WithFontFamily("Carlito").WithLegend(false).WithXLabels("North", "South", "East")
             .WithDataLabels().WithDataLabelPlacement(outside ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside);
         chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
@@ -131,17 +131,7 @@ public sealed class RadialLabelTargetBrowserTests {
         // A full column's radial end can leave no collision-free room for a centred Outside candidate.
         if (outside && kind == ChartSeriesKind.RadialColumn) chart.WithDataLabelPlacement(ChartDataLabelPlacement.Right);
         var points = new[] { new ChartPoint(1, 1200), new ChartPoint(2, 300), new ChartPoint(3, 750) };
-        switch (kind) {
-            case ChartSeriesKind.Pie: chart.AddPie("Requests", points); break;
-            case ChartSeriesKind.Donut: chart.AddDonut("Requests", points); break;
-            case ChartSeriesKind.RadialBar: chart.AddRadialBar("Requests", points); break;
-            case ChartSeriesKind.RadialColumn: chart.AddRadialColumn("Requests", points); break;
-            case ChartSeriesKind.Polar: chart.AddPolar("Requests", points); break;
-            case ChartSeriesKind.Radar: chart.AddRadar("Requests", points); break;
-            case ChartSeriesKind.PolarArea: chart.AddPolarArea("Requests", points); break;
-            default: throw new ArgumentOutOfRangeException(nameof(kind));
-        }
-        chart.Series[0].WithInteractionKey("requests");
+        chart.AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", kind, points));
         return chart.WithYAxisBounds(0, 1500);
     }
 

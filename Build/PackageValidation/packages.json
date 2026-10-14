@@ -391,6 +391,22 @@
           "xunit",
           "xunit.runner.visualstudio"
         ]
+      },
+      {
+        "Id": "ChartForgeX.Markup.Cli",
+        "RequiredEntries": [
+          "README.md",
+          "licenses/Unicode-LICENSE.txt",
+          "tools/net8.0/any/DotnetToolSettings.xml",
+          "tools/net8.0/any/ChartForgeX.Markup.Cli.dll",
+          "tools/net8.0/any/ChartForgeX.Markup.Cli.deps.json",
+          "tools/net8.0/any/ChartForgeX.Markup.Cli.runtimeconfig.json",
+          "tools/net8.0/any/ChartForgeX.dll",
+          "tools/net8.0/any/ChartForgeX.Visuals.dll",
+          "tools/net8.0/any/ChartForgeX.Markup.dll",
+          "tools/net8.0/any/ChartForgeX.Mermaid.dll",
+          "tools/net8.0/any/ChartForgeX.Markup.Mermaid.dll"
+        ]
       }
     ]
   }

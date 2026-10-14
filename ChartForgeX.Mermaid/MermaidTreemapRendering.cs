@@ -17,8 +17,8 @@ public static class MermaidTreemapRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTreemapRenderOptions();
         var chart = Chart.Create()
-            .WithTitle(ResolveTitle(options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid treemap"))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithDataLabels()
             .AddTreemap(string.IsNullOrWhiteSpace(options.SeriesName) ? "Treemap" : options.SeriesName!, ToItems(document));
@@ -58,15 +58,6 @@ public static class MermaidTreemapRendering {
     /// </summary>
     public static byte[] ToPng(this MermaidTreemapDocument document, MermaidTreemapRenderOptions? options = null) =>
         document.ToChart(options).ToPng();
-
-    private static string ResolveTitle(MermaidTreemapRenderOptions options) =>
-        string.IsNullOrWhiteSpace(options.Title) ? "Mermaid treemap" : options.Title!;
-
-    private static string ResolveSubtitle(MermaidTreemapDocument document, MermaidTreemapRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
-    }
-
     private static ChartHierarchyItem[] ToItems(MermaidTreemapDocument document) {
         // Mermaid labels have no authored ID syntax; source-order IDs preserve distinct repeated labels.
         var ids = new Dictionary<MermaidTreemapNode, string>();

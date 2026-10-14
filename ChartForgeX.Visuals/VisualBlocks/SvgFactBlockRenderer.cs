@@ -20,7 +20,7 @@ public sealed partial class SvgFactBlockRenderer {
         return RenderOwned(block, idScope, RenderCore);
     }
     internal ChartLabelScene RenderLabelScene(IVisualBlock block) {
-        var font = new Typography.FontSpec { Family = block.Options.Theme.FontFamily };
+        var font = new Typography.FontSpec { Family = block.Options.ResolvedTheme.FontFamily };
         using var measurement = ChartLabelScene.OpenFontScope(font);
         return ChartLabelScene.Create(RenderCore(block, BuildProvisionalId(block, string.Empty)), font);
     }
@@ -41,7 +41,7 @@ public sealed partial class SvgFactBlockRenderer {
     });
     private static void RenderTable(SvgMarkupWriter writer, ChartTable table, string id) {
         var options = table.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, table, ref y, content.X, content.Width);
@@ -49,7 +49,7 @@ public sealed partial class SvgFactBlockRenderer {
         var rowHeight = table.Dense ? 24.0 : 31.0;
         var widths = ColumnWidths(table, content.Width);
         if (table.ShowHeader) {
-            writer.StartElement("rect").Attribute("data-cfx-role", "table-header").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", content.X).Attribute("y", y).Attribute("width", content.Width).Attribute("height", headerHeight).Attribute("rx", Math.Min(6, theme.PlotCornerRadius)).Attribute("fill", theme.FlatMarks ? theme.PlotBackground.ToCss() : "url(#" + id + "-visualPlot)").Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
+            writer.StartElement("rect").Attribute("data-cfx-role", "table-header").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", content.X).Attribute("y", y).Attribute("width", content.Width).Attribute("height", headerHeight).Attribute("rx", Math.Min(6, theme.PlotCornerRadius)).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
             var x = content.X;
             for (var i = 0; i < table.Columns.Count; i++) {
                 WriteText(writer, table.Columns[i].Header, x + 9, y + headerHeight * 0.66, widths[i] - 18, table.Columns[i].Alignment, theme.Text, theme.FontFamily, theme.SubtitleFontSize, "700");
@@ -89,7 +89,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void RenderList(SvgMarkupWriter writer, ChartList list) {
         var options = list.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, list, ref y, content.X, content.Width);
@@ -108,20 +108,20 @@ public sealed partial class SvgFactBlockRenderer {
     }
     private static void RenderMetric(SvgMarkupWriter writer, MetricCard card, string id) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
         var detailBottom = options.Size.Height - options.Padding.Bottom;
         var hasMicroVisual = card.MiniBars.Count > 0 || card.SparklineCount > 0;
         var heroMicroVisual = hasMicroVisual && card.MicroVisualPlacement == MetricCardMicroVisualPlacement.Hero;
-        var valueInsetSurface = !theme.FlatMarks && !hasMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset;
+        var valueInsetSurface = !hasMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset;
         var labelX = content.X;
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
         if (card.Status != VisualStatus.None) {
-            var barInset = options.ShowCard && theme.UseCard ? ChartVisualPrimitives.CardInnerHighlightInset : 0;
+            var barInset = options.ShowCard ? ChartVisualPrimitives.CardInnerHighlightInset : 0;
             writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", barInset).Attribute("y", barInset).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", Math.Max(1, options.Size.Height - barInset * 2)).Attribute("fill", statusColor.ToCss());
-            if (options.ShowCard && theme.UseCard) writer.Attribute("clip-path", "url(#" + id + "-visualCardClip)");
+            if (options.ShowCard) writer.Attribute("clip-path", "url(#" + id + "-visualCardClip)");
             writer.EndEmptyElement().Line();
         }
 
@@ -158,7 +158,7 @@ public sealed partial class SvgFactBlockRenderer {
         else RenderMetricValueText(writer, card, content.X, content.Y + labelSize + valueSize + 14 + valueYOffset, valueSize, valueWidth, theme.Text, theme.MutedText);
         var microX = heroMicroVisual ? content.X + 24 : content.X + content.Width - microWidth;
         var microY = heroMicroVisual ? content.Y + Math.Max(66, options.Size.Height * 0.36) : content.Y + labelSize + Math.Max(20, valueSize * 0.52) + valueYOffset;
-        if (!theme.FlatMarks && heroMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset) {
+        if (heroMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset) {
             var surfaceX = content.X;
             var surfaceY = microY - 18;
             var surfaceWidth = content.Width;
@@ -179,7 +179,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderMetricDetail(SvgMarkupWriter writer, MetricCard card, double bottom, double x, double width) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
         var trendSize = Math.Max(10, theme.SubtitleFontSize);
         var captionSize = Math.Max(10, theme.SubtitleFontSize - 1);
@@ -257,7 +257,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void RenderMetricDetails(SvgMarkupWriter writer, MetricCard card, ChartRect content, double top, double bottom) {
         if (card.Details.Count == 0 || bottom <= top + 18) return;
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var count = Math.Min(card.Details.Count, 4);
         var columns = count <= 2 ? count : 2;
         var rows = (int)Math.Ceiling(count / (double)columns);
@@ -309,7 +309,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void RenderWorkloadList(SvgMarkupWriter writer, WorkloadListBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
@@ -357,7 +357,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void RenderRadialMetric(SvgMarkupWriter writer, RadialMetricCard card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, card, ref y, content.X, content.Width);
@@ -402,7 +402,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void WriteMarker(SvgMarkupWriter writer, ChartList list, ChartListItem item, int index, double x, double y) {
-        var theme = list.Options.Theme;
+        var theme = list.Options.ResolvedTheme;
         var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, index) : VisualBlockRendering.StatusColor(theme, item.Status);
         if (list.Marker == VisualListMarker.None) return;
         if (list.Marker == VisualListMarker.Number) {
@@ -464,7 +464,7 @@ public sealed partial class SvgFactBlockRenderer {
         return table.StatusColumnIndex == columnIndex ? VisualBlockRendering.ParseStatus(cell.Text) : VisualStatus.None;
     }
 
-    private static void WriteRadialSeparators(SvgMarkupWriter writer, ChartRadialLayer layer, ChartForgeX.Themes.ChartTheme theme, double cx, double cy, double radius, double stroke, double start, double end) {
+    private static void WriteRadialSeparators(SvgMarkupWriter writer, ChartRadialLayer layer, ChartForgeX.Themes.ResolvedVisualTheme theme, double cx, double cy, double radius, double stroke, double start, double end) {
         if (layer.SeparatorCount <= 0) return;
         var separator = layer.SeparatorColor ?? theme.CardBackground;
         var inset = Math.Min(stroke / 2 - 0.5, Math.Max(0, stroke * layer.SeparatorInsetRatio));

@@ -11,7 +11,7 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
     private const string DataStop = "[data-cfx-keyboard-component='data'][tabindex='0']";
     private const string LegendStop = "[data-cfx-keyboard-component='legend'][tabindex='0']";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task MixedCartesianAnnotationsAreReachableWithinOneDataTabStop(bool compactDark) {
@@ -64,7 +64,7 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task StandaloneAnnotationsUseSequentialArrowsAndHomeEndWithinOneComponent() {
         if (!Enabled) return;
         var chart = Frame(false).AddHorizontalLine(6, "Warning threshold").AddVerticalLine(2, "Review window");
@@ -88,7 +88,7 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task MutingCartesianDataRecoversToAnnotationsAndUnmuteRestoresCrossGroupTraversal() {
         if (!Enabled) return;
         await using var session = await OpenAsync(MixedChart(true).ToInteractiveHtmlPage());
@@ -117,7 +117,7 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SingleCartesianSeriesKeepsVerticalArrowsWithinItsCurrentObservation() {
         if (!Enabled) return;
         await using var session = await OpenAsync(Frame(false).AddLine("Actual", ChartPoints.FromValues(3, 5, 7)).ToInteractiveHtmlPage());
@@ -137,7 +137,7 @@ public sealed class InteractiveKeyboardMixedTargetsBrowserTests {
         .AddHorizontalLine(6, "Warning threshold").AddVerticalLine(2, "Review window");
 
     private static Chart Frame(bool dark) => Chart.Create().WithSize(596, 420).WithTitle("Observed values with reference guides")
-        .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
         .WithXLabels("A", "B", "C").WithXAxisBounds(1, 3).WithYAxisBounds(0, 10);
 
     private static string Annotation(int index) => "[data-cfx-role='annotation'][data-cfx-source-id='annotation-" + index + "']";

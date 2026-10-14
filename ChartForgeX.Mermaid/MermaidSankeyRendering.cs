@@ -17,8 +17,8 @@ public static class MermaidSankeyRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidSankeyRenderOptions();
         var chart = Chart.Create()
-            .WithTitle(ResolveTitle(options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid Sankey"))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width ?? document.Configuration.Sankey?.Width ?? 960,
                 options.Height ?? document.Configuration.Sankey?.Height ?? 560)
             .AddSankey(string.IsNullOrWhiteSpace(options.SeriesName) ? "Flow" : options.SeriesName!, ToNodes(document), ToLinks(document));
@@ -53,15 +53,6 @@ public static class MermaidSankeyRendering {
     /// </summary>
     public static byte[] ToPng(this MermaidSankeyDocument document, MermaidSankeyRenderOptions? options = null) =>
         document.ToChart(options).ToPng();
-
-    private static string ResolveTitle(MermaidSankeyRenderOptions options) =>
-        string.IsNullOrWhiteSpace(options.Title) ? "Mermaid Sankey" : options.Title!;
-
-    private static string ResolveSubtitle(MermaidSankeyDocument document, MermaidSankeyRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
-    }
-
     // Sankey CSV uses endpoint text as identity. Make that language mapping explicit at this boundary.
     private static IReadOnlyList<ChartNode> ToNodes(MermaidSankeyDocument document) {
         var nodes = new List<ChartNode>();

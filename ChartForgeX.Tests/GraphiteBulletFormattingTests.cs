@@ -17,7 +17,7 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(false, 80, 1)]
     [InlineData(true, 80, 1)]
     public void CompactBulletRowsKeepPositiveMarksInSvgAndPng(bool dark, int height, int rowCount) {
-        var chart = Chart.Create().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(200, height).WithPngOutputScale(1);
         for (var row = 0; row < rowCount; row++) chart.AddBullet("Count " + row, 40 + row, 70);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
@@ -50,7 +50,7 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(false, 380)]
     [InlineData(true, 380)]
     public void PercentValuesTargetsAndAxisRetainTheirUnitsWithoutColliding(bool dark, int width) {
-        var chart = Chart.Create().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(width, 294).WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + " %")
             .AddBullet("DMARC", 88, 95).AddBullet("DNSSEC", 74, 90);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
@@ -64,8 +64,8 @@ public sealed class GraphiteBulletFormattingTests {
         var valueRegions = prepared.Regions.Where(region => region.Role == "bullet-value-label").ToArray();
         var targetRegions = prepared.Regions.Where(region => region.Role == "bullet-target-label").ToArray();
         for (var i = 0; i < values.Length; i++) {
-            Assert.InRange((double)values[i].Attribute("font-size")!, 1, chart.Options.Theme.DataLabelFontSize);
-            Assert.InRange((double)targets[i].Attribute("font-size")!, 1, chart.Options.Theme.DataLabelFontSize);
+            Assert.InRange((double)values[i].Attribute("font-size")!, 1, chart.Options.Theme.Typography.DataLabelSize);
+            Assert.InRange((double)targets[i].Attribute("font-size")!, 1, chart.Options.Theme.Typography.DataLabelSize);
             Assert.True(valueRegions[i].Bounds.Right <= targetRegions[i].Bounds.Left);
             Assert.Equal(valueRegions[i].Bounds.Top, targetRegions[i].Bounds.Top);
             Assert.Equal(valueRegions[i].Bounds.Bottom, targetRegions[i].Bounds.Bottom);
@@ -79,7 +79,7 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void PlainTargetsKeepGroupedValuesAndCompactTicksWhileExplicitFormatOwnsBoth(bool dark) {
-        var chart = Chart.Create().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(640, 300).AddBullet("Count", 1284, 1900, max: 2000);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal("1,284", Assert.Single(Roles(nodes, "bullet-value-label")).Value);

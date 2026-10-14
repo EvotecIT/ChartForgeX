@@ -26,7 +26,7 @@ For each Mermaid family ChartForgeX supports, the implementation should:
 
 Reference rendering tools can be useful in tests and compatibility checks, but they are not a runtime dependency for ChartForgeX packages.
 
-The current semantic reference is Mermaid.js 12.1.0. The test harness also qualifies its recorded examples against pinned 10.9.8 and 11.17.2 references. Older spellings such as `graph`, `stateDiagram`/`stateDiagram-v2`, and `xychart`/`xychart-beta` are accepted where implemented. These fixture results do not establish complete compatibility with every Mermaid 10, 11 or 12 release.
+The current semantic reference is Mermaid.js 12.2.0. The test harness also qualifies its recorded examples against pinned 10.9.8 and 11.17.2 references. Older spellings such as `graph`, `stateDiagram`/`stateDiagram-v2`, and `xychart`/`xychart-beta` are accepted where implemented. These fixture results do not establish complete compatibility with every Mermaid 10, 11 or 12 release.
 
 The [Mermaid roadmap](../TODO.md#mermaid) plans newer-syntax adoption and regression coverage for supported older syntax. The [support matrix](mermaid-support-matrix.md) separates native render paths, retained-only features, approximate mappings and missing families. CFX uses its own deterministic scene and appearance; syntax compatibility does not imply the same layout or pixels as Mermaid's browser renderer.
 
@@ -59,6 +59,8 @@ if (!result.HasErrors && result.Artifact != null) {
 
 Inspect `Diagnostics` even when rendering succeeds: warnings identify syntax or configuration retained without exact visual interpretation. `accTitle` and single-line or multiline `accDescr` provide accessible names and descriptions. The `dark` and `default` source themes select static palettes. Source font stacks reach chart, topology, sequence and visual-block owners; native font resolution uses the existing fallback rules and does not fetch remote fonts. Other themes and settings produce approximation warnings.
 
+The artifact title comes from the family render option `Title`, then the diagram's own `title` statement, then the frontmatter `title`, then a family name such as `Mermaid flowchart`. Like Mermaid, rendered diagrams have no subtitle by default; set the family option `Subtitle` (for example `options.Flowchart.Subtitle`) to add one. The header keyword line stays available as `mermaid.header` artifact metadata.
+
 `MermaidRenderOptions` lives in `ChartForgeX.Mermaid` and supplies family defaults to both the source renderer and `MermaidVisualMarkupParser`. Replace the former `ChartForgeX.Markup.Mermaid.MermaidVisualMarkupRenderOptions` type with this shared type when migrating source code.
 
 Topology diagram dimensions set the minimum canvas. The renderer expands the canvas when node content or relationship notation needs more space; the artifact's natural size reports those rendered dimensions.
@@ -71,7 +73,7 @@ Configuration merges in this order: frontmatter first, then legacy directives in
 
 `themeVariables.fontFamily` selects the native default font stack for chart, topology, sequence and visual-block output. It overrides root `fontFamily`, including when a later directive changes only the root setting. Unsupported family keys such as `flowchart.fontFamily` retain a diagnostic and do not change that selection. The original declarations remain in `Settings`, and `Configuration.FontFamily` reports the effective native stack. This sets the shared native typography default; it does not reproduce every Mermaid family-specific font role or fetch remote fonts.
 
-`themeVariables.fontSize` sets the native base data-label size in logical pixels, with other native text roles scaled proportionally. Native block body roles use `ChartTheme.DataLabelFontSize`; headings use their own scaled roles. In a fixed chart or block viewport, oversized headings fit within a bounded share of the content height. Block cells, Venn captions, Wardley labels and fishbone effect/cause labels fit measured width and height limits. Wardley plot margins reserve scaled annotation circles, including their strokes at domain boundaries, while connector captions retain a separate placement role. Fitting measures the actual font size, including fallback fonts, discrete bitmap advances on fontless hosts and synthetic emphasis. Native caption placement and shortening use those same raster metrics. Oversized Cartesian tick labels fit their complete rotated footprints within measured strips and tick spacing, and axis titles share the reserved strip with ticks. The authored font size remains in the model. Oversized chart legends fit their frame budget and retain the normal overflow summary for dense entries. Long headings shorten using measured font widths. Packet field captions and bit numbers fit the remaining row space and their individual field widths. Git branch, commit and tag captions fit their measured lane and badge bounds. Native block captions render as single text runs, with line breaks and XML whitespace normalized before heading measurement and fitting; source and model strings remain intact. Topology group headers, actor and tile captions, and subtitle chips fit their reserved cells. Compact actor figures shrink within their node bounds, with routing and caption placement following the same geometry. Git endpoint reserves include scaled cherry-pick markers and marker strokes.
+`themeVariables.fontSize` sets the native base data-label size in logical pixels, with other native text roles scaled proportionally. Native block body roles use `VisualTheme.Typography.DataLabelSize`; headings use their own scaled roles. In a fixed chart or block viewport, oversized headings fit within a bounded share of the content height. Block cells, Venn captions, Wardley labels and fishbone effect/cause labels fit measured width and height limits. Wardley plot margins reserve scaled annotation circles, including their strokes at domain boundaries, while connector captions retain a separate placement role. Fitting measures the actual font size, including fallback fonts, discrete bitmap advances on fontless hosts and synthetic emphasis. Native caption placement and shortening use those same raster metrics. Oversized Cartesian tick labels fit their complete rotated footprints within measured strips and tick spacing, and axis titles share the reserved strip with ticks. The authored font size remains in the model. Oversized chart legends fit their frame budget and retain the normal overflow summary for dense entries. Long headings shorten using measured font widths. Packet field captions and bit numbers fit the remaining row space and their individual field widths. Git branch, commit and tag captions fit their measured lane and badge bounds. Native block captions render as single text runs, with line breaks and XML whitespace normalized before heading measurement and fitting; source and model strings remain intact. Topology group headers, actor and tile captions, and subtitle chips fit their reserved cells. Compact actor figures shrink within their node bounds, with routing and caption placement following the same geometry. Git endpoint reserves include scaled cherry-pick markers and marker strokes.
 
 The setting accepts a number or CSS pixel string such as `18.5px`, `18PX`, `1e2px` or `+1.8e1px`, from 1 through 256. Pixel units are case-insensitive. `Configuration.FontSize` reports the applied size. Relative units, physical units, CSS size keywords such as `math`, and CSS expressions remain in the source with an unsupported-configuration warning. Sizing functions require one balanced enclosing call, including nested parentheses, quoted text and comments; their expressions are not evaluated. Escaped line breaks are accepted only inside quoted CSS strings; unquoted escapes before CR, LF or form feed report an invalid configuration. Malformed delimiters and invalid pixel sizes produce one located configuration error. Global and family-specific `fontSize` settings retain their diagnostics.
 
@@ -101,7 +103,7 @@ JSON configuration numbers must use JSON number syntax and fit the native reader
 
 Configuration is limited to 65,536 characters across the YAML `config` declarations and legacy declarations, 256 retained settings, eight JSON/mapping levels and 4,096 characters for each latest global or active-family theme/layout/look value and effective font string. Effective presentation strings contain complete Unicode characters; font names also use XML-compatible characters so native artifacts can export to SVG. Unsupported sequence bodies, including indentless items, count toward the configuration budget. Unrelated frontmatter metadata, whole YAML comment lines and blank lines outside scalar content do not consume it. Physical block-scalar and quoted flow-scalar bodies count, including lines beginning with `#` and whitespace-only lines. Comments do not end the active mapping; following indented settings remain subject to its limits. Over-budget declarations are omitted from the bounded directive collection; the original source remains available. YAML has an additional 256-key limit. Duplicate keys within one supported mapping, inconsistent sibling indentation, invalid supported values and over-limit input report `CFXM006` and prevent the shared renderer from producing an artifact. Repeated legacy declarations remain valid and merge in order.
 
-`layout`, `look`, `defaultRenderer`, theme variables and other family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
+Unmapped `layout`, `look`, `defaultRenderer`, theme variables and family options remain inspectable without changing the native scene. Layout requests report `CFXM003`; other unmapped settings report `CFXM005`. Supported radar paint and typography settings are documented under [Radar Diagrams](#radar-diagrams). A theme such as `forest` retains its name and reports the native light-palette approximation. This does not reproduce Mermaid's browser appearance or every YAML form.
 
 ## Process diagrams
 
@@ -129,6 +131,7 @@ Supported flowchart parsing includes:
 - Common node references and labels.
 - Common node shapes, including rectangle, rounded, stadium, subroutine, cylinder, circle, double circle, rhombus, hexagon, and parallelogram variants.
 - Edge operators, pipe labels, inline labels, dotted operators, and chained edges.
+- Longer normal, thick and dotted operators request larger minimum rank spans; caption punctuation does not affect spacing.
 - Quoted pipe captions retain embedded pipes. Inline captions retain comparison signs, brackets, and semicolons. Node metadata decodes YAML single-quoted scalars, including doubled apostrophes and literal backslashes, while apostrophes in ordinary captions remain text.
 - `subgraph ... end` groups.
 - `classDef`, `class`, and inline `:::class` node classes.
@@ -169,6 +172,8 @@ var png = document.ToPng();
 ```
 
 The conversion target for flowcharts is `TopologyChart`. Subgraphs become topology groups. Nodes become topology nodes. Edges become topology edges. Hrefs, tooltips, class names, source lines, Mermaid ids, and style metadata are retained where the topology model can carry them.
+
+Link length is a native rank constraint: `A --> B` requests one rank, `A ---> B` requests two, and `A ----> B` requests three. Thick and dotted links use the same rank-spacing owner, and inline labels take their length from the closing operator. Hyphens or dots within labels remain label text. Swimlane conversion applies the same rule. Longer links can cause the fitted canvas to grow; they do not request a fixed pixel distance. Shared routing reserves a corridor for links that skip intermediate ranks while preserving explicit native ports and waypoints.
 
 ## Class Diagrams
 
@@ -411,6 +416,7 @@ Supported mindmap parsing includes:
 - Common node delimiters such as round, square, circle, cloud, and hexagon forms.
 - Class markers with `:::className`.
 - Icon markers with `::icon(...)`.
+- Branch coloring by default, or `mindmap.colorBy: depth` to color equal parent-child depths alike.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -430,6 +436,26 @@ var png = document!.ToPng();
 ```
 
 The conversion target for mindmaps is `TopologyChart` with `TopologyLayoutMode.MindMap`. Nodes retain hierarchy, shape tokens, classes, icon markers, source spans, and generated stable ids.
+
+Use frontmatter or an init directive to choose depth coloring:
+
+```mermaid
+---
+config:
+  mindmap:
+    colorBy: depth
+---
+mindmap
+  Roadmap
+    Planning
+      Tasks
+    Delivery
+      Releases
+```
+
+The root has its own color section. Branch mode gives each first-level branch and its descendants one section; depth mode counts parent-child relationships, so uneven indentation widths do not affect the colors. Both modes cycle through eleven non-root sections, and each incoming edge uses its child's section. The active `VisualTheme` supplies the colors; a shorter palette cycles through its own colors without changing the hierarchy or section assignments.
+
+For direct conversion, set `document.ColorBy = MermaidMindMapColorMode.Depth`. The resulting topology retains palette indexes, so changing its `Theme` or `ThemeMode` resolves the new palette when it is prepared again. Explicit node or edge `Color` takes precedence, explicit node `BackgroundColor` remains its surface, and status badges retain health colors. Mindmaps use the native tinted mind-map style; set `DefaultRenderOptions` or pass topology render options to choose another treatment. Class and icon tokens remain source metadata rather than applying external CSS or fetching icon libraries.
 
 ## Tree View Diagrams
 
@@ -687,7 +713,7 @@ Supported pie parsing includes:
 
 - `pie` headers.
 - Optional `showData` on the header line or as a body statement.
-- Optional `title` statements.
+- Optional titles on the header line (`pie title Output by surface`, `pie showData title ...`) or as `title` statements.
 - Quoted slice labels with positive numeric values.
 - Source spans for every slice.
 
@@ -837,7 +863,9 @@ var png = document.ToPng();
 
 The conversion target for Gantt diagrams is `Chart`. Task ids, tags, sections, dependencies, date format, axis format, tick interval, excludes/includes, weekend selection, today marker text, and source spans are retained in the AST or artifact metadata. Static rendering maps Mermaid tasks, milestones, dependencies, and optional caller-provided today markers onto ChartForgeX's dependency-free Gantt renderer. Duration-based and `until` scheduling ends advance over excluded dates, with includes overriding exclusions; explicit end dates remain authored dates. `End` supplies dependency scheduling, while `RenderEnd` preserves Mermaid's visible bar endpoint before trailing excluded days. Interior exclusions can extend both values. Repeated `excludes` and `includes` declarations merge their tokens, and the final diagram calendar/date format applies to all tasks regardless of declaration order. Missing ids, circular date dependencies and an end before its start produce source diagnostics. `UntilTaskIds` retains end references independently of `DependencyIds`, and the artifact records their count as `mermaid.untilReferences`.
 
-Native callers can add all Gantt entries first, then use `chart.AddGanttDependency(predecessorIndex, successorIndex)` for forward or multiple links. Both indices address existing, distinct Gantt series in authored order, including vertical markers. `chart.GanttDependencies` returns a detached snapshot including inline `dependsOn` links; duplicates render once. Links between task rows anchor the predecessor's displayed finish and successor's displayed start without changing task dates. References involving a vertical marker retain their dependency metadata without a row connector. Milestone links meet the diamond boundary, and connectors paint above task fills so arrowheads remain visible in SVG and PNG. Automatic axis windows reserve room for endpoint arrowheads; explicit axis bounds retain their clipping window. The inline `dependsOn` argument still addresses an earlier Gantt series. Native preparation revalidates links when mutable series change.
+Native callers attach their Gantt series, then use `chart.AddGanttDependency(predecessor, successor)` with retained handles for forward or multiple links. Both handles must be distinct Gantt series attached to that chart, including vertical markers. `chart.GanttDependencies` returns a detached snapshot with stable `PredecessorId` and `SuccessorId` values; duplicate links render once. The fluent `dependsOn` argument accepts an attached predecessor handle and registers the same chart-owned relationship. Moving a series preserves its links. Removing an endpoint removes its links, while clearing observations temporarily hides connectors until data is restored on the same handle.
+
+Links between task rows anchor the predecessor's displayed finish and successor's displayed start without changing task dates. References involving a vertical marker retain their dependency metadata without a row connector. Milestone links meet the diamond boundary, and connectors paint above task fills so arrowheads remain visible in SVG and PNG. Automatic axis windows reserve room for endpoint arrowheads; explicit axis bounds retain their clipping window. Source metadata uses the current series ordinals for the rendered scene and stable IDs for dependency endpoints.
 
 The `vert` tag paints a reference line at the entry's resolved start date without taking up a task row. Its full start/end range remains available to `after` and `until` scheduling and the automatic time window. Native callers use `chart.AddGanttMarker("Deadline", when, rangeEnd: optionalEnd)`; numeric schedules have the equivalent numeric overload. Accessible descriptions and interaction values identify the visible start position, while `data-cfx-end` retains the scheduling endpoint. Markers are hidden from the legend by default; opting one in with `chart.Series[index].WithLegendEntry()` uses the marker's actual point, series, status or default ink for its swatch. Ordinary `AddVerticalLine` annotations also render on classic Gantt and timeline charts through the shared annotation owner. Marker-only Gantt charts render guides and a time axis without inventing task rows. Captions use measured placement around task bodies; explicit axis bounds hide markers outside the window. Mermaid 10 interprets the tested unnumbered `vert` form as an ordinary task id; the versioned fixture records that semantic difference, while ChartForgeX follows the current 11/12 marker interpretation.
 
@@ -1016,7 +1044,7 @@ The conversion target for radar diagrams is `Chart`. Axis labels, curve values, 
 
 Nonnegative decimal `ticks` selects equal radial intervals, with five by default. `ticks 0` hides concentric guides while retaining spokes, labels and data points. Fractional values retain the authored spacing divisor: `ticks 2.5` draws three guides at 0.4, 0.8 and 1.2 times the value-axis radius; `ticks 0.5` draws one guide at twice that radius. The shared scene fits the outer guide inside the viewport while preserving the value domain and observations. Counts above 32 render 32 guides with a source warning and retain the authored count in the AST. Tick numerals require digits on both sides of a decimal point; negative, signed, exponent and shorthand decimal spellings produce located errors.
 
-Native C# radar charts keep their polygon default and can select circular guides with `WithPolarGridShape(ChartPolarGridShape.Circle)`. Set `Options.PolarGridRingCount` from 0 through 100 for integer or fractional intervals, or leave it null to use the radial axis's generated ticks. Integer counts preserve data-point coordinates; fractional intervals fit the extended outer guide without changing source values or series forms. `PolarGridRingCount` and `MermaidRadarDocument.Ticks` use `double?`; code that reads them into `int?` must use `double?` to retain fractional values. Source radar theme variables remain unmapped.
+Native C# radar charts keep their polygon default and can select circular guides with `WithPolarGridShape(ChartPolarGridShape.Circle)`. Set `Options.PolarGridRingCount` from 0 through 100 for integer or fractional intervals, or leave it null to use the radial axis's generated ticks. Integer counts preserve data-point coordinates; fractional intervals fit the extended outer guide without changing source values or series forms. `PolarGridRingCount` and `MermaidRadarDocument.Ticks` use `double?`; code that reads them into `int?` must use `double?` to retain fractional values.
 
 Static SVG and PNG share the same radar path geometry. Circular graticules, including the default, select closed cubic curves with tension `0.17`; polygonal graticules select straight edges.
 
@@ -1040,6 +1068,24 @@ Radar configuration also maps `width`, `height`, `marginLeft`, `marginTop`, `mar
 `axisScaleFactor` changes spoke length relative to the value-axis radius; `axisLabelFactor` changes category-label anchors. They default to one and 1.05 respectively for Mermaid sources. The native theme supplies the caption gap. Long visible spokes, label anchors, fractional guides and curved outlines share the available plot space without changing observation values or the selected value domains. Direct native radar and polar charts expose `Options.PolarAxisScaleFactor` and `Options.PolarAxisLabelFactor`, both with a default of one. These options apply to the dedicated radar/polar projection; radial-column compositions retain their shared numeric radial layout.
 
 `MermaidRadarRenderOptions.Width` and `Height` are nullable host overrides: null uses the authored source dimension, then the native preview default of 760 by 620 pixels. Callers reading either property into an `int` can use `Width ?? 760` or `Height ?? 620`, or read the converted chart's resolved size. `AxisScaleFactor`, `AxisLabelFactor` and `Padding` provide explicit host overrides; padding replaces all four source margins, including zero values. Unspecified source margins retain the native 24-pixel frame defaults. Markdown fences preserve the captured host options, and explicit fence dimensions override source dimensions. Source labels now use the 1.05 anchor factor by default; callers retaining the earlier native anchor placement can set the host `AxisLabelFactor` to one. Native heading, legend and measured-label spacing still determines the final plot, so source margins do not promise browser-renderer pixel identity.
+
+Radar source paint uses `config.themeVariables`. `titleColor` sets the title color, and `cScale0` through `cScale11` set series colors in source order. These are explicit native style values over the active paired theme; changing light/dark mode preserves authored paint. The series palette repeats after twelve slots, and omitted slots use the native theme palette.
+
+The following nested `themeVariables.radar` settings apply through the same chart and series owners in direct and Markdown-fence rendering:
+
+| Source setting | Native owner | Accepted value |
+| --- | --- | --- |
+| `axisColor` | Spoke stroke and axis-label color | Supported native color string |
+| `axisStrokeWidth` | `Options.PolarAxisStroke` | Finite width from 0 through 1024; zero hides spoke ink |
+| `axisLabelFontSize` | Tick-label style | Finite logical-pixel size from 1 through 256 |
+| `graticuleColor` | Guide stroke and authored guide fill | Supported native color string |
+| `graticuleStrokeWidth` | `Options.PolarGridStroke` | Finite width from 0 through 1024; zero hides guide outlines |
+| `graticuleOpacity` | `Options.PolarGridFillOpacity` | Finite opacity from 0 through 1 |
+| `curveOpacity` | Per-series radar fill opacity | Finite opacity from 0 through 1 |
+| `curveStrokeWidth` | Per-series radar `OutlineStroke` | Finite width from 0 through 1024; zero hides the outline |
+| `legendFontSize` | Legend text style | Finite logical-pixel size from 1 through 256 |
+
+Invalid supported values produce located configuration errors. Frontmatter/directive precedence follows the shared configuration rules. Native callers can configure each retained radar series through `ConfigureRadar`, including `OutlineStroke` with the existing immutable `ChartStrokeStyle`; guide strokes use that same type. SVG and PNG share the resolved plot, guide and legend paint, including color alpha. Authored nested guide fills composite in drawing order. Unmapped theme variables retain diagnostics rather than selecting another renderer.
 
 ## Treemap Diagrams
 
@@ -1393,6 +1439,7 @@ Flowchart rendering maps Mermaid concepts into the ChartForgeX topology visual v
 | Subgraph | Topology group. |
 | Node label | Topology node label. |
 | Edge label | Topology edge label. |
+| Link length | Native `TopologyEdge.MinimumRankSpan`, also used by swimlane diagrams. |
 | `click` href and tooltip | Topology node href and tooltip. |
 | `classDef`, `class`, `style` colors | Node style metadata and supported color fields. |
 | `linkStyle stroke` | Edge color. |
@@ -1439,11 +1486,11 @@ Fence attributes such as `id`, `title`, `subtitle`, `width`, `height`, and famil
 
 ## Mermaid.js Conformance Fixtures
 
-The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.1.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. Shared expectations cover selected flowchart nodes/edges and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. The harness does not render upstream reference images.
+The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. Shared expectations cover selected flowchart nodes/edges and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. The harness does not render upstream reference images.
 
 ```powershell
 Set-Location .\tests\mermaid-conformance
-npm ci --ignore-scripts --no-audit --no-fund
+npm ci --ignore-scripts --no-audit --no-fund --engine-strict
 npm run validate
 ```
 

@@ -30,36 +30,22 @@ public sealed partial class PngVisualBlockRenderer {
 
     internal static RgbaCanvas RenderOwnedCanvas(IVisualBlock block, Action<RgbaCanvas> renderContent, Func<ChartLabelScene> labelScene, int? outputScale = null) {
         var options = block.Options;
-        var theme = options.Theme;
-        if (theme.UseGraphiteLayout) {
-            var scene = labelScene();
-            var target = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
-            target.Clear(options.HostOwnsFrame || options.TransparentBackground || options.ShowCard && theme.UseCard ? ChartColor.Transparent : VisualBlockRendering.SurfaceBackground(options));
-            scene.PaintMarks(target);
-            scene.Paint(target);
-            return target;
-        }
-        using var emphasis = RgbaCanvas.OpenEmphasisScope();
-        var canvas = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
-        canvas.Clear(VisualBlockRendering.SurfaceBackground(options));
-        if (options.ShowCard && theme.UseCard) {
-            var radius = Math.Max(0, theme.CornerRadius - 0.5);
-            if (theme.FlatMarks) canvas.FillRoundedRect(0.5, 0.5, Math.Max(0, options.Size.Width - 1), Math.Max(0, options.Size.Height - 1), radius, theme.CardBackground);
-            else canvas.FillRoundedRectVerticalGradient(0, 0, options.Size.Width, options.Size.Height, theme.CornerRadius, ChartSurfacePolish.GradientTop(theme.CardBackground), ChartSurfacePolish.GradientBottom(theme.CardBackground));
-            canvas.StrokeRoundedRect(0.5, 0.5, Math.Max(1, options.Size.Width - 1), Math.Max(1, options.Size.Height - 1), radius, theme.CardBorder, 1);
-            if (theme.CardBackground.A > 0 && !theme.FlatMarks) canvas.StrokeRoundedRect(ChartVisualPrimitives.CardInnerHighlightInset, ChartVisualPrimitives.CardInnerHighlightInset, Math.Max(1, options.Size.Width - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(1, options.Size.Height - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(0, theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset), ApplyOpacity(ChartColor.White, ChartVisualPrimitives.CardInnerHighlightOpacity), 1);
-        }
-
-        renderContent(canvas);
-        return canvas;
+        var theme = options.ResolvedTheme;
+        var scene = labelScene();
+        var target = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
+        // The shared mark scene owns the page background, including its alpha and host-frame policy.
+        target.Clear(ChartColor.Transparent);
+        scene.PaintMarks(target);
+        scene.Paint(target);
+        return target;
     }
 
     internal static void DrawHeading(RgbaCanvas canvas, IVisualBlock block, ref double y, double x, double width) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         var headings = VisualBlockRendering.Headings(block);
         var titleSize = headings.TitleFontSize; var subtitleSize = headings.SubtitleFontSize;
         if (block.Title.Length > 0) {
-            var title = VisualBlockRendering.FitMeasuredText(block.Title, titleSize, width, theme.FontFamily, theme.UseGraphiteLayout ? 700 : 800);
+            var title = VisualBlockRendering.FitMeasuredText(block.Title, titleSize, width, theme.FontFamily, 700);
             DrawAlignedTextAtBaseline(canvas, title, x, y + headings.TitleAscent, width, TextAlignment.Left, theme.Text, titleSize, true);
             y += headings.TitleAdvance;
         }

@@ -7,6 +7,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class ReferenceStrokeDashTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

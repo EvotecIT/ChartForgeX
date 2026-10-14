@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects readable data tooltips without stripping host identity or authored metadata.</summary>
 public sealed class InteractiveTooltipReadoutBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("funnel", false)]
     [InlineData("funnel", true)]
     [InlineData("pie", false)]
@@ -26,7 +26,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         if (!Enabled) return;
         var width = dark ? 340 : 700;
         var chart = Chart.Create().WithSize(596, 338).WithXLabels("North", "South")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         switch (family) {
             case "funnel": chart.AddFunnel("Requests", ChartPoints.FromValues(7, 3)); break;
             case "pie": chart.AddPie("Requests", ChartPoints.FromValues(7, 3)); break;
@@ -87,7 +87,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("pie", false, "61.54%")]
     [InlineData("pie", true, "61.54%")]
     [InlineData("gauge", false, "100%")]
@@ -101,7 +101,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
     public async Task PercentReadoutUsesReadableUnitsWhileRetainingFractionalMetadata(string family, bool dark, string expected) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(dark ? 316 : 596, 338).WithLegend(false).WithDataLabels(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         switch (family) {
             case "pie": chart.AddPie("Requests", ChartPoints.FromValues(8, 5)); break;
             case "gauge": chart.AddGauge("Capacity", 13, max: 13); break;
@@ -149,15 +149,14 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task CircleScalarUsesSeriesIdentityForTabPointerAndPercentageReadout(bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(dark ? 316 : 596, 338).WithLegend(true).WithDataLabels(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .AddCircle("Capacity", 8, max: 13);
-        chart.Series[0].WithInteractionKey("capacity-source");
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .AddSeries(ChartSeries.CreateCircle(new ChartSeriesId("capacity-source"), "Capacity", 8, max: 13));
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single)
             .Replace("<main ", "<button id='before-chart'>Before chart</button><main ", StringComparison.Ordinal);
         if (dark) {
@@ -169,6 +168,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         var page = session.Page;
         var target = page.Locator("[data-cfx-role='circle-chart']");
         var root = page.Locator(".cfx-interactive-chart");
+        Assert.Equal("1", await target.GetAttributeAsync("data-cfx-source-count"));
         var rawPercent = await target.GetAttributeAsync("data-cfx-percent");
         Assert.Equal(8d / 13d, await target.EvaluateAsync<double>("node => Number(node.dataset.cfxPercent)"));
         await page.EvaluateAsync("() => { const root = document.querySelector('.cfx-interactive-chart'); root.addEventListener('cfxselect', event => window.circleSelection = event.detail.target); root.addEventListener('cfxhover', event => window.circleHover = event.detail.target); }");
@@ -251,7 +251,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         Assert.Equal("capacity-source", target.GetProperty("seriesKey").GetString());
         Assert.Equal("8", target.GetProperty("value").GetString());
         Assert.False(target.TryGetProperty("point", out _));
-        Assert.False(target.TryGetProperty("sourcePoint", out _));
+        Assert.Equal("0", target.GetProperty("sourcePoint").GetString());
     }
 
     private static Task<double[]> CircleLocationAsync(ILocator target, bool empty) => target.EvaluateAsync<double[]>("(node, empty) => { const svg = node.closest('svg'); const center = node.querySelector('[data-cfx-role=\"circle-center\"]'); const point = svg.createSVGPoint(); point.x = empty ? 8 : Number(center.getAttribute('cx')); point.y = empty ? svg.viewBox.baseVal.height - 8 : Number(center.getAttribute('cy')); const screen = point.matrixTransform(svg.getScreenCTM()); return [screen.x, screen.y]; }", empty);

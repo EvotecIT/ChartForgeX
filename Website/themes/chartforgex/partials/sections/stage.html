@@ -16,7 +16,6 @@
     .WithTitle(<span class="s">"Sign-ins by method"</span>)
     .WithSubtitle(<span class="s">"Weekly sign-ins across the tenant, last 12 weeks"</span>)
     .WithYAxis(<span class="s">"Sign-ins"</span>)
-    .WithDesignTokens(<span class="t">VisualDesignTokens</span>.GraphiteLight())
     .WithXLabels(weeks)
     .AddStackedArea(<span class="s">"Passkey"</span>, Points(<span class="n">800</span>, <span class="n">1200</span>, <span class="n">1700</span>, <span class="c">/* … */</span> <span class="n">8900</span>))
     .AddStackedArea(<span class="s">"Authenticator app"</span>, Points(<span class="n">7200</span>, <span class="c">/* … */</span> <span class="n">6200</span>))

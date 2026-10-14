@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -142,12 +143,12 @@ public sealed class ChartLineStrokeQualityTests {
     }
 
     private static Chart LineChart(IReadOnlyList<ChartPoint> points, ChartColor color, double width, bool smooth) {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 400).WithHeader(false).WithLegend(false).WithGrid(false).WithAxes(false).WithLineVisualStyle(ChartLineVisualStyle.Plain());
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 400).WithHeader(false).WithLegend(false).WithGrid(false).WithAxes(false).WithLineVisualStyle(ChartLineVisualStyle.Plain());
         // Fixed domains keep the stroke cross-section proof independent of automatic tick rounding.
         chart.WithXAxisBounds(points.Min(point => point.X), points.Max(point => point.X)).WithYAxisBounds(0, 100);
         if (smooth) chart.AddSmoothLine("Series", points, color);
         else chart.AddLine("Series", points, color);
-        chart.Series[0].WithStrokeWidth(width).WithMarkerRadius(0);
+        chart.Series[0].WithStrokeWidth(width).ConfigureMarkers(markers => markers.Radius = 0);
         return chart;
     }
 
@@ -161,7 +162,7 @@ public sealed class ChartLineStrokeQualityTests {
             .AddLine("Series", new[] { new ChartPoint(0, 10), new ChartPoint(10, 12) }, ChartColor.FromRgba(0, 0, 0, 0));
         chart.Options.XAxis.ShowLine = showLine;
         chart.Options.YAxis.ShowLine = false;
-        chart.Options.Theme.Axis = Ink;
+        chart.Options.Theme = chart.Options.Theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = Ink; });
         return chart;
     }
 

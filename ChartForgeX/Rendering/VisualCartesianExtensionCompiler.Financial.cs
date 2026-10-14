@@ -9,10 +9,10 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawFinancial(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
-        var series = chart.Series[index]; var stride = ObservationStride(series.Kind); var count = series.Points.Count / stride;
+        var series = chart.Series[index]; var stride = ObservationStride(series.Kind); var count = series.RenderPoints.Count / stride;
         for (var item = 0; item < count; item++) {
-            var raw = item * stride; var xValue = series.Points[raw].X; var x = map.X(xValue);
-            var open = series.Points[raw].Y; var high = series.Points[raw + 1].Y; var low = series.Points[raw + 2].Y; var close = series.Points[raw + 3].Y;
+            var raw = item * stride; var xValue = series.RenderPoints[raw].X; var x = map.X(xValue);
+            var open = series.RenderPoints[raw].Y; var high = series.RenderPoints[raw + 1].Y; var low = series.RenderPoints[raw + 2].Y; var close = series.RenderPoints[raw + 3].Y;
             var style = FinancialStyle(series, index, item, close >= open, colors);
             var candle = series.Kind == ChartSeriesKind.Candlestick;
             var width = candle ? Math.Max(8, Math.Min(22, plot.Width / Math.Max(1, count * 5))) : Math.Max(7, Math.Min(18, plot.Width / Math.Max(1, count * 6)));

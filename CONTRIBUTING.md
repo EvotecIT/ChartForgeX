@@ -29,9 +29,19 @@ dotnet test .\ChartForgeX.sln -c Release
 - Breaking changes are allowed when they bring a cleaner architecture, better usability, or a simpler public API. Document the migration path instead of keeping compatibility shims that lock in poor design.
 - Do not suppress warnings with `NoWarn`.
 
-## CI Runner
+## Browser Quality
 
-The GitHub Actions workflow is intentionally configured for private repositories. It requires a self-hosted runner with both `self-hosted` and `private` labels.
+The quality workflow runs the build/test/example/package loop on Windows, Linux, and macOS. A separate Windows Chromium job requires rendered browser and interaction checks to execute.
+
+Run that browser lane locally with a task-owned absolute output directory:
+
+```powershell
+./Build/Test-BrowserQuality.ps1 -OutputRoot (Join-Path ([IO.Path]::GetTempPath()) 'chartforgex-browser-quality')
+```
+
+The runner builds the tests, generates and serves a fresh v2 gallery on loopback, and enables the `Category=Browser` contracts. HtmlTinkerX owns Chromium installation and session lifetime. The runner stops its gallery server and restores its environment when it finishes, including after a test failure. Its output directory retains the TRX, screenshots, measured defects, and console evidence for inspection; remove superseded task output when it is no longer needed.
+
+The ordinary test loop reports disabled browser contracts and missing platform prerequisites as explicit skips. Required mode fails on incomplete setup, an empty selection, or skipped tests. A passing build without the required browser lane does not qualify interaction behavior or complete appearance.
 
 ## Build Timeouts
 
@@ -40,7 +50,7 @@ The GitHub Actions workflow is intentionally configured for private repositories
 - `-DotNetCommandTimeoutSeconds` controls the general restore/build/test/example/pack timeout. The default is 900 seconds.
 - `-PackageConsumerTimeoutSeconds` controls the final temporary-console-app package smoke run. The default is 180 seconds.
 
-If a private runner is under heavy load, rerun with a larger timeout rather than skipping package or visual validation:
+If a runner is under heavy load, rerun with a larger timeout:
 
 ```powershell
 ./Build.ps1 -Configuration Release -DotNetCommandTimeoutSeconds 1800 -PackageConsumerTimeoutSeconds 300
@@ -104,10 +114,6 @@ Topology and geographic topology examples are not part of `visual-baseline.json`
 
 Keep that split until dense routing and geographic layout polish settle enough for numeric visual baselines. When promoting topology artifacts into the regular baseline, start with the manifest's `baselineCandidates` list and update `Build.ps1`, `ChartForgeX.Examples/visual-baseline.json`, `TODO.md`, and this guide in the same PR.
 
-## Release Workflow
+## Release Qualification
 
-1. Choose and add package license metadata before a public NuGet release.
-2. Update `Version` and package release metadata in `ChartForgeX/ChartForgeX.csproj`, `ChartForgeX.Interactivity/ChartForgeX.Interactivity.csproj`, and `ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj`.
-3. Run `./Build.ps1 -Configuration Release`.
-4. Inspect generated examples at `ChartForgeX.Examples/bin/Release/net8.0/output/index.html`.
-5. Publish the package files from `artifacts/packages/Release`.
+Before an authorized release, run the quality loop with `-QualifyPackages`, the required browser lane, and the applicable cross-platform CI checks. Inspect the generated examples and retain the release candidate's package-consumer results. Use the coordinated PowerForge entrypoint described above to version and publish the nine packages together. Verify the public artifacts and affected installed consumers separately; successful local packing establishes neither publication nor host readiness.

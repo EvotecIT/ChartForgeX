@@ -11,14 +11,15 @@ public static partial class V2Examples {
             foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
                 var id = family + "-feasibility-" + mode.ToString().ToLowerInvariant();
                 var title = family == "topology" ? "Service request route" : "Client and server exchange";
-                IVisualRenderable model = family == "topology" ? CreateTopology() : CreateSequence();
+                var recipe = ExampleRecipes.Named("simple-" + family);
+                var model = recipe.Create("feasibility", mode);
                 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
                     VisualTheme.Graphite(), mode, new VisualFrame(title, "Product-neutral diagram semantics", showLegend: false), FontSpec.FromFamily(ProofFont));
                 var prepared = model.Prepare(context);
                 ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
                 File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
                 WriteThumbnail(output, model, id, title, family, mode, legend: false);
-                ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".csharp.txt"), DiagramSnippet(family, title, mode));
+                WriteRecipe(output, id, recipe, "feasibility", title, "Product-neutral diagram semantics", mode, 640, 400, false, family == "topology" ? "Topology" : "Sequence");
                 artifacts.Add(new ProofArtifact(id, family, title, "feasibility", mode.ToString().ToLowerInvariant(), 640, 400,
                     prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count,
                     DiagnosticMessages: prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray()));
@@ -26,46 +27,4 @@ public static partial class V2Examples {
         }
     }
 
-    /// <summary>Creates the bounded native topology proof without product-specific data or layout policy.</summary>
-    // <topology-source>
-    public static TopologyChart CreateTopology() {
-        var chart = TopologyChart.Create();
-        chart.Id = "service-request";
-        chart.Viewport = new TopologyViewport { Width = 640, Height = 400 };
-        chart.Nodes.Add(new TopologyNode { Id = "source", Label = "Source\nservice", X = 24, Y = 70, Width = 140, Height = 64, Status = TopologyHealthStatus.Healthy });
-        chart.Nodes.Add(new TopologyNode { Id = "target", Label = "Target", X = 300, Y = 70, Width = 140, Height = 64 });
-        chart.Edges.Add(new TopologyEdge { Id = "route", SourceNodeId = "source", TargetNodeId = "target", Direction = VisualLinkDirection.Forward,
-            Routing = TopologyEdgeRouting.Straight, LineStyle = TopologyEdgeLineStyle.Solid, Label = "Request" });
-        return chart;
-    }
-    // </topology-source>
-
-    /// <summary>Creates a multiline call and dashed return with ordinary participants.</summary>
-    // <sequence-source>
-    public static SequenceArtifact CreateSequence() => SequenceArtifact.Create("session").WithSize(640, 400)
-        .AddParticipant("client", "Client").AddParticipant("server", "Server")
-        .AddMessage("client", "server", "Request\npayload")
-        .AddMessage("server", "client", "Response", SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return);
-    // </sequence-source>
-
-    private static string DiagramSnippet(string family, string title, VisualThemeMode mode) {
-        var factory = ReadFactorySource("ChartForgeX.Examples.V2DiagramSource", family);
-        return "using ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\nusing ChartForgeX.Typography;\nusing ChartForgeX.VisualArtifacts;\n\n" +
-            ProofFontSetup +
-            "var model = " + (family == "topology" ? "CreateTopology" : "CreateSequence") + "();\n" +
-            "var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), VisualTheme.Graphite(), VisualThemeMode." + mode + ",\n" +
-            "    new VisualFrame(" + Literal(title) + ", \"Product-neutral diagram semantics\", showLegend: false), FontSpec.FromFamily(\"" + ProofFont + "\"));\n" +
-            "var prepared = model.Prepare(context);\nSystem.IO.File.WriteAllText(\"diagram.svg\", prepared.ToSvg());\nSystem.IO.File.WriteAllBytes(\"diagram.png\", prepared.ToPng());\n\n" + factory + "\n";
-    }
-
-    private static string ReadFactorySource(string resource, string name) {
-        using var stream = typeof(V2Examples).Assembly.GetManifestResourceStream(resource)
-            ?? throw new InvalidOperationException("Example source is missing: " + resource);
-        using var reader = new StreamReader(stream);
-        var source = reader.ReadToEnd();
-        var marker = "// <" + name + "-source>";
-        var start = source.IndexOf(marker, StringComparison.Ordinal) + marker.Length;
-        var end = source.IndexOf("// </" + name + "-source>", start, StringComparison.Ordinal);
-        return source.Substring(start, end - start).Trim().Replace("public static ", "static ", StringComparison.Ordinal);
-    }
 }

@@ -1,0 +1,52 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = DottedMapRecipe.Create("compact", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Service routes across Europe", "The same data in a compact view", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Creates a dotted map with service locations and routes across Europe.</summary>
+public static class DottedMapRecipe {
+    /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+
+        var chart = Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe())
+            .AddDottedMap("Locations", new[] {
+                new ChartMapPoint("Madrid", -3.7, 40.4, 18),
+                new ChartMapPoint("Warsaw", 21, 52.2, 74),
+                new ChartMapPoint("Oslo", 10.8, 59.9, 42)
+            })
+            .AddMapRouteBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw")
+            .AddMapRoute("Warsaw to Oslo", new[] {
+                new ChartMapPoint("Warsaw", 21, 52.2),
+                new ChartMapPoint("Baltic", 17, 56),
+                new ChartMapPoint("Oslo", 10.8, 59.9)
+            })
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        if (variant is "options" or "compact-options") chart.WithPointLegend();
+        return chart;
+    }
+}

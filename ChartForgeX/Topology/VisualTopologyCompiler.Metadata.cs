@@ -42,6 +42,7 @@ internal sealed partial class VisualTopologyCompiler {
             data["data-node-artwork-source"] = ResolveNodeArtworkSource(node, _options) ?? string.Empty;
         }
         if (!string.IsNullOrWhiteSpace(node.Color)) data["data-node-color"] = node.Color!;
+        if (node.PaletteIndex.HasValue) data["data-node-palette-index"] = node.PaletteIndex.Value.ToString(CultureInfo.InvariantCulture);
         if (!string.IsNullOrWhiteSpace(node.BackgroundColor)) data["data-node-background-color"] = node.BackgroundColor!;
         return data;
     }
@@ -75,6 +76,7 @@ internal sealed partial class VisualTopologyCompiler {
             : string.Join(" ", new[] { (TopologyEdgeLayoutInference.SourcePort, "source-port"), (TopologyEdgeLayoutInference.TargetPort, "target-port"), (TopologyEdgeLayoutInference.RouteLane, "route-lane") }
                 .Where(entry => (edge.LayoutInference & entry.Item1) != 0).Select(entry => entry.Item2));
         data["data-edge-color"] = edge.Color ?? string.Empty;
+        if (edge.PaletteIndex.HasValue) data["data-edge-palette-index"] = edge.PaletteIndex.Value.ToString(CultureInfo.InvariantCulture);
         if (edge.StrokeWidth.HasValue) data["data-edge-stroke-width"] = Number(edge.StrokeWidth.Value * _scale);
         if (edge.Opacity.HasValue) data["data-edge-opacity"] = Number(edge.Opacity.Value);
         data["data-edge-dash-pattern"] = string.Join(" ", edge.DashPattern.Select(length => Number(length * _scale)));

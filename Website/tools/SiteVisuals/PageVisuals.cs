@@ -39,8 +39,6 @@ internal sealed class VisualOutput {
     public VisualOutput(string website) {
         Website = website;
         Root = Path.Combine(website, "static", "site");
-        Light = VisualDesignTokens.GraphiteLight();
-        Dark = VisualDesignTokens.GraphiteDark();
         // The generator owns these folders completely, so a renamed visual never leaves a stale file behind.
         foreach (var folder in OwnedFolders) {
             var path = Path.Combine(Root, folder);
@@ -53,14 +51,12 @@ internal sealed class VisualOutput {
 
     public string Website { get; }
     public string Root { get; }
-    public VisualDesignTokens Light { get; }
-    public VisualDesignTokens Dark { get; }
     public int Files { get; private set; }
     public long Bytes { get; private set; }
 
-    public IEnumerable<(string Mode, VisualDesignTokens Tokens, bool IsDark)> Modes() {
-        yield return ("light", Light, false);
-        yield return ("dark", Dark, true);
+    public IEnumerable<(string Name, VisualThemeMode Mode, bool IsDark)> Modes() {
+        yield return ("light", VisualThemeMode.Light, false);
+        yield return ("dark", VisualThemeMode.Dark, true);
     }
 
     public void Text(string relative, string content) {
@@ -77,9 +73,9 @@ internal sealed class VisualOutput {
     }
 
     /// <summary>Writes a light and a dark SVG named <c>{name}-light.svg</c> and <c>{name}-dark.svg</c> and returns their size.</summary>
-    public Dictionary<string, object> Pair(string name, Func<VisualDesignTokens, bool, string> render) {
-        var light = render(Light, false);
-        var dark = render(Dark, true);
+    public Dictionary<string, object> Pair(string name, Func<VisualThemeMode, bool, string> render) {
+        var light = render(VisualThemeMode.Light, false);
+        var dark = render(VisualThemeMode.Dark, true);
         Text(name + "-light.svg", light);
         Text(name + "-dark.svg", dark);
         var (width, height) = Size(light);
@@ -93,9 +89,9 @@ internal sealed class VisualOutput {
     }
 
     /// <summary>Writes a light and a dark PNG pair, for outputs whose SVG animates.</summary>
-    public Dictionary<string, object> PngPair(string name, Func<VisualDesignTokens, bool, byte[]> render) {
-        var light = render(Light, false);
-        var dark = render(Dark, true);
+    public Dictionary<string, object> PngPair(string name, Func<VisualThemeMode, bool, byte[]> render) {
+        var light = render(VisualThemeMode.Light, false);
+        var dark = render(VisualThemeMode.Dark, true);
         // Width and height are the big-endian integers of the IHDR chunk.
         static int Read(byte[] png, int offset) => (png[offset] << 24) | (png[offset + 1] << 16) | (png[offset + 2] << 8) | png[offset + 3];
         var width = Read(light, 16);

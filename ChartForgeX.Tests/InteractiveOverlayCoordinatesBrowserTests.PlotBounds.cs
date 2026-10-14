@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Fit)]
     [InlineData(true, HtmlChartResponsiveLayout.Fit)]
     [InlineData(false, HtmlChartResponsiveLayout.Readable)]
@@ -22,13 +22,12 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
         var values = new[] { new ChartPoint(1, 5), new ChartPoint(5, 5), new ChartPoint(9, 9) };
         const string name = "Reading with a long observation label that must fit the plot";
-        if (horizontal) chart.AddHorizontalBar(name, values);
+        if (horizontal) chart.AddSeries(new ChartSeries(new ChartSeriesId("reading-source"), name, ChartSeriesKind.HorizontalBar, values));
         else {
-            chart.AddScatter(name, values).AddLine("Secondary", new[] { new ChartPoint(1, 2000), new ChartPoint(9, 8000) });
+            chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), name, values)).AddLine("Secondary", new[] { new ChartPoint(1, 2000), new ChartPoint(9, 8000) });
             chart.Series[1].UseSecondaryYAxis();
             chart.WithSecondaryYAxisBounds(0, 10000);
         }
-        chart.Series[0].WithInteractionKey("reading-source");
         await using var session = await OpenAsync(Host(false, layout, 340, 1, false, ChartInteractionFeatures.Crosshair, chart), 950, 760);
         var page = session.Page;
         foreach (var index in new[] { 0, 2 }) {
@@ -47,7 +46,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartResponsiveLayout.Fit)]
     [InlineData(HtmlChartResponsiveLayout.Readable)]
     public async Task ProgrammaticViewportAndResetDiscardStaleGuidesAndReprojectTheSameObservation(HtmlChartResponsiveLayout layout) {
@@ -88,7 +87,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task MissingOrAmbiguousPlotMetadataRetainsNativeTooltipsWithoutGuessingAGuide(bool ambiguous) {

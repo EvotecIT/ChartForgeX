@@ -6,7 +6,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPaintBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task FullyOffscreenOversizedScheduleTargetScrollsIntoViewAndOrdinaryNavigationStillReturns() {
         if (!Enabled) return;
         var chart = Frame(false).WithTitle("Offscreen intervals").WithXAxisBounds(0, 10)

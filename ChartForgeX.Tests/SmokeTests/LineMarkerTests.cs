@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -11,9 +12,9 @@ internal static partial class SmokeTests {
     private static void ZeroMarkerRadiusSuppressesOptionalLineMarkers() {
         var color = ChartColor.FromRgb(37, 99, 235);
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 30), new ChartPoint(3, 20) };
-        var referenceSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var referenceSvg = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
-            .ConfigureTheme(theme => theme.WithMarkerRadius(4))
+            .ConfigureTheme(builder => builder.MarkerRadius = 4)
             .AddLine("Values", points, color)
             .ToSvg();
         var referenceMarkers = SvgDocument.Parse(referenceSvg).Root
@@ -22,9 +23,9 @@ internal static partial class SmokeTests {
             .ToArray();
         Assert(referenceMarkers.Length == points.Length, "Positive marker radii should preserve one SVG marker per line point.");
 
-        var markerless = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var markerless = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
-            .ConfigureTheme(theme => theme.WithMarkerRadius(0))
+            .ConfigureTheme(builder => builder.MarkerRadius = 0)
             .AddLine("Values", points, color);
         var markerlessSvg = markerless.ToSvg();
         Assert(!markerlessSvg.Contains("data-cfx-role=\"marker\"", StringComparison.Ordinal), "A zero marker radius should omit optional SVG line markers.");
@@ -42,15 +43,15 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(pixels[offset] - color.R) <= 48 && Math.Abs(pixels[offset + 1] - color.G) <= 48 && Math.Abs(pixels[offset + 2] - color.B) <= 48,
             "A zero marker radius should not punch marker-outline holes through PNG line paths.");
 
-        var markedArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var markedArea = Chart.Create().WithTheme(VisualTheme.Report())
             .WithLegend(true)
             .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
-            .ConfigureTheme(theme => theme.WithMarkerRadius(4))
+            .ConfigureTheme(builder => builder.MarkerRadius = 4)
             .AddArea("Area", points, color);
-        var markerlessArea = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var markerlessArea = Chart.Create().WithTheme(VisualTheme.Report())
             .WithLegend(true)
             .WithSize(320, 200).WithLineMarkers(ChartLineMarkerMode.All)
-            .ConfigureTheme(theme => theme.WithMarkerRadius(0))
+            .ConfigureTheme(builder => builder.MarkerRadius = 0)
             .AddArea("Area", points, color);
         Assert(!SvgDocument.Parse(markerlessArea.ToSvg()).Root.FindByTag("ellipse").Any(), "A markerless area should not advertise a point marker in its SVG legend.");
         Assert(SvgDocument.Parse(markedArea.ToSvg()).Root.FindByTag("ellipse").Count(element => element.GetAttribute("data-cfx-role") == "marker") == points.Length, "Area series should preserve explicitly enabled point markers.");

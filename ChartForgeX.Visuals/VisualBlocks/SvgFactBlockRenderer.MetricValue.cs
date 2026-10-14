@@ -10,7 +10,7 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderMetricValueSurface(SvgMarkupWriter writer, MetricCard card, ChartRect content, double detailBottom, double labelSize, double valueSize, double valueWidth, ChartColor statusColor) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var y = content.Y + labelSize + 18;
         var height = Math.Max(1, detailBottom - y - 4);
         var radius = Math.Min(20, Math.Max(14, theme.PlotCornerRadius + 7));
@@ -40,11 +40,11 @@ public sealed partial class SvgFactBlockRenderer {
         var desiredUnitWidth = card.Unit.Length == 0 ? 0 : VisualBlockRendering.EstimateTextWidth(card.Unit, unitSize);
         var valueWidth = Math.Max(1, maxWidth - desiredUnitWidth - gap);
         var fittedValue = VisualBlockRendering.FitText(card.Value, valueSize, valueWidth);
-        writer.StartElement("text").Attribute("data-cfx-role", "metric-value").Attribute("x", x).Attribute("y", y).Attribute("fill", valueColor.ToCss()).Attribute("font-family", card.Options.Theme.FontFamily).Attribute("font-size", valueSize).Attribute("font-weight", "850").Text(fittedValue).EndElement().Line();
+        writer.StartElement("text").Attribute("data-cfx-role", "metric-value").Attribute("x", x).Attribute("y", y).Attribute("fill", valueColor.ToCss()).Attribute("font-family", card.Options.ResolvedTheme.FontFamily).Attribute("font-size", valueSize).Attribute("font-weight", "850").Text(fittedValue).EndElement().Line();
         if (card.Unit.Length == 0) return;
         var valueTextWidth = VisualBlockRendering.EstimateTextWidth(fittedValue, valueSize);
         var unitWidth = Math.Max(1, maxWidth - valueTextWidth - gap);
-        writer.StartElement("text").Attribute("data-cfx-role", "metric-unit").Attribute("x", x + valueTextWidth + gap).Attribute("y", y).Attribute("fill", unitColor.ToCss()).Attribute("font-family", card.Options.Theme.FontFamily).Attribute("font-size", unitSize).Attribute("font-weight", "650").Text(VisualBlockRendering.FitText(card.Unit, unitSize, unitWidth)).EndElement().Line();
+        writer.StartElement("text").Attribute("data-cfx-role", "metric-unit").Attribute("x", x + valueTextWidth + gap).Attribute("y", y).Attribute("fill", unitColor.ToCss()).Attribute("font-family", card.Options.ResolvedTheme.FontFamily).Attribute("font-size", unitSize).Attribute("font-weight", "650").Text(VisualBlockRendering.FitText(card.Unit, unitSize, unitWidth)).EndElement().Line();
     }
 
     private static double MetricValueFontSize(MetricCard card, double requestedSize, double maxWidth) {

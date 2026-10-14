@@ -56,15 +56,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddHistogram(string name, IEnumerable<ChartPoint> observations, ChartHistogramBinLayout layout,
         ChartHistogramAggregation aggregation, ChartHistogramEncoding encoding = ChartHistogramEncoding.Value, ChartColor? color = null) {
-        if (observations == null) throw new ArgumentNullException(nameof(observations));
-        if (layout == null) throw new ArgumentNullException(nameof(layout));
-        EnsureCanAddSeries();
-        var source = observations.ToArray();
-        var bins = ChartHistogramAggregator.Aggregate(source, layout, aggregation, encoding);
-        var points = bins.Select(bin => new ChartPoint(bin.Center, bin.Value ?? 0));
-
-        Add(name, ChartSeriesKind.Bar, points, color);
-        Series[Series.Count - 1].SetHistogram(layout, aggregation, encoding, bins, source);
+        AppendSeries(ChartSeries.CreateHistogram(name, observations, layout, aggregation, encoding, color));
         return this;
     }
 }

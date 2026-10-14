@@ -33,11 +33,11 @@ internal static partial class TopologyRenderPrimitives {
     public static SvgPaint StatusPaint(string color, string background) => StatusPaint(color, background, 0.10);
 
     /// <summary>Returns <see cref="GroupFill"/> as an SVG paint.</summary>
-    public static SvgPaint GroupPaint(string accent, TopologyTheme theme, TopologyRenderOptions options, SvgColorRole colorRole) =>
+    public static SvgPaint GroupPaint(string accent, TopologyPaint theme, TopologyRenderOptions options, SvgColorRole colorRole) =>
         UseNeutralGroupSurface(options) ? SvgPaint.Plain(theme.Card) : StatusPaint(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.055 : 0.10, colorRole);
 
     /// <summary>Returns <see cref="NodeFill"/> as an SVG paint.</summary>
-    public static SvgPaint NodePaint(TopologyNode node, TopologyTheme theme, string accent, TopologyRenderOptions options, SvgColorRole colorRole) {
+    public static SvgPaint NodePaint(TopologyNode node, TopologyPaint theme, string accent, TopologyRenderOptions options, SvgColorRole colorRole) {
         if (!string.IsNullOrWhiteSpace(node.BackgroundColor)) return SvgPaint.Plain(node.BackgroundColor!.Trim());
         return EffectiveNodeSurfaceStyle(options) == TopologyNodeSurfaceStyle.Card
             ? SvgPaint.Plain(theme.Card)

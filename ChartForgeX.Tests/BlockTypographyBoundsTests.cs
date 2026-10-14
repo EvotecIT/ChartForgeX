@@ -13,6 +13,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class BlockTypographyBoundsTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, false)]
     [InlineData(false, true, false)]
@@ -22,13 +23,13 @@ public sealed class BlockTypographyBoundsTests {
     [InlineData(false, true, true)]
     [InlineData(true, false, true)]
     [InlineData(true, true, true)]
-    public async Task LargestAcceptedPacketTypographyKeepsBothRowsAndLabelsVisible(bool headings, bool graphite, bool card) {
+    public async Task LargestAcceptedPacketTypographyKeepsBothRowsAndLabelsVisible(bool headings, bool dark, bool card) {
         var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\npacket-beta\n0-31: \"Header\"\n32-63: \"Payload\"");
         Assert.Empty(result.Diagnostics);
         var artifact = result.Artifact!;
         var packet = Assert.IsType<PacketLayoutBlock>(artifact.Model);
-        packet.Options.Theme.UseGraphiteLayout = graphite;
         packet.Options.ShowCard = card;
+        packet.Options.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
         if (!headings) packet.WithTitle("").WithSubtitle("");
         var svg = XDocument.Parse(packet.ToSvg());
         var fields = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "packet-field").ToArray();
@@ -41,7 +42,7 @@ public sealed class BlockTypographyBoundsTests {
         var text = svg.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
         Assert.Contains("Header", text); Assert.Contains("Payload", text);
         foreach (var number in new[] { "0", "31", "32", "63" }) Assert.Contains(number, text);
-        if (headings && graphite) {
+        if (headings) {
             var firstField = fields.Min(field => Number(field, "y"));
             foreach (var heading in svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") is "visual-title" or "visual-subtitle")) {
                 Assert.True(heading.Attribute("data-cfx-label-y") != null, heading.ToString());
@@ -60,19 +61,20 @@ public sealed class BlockTypographyBoundsTests {
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(captures)) return;
         Directory.CreateDirectory(captures);
-        var name = "packet-font-256-" + (headings ? "headings-" : "body-") + (graphite ? "graphite-" : "classic-") + (card ? "card" : "bare");
+        var name = "packet-font-256-" + (headings ? "headings-" : "body-") + (dark ? "dark-" : "light-") + (card ? "card" : "bare");
         await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), PngWriter.WriteRgba(image));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(10.5)]
     [InlineData(21)]
     public async Task ClassicWardleyNotesUseTheSameBaselineInSvgAndPng(double size) {
-        var theme = ChartTheme.Light(); theme.UseGraphiteLayout = false; theme.FontFamily = "Arial"; theme.DataLabelFontSize = size;
-        theme.Background = theme.CardBackground = theme.PlotBackground = ChartColor.Transparent;
-        theme.Text = theme.Axis = theme.Grid = theme.PlotBorder = ChartColor.Transparent;
-        theme.MutedText = ChartColor.FromHex("#FF0000"); theme.Palette = new[] { ChartColor.Transparent };
+        var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; });
+        theme = theme.Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartColor.Transparent; builder.Light.Axis = builder.Dark.Axis = builder.Light.Grid = builder.Dark.Grid = builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.Transparent; });
+        theme = theme.Configure(builder => { builder.Light.Muted = builder.Dark.Muted = ChartColor.FromHex("#FF0000"); }); theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.Transparent }; });
         var map = WardleyMapBlock.Create().WithSize(800, 400).WithTheme(theme).WithCard(false).WithTransparentBackground();
         map.AddNode("n", "Node", .9, .1); map.AddNote("MMMM", .5, .5);
         var svg = map.ToSvg();

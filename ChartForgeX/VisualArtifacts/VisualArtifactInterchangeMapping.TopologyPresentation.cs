@@ -20,6 +20,7 @@ public static partial class VisualArtifactInterchangeMapping {
     private static VisualArtifactInterchangeTopologyNode MapNodePresentation(TopologyNode node, TopologyNodeDisplayMode displayMode, bool showStatusBadge) {
         return new VisualArtifactInterchangeTopologyNode {
             Kind = node.Kind,
+            PaletteIndex = node.PaletteIndex,
             Status = node.Status,
             DisplayMode = displayMode,
             Shape = node.Shape,
@@ -34,6 +35,7 @@ public static partial class VisualArtifactInterchangeMapping {
     private static VisualArtifactInterchangeTopologyEdge MapEdgePresentation(TopologyEdge edge, InterchangeIdScope ids) {
         var mapped = new VisualArtifactInterchangeTopologyEdge {
             Kind = edge.Kind,
+            PaletteIndex = edge.PaletteIndex,
             Status = edge.Status,
             Direction = edge.Direction,
             SourcePort = edge.SourcePort,
@@ -122,7 +124,7 @@ public static partial class VisualArtifactInterchangeMapping {
         };
     }
 
-    private static VisualArtifactInterchangeTheme MapTheme(TopologyTheme theme) {
+    private static VisualArtifactInterchangeTheme MapTheme(TopologyPaint theme) {
         return new VisualArtifactInterchangeTheme {
             Background = theme.Background,
             Foreground = theme.Foreground,

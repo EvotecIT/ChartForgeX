@@ -1,0 +1,8 @@
+global using System.Globalization;
+global using ChartForgeX.Core;
+global using ChartForgeX.Primitives;
+global using ChartForgeX.Rendering;
+global using ChartForgeX.Themes;
+global using ChartForgeX.Topology;
+global using ChartForgeX.VisualArtifacts;
+global using ChartForgeX.VisualBlocks;

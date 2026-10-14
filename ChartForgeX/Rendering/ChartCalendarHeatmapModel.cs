@@ -8,23 +8,23 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>
 /// Renderer-neutral days, weeks, colours, words, and cell geometry of a calendar heatmap, so SVG and PNG draw the
-/// same calendar. Weeks start on the series' first day of week. Default coloring gives zero its own neutral paint;
+/// same calendar. Weeks start on the chart's configured first day of week. Default coloring gives zero its own neutral paint;
 /// an explicit numeric scale instead maps every present value, including zero, over the complete observed domain.
 /// </summary>
 internal sealed class ChartCalendarHeatmapModel {
     private static readonly string[] InvariantDays = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
     private static readonly string[] InvariantMonths = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
     private readonly Dictionary<DateTime, ChartCalendarDay> _byDate;
-    private readonly string[] _dayNames;
-    private readonly string[] _monthNames;
+    private readonly IReadOnlyList<string> _dayNames;
+    private readonly IReadOnlyList<string> _monthNames;
 
     private ChartCalendarHeatmapModel(Chart chart, ChartSeries series, Dictionary<DateTime, ChartCalendarDay> byDate, DateTime minDate, DateTime maxDate, double min, double max, double rampMin, int zeroDays) {
         Chart = chart;
         Series = series;
         _byDate = byDate;
-        FirstDay = series.CalendarFirstDay;
-        _dayNames = series.CalendarDayNames ?? InvariantDays;
-        _monthNames = series.CalendarMonthNames ?? InvariantMonths;
+        FirstDay = chart.Options.Calendar.FirstDayOfWeek;
+        _dayNames = chart.Options.Calendar.DayNames ?? InvariantDays;
+        _monthNames = chart.Options.Calendar.MonthNames ?? InvariantMonths;
         MinDate = minDate;
         MaxDate = maxDate;
         Start = minDate.AddDays(-Row(minDate));
@@ -85,17 +85,17 @@ internal sealed class ChartCalendarHeatmapModel {
             }
         }
 
-        if (series == null || series.Points.Count == 0) return null;
+        if (series == null || series.RenderPoints.Count == 0) return null;
         var byDate = new Dictionary<DateTime, ChartCalendarDay>();
         var minDate = DateTime.MaxValue;
         var maxDate = DateTime.MinValue;
         var min = double.PositiveInfinity;
         var max = double.NegativeInfinity;
         var minNonZero = double.PositiveInfinity;
-        for (var i = 0; i < series.Points.Count; i++) {
-            var date = DateTime.FromOADate(series.Points[i].X).Date;
-            var value = series.Points[i].Y;
-            byDate[date] = new ChartCalendarDay(date, value, i < series.PointColors.Count ? series.PointColors[i] : null);
+        for (var i = 0; i < series.RenderPoints.Count; i++) {
+            var date = series.CalendarItems[i].Date;
+            var value = series.CalendarItems[i].Value;
+            byDate[date] = new ChartCalendarDay(date, value, i < series.PointColors.Count && series.PointColors[i].HasValue ? series.PointColors[i] : series.CalendarItems[i].Color);
             if (date < minDate) minDate = date;
             if (date > maxDate) maxDate = date;
             min = Math.Min(min, value);
@@ -182,7 +182,7 @@ internal sealed class ChartCalendarHeatmapModel {
     public static ChartRect Frame(Chart chart, ChartRect basePlot) {
         var options = chart.Options;
         if (options.HasExplicitPadding) return basePlot;
-        var inset = (options.ShowCard && options.Theme.UseCard ? ChartVisualPrimitives.CardSurfaceInset : 0) + EdgeInset;
+        var inset = (options.ShowCard ? ChartVisualPrimitives.CardSurfaceInset : 0) + EdgeInset;
         var top = options.ShowHeader ? Math.Max(inset, ChartLayout.HeaderBottom(chart)) : inset;
         return new ChartRect(inset, top, Math.Max(1, options.Size.Width - inset * 2), Math.Max(1, options.Size.Height - top - inset));
     }
@@ -199,14 +199,14 @@ internal sealed class ChartCalendarHeatmapModel {
     /// unless a preferred size fits or a maximum size applies; the grid is centred.
     /// </summary>
     public ChartCalendarLayout Layout(ChartRect plot) {
-        var options = Chart.Options;
-        var gap = options.CalendarCellGap ?? (Columns > 32 ? 2.5 : 3.5);
+        var options = Chart.Options.Calendar;
+        var gap = options.Gap ?? (Columns > 32 ? 2.5 : 3.5);
         // A preferred gap cannot consume the frame before its cells are drawn.
         gap = Math.Max(0, Math.Min(gap, Math.Min(Columns > 1 ? Math.Max(0, plot.Width - Columns) / (Columns - 1) : gap, Math.Max(0, plot.Height - 7) / 6)));
         var fit = Math.Max(0, Math.Min((plot.Width - gap * (Columns - 1)) / Columns, (plot.Height - gap * 6) / 7));
         var cell = fit;
-        if (options.CalendarMaximumCellSize.HasValue) cell = Math.Min(cell, options.CalendarMaximumCellSize.Value);
-        if (options.CalendarCellSize.HasValue) cell = Math.Min(options.CalendarCellSize.Value, fit);
+        if (options.MaximumCellSize.HasValue) cell = Math.Min(cell, options.MaximumCellSize.Value);
+        if (options.CellSize.HasValue) cell = Math.Min(options.CellSize.Value, fit);
         var gridWidth = Columns * cell + (Columns - 1) * gap;
         var gridHeight = 7 * cell + 6 * gap;
         return new ChartCalendarLayout(cell, gap, plot.Left + Math.Max(0, (plot.Width - gridWidth) / 2), plot.Top + Math.Max(0, (plot.Height - gridHeight) / 2), gridWidth, gridHeight);
@@ -218,7 +218,7 @@ internal sealed class ChartCalendarHeatmapModel {
     /// metrics, so SVG and PNG label the same rows.
     /// </summary>
     public IEnumerable<int> LabelledRows(ChartCalendarLayout layout) {
-        var all = layout.Cell + layout.Gap >= Chart.Options.Theme.TickLabelFontSize * 1.2 + 1;
+        var all = layout.Cell + layout.Gap >= Chart.Options.ResolvedTheme.TickLabelFontSize * 1.2 + 1;
         for (var row = 0; row < 7; row++) {
             var weekday = (DayOfWeek)(((int)FirstDay + row) % 7);
             if (all || weekday is DayOfWeek.Monday or DayOfWeek.Wednesday or DayOfWeek.Friday) yield return row;
@@ -232,7 +232,7 @@ internal sealed class ChartCalendarHeatmapModel {
     /// font size, so SVG and PNG choose the same labels.
     /// </summary>
     public IEnumerable<(DateTime Month, double X)> MonthLabels(ChartCalendarLayout layout) {
-        return MonthLabels(layout, text => text.Length * Chart.Options.Theme.TickLabelFontSize * 0.62);
+        return MonthLabels(layout, text => text.Length * Chart.Options.ResolvedTheme.TickLabelFontSize * 0.62);
     }
 
     internal IEnumerable<(DateTime Month, double X)> MonthLabels(ChartCalendarLayout layout, Func<string, double> measure) {

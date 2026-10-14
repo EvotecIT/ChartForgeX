@@ -108,7 +108,7 @@ public sealed partial class Chart {
         if (label == null) throw new System.ArgumentNullException(nameof(label));
         ChartGuards.Finite(x, nameof(x));
         ChartGuards.Finite(y, nameof(y));
-        var focusColor = color ?? Options.Theme.Palette[0];
+        var focusColor = color ?? Options.ResolvedTheme.Palette[0];
         WithHighlightedXAxisLabel(x, focusColor);
         // The callout owns the visible caption; the crosshair retains its full label
         // for accessibility and semantic exports without painting a duplicate.

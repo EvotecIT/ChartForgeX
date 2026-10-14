@@ -62,7 +62,7 @@ public sealed class RadarFormTests {
     public void MixedFormsShareCategoryAndValueGeometryAndKeepMissingZeroDistinctFromAuthoredZero() {
         var color = ChartColor.FromHex("#2468AC");
         var chart = Bare().AddRadarArea("Area", new[] { new ChartPoint(3, 80), new ChartPoint(1, 0), new ChartPoint(2, 50) }, color)
-            .AddRadarLine("Line", new[] { new ChartPoint(1, 0), new ChartPoint(3, 80), new ChartPoint(4, 20) }, color);
+            .AddRadarLine("Line", new[] { new ChartPoint(1 + 4e-16, 0), new ChartPoint(3, 80), new ChartPoint(4, 20) }, color);
         chart.Series[0].ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Star; marker.Radius = 6; });
         chart.Series[0].WithPointColor(0, ChartColor.FromHex("#AB1234")).WithPointLabel(0, "Complete source label");
         var prepared = Prepare(chart);
@@ -85,6 +85,21 @@ public sealed class RadarFormTests {
         chart.Series[0].Radar.Form = ChartLineAreaForm.Line; chart.Series[0].Points.Clear();
         chart.Series[1].Markers.Shape = ChartMarkerShape.Pin;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
+    }
+
+    [Fact]
+    public void NearbyDistinctCategoriesKeepEveryAuthoredValueAndObservationIdentity() {
+        var chart = Bare().AddRadar("Samples", new[] {
+            new ChartPoint(1, 10), new ChartPoint(1.0000000001, 90), new ChartPoint(2, 40), new ChartPoint(3, 60)
+        });
+        chart.Series[0].WithObservationId(1, new ChartObservationId("nearby"));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var sources = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "radar-point-source").ToArray();
+        Assert.Equal(4, sources.Length); Assert.Equal(4, sources.Select(source => source.Id).Distinct().Count());
+        var near = Assert.Single(sources, source => source.Metadata.TryGetValue("data-cfx-observation-id", out var id) && id == "nearby");
+        Assert.Equal("1", near.Metadata["data-cfx-point"]); Assert.Equal("90", near.Metadata["data-cfx-value"]);
+        Assert.Equal(1.0000000001, chart.Series[0].Points[1].X);
+        Assert.NotEmpty(prepared.ToPng());
     }
 
     [Fact]

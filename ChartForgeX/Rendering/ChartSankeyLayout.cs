@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 internal static class ChartSankeyLayout {
     internal static ChartSankeyModel Build(Chart chart) {
         var series = chart.Series.FirstOrDefault(s => s.Kind == ChartSeriesKind.Sankey);
-        if (series?.Relationships == null) return ChartSankeyModel.Empty;
+        if (series?.Relationships == null || series.Nodes.Count == 0) return ChartSankeyModel.Empty;
         var facts = series.Relationships;
         var links = new List<ChartSankeyLayoutLink>();
         var count = facts.Nodes.Count;

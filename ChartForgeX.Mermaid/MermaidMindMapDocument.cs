@@ -7,6 +7,17 @@ namespace ChartForgeX.Mermaid;
 /// Describes a parsed Mermaid mindmap.
 /// </summary>
 public sealed class MermaidMindMapDocument : MermaidDocument {
+    private MermaidMindMapColorMode _colorBy;
+
+    /// <summary>Gets or sets how categorical colors follow the source hierarchy. Branch is the default.</summary>
+    public MermaidMindMapColorMode ColorBy {
+        get => _colorBy;
+        set {
+            if (!Enum.IsDefined(typeof(MermaidMindMapColorMode), value)) throw new ArgumentOutOfRangeException(nameof(value));
+            _colorBy = value;
+        }
+    }
+
     /// <summary>Gets mindmap nodes in source order.</summary>
     public List<MermaidMindMapNode> Nodes { get; } = new();
 }
@@ -30,7 +41,7 @@ public sealed class MermaidMindMapNode : MermaidAstNode {
     /// <summary>Gets the displayed node text.</summary>
     public string Text { get; }
 
-    /// <summary>Gets the indentation-derived logical level.</summary>
+    /// <summary>Gets the structural parent-child depth, starting at zero for the root, independently of indentation width.</summary>
     public int Level { get; }
 
     /// <summary>Gets or sets the parent node id.</summary>
@@ -44,4 +55,12 @@ public sealed class MermaidMindMapNode : MermaidAstNode {
 
     /// <summary>Gets parsed icon class tokens.</summary>
     public List<string> Icons { get; } = new();
+}
+
+/// <summary>Determines the categorical color section assigned to each mindmap node and its incoming edge.</summary>
+public enum MermaidMindMapColorMode {
+    /// <summary>Each root branch and all its descendants share a section.</summary>
+    Branch = 0,
+    /// <summary>Nodes at the same structural depth share a section across branches.</summary>
+    Depth = 1
 }

@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Xml.Linq;
 using ChartForgeX.Markup;
 using ChartForgeX;
 using ChartForgeX.Core;
@@ -7,6 +9,9 @@ using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
@@ -14,15 +19,39 @@ using ChartForgeX.VisualBlocks;
 internal static class Program {
     private static void Main() {
         PackageAssertions.CoreFixtures();
-        var chart = Chart.Create()
-            .WithTitle("Package smoke")
-            .WithSize(320, 180)
-            .AddLine("Values", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
-
-        if (!chart.ToSvg().Contains("<svg", StringComparison.Ordinal)) throw new InvalidOperationException("SVG render failed.");
+        NativeViewportSection();
+        RadarSourcePaint();
+        var values = ChartSeries.CreateLine(new ChartSeriesId("package-values"), "Values",
+            new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
+        var bubble = ChartSeries.CreateBubble(new ChartSeriesId("0"), "Values", new[] { new ChartBubble(1.5, 2.5, 7) })
+            .WithObservationId(0, new ChartObservationId("package-bubble"));
+        var chart = Chart.Create().WithTitle("Package smoke").WithSize(320, 180)
+            .AddSeries(values).AddSeries(bubble);
+        PackageAssertions.Require(ReferenceEquals(chart.Series[0], values) && ReferenceEquals(chart.Series[1], bubble),
+            "Packed chart attachment did not retain the authored series handles.");
+        PackageAssertions.Require(bubble.Id.Value == "0" && bubble.Bubbles.Count == 1 && bubble.SourcePointCount == 1 && bubble.Points.Count == 0,
+            "Packed Bubble construction did not preserve its stable identity and single typed observation.");
+        var artifact = chart.ToVisualArtifact("package-chart");
+        PackageAssertions.Require(artifact.Metadata["chart.series.0.id"] == values.Id.Value && artifact.Metadata["chart.series.1.id"] == "0" &&
+            artifact.Metadata["chart.series.1.scope"] == "shared", "Packed artifact metadata confused a numeric-looking stable ID with a series ordinal.");
+        var chartSvg = chart.ToSvg();
+        if (!chartSvg.Contains("<svg", StringComparison.Ordinal)) throw new InvalidOperationException("SVG render failed.");
+        var bubblePoints = XDocument.Parse(chartSvg).Descendants().Where(element =>
+            (string?)element.Attribute("data-cfx-role") == "point" && (string?)element.Attribute("data-cfx-series-key") == "0").ToArray();
+        PackageAssertions.Require(bubblePoints.Length == 1 && (string?)bubblePoints[0].Attribute("data-cfx-series") == "1" &&
+            (string?)bubblePoints[0].Attribute("data-cfx-source-point") == "0" && (string?)bubblePoints[0].Attribute("data-cfx-source-count") == "1" &&
+            (string?)bubblePoints[0].Attribute("data-cfx-size") == "7" && (string?)bubblePoints[0].Attribute("data-cfx-observation-id") == "package-bubble",
+            "Packed Bubble SVG lost typed observation facts or mapped the stable series ID to its numeric ordinal.");
         if (!chart.ToHtmlFragment().Contains("<svg", StringComparison.Ordinal)) throw new InvalidOperationException("HTML render failed.");
         if (chart.ToPng().Length <= 64) throw new InvalidOperationException("PNG render failed.");
-        var html = chart.ToInteractiveHtmlPage(options => options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts));
+        var html = chart.ToInteractiveHtmlPage(options => {
+            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
+            options.Interaction.AddScenario("package-series", "Selected series", scenario => scenario.AddSeriesStep(bubble.Id, "Bubble observation"));
+            options.Interaction.WithActiveScenario("package-series");
+        });
+        PackageAssertions.Require(html.Contains("data-cfx-scenario-target-id=\"0\"", StringComparison.Ordinal) &&
+            html.Contains("data-cfx-scenario-target-kind=\"series\"", StringComparison.Ordinal),
+            "Packed HTML adapter did not accept the typed stable series ID in its scenario step.");
         if (!html.Contains("data-cfx-zoom=\"in\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML zoom controls missing.");
         if (!html.Contains("data-cfx-mode-button=\"brush\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML brush controls missing.");
         if (!html.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal)) throw new InvalidOperationException("Interactive HTML export controls missing.");
@@ -52,11 +81,13 @@ internal static class Program {
         if (!graphHtml.Contains("data-cfx-graph-id=\"package-graph\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer package surface missing.");
         if (!graphHtml.Contains("data-cfx-graph-physics=\"Repulsion\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer physics profile missing.");
 
-        var mermaid = new MermaidParser().ParseFlowchart("flowchart LR\n  a[Start] --> b[Done]");
+        var mermaid = new MermaidParser().ParseFlowchart("---\nconfig:\n  theme: dark\n---\nflowchart LR\n  a[Start] --> b[Done]");
         if (mermaid.HasErrors || mermaid.Document is null) throw new InvalidOperationException("Mermaid package parser failed.");
         if (mermaid.Document.Nodes.Count != 2 || mermaid.Document.Edges.Count != 1) throw new InvalidOperationException("Mermaid package parser model missing nodes or edges.");
         var mermaidArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "package-mermaid" });
         if (mermaidArtifact.Kind != VisualArtifactKind.Mermaid || !mermaidArtifact.SupportsExport(VisualArtifactExportFormat.Svg)) throw new InvalidOperationException("Mermaid package artifact contract missing.");
+        PackageAssertions.Require(mermaidArtifact.Model is TopologyChart mermaidTopology && mermaidTopology.ThemeMode == VisualThemeMode.Dark &&
+            mermaidTopology.Theme.ToJson() == VisualTheme.Graphite().ToJson(), "Packed Mermaid conversion did not preserve the canonical paired theme and explicit dark mode.");
         var mermaidClass = new MermaidParser().ParseClass("classDiagram\nclass User\nUser <|-- Admin");
         if (mermaidClass.HasErrors || mermaidClass.Document is null || mermaidClass.Document.Classes.Count != 2) throw new InvalidOperationException("Mermaid package class parser failed.");
         if (mermaidClass.Document.ToVisualArtifact().Model is not ChartForgeX.Topology.TopologyChart) throw new InvalidOperationException("Mermaid package class artifact contract missing.");
@@ -109,5 +140,44 @@ internal static class Program {
         PackageAssertions.Payload("ChartForgeX", "ChartForgeX.Visuals", "ChartForgeX.Interactivity",
             "ChartForgeX.Interactivity.Html", "ChartForgeX.Markup", "ChartForgeX.Mermaid", "ChartForgeX.Markup.Mermaid");
         Console.WriteLine("Adapter package consumer and Markup table producer passed.");
+    }
+
+    private static void NativeViewportSection() {
+        var observations = ChartSeries.CreateLine(new ChartSeriesId("native-values"), "Native values",
+            new[] { new ChartPoint(0, -100), new ChartPoint(5, 4), new ChartPoint(10, 100) })
+            .WithObservationId(1, new ChartObservationId("native-middle"));
+        var chart = Chart.Create().WithSize(520, 320).WithLegend(false).WithXAxisBounds(0, 10).AddSeries(observations);
+        var renderer = new HtmlInteractiveChartRenderer();
+        var full = renderer.PrepareSection(chart);
+        var projection = full.PreparedVisual.XProjection ?? throw new InvalidOperationException("Packed HTML section omitted its native X projection.");
+        var requested = projection.ConstrainViewport(projection.Project(3), projection.Project(7));
+        PackageAssertions.Require(requested is not null && Math.Abs(requested.Minimum - 3) < 1e-9 && Math.Abs(requested.Maximum - 7) < 1e-9,
+            "Packed logical gesture did not produce the source X window.");
+        var narrowed = renderer.PrepareSection(chart, requested);
+        PackageAssertions.Require(narrowed.PreparedVisual.XProjection is ChartXProjection window && window.Minimum > 2.99 && window.Maximum < 7.01 &&
+            narrowed.Html.Contains("data-cfx-observation-id=\"native-middle\"", StringComparison.Ordinal) &&
+            !narrowed.Html.Contains("<script", StringComparison.OrdinalIgnoreCase), "Packed native section lost its window, source identity or asset-free contract.");
+        PackageAssertions.Require(!full.PreparedVisual.Regions.Where(region => region.Role == "axis-x-label").Select(region => region.Label)
+            .SequenceEqual(narrowed.PreparedVisual.Regions.Where(region => region.Role == "axis-x-label").Select(region => region.Label)),
+            "Packed viewport retained full-domain X tick captions.");
+        PackageAssertions.Require(full.PreparedVisual.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label)
+            .SequenceEqual(narrowed.PreparedVisual.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label)),
+            "Packed viewport changed the full-data Y domain.");
+        PackageAssertions.Png(narrowed.PreparedVisual.ToPng());
+        PackageAssertions.Require(renderer.PrepareSection(chart).Html == full.Html && chart.Options.XAxis.Minimum == 0 && chart.Options.XAxis.Maximum == 10,
+            "Packed native reset did not recover the full section or mutated authored bounds.");
+    }
+    private static void RadarSourcePaint() {
+        const string source = "%%{init: {'themeVariables': {'cScale0': '#2563EB', 'radar': {'curveStrokeWidth': 0, 'curveOpacity': 0, 'axisStrokeWidth': 3}}}}%%\nradar-beta\naxis A,B,C\ncurve c{20,40,30}\nmax 100";
+        var parsed = new MermaidParser().ParseRadar(source);
+        PackageAssertions.Require(!parsed.HasErrors && parsed.Diagnostics.Count == 0, "Packed radar style parser failed.");
+        var chart = parsed.Document!.ToChart();
+        PackageAssertions.Require(chart.Series[0].Color?.Equals(ChartColor.FromHex("#2563EB")) == true
+            && chart.Series[0].Radar.OutlineStroke!.Width == 0 && chart.Options.PolarAxisStroke!.Width == 3,
+            "Packed radar theme settings did not reach native owners.");
+        var markup = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        PackageAssertions.Require(!markup.HasErrors && markup.Artifacts.Count == 1
+            && markup.Artifacts[0].ToSvg() == parsed.Document!.ToVisualArtifact().ToSvg(), "Packed radar fence changed source paint.");
+        PackageAssertions.Png(markup.Artifacts[0].ToPng());
     }
 }

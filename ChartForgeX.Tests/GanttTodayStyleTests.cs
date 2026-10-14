@@ -115,6 +115,7 @@ public sealed class GanttTodayStyleTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStrokeStyle(dash: new[] { .001, .001 }));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
@@ -122,7 +123,7 @@ public sealed class GanttTodayStyleTests {
         var parsed = new MermaidParser().ParseGantt("gantt\ntodayMarker stroke:#00ff00,stroke-width:5px,opacity:0.5,stroke-dasharray:6 8\nTask :2026-01-01,6d");
         Assert.Empty(parsed.Diagnostics);
         var chart = parsed.Document!.ToChart(new MermaidGanttRenderOptions { Today = Start.AddDays(2), Width = width, Height = 360 })
-            .WithLegend(false).WithDataLabels(false).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithLegend(false).WithDataLabels(false).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gantt-now-line");
         var actual = prepared.ToRgba();

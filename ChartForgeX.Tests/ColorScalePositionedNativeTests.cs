@@ -74,7 +74,9 @@ public sealed partial class ColorScalePositionedNativeTests {
     public void CompactEndpointAdjacentPivotKeepsItsAnchorAndFullCaption(string family) {
         var scale = ChartColorScale.Diverging(new[] { new ChartColorStop(-20, Cold) }, new ChartColorStop(-19.5, ChartColor.White),
             new[] { new ChartColorStop(-3, Cool), new ChartColorStop(5, Warm), new ChartColorStop(40, Hot) }).WithLabels(null, "Zero", null);
-        var chart = Create(family, scale, 360, dark: true); var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
+        var chart = Create(family, scale, 360, dark: true);
+        Assert.Equal("CFX Positioned Native Carlito", chart.Options.Theme.Typography.Family);
+        var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         AssertMetadata(prepared, document, family, scale); AssertKeyPaint(prepared, document, family, scale);
         var swatches = Swatches(prepared, family); var prefix = Prefix(family);
         var id = family == "tile-map" ? "map-scale-midpoint" : prefix + "-label-midpoint";
@@ -82,7 +84,7 @@ public sealed partial class ColorScalePositionedNativeTests {
         Assert.Equal(swatches[0].Bounds.Left + (4 * .5 / 60 + .5) * swatches[0].Bounds.Width, caption.X, 6);
         var region = prepared.Regions.Single(item => item.Id == id);
         Assert.Contains("-19.5", region.Label); Assert.Equal(region.Label, string.Join("", caption.Text.Lines.Select(line => line.Text)));
-        Assert.True(caption.Text.Size >= 8);
+        Assert.True(caption.Text.Size >= 10);
         ScatterBubbleColorRenderingTests.Capture(prepared, "positioned-edge-" + family);
     }
 

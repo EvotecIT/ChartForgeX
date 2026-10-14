@@ -38,7 +38,7 @@ internal static class ChartSeriesColours {
         pointIndex < series.PointColors.Count ? series.PointColors[pointIndex] : null;
 
     internal static ChartColor Resolve(Chart chart, int index) {
-        var series = chart.Series[index]; var t = chart.Options.Theme;
+        var series = chart.Series[index]; var t = chart.Options.ResolvedTheme;
         if (series.Color.HasValue) return series.Color.Value;
         return series.StateRole switch {
             ChartSeriesState.Danger => t.Negative,

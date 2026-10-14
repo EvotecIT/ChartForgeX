@@ -40,12 +40,12 @@ public static partial class V2Examples {
             ValidateStandalonePresentation(example, id);
             if (artifact.GetProperty("diagnostics").GetArrayLength() > 0 && !example.Contains("data-layout-notes", StringComparison.Ordinal))
                 throw new InvalidOperationException("Example page hides its layout limitations: " + id);
-            foreach (var kind in new[] { "svg", "png", "html", "source", "thumbnail", "thumbnailPng" }) {
+            foreach (var kind in new[] { "svg", "png", "html", "source", "gallerySource", "thumbnail", "thumbnailPng" }) {
                 var name = artifact.GetProperty(kind).GetString()!;
                 if (Path.GetFileName(name) != name || !File.Exists(Path.Combine(output, name)))
                     throw new InvalidOperationException("Missing or invalid " + kind + " artifact: " + id);
                 if (!assets.Contains(name)) throw new InvalidOperationException("Gallery asset handoff does not include " + name);
-                if ((kind is "svg" or "png" or "source") && !example.Contains(name, StringComparison.Ordinal))
+                if ((kind is "svg" or "png" or "source" or "gallerySource") && !example.Contains(name, StringComparison.Ordinal))
                     throw new InvalidOperationException("Example page does not link " + name);
                 if (kind == "html" && artifact.GetProperty("primary").GetBoolean() && !catalog.Contains(name, StringComparison.Ordinal))
                     throw new InvalidOperationException("Catalog does not link its primary example: " + name);

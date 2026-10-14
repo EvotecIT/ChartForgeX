@@ -24,7 +24,7 @@ public sealed class HorizontalWaterfallTests {
         chart.Options.Waterfall.Orientation = ChartOrientation.Vertical;
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(4, "Changed"));
         chart.Options.YAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed category callback"));
-        chart.Series.Clear();
+        chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -170,7 +170,7 @@ public sealed class HorizontalWaterfallTests {
         Assert.Equal(6, calls.Count); Assert.All(calls.Values, count => Assert.Equal(1, count));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.Options.YAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed category callback"));
-        chart.ConfigureLabels(labels => labels.OpeningBalance = "Changed"); chart.Series.Clear();
+        chart.ConfigureLabels(labels => labels.OpeningBalance = "Changed"); chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.All(calls.Values, count => Assert.Equal(1, count));
     }

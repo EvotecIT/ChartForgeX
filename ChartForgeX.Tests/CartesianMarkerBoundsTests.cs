@@ -116,7 +116,7 @@ public sealed class CartesianMarkerBoundsTests {
         else {
             if (kind == ChartSeriesKind.Scatter) chart.AddScatter("Samples", points);
             else chart.AddLine("Samples", points);
-            chart.Series[0].WithMarkerRadius(12);
+            chart.Series[0].ConfigureMarkers(markers => markers.Radius = 12);
         }
         if (secondary) chart.Series[0].UseSecondaryYAxis();
         return chart;

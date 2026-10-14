@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttDisplayZoneTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(300, "2026-01-02", "2026-01-03")]
     [InlineData(-300, "2026-01-01", "2026-01-02")]

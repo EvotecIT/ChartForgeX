@@ -1,0 +1,53 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = StepLineViewportRecipe.Create("x-viewport", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Reversed steps, X 2\u20138", "Utilization labels within X 2\u20138; full-data Y scales; gap at sample 6", showLegend: true, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context, new ChartXViewport(2, 8));
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Authored requests and utilization retain outside observations while selecting X 2–8 for rendering.</summary>
+public static class StepLineViewportRecipe {
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var compact = variant.StartsWith("compact", StringComparison.Ordinal);
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.StepLine,
+            Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 38, 82)).ConfigureMarkers(markers => markers.Radius = 3);
+        observed.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels().AddSeries(observed);
+        if (!compact) {
+            observed.WithDataLabels(false);
+            var utilization = new ChartSeries(new ChartSeriesId("utilization"), "Utilization", ChartSeriesKind.StepLine,
+                Points(96, 72, 48, 61, 55, 76, 49, 67, 59, 84, 100))
+                .UseSecondaryYAxis().ConfigureMarkers(markers => markers.Radius = 3);
+            utilization.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            chart.AddSeries(utilization).WithSecondaryYAxis("Utilization (%)");
+            chart.Options.SecondaryYAxis.TickCount = 4;
+        }
+        chart.Options.XAxis.WithReversal(true);
+        chart.Options.XAxis.TickCount = 4; chart.Options.YAxis.TickCount = 4;
+        return chart;
+    }
+
+    private static ChartPoint[] Points(params double[] values) => values.Select((value, index) =>
+        new ChartPoint(index == 1 ? 1.99 : index == 9 ? 8.01 : index, value, index == 6)).ToArray();
+}

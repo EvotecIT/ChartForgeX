@@ -88,13 +88,13 @@ internal static class VisualCanvasLayoutAnalyzer {
                     bounds));
             }
 
-            if (layer is VisualCanvasInfoTileLayer tile) AnalyzeInfoTile(tile, i, diagnostics, canvas.Theme);
+            if (layer is VisualCanvasInfoTileLayer tile) AnalyzeInfoTile(tile, i, diagnostics, canvas.ResolveStyle());
         }
 
         return new VisualCanvasLayoutReport(diagnostics);
     }
 
-    private static void AnalyzeInfoTile(VisualCanvasInfoTileLayer tile, int layerIndex, List<VisualCanvasLayoutDiagnostic> diagnostics, VisualCanvasTheme theme) {
+    private static void AnalyzeInfoTile(VisualCanvasInfoTileLayer tile, int layerIndex, List<VisualCanvasLayoutDiagnostic> diagnostics, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));

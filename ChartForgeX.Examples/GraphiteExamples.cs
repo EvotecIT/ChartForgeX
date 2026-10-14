@@ -13,6 +13,9 @@ internal static class GraphiteExamples {
         foreach (var dark in new[] { false, true }) {
             var suffix = dark ? "dark" : "light";
             gallery.Append("<section class='").Append(suffix).Append("'><h2>").Append(suffix).Append("</h2>");
+            var lifecycleName = "graphite-" + suffix + "-chart-lifecycle.html";
+            HtmlChartLifecycleExamples.Write(output, dark);
+            gallery.Append("<p><a href='").Append(lifecycleName).Append("'>Update measurements and retain chart identity</a></p>");
             foreach (var anchor in Enum.GetValues<HtmlChartTooltipAnchor>()) {
                 var name = "graphite-" + suffix + "-tooltip-" + anchor.ToString().ToLowerInvariant();
                 File.WriteAllText(Path.Combine(output, name + ".html"), HtmlTooltipPositionExamples.CreatePage(anchor, dark));
@@ -39,12 +42,13 @@ internal static class GraphiteExamples {
                 gallery.Append("<h2>").Append(item.Key).Append("</h2><div class='pair'><img alt='SVG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".svg'><img alt='PNG' style='max-width:").Append(nativeWidth).Append("px' src='").Append(name).Append(".png'></div>");
                 if (item.Key == "line") gallery.Append("<p><a href='").Append(name).Append("-interactive.html'>Explore pointer tooltips with a 360 ms delay</a></p>");
             }
-            var theme=dark?ChartTheme.GraphiteDark():ChartTheme.GraphiteLight();
-            var metric=MetricCard.Create().WithSize(300,200).WithTheme(theme).WithMetric("Coverage","98.4%").WithCaption("Assets reporting")
-                .WithMiniSparkline(new[]{92d,94,95,97,98.4},color:theme.Palette[0]);
-            var table=ChartTable.Create().WithSize(300,200).WithTheme(theme).WithTitle("Controls").AddColumn("Control").AddColumn("Actual")
+            var theme = VisualTheme.Graphite();
+            var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            var metric=MetricCard.Create().WithSize(300,200).WithTheme(theme, mode).WithMetric("Coverage","98.4%").WithCaption("Assets reporting")
+                .WithMiniSparkline(new[]{92d,94,95,97,98.4},color:theme.Resolve(mode).Palette[0]);
+            var table=ChartTable.Create().WithSize(300,200).WithTheme(theme, mode).WithTitle("Controls").AddColumn("Control").AddColumn("Actual")
                 .AddRow("TLS","92%").AddRow("DNSSEC","74%");
-            var dashboard=VisualGrid.Create().WithTheme(theme).WithTitle("Control overview").WithColumns(2).WithPanelSize(300,220)
+            var dashboard=VisualGrid.Create().WithTheme(theme, mode).WithTitle("Control overview").WithColumns(2).WithPanelSize(300,220)
                 .WithPngOutputScale((int)scale).Add(metric).Add(table).Add(Create(dark)["bar"].WithSize(300,220)).Add(Create(dark)["line"].WithSize(300,220));
             var dashboardName="graphite-"+suffix+"-dashboard";
             dashboard.SaveSvg(Path.Combine(output,dashboardName+".svg")); dashboard.SavePng(Path.Combine(output,dashboardName+".png")); dashboard.SaveHtml(Path.Combine(output,dashboardName+".html"));
@@ -57,13 +61,15 @@ internal static class GraphiteExamples {
     }
 
     internal static Dictionary<string, Chart> Create(bool dark) {
-        Chart Frame(string title,string subtitle,int width=596,int height=338) => Chart.Create().WithSize(width,height).WithTheme(dark?ChartTheme.GraphiteDark():ChartTheme.GraphiteLight()).WithTitle(title).WithSubtitle(subtitle);
+        Chart Frame(string title,string subtitle,int width=596,int height=338) => Chart.Create().WithSize(width,height).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle(title).WithSubtitle(subtitle);
         var bar=Frame("Findings by severity","Current and previous run").WithXLabels("Critical","High","Medium","Low","Info").WithDataLabels()
             .AddBar("Current",Points(6,30,82,124,208)).AddBar("Previous",Points(9,39,95,116,186));
         bar.Options.YAxis.Maximum=250; bar.Options.YAxis.TickCount=6;
+        var passed = new ChartSeries(new ChartSeriesId("passed"), "Passed", ChartSeriesKind.Line, Points(820,940,980,1041,1120,1180,1230)).WithState(ChartSeriesState.Quiet);
+        var warnings = new ChartSeries(new ChartSeriesId("warnings"), "Warnings", ChartSeriesKind.Line, Points(120,138,131,112,98,86,72)).WithState(ChartSeriesState.Warning);
+        var failed = new ChartSeries(new ChartSeriesId("failed"), "Failed", ChartSeriesKind.Line, Points(22,30,27,31,18,14,11)).WithState(ChartSeriesState.Danger);
         var line=Frame("Check results over time","Healthy checks recede; failures remain visible").WithXLabels("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
-            .AddLine("Passed",Points(820,940,980,1041,1120,1180,1230)).AddLine("Warnings",Points(120,138,131,112,98,86,72)).AddLine("Failed",Points(22,30,27,31,18,14,11))
-            .WithSeriesState("Passed",ChartSeriesState.Quiet).WithSeriesState("Warnings",ChartSeriesState.Warning).WithSeriesState("Failed",ChartSeriesState.Danger);
+            .AddSeries(passed).AddSeries(warnings).AddSeries(failed);
         line.Options.YAxis.Maximum=1400; line.Options.YAxis.TickCount=8;
         var donut=Frame("Findings by control","Largest slices first",596,314).WithXLabels("Mail authentication","TLS","DNSSEC","Policy","Monitoring","Other")
             .AddDonut("Findings",Points(356,268,214,188,142,116));
@@ -92,13 +98,16 @@ internal static class GraphiteExamples {
         results["treemap"]=Frame("Storage distribution","Flat tiles with readable ink").WithDataLabels().AddTreemap("Files",new[]{new ChartHierarchyItem("One", "One", value: 50),new("Two", "Two", value: 30),new("Three", "Three", value: 20)});
         results["tree"]=Frame("Hierarchy","Shared flat surfaces and labels").WithDataLabels().AddTree("Structure", new[] { new ChartNode("Root", "Root"), new ChartNode("One", "One"), new ChartNode("Two", "Two"), new ChartNode("Three", "Three") }, new[]{new ChartTreeLink("Root","One"),new("Root","Two"),new("One","Three")});
         results["timeline"]=Frame("Delivery timeline","Flat intervals").AddTimelineRange("Plan",1,3).AddTimelineRange("Build",3,7).AddTimelineRange("Review",6,9);
-        results["gantt"]=Frame("Delivery schedule","Flat tasks and progress").AddGanttTask("Plan",1,3,1).AddGanttTask("Build",3,7,.65,0).AddGanttTask("Review",6,9,.2,1);
+        results["gantt"]=Frame("Delivery schedule","Flat tasks and progress").AddGanttTask("Plan",1,3,1).AddGanttTask("Build",3,7,.65).AddGanttTask("Review",6,9,.2);
+        var schedule = results["gantt"];
+        schedule.AddGanttDependency(schedule.Series[0], schedule.Series[1]).AddGanttDependency(schedule.Series[1], schedule.Series[2]);
         results["bubble"]=Frame("Bubble observations","70 percent fill with surface outline").AddBubble("Samples",new[]{new ChartBubble(1,20,12),new(2,50,30),new(3,38,20)});
         results["multi-area"]=Frame("Multiple area series","Lines without overlapping fills").AddArea("One",Points(20,30,40)).AddArea("Two",Points(15,25,35));
         results["waterfall"]=Frame("Changes","Flat increments and total").WithXLabels("Start","Added","Removed","Final").WithDataLabels().AddWaterfall("Changes",Points(60,20,-10,70));
         results["host-frame"]=Frame("Host-framed counts","No chart surface or outer padding").WithHostFrame().WithXLabels("One","Two","Three").WithDataLabels().AddBar("Counts",Points(50,30,20));
+        var alert = new ChartSeries(new ChartSeriesId("alert"), "Alert", ChartSeriesKind.Bar, Points(40,24,16)).WithState(ChartSeriesState.Danger);
         results["inside-bar"]=Frame("Inside bar labels","Contrasting ink for categorical and state fills").WithXLabels("One","Two","Three")
-            .WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside).AddBar("Observed",Points(50,30,20)).AddBar("Alert",Points(40,24,16)).WithSeriesState("Alert",ChartSeriesState.Danger);
+            .WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside).AddBar("Observed",Points(50,30,20)).AddSeries(alert);
         return results;
     }
 

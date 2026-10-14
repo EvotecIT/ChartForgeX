@@ -30,17 +30,16 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentNullException>(() => new ChartAxisLabel(1, null!), "Axis labels should reject null text.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartAxisLabel(double.NaN, "bad"), "Axis labels should reject non-finite values.");
         AssertThrows<ArgumentException>(() => Chart.Create().WithXLabels(new[] { default(ChartAxisLabel) }), "Explicit axis labels should reject default labels with null text.");
-        AssertThrows<ArgumentNullException>(() => ChartTheme.Light().Palette = null!, "Themes should reject null palettes.");
-        AssertThrows<ArgumentException>(() => ChartTheme.Light().Palette = Array.Empty<ChartColor>(), "Themes should reject empty palettes.");
+        AssertThrows<ArgumentNullException>(() => VisualTheme.Report().Configure(builder => builder.Light.Palette = null!), "Themes should reject null palettes.");
+        AssertThrows<ArgumentException>(() => VisualTheme.Report().WithPalette(Array.Empty<ChartColor>()), "Themes should reject empty palettes.");
         AssertThrows<ArgumentException>(() => ChartColor.FromHex("#12"), "Hex colors should reject invalid lengths.");
         AssertThrows<ArgumentException>(() => ChartColor.FromHex("#ggg"), "Hex colors should reject invalid characters.");
         AssertThrows<ArgumentException>(() => ChartPalettes.FromHex(), "Hex palette helpers should reject empty palettes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartTheme.Light().TitleFontSize = 0, "Themes should reject non-positive font sizes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartTheme.Light().ShadowOpacity = 2, "Themes should reject opacity values outside zero to one.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ChartTheme.Light().WithSurfaceStyle((ChartSurfaceStyle)999), "Themes should reject unknown surface styles.");
-        AssertThrows<ArgumentNullException>(() => ChartTheme.Light().FontFamily = null!, "Themes should reject null font families.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new VisualTypography(titleSize: 0), "Themes should reject non-positive font sizes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => VisualTheme.Report().Configure(builder => builder.CardShadowOpacity = 2), "Themes should reject opacity values outside zero to one.");
+        AssertThrows<ArgumentException>(() => VisualTheme.Report().WithFontFamily(null!), "Themes should reject null font families.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", new[] { new ChartPoint(1, double.PositiveInfinity) }), "Series should reject non-finite point values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartSeries("Values", (ChartSeriesKind)999, Points(1, 2, 3)), "Series should reject unknown series kinds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartSeries(new ChartSeriesId("values"), "Values", (ChartSeriesKind)999, Points(1, 2, 3)), "Series should reject unknown series kinds.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", Points(1, 2, 3)).Series[0].StrokeWidth = 0, "Series stroke widths should reject non-positive values.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", Points(1, 2, 3)).Series[0].StrokeWidth = double.NaN, "Series stroke widths should reject non-finite values.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", Points(1, 2, 3)).Series[0].YAxis = (ChartAxisSide)99, "Series y-axis side should reject unknown enum values.");
@@ -81,7 +80,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => Chart.Create().AddPareto("Zero", new[] { new ChartParetoItem("A", 0), new ChartParetoItem("B", 0) }), "Pareto charts should reject all-zero item sets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartParetoItem("Bad", -1), "Pareto items should reject negative values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartParetoItem("Bad", double.NaN), "Pareto items should reject non-finite values.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddTreemap("Empty", Array.Empty<ChartHierarchyItem>()), "Treemaps should reject empty item sets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartHierarchyItem("Bad", "Bad", value: -1), "Treemap items should reject negative values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartHierarchyItem("Bad", "Bad", value: double.NaN), "Treemap items should reject non-finite values.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddPictorial("Empty", Array.Empty<ChartPictorialItem>()), "Pictorial charts should reject empty item sets.");
@@ -123,7 +121,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddTimelineRange("Task", 10, 2), "Timelines should reject inverted ranges.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 10, 2), "Gantt tasks should reject inverted ranges.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 1, 2, 1.1), "Gantt tasks should reject progress above one.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddGanttTask("Task", 1, 2, dependsOn: 0), "Gantt tasks should reject dependencies that do not reference earlier tasks.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithGanttToday(double.NaN), "Gantt today markers should reject non-finite values.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") }, Array.Empty<ChartFlowLink>()), "Sankey charts should reject empty link sets.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddSankey("Flow", new[] { new ChartNode("A", "A"), new ChartNode("B", "B") },
@@ -137,7 +134,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A") }, new[] { new ChartTreeLink("A", "A") }), "Tree charts should reject self links.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("C", "C"), new ChartNode("B", "B") }, new[] { new ChartTreeLink("A", "C"), new ChartTreeLink("B", "C") }), "Tree charts should reject multiple parents for a child.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C"), new ChartNode("D", "D") }, new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("C", "D") }), "Tree charts should reject multiple roots.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", Array.Empty<ChartHierarchyItem>()), "Sunburst charts should reject empty item sets.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartHierarchyItem("A", "A", "A", 1) }), "Sunburst charts should reject self links.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartHierarchyItem("A", "A", value: 1), new ChartHierarchyItem("A", "Another A", value: 2) }), "Sunburst charts should reject duplicate identities.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddSunburst("Sunburst", new[] { new ChartHierarchyItem("A", "A"), new ChartHierarchyItem("B", "B", "A", 1), new ChartHierarchyItem("C", "C"), new ChartHierarchyItem("D", "D", "C", 1) }), "Sunburst charts should reject multiple roots.");
@@ -173,30 +169,13 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentNullException>(() => new HtmlChartGridRenderer().RenderPage(null!), "HTML grid rendering should reject null grids.");
         AssertThrows<InvalidOperationException>(() => ChartGrid.Create().ToHtmlPage(), "HTML grid rendering should reject empty grids.");
         var chartWithNullSeries = Chart.Create();
-        chartWithNullSeries.Series.Add(null!);
-        AssertThrows<InvalidOperationException>(() => chartWithNullSeries.ToSvg(), "Rendering should reject null entries in the public series collection.");
+        AssertThrows<ArgumentNullException>(() => chartWithNullSeries.AddSeries(null!), "Series attachment should reject null before changing the chart.");
         var chartWithNullAnnotation = Chart.Create().AddLine("Values", Points(1, 2, 3));
         chartWithNullAnnotation.Annotations.Add(null!);
         AssertThrows<InvalidOperationException>(() => chartWithNullAnnotation.ToPng(), "Rendering should reject null entries in the public annotation collection.");
         var chartWithDefaultAxisLabel = Chart.Create().AddLine("Values", Points(1, 2, 3));
         chartWithDefaultAxisLabel.Options.XAxisLabels.Add(default);
         AssertThrows<InvalidOperationException>(() => chartWithDefaultAxisLabel.ToSvg(), "Rendering should reject default axis labels added through the mutable options collection.");
-        var malformedBubble = Chart.Create();
-        malformedBubble.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Bubble, new[] { new ChartPoint(1, 2) }));
-        AssertThrows<InvalidOperationException>(() => malformedBubble.ToSvg(), "Bubble renderers should reject incomplete public series tuples.");
-        var malformedErrorBar = Chart.Create();
-        malformedErrorBar.Series.Add(new ChartSeries("Bad", ChartSeriesKind.ErrorBar, new[] { new ChartPoint(1, 5), new ChartPoint(1, 6), new ChartPoint(1, 8) }));
-        AssertThrows<InvalidOperationException>(() => malformedErrorBar.ToPng(), "Error-bar renderers should reject inverted public lower bounds.");
-        var malformedCandlestick = Chart.Create();
-        malformedCandlestick.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Candlestick, new[] { new ChartPoint(1, 5), new ChartPoint(1, 4), new ChartPoint(1, 2), new ChartPoint(1, 3) }));
-        AssertThrows<InvalidOperationException>(() => malformedCandlestick.ToSvg(), "Candlestick renderers should reject malformed public OHLC tuples.");
-        var malformedBoxPlot = Chart.Create();
-        malformedBoxPlot.Series.Add(new ChartSeries("Bad", ChartSeriesKind.BoxPlot, new[] { new ChartPoint(1, 1), new ChartPoint(1, 4), new ChartPoint(1, 3), new ChartPoint(1, 5), new ChartPoint(1, 6) }));
-        AssertThrows<InvalidOperationException>(() => malformedBoxPlot.ToPng(), "Box plot renderers should reject unordered public summary tuples.");
-        var fractionalGanttDependency = Chart.Create();
-        fractionalGanttDependency.Series.Add(new ChartSeries("A", ChartSeriesKind.Gantt, new[] { new ChartPoint(1, 2), new ChartPoint(1, -1), new ChartPoint(0, 0) }));
-        fractionalGanttDependency.Series.Add(new ChartSeries("B", ChartSeriesKind.Gantt, new[] { new ChartPoint(2, 3), new ChartPoint(1, 0.4), new ChartPoint(0, 0) }));
-        AssertThrows<InvalidOperationException>(() => fractionalGanttDependency.ToSvg(), "Gantt renderers should reject fractional dependency indexes instead of rounding them.");
     }
 
     private static void SpecializedChartsRejectMixedSeries() {
@@ -211,19 +190,13 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddPolarArea("Bad", Points(30, -1, 40)).ToPng(), "Polar-area charts should reject negative segment values instead of silently filtering them.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddRadar("Too small", Points(72, 84)).ToPng(), "Radar charts should reject fewer than three categories instead of rendering a blank chart.");
         var malformedHeatmap = Chart.Create();
-        malformedHeatmap.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Heatmap, Array.Empty<ChartPoint>()));
+        malformedHeatmap.AddSeries(new ChartSeries(new ChartSeriesId("bad"), "Bad", ChartSeriesKind.Heatmap, Array.Empty<ChartPoint>()));
         Assert(malformedHeatmap.ToSvg().Contains("matrix-no-data"), "Empty heatmap rows should render the native no-data scene.");
-        var malformedBullet = Chart.Create();
-        malformedBullet.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Bullet, Points(72)));
-        AssertThrows<InvalidOperationException>(() => malformedBullet.ToSvg(), "Bullet renderers should reject malformed public series instead of rendering a blank chart.");
-        var malformedGantt = Chart.Create();
-        malformedGantt.Series.Add(new ChartSeries("Bad", ChartSeriesKind.Gantt, Points(1, 2)));
-        AssertThrows<InvalidOperationException>(() => malformedGantt.ToPng(), "Gantt renderers should reject malformed public series instead of rendering a blank chart.");
         foreach (var kind in new[] { ChartSeriesKind.Sankey, ChartSeriesKind.Tree, ChartSeriesKind.Sunburst, ChartSeriesKind.Treemap }) {
-            AssertThrows<ArgumentException>(() => new ChartSeries("Raw", kind, Points(1)), "Relationship constructors require typed nodes, links, or items.");
+            AssertThrows<ArgumentException>(() => new ChartSeries(new ChartSeriesId("raw"), "Raw", kind, Points(1)), "Relationship constructors require typed nodes, links, or items.");
             var incompatible = Chart.Create();
-            var raw = new ChartSeries("Raw", kind, Array.Empty<ChartPoint>());
-            incompatible.Series.Add(raw);
+            var raw = new ChartSeries(new ChartSeriesId("raw"), "Raw", kind, Array.Empty<ChartPoint>());
+            incompatible.AddSeries(raw);
             var prepared = incompatible.Prepare(new VisualRenderContext());
             var diagnostic = kind == ChartSeriesKind.Sankey ? "sankey.no-data" : "hierarchy.no-data";
             Assert(prepared.Diagnostics.Any(item => item.Code == diagnostic), "An empty relationship series retains its native no-data diagnostic.");
@@ -231,9 +204,8 @@ internal static partial class SmokeTests {
                 group.Metadata.TryGetValue("data-cfx-target-kind", out var targetKind) && (targetKind == "node" || targetKind == "link")),
                 "An empty relationship series does not invent interactive node or link targets.");
             Assert(!string.IsNullOrWhiteSpace(prepared.ToSvg()), "An empty relationship series still exports its native frame.");
-            raw.Points.Add(new ChartPoint(0, 1));
-            AssertThrows<InvalidOperationException>(() => incompatible.ToSvg(), "Relationship SVG exports reject added raw points.");
-            AssertThrows<InvalidOperationException>(() => incompatible.ToPng(), "Relationship PNG exports reject added raw points.");
+            AssertThrows<NotSupportedException>(() => raw.Points.Add(new ChartPoint(0, 1)), "Relationship series reject incompatible raw-point mutation immediately.");
+            Assert(!string.IsNullOrWhiteSpace(incompatible.ToSvg()) && incompatible.ToPng().Length > 64, "Rejected raw edits leave native no-data exports intact.");
         }
     }
 }

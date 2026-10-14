@@ -11,7 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderDistributionRows(SvgMarkupWriter writer, SegmentedMetricBlock card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderSegmentedMetricHeading(writer, card, ref y, content.X, content.Width);
@@ -37,7 +37,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderDistributionStack(SvgMarkupWriter writer, SegmentedMetricBlock card, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var total = VisualFactBlockRendering.SegmentedTotal(card);
         writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-distribution-strip").Attribute("data-cfx-total", total).EndStartElement().Line();
         foreach (var segment in VisualFactBlockRendering.SegmentedStackSegments(card, x, y, width, height, 5)) {
@@ -75,7 +75,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderDistributionLegend(SvgMarkupWriter writer, SegmentedMetricBlock card, SegmentedDistributionLayout layout) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-distribution-legend").EndStartElement().Line();
         foreach (var chip in layout.LegendChips) {
             var color = VisualFactBlockRendering.SegmentedItemColor(theme, chip.Item, chip.Index);
@@ -89,7 +89,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderDistributionRow(SvgMarkupWriter writer, SegmentedMetricBlock card, SegmentedMetricItem segment, int index, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var color = VisualFactBlockRendering.SegmentedItemColor(theme, segment, index);
         var layout = VisualFactBlockRendering.SegmentedDistributionRowLayout(card, segment, x, y, width, height);
 

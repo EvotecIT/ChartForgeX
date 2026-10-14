@@ -11,7 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderSegmentedMetricComposition(SvgMarkupWriter writer, SegmentedMetricBlock card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderSegmentedMetricHeading(writer, card, ref y, content.X, content.Width);
@@ -25,7 +25,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderCompositionLegend(SvgMarkupWriter writer, SegmentedMetricBlock card, ChartRect content, ref double y, double rowHeight, double legendBottom) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var total = VisualFactBlockRendering.SegmentedTotal(card);
         writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-composition").Attribute("data-cfx-legend-y", y).Attribute("data-cfx-row-height", rowHeight).Attribute("data-cfx-legend-bottom", legendBottom).EndStartElement().Line();
         for (var i = 0; i < card.Items.Count && VisualFactBlockRendering.CanRenderLegendRow(y, rowHeight, legendBottom); i++) {
@@ -43,7 +43,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderCompositionStrip(SvgMarkupWriter writer, SegmentedMetricBlock card, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var total = VisualFactBlockRendering.SegmentedTotal(card);
         writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-composition-strip").Attribute("data-cfx-total", total).EndStartElement().Line();
         foreach (var segment in VisualFactBlockRendering.SegmentedStackSegments(card, x, y, width, height, 4)) {

@@ -38,7 +38,7 @@ internal static partial class SmokeTests {
         Verify.Contains(prepared.Regions, region => region.Role == "dotted-map-point" && region.Label!.Contains("Indonesia"));
         Verify.True(prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "dotted-map-boundary" && node.Fill.HasValue).Sum(node => node.Commands.Count) > 100);
         Verify.NotEmpty(prepared.ToPng());
-        var dark = PreparedFamily(Chart.Create().WithTheme(ChartTheme.ReportDark()).AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }));
+        var dark = PreparedFamily(Chart.Create().WithTheme(VisualTheme.Report(), VisualThemeMode.Dark).AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }));
         Verify.Contains(dark.Scene.Nodes, node => node.Role == "dotted-map-land-dot");
         AssertThrows<ArgumentException>(() => Chart.Create().AddDottedMap("Empty", Array.Empty<ChartMapPoint>()), "Map inputs must not be empty.");
         AssertThrows<ArgumentException>(() => new ChartMapPoint(" ", 0, 0), "Map labels must be nonempty.");

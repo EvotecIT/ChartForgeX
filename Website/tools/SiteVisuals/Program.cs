@@ -20,8 +20,7 @@ var output = Path.Combine(website, "static", "site");
 var partials = Path.Combine(website, "themes", "chartforgex", "partials", "generated");
 Directory.CreateDirectory(output);
 Directory.CreateDirectory(partials);
-var light = VisualDesignTokens.GraphiteLight();
-var dark = VisualDesignTokens.GraphiteDark();
+var modes = new[] { (Name: "light", Mode: VisualThemeMode.Light), (Name: "dark", Mode: VisualThemeMode.Dark) };
 
 string[] HeroSeries = { "Passkey", "Authenticator app", "SMS code", "Password only" };
 string[] HeroWeeks = Enumerable.Range(1, 12).Select(w => $"W{w}").ToArray();
@@ -33,11 +32,11 @@ double[][] HeroData = {
 };
 
 // One chart definition, every surface. The C# shown on the home page mirrors this method.
-Chart HeroChart(VisualDesignTokens tokens) => Chart.Create()
+Chart HeroChart(VisualThemeMode mode) => Chart.Create()
     .WithTitle("Sign-ins by method")
     .WithSubtitle("Weekly sign-ins across the tenant, last 12 weeks")
     .WithYAxis("Sign-ins")
-    .WithDesignTokens(tokens)
+    .WithThemeMode(mode)
     .ConfigureAccessibility(a => a.WithTextAlternative(
         "Sign-ins by method",
         "Passkey sign-ins grow from 800 to 8,900 a week while password-only and SMS sign-ins decline.",
@@ -49,30 +48,30 @@ Chart HeroChart(VisualDesignTokens tokens) => Chart.Create()
     .AddStackedArea("SMS code", Points(HeroData[2]))
     .AddStackedArea("Password only", Points(HeroData[3]));
 
-var lightVariables = light.ToSvgColorVariables();
-var darkVariables = dark.ToSvgColorVariables();
+var lightVariables = VisualDesignTokens.GraphiteLight().ToSvgColorVariables();
+var darkVariables = VisualDesignTokens.GraphiteDark().ToSvgColorVariables();
 
 // SVG: one file for both themes; the page swaps the custom properties.
-var themedHero = HeroChart(light).WithSvgColorVariables(lightVariables);
+var themedHero = HeroChart(VisualThemeMode.Light).WithSvgColorVariables(lightVariables);
 var heroSvg = themedHero.ToSvg("cfx-hero");
 Write("hero.svg", heroSvg);
 Write("hero-theme.css", ThemeCss(lightVariables, darkVariables));
 File.WriteAllText(Path.Combine(partials, "hero-svg.html"), heroSvg, new UTF8Encoding(false));
 
-foreach (var (mode, tokens) in new[] { ("light", light), ("dark", dark) }) {
-    var chart = HeroChart(tokens);
-    File.WriteAllBytes(Path.Combine(output, $"hero-{mode}.png"), chart.ToPng());
-    Write($"hero-{mode}.html", chart.ToHtmlPage());
-    Write($"hero-{mode}.interactive.html", chart.ToInteractiveHtmlPage());
+foreach (var (name, mode) in modes) {
+    var chart = HeroChart(mode);
+    File.WriteAllBytes(Path.Combine(output, $"hero-{name}.png"), chart.ToPng());
+    Write($"hero-{name}.html", chart.ToHtmlPage());
+    Write($"hero-{name}.interactive.html", chart.ToInteractiveHtmlPage());
 }
 
 // Hero dashboard: one ChartGrid of several families, rendered in both themes.
-ChartGrid HeroDashboard(VisualDesignTokens tokens) {
+ChartGrid HeroDashboard(VisualThemeMode mode) {
     ChartPoint[] Values(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
-    var trend = HeroChart(tokens).WithTitle("Sign-ins by method").WithSubtitle("Last 12 weeks").WithSize(1056, 320);
-    var methods = Chart.Create().WithDesignTokens(tokens).WithTitle("This week").WithSubtitle("Share of sign-ins")
+    var trend = HeroChart(mode).WithTitle("Sign-ins by method").WithSubtitle("Last 12 weeks").WithSize(1056, 320);
+    var methods = Chart.Create().WithThemeMode(mode).WithTitle("This week").WithSubtitle("Share of sign-ins")
         .WithXLabels(HeroSeries).AddDonut("Sign-ins", Values(HeroData.Select(series => series[^1]).ToArray()));
-    var posture = Chart.Create().WithDesignTokens(tokens).WithTitle("Security posture").WithSubtitle("Current against target")
+    var posture = Chart.Create().WithThemeMode(mode).WithTitle("Security posture").WithSubtitle("Current against target")
         .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring").WithYAxisBounds(0, 100).WithDataLabels(false)
         .AddRadarArea("Current", Values(91, 72, 88, 95, 79, 84)).AddRadarLine("Target", Values(95, 90, 95, 95, 90, 92));
     var hours = new[] { "0", "2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22" };
@@ -81,9 +80,9 @@ ChartGrid HeroDashboard(VisualDesignTokens tokens) {
         var working = d < 5 && h >= 4 && h <= 9;
         return Math.Round((working ? 60 + 30 * Math.Sin(h * .9) : 8 + 6 * Math.Cos(h)) * (d < 5 ? 1 : .35));
     }));
-    var heat = Chart.Create().WithDesignTokens(tokens).WithTitle("Sign-ins by hour").WithSubtitle("Weekday working hours stand out")
+    var heat = Chart.Create().WithThemeMode(mode).WithTitle("Sign-ins by hour").WithSubtitle("Weekday working hours stand out")
         .WithXLabels(hours).AddHeatmapRows(days, activity);
-    var coverage = Chart.Create().WithDesignTokens(tokens).WithTitle("MFA coverage").WithSubtitle("Accounts with a strong method")
+    var coverage = Chart.Create().WithThemeMode(mode).WithTitle("MFA coverage").WithSubtitle("Accounts with a strong method")
         .AddGauge("Coverage", 87).ConfigureGauge(options => options.Target = 95);
     foreach (var panel in new[] { methods, posture, heat, coverage }) {
         panel.WithSize(520, 320);
@@ -93,16 +92,16 @@ ChartGrid HeroDashboard(VisualDesignTokens tokens) {
         .Add(trend, 2).Add(methods).Add(posture).Add(heat).Add(coverage);
 }
 
-foreach (var (mode, tokens) in new[] { ("light", light), ("dark", dark) }) {
-    var grid = HeroDashboard(tokens);
-    Write($"dashboard-{mode}.svg", grid.ToSvg());
-    File.WriteAllBytes(Path.Combine(output, $"dashboard-{mode}.png"), grid.WithPngOutputScale(2).ToPng());
+foreach (var (name, mode) in modes) {
+    var grid = HeroDashboard(mode);
+    Write($"dashboard-{name}.svg", grid.ToSvg());
+    File.WriteAllBytes(Path.Combine(output, $"dashboard-{name}.png"), grid.WithPngOutputScale(2).ToPng());
 }
 
 // Touch icon and social card, rasterized by ChartForgeX from SVG.
 var faviconSvg = File.ReadAllText(Path.Combine(website, "static", "favicon.svg"));
 File.WriteAllBytes(Path.Combine(website, "static", "apple-touch-icon.png"), SvgRasterizer.ToPng(faviconSvg, 180, 180));
-var heroLightSvg = HeroChart(light).ToSvg("cfx-social");
+var heroLightSvg = HeroChart(VisualThemeMode.Light).ToSvg("cfx-social");
 var heroInner = heroLightSvg.Substring(heroLightSvg.IndexOf('>') + 1);
 heroInner = heroInner.Substring(0, heroInner.LastIndexOf("</svg>", StringComparison.Ordinal));
 var logoInner = faviconSvg.Substring(faviconSvg.IndexOf('>') + 1);
@@ -150,8 +149,8 @@ var fence = VisualMarkupScanner.ParseFenceBlock(fenceInfo, fenceText, fenceLine:
 var markup = new VisualMarkupParser().Parse(fence);
 Report("markdown fence", markup.Diagnostics.Select(d => d.ToString()));
 if (markup.Artifacts.FirstOrDefault()?.Model is Chart fenced) {
-    foreach (var (mode, tokens) in new[] { ("light", light), ("dark", dark) }) {
-        Write($"hero-markdown-{mode}.svg", fenced.WithDesignTokens(tokens).ToSvg($"cfx-md-{mode}"));
+    foreach (var (name, mode) in modes) {
+        Write($"hero-markdown-{name}.svg", fenced.WithThemeMode(mode).ToSvg($"cfx-md-{name}"));
     }
 }
 

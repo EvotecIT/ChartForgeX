@@ -1,44 +1,21 @@
-using System;
-using System.Globalization;
-using System.Linq;
 using ChartForgeX.Core;
-using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.VisualArtifacts;
 
-/// <summary>Executable, deterministic gallery models shared by the catalog and its downloadable C# examples.</summary>
-public static partial class V2GalleryModels {
-    /// <summary>Creates an actual source model for every chart kind, without selecting a renderer or export backend.</summary>
-    public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        var differenceGapVariant = (variant is "dated-gaps" or "compact-dated-gaps") && kind == ChartSeriesKind.DifferenceArea;
-        var differenceStepVariant = (variant is "step-start" or "step-middle" or "step-end" or "compact-step-middle") && kind == ChartSeriesKind.DifferenceArea;
-        var funnelVariant = variant is "cone-vertical" or "stage-bars-horizontal";
-        var precisionVariant = (variant is "precision" or "compact-precision") && kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge;
-        var authoredHierarchyVariant = (variant is "authored-total" or "compact-authored-total") && kind == ChartSeriesKind.Sunburst;
-        var horizontalCartesian = (variant is "horizontal" or "compact-horizontal") && kind is ChartSeriesKind.Waterfall or ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot;
-        var endpointLabels = kind == ChartSeriesKind.RangeBar && variant is "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels";
-        var angularReversalVariant = (variant is "angular-reversal" or "compact-angular-reversal") && kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar or ChartSeriesKind.PolarArea;
-        var financialDashVariant = (variant is "dashed" or "compact-dashed") && kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc;
-        var radialLabelVariant = (variant is "axis-labels" or "compact-axis-labels" or "all-labels" or "compact-all-labels") && kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
-        var colorScaleVariant = (variant is "color-scale" or "compact-color-scale") && kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap or ChartSeriesKind.CalendarHeatmap;
-        var positionedColorVariant = (variant is "positioned-color-scale" or "compact-positioned-color-scale") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
-        var colorDimensionVariant = (variant is "color-dimension" or "compact-color-dimension") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble;
-        var colorLegendVariant = (variant is "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter;
-        var plotRegionVariant = kind == ChartSeriesKind.Scatter && variant is "quadrants" or "compact-quadrants"
-            || kind == ChartSeriesKind.Bubble && variant is "plot-regions" or "compact-plot-regions";
-        var partialColorVariant = (variant is "partial-color-range" or "compact-partial-color-range") && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter;
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options") && !(funnelVariant && kind == ChartSeriesKind.Funnel) && !precisionVariant && !authoredHierarchyVariant && !horizontalCartesian && !angularReversalVariant && !financialDashVariant && !radialLabelVariant && !colorScaleVariant && !positionedColorVariant && !colorDimensionVariant && !colorLegendVariant && !endpointLabels && !partialColorVariant && !differenceGapVariant && !differenceStepVariant && !plotRegionVariant)
-            throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = (endpointLabels ? RangeBarEndpointLabels(variant) : null) ?? (angularReversalVariant ? AngularReversal(kind) : null) ?? (financialDashVariant ? FinancialDashes(kind) : null) ?? (precisionVariant ? kind == ChartSeriesKind.Gauge ? GaugePrecision() : AxisPrecision() : null) ?? (variant is "options" or "compact-options" || funnelVariant || horizontalCartesian ? GeometryOptions(kind, variant) : null)
-            ?? PlotRegionObservations(kind, variant) ?? PartialColorObservations(kind, variant, mode) ?? ColorDimensionObservations(kind, variant, mode) ?? PositionedColorObservations(kind, variant, mode) ?? NumericColorObservations(kind, variant, mode) ?? Differences(kind, variant) ?? Basic(kind, variant) ?? Ranges(kind, variant) ?? Radial(kind, variant) ?? MatrixMap(kind, variant, mode) ?? Specialty(kind, variant, mode)
-            ?? throw new ArgumentOutOfRangeException(nameof(kind));
-        if (!precisionVariant && !colorDimensionVariant && !colorLegendVariant) chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
-        if (variant == "options" && kind == ChartSeriesKind.Area) {
-            chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
-            chart.Series[0].StateRole = ChartSeriesState.Warning;
-            chart.WithDataLabels();
-        }
-        return chart;
-    }
+/// <summary>Executable gallery models shared by focused downloadable recipes and rendering tests.</summary>
+public static class V2GalleryModels {
+    /// <summary>Creates the selected family from the same compiled source included in its download.</summary>
+    public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) =>
+        (Chart)ExampleRecipes.ForKind(kind, variant).Create(variant, mode);
+
+    public static ChartGrid CreateGrid() => ChartGridRecipe.Create();
+    public static TopologyChart CreateTopology(bool atlas = false) => TopologyRecipe.Create(atlas ? "shapes" : "expanded");
+    public static FlowArtifact CreateFlow() => FlowRecipe.Create();
+    public static SequenceArtifact CreateSequence() => SequenceRecipe.Create();
+    public static Chart CreateMixedRadial(double? curveTension = null) => MixedRadialRecipe.Create(curveTension: curveTension);
+    public static Chart CreateRadialBarScales() => RadialBarScalesRecipe.Create();
+    public static Chart CreateHistogram(string variant) => HistogramRecipe.Create(variant);
 
     /// <summary>Gets a short title describing the actual example data.</summary>
     public static string Title(ChartSeriesKind kind) => kind switch {
@@ -73,37 +50,4 @@ public static partial class V2GalleryModels {
         _ => throw new ArgumentOutOfRangeException(nameof(kind))
     };
 
-    private static ChartPoint[] Observations(string variant, double offset = 0) => (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
-        .Select(index => new ChartPoint(index, 20 + offset + index * 7 % 29, variant == "sparse" && index == 6)).ToArray();
-    private static Chart Categories(ChartSeriesKind kind) => Chart.Create().WithXLabels(kind switch {
-        ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.TrendLine or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc => new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
-        ChartSeriesKind.ErrorBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.RangeBar or ChartSeriesKind.Dumbbell => new[] { "Standard", "Express", "Premium", "Bulk", "Return" },
-        ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap => new[] { "Identity", "Network", "Storage", "Backup", "Access", "Recovery" },
-        ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.PolarArea => new[] { "Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other" },
-        ChartSeriesKind.ProgressRing => new[] { "Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete" },
-        ChartSeriesKind.Radar => new[] { "Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support" },
-        ChartSeriesKind.Scatter or ChartSeriesKind.Bubble => new[] { "1", "2", "3", "4", "5", "6" },
-        ChartSeriesKind.Lollipop => new[] { "Received", "Packed", "Shipped", "In transit", "Delivered", "Reviewed" },
-        ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea => new[] { "08:00", "10:00", "12:00", "14:00", "16:00" },
-        _ => new[] { "North", "South", "East", "West", "Central", "Online" }
-    });
-    private static Chart? Basic(ChartSeriesKind kind, string variant) {
-        var chart = Categories(kind); var values = Observations(variant);
-        return kind switch {
-            ChartSeriesKind.Line => chart.AddLine("Requests", values),
-            ChartSeriesKind.StepLine => chart.AddStepLine("Queued", values),
-            ChartSeriesKind.Area => chart.AddArea("Used capacity", values),
-            ChartSeriesKind.StepArea => chart.AddStepArea("Reserved capacity", values),
-            ChartSeriesKind.Scatter => chart.WithXAxis("Workload batches").WithYAxis("Time (minutes)").AddScatter("Processing time", values),
-            ChartSeriesKind.Bar => chart.AddBar("Orders", values),
-            ChartSeriesKind.Lollipop => chart.AddLollipop("Orders", values),
-            ChartSeriesKind.HorizontalBar => chart.AddHorizontalBar("Orders", values),
-            ChartSeriesKind.StackedArea => chart.AddStackedArea("Requests", values).AddStackedArea("Follow-ups", Observations(variant, -10)),
-            ChartSeriesKind.Waterfall => chart.WithXLabels("North", "South", "East", "West", "Central", "Total")
-                .AddWaterfall("Changes", new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12) }),
-            ChartSeriesKind.Slope => Chart.Create().AddSlope("Team A", 28, 64, "Before", "After").AddSlope("Team B", 52, 43, "Before", "After").AddSlope("Team C", 38, 57, "Before", "After"),
-            ChartSeriesKind.TrendLine => chart.AddScatter("Observations", values).AddTrendLine("Least-squares trend", values),
-            _ => null
-        };
-    }
 }

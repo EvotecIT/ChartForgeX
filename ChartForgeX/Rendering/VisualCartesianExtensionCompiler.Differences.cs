@@ -26,7 +26,7 @@ internal static partial class VisualCartesianCompiler {
         DrawLayeredPath(chart, builder, ChartPathBuilder.FromPoints(geometry.First, series.Interpolation, series.StepPosition), color, paint, stroke, "difference-first");
         DrawLayeredPath(chart, builder, ChartPathBuilder.FromPoints(geometry.Second, series.Interpolation, series.StepPosition), color, paint, stroke, "difference-second");
         for (var item = 0; item < geometry.First.Count; item++) {
-            var first = series.Points[item * 2]; var second = series.Points[item * 2 + 1];
+            var first = series.RenderPoints[item * 2]; var second = series.RenderPoints[item * 2 + 1];
             var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue
                 || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
             var showMarkers = VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue);

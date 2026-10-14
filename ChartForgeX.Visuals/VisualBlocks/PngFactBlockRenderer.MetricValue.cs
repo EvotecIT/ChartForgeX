@@ -10,7 +10,7 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class PngFactBlockRenderer {
     private static void DrawMetricValueSurface(RgbaCanvas canvas, MetricCard card, ChartRect content, double detailBottom, double labelSize, double valueSize, double valueWidth, ChartColor statusColor) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var y = content.Y + labelSize + 18;
         var height = Math.Max(1, detailBottom - y - 4);
         var radius = Math.Min(20, Math.Max(14, theme.PlotCornerRadius + 7));

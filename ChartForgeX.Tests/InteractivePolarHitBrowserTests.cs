@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractivePolarHitBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false, false)]
     [InlineData(true, true, false)]
     [InlineData(false, true, true)]
@@ -18,11 +18,10 @@ public sealed class InteractivePolarHitBrowserTests {
     public async Task NativeSectorHitRetainsObservationAndEmptyPolarSpaceHasNoInferredTarget(bool donut, bool dark, bool compact) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(compact ? 320 : 600, 340)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithLegend(false).WithDataLabels(false).WithXLabels("North", "South");
         var points = new[] { new ChartPoint(1, 1200), new ChartPoint(2, 300) };
-        if (donut) chart.AddDonut("Requests", points); else chart.AddPie("Requests", points);
-        chart.Series[0].WithInteractionKey("requests");
+        chart.AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie, points));
         var mark = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneSlice>().First();
         // Existing producers supply the fixture; the explicit coordinate contract keeps this adapter test independent of new Core APIs.
         await using var session = await OpenAsync(PolarContract(chart.ToInteractiveHtmlPage()), compact ? 360 : 680, 480);
@@ -50,13 +49,13 @@ public sealed class InteractivePolarHitBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task NestedPolarObservationInheritsAuthoredSeriesIdentity() {
         if (!Enabled) return;
+        var first = new ChartSeries(new ChartSeriesId("first"), "First", ChartSeriesKind.Polar, new[] { new ChartPoint(0, 40), new ChartPoint(1, 50) });
+        var second = new ChartSeries(new ChartSeriesId("second"), "Second", ChartSeriesKind.Polar, new[] { new ChartPoint(2, 80), new ChartPoint(3, 70) });
         var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithDataLabels(false)
-            .AddPolar("First", new[] { new ChartPoint(0, 40), new ChartPoint(1, 50) })
-            .AddPolar("Second", new[] { new ChartPoint(2, 80), new ChartPoint(3, 70) }).WithYAxisBounds(0, 100);
-        chart.Series[0].WithInteractionKey("first"); chart.Series[1].WithInteractionKey("second");
+            .AddSeries(first).AddSeries(second).WithYAxisBounds(0, 100);
         await using var session = await OpenAsync(PolarContract(chart.ToInteractiveHtmlPage()));
         var page = session.Page;
         var target = page.Locator("[data-cfx-role='polar-series'][data-cfx-series='1'] [data-cfx-point='0']");
@@ -70,7 +69,7 @@ public sealed class InteractivePolarHitBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task NativeAnnotationTargetRetainsItsTooltipWithoutNearestPointGeometry() {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithYAxisBounds(0, 100)

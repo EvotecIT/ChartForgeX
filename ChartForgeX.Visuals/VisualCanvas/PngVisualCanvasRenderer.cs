@@ -34,13 +34,13 @@ public sealed class PngVisualCanvasRenderer {
         if (canvas.BackdropStyle != VisualCanvasBackdropStyle.Transparent) {
             output.FillRoundedRectVerticalGradient(0, 0, width, height, 0, canvas.BackgroundTop, canvas.BackgroundBottom);
         }
-        var theme = canvas.Theme ?? new VisualCanvasTheme();
+        var theme = canvas.ResolveStyle();
         if (canvas.BackdropStyle == VisualCanvasBackdropStyle.TechHorizon) RenderTechBackdrop(output, width, height, theme);
         foreach (var layer in canvas.Layers) RenderLayer(output, layer, theme);
         return output;
     }
 
-    private static void RenderLayer(RgbaCanvas canvas, VisualCanvasLayer layer, VisualCanvasTheme theme) {
+    private static void RenderLayer(RgbaCanvas canvas, VisualCanvasLayer layer, ResolvedVisualCanvasStyle theme) {
         if (layer is VisualCanvasTextLayer text) {
             var face = VisualCanvasTextFace.Resolve(theme.FontFamily, text.Emphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
             DrawText(canvas, text.X, text.Y, text.Width, text.Text, text.FontSize, text.ResolveColor(theme), text.Alignment, face);
@@ -61,7 +61,7 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static void RenderTechBackdrop(RgbaCanvas canvas, double width, double height, VisualCanvasTheme theme) {
+    private static void RenderTechBackdrop(RgbaCanvas canvas, double width, double height, ResolvedVisualCanvasStyle theme) {
         var accent = theme.SecondaryAccent;
         for (var i = 0; i < 56; i++) {
             var x = (width * ((i * 37) % 101)) / 100.0;
@@ -96,7 +96,7 @@ public sealed class PngVisualCanvasRenderer {
         face.Draw(canvas, drawX, y, fitted, color, fontSize);
     }
 
-    private static void DrawHeroTitle(RgbaCanvas canvas, VisualCanvasHeroTitleLayer hero, VisualCanvasTheme theme) {
+    private static void DrawHeroTitle(RgbaCanvas canvas, VisualCanvasHeroTitleLayer hero, ResolvedVisualCanvasStyle theme) {
         var face = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.HeroTitle, theme.TextMeasurementMode);
         var fontSize = hero.FittedFontSize(face);
         var totalWidth = 0.0;
@@ -110,7 +110,7 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static void DrawKeyValueBlock(RgbaCanvas canvas, VisualCanvasKeyValueBlockLayer block, VisualCanvasTheme theme) {
+    private static void DrawKeyValueBlock(RgbaCanvas canvas, VisualCanvasKeyValueBlockLayer block, ResolvedVisualCanvasStyle theme) {
         var layout = VisualCanvasKeyValueBlockLayout.Build(block, theme);
         var labelFace = block.LabelFace(theme);
         var valueFace = block.ValueFace(theme);
@@ -129,7 +129,7 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static void DrawInfoTile(RgbaCanvas canvas, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme) {
+    private static void DrawInfoTile(RgbaCanvas canvas, VisualCanvasInfoTileLayer tile, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(tile.SurfaceStyle, nameof(tile.SurfaceStyle));
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
@@ -192,7 +192,7 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static ChartColor TileTextColor(VisualCanvasInfoTileTextRole role, VisualCanvasTheme theme) {
+    private static ChartColor TileTextColor(VisualCanvasInfoTileTextRole role, ResolvedVisualCanvasStyle theme) {
         switch (role) {
             case VisualCanvasInfoTileTextRole.Label: return theme.TileLabelColor;
             case VisualCanvasInfoTileTextRole.Detail: return theme.TileDetailColor;
@@ -200,7 +200,7 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static void DrawTileMiniChart(RgbaCanvas canvas, VisualCanvasInfoTileLayer tile, VisualCanvasTheme theme, ChartColor accent, double x, double y, double width, double height) {
+    private static void DrawTileMiniChart(RgbaCanvas canvas, VisualCanvasInfoTileLayer tile, ResolvedVisualCanvasStyle theme, ChartColor accent, double x, double y, double width, double height) {
         canvas.FillRoundedRect(x, y, width, height, Math.Min(8, height * 0.24), theme.TileMiniChartTrackColor.WithOpacity(0.20));
         canvas.DrawLine(x + 4, y + height * 0.72, x + width - 4, y + height * 0.72, theme.TileMiniChartTrackColor, 1);
         canvas.DrawLine(x + 4, y + height * 0.38, x + width - 4, y + height * 0.38, theme.TileMiniChartTrackColor.WithOpacity(0.62), 1);
@@ -332,7 +332,7 @@ public sealed class PngVisualCanvasRenderer {
         }
     }
 
-    private static void DrawHeroBadge(RgbaCanvas canvas, VisualCanvasHeroBadgeLayer badge, VisualCanvasTheme theme) {
+    private static void DrawHeroBadge(RgbaCanvas canvas, VisualCanvasHeroBadgeLayer badge, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(badge.ImageFit, nameof(badge.ImageFit));
         var radius = Math.Min(22, badge.Height * 0.20);
         canvas.FillRoundedRect(badge.X - 6, badge.Y - 6, badge.Width + 12, badge.Height + 12, radius + 4, theme.HeroBadgeGlowColor);
@@ -357,7 +357,7 @@ public sealed class PngVisualCanvasRenderer {
         DrawText(canvas, badge.X, badge.Y + badge.Height / 2 + badge.Height * 0.17 - fontSize, badge.Width, badge.Symbol, fontSize, theme.HeroBadgeTextColor, TextAlignment.Center, VisualCanvasTextFace.Resolve(theme.MonospaceFontFamily, VisualCanvasFontWeights.HeroBadge, theme.TextMeasurementMode));
     }
 
-    private static void DrawImage(RgbaCanvas canvas, VisualCanvasImageLayer image, VisualCanvasTheme theme) {
+    private static void DrawImage(RgbaCanvas canvas, VisualCanvasImageLayer image, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(image.Fit, nameof(image.Fit));
         if (image.Rgba != null && (image.SourceWidth <= 0 || image.SourceHeight <= 0)) {
             throw new ArgumentOutOfRangeException(nameof(image.SourceWidth), "RGBA image layers require positive source dimensions.");
@@ -378,7 +378,7 @@ public sealed class PngVisualCanvasRenderer {
             VisualCanvasImageFitMapping.Resolve(image.Fit));
     }
 
-    private static void DrawFeatureStrip(RgbaCanvas canvas, VisualCanvasFeatureStripLayer strip, VisualCanvasTheme theme) {
+    private static void DrawFeatureStrip(RgbaCanvas canvas, VisualCanvasFeatureStripLayer strip, ResolvedVisualCanvasStyle theme) {
         var slot = strip.Width / strip.Items.Count;
         var iconFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.Emphasized, theme.TextMeasurementMode);
         var labelFace = VisualCanvasTextFace.Resolve(theme.FontFamily, VisualCanvasFontWeights.FeatureLabel, theme.TextMeasurementMode);

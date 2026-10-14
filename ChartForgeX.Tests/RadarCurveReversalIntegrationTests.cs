@@ -7,6 +7,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class RadarCurveReversalIntegrationTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(320, 240)]
     [InlineData(800, 440)]

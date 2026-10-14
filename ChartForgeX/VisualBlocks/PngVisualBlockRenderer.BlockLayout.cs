@@ -9,7 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngVisualBlockRenderer {
     private static void DrawBlockLayout(RgbaCanvas canvas, BlockLayoutBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, block, ref y, content.X, content.Width);
@@ -32,7 +32,7 @@ public sealed partial class PngVisualBlockRenderer {
         }
     }
 
-    private static void DrawBlockLayoutNode(RgbaCanvas canvas, BlockLayoutItem item, int index, BlockLayoutRect rect, ChartForgeX.Themes.ChartTheme theme) {
+    private static void DrawBlockLayoutNode(RgbaCanvas canvas, BlockLayoutItem item, int index, BlockLayoutRect rect, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var accent = VisualBlockRendering.PaletteAt(theme, index);
         if (item.Shape == BlockLayoutShape.Circle) {
             var radius = VisualBlockRendering.BlockLayoutCircleRadius(rect.Width, rect.Height);
@@ -54,7 +54,7 @@ public sealed partial class PngVisualBlockRenderer {
         DrawAlignedTextAtBaseline(canvas, item.Label, caption.X, VisualBlockRendering.BlockLayoutBaseline(style, rect.Y + rect.Height / 2), caption.Width, TextAlignment.Center, theme.Text, style.FontSize, true);
     }
 
-    private static void DrawBlockLayoutEdge(RgbaCanvas canvas, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ChartTheme theme) {
+    private static void DrawBlockLayoutEdge(RgbaCanvas canvas, BlockLayoutEdge edge, BlockLayoutRect source, BlockLayoutRect target, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var route = BlockEdgeRoute(source, target);
         canvas.DrawLine(route.X1, route.Y1, route.X2, route.Y2, theme.Axis, 1.6);
         if (edge.Directed) DrawBlockArrowHead(canvas, route, theme.Axis);

@@ -24,4 +24,7 @@ public sealed class ChartFunnelOptions {
             _orientation = value;
         }
     }
+
+    /// <summary>Copies the configured state for isolated chart configuration.</summary>
+    internal ChartFunnelOptions Clone() => (ChartFunnelOptions)MemberwiseClone();
 }

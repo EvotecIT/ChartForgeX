@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Paired facts need their own marker, boundary ink or connected fill to become interactive paint.</summary>
 public sealed class PairedSegmentPaintBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.DifferenceArea, "opposite")]
     [InlineData(ChartSeriesKind.DifferenceArea, "opposite-reversed")]
     [InlineData(ChartSeriesKind.RangeBand, "opposite")]
@@ -33,11 +33,11 @@ public sealed class PairedSegmentPaintBrowserTests {
         var second = cap ? 10.04 : scenario == "opposite-reversed" ? -2 : 12;
         var chart = Create(kind, false, true);
         chart.Series[0].WithStrokeWidth(6);
-        chart.Series[0].Points[4] = new ChartPoint(2, first, !connected);
-        chart.Series[0].Points[5] = new ChartPoint(2, second, !connected);
+        if (kind == ChartSeriesKind.DifferenceArea) chart.Series[0].UpdateDifferencePoint(2, new ChartDifferencePoint(2, first, second, !connected));
+        else chart.Series[0].UpdateRange(2, new ChartRangeBand(2, first, second, !connected));
         if (connected) {
-            chart.Series[0].Points[6] = new ChartPoint(3, kind == ChartSeriesKind.DifferenceArea ? 8 : 2);
-            chart.Series[0].Points[7] = new ChartPoint(3, kind == ChartSeriesKind.DifferenceArea ? 2 : 8);
+            if (kind == ChartSeriesKind.DifferenceArea) chart.Series[0].UpdateDifferencePoint(3, new ChartDifferencePoint(3, 8, 2));
+            else chart.Series[0].UpdateRange(3, new ChartRangeBand(3, 2, 8));
         }
         var transparent = scenario == "connected-transparent";
         if (transparent && kind == ChartSeriesKind.DifferenceArea) chart.Series[0].ConfigureDifferenceArea(options => {
@@ -85,13 +85,13 @@ public sealed class PairedSegmentPaintBrowserTests {
             Assert.Contains(second.ToString(System.Globalization.CultureInfo.InvariantCulture), pointer.GetProperty("readout").GetString());
             Assert.Equal(new[] { "paired:2", "paired:2" }, keyboard.GetProperty("selections").EnumerateArray().Select(id => id.GetString()));
         } else Assert.DoesNotContain(keyboard.GetProperty("selections").EnumerateArray(), id => id.GetString() == "paired:2");
-        Assert.Equal(first, double.Parse((await point.GetAttributeAsync("data-cfx-source-0-y"))!, System.Globalization.CultureInfo.InvariantCulture));
-        Assert.Equal(second, double.Parse((await point.GetAttributeAsync("data-cfx-source-1-y"))!, System.Globalization.CultureInfo.InvariantCulture));
-        Assert.Equal("2", await point.GetAttributeAsync("data-cfx-source-count"));
+        Assert.Equal(first, double.Parse((await point.GetAttributeAsync(kind == ChartSeriesKind.DifferenceArea ? "data-cfx-first" : "data-cfx-lower"))!, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(second, double.Parse((await point.GetAttributeAsync(kind == ChartSeriesKind.DifferenceArea ? "data-cfx-second" : "data-cfx-upper"))!, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal("1", await point.GetAttributeAsync("data-cfx-source-count"));
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.DifferenceArea, "none")]
     [InlineData(ChartSeriesKind.RangeArea, "none")]
     [InlineData(ChartSeriesKind.RangeBand, "none")]
@@ -143,13 +143,11 @@ public sealed class PairedSegmentPaintBrowserTests {
         await page.Keyboard.PressAsync("Space");
         var keyboard = await StateAsync(page);
         await CaptureAsync(page, name + "-keyboard", new { focused, keyboard });
-        Assert.Equal("2", await isolated.GetAttributeAsync("data-cfx-source-count"));
-        Assert.Equal("4", await isolated.GetAttributeAsync("data-cfx-source-0-index"));
-        Assert.Equal("5", await isolated.GetAttributeAsync("data-cfx-source-1-index"));
-        Assert.Equal("true", await isolated.GetAttributeAsync("data-cfx-source-0-break"));
-        Assert.Equal("true", await isolated.GetAttributeAsync("data-cfx-source-1-break"));
-        Assert.Equal(kind == ChartSeriesKind.DifferenceArea ? "8" : "2", await isolated.GetAttributeAsync("data-cfx-source-0-y"));
-        Assert.Equal(kind == ChartSeriesKind.DifferenceArea ? "2" : "8", await isolated.GetAttributeAsync("data-cfx-source-1-y"));
+        Assert.Equal("1", await isolated.GetAttributeAsync("data-cfx-source-count"));
+        Assert.Equal("2", await isolated.GetAttributeAsync("data-cfx-source-point"));
+        Assert.Equal("true", await isolated.GetAttributeAsync("data-cfx-break-before"));
+        Assert.Equal(kind == ChartSeriesKind.DifferenceArea ? "8" : "2", await isolated.GetAttributeAsync(kind == ChartSeriesKind.DifferenceArea ? "data-cfx-first" : "data-cfx-lower"));
+        Assert.Equal(kind == ChartSeriesKind.DifferenceArea ? "2" : "8", await isolated.GetAttributeAsync(kind == ChartSeriesKind.DifferenceArea ? "data-cfx-second" : "data-cfx-upper"));
         Assert.Equal(available, pointer.GetProperty("tooltipVisible").GetBoolean());
         Assert.Equal(available, clicked.GetProperty("isolatedSelected").GetBoolean());
         if (available) {
@@ -166,23 +164,19 @@ public sealed class PairedSegmentPaintBrowserTests {
 
     private static Chart Create(ChartSeriesKind kind, bool markers, bool boundary) {
         var chart = Chart.Create().WithSize(600, 380).WithTitle("Disconnected paired observations")
-            .WithTheme(ChartTheme.GraphiteLight()).WithLegend(false).WithDataLabels(false)
+            .WithTheme(VisualTheme.Graphite()).WithLegend(false).WithDataLabels(false)
             .WithXAxisBounds(0, 4).WithYAxisBounds(0, 10).WithLineVisualStyle(ChartLineVisualStyle.Plain());
         if (kind == ChartSeriesKind.DifferenceArea) {
-            chart.AddDifferenceArea("Pair", Enumerable.Range(0, 5).Select(x => new ChartDifferencePoint(x, 8, 2, x is 2 or 3)));
+            chart.AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("paired"), "Pair", Enumerable.Range(0, 5).Select(x => new ChartDifferencePoint(x, 8, 2, x is 2 or 3))));
             chart.Series[0].WithColor(boundary ? ChartColor.FromHex("#DF3040") : ChartColor.Transparent).ConfigureDifferenceArea(options => {
                 options.PositiveFill = ChartColor.FromHex("#DF3040"); options.PositiveFillOpacity = .6;
             });
         } else {
-            var pairs = Enumerable.Range(0, 5).Select(x => new ChartRangeBand(x, 2, 8));
-            if (kind == ChartSeriesKind.RangeArea) chart.AddRangeArea("Pair", pairs);
-            else chart.AddRangeBand("Pair", pairs);
-            foreach (var raw in new[] { 4, 5, 6, 7 }) {
-                var point = chart.Series[0].Points[raw];
-                chart.Series[0].Points[raw] = new ChartPoint(point.X, point.Y, true);
-            }
+            var pairs = Enumerable.Range(0, 5).Select(x => new ChartRangeBand(x, 2, 8, x is 2 or 3));
+            if (kind == ChartSeriesKind.RangeArea) chart.AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("paired"), "Pair", pairs));
+            else chart.AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId("paired"), "Pair", pairs));
         }
-        chart.Series[0].WithInteractionKey("paired").WithPointColor(2, ChartColor.FromHex("#DF3040"))
+        chart.Series[0].WithPointColor(2, ChartColor.FromHex("#DF3040"))
             .ConfigureMarkers(options => options.Enabled = markers);
         return chart;
     }
@@ -193,8 +187,8 @@ public sealed class PairedSegmentPaintBrowserTests {
           hover:root.dataset.cfxHoverKey||'',crosshairVisible:!!root.querySelector('.cfx-crosshair')&&!root.querySelector('.cfx-crosshair').hidden,isolatedSelected:root.querySelector('[data-cfx-point="2"]').getAttribute('aria-selected')==='true',
           selections:window.cfxSegmentSelections,
           points:[...root.querySelectorAll('[data-cfx-role="point"]')].map(n=>({id:n.dataset.cfxTargetId,tabindex:n.getAttribute('tabindex'),
-            selected:n.getAttribute('aria-selected'),first:n.getAttribute('data-cfx-source-0-y'),second:n.getAttribute('data-cfx-source-1-y'),
-            breakBefore:n.getAttribute('data-cfx-source-0-break')}))};}
+            selected:n.getAttribute('aria-selected'),first:n.getAttribute('data-cfx-first')??n.getAttribute('data-cfx-lower'),second:n.getAttribute('data-cfx-second')??n.getAttribute('data-cfx-upper'),
+            breakBefore:n.getAttribute('data-cfx-break-before')}))};}
         """);
 
     private static async Task CaptureAsync(IPage page, string name, object state) {

@@ -4,7 +4,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(0)]
     [InlineData(Delay)]
     public async Task PointerHandoffReturnsToTheFocusedShadowLegendWithoutQueuingItsReadout(int delay) {

@@ -94,17 +94,17 @@ public sealed class NativeTopologyDuplicateEdgeTests {
 
     [Fact]
     public void AnimationPaintKeepsStatusAndSurfaceVariablesDetachedFromCallerChanges() {
-        var theme = TopologyTheme.Light();
+        var theme = VisualTheme.Graphite();
         var chart = Diagram().WithTheme(theme);
-        var variables = new SvgColorVariables().Add("--background", ChartColor.Parse(theme.Background), SvgColorRole.Surface)
-            .Add("--neutral", ChartColor.Parse(theme.Unknown), SvgColorRole.Status);
+        var variables = new SvgColorVariables().Add("--background", theme.Resolve(VisualThemeMode.Light).Background, SvgColorRole.Surface)
+            .Add("--neutral", theme.Resolve(VisualThemeMode.Light).Status.Neutral.Fill, SvgColorRole.Status);
         var prepared = chart.WithMotion(TopologyMotionOptions.RoutePulseForEdges("dup"), new TopologyRenderOptions { IncludeLegend = false, SvgColorVariables = variables });
         var svg = prepared.ToSvg(); var xml = XDocument.Parse(svg);
         var marker = Assert.Single(xml.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "topology-motion-marker");
         Assert.StartsWith("var(--neutral,", (string?)marker.Attribute("fill"), StringComparison.Ordinal);
         Assert.StartsWith("var(--background,", (string?)marker.Attribute("stroke"), StringComparison.Ordinal);
-        variables.Add("--later", ChartColor.Parse(theme.Unknown), SvgColorRole.Status);
-        theme.Unknown = "#FF0000";
+        variables.Add("--later", theme.Resolve(VisualThemeMode.Light).Status.Neutral.Fill, SvgColorRole.Status);
+        chart.Theme = theme.Configure(builder => builder.Light.Status.Neutral = new VisualTokenColor(ChartColor.FromHex("#FF0000"), ChartColor.White));
         Assert.Equal(svg, prepared.ToSvg());
     }
 

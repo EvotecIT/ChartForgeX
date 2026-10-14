@@ -14,7 +14,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
     private const string RegionRoot = ".cfx-interactive-chart";
     private const string Guidance = "Background guidance";
 
-    [Fact]
+    [BrowserFact]
     public async Task BrushLassoAndCompareContainObservationsWithoutBackgroundRegions() {
         if (!Enabled) return;
         var html = PassiveChart().ToInteractiveHtmlPage(options => {
@@ -53,7 +53,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task HostStateAndSynchronizedHoverKeepPassiveFactsOutOfSelectionAndEmphasis() {
         if (!Enabled) return;
         var html = new[] { PassiveChart().AddHorizontalLine(9, Guidance), PassiveChart().AddHorizontalLine(9, Guidance) }
@@ -100,7 +100,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task PassiveFillAndCaptionPaintAllowNearbyObservationAndCrosshair(bool nearest) {
@@ -153,9 +153,8 @@ public sealed partial class CartesianPlotRegionBrowserTests {
     private static Chart PassiveChart() {
         var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithTitle("Passive planning guidance")
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-            .AddScatter("Observed", new[] { new ChartPoint(5, 6), new ChartPoint(8, 8) })
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed", new[] { new ChartPoint(5, 6), new ChartPoint(8, 8) }))
             .AddPlotRegion(new(ChartColor.FromHex("#5c9e75"), label: Guidance, opacity: .2));
-        chart.Series[0].WithInteractionKey("observations");
         return chart;
     }
 

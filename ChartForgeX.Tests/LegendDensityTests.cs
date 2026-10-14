@@ -131,7 +131,7 @@ public sealed class LegendDensityTests {
     }
 
     private static Chart Dense(string kind, int count) {
-        var chart = Chart.Create().WithTheme(ChartTheme.Light()).WithSize(900, 560).WithTitle("Dense legend");
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(900, 560).WithTitle("Dense legend");
         var points = Enumerable.Range(0, count).Select(index => new ChartPoint(index, index % 100 + 1)).ToArray();
         chart.WithXLabels(points.Select(point => "Service " + point.X).ToArray());
         if (kind == "pie") chart.AddPie("Values", points);

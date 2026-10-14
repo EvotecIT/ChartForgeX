@@ -9,9 +9,11 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\ChartForgeX.Examples\Snippets\FiveLineChart.cs.txt" Link="Program.cs" />
-    <ProjectReference Include="..\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj" />
-    <ProjectReference Include="..\ChartForgeX.Stories\ChartForgeX.Stories.csproj" />
+    <Compile Include="Program.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipeImports.cs" Link="RecipeImports.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipes.cs" Link="ExampleRecipes.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\Recipes\*Recipe.cs" Link="Recipes\%(Filename)%(Extension)" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="$(RecipeSource)" Link="Program.cs" Condition="'$(RecipeSource)' != ''" />
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
   </ItemGroup>
 </Project>

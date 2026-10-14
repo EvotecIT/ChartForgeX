@@ -9,10 +9,8 @@ public sealed partial class Chart {
     /// <remarks>Leaves require finite non-negative sizes. Groups aggregate leaves by default; authored-total sizing preserves unused capacity.</remarks>
     public Chart AddSunburst(string name, IEnumerable<ChartHierarchyItem> items, ChartColor? color = null) {
         EnsureCanAddSeries();
-        var series = new ChartSeries(name, ChartSeriesKind.Sunburst, Array.Empty<ChartPoint>()) { Color = color };
-        var facts = ChartRelationshipIndex.AreaHierarchy(items, allowForest: false, requireNullGroups: false);
-        _ = facts.ResolveHierarchyValues(Options.Sunburst.ParentValuePolicy);
-        series.SetRelationships(facts);
+        var series = ChartSeries.CreateSunburst(name, items, color);
+        _ = series.Relationships!.ResolveHierarchyValues(Options.Sunburst.ParentValuePolicy);
         AppendSeries(series);
         return this;
     }
@@ -20,7 +18,7 @@ public sealed partial class Chart {
     /// <summary>Configures Sunburst parent-size interpretation and independent numeric color.</summary>
     public Chart ConfigureSunburst(Action<ChartSunburstOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.Sunburst);
+        Options.Sunburst = ChartOptionConfiguration.Configure(Options.Sunburst, configure, options => options.Clone());
         return this;
     }
 }

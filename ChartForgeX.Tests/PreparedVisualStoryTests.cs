@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Raster;
 using ChartForgeX.Stories;
 using ChartForgeX.Terminal;
@@ -20,7 +21,7 @@ public sealed class PreparedVisualStoryTests {
 
     [Fact]
     public void PreparationDetachesMutableInputsAndReturnedFrames() {
-        var theme = VisualStoryTheme.GraphiteDark();
+        var theme = VisualTheme.Graphite();
         var table = TerminalTable.Create().WithColumns("Result").AddRow("ready");
         var terminal = TerminalStory.Create().Command("Invoke-Demo", 0.5).Table(table);
         var source = StorySourceText.Create("Invoke-Demo", "powershell");
@@ -34,7 +35,7 @@ public sealed class PreparedVisualStoryTests {
         var prepared = story.Prepare();
         var before = prepared.ToPng();
         var transcript = prepared.ToTranscript();
-        theme.Background = ChartColor.White; table.AddRow("changed"); terminal.Output("changed");
+        story.WithTheme(theme.Configure(builder => builder.Dark.Background = ChartColor.White)); table.AddRow("changed"); terminal.Output("changed");
         source.WithLanguage("changed"); pixels[0] = 0;
         Assert.Equal(before, prepared.ToPng());
         Assert.Equal(transcript, prepared.ToTranscript());

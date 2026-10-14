@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Xml.Linq;
 using System.Globalization;
 using ChartForgeX.Mermaid;
@@ -13,7 +14,7 @@ public sealed class MermaidFixedBlockTypographyTests {
     [Fact]
     public void GitSourceSizeRemainsEffectiveAtBitmapScaleBoundaries() {
         static GitGraphBlock Create(double size) {
-            var theme = ChartForgeX.Themes.ChartTheme.Light(); theme.FontFamily = "Arial"; theme.DataLabelFontSize = size;
+            var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
             return GitGraphBlock.Create().WithSize(900, 500).WithTheme(theme).WithCard(false).AddBranch("main").AddCommit("base", "main", tag: "v1");
         }
         var small = Create(10.5); var large = Create(21);
@@ -30,7 +31,7 @@ public sealed class MermaidFixedBlockTypographyTests {
     [Fact]
     public void PacketBitSizeRemainsReadableAtBitmapScaleBoundaries() {
         static PacketLayoutBlock Create(double size) {
-            var theme = ChartForgeX.Themes.ChartTheme.Light(); theme.FontFamily = "Arial"; theme.DataLabelFontSize = size;
+            var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
             return PacketLayoutBlock.Create().WithSize(900, 500).WithTheme(theme).WithCard(false).WithBitsPerRow(32)
                 .AddField(0, 0, "Flag").AddField(1, 31, "Payload");
         }
@@ -45,7 +46,7 @@ public sealed class MermaidFixedBlockTypographyTests {
 
     [Fact]
     public void DensePacketKeepsFieldRangesWithoutOverlappingAtBitmapScaleBoundaries() {
-        var theme = ChartForgeX.Themes.ChartTheme.Light(); theme.FontFamily = "Arial";
+        var theme = VisualTheme.Report().WithFontFamily("Arial");
         var block = PacketLayoutBlock.Create().WithSize(320, 240).WithTheme(theme).WithCard(false).WithBitsPerRow(512)
             .AddField(0, 0, "Flag").AddField(1, 511, "Payload");
         var svg = XDocument.Parse(block.ToSvg());
@@ -53,10 +54,10 @@ public sealed class MermaidFixedBlockTypographyTests {
         Assert.Equal(new[] { "0", "1" }, fields.Select(e => (string?)e.Attribute("data-bit-start")));
         Assert.Equal(new[] { "0", "511" }, fields.Select(e => (string?)e.Attribute("data-bit-end")));
         var numbers = svg.Descendants().Where(e => ((string?)e.Attribute("data-cfx-role"))?.StartsWith("packet-bit-", StringComparison.Ordinal) == true).ToArray();
-        if (TypographyFontResolver.ResolveFace(new FontSpec { Family = theme.FontFamily }).Font == null) Assert.Empty(numbers);
+        if (TypographyFontResolver.ResolveFace(new FontSpec { Family = theme.Typography.Family }).Font == null) Assert.Empty(numbers);
         else if (numbers.Length > 0) {
             var number = numbers.First(e => e.Value == "0");
-            var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = 700 },
+            var style = new TextStyle { Font = new FontSpec { Family = theme.Typography.Family, Weight = 700 },
                 FontSize = double.Parse((string)number.Attribute("font-size")!, CultureInfo.InvariantCulture), LineHeight = 1 };
             var fieldWidth = double.Parse((string)fields[0].Attribute("width")!, CultureInfo.InvariantCulture);
             Assert.InRange(TextLayoutEngine.Measure(number.Value, style).Width, 0, fieldWidth);
@@ -67,7 +68,7 @@ public sealed class MermaidFixedBlockTypographyTests {
 
     private static void CaptureBitmapCandidate(IVisualBlock block, string name) {
         if (Environment.GetEnvironmentVariable("CFX_TEST_REQUIRE_BITMAP_FONT") == "1")
-            Assert.Null(TypographyFontResolver.ResolveFace(new FontSpec { Family = block.Options.Theme.FontFamily }).Font);
+            Assert.Null(TypographyFontResolver.ResolveFace(new FontSpec { Family = block.Options.Theme.Typography.Family }).Font);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(captures)) return;
         Directory.CreateDirectory(captures);
@@ -99,18 +100,19 @@ public sealed class MermaidFixedBlockTypographyTests {
         File.WriteAllBytes(Path.Combine(captures, "fishbone-management-" + size + "-native.png"), png);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task MaximumSourceSizeRetainsFixedWardleyAndFishboneRoles(bool graphite, bool fishbone) {
+    public async Task MaximumSourceSizeRetainsFixedWardleyAndFishboneRoles(bool dark, bool fishbone) {
         var body = fishbone ? "ishikawa-beta\nAPI\n  People\n    Data\n  Process\n    Review"
             : "wardley-beta\nanchor User [0.9, 0.15]\ncomponent API [0.55, 0.4]\nUser +'uses'> API\nnote \"Data\" [0.25, 0.6]\naccelerator Faster [0.45, 0.65]\nannotation 1, [0.5, 0.5] \"Review\"\npipeline API {\n  component Build [0.3]\n}";
         var parsed = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\n" + body);
         Assert.Empty(parsed.Diagnostics);
         var block = Assert.IsAssignableFrom<IVisualBlock>(parsed.Artifact!.Model);
-        block.Options.Theme.UseGraphiteLayout = graphite;
+        block.Options.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
         var svg = parsed.Artifact.ToSvg(); var png = parsed.Artifact.ToPng();
         var labels = XDocument.Parse(svg).Descendants().Where(e => e.Name.LocalName == "text").Select(e => e.Value).ToArray();
         foreach (var value in fishbone ? new[] { "API", "People", "Data", "Process", "Review" }
@@ -123,14 +125,14 @@ public sealed class MermaidFixedBlockTypographyTests {
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(captures)) return;
         Directory.CreateDirectory(captures);
-        var name = (fishbone ? "fishbone" : "wardley") + "-font-ceiling-" + graphite;
+        var name = (fishbone ? "fishbone" : "wardley") + "-font-ceiling-" + dark;
         await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png") });
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), png);
     }
 
     [Fact]
     public void SingleLineHeadingNormalizationDoesNotConsumeExtraBodySpace() {
-        var theme = ChartForgeX.Themes.ChartTheme.Light(); theme.TitleFontSize = 42; theme.SubtitleFontSize = 27;
+        var theme = VisualTheme.Report(); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: 42, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: builder.Typography.DataLabelSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); }); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: 27, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: builder.Typography.DataLabelSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var first = BlockLayoutBlock.Create().WithTitle("First Second").WithSubtitle("Third Fourth").WithTheme(theme).AddItem("a", "API");
         var second = BlockLayoutBlock.Create().WithTitle("First\nSecond").WithSubtitle("Third\r\nFourth").WithTheme(theme).AddItem("a", "API");
         static string Positions(string svg) => string.Join("|", XDocument.Parse(svg).Descendants()

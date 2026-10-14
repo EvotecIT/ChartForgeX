@@ -11,7 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderScheduleTimeline(SvgMarkupWriter writer, ScheduleTimelineBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
@@ -65,12 +65,13 @@ public sealed partial class SvgFactBlockRenderer {
             writer.StartElement("rect").Attribute("data-cfx-role", "schedule-event-pill").Attribute("x", left).Attribute("y", eventY).Attribute("width", width).Attribute("height", eventHeight).Attribute("rx", radius).Attribute("fill", color.WithAlpha(34).ToCss()).Attribute("stroke", color.WithAlpha(130).ToCss()).EndEmptyElement().Line();
             writer.StartElement("rect").Attribute("data-cfx-role", "schedule-event-stripe").Attribute("x", left).Attribute("y", eventY).Attribute("width", Math.Min(5, width)).Attribute("height", eventHeight).Attribute("rx", Math.Min(3, radius)).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
             var avatarReserve = Math.Min(width * 0.34, item.Avatars.Count == 0 ? 0 : 18 + Math.Min(3, item.Avatars.Count) * 14);
-            var badgeReserve = item.Badge.Length == 0 ? 0 : Math.Min(78, VisualBlockRendering.EstimateTextWidth(item.Badge, theme.SubtitleFontSize) + 18);
+            var badgeFontSize = Math.Max(9, theme.SubtitleFontSize - 1);
+            var badgeReserve = item.Badge.Length == 0 ? 0 : Math.Min(78, VisualBlockRendering.MeasureTextWidth(item.Badge, badgeFontSize, theme.FontFamily, 700) + 18);
             WriteText(writer, item.Title, left + 14, eventY + eventHeight * 0.62, Math.Max(1, width - 20 - avatarReserve - badgeReserve), TextAlignment.Left, color, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize), "750");
             if (item.Badge.Length > 0) {
                 var badgeWidth = Math.Min(78, badgeReserve);
                 writer.StartElement("rect").Attribute("data-cfx-role", "schedule-event-badge").Attribute("x", left + width - avatarReserve - badgeWidth - 6).Attribute("y", eventY + 7).Attribute("width", badgeWidth).Attribute("height", eventHeight - 14).Attribute("rx", 7).Attribute("fill", color.WithAlpha(50).ToCss()).EndEmptyElement().Line();
-                WriteText(writer, item.Badge, left + width - avatarReserve - badgeWidth, eventY + eventHeight * 0.62, badgeWidth - 10, TextAlignment.Center, color, theme.FontFamily, Math.Max(9, theme.SubtitleFontSize - 1), "800");
+                WriteText(writer, item.Badge, left + width - avatarReserve - badgeWidth, eventY + eventHeight * 0.62, badgeWidth - 10, TextAlignment.Center, color, theme.FontFamily, badgeFontSize, "700");
             }
 
             RenderScheduleAvatars(writer, item, color, theme, left + width - avatarReserve + 3, eventY + eventHeight / 2);
@@ -81,7 +82,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
 
-    private static void RenderScheduleAvatars(SvgMarkupWriter writer, ScheduleTimelineEvent item, ChartColor color, ChartForgeX.Themes.ChartTheme theme, double x, double y) {
+    private static void RenderScheduleAvatars(SvgMarkupWriter writer, ScheduleTimelineEvent item, ChartColor color, ChartForgeX.Themes.ResolvedVisualTheme theme, double x, double y) {
         var count = Math.Min(3, item.Avatars.Count);
         for (var i = 0; i < count; i++) {
             var cx = x + i * 14;

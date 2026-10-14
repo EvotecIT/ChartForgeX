@@ -6,7 +6,7 @@ description: "Mix standard, compact, and vertical branches in one deterministic 
 layout: example
 ---
 
-`TopologyChart` draws a static organization view, and hierarchy policy changes the density of one branch without touching the rest. The output above is this program's SVG; the site adds `WithDesignTokens` to show it in its light and dark themes.
+`TopologyChart` draws a static organization view, and hierarchy policy changes the density of one branch without touching the rest. The output above is this program's SVG; the site adds `WithThemeMode` to show it in its light and dark themes.
 
 ## Describe the people
 

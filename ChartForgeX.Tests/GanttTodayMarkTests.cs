@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GanttTodayMarkTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, 960)]
     [InlineData(true, false, 320)]
@@ -17,7 +18,7 @@ public sealed class GanttTodayMarkTests {
     public async Task TodayLinePaintsVisibleInkAcrossClassicAndPackedTaskFills(bool dark, bool lanes, int width) {
         var start = new DateTime(2026, 1, 1);
         var chart = Chart.Create().WithSize(width, 360).WithLegend(false).WithDataLabels(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithGanttToday(start.AddDays(2));
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithGanttToday(start.AddDays(2));
         if (lanes) chart.WithStateCategories(new ChartStateCategory("work", "Work", ChartColor.FromHex("#3291CC")))
             .AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, start.AddDays(4), "work") });
         else chart.AddGanttTask("Task", start, start.AddDays(4));

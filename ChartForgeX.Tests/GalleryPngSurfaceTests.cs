@@ -20,13 +20,15 @@ public sealed class GalleryPngSurfaceTests {
     [InlineData("grid", 2)]
     [InlineData("block-card", 1)]
     [InlineData("block-card", 2)]
+    [InlineData("variable-frame", 1)]
+    [InlineData("variable-frame", 2)]
     public void DeclaredSurfacesRemainHealthyAndExtraEdgeMarksRemainObservable(string surface, int scale) {
         var chart = Chart.Create().WithSize(320, 220).WithTitle("Perimeter health")
             .AddBar("Observed", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50) });
         string svg;
         byte[] png;
         if (surface == "block-card") {
-            var theme = ChartTheme.GraphiteLight(); theme.UseGraphiteLayout = false;
+            var theme = VisualTheme.Graphite();
             var block = BlockLayoutBlock.Create().WithSize(320, 220).WithTitle("Block card")
                 .WithTheme(theme).AddItem("a", "A");
             block.Options.PngOutputScale = scale;
@@ -37,12 +39,19 @@ public sealed class GalleryPngSurfaceTests {
                 layout: new VisualLayoutOptions(new VisualSize(320, 220.553))));
             svg = prepared.ToSvg();
             png = prepared.ToPng(new VisualRenderOptions(scale: scale));
+        } else if (surface == "variable-frame") {
+            var tokens = VisualDesignTokens.Dark();
+            chart.WithTheme(new VisualTheme(tokens, tokens), VisualThemeMode.Dark)
+                .WithSvgColorVariables(tokens.ToSvgColorVariables()).WithPngOutputScale(scale);
+            svg = chart.ToSvg(); png = chart.ToPng();
+            Assert.Contains("var(--cfx-surface-card,", svg);
+            Assert.Contains("var(--cfx-surface-line,", svg);
         } else if (surface == "shadow") {
-            chart.WithTheme(ChartTheme.Dark().WithShadowOpacity(.24)).WithPngOutputScale(scale);
+            chart.WithTheme(VisualTheme.Report().Configure(builder => { builder.CardShadowOpacity = .24; }), VisualThemeMode.Dark).WithPngOutputScale(scale);
             svg = chart.ToSvg(); png = chart.ToPng();
             Assert.Contains("frame-card-shadow", svg);
         } else {
-            var grid = ChartGrid.Create().WithColumns(2).WithTheme(ChartTheme.GraphiteLight())
+            var grid = ChartGrid.Create().WithColumns(2).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
                 .WithPngOutputScale(scale).Add(chart).Add(Chart.Create().WithSize(320, 220)
                     .AddLine("Trend", new[] { new ChartPoint(1, 10), new ChartPoint(2, 30) }));
             svg = grid.ToSvg(); png = grid.ToPng();

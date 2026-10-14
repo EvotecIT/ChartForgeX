@@ -5,7 +5,7 @@ description: "Render the same typed ChartForgeX chart as SVG, HTML, and PNG from
 layout: example
 ---
 
-One typed definition renders to every surface. The output above is this program's SVG; the site adds `WithDesignTokens` to show it in its light and dark themes.
+One typed definition renders to every surface. The output above is this program's SVG; the site adds `WithThemeMode` to show it in its light and dark themes.
 
 ## Describe the chart
 

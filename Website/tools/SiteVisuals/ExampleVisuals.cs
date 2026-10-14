@@ -1,5 +1,5 @@
 // Outputs of the curated examples under content/examples. Each builder mirrors the code on its example page; the only
-// addition is WithDesignTokens, so the site can show the same output in its light and dark themes.
+// addition is WithThemeMode, so the site can show the same output in its light and dark themes.
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Data;
@@ -16,19 +16,19 @@ internal static class ExampleVisuals {
         var examples = new SortedDictionary<string, object>(StringComparer.Ordinal);
 
         examples["static-chart"] = Save(output, "static-chart",
-            tokens => StaticChart(tokens).ToSvg("cfx-ex-chart"),
-            tokens => StaticChart(tokens).ToPng(),
-            tokens => StaticChart(tokens).ToHtmlPage());
+            mode => StaticChart(mode).ToSvg("cfx-ex-chart"),
+            mode => StaticChart(mode).ToPng(),
+            mode => StaticChart(mode).ToHtmlPage());
 
         examples["report-grid"] = Save(output, "report-grid",
-            tokens => ReportGrid(tokens).ToSvg("cfx-ex-grid"),
-            tokens => ReportGrid(tokens).ToPng(),
-            tokens => ReportGrid(tokens).ToHtmlPage());
+            mode => ReportGrid(mode).ToSvg("cfx-ex-grid"),
+            mode => ReportGrid(mode).ToPng(),
+            mode => ReportGrid(mode).ToHtmlPage());
 
         examples["organization-hierarchy"] = Save(output, "organization-hierarchy",
-            tokens => TeamHierarchy(tokens).ToSvg(),
-            tokens => TeamHierarchy(tokens).ToPng(),
-            tokens => TeamHierarchy(tokens).ToHtmlPage());
+            mode => TeamHierarchy(mode).ToSvg(),
+            mode => TeamHierarchy(mode).ToPng(),
+            mode => TeamHierarchy(mode).ToHtmlPage());
 
         // The interactive example's output is the explorer page itself; the static SVG is its card image.
         var estate = output.Pair("examples/interactive-topology", (_, dark) => Estate().ToGraphSvg(configure: options => {
@@ -47,14 +47,14 @@ internal static class ExampleVisuals {
     }
 
     private static Dictionary<string, object> Save(VisualOutput output, string slug,
-        Func<VisualDesignTokens, string> svg, Func<VisualDesignTokens, byte[]> png, Func<VisualDesignTokens, string> html) {
-        var entry = output.Pair("examples/" + slug, (tokens, _) => svg(tokens));
+        Func<VisualThemeMode, string> svg, Func<VisualThemeMode, byte[]> png, Func<VisualThemeMode, string> html) {
+        var entry = output.Pair("examples/" + slug, (mode, _) => svg(mode));
         long pngBytes = 0;
-        foreach (var (mode, tokens, _) in output.Modes()) {
-            var bytes = png(tokens);
+        foreach (var (name, mode, _) in output.Modes()) {
+            var bytes = png(mode);
             pngBytes = Math.Max(pngBytes, bytes.Length);
-            output.Binary($"examples/{slug}-{mode}.png", bytes);
-            output.Text($"examples/{slug}-{mode}.html", html(tokens));
+            output.Binary($"examples/{slug}-{name}.png", bytes);
+            output.Text($"examples/{slug}-{name}.html", html(mode));
         }
 
         entry["pngKb"] = Math.Round(pngBytes / 1024d);
@@ -69,8 +69,8 @@ internal static class ExampleVisuals {
     }
 
     // content/examples/static-chart.md
-    public static Chart StaticChart(VisualDesignTokens tokens) => Chart.Create()
-        .WithDesignTokens(tokens)
+    public static Chart StaticChart(VisualThemeMode mode) => Chart.Create()
+        .WithThemeMode(mode)
         .WithTitle("Deployment health")
         .WithXAxis("Run")
         .WithYAxis("Checks")
@@ -80,7 +80,7 @@ internal static class ExampleVisuals {
         .AddSmoothLine("Failed", Points(22, 30, 28, 21, 18), ChartColor.FromRgb(248, 113, 113));
 
     // content/examples/report-grid.md
-    public static ChartGrid ReportGrid(VisualDesignTokens tokens) {
+    public static ChartGrid ReportGrid(VisualThemeMode mode) {
         var samples = ChartDataset<CpuSample>.From(new CpuSample[] {
             new("Warsaw", 1, 35), new("Warsaw", 2, 42),
             new("Warsaw", 3, 39), new("Warsaw", 4, 51),
@@ -96,7 +96,7 @@ internal static class ExampleVisuals {
             samples,
             sample => sample.Site,
             (site, rows) => Chart.Create()
-                .WithDesignTokens(tokens)
+                .WithThemeMode(mode)
                 .WithTitle(site)
                 .WithYAxis("CPU (%)")
                 .AddLine("CPU", rows, sample => sample.Minute, sample => sample.Cpu),
@@ -104,7 +104,7 @@ internal static class ExampleVisuals {
     }
 
     // content/examples/organization-hierarchy.md
-    public static TopologyChart TeamHierarchy(VisualDesignTokens tokens) {
+    public static TopologyChart TeamHierarchy(VisualThemeMode mode) {
         var members = new[] {
             new TopologyTeamMember("marta", "Marta", "Head of platform") {
                 LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard
@@ -127,7 +127,7 @@ internal static class ExampleVisuals {
         };
 
         return TopologyChart.Create()
-            .WithDesignTokens(tokens)
+            .WithThemeMode(mode)
             .WithTitle("Platform team")
             .WithSubtitle("Standard, compact and vertical branches")
             .WithViewport(1180, 620, 28)

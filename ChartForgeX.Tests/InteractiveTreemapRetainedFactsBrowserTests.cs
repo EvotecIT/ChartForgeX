@@ -11,7 +11,7 @@ public sealed class InteractiveTreemapRetainedFactsBrowserTests {
     private const string DataStop = "[data-cfx-keyboard-component=data][tabindex='0']";
     private static string Target(string id) => "[data-cfx-target-kind=node][data-cfx-target-id='" + id + "']";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -22,9 +22,8 @@ public sealed class InteractiveTreemapRetainedFactsBrowserTests {
         if (allZero) items.Add(new("standalone", "Standalone", value: 0));
         else { items.Add(new("visible", "Main allocation", "group", 1)); items.Add(new("tiny", "Small allocation", "group", 1e-20)); }
         var chart = Chart.Create().WithSize(compactDark ? 340 : 680, compactDark ? 340 : 400).WithLegend(false)
-            .WithTheme(compactDark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .WithTitle(allZero ? "Unallocated work" : "Allocation by team").AddTreemap("Allocation", items);
-        chart.Series[0].WithInteractionKey("allocation-source");
+            .WithTheme(VisualTheme.Graphite(), compactDark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTitle(allZero ? "Unallocated work" : "Allocation by team").AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("allocation-source"), "Allocation", items));
         var html = chart.ToInteractiveHtmlPage(options => { options.IncludeResetButton = false; options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit; })
             .Replace("<main ", "<button id='before-chart'>Before chart</button><main ", StringComparison.Ordinal);
         await using var session = await OpenAsync(html, compactDark ? 390 : 800, compactDark ? 620 : 550);

@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Globalization;
 using System.IO;
@@ -61,7 +62,7 @@ internal static partial class SmokeTests {
     }
 
     private static void BubbleSeriesRenderScaledMarkers() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .WithDataLabels()
             .AddBubble("Risk clusters", new[] {
@@ -85,7 +86,7 @@ internal static partial class SmokeTests {
             new ChartPoint(4, 33),
             new ChartPoint(5, 41)
         };
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .AddScatter("Observed", points, ChartColor.FromRgb(37, 99, 235))
             .AddTrendLine("Trend", points, ChartColor.FromRgb(245, 158, 11));
@@ -190,7 +191,7 @@ internal static partial class SmokeTests {
     }
 
     private static void StackedAreaSeriesRenderCumulativeFilledBands() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .WithDataLabels()
             .WithXLabels("Mon", "Tue", "Wed")
@@ -207,7 +208,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SlopeSeriesRenderEndpointComparisons() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .WithDataLabels()
             .AddSlope("DMARC", 58, 88, "Before", "After", ChartColor.FromRgb(37, 99, 235))
@@ -265,7 +266,7 @@ internal static partial class SmokeTests {
     }
 
     private static void BarLineComboRendersBarsAndLine() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360).WithLineMarkers(ChartLineMarkerMode.All)
             .WithYAxis("Volume")
             .WithSecondaryYAxis("Rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
@@ -296,7 +297,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Pass rate</text>", StringComparison.Ordinal), "Bar-line combos should render the line legend label.");
         Assert(chart.ToPng().Length > 64, "Bar-line combos should render PNG output.");
 
-        var secondaryOnly = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithSecondaryYAxis("Rate").AddLine("Rate", Points(88, 93, 91));
+        var secondaryOnly = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithSecondaryYAxis("Rate").AddLine("Rate", Points(88, 93, 91));
         secondaryOnly.Series[0].UseSecondaryYAxis();
         Assert(!secondaryOnly.ToSvg().Contains("Infinity", StringComparison.Ordinal), "Secondary-axis-only charts should still render finite SVG geometry.");
     }
@@ -310,7 +311,7 @@ internal static partial class SmokeTests {
     }
 
     private static void HorizontalBarSeriesRenderCategoryBars() {
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var svg = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 360)
             .WithDataLabels()
             .WithXLabels("SPF alignment", "DMARC policy", "DNSSEC coverage")
@@ -323,7 +324,7 @@ internal static partial class SmokeTests {
     }
 
     private static void StackedHorizontalBarsRenderSegmentsAndTotals() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var chart = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(700, 380)
             .WithStackedHorizontalBars()
             .WithStackTotals()
@@ -346,7 +347,7 @@ internal static partial class SmokeTests {
     }
 
     private static void HeatmapRowsRenderMatrixCells() {
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var svg = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(720, 420)
             .WithDataLabels()
             .WithXAxis("Control")
@@ -376,7 +377,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Primary</text>", StringComparison.Ordinal), "Heatmaps should render row labels.");
         Assert(svg.Contains(">DMARC</text>", StringComparison.Ordinal), "Heatmaps should render column labels.");
         Assert(svg.Contains(">100%</text>", StringComparison.Ordinal), "Heatmaps should render optional data labels.");
-        var edgeSvg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var edgeSvg = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 320)
             .WithXLabels("Very long first control", "Middle", "Very long final control")
             .AddHeatmapRow("Domains", Points(100, 60, 0))
@@ -394,8 +395,9 @@ internal static partial class SmokeTests {
             .WithDataLabels()
             .WithGanttToday(new DateTime(2026, 2, 10))
             .AddGanttTask("Inventory scope", new DateTime(2026, 1, 5), new DateTime(2026, 1, 24), 0.75, color: ChartColor.FromRgb(37, 99, 235))
-            .AddGanttTask("Owner remediation", new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.55, dependsOn: 0, color: ChartColor.FromRgb(16, 185, 129))
-            .AddGanttMilestone("Executive sign-off", new DateTime(2026, 3, 2), dependsOn: 1, color: ChartColor.FromRgb(245, 158, 11));
+            .AddGanttTask("Owner remediation", new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.55, color: ChartColor.FromRgb(16, 185, 129))
+            .AddGanttMilestone("Executive sign-off", new DateTime(2026, 3, 2), color: ChartColor.FromRgb(245, 158, 11));
+        chart.AddGanttDependency(chart.Series[0], chart.Series[1]).AddGanttDependency(chart.Series[1], chart.Series[2]);
 
         var svg = chart.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"gantt-chart\"", StringComparison.Ordinal), "Gantt charts should expose a chart role marker.");
@@ -487,7 +489,7 @@ internal static partial class SmokeTests {
     }
 
     private static void WaterfallSeriesRenderCumulativeChangeBars() {
-        var svg = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var svg = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(760, 420)
             .WithDataLabels()
             .WithXAxis("Change")
@@ -506,7 +508,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">Opened</text>", StringComparison.Ordinal), "Waterfall charts should render category labels.");
         Assert(svg.Contains(">Total</text>", StringComparison.Ordinal), "Waterfall charts should render a total category.");
         Assert(svg.Contains(">+18</text>", StringComparison.Ordinal), "Waterfall charts should render positive delta labels.");
-        Assert(Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddWaterfall("Delta", Points(18, -42, -12, 9)).ToPng().Length > 64, "Waterfall charts should render PNG output.");
+        Assert(Chart.Create().WithTheme(VisualTheme.Report()).AddWaterfall("Delta", Points(18, -42, -12, 9)).ToPng().Length > 64, "Waterfall charts should render PNG output.");
     }
 
 

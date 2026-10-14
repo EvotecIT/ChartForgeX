@@ -22,7 +22,7 @@ public sealed class FontRegistryMemoryTests : IDisposable {
         try {
             FontRegistry.Register(Family, path);
             var chart = Chart.Create().WithSize(360, 220).WithTitle("ChartForgeX 0123456789")
-                .WithTheme(ChartTheme.ReportLight().WithFontFamily(Family))
+                .WithTheme(VisualTheme.Report().WithFontFamily(Family))
                 .WithXLabels("H", "O").AddBar("H", ChartPoints.FromValues(12, 18));
             var png = chart.ToPng();
             var svg = chart.ToSvg();

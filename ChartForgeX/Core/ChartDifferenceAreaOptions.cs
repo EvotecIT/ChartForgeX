@@ -23,6 +23,10 @@ public sealed class ChartDifferenceAreaOptions {
     public double? NegativeFillOpacity { get => _negativeFillOpacity; set { Opacity(value); _negativeFillOpacity = value; IsConfigured = true; } }
 
     internal bool IsConfigured { get; private set; }
+
+    /// <summary>Copies fields directly so configuration tracking remains unchanged.</summary>
+    internal ChartDifferenceAreaOptions Clone() => (ChartDifferenceAreaOptions)MemberwiseClone();
+
     private static string Name(string value) => !string.IsNullOrWhiteSpace(value) ? value
         : throw new ArgumentException("A difference observation name must not be empty.", nameof(value));
     private static void Opacity(double? value) {

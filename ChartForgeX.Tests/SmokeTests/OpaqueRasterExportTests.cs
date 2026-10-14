@@ -130,7 +130,7 @@ internal static partial class SmokeTests {
 
         var transparent = Chart.Create()
             .WithSize(32, 24)
-            .WithTheme(ChartTheme.TransparentOverlayDark())
+            .WithTheme(VisualTheme.TransparentOverlay(), VisualThemeMode.Dark)
             .WithTransparentBackground()
             .WithHeader(false)
             .WithCard(false)

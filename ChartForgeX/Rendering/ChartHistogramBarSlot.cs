@@ -13,7 +13,7 @@ internal static class ChartHistogramBarSlot {
 
     public static bool TryResolve(Chart chart, ChartBarCoordinateMap coordinateMap, ChartStackLayout stacks, int seriesIndex, int pointIndex, ChartMapper map, out double left, out double width) {
         var series = chart.Series[seriesIndex];
-        if (pointIndex < 0 || pointIndex >= series.Points.Count || !coordinateMap.TryResolveHistogramSlot(seriesIndex, pointIndex, out var layout, out var binIndex) || layout.Minimum == layout.Maximum) {
+        if (pointIndex < 0 || pointIndex >= series.RenderPoints.Count || !coordinateMap.TryResolveHistogramSlot(seriesIndex, pointIndex, out var layout, out var binIndex) || layout.Minimum == layout.Maximum) {
             left = 0;
             width = 0;
             return false;

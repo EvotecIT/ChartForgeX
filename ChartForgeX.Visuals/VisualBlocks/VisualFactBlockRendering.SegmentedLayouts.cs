@@ -27,7 +27,7 @@ internal static partial class VisualFactBlockRendering {
     }
 
     public static SegmentedHeaderLayout SegmentedHeaderLayout(SegmentedMetricBlock card, double x, double y, double width) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var badgeSize = card.HeaderSymbol.Length > 0 ? 48.0 : 0.0;
         var textX = x + (badgeSize > 0 ? badgeSize + 18 : 0);
         var hasTitle = card.Title.Length > 0;
@@ -42,7 +42,7 @@ internal static partial class VisualFactBlockRendering {
     }
 
     public static SegmentedFunnelLayout SegmentedFunnelLayout(SegmentedMetricBlock card, ChartRect content, double y) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var bottom = card.Options.Size.Height - card.Options.Padding.Bottom;
         var totalSegments = 0;
         foreach (var item in card.Items) totalSegments += Math.Max(1, item.Segments);
@@ -77,7 +77,7 @@ internal static partial class VisualFactBlockRendering {
     }
 
     public static SegmentedProgressRowLayout SegmentedProgressRowLayout(SegmentedMetricBlock card, SegmentedMetricItem row, ChartRect content, double y, double rowHeight, ChartColor accent) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var valueText = SegmentedProgressValueText(row);
         var deltaColor = SegmentedDeltaColor(theme, row, accent);
         var valueFontSize = Math.Max(13, theme.SubtitleFontSize + 1);
@@ -120,7 +120,7 @@ internal static partial class VisualFactBlockRendering {
     }
 
     public static SegmentedDistributionLayout SegmentedDistributionLayout(SegmentedMetricBlock card, ChartRect content, double y) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var bottom = card.Options.Size.Height - card.Options.Padding.Bottom;
         var metricSize = Math.Min(38, Math.Max(24, card.Options.Size.Height * 0.12));
         var captionWidth = card.Caption.Length == 0 ? 0 : Math.Min(content.Width * 0.34, EstimateTextWidth(card.Caption, theme.SubtitleFontSize) + 12);
@@ -136,7 +136,7 @@ internal static partial class VisualFactBlockRendering {
     }
 
     private static IReadOnlyList<SegmentedDistributionChipLayout> DistributionLegendChips(SegmentedMetricBlock card, double x, double y, double width) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var rowHeight = 20.0;
         var cursorX = x;
         var cursorY = y;
@@ -160,7 +160,7 @@ internal static partial class VisualFactBlockRendering {
     }
 
     public static SegmentedDistributionRowLayout SegmentedDistributionRowLayout(SegmentedMetricBlock card, SegmentedMetricItem segment, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var total = SegmentedTotal(card);
         var rowY = y + height * 0.5;
         var badgeSize = Math.Min(22, Math.Max(16, height - 9));

@@ -14,4 +14,7 @@ public sealed class ChartBoxPlotOptions {
             _orientation = value;
         }
     }
+
+    /// <summary>Copies the configured state for isolated chart configuration.</summary>
+    internal ChartBoxPlotOptions Clone() => (ChartBoxPlotOptions)MemberwiseClone();
 }

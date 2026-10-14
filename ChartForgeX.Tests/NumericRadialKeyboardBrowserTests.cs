@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class NumericRadialKeyboardBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, false)]
     [InlineData(false, false)]
     [InlineData(true, true)]
@@ -39,7 +39,7 @@ public sealed class NumericRadialKeyboardBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, "mute")]
     [InlineData(false, "mute")]
     [InlineData(true, "unpainted")]

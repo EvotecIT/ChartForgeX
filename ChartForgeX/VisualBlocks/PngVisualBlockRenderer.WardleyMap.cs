@@ -10,7 +10,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngVisualBlockRenderer {
     private static void DrawWardleyMap(RgbaCanvas canvas, WardleyMapBlock map) {
         var options = map.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, map, ref y, content.X, content.Width);
@@ -26,7 +26,7 @@ public sealed partial class PngVisualBlockRenderer {
     }
 
     private static void DrawWardleyAxes(RgbaCanvas canvas, WardleyMapBlock map, VisualBlockRendering.WardleyMapLayout layout) {
-        var theme = map.Options.Theme;
+        var theme = map.Options.ResolvedTheme;
         var plot = layout.Plot;
         canvas.FillRect(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotBackground);
         canvas.StrokeRect(plot.X, plot.Y, plot.Width, plot.Height, theme.PlotBorder, 1);
@@ -47,7 +47,7 @@ public sealed partial class PngVisualBlockRenderer {
         }
     }
 
-    private static void DrawWardleyLink(RgbaCanvas canvas, WardleyMapLink link, VisualBlockRendering.WardleyMapLayout layout, ChartTheme theme) {
+    private static void DrawWardleyLink(RgbaCanvas canvas, WardleyMapLink link, VisualBlockRendering.WardleyMapLayout layout, ResolvedVisualTheme theme) {
         if (!layout.NodeLookup.TryGetValue(link.FromId, out var from) || !layout.NodeLookup.TryGetValue(link.ToId, out var to)) return;
         var color = ChartColorMath.WithOpacity(theme.Axis, VisualBlockRendering.WardleyAccentOpacity);
         if (link.Dashed) canvas.DrawDashedLine(from.X, from.Y, to.X, to.Y, color, 1.2, 5, 5);
@@ -80,7 +80,7 @@ public sealed partial class PngVisualBlockRenderer {
         }, color);
     }
 
-    private static void DrawWardleyEvolution(RgbaCanvas canvas, WardleyMapEvolution evolution, VisualBlockRendering.WardleyMapLayout layout, ChartTheme theme) {
+    private static void DrawWardleyEvolution(RgbaCanvas canvas, WardleyMapEvolution evolution, VisualBlockRendering.WardleyMapLayout layout, ResolvedVisualTheme theme) {
         if (!layout.NodeLookup.TryGetValue(evolution.NodeId, out var from)) return;
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, evolution.TargetEvolution);
         var color = VisualBlockRendering.PaletteAt(theme, 2);
@@ -88,7 +88,7 @@ public sealed partial class PngVisualBlockRenderer {
         canvas.FillPathData(VisualBlockRendering.WardleyEvolutionArrowPath(x, from.Y), color);
     }
 
-    private static void DrawWardleyPipeline(RgbaCanvas canvas, WardleyMapPipeline pipeline, VisualBlockRendering.WardleyMapLayout layout, ChartTheme theme) {
+    private static void DrawWardleyPipeline(RgbaCanvas canvas, WardleyMapPipeline pipeline, VisualBlockRendering.WardleyMapLayout layout, ResolvedVisualTheme theme) {
         if (!layout.NodeLookup.TryGetValue(pipeline.ParentId, out var parent) || pipeline.Components.Count == 0) return;
         var minX = parent.X;
         var maxX = parent.X;
@@ -107,7 +107,7 @@ public sealed partial class PngVisualBlockRenderer {
     }
 
     private static void DrawWardleyNode(RgbaCanvas canvas, VisualBlockRendering.WardleyNodePlacement placement, WardleyMapBlock map) {
-        var theme = map.Options.Theme;
+        var theme = map.Options.ResolvedTheme;
         var node = placement.Node;
         var color = node.Kind == WardleyMapNodeKind.Anchor ? theme.Text : VisualBlockRendering.PaletteAt(theme, placement.Index);
         var radius = node.Kind == WardleyMapNodeKind.Anchor ? 7.5 : 6;
@@ -123,7 +123,7 @@ public sealed partial class PngVisualBlockRenderer {
         DrawFittedBodyText(canvas, node.Label, labelX, labelY, 120, 20, node.Kind == WardleyMapNodeKind.Anchor ? TextAlignment.Center : TextAlignment.Left, theme.Text, theme, 10.5, node.Kind == WardleyMapNodeKind.Anchor ? 800 : 600);
     }
 
-    private static void DrawWardleyAnnotation(RgbaCanvas canvas, WardleyMapAnnotation annotation, VisualBlockRendering.WardleyMapLayout layout, ChartTheme theme) {
+    private static void DrawWardleyAnnotation(RgbaCanvas canvas, WardleyMapAnnotation annotation, VisualBlockRendering.WardleyMapLayout layout, ResolvedVisualTheme theme) {
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, annotation.Evolution);
         var y = VisualBlockRendering.ProjectWardleyY(layout.Plot, annotation.Visibility);
         var radius = VisualBlockRendering.WardleyAnnotationRadius(theme);
@@ -133,7 +133,7 @@ public sealed partial class PngVisualBlockRenderer {
         if (annotation.Text.Length > 0) DrawFittedBodyText(canvas, annotation.Text, x + radius + 3, y - 4, 150, 20, TextAlignment.Left, theme.MutedText, theme, 9, 600);
     }
 
-    private static void DrawWardleyMarker(RgbaCanvas canvas, WardleyMapMarker marker, VisualBlockRendering.WardleyMapLayout layout, ChartTheme theme) {
+    private static void DrawWardleyMarker(RgbaCanvas canvas, WardleyMapMarker marker, VisualBlockRendering.WardleyMapLayout layout, ResolvedVisualTheme theme) {
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, marker.Evolution);
         var y = VisualBlockRendering.ProjectWardleyY(layout.Plot, marker.Visibility);
         var color = VisualBlockRendering.PaletteAt(theme, marker.Kind == WardleyMapMarkerKind.Accelerator ? 1 : 3);

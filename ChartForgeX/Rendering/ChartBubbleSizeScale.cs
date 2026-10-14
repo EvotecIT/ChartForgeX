@@ -25,8 +25,8 @@ internal sealed class ChartBubbleSizeScale {
         var minimum = double.PositiveInfinity; var maximum = double.NegativeInfinity;
         foreach (var series in chart.Series) {
             if (series.Kind != ChartSeriesKind.Bubble) continue;
-            for (var index = 1; index < series.Points.Count; index += 2) {
-                var size = series.Points[index].Y;
+            for (var index = 1; index < series.RenderPoints.Count; index += 2) {
+                var size = series.RenderPoints[index].Y;
                 minimum = Math.Min(minimum, size); maximum = Math.Max(maximum, size);
             }
         }

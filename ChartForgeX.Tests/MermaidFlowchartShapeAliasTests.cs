@@ -29,6 +29,7 @@ public sealed class MermaidFlowchartShapeAliasTests {
         Assert.Equal("Caption", node.Label);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
 internal static partial class TopologyVisualExamples {
@@ -98,7 +99,7 @@ internal static partial class TopologyVisualExamples {
             .WithTitle("Secure Access Arbitrary Icon Topology")
             .WithSubtitle("Manual relationship diagram using catalog and node-supplied inline SVG artwork, icon-only nodes, gateway bars, panels, dashed tunnels, and destination cards.")
             .WithViewport(1280, 655, 22)
-            .WithTheme(TopologyTheme.Light())
+            .WithTheme(VisualTheme.Graphite())
             .WithLegend(TopologyLegend.Create("Flow Legend")
                 .AddNodeKind("Tenant", TopologyNodeKind.Cloud, "#0E7490", "TEN", iconId: "secure-access:tenant-cloud")
                 .AddNodeKind("Gateway", TopologyNodeKind.Gateway, "#0E7490", "GW", iconId: "secure-access:gateway")

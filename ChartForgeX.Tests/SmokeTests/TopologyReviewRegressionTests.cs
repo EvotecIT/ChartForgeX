@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Linq;
 using ChartForgeX.Core;
@@ -273,11 +274,11 @@ internal static partial class SmokeTests {
     }
 
     private static void TopologyEdgeLabelClearanceUsesBackgroundWhenGroupsAreHidden() {
-        var theme = TopologyTheme.Light();
+        var theme = VisualTheme.Graphite();
         var group = new TopologyGroup { Id = "g", Label = "Group", X = 40, Y = 40, Width = 160, Height = 120, Status = TopologyHealthStatus.Warning };
-        var fill = TopologyRenderPrimitives.EdgeLabelClearanceFill(group, theme, new TopologyRenderOptions { IncludeGroups = false }.WithMonitoringDashboardStyle());
+        var fill = TopologyRenderPrimitives.EdgeLabelClearanceFill(group, new TopologyPaint(theme, VisualThemeMode.Light), new TopologyRenderOptions { IncludeGroups = false }.WithMonitoringDashboardStyle());
 
-        Assert(string.Equals(fill, theme.Background, StringComparison.Ordinal), "Monitoring edge-label clearance should use the actual background when group cards are hidden.");
+        Assert(string.Equals(fill, theme.Resolve(VisualThemeMode.Light).Background.ToCss(), StringComparison.Ordinal), "Monitoring edge-label clearance should use the actual background when group cards are hidden.");
     }
 
     private static void TopologyGeographicCalloutsAvoidUnlabeledLinkRoutes() {
@@ -309,7 +310,7 @@ internal static partial class SmokeTests {
             IncludeGroups = false,
             IncludeGeographicCallouts = true,
             PreferGeographicCalloutMapEdges = false
-        }.WithMonitoringDashboardStyle(), TopologyTheme.Light()).Single();
+        }.WithMonitoringDashboardStyle(), chart.ResolvedTheme).Single();
 
         Assert(string.Equals(callout.Placement, "left-corner", StringComparison.Ordinal), "Explicit calloutPlacement metadata should be honored even when global map-edge preference is disabled.");
     }
@@ -331,7 +332,7 @@ internal static partial class SmokeTests {
             IncludeGroups = false,
             IncludeGeographicCallouts = true,
             PreferGeographicCalloutMapEdges = true
-        }.WithMonitoringDashboardStyle(), TopologyTheme.Light()).Single();
+        }.WithMonitoringDashboardStyle(), chart.ResolvedTheme).Single();
 
         Assert(string.Equals(callout.Placement, "right-corner", StringComparison.Ordinal), "A single eastern callout should prefer the right map corner instead of defaulting to the left.");
     }

@@ -66,7 +66,7 @@ public sealed class NumericRadialEncodedGeometryTests {
     }
 
     internal static Chart SharedStrokedSlice(bool donut) {
-        var chart = Create(true); chart.Series.Clear();
+        var chart = Create(true); chart.ClearSeries();
         var points = new[] { new ChartPoint(1, 100000000), new ChartPoint(2, 1) };
         if (donut) chart.AddDonut("Observed", points); else chart.AddPie("Observed", points);
         return chart.WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Right);

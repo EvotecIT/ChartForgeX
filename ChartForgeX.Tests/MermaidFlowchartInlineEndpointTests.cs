@@ -61,6 +61,7 @@ public sealed class MermaidFlowchartInlineEndpointTests {
             chart.Edges.Select(edge => (edge.SourceMarker.ToString()!, edge.TargetMarker.ToString()!)));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

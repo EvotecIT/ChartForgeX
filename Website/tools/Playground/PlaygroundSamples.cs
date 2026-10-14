@@ -139,11 +139,11 @@ public static class PlaygroundSamples {
                 +string Name
                 +ChartPoint[] Points
               }
-              class ChartTheme {
-                +string FontFamily
+              class VisualTheme {
+                +VisualTypography Typography
               }
               Chart "1" *-- "many" ChartSeries : contains
-              Chart --> ChartTheme : uses
+              Chart --> VisualTheme : uses
             """),
         new PlaygroundSample("mermaid-er", "Entity relationship", Mermaid, """
             erDiagram

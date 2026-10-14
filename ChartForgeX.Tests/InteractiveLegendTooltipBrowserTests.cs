@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 public sealed class InteractiveLegendTooltipBrowserTests {
     private static readonly string[] InternalFields = { "Role", "Kind", "legend item", "Series" };
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LegendTooltip_FocusAndHover_SummarizesSeriesWithoutInternalFields(bool dark) {
@@ -18,7 +18,7 @@ public sealed class InteractiveLegendTooltipBrowserTests {
         await page.Locator(Legend(1)).FocusAsync();
         AssertSummary(await TooltipTextAsync(page), "Warnings", "Latest (Sun)", "72");
         var colours = await page.EvaluateAsync<string[]>("() => [getComputedStyle(document.querySelector('.cfx-tooltip__swatch')).backgroundColor, getComputedStyle(document.querySelector('[data-cfx-role=\"series\"][data-cfx-series=\"1\"] [data-cfx-role=\"line\"]')).stroke]");
-        Assert.Equal(colours[1], colours[0]);
+        await AssertCssColorsEqualAsync(page, colours[1], colours[0]);
         await page.Locator(Legend(1)).BlurAsync();
 
         // Moving across the legend must keep its summary instead of handing over to the plot crosshair.
@@ -29,7 +29,7 @@ public sealed class InteractiveLegendTooltipBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LegendTooltip_BarSeries_SummarizesTotal(bool dark) {

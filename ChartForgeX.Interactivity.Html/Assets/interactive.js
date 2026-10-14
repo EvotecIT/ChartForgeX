@@ -1,4 +1,8 @@
 (() => {
+  if (window.ChartForgeXCharts) {
+    document.querySelectorAll('.cfx-interactive-chart').forEach(root => window.ChartForgeXCharts.mount(root));
+    return;
+  }
   const featureAliases = {
     ReportReview: ['Tooltips', 'Selection', 'LegendToggles', 'KeyboardNavigation', 'Crosshair', 'CompareMarkers']
   };
@@ -119,6 +123,7 @@
   };
   const pointTargetId = (node) => {
     const data = node.dataset || {};
+    if (data.cfxObservationId !== undefined) return JSON.stringify([seriesKey(node), data.cfxObservationId]);
     const derived = hasDerivedPointIdentity(node);
     const point = derived ? 'derived:' + derivedPointIdentity(node) : sourcePointIndex(node) ?? '0';
     return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
@@ -195,6 +200,8 @@
       label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
+      seriesScope: data.cfxSeriesScope,
+      observationId: data.cfxObservationId,
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
       sourcePoints: sourcePointCollection(node),
@@ -394,6 +401,8 @@
   };
   const selectedTargets = (root) => compareItems(root).map((item) => item.target);
   const renderCompare = (root) => {
+    (root._cfxCompareCleanup || []).forEach(release => release());
+    root._cfxCompareCleanup = [];
     const tray = root.querySelector('[data-cfx-compare-tray]');
     if (!tray || !hasFeature(root, 'CompareMarkers')) return [];
     const items = compareItems(root);
@@ -416,13 +425,13 @@
       chip.textContent = item.label;
       chip.dataset.cfxCompareIndex = String(index);
       chip.title = item.label;
-      chip.addEventListener('click', () => {
+      root._cfxCompareCleanup.push(listenChart(root, chip, 'click', () => {
         clearHover(root, false, false);
         if (applyHoverByTarget(root, item.target)) {
           recordFocusTrail(root, item.target, true, true);
           emitHostEvent(root, 'cfxhover', { label: item.label, target: item.target });
         }
-      });
+      }));
       tray.appendChild(chip);
     });
     if (items.length > 6) {
@@ -436,7 +445,7 @@
     clear.type = 'button';
     clear.textContent = 'Clear';
     clear.setAttribute('data-cfx-compare-clear', 'true');
-    clear.addEventListener('click', () => {
+    root._cfxCompareCleanup.push(listenChart(root, clear, 'click', () => {
       const returnFocus = tray.contains(document.activeElement);
       clearSelections(root);
       publishCompare(root, true);
@@ -444,7 +453,7 @@
         if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
         try { root.focus({ preventScroll: true }); } catch { root.focus(); }
       }
-    });
+    }));
     tray.appendChild(clear);
     return items;
   };
@@ -595,8 +604,7 @@
         const knots = new Set([low, high]);
         const add = (y) => { for (const value of [y, Number(y.toFixed(3))]) if (value > low && value < high) knots.add(value); };
         const owner = subject.closest('[data-cfx-role="series"]'), index = Number(subject.dataset.cfxPoint);
-        const connected = point => point && point.getAttribute('data-cfx-source-0-break') !== 'true'
-          && point.getAttribute('data-cfx-source-1-break') !== 'true';
+        const connected = point => point && point.getAttribute('data-cfx-break-before') !== 'true';
         for (const offset of [-1, 1]) {
           const neighbor = owner && owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index + offset) + '"]');
           if (!neighbor || !connected(offset < 0 ? subject : neighbor) || !neighbor._cfxNativeRegion) continue;
@@ -685,8 +693,7 @@
   const pairedConnectedSpan = (node, owner) => {
     const index = Number(node.dataset.cfxPoint);
     const followsPrevious = (point) => point
-      && point.getAttribute('data-cfx-source-0-break') !== 'true'
-      && point.getAttribute('data-cfx-source-1-break') !== 'true';
+      && point.getAttribute('data-cfx-break-before') !== 'true';
     const previous = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index - 1) + '"]');
     const next = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index + 1) + '"]');
     // Native paired fills need a connected span; isolated observations can still paint their own markers or caps.
@@ -875,7 +882,7 @@
     if (!node || !isInteractiveTarget(node)) return null;
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
     if (legend) return childPaint(node, true, styles);
-    if (node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
+    if (node.dataset.cfxVisible === 'false' || node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
     return observationPaint(node, styles);
   };
   const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
@@ -1383,13 +1390,16 @@
     series.forEach((item, index) => {
       svg.setAttribute('data-cfx-series-name-' + index, item.name);
       svg.setAttribute('data-cfx-series-key-' + index, item.key);
+      svg.setAttribute('data-cfx-series-scope-' + index, item.local ? 'local' : 'shared');
       svg.setAttribute('data-cfx-series-state-' + index, item.state);
       svg.setAttribute('data-cfx-series-source-indices-' + index, item.indices.join(','));
     });
     const sourceFacts = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points],[data-cfx-point][data-cfx-derived]'))
       .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint,
         { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived, identity: derivedPointIdentity(node) }]));
-    svg.querySelectorAll('[data-cfx-role="legend-entry"]').forEach((node) => {
+    const observationIds = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-observation-id]'))
+      .map(node => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxObservationId]));
+    svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
       const match = source.match(/^legend-series-(\d+)(?:-point-(\d+|other))?$/);
@@ -1411,6 +1421,8 @@
       if (match && match[2] !== undefined) {
         data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
         const collectionKey = index + ':' + data.cfxPoint;
+        const observationId = observationIds.get(collectionKey);
+        if (observationId !== undefined) data.cfxObservationId = observationId;
         const facts = sourceFacts.get(collectionKey);
         if (facts) {
           if (data.cfxSourcePoints === undefined && facts.points !== undefined) data.cfxSourcePoints = facts.points;
@@ -1428,6 +1440,7 @@
       const item = series[Number(data.cfxSeries)];
       if (!item) return;
       data.cfxSeriesName = item.name; data.cfxSeriesKey = item.key;
+      data.cfxSeriesScope = item.local ? 'local' : 'shared';
       data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
@@ -1460,6 +1473,7 @@
       node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
       node._cfxFillInteriors = Object.freeze((region.fillInteriors || []).map(candidate => Object.freeze(candidate.slice())));
       if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
+      if (data.cfxVisible === 'false') return;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -1559,6 +1573,7 @@
     (root._cfxBranchHighlights || []).forEach(node => {
       delete node.dataset.cfxHighlightState;
       const paint = node.querySelector('[data-cfx-highlight-paint]');
+      if (!paint) return;
       paint.style.removeProperty('--cfx-highlight-opacity');
       paint.style.removeProperty('--cfx-highlight-stroke');
       paint.style.removeProperty('--cfx-highlight-stroke-width');
@@ -1607,6 +1622,80 @@
     refreshRootBranchHighlightAvailability(root);
     return true;
   };
+  // One owner releases a chart's browser work. Source data and layout remain native prepared facts.
+  const chartLifetimes = new WeakMap();
+  const mountedCharts = new Set();
+  let chartLifetimeObserver = null;
+  const watchChartLifetimes = () => {
+    if (!mountedCharts.size) {
+      chartLifetimeObserver?.disconnect(); chartLifetimeObserver = null;
+      return;
+    }
+    if (!chartLifetimeObserver) chartLifetimeObserver = new MutationObserver(() => {
+      for (const root of Array.from(mountedCharts)) if (!root.isConnected) chartLifetimes.get(root)?.controller.dispose();
+      if (Array.from(mountedCharts).some(root => {
+        const before = chartLifetimes.get(root).trees, after = tooltipRootTrees(root);
+        return before.length !== after.length || before.some((tree, index) => tree !== after[index]);
+      })) watchChartLifetimes();
+    });
+    chartLifetimeObserver.disconnect();
+    const trees = new Set();
+    for (const root of mountedCharts) {
+      const ownedTrees = tooltipRootTrees(root); chartLifetimes.get(root).trees = ownedTrees;
+      for (const tree of ownedTrees) trees.add(tree);
+    }
+    for (const tree of trees) chartLifetimeObserver.observe(tree, { childList: true, subtree: true });
+  };
+  const ownChartWork = (root, release) => {
+    const lifetime = chartLifetimes.get(root);
+    if (!lifetime || lifetime.disposed) { release(); return () => {}; }
+    let active = true;
+    const cleanup = () => {
+      if (!active) return;
+      active = false; lifetime.cleanups.delete(cleanup); release();
+    };
+    lifetime.cleanups.add(cleanup);
+    return cleanup;
+  };
+  const listenChart = (root, target, name, listener, options) => {
+    target.addEventListener(name, listener, options);
+    return ownChartWork(root, () => target.removeEventListener(name, listener, options));
+  };
+  const clearChartBrowserState = (root) => {
+    cancelTooltipRequest(root);
+    hideTip(root, root.querySelector('.cfx-tooltip'), true);
+    stopScenarioPlayback(root, 'paused', false);
+    clearHover(root, false, false);
+    hideCrosshair(root, root.querySelector('.cfx-crosshair'));
+    clearFocusTrail(root); clearReveals(root);
+    clearSelections(root); setSeriesIsolation(root, null, false); resetViewport(root);
+    root.querySelectorAll('.cfx-series-muted').forEach(node => node.classList.remove('cfx-series-muted'));
+    root.querySelectorAll('[data-cfx-muted]').forEach(node => node.removeAttribute('data-cfx-muted'));
+    syncResetControl(root);
+    root.querySelectorAll('.cfx-prepared-point-marker,[data-cfx-browser-hit-area],[data-cfx-highlight-outline]').forEach(node => node.remove());
+    root.querySelectorAll('[data-cfx-highlight-paint]').forEach(paint => paint.replaceWith(...paint.childNodes));
+    root.querySelectorAll('[data-cfx-highlight-managed]').forEach(node => {
+      node.removeAttribute('data-cfx-highlight-managed'); node.removeAttribute('data-cfx-highlight-unavailable');
+    });
+    root.querySelectorAll('[data-cfx-keyboard-component]').forEach(node => {
+      node.removeAttribute('data-cfx-keyboard-component'); node.removeAttribute('tabindex');
+    });
+    root.querySelectorAll('[data-cfx-label-for],[data-cfx-point]').forEach(node => {
+      delete node._cfxLabelTarget; delete node._cfxPointLabels;
+    });
+    for (const key of Object.keys(root)) if (key.startsWith('_cfx')) delete root[key];
+    root.removeAttribute('data-cfx-runtime-bound');
+  };
+  const releaseChartLifetime = (root) => {
+    const lifetime = chartLifetimes.get(root);
+    if (!lifetime || lifetime.disposed) return;
+    cancelXViewportRequest(lifetime);
+    lifetime.disposed = true;
+    for (const cleanup of Array.from(lifetime.cleanups)) cleanup();
+    clearChartBrowserState(root);
+    mountedCharts.delete(root); chartLifetimes.delete(root); watchChartLifetimes();
+    syncResetControl(root);
+  };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
   const totalSeriesKinds = new Set(['bar', 'horizontalbar', 'lollipop', 'radialbar', 'radialcolumn']);
@@ -1618,7 +1707,9 @@
     svg.querySelectorAll('[data-cfx-series][data-cfx-point]').forEach((mark) => {
       const markData = mark.dataset || {};
       if (markData.cfxEmpty === 'true' || markData.cfxSeries !== data.cfxSeries || values.has(markData.cfxPoint) || mark.closest('[data-cfx-role="legend-item"]')) return;
-      const value = Number(markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue);
+      const rawValue = markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue;
+      if (rawValue === undefined || rawValue === '') return;
+      const value = Number(rawValue);
       if (!Number.isFinite(value)) return;
       values.set(markData.cfxPoint, { point: Number(markData.cfxPoint), value, label: markData.cfxXLabel || markData.cfxCategory || '',
         formatted: markData.cfxFormattedValue, valueLabel: rowName(mark, 'value', 'Value') });
@@ -1749,6 +1840,7 @@
       if (event.target === stage.querySelector('svg') && event.propertyName === 'transform') hideGuide();
     };
     const queueRefresh = () => {
+      if (chartLifetimes.get(root)?.disposed !== false) return;
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         frame = 0;
@@ -1766,14 +1858,15 @@
         refreshKeyboardNavigation(root);
       });
     };
-    stage.addEventListener('scroll', hideGuide, { passive: true });
-    stage.addEventListener('transitionend', finishViewport);
-    stage.addEventListener('transitioncancel', finishViewport);
-    window.addEventListener('resize', queueRefresh);
+    listenChart(root, stage, 'scroll', hideGuide, { passive: true });
+    listenChart(root, stage, 'transitionend', finishViewport);
+    listenChart(root, stage, 'transitioncancel', finishViewport);
+    listenChart(root, window, 'resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
       observer = new ResizeObserver(queueRefresh);
       observer.observe(stage);
     }
+    ownChartWork(root, () => { if (frame) cancelAnimationFrame(frame); observer?.disconnect(); });
   };
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const getState = (root) => ({
@@ -1799,6 +1892,7 @@
   };
   // The reset control is contextual: it exists only while the reader has changed the view.
   const viewChanged = (root) => {
+    if (connectedXViewport(root) && nativeXWindowChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
@@ -1821,10 +1915,31 @@
   };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
+    // Automatically allocated identities are local handles, never accidental matches in a peer chart.
+    const sharedTarget = target => target && target.seriesScope !== 'local';
+    if (payload.target?.seriesScope === 'local') {
+      if (['hover', 'crosshair', 'navigate'].includes(payload.action) && root._cfxSharedHover) emitSync(root, { action: 'hover-clear' });
+      return;
+    }
+    payload = { ...payload };
+    for (const field of ['targets', 'trail']) if (Array.isArray(payload[field])) {
+      const shared = payload[field].filter(sharedTarget);
+      if (payload[field].length && !shared.length) return;
+      payload[field] = shared;
+    }
+    if (payload.action === 'state' && payload.state) {
+      const targets = payload.state.selectedTargets || [], shared = targets.filter(sharedTarget);
+      if (targets.length && !shared.length) return;
+      payload.state = { ...payload.state, selectedTargets: shared };
+    }
+    if (payload.action === 'hover-clear') {
+      if (!root._cfxSharedHover) return;
+      delete root._cfxSharedHover;
+    } else if (['hover', 'crosshair', 'navigate'].includes(payload.action)) root._cfxSharedHover = true;
     const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
     root.dispatchEvent(new CustomEvent('cfxsync', { detail }));
     document.querySelectorAll('.cfx-interactive-chart').forEach((peer) => {
-      if (sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
+      if (chartLifetimes.get(peer)?.disposed === false && sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
     });
   };
   const applyMode = (root, mode) => {
@@ -1837,6 +1952,8 @@
   const resetViewport = (root) => {
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
     root.dataset.cfxBrush = '';
+    const brush = root.querySelector('.cfx-brush-box');
+    if (brush) brush.hidden = true;
     root.dataset.cfxMode = '';
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
     syncResetControl(root);
@@ -1902,6 +2019,10 @@
   };
   const zoomBy = (root, factor) => {
     if (!hasFeature(root, 'Zoom')) return;
+    if (chartLifetimes.get(root)?.xViewportConnection) {
+      requestXViewportZoom(root, factor);
+      return;
+    }
     const state = getState(root);
     state.zoom *= factor;
     applyViewport(root, state);
@@ -1943,7 +2064,12 @@
     const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
     const sourceUrl = URL.createObjectURL(source);
     const image = new Image();
+    let canceled = false;
+    const release = ownChartWork(root, () => {
+      canceled = true; image.onload = null; image.onerror = null; image.src = ''; URL.revokeObjectURL(sourceUrl);
+    });
     image.onload = () => {
+      if (canceled) return;
       const size = svgSize(serialized.svg);
       const scale = Math.max(1, Math.ceil(window.devicePixelRatio || 1));
       const canvas = document.createElement('canvas');
@@ -1951,22 +2077,24 @@
       canvas.height = size.height * scale;
       const context = canvas.getContext('2d');
       if (!context) {
-        URL.revokeObjectURL(sourceUrl);
+        release();
         return;
       }
       context.setTransform(scale, 0, 0, scale, 0, 0);
       context.clearRect(0, 0, size.width, size.height);
       context.drawImage(image, 0, 0, size.width, size.height);
       canvas.toBlob((blob) => {
-        URL.revokeObjectURL(sourceUrl);
-        if (blob) downloadBlob(root, blob, 'png', 'png');
+        if (canceled) return;
+        release();
+        if (blob && root.isConnected) downloadBlob(root, blob, 'png', 'png');
       }, 'image/png');
     };
-    image.onerror = () => URL.revokeObjectURL(sourceUrl);
+    image.onerror = release;
     image.src = sourceUrl;
   };
   // Data and legend are separate roving components. Source identities stay on the actual rendered marks.
   const keyboardTargetAvailable = (node) => {
+    if (node.dataset.cfxVisible === 'false') return false;
     if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, new Map())) return false;
     // Muted data leaves navigation; its legend remains an entry point for restoring the series.
     if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
@@ -2086,6 +2214,7 @@
       ancestry.trees.forEach(tree => tree.addEventListener('slotchange', queueRefresh, true));
     };
     const queueRefresh = () => {
+      if (chartLifetimes.get(root)?.disposed !== false) return;
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         frame = 0;
@@ -2099,7 +2228,7 @@
         watchAncestry(); refreshKeyboardNavigation(root);
       });
     };
-    window.addEventListener('resize', queueRefresh);
+    listenChart(root, window, 'resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
       // Tabs and other initially hidden hosts acquire layout without a window resize.
       resizeObserver = new ResizeObserver(queueRefresh);
@@ -2107,6 +2236,7 @@
     }
     // Native paint and host styles can change without a resize. Tab and arrow availability share this owner.
     paintObserver = new MutationObserver(records => {
+      if (chartLifetimes.get(root)?.disposed !== false) return;
       if (!root.isConnected) { queueRefresh(); return; }
       if (!records.some(record => root.contains(record.target) || record.type === 'attributes' && ancestry.nodes.includes(record.target)
         || record.type === 'childList' && Array.from(record.removedNodes).some(node => ancestry.nodes.some(boundary => node.contains(boundary))))) return;
@@ -2114,6 +2244,10 @@
       refreshKeyboardNavigation(root);
     });
     watchAncestry();
+    ownChartWork(root, () => {
+      if (frame) cancelAnimationFrame(frame);
+      resizeObserver?.disconnect(); paintObserver?.disconnect(); unwatchSlots();
+    });
   };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) {
@@ -2207,7 +2341,8 @@
     const data = node.dataset || {};
     const reference = legendTarget(node) || (['node', 'link', 'region'].includes(data.cfxTargetKind)
       ? { targetKind: data.cfxTargetKind, targetId: data.cfxTargetId } : null);
-    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), label: data.cfxLabel || seriesLabel(node),
+    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), seriesScope: data.cfxSeriesScope,
+      observationId: data.cfxObservationId, label: data.cfxLabel || seriesLabel(node),
       targetKind: data.cfxPoint === undefined ? 'series' : 'point',
       targetId: data.cfxPoint === undefined ? seriesKey(node) : pointTargetId(node), ...reference };
   };
@@ -2377,7 +2512,8 @@
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
-    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
+    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node)
+      || pointUnits && data.cfxPoint === String(target.point));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
   const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
@@ -2394,7 +2530,8 @@
     const hoverMode = hoverModeForTarget(root, localNode, mode);
     if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
-    const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
+    const itemUnit = hoverMode === 'series' && (legendItemUnit(root, localTarget)
+      || pointUnits && referencedTargetNode(root, { ...localTarget, targetKind: 'point' }));
     let matched = false;
     nodes.forEach((node) => {
       const hovered = matchesTargetIdentity(node, localTarget);
@@ -2445,6 +2582,122 @@
     if (emit !== false) emitHostEvent(root, 'cfxtrail', { target, trail, count: trail.length });
     if (sync !== false) emitSync(root, { action: 'trail', target, trail, count: trail.length });
     return trail;
+  };
+  const applySelectionByLabel = (root, label, selected) => {
+    if (!label) return;
+    interactiveTargets(root).forEach((node) => {
+      if (text(node) === label) setNodeSelected(node, selected);
+    });
+    syncResetControl(root);
+  };
+  const matchesTargetIdentity = (node, target) => {
+    if (!target) return false;
+    const data = node.dataset || {};
+    if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
+    if (target.id) return node.id === target.id || data.cfxId === target.id;
+    if (target.seriesKey) {
+      if (seriesKey(node) !== target.seriesKey) return false;
+      if (target.point !== undefined) return data.cfxPoint === String(target.point);
+      return !target.role || data.cfxRole === target.role;
+    }
+    if (target.series !== undefined && target.point !== undefined && data.cfxSeries === String(target.series) && data.cfxPoint === String(target.point)) return true;
+    if (target.series !== undefined && target.point === undefined && data.cfxSeries === String(target.series) && target.role && data.cfxRole === target.role) return true;
+    if (target.role && data.cfxRole === target.role && target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
+    if (target.role && data.cfxRole === target.role && target.value && (data.cfxValue === target.value || data.cfxY === target.value || data.cfxEnd === target.value)) return true;
+    return false;
+  };
+  const applySelectionByTarget = (root, target, selected) => {
+    if (!target) return false;
+    let matched = false;
+    interactiveTargets(root).forEach((node) => {
+      if (!matchesTargetIdentity(node, target)) return;
+      matched = true;
+      setNodeSelected(node, selected);
+    });
+    syncResetControl(root);
+    return matched;
+  };
+  const clearSelections = (root) => {
+    root.querySelectorAll('.cfx-selected').forEach((node) => {
+      node.classList.remove('cfx-selected');
+      node.removeAttribute('aria-selected');
+    });
+    renderCompare(root);
+    syncResetControl(root);
+  };
+  const applySelectionSetByTargets = (root, targets, replace) => {
+    if (replace !== false) clearSelections(root);
+    let count = 0;
+    (targets || []).forEach((target) => {
+      if (applySelectionByTarget(root, target, true)) count++;
+    });
+    return count;
+  };
+  const nodeCenterInRect = (node, rect) => {
+    const box = node.getBoundingClientRect();
+    if (!box.width && !box.height) return null;
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
+    return { x, y };
+  };
+  const selectTargetsInBox = (root, rect, append) => {
+    if (!hasFeature(root, 'Selection')) return [];
+    if (!append) clearSelections(root);
+    const targets = [];
+    interactiveTargets(root, lassoSelector).forEach((node) => {
+      if (node.closest('[data-cfx-role="legend-item"]')) return;
+      if (!nodeCenterInRect(node, rect)) return;
+      setNodeSelected(node, true);
+      targets.push(targetIdentity(node));
+    });
+    syncResetControl(root);
+    return targets;
+  };
+  const applySync = (root, detail) => {
+    if (!detail || detail.chartId === root.dataset.cfxChartId) return;
+    if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
+    else if (detail.action === 'brush') {
+      root.dataset.cfxBrush = detail.bounds || '';
+      syncResetControl(root);
+    }
+    else if (detail.action === 'selection') {
+      if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
+      renderCompare(root);
+    } else if (detail.action === 'lasso') {
+      applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
+      renderCompare(root);
+    } else if (detail.action === 'compare') {
+      applySelectionSetByTargets(root, detail.targets || [], true);
+      renderCompare(root);
+    }
+    else if (detail.action === 'hover') {
+      clearHover(root, false, false);
+      applyHoverByTarget(root, detail.target);
+      revealTargets(root, [detail.target], false, false, detail.source || 'hover');
+    } else if (detail.action === 'hover-clear') clearHover(root, false, false);
+    else if (detail.action === 'crosshair' || detail.action === 'navigate') {
+      clearHover(root, false, false);
+      applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series');
+      revealTargets(root, [detail.target], false, false, detail.action);
+    }
+    else if (detail.action === 'trail') applyFocusTrail(root, detail.trail || []);
+    else if (detail.action === 'reveal') revealTargets(root, detail.targets || [], false, false, detail.source || '');
+    else if (detail.action === 'reveal-clear') clearReveals(root, detail.source || '');
+    else if (detail.action === 'state') applyInteractionState(root, detail.state, false, false);
+    else if (detail.action === 'series') {
+      const target = resolveSeriesTarget(root, detail.target);
+      if (target) setSeriesMuted(root, target, detail.muted === true);
+    }
+    else if (detail.action === 'series-focus') {
+      const target = resolveSeriesTarget(root, detail.target);
+      if (target) setSeriesIsolation(root, target, detail.isolated === true);
+    }
+    else if (detail.action === 'scenario') setScenario(root, detail.scenarioId || '', false, false);
+    else if (detail.action === 'scenario-step') {
+      if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, false, false);
+      setScenarioStep(root, detail.index, false, false);
+    }
   };
   const revealLayer = (root) => {
     let layer = root.querySelector('[data-cfx-reveal-layer]');
@@ -2698,121 +2951,6 @@
     if (tooltipPoint) showTip(root, tip, tooltipPoint.node, event);
     else hideTip(root, tip, false);
   };
-  const applySelectionByLabel = (root, label, selected) => {
-    if (!label) return;
-    interactiveTargets(root).forEach((node) => {
-      if (text(node) === label) setNodeSelected(node, selected);
-    });
-    syncResetControl(root);
-  };
-  const matchesTargetIdentity = (node, target) => {
-    if (!target) return false;
-    const data = node.dataset || {};
-    if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
-    if (target.id) return node.id === target.id || data.cfxId === target.id;
-    if (target.seriesKey) {
-      if (seriesKey(node) !== target.seriesKey) return false;
-      if (target.point !== undefined) return data.cfxPoint === String(target.point);
-      return !target.role || data.cfxRole === target.role;
-    }
-    if (target.series !== undefined && target.point !== undefined && data.cfxSeries === String(target.series) && data.cfxPoint === String(target.point)) return true;
-    if (target.series !== undefined && target.point === undefined && data.cfxSeries === String(target.series) && target.role && data.cfxRole === target.role) return true;
-    if (target.role && data.cfxRole === target.role && target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
-    if (target.role && data.cfxRole === target.role && target.value && (data.cfxValue === target.value || data.cfxY === target.value || data.cfxEnd === target.value)) return true;
-    return false;
-  };
-  const applySelectionByTarget = (root, target, selected) => {
-    if (!target) return false;
-    let matched = false;
-    interactiveTargets(root).forEach((node) => {
-      if (!matchesTargetIdentity(node, target)) return;
-      matched = true;
-      setNodeSelected(node, selected);
-    });
-    syncResetControl(root);
-    return matched;
-  };
-  const clearSelections = (root) => {
-    root.querySelectorAll('.cfx-selected').forEach((node) => {
-      node.classList.remove('cfx-selected');
-      node.removeAttribute('aria-selected');
-    });
-    syncResetControl(root);
-  };
-  const applySelectionSetByTargets = (root, targets, replace) => {
-    if (replace !== false) clearSelections(root);
-    let count = 0;
-    (targets || []).forEach((target) => {
-      if (applySelectionByTarget(root, target, true)) count++;
-    });
-    return count;
-  };
-  const nodeCenterInRect = (node, rect) => {
-    const box = node.getBoundingClientRect();
-    if (!box.width && !box.height) return null;
-    const x = box.left + box.width / 2;
-    const y = box.top + box.height / 2;
-    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
-    return { x, y };
-  };
-  const selectTargetsInBox = (root, rect, append) => {
-    if (!hasFeature(root, 'Selection')) return [];
-    if (!append) clearSelections(root);
-    const targets = [];
-    interactiveTargets(root, lassoSelector).forEach((node) => {
-      if (node.closest('[data-cfx-role="legend-item"]')) return;
-      if (!nodeCenterInRect(node, rect)) return;
-      setNodeSelected(node, true);
-      targets.push(targetIdentity(node));
-    });
-    syncResetControl(root);
-    return targets;
-  };
-  const applySync = (root, detail) => {
-    if (!detail || detail.chartId === root.dataset.cfxChartId) return;
-    if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
-    else if (detail.action === 'brush') {
-      root.dataset.cfxBrush = detail.bounds || '';
-      syncResetControl(root);
-    }
-    else if (detail.action === 'selection') {
-      if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
-      renderCompare(root);
-    } else if (detail.action === 'lasso') {
-      applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
-      renderCompare(root);
-    } else if (detail.action === 'compare') {
-      applySelectionSetByTargets(root, detail.targets || [], true);
-      renderCompare(root);
-    }
-    else if (detail.action === 'hover') {
-      clearHover(root, false, false);
-      applyHoverByTarget(root, detail.target);
-      revealTargets(root, [detail.target], false, false, detail.source || 'hover');
-    } else if (detail.action === 'hover-clear') clearHover(root, false, false);
-    else if (detail.action === 'crosshair' || detail.action === 'navigate') {
-      clearHover(root, false, false);
-      applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series');
-      revealTargets(root, [detail.target], false, false, detail.action);
-    }
-    else if (detail.action === 'trail') applyFocusTrail(root, detail.trail || []);
-    else if (detail.action === 'reveal') revealTargets(root, detail.targets || [], false, false, detail.source || '');
-    else if (detail.action === 'reveal-clear') clearReveals(root, detail.source || '');
-    else if (detail.action === 'state') applyInteractionState(root, detail.state, false, false);
-    else if (detail.action === 'series') {
-      const target = resolveSeriesTarget(root, detail.target);
-      if (target) setSeriesMuted(root, target, detail.muted === true);
-    }
-    else if (detail.action === 'series-focus') {
-      const target = resolveSeriesTarget(root, detail.target);
-      if (target) setSeriesIsolation(root, target, detail.isolated === true);
-    }
-    else if (detail.action === 'scenario') setScenario(root, detail.scenarioId || '', false, false);
-    else if (detail.action === 'scenario-step') {
-      if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, false, false);
-      setScenarioStep(root, detail.index, false, false);
-    }
-  };
   const readJson = (value, fallback) => {
     try {
       const parsed = JSON.parse(value || '');
@@ -2867,8 +3005,7 @@
     const kind = step.targetKind || '';
     const target = step.targetId || '';
     if (renderedTargetKind(node) === kind && renderedTargetId(node, kind) === target) return true;
-    const seriesOrdinalTarget = /^(0|[1-9]\d*)$/.test(target);
-    if (kind === 'series' && (seriesOrdinalTarget ? data.cfxSeries === target : seriesKey(node) === target)) return true;
+    if (kind === 'series') return seriesKey(node) === target;
     if (kind === 'point' && data.cfxPoint === target) return true;
     if (kind === 'point' && data.cfxSeries !== undefined && data.cfxPoint !== undefined && (data.cfxSeries + ':' + data.cfxPoint === target || data.cfxSeries + '.' + data.cfxPoint === target)) return true;
     if (kind === 'annotation' && (data.cfxRole || '').indexOf('annotation') === 0 && (data.cfxLabel === target || data.cfxKind === target || data.cfxValue === target || data.cfxId === target || node.id === target)) return true;
@@ -3094,6 +3231,7 @@
     if (!Number.isFinite(index) || index < 0) index = 0;
     if (index >= route.steps.length && route.loopPlayback) index = 0;
     const advance = () => {
+      if (!root.isConnected || chartLifetimes.get(root)?.disposed !== false) { stopScenarioPlayback(root, 'paused', false); return; }
       if (index >= route.steps.length) {
         if (route.loopPlayback) index = 0;
         else {
@@ -3114,8 +3252,7 @@
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).catch(() => {});
     emitHostEvent(root, 'cfxscenariolink', { url });
   };
-  document.querySelectorAll('.cfx-interactive-chart').forEach((root) => {
-    if (root.dataset.cfxRuntimeBound === 'true') return;
+  const bindChart = (root) => {
     root.dataset.cfxRuntimeBound = 'true';
     const tip = root.querySelector('.cfx-tooltip');
     const stage = root.querySelector('.cfx-stage');
@@ -3123,9 +3260,12 @@
     const crosshair = root.querySelector('.cfx-crosshair');
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
+    listenChart(root, root, 'keydown', event => {
+      if (event.key === 'Escape') cancelXViewportRequest(chartLifetimes.get(root));
+    }, true);
     applyRenderedTargetContract(root);
     prepareRootBranchHighlights(root);
-    if (root._cfxBranchHighlights) root.addEventListener('keydown', event => {
+    if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
       event.stopPropagation();
@@ -3135,13 +3275,13 @@
     });
     applyViewport(root, getState(root));
     renderCompare(root);
-    if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());
+    if (compareTray) listenChart(root, compareTray, 'pointerdown', (event) => event.stopPropagation());
     if (hasFeature(root, 'StateBookmarks')) {
-      root.addEventListener('cfx-capture-state', (event) => {
+      listenChart(root, root, 'cfx-capture-state', (event) => {
         const detail = event.detail || {};
         publishInteractionState(root, detail.source || 'host', detail.sync);
       });
-      root.addEventListener('cfx-apply-state', (event) => {
+      listenChart(root, root, 'cfx-apply-state', (event) => {
         const detail = event.detail || {};
         applyInteractionState(root, detail.snapshot || detail.state || detail, true, detail.sync);
       });
@@ -3153,16 +3293,16 @@
       const focusNode = targetFocusNode(node);
       const labels = pointLabelSurfaces(root, node);
       [node, ...labels].forEach(surface => {
-        surface.addEventListener('pointerenter', (event) => {
+        listenChart(root, surface, 'pointerenter', (event) => {
           if (!pointerTargetPaint(node)) return;
           if (!ownsTooltipPointer(root, event)) hideCrosshair(root, crosshair);
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
-        surface.addEventListener('pointermove', (event) => {
+        listenChart(root, surface, 'pointermove', (event) => {
           if (ownsTooltipPointer(root, event)) moveTip(tip, event, node);
         });
-        surface.addEventListener('pointerleave', (event) => {
+        listenChart(root, surface, 'pointerleave', (event) => {
           if (!ownsTooltipPointer(root, event)) return;
           clearHover(root, true, true);
           if (!retainPointerTip(root, event)) hideTip(root, tip, false);
@@ -3170,14 +3310,21 @@
       });
       // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
-        focusNode.addEventListener('focus', (event) => {
+        let pointerFocus = false;
+        // Touch compatibility mouse events can focus the mark after pointerup has already cleared the press.
+        ['pointerdown', 'mousedown'].forEach(type => listenChart(root, focusNode, type, (event) => { pointerFocus = event.button === 0; }));
+        ['pointerup', 'pointercancel', 'pointerleave', 'mouseup'].forEach(type => listenChart(root, focusNode, type, () => { pointerFocus = false; }));
+        listenChart(root, focusNode, 'focus', (event) => {
           refreshKeyboardNavigation(root, node);
-          if (hasFeature(root, 'KeyboardNavigation')) scrollKeyboardTargetIntoView(root, focusNode);
+          // Revealing a partly visible mark between pointer down and up retargets its native click.
+          if (hasFeature(root, 'KeyboardNavigation') && !pointerFocus) scrollKeyboardTargetIntoView(root, focusNode);
+          pointerFocus = false;
           if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
-        focusNode.addEventListener('blur', () => {
+        listenChart(root, focusNode, 'blur', () => {
+          pointerFocus = false;
           clearHover(root, true, true);
           hideTip(root, tip, false);
         });
@@ -3194,9 +3341,9 @@
           pinTip(root, tip, node, event);
         }
       };
-      focusNode.addEventListener('click', activateTarget);
-      labels.forEach(label => label.addEventListener('click', activateTarget));
-      if (hasFeature(root, 'KeyboardNavigation')) focusNode.addEventListener('keydown', (event) => {
+      listenChart(root, focusNode, 'click', activateTarget);
+      labels.forEach(label => listenChart(root, label, 'click', activateTarget));
+      if (hasFeature(root, 'KeyboardNavigation')) listenChart(root, focusNode, 'keydown', (event) => {
         if (!hasFeature(root, 'KeyboardNavigation') || event.defaultPrevented || event.target !== focusNode) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();
@@ -3219,30 +3366,30 @@
       });
     });
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
-      button.addEventListener('click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
+      listenChart(root, button, 'click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
     });
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
-      button.addEventListener('click', () => setMode(root, button.dataset.cfxModeButton || ''));
+      listenChart(root, button, 'click', () => setMode(root, button.dataset.cfxModeButton || ''));
     });
     root.querySelectorAll('[data-cfx-export]').forEach((button) => {
-      button.addEventListener('click', () => {
+      listenChart(root, button, 'click', () => {
         if (button.dataset.cfxExport === 'png') exportPng(root);
         else exportSvg(root);
       });
     });
     root.querySelectorAll('[data-cfx-scenario]').forEach((button) => {
-      button.addEventListener('click', () => setScenario(root, button.dataset.cfxScenario || '', true));
+      listenChart(root, button, 'click', () => setScenario(root, button.dataset.cfxScenario || '', true));
     });
     if (hasFeature(root, 'Scenarios')) {
-      root.addEventListener('cfx-set-scenario', (event) => {
+      listenChart(root, root, 'cfx-set-scenario', (event) => {
         const detail = event.detail || {};
         setScenario(root, detail.scenarioId || '', true, true);
       });
-      root.addEventListener('cfx-clear-scenario', () => setScenario(root, '', true, true));
+      listenChart(root, root, 'cfx-clear-scenario', () => setScenario(root, '', true, true));
     }
     if (hasFeature(root, 'StepPlayback')) {
       root.querySelectorAll('[data-cfx-scenario-step-control]').forEach((button) => {
-        button.addEventListener('click', () => {
+        listenChart(root, button, 'click', () => {
           const action = button.dataset.cfxScenarioStepControl || '';
           if (action === 'previous') stepScenario(root, -1);
           else if (action === 'next') stepScenario(root, 1);
@@ -3251,25 +3398,25 @@
           else if (action === 'link') copyScenarioLink(root);
         });
       });
-      root.addEventListener('cfx-set-scenario-step', (event) => {
+      listenChart(root, root, 'cfx-set-scenario-step', (event) => {
         const detail = event.detail || {};
         if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, true, true);
         const index = detail.index !== undefined ? detail.index : detail.stepIndex;
         setScenarioStep(root, index, true, true);
       });
-      root.addEventListener('cfx-clear-scenario-step', () => {
+      listenChart(root, root, 'cfx-clear-scenario-step', () => {
         stopScenarioPlayback(root, 'paused');
         clearScenarioStep(root);
         clearReveals(root);
       });
-      root.addEventListener('cfx-play-scenario', (event) => {
+      listenChart(root, root, 'cfx-play-scenario', (event) => {
         const detail = event.detail || {};
         if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, true, true);
         playScenario(root);
       });
-      root.addEventListener('cfx-pause-scenario', () => stopScenarioPlayback(root, 'paused'));
+      listenChart(root, root, 'cfx-pause-scenario', () => stopScenarioPlayback(root, 'paused'));
       const scrubber = root.querySelector('[data-cfx-scenario-scrubber]');
-      if (scrubber) scrubber.addEventListener('input', () => {
+      if (scrubber) listenChart(root, scrubber, 'input', () => {
         stopScenarioPlayback(root, 'paused');
         setScenarioStep(root, Number(scrubber.value) - 1, true, true);
       });
@@ -3279,8 +3426,8 @@
           const item = target instanceof Element ? target.closest('[data-cfx-scenario-step-index]') : null;
           if (item && stepsList.contains(item)) setScenarioStep(root, Number(item.getAttribute('data-cfx-scenario-step-index')) - 1, true, true);
         };
-        stepsList.addEventListener('click', (event) => focusStep(event.target));
-        stepsList.addEventListener('keydown', (event) => {
+        listenChart(root, stepsList, 'click', (event) => focusStep(event.target));
+        listenChart(root, stepsList, 'keydown', (event) => {
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
           focusStep(event.target);
@@ -3297,19 +3444,31 @@
       if (hasFeature(root, 'StepPlayback') && initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) startScenarioPlayback(root, initialRoute, 0, false, true);
     }
     if (stage) {
-      stage.addEventListener('pointerenter', (event) => {
+      listenChart(root, stage, 'pointerenter', (event) => {
         // A new contact can acquire sparse plot space before any native mark receives its own entry.
         if (!ownsTooltipPointer(root, event)) updateNearestPoint(root, crosshair, tip, event);
       });
-      stage.addEventListener('wheel', (event) => {
+      listenChart(root, stage, 'wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
+        if (connectedXViewport(root) && !chartXProjection(root)) return;
         event.preventDefault();
         zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92);
       }, { passive: false });
       let drag = null;
-      stage.addEventListener('pointerdown', (event) => {
+      ownChartWork(root, () => {
+        if (drag && stage.hasPointerCapture(drag.id)) stage.releasePointerCapture(drag.id);
+        drag = null;
+      });
+      listenChart(root, stage, 'pointerdown', (event) => {
         if (event.button !== 0) return;
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
+          if (connectedXViewport(root)) {
+            const x = logicalXPointer(root, event);
+            if (x === null || !chartXProjection(root)) return;
+            drag = { mode: 'native-pan', id: event.pointerId, x, delta: 0 };
+            event.preventDefault(); stage.setPointerCapture(event.pointerId);
+            return;
+          }
           const state = getState(root);
           const point = stagePointer(stage, event);
           drag = { mode: 'pan', id: event.pointerId, x: point.x, y: point.y, panX: state.panX, panY: state.panY };
@@ -3317,7 +3476,9 @@
           stage.setPointerCapture(event.pointerId);
         } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
           const point = stagePointer(stage, event, true);
-          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y };
+          const previousBrush = { hidden: brush.hidden, left: brush.style.left, top: brush.style.top,
+            width: brush.style.width, height: brush.style.height };
+          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y, previousBrush };
           brush.hidden = false;
           brush.style.left = drag.left + 'px';
           brush.style.top = drag.top + 'px';
@@ -3327,13 +3488,16 @@
           stage.setPointerCapture(event.pointerId);
         }
       });
-      stage.addEventListener('pointermove', (event) => {
+      listenChart(root, stage, 'pointermove', (event) => {
         if (!drag || drag.id !== event.pointerId) {
           if (!ownsTooltipPointer(root, event)) return;
           updateNearestPoint(root, crosshair, tip, event);
           return;
         }
-        if (drag.mode === 'pan') {
+        if (drag.mode === 'native-pan') {
+          const x = logicalXPointer(root, event);
+          if (x !== null) drag.delta = x - drag.x;
+        } else if (drag.mode === 'pan') {
           const point = stagePointer(stage, event);
           applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
         } else if (drag.mode === 'brush' && brush) {
@@ -3346,9 +3510,12 @@
           brush.style.height = Math.abs(y - drag.top) + 'px';
         }
       });
-      stage.addEventListener('pointerup', (event) => {
+      listenChart(root, stage, 'pointerup', (event) => {
         if (!drag || drag.id !== event.pointerId) return;
-        if (drag.mode === 'brush' && brush) {
+        if (drag.mode === 'native-pan') {
+          const plot = chartXProjection(root)?.plotBounds;
+          if (plot && Math.abs(drag.delta) > 0.5) requestXViewport(root, 'pan', plot.x - drag.delta, plot.x + plot.width - drag.delta);
+        } else if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           syncResetControl(root);
           const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
@@ -3365,14 +3532,21 @@
         stage.releasePointerCapture(event.pointerId);
         drag = null;
       });
-      stage.addEventListener('pointerleave', (event) => {
+      listenChart(root, stage, 'pointerleave', (event) => {
         if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      stage.addEventListener('pointercancel', (event) => {
-        if (drag && drag.id === event.pointerId) drag = null;
+      listenChart(root, stage, 'pointercancel', (event) => {
+        if (drag && drag.id === event.pointerId) {
+          // Cancel only the provisional gesture; a previously committed selection and box remain current.
+          if (drag.mode === 'brush' && brush) {
+            brush.hidden = drag.previousBrush.hidden;
+            for (const name of ['left', 'top', 'width', 'height']) brush.style[name] = drag.previousBrush[name];
+          }
+          drag = null;
+        }
         if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
@@ -3380,8 +3554,12 @@
       });
     }
     const reset = root.querySelector('[data-cfx-reset]');
-    if (reset) window.addEventListener('resize', () => syncResetControl(root));
-    if (reset) reset.addEventListener('click', () => {
+    if (reset) listenChart(root, window, 'resize', () => syncResetControl(root));
+    if (reset) listenChart(root, reset, 'click', () => {
+      if (connectedXViewport(root) && chartXProjection(root) && (nativeXWindowChanged(root) || chartLifetimes.get(root)?.xViewportPending)) {
+        requestXViewport(root, 'reset');
+        return;
+      }
       resetViewport(root);
       emitHostEvent(root, 'cfxreset', {});
       emitHostEvent(root, 'cfxviewport', { state: getState(root) });
@@ -3393,12 +3571,222 @@
       refreshKeyboardNavigation(root);
       clearFocusTrail(root);
       clearReveals(root);
-      if (brush) brush.hidden = true;
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
       if (root._cfxBranchHighlights) clearHover(root, true, true);
       publishCompare(root, true);
       syncResetControl(root);
     });
-  });
+  };
+  // Generated sections carry the scene and matching semantic metadata as one adapter document.
+  const readChartSection = (value, fresh = false) => {
+    let section = value;
+    if (typeof value === 'string') {
+      const template = document.createElement('template'); template.innerHTML = value.trim();
+      if (template.content.children.length !== 1) throw new TypeError('Expected one generated chart section without assets.');
+      section = template.content.firstElementChild;
+    }
+    if (!(section instanceof Element) || !section.matches('section.cfx-interactive-chart'))
+      throw new TypeError('Expected a generated interactive chart section.');
+    if (fresh && section.dataset.cfxRuntimeBound === 'true') throw new TypeError('Update requires a fresh generated section.');
+    if (section.querySelector('script') || section.querySelectorAll('.cfx-stage').length !== 1
+      || section.querySelectorAll('.cfx-stage svg').length !== 1 || section.querySelectorAll('.cfx-tooltip').length !== 1)
+      throw new TypeError('The generated chart section must contain its scene and readout, without scripts.');
+    const svg = section.querySelector('.cfx-stage svg');
+    const box = svg.getAttribute('viewBox')?.trim().split(/[\s,]+/).map(Number);
+    let metadata;
+    try { metadata = JSON.parse(section.dataset.cfxPreparedChart); } catch { throw new TypeError('The chart section requires prepared metadata.'); }
+    if (!section.dataset.cfxChartId || svg.namespaceURI !== 'http://www.w3.org/2000/svg' || !box || box.length !== 4 || !box.every(Number.isFinite) || box[2] <= 0 || box[3] <= 0
+      || !metadata || !Array.isArray(metadata.series) || !Array.isArray(metadata.regions) || !Array.isArray(metadata.xLabels)
+      || metadata.series.some(item => !item || typeof item.name !== 'string' || typeof item.key !== 'string' || !item.key
+        || typeof item.local !== 'boolean' || typeof item.kind !== 'string' || typeof item.state !== 'string'
+        || !Array.isArray(item.indices) || item.indices.some(index => !Number.isSafeInteger(index) || index < 0))
+      || new Set(metadata.series.map(item => item.key)).size !== metadata.series.length
+      || metadata.xProjection !== undefined && !validXProjection(metadata.xProjection)
+      || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
+      || metadata.regions.some(item => !item || typeof item.id !== 'string' || typeof item.role !== 'string'
+        || ![item.x, item.y, item.width, item.height].every(Number.isFinite) || item.width < 0 || item.height < 0
+        || item.fillInteriors !== undefined && (!Array.isArray(item.fillInteriors)
+          || item.fillInteriors.some(box => !Array.isArray(box) || box.length !== 3 || !box.every(Number.isFinite)))))
+      throw new TypeError('The chart section has invalid prepared metadata or scene bounds.');
+    if (Array.from(svg.querySelectorAll('[data-cfx-series]')).some(node => {
+      const index = Number(node.dataset.cfxSeries);
+      return !Number.isInteger(index) || index < 0 || index >= metadata.series.length;
+    })) throw new TypeError('The chart scene does not match its prepared series metadata.');
+    return section;
+  };
+  const durableChartTarget = target => !!target && target.seriesScope === 'shared' && !!target.seriesKey
+    && (target.targetKind !== 'point' || target.observationId !== undefined)
+    && (target.targetKind !== 'legend' || target.point === undefined || target.observationId !== undefined);
+  const chartUpdateState = root => {
+    const active = root.getRootNode().activeElement;
+    const focused = interactiveTargets(root).find(node => targetFocusNode(node) === active);
+    const legends = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"]'));
+    return {
+      selected: selectedTargets(root).filter(durableChartTarget),
+      muted: legends.filter(node => node.dataset.cfxMuted === 'true').map(seriesTarget).filter(durableChartTarget),
+      isolated: legends.filter(node => node.dataset.cfxIsolated === 'true').map(seriesTarget).filter(durableChartTarget),
+      focused: focused && durableChartTarget(targetIdentity(focused)) ? targetIdentity(focused) : null,
+      ownedFocus: !!active && root.contains(active), viewport: getState(root)
+    };
+  };
+  const installChartSection = (root, next) => {
+    // Host attributes and non-adapter CSS properties belong to the embedding application.
+    for (const attribute of Array.from(root.attributes)) if (attribute.name.startsWith('data-cfx-')) root.removeAttribute(attribute.name);
+    for (const property of Array.from(root.style)) if (property.startsWith('--cfx-')) root.style.removeProperty(property);
+    for (const attribute of Array.from(next.attributes)) {
+      if (attribute.name.startsWith('data-cfx-') && attribute.name !== 'data-cfx-runtime-bound'
+        || attribute.name === 'role' || attribute.name === 'aria-label') root.setAttribute(attribute.name, attribute.value);
+    }
+    for (const property of Array.from(next.style)) if (property.startsWith('--cfx-'))
+      root.style.setProperty(property, next.style.getPropertyValue(property), next.style.getPropertyPriority(property));
+    root.replaceChildren(...Array.from(next.childNodes).map(node => node.cloneNode(true)));
+  };
+  const restoreChartUpdateState = (root, state, nativeCommit = false) => {
+    // Explicit identity survives position changes; anonymous ordinal facts never inherit full-replacement state.
+    clearSelections(root);
+    for (const target of state.selected) interactiveTargets(root).forEach(node => {
+      if (seriesKey(node) === target.seriesKey && matchesTargetIdentity(node, target)) setNodeSelected(node, true);
+    });
+    for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
+    for (const target of state.isolated) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesIsolation(root, resolved, true); }
+    applyViewport(root, nativeCommit ? { zoom: 1, panX: 0, panY: 0 } : state.viewport);
+    renderCompare(root); refreshKeyboardNavigation(root); syncResetControl(root);
+    const focused = state.focused && interactiveTargets(root).find(node => seriesKey(node) === state.focused.seriesKey && matchesTargetIdentity(node, state.focused));
+    if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused);
+    else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
+    // Focus recovery must not resurrect a pinned or stale readout from the previous scene.
+    hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
+  };
+  // Connected hosts return a C#-prepared scene. JavaScript owns gesture geometry and reply lifetime only.
+  let chartSceneSequence = 0, chartViewportRequestSequence = 0;
+  const nextChartSceneRevision = () => 'cfx-scene-' + (++chartSceneSequence);
+  const validXProjection = projection => {
+    const box = projection?.plotBounds;
+    return !!projection && [projection.fullMinimum, projection.fullMaximum, projection.minimum, projection.maximum].every(Number.isFinite)
+      && projection.fullMinimum < projection.fullMaximum && projection.minimum < projection.maximum
+      && projection.minimum >= projection.fullMinimum && projection.maximum <= projection.fullMaximum
+      && typeof projection.reversed === 'boolean' && !!box && [box.x, box.y, box.width, box.height].every(Number.isFinite)
+      && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
+  };
+  const chartXProjection = root => {
+    try { return JSON.parse(root.dataset.cfxPreparedChart).xProjection || null; } catch { return null; }
+  };
+  const nativeXWindowChanged = root => {
+    const projection = chartXProjection(root);
+    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+  };
+  const connectedXViewport = root => !!chartLifetimes.get(root)?.xViewportConnection;
+  const syncXViewportControls = root => {
+    const unsupported = connectedXViewport(root) && !chartXProjection(root);
+    root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = unsupported; });
+    if (unsupported && root.dataset.cfxMode === 'pan') applyMode(root, '');
+    syncResetControl(root);
+  };
+  const cancelXViewportRequest = lifetime => {
+    const pending = lifetime?.xViewportPending;
+    if (!pending) return;
+    lifetime.xViewportPending = null;
+    pending.abort.abort();
+  };
+  const logicalXPointer = (root, event) => {
+    const matrix = root.querySelector('.cfx-stage svg')?.getScreenCTM();
+    if (!matrix) return null;
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+    return Number.isFinite(point.x) ? point.x : null;
+  };
+  const replaceChartSection = (root, lifetime, next, nativeKind = '') => {
+    const state = chartUpdateState(root);
+    if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
+    releaseChartLifetime(root);
+    installChartSection(root, next);
+    // The application owns the root and connection; each installed scene owns fresh browser work.
+    lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();
+    chartLifetimes.set(root, lifetime); mountedCharts.add(root);
+    bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind);
+    syncXViewportControls(root);
+  };
+  const requestXViewport = (root, kind, left, right) => {
+    const lifetime = chartLifetimes.get(root), connection = lifetime?.xViewportConnection;
+    if (!connection || lifetime.disposed || !root.isConnected || !chartXProjection(root)) return;
+    if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return;
+    cancelXViewportRequest(lifetime);
+    const request = Object.freeze({ chartId: root.dataset.cfxChartId, requestId: 'cfx-request-' + (++chartViewportRequestSequence),
+      sceneRevision: lifetime.sceneRevision, kind, ...(kind === 'reset' ? {} : { left, right }) });
+    const pending = { request, abort: new AbortController() }; lifetime.xViewportPending = pending;
+    const current = () => root.isConnected && chartLifetimes.get(root) === lifetime && !lifetime.disposed
+      && lifetime.xViewportConnection === connection && lifetime.xViewportPending === pending
+      && lifetime.sceneRevision === request.sceneRevision && !pending.abort.signal.aborted;
+    emitHostEvent(root, 'cfxviewportrequest', request);
+    Promise.resolve().then(() => {
+      if (!current()) return;
+      return connection(request, pending.abort.signal);
+    }).then(html => {
+      if (!current()) return;
+      if (typeof html !== 'string') throw new TypeError('The viewport connection must return a fresh generated section HTML string.');
+      const next = readChartSection(html, true).cloneNode(true);
+      if (next.dataset.cfxChartId !== request.chartId || !chartXProjection(next))
+        throw new TypeError('The viewport reply must retain the chart identity and a supported X projection.');
+      lifetime.xViewportPending = null;
+      replaceChartSection(root, lifetime, next, kind);
+      emitHostEvent(root, 'cfxviewportchange', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind });
+    }).catch(error => {
+      if (!current()) return;
+      lifetime.xViewportPending = null;
+      emitHostEvent(root, 'cfxviewporterror', { requestId: request.requestId, sceneRevision: request.sceneRevision, kind,
+        message: error instanceof Error ? error.message : String(error) });
+    });
+  };
+  const requestXViewportZoom = (root, factor) => {
+    const plot = chartXProjection(root)?.plotBounds;
+    if (!plot || !Number.isFinite(factor) || factor <= 0) return;
+    const middle = plot.x + plot.width / 2, half = plot.width / (2 * factor);
+    requestXViewport(root, 'zoom', middle - half, middle + half);
+  };
+  const chartRoot = target => typeof target === 'string' ? document.querySelector(target) : target;
+  const mountChart = target => {
+    const root = chartRoot(target);
+    const existing = root && chartLifetimes.get(root);
+    if (existing && !root.isConnected) { existing.controller.dispose(); throw new TypeError('Mount the chart after inserting its section into the document.'); }
+    if (existing && !existing.disposed) return existing.controller;
+    readChartSection(root);
+    if (!root.isConnected) throw new TypeError('Mount the chart after inserting its section into the document.');
+    const lifetime = { cleanups: new Set(), disposed: false, controller: null, xViewportConnection: null,
+      xViewportPending: null, sceneRevision: nextChartSceneRevision() };
+    const requireMounted = () => {
+      if (lifetime.disposed || !root.isConnected) { controller.dispose(); throw new Error('The chart controller is disposed; mount the connected section again.'); }
+    };
+    const controller = Object.freeze({
+      root,
+      get sceneRevision() { return lifetime.sceneRevision; },
+      update: section => {
+        requireMounted();
+        const next = readChartSection(section, true).cloneNode(true);
+        replaceChartSection(root, lifetime, next);
+        emitHostEvent(root, 'cfxupdated', {});
+        return controller;
+      },
+      connectXViewport: connection => {
+        requireMounted();
+        if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected an X viewport callback or null to disconnect.');
+        cancelXViewportRequest(lifetime);
+        lifetime.xViewportConnection = connection;
+        if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
+        syncXViewportControls(root);
+        return controller;
+      },
+      resize: () => {
+        requireMounted(); hideCrosshair(root, root.querySelector('.cfx-crosshair'));
+        refreshKeyboardNavigation(root); refreshTooltipPosition(root); syncResetControl(root);
+        return controller;
+      },
+      dispose: () => { if (!lifetime.disposed) releaseChartLifetime(root); }
+    });
+    lifetime.controller = controller; chartLifetimes.set(root, lifetime); mountedCharts.add(root);
+    try { bindChart(root); watchChartLifetimes(); } catch (error) { releaseChartLifetime(root); throw error; }
+    return controller;
+  };
+  // Shared assets may be registered by more than one fragment. One installed runtime owns all controllers.
+  window.ChartForgeXCharts = Object.freeze({ mount: mountChart });
+  document.querySelectorAll('.cfx-interactive-chart').forEach(root => mountChart(root));
 })();

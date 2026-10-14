@@ -19,7 +19,8 @@ public sealed class ColorDimensionCaptureTests {
             options.LegendStyle = ChartColorLegendStyle.Gradient;
             options.ValueFormat = ChartValueFormat.Custom(value => {
                 calls[value] = calls.GetValueOrDefault(value) + 1;
-                options.ShowLegend = false; options.LegendStyle = ChartColorLegendStyle.Swatches;
+                chart.Series[0].ColorDimension.ShowLegend = false;
+                chart.Series[0].ColorDimension.LegendStyle = ChartColorLegendStyle.Swatches;
                 return value.ToString(CultureInfo.InvariantCulture);
             });
         });
@@ -79,7 +80,8 @@ public sealed class ColorDimensionCaptureTests {
         Assert.EndsWith("Temperature: No data", prepared.Regions.Single(region => region.Id == "series-0-point-2").Label);
         Assert.All(Role(svg, "color-scale-0-step"), sample => Assert.Equal(string.Empty, (string?)sample.Attribute("data-cfx-formatted-value")));
         Assert.All(calls.Values, count => Assert.Equal(1, count));
-        chart.Series[0].Points.Clear();
+        if (bubble) chart.Series[0].ReplaceBubbles(Array.Empty<ChartBubble>());
+        else chart.Series[0].Points.Clear();
         if (bubble) chart.AddBubble("Missing", new[] { new ChartBubble(1, 10, 9) });
         else chart.AddScatter("Missing", new[] { new ChartPoint(1, 10) });
         var missingSeries = chart.Series[1];

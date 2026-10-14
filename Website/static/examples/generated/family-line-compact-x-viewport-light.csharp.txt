@@ -1,34 +1,50 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.Topology;
 using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
 
-#region Setup: licensed font fixtures shipped beside the gallery outputs
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
-#endregion
-var chart =Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels();
-chart.AddLine("Observed", new ChartPoint[] { new ChartPoint(0, 88), new ChartPoint(1.99, 44), new ChartPoint(2, 34), new ChartPoint(3, 56), new ChartPoint(4, 46), new ChartPoint(5, 64), new ChartPoint(6, 42, true), new ChartPoint(7, 58), new ChartPoint(8, 50), new ChartPoint(8.01, 38), new ChartPoint(10, 82) });
-chart.Series[0].WithMarkerRadius(3);
-chart.Options.XAxis.TickCount = 4;
-chart.Options.YAxis.TickCount = 4;
-// Only observations inside X 2–8 request labels; boundary observations remain eligible.
-// Authored observations at X 1.99 and 8.01 retain their source facts; all points determine the Y scales.
-var viewport = new ChartXViewport(2, 8);
-var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(), VisualThemeMode.Light,
-    new VisualFrame("Requests, X 2\u20138", "Full-data Y; gap at 6; labels in X 2\u20138", showLegend: false), FontSpec.FromFamily("CFX Proof Carlito"));
-var prepared = chart.Prepare(context, viewport);
-System.IO.File.WriteAllText("visual.svg", prepared.ToSvg("family-line-compact-x-viewport-light"));
-System.IO.File.WriteAllBytes("visual.png", prepared.ToPng());
-System.IO.File.WriteAllText("visual.html", prepared.ToArtifact("family-line-compact-x-viewport-light", VisualArtifactKind.Chart).ToHtmlPage());
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = LineViewportRecipe.Create("compact-x-viewport", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Requests, X 2\u20138", "Full-data Y; gap at 6; labels in X 2\u20138", showLegend: false, showSurface: false));
+var prepared = model.Prepare(context, new ChartXViewport(2, 8));
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
 
-// Prepare the same window at thumbnail size, rather than resizing the full scene.
-var thumbnailTheme = VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 13.5, legendSize: 13.5, dataLabelSize: 13.5));
-var thumbnailContext = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 280), 16), thumbnailTheme, VisualThemeMode.Light, new VisualFrame("", "", showLegend: false), FontSpec.FromFamily("CFX Proof Carlito"));
-var thumbnail = chart.Prepare(thumbnailContext, viewport);
-var artifact = thumbnail.ToArtifact("family-line-compact-x-viewport-light-thumbnail", VisualArtifactKind.Chart);
-artifact.Accessibility.Name = "Requests, X 2\u20138";
-System.IO.File.WriteAllText("visual.thumbnail.svg", artifact.ToSvg());
-System.IO.File.WriteAllBytes("visual.thumbnail.png", thumbnail.ToPng());
+/// <summary>Authored requests and utilization retain outside observations while selecting X 2–8 for rendering.</summary>
+public static class LineViewportRecipe {
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var compact = variant.StartsWith("compact", StringComparison.Ordinal);
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Line,
+            Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 38, 82)).ConfigureMarkers(markers => markers.Radius = 3);
+
+        var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels().AddSeries(observed);
+        if (!compact) {
+            observed.WithDataLabels(false);
+            var utilization = new ChartSeries(new ChartSeriesId("utilization"), "Utilization", ChartSeriesKind.Line,
+                Points(96, 72, 48, 61, 55, 76, 49, 67, 59, 84, 100))
+                .UseSecondaryYAxis().ConfigureMarkers(markers => markers.Radius = 3);
+
+            chart.AddSeries(utilization).WithSecondaryYAxis("Utilization (%)");
+            chart.Options.SecondaryYAxis.TickCount = 4;
+        }
+        chart.Options.XAxis.WithReversal(false);
+        chart.Options.XAxis.TickCount = 4; chart.Options.YAxis.TickCount = 4;
+        return chart;
+    }
+
+    private static ChartPoint[] Points(params double[] values) => values.Select((value, index) =>
+        new ChartPoint(index == 1 ? 1.99 : index == 9 ? 8.01 : index, value, index == 6)).ToArray();
+}

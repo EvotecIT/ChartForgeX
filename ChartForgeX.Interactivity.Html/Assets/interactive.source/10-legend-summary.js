@@ -9,7 +9,9 @@
     svg.querySelectorAll('[data-cfx-series][data-cfx-point]').forEach((mark) => {
       const markData = mark.dataset || {};
       if (markData.cfxEmpty === 'true' || markData.cfxSeries !== data.cfxSeries || values.has(markData.cfxPoint) || mark.closest('[data-cfx-role="legend-item"]')) return;
-      const value = Number(markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue);
+      const rawValue = markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue;
+      if (rawValue === undefined || rawValue === '') return;
+      const value = Number(rawValue);
       if (!Number.isFinite(value)) return;
       values.set(markData.cfxPoint, { point: Number(markData.cfxPoint), value, label: markData.cfxXLabel || markData.cfxCategory || '',
         formatted: markData.cfxFormattedValue, valueLabel: rowName(mark, 'value', 'Value') });

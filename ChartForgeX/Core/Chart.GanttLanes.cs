@@ -26,26 +26,11 @@ public sealed partial class Chart {
     /// <param name="items">The lane items. They are ordered by start, then end, then input order.</param>
     /// <param name="group">Optional group header, for example a site.</param>
     /// <param name="summary">Optional text for the summary column, for example <c>3 incidents</c>.</param>
+    /// <param name="id">Optional stable series identity. When omitted, the chart assigns a local ID.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddGanttLane(string name, IEnumerable<ChartGanttLaneItem> items, string? group = null, string? summary = null) {
-        if (name == null) throw new ArgumentNullException(nameof(name));
-        if (items == null) throw new ArgumentNullException(nameof(items));
-        var ordered = new List<ChartGanttLaneItem>();
-        foreach (var item in items) {
-            if (item.Category == null) throw new ArgumentException("Gantt lane items must be created with a category.", nameof(items));
-            ordered.Add(item);
-        }
-
-        ordered = ordered.Select((item, index) => (Item: item, Index: index))
-            .OrderBy(entry => entry.Item.Start).ThenBy(entry => entry.Item.End ?? double.MaxValue).ThenBy(entry => entry.Index)
-            .Select(entry => entry.Item).ToList();
-        var series = new ChartSeries(name, ChartSeriesKind.GanttLane, ordered.ConvertAll(item => new ChartPoint(item.Start, item.End ?? item.Start))) {
-            ShowInLegend = false,
-            LaneSummary = summary,
-            LaneGroup = string.IsNullOrWhiteSpace(group) ? null : group
-        };
-        series.GanttLaneItems.AddRange(ordered);
-        AppendSeries(series);
+    public Chart AddGanttLane(string name, IEnumerable<ChartGanttLaneItem> items, string? group = null, string? summary = null, ChartSeriesId? id = null) {
+        AppendSeries(id.HasValue ? ChartSeries.CreateGanttLane(id.Value, name, items, group, summary)
+            : ChartSeries.CreateGanttLane(name, items, group, summary));
         return this;
     }
 }

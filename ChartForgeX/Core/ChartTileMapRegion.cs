@@ -7,7 +7,7 @@ namespace ChartForgeX.Core;
 /// Describes one region in a tile-map definition.
 /// </summary>
 public readonly struct ChartTileMapRegion {
-    private readonly string[] _aliases;
+    private readonly IReadOnlyList<string>? _aliases;
 
     /// <summary>
     /// Gets the canonical region code.
@@ -32,7 +32,7 @@ public readonly struct ChartTileMapRegion {
     /// <summary>
     /// Gets alternate codes or names that should resolve to this region.
     /// </summary>
-    public IReadOnlyList<string> Aliases => _aliases;
+    public IReadOnlyList<string> Aliases => _aliases ?? Array.Empty<string>();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartTileMapRegion"/> struct.
@@ -51,7 +51,7 @@ public readonly struct ChartTileMapRegion {
         Name = name.Trim();
         Column = column;
         Row = row;
-        _aliases = MaterializeAliases(aliases);
+        _aliases = Array.AsReadOnly(MaterializeAliases(aliases));
     }
 
     private static string[] MaterializeAliases(IEnumerable<string>? aliases) {

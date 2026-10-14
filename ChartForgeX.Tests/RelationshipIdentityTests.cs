@@ -27,9 +27,9 @@ public sealed class RelationshipIdentityTests {
             : new ChartHierarchyItem(node.Id, node.Label)).ToArray();
     }
     private static Chart Add(Chart chart, ChartSeriesKind kind, IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links) => kind switch {
-        ChartSeriesKind.Tree => chart.AddTree("Teams", nodes, links),
-        ChartSeriesKind.Sunburst => chart.AddSunburst("Teams", Items(nodes, links)),
-        _ => chart.AddSankey("Teams", nodes, links.Select(link => new ChartFlowLink("flow-" + link.ChildId, link.ParentId, link.ChildId, link.Value)))
+        ChartSeriesKind.Tree => chart.AddSeries(ChartSeries.CreateTree(new ChartSeriesId("team-source"), "Teams", nodes, links)),
+        ChartSeriesKind.Sunburst => chart.AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("team-source"), "Teams", Items(nodes, links))),
+        _ => chart.AddSeries(ChartSeries.CreateSankey(new ChartSeriesId("team-source"), "Teams", nodes, links.Select(link => new ChartFlowLink("flow-" + link.ChildId, link.ParentId, link.ChildId, link.Value))))
     };
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), frame: new VisualFrame(showLegend: false)));
     private static XElement[] Targets(Chart chart) => XDocument.Parse(Prepare(chart).ToSvg()).Descendants().Where(e => e.Attribute("data-cfx-target-kind") != null).ToArray();
@@ -40,8 +40,7 @@ public sealed class RelationshipIdentityTests {
     [InlineData(ChartSeriesKind.Sunburst)]
     [InlineData(ChartSeriesKind.Sankey)]
     public void RepeatedLabelsRetainIndependentAuthoredNodesAndWeights(ChartSeriesKind kind) {
-        var chart = RepeatedLabels(kind); var series = chart.Series[0];
-        ChartDescriptionFacts? facts = null;
+        var chart = RepeatedLabels(kind); var series = chart.Series[0]; ChartDescriptionFacts? facts = null;
         chart.Options.Labels.AccessibleTextFormatter = value => { facts = value; return null; };
         var prepared = Prepare(chart);
         Assert.Equal(5, series.Nodes.Count); Assert.Empty(series.Points); Assert.Equal(0, series.SourcePointCount);
@@ -55,7 +54,7 @@ public sealed class RelationshipIdentityTests {
         Assert.All(supports, e => {
             Assert.Equal("node", (string?)e.Attribute("data-cfx-target-kind"));
             Assert.Equal("0", (string?)e.Attribute("data-cfx-series"));
-            Assert.Equal("Teams", (string?)e.Attribute("data-cfx-series-key"));
+            Assert.Equal(series.Id.Value, (string?)e.Attribute("data-cfx-series-key"));
             Assert.Null(e.Attribute("data-cfx-point")); Assert.Null(e.Attribute("data-cfx-source-point"));
         });
         Assert.Equal(2, prepared.Regions.Count(region => region.Id.EndsWith("support", StringComparison.Ordinal) && region.Role != "tree-link" && region.Role != "sankey-link"));
@@ -146,8 +145,8 @@ public sealed class RelationshipIdentityTests {
         var nodes = SupportNodes().ToList(); var branches = SupportBranches().ToList();
         var items = SupportItems().ToList();
         var flows = branches.Select(link => new ChartFlowLink("flow-" + link.ChildId, link.ParentId, link.ChildId, link.Value)).ToList();
-        var chart = kind == ChartSeriesKind.Sankey ? Chart.Create().AddSankey("Teams", nodes, flows)
-            : kind == ChartSeriesKind.Sunburst ? Chart.Create().AddSunburst("Teams", items) : Add(Chart.Create(), kind, nodes, branches);
+        var chart = kind == ChartSeriesKind.Sankey ? Chart.Create().AddSeries(ChartSeries.CreateSankey(new ChartSeriesId("team-source"), "Teams", nodes, flows))
+            : kind == ChartSeriesKind.Sunburst ? Chart.Create().AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("team-source"), "Teams", items)) : Add(Chart.Create(), kind, nodes, branches);
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         nodes.Clear(); branches.Clear(); flows.Clear(); items.Clear();
         Assert.Equal(5, chart.Series[0].Nodes.Count); Assert.Equal(svg, Prepare(chart).ToSvg());

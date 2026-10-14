@@ -18,13 +18,19 @@ public static partial class LegacySceneBenchmarkCases {
 
     private static VisualDesignTokens Phase3Tokens() {
         var tokens = VisualDesignTokens.FromJson(_tokens);
+#if LEGACY_CHART_API
         tokens.FontFamily = "CFX Proof Carlito";
         tokens.UseGraphiteLayout = true;
+#endif
         return tokens;
     }
 
     private static Chart CreatePhase3Chart(string fixture) {
+#if LEGACY_CHART_API
         var theme = Phase3Tokens().ApplyTo(ChartTheme.GraphiteLight()).WithTypography(22, 13, 11, 11, 12, 11);
+#else
+        var theme = CurrentTheme();
+#endif
         var chart = Chart.Create().WithSize(Width, Height).WithTheme(theme).WithTitle(Title)
             .WithSubtitle("One prepared scene for SVG and native PNG").WithLegend().WithPadding(24, 24, 24, 24).WithPngOutputScale(1).WithPngSupersampling(2);
         switch (fixture) {
@@ -34,8 +40,14 @@ public static partial class LegacySceneBenchmarkCases {
                     .Select(column => new ChartPoint(column + 1, (row * 17 + column * 7) % 101)));
                 break;
             case "calendar":
+#if LEGACY_CHART_API
                 chart.AddCalendarHeatmap("Daily checks", Enumerable.Range(0, 120).Where(index => index % 7 != 0)
                     .Select(index => new ChartCalendarHeatmapItem(new DateTime(2025, 1, 1).AddDays(index), index % 9 == 0 ? 0 : (index * 13) % 37)), firstDayOfWeek: DayOfWeek.Monday);
+#else
+                chart.ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
+                    .AddCalendarHeatmap("Daily checks", Enumerable.Range(0, 120).Where(index => index % 7 != 0)
+                        .Select(index => new ChartCalendarHeatmapItem(new DateTime(2025, 1, 1).AddDays(index), index % 9 == 0 ? 0 : (index * 13) % 37)));
+#endif
                 break;
             case "progress":
                 chart.AddProgressBars("Completion", new double[] { 0, 27, 49, 73, 88, 100 }
@@ -94,7 +106,12 @@ public static partial class LegacySceneBenchmarkCases {
     private static TopologyChart CreateTopology() {
         var chart = TopologyChart.Create().WithId("scene-topology").WithTitle(Title)
             .WithSubtitle("One prepared scene for SVG and native PNG").WithViewport(Width, Height, 24)
-            .WithLayout(TopologyLayoutMode.Layered).WithDesignTokens(Phase3Tokens());
+            .WithLayout(TopologyLayoutMode.Layered);
+#if LEGACY_CHART_API
+        chart.WithDesignTokens(Phase3Tokens());
+#else
+        chart.WithTheme(CurrentTheme());
+#endif
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true,
             WrapNodeLabels = true, PngOutputScale = 1, PngSupersamplingScale = 2 };
         for (var index = 0; index < 12; index++) chart.AddAutoNode("node-" + index, "Service " + (index + 1),
@@ -121,9 +138,13 @@ public static partial class LegacySceneBenchmarkCases {
         } else {
             var chart = (Chart)model;
             source.Append('|').Append(chart.Title).Append('|').Append(chart.Subtitle);
-            // The legacy flat Treemap stores item labels in XAxisLabels; the current typed
-            // input stores them with each item. TreemapFacts reads their common source meaning.
-            if (fixture != "treemap") foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
+            // Preserve the historical digest order while reading the actual source owner in each profile.
+            if (fixture == "calendar") foreach (var item in CalendarFacts(chart)) source.Append('|').Append(Numeric(item.Date.ToOADate()))
+                .Append(':').Append(item.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            else if (fixture == "map") {
+                var items = MapFacts(chart);
+                for (var index = 0; index < items.Count; index++) source.Append('|').Append(Numeric(index + 1)).Append(':').Append(items[index].Label);
+            } else if (fixture != "treemap") foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
             foreach (var series in chart.Series) {
                 source.Append('|').Append(series.Kind).Append(':').Append(series.Name);
                 if (series.Kind == ChartSeriesKind.Sankey) {
@@ -131,12 +152,36 @@ public static partial class LegacySceneBenchmarkCases {
                     foreach (var flow in SankeyFacts(chart)) source.Append("|flow:").Append(flow.Source).Append(':').Append(flow.Target).Append(':').Append(Numeric(flow.Value));
                 } else if (series.Kind == ChartSeriesKind.Treemap) {
                     foreach (var item in TreemapFacts(chart)) source.Append("|treemap:").Append(item.Label).Append(':').Append(Numeric(item.Value));
+                } else if (series.Kind == ChartSeriesKind.CalendarHeatmap) {
+                    foreach (var item in CalendarFacts(chart)) source.Append('|').Append(Numeric(item.Date.ToOADate())).Append(',').Append(Numeric(item.Value)).Append(',').Append(false);
+                } else if (series.Kind == ChartSeriesKind.DottedMap) {
+                    foreach (var item in MapFacts(chart)) source.Append('|').Append(Numeric(item.Longitude)).Append(',').Append(Numeric(item.Latitude)).Append(',').Append(false);
                 } else foreach (var point in series.Points) source.Append('|').Append(Numeric(point.X)).Append(',').Append(Numeric(point.Y)).Append(',').Append(point.BreakBefore);
             }
-            if (fixture == "map") foreach (var point in MapItems()) source.Append('|').Append(point.Label).Append(':').Append(Numeric(point.Value!.Value));
+            if (fixture == "map") foreach (var point in MapFacts(chart)) source.Append('|').Append(point.Label).Append(':').Append(Numeric(point.Value!.Value));
             source.Append('|').Append(Numeric(chart.Options.ProgressMaximum)).Append("|calendar-first-day=Monday");
         }
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source.ToString())));
+    }
+
+    private static IReadOnlyList<(DateTime Date, double Value)> CalendarFacts(Chart chart) {
+        var series = chart.Series[0];
+#if LEGACY_CHART_API
+        return series.Points.Select(point => (DateTime.FromOADate(point.X).Date, point.Y)).ToArray();
+#else
+        return series.CalendarItems.Select(item => (item.Date, item.Value)).ToArray();
+#endif
+    }
+
+    private static IReadOnlyList<(string Label, double Longitude, double Latitude, double? Value)> MapFacts(Chart chart) {
+        var series = chart.Series[0];
+#if LEGACY_CHART_API
+        var labels = chart.Options.XAxisLabels.ToDictionary(label => label.Value, label => label.Text);
+        Require(labels.Count == series.Points.Count && series.PointValues.Count == series.Points.Count, "Legacy map source metadata changed.");
+        return series.Points.Select((point, index) => (labels[index + 1], point.X, point.Y, series.PointValues[index])).ToArray();
+#else
+        return series.MapPoints.Select(point => (point.Label, point.Longitude, point.Latitude, point.Value)).ToArray();
+#endif
     }
 
     private static IReadOnlyList<(string Label, double Value)> TreemapFacts(Chart chart) {

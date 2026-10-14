@@ -113,6 +113,7 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.Property("topology");
         writer.StartObject();
         String(writer, "kind", topology.Kind.ToString());
+        OptionalNumber(writer, "paletteIndex", topology.PaletteIndex);
         String(writer, "status", topology.Status.ToString());
         String(writer, "displayMode", topology.DisplayMode.ToString());
         OptionalString(writer, "shape", topology.Shape?.ToString());
@@ -143,6 +144,7 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.Property("topology");
         writer.StartObject();
         String(writer, "kind", topology.Kind.ToString());
+        OptionalNumber(writer, "paletteIndex", topology.PaletteIndex);
         String(writer, "status", topology.Status.ToString());
         String(writer, "direction", topology.Direction.ToString());
         String(writer, "sourcePort", topology.SourcePort.ToString());
@@ -327,6 +329,7 @@ internal static partial class VisualArtifactInterchangeJson {
         if (item == null) return null;
         return new VisualArtifactInterchangeTopologyNode {
             Kind = RequiredEnum<ChartForgeX.Topology.TopologyNodeKind>(item, "kind"),
+            PaletteIndex = OptionalInt(item, "paletteIndex"),
             Status = RequiredEnum<ChartForgeX.Topology.TopologyHealthStatus>(item, "status"),
             DisplayMode = RequiredEnum<ChartForgeX.Topology.TopologyNodeDisplayMode>(item, "displayMode"),
             Shape = OptionalEnum<ChartForgeX.Topology.TopologyNodeShape>(item, "shape"),
@@ -352,6 +355,7 @@ internal static partial class VisualArtifactInterchangeJson {
         if (item == null) return null;
         var result = new VisualArtifactInterchangeTopologyEdge {
             Kind = RequiredEnum<ChartForgeX.Topology.TopologyEdgeKind>(item, "kind"),
+            PaletteIndex = OptionalInt(item, "paletteIndex"),
             Status = RequiredEnum<ChartForgeX.Topology.TopologyHealthStatus>(item, "status"),
             Direction = RequiredEnum<ChartForgeX.Primitives.VisualLinkDirection>(item, "direction"),
             SourcePort = RequiredEnum<ChartForgeX.Topology.TopologyEdgePort>(item, "sourcePort"),

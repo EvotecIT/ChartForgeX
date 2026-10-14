@@ -16,8 +16,8 @@ public static class MermaidGitGraphRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidGitGraphRenderOptions();
         var block = GitGraphBlock.Create()
-            .WithTitle(ResolveTitle(options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid git graph"))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithPadding(options.Padding)
             .WithBranchLabels(options.ShowBranchLabels)
@@ -57,16 +57,6 @@ public static class MermaidGitGraphRendering {
     /// <summary>Renders a Mermaid git graph document to static PNG.</summary>
     public static byte[] ToPng(this MermaidGitGraphDocument document, MermaidGitGraphRenderOptions? options = null) =>
         document.ToGitGraphBlock(options).ToPng();
-
-    private static string ResolveTitle(MermaidGitGraphRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        return "Mermaid git graph";
-    }
-
-    private static string ResolveSubtitle(MermaidGitGraphDocument document, MermaidGitGraphRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Direction.Length == 0 ? document.Header : document.Header + " " + document.Direction;
-    }
 }
 
 /// <summary>

@@ -1,0 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = TimelineRecipe.Create("wide", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Project activities in March 2026", "Explore the data, then download the chart", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Three date intervals with stable task identities and an explicitly configured time axis.</summary>
+public static class TimelineRecipe {
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+        var discovery = new ChartSeries(new ChartSeriesId("discovery"), "Discovery", ChartSeriesKind.Timeline,
+            new[] { new ChartPoint(start.ToOADate(), start.AddDays(3).ToOADate()) });
+        var implementation = new ChartSeries(new ChartSeriesId("implementation"), "Implementation", ChartSeriesKind.Timeline,
+            new[] { new ChartPoint(start.AddDays(2).ToOADate(), start.AddDays(7).ToOADate()) });
+        var validation = new ChartSeries(new ChartSeriesId("validation"), "Validation", ChartSeriesKind.Timeline,
+            new[] { new ChartPoint(start.AddDays(6).ToOADate(), start.AddDays(9).ToOADate()) });
+        return Chart.Create().AddSeries(discovery).AddSeries(implementation).AddSeries(validation)
+            .ConfigureXAxis(axis => {
+                axis.Scale = ChartScaleKind.Time;
+                axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", CultureInfo.InvariantCulture));
+            }).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

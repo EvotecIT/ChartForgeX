@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using Xunit;
 
@@ -18,7 +19,7 @@ public sealed class TopologyDensePlanCacheTests {
         var first = Routes(DenseReplicationFixture.Sites60(), DenseReplicationFixture.Options());
         Assert.Equal(1, TopologyDenseRoutePlanner.CachedPlanCount);
         var dark = DenseReplicationFixture.Sites60();
-        dark.Theme = TopologyTheme.Dark();
+        dark.Theme = VisualTheme.Graphite();
         var second = Routes(dark, DenseReplicationFixture.Options());
         Assert.Equal(1, TopologyDenseRoutePlanner.CachedPlanCount);
         TopologyDenseRoutePlanner.ClearPlanCache();

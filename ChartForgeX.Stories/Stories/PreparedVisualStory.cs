@@ -73,7 +73,7 @@ public sealed partial class PreparedVisualStory {
             var next = NativeVisualStoryRenderer.Prepare(_story, index + 1, 0, outputScale, _transcript);
             var renderOptions = new VisualRenderOptions(outputScale, supersampling: 1);
             var pixels = VisualStoryAnimatedRasterRenderer.CrossFade(current.ToRgba(renderOptions), next.ToRgba(renderOptions), 1 - remaining / transition);
-            var builder = new VisualSceneBuilder(current.Size, ChartForgeX.Typography.FontSpec.FromFamily(_story.Theme.FontFamily));
+            var builder = new VisualSceneBuilder(current.Size, ChartForgeX.Typography.FontSpec.FromFamily(_story.Theme.Typography.Family));
             builder.Image(pixels, new ChartForgeX.Primitives.ChartRect(0, 0, Width, Height), role: "story-transition");
             return new PreparedVisual(builder.Build(), current.Accessibility);
         }
@@ -220,7 +220,7 @@ public sealed partial class PreparedVisualStory {
     }
 
     private static VisualStory Capture(VisualStory story, out long assetBytes) {
-        var copy = VisualStory.Create(story.Title).WithSize(story.Width, story.Height).WithTheme(story.Theme.Clone());
+        var copy = VisualStory.Create(story.Title).WithSize(story.Width, story.Height).WithTheme(story.Theme, story.ThemeMode).WithStyle(story.Style.Clone());
         copy.WithPanelReflow(story.ReflowPanels);
         if (story.Description.Length > 0) copy.WithDescription(story.Description);
         var surfaces = new Dictionary<VisualStorySurface, VisualStorySurface>();

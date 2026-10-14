@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
 using Xunit;
@@ -27,12 +28,13 @@ public sealed class TopologyGraphCardColorTests {
     [InlineData("#111827")]
     [InlineData("#fed7aa")]
     public void StaticCardPaintPreservesTheProjectedThemeWithoutAuthoringIt(string surface) {
-        var theme = TopologyTheme.Light();
-        theme.Card = surface;
+        var theme = VisualTheme.Graphite();
+        theme = theme.Configure(builder => builder.Light.Surface = ChartForgeX.Primitives.ChartColor.FromHex(surface));
         var chart = TopologyChart.Create().WithTheme(theme).AddNode("card", "Card", 0, 0)
             .WithNodeDisplay("card", TopologyNodeDisplayMode.Card);
         var implicitScene = chart.ToGraphScene();
         Assert.Null(implicitScene.Nodes[0].Style.BackgroundColor);
+        Assert.Equal(ChartForgeX.Primitives.ChartColor.FromHex(surface).ToCss(), implicitScene.Nodes[0].Metadata["topology.cardBackgroundColor"]);
         var implicitPng = implicitScene.ToGraphPng(configure: options => { options.Width = 320; options.Height = 180; });
         chart.Nodes[0].BackgroundColor = surface;
         var explicitPng = chart.ToGraphScene().ToGraphPng(configure: options => { options.Width = 320; options.Height = 180; });

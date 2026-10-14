@@ -40,6 +40,7 @@ public sealed class GanttDstIntervalRegressionTests {
         if (unit == ChartTimeTickUnit.Day) Assert.Contains(new DateTime(2026, 9, 2, 3, 0, 0).ToOADate(), spanning!);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

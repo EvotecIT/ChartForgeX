@@ -68,8 +68,7 @@
   const pairedConnectedSpan = (node, owner) => {
     const index = Number(node.dataset.cfxPoint);
     const followsPrevious = (point) => point
-      && point.getAttribute('data-cfx-source-0-break') !== 'true'
-      && point.getAttribute('data-cfx-source-1-break') !== 'true';
+      && point.getAttribute('data-cfx-break-before') !== 'true';
     const previous = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index - 1) + '"]');
     const next = owner.querySelector('[data-cfx-role="point"][data-cfx-point="' + (index + 1) + '"]');
     // Native paired fills need a connected span; isolated observations can still paint their own markers or caps.
@@ -258,7 +257,7 @@
     if (!node || !isInteractiveTarget(node)) return null;
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
     if (legend) return childPaint(node, true, styles);
-    if (node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
+    if (node.dataset.cfxVisible === 'false' || node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
     return observationPaint(node, styles);
   };
   const tooltipReadoutAvailable = (node, event, styles = new Map()) => {

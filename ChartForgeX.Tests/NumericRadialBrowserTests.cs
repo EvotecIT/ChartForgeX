@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class NumericRadialBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, false, false, false)]
     [InlineData(true, true, true, false)]
     [InlineData(false, true, false, false)]
@@ -19,13 +19,13 @@ public sealed class NumericRadialBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(compact ? 360 : 800, compact ? 360 : 440)
             .WithTitle(bars ? "Regional requests" : "Regional workload")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXLabels("North", "South", "East", "West").WithLegend().WithDataLabels(false)
             .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180));
         var first = new[] { new ChartPoint(1, 1200), new ChartPoint(2, 800), new ChartPoint(3, 500), new ChartPoint(4, 900) };
         var second = new[] { new ChartPoint(1, 300), new ChartPoint(2, 200), new ChartPoint(3, 100), new ChartPoint(4, 250) };
-        NumericRadialSeriesTests.Add(chart, bars, "Requests", first); NumericRadialSeriesTests.Add(chart, bars, "Follow-ups", second);
-        chart.Series[0].WithInteractionKey("requests"); chart.Series[1].WithInteractionKey("follow-ups");
+        NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("requests"), "Requests", first);
+        NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("follow-ups"), "Follow-ups", second);
         if (dark) foreach (var series in chart.Series) series.WithStackGroup("work");
         chart.WithYAxisBounds(nonzero ? 100 : 0, 1600);
         var mark = NumericRadialSeriesTests.Marks(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene)[0];

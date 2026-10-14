@@ -39,7 +39,7 @@ internal sealed partial class ChartStackLayout {
         var buckets = new Dictionary<(int Group, int Coordinate, bool Positive), StackBucket>();
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
-            if (!Supports(series.Kind)) { sourceValues[seriesIndex] = series.Points.Select(point => point.Y).ToArray(); continue; }
+            if (!Supports(series.Kind)) { sourceValues[seriesIndex] = series.RenderPoints.Select(point => point.Y).ToArray(); continue; }
             var stacked = Participates(chart, series);
             if (!stacked && series.NormalizedTo.HasValue)
                 throw new InvalidOperationException("Stack normalization requires stacked bars or an explicit StackGroup.");
@@ -49,10 +49,10 @@ internal sealed partial class ChartStackLayout {
                 groups.Add(group);
             } else group.Validate(series);
             seriesGroups[seriesIndex] = group;
-            if (stacked) points[seriesIndex] = new ChartStackPoint[series.Points.Count];
-            else sourceValues[seriesIndex] = Enumerable.Range(0, series.Points.Count).Select(series.RenderedPointValue).ToArray();
-            for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
-                var point = series.Points[pointIndex];
+            if (stacked) points[seriesIndex] = new ChartStackPoint[series.RenderPoints.Count];
+            else sourceValues[seriesIndex] = Enumerable.Range(0, series.RenderPoints.Count).Select(series.RenderedPointValue).ToArray();
+            for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
+                var point = series.RenderPoints[pointIndex];
                 if (!stacked) continue;
                 var key = (group.Id, coordinateIds[seriesIndex][pointIndex], point.Y >= 0);
                 if (!buckets.TryGetValue(key, out var bucket)) {

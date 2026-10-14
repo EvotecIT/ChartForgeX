@@ -8,14 +8,15 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidUpperTypographyRegressionTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 2)]
     [InlineData(false, 3)]
     [InlineData(true, 2)]
     [InlineData(true, 3)]
-    public async Task NativeVennLongSetAndRegionCaptionsShareMeasuredSpace(bool graphite, int count) {
-        var theme = ChartTheme.Light(); theme.FontFamily = "Arial"; theme.UseGraphiteLayout = graphite; theme.DataLabelFontSize = 256;
-        var block = VennDiagramBlock.Create().WithSize(320, 460).WithTheme(theme)
+    public async Task NativeVennLongSetAndRegionCaptionsShareMeasuredSpace(bool dark, int count) {
+        var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        var block = VennDiagramBlock.Create().WithSize(320, 460).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddSet("A", "A collection", 60).AddSet("B", "B collection", 55)
             .AddIntersection(new[] { "A", "B" }, "Both", 18).AddText(new[] { "A" }, "note", "Data");
         var expected = new List<string> { "A collection", "B collection", "Both", "Data" };
@@ -35,11 +36,12 @@ public sealed class MermaidUpperTypographyRegressionTests {
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(captures)) return;
         Directory.CreateDirectory(captures);
-        var name = "venn-long-captions-" + graphite + "-" + count;
+        var name = "venn-long-captions-" + dark + "-" + count;
         await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), png);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 320, false)]
     [InlineData(false, 960, false)]
@@ -49,7 +51,7 @@ public sealed class MermaidUpperTypographyRegressionTests {
     [InlineData(false, 960, true)]
     [InlineData(true, 320, true)]
     [InlineData(true, 960, true)]
-    public async Task MaximumFontRetainsLegendAndVennCaptionsWithinTheViewport(bool graphite, int width, bool venn) {
+    public async Task MaximumFontRetainsLegendAndVennCaptionsWithinTheViewport(bool dark, int width, bool venn) {
         var source = "%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\n" +
             (venn ? "venn-beta\nset API [\"API\"] : 60\nset UI [\"UI\"] : 55\nunion API,UI [\"Shared\"] : 18\ntext API note [\"Data\"]"
                 : "pie\n\"API\": 2\n\"UI\": 1");
@@ -58,11 +60,10 @@ public sealed class MermaidUpperTypographyRegressionTests {
         string svg; byte[] png;
         if (venn) {
             var block = Assert.IsType<MermaidVennDocument>(parsed.Document).ToVennDiagramBlock();
-            block.WithSize(width, 460); block.Options.Theme.UseGraphiteLayout = graphite;
+            block.WithSize(width, 460).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
             svg = block.ToSvg(); png = block.ToPng();
         } else {
-            var chart = Assert.IsType<MermaidPieDocument>(parsed.Document).ToChart(new MermaidPieRenderOptions { Width = width, Height = 460 });
-            chart.Options.Theme.UseGraphiteLayout = graphite;
+            var chart = Assert.IsType<MermaidPieDocument>(parsed.Document).ToChart(new MermaidPieRenderOptions { Width = width, Height = 460 }).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
             svg = chart.ToSvg(); png = chart.ToPng();
         }
         var labels = XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
@@ -76,7 +77,7 @@ public sealed class MermaidUpperTypographyRegressionTests {
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(captures)) {
             Directory.CreateDirectory(captures);
-            var name = (venn ? "venn" : "pie-legend") + "-font-ceiling-" + graphite + "-" + width;
+            var name = (venn ? "venn" : "pie-legend") + "-font-ceiling-" + dark + "-" + width;
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + "-browser.png"), FullPage = true });
             File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), png);
         }

@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
@@ -9,6 +10,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects native radial and schedule captions at the accepted source font ceiling.</summary>
 public sealed class MermaidPolarScheduleTypographyTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("radar", 320, false, 0)]
     [InlineData("radar", 960, false, 0)]
@@ -18,15 +20,15 @@ public sealed class MermaidPolarScheduleTypographyTests {
     [InlineData("gantt", 960, false, 0)]
     [InlineData("gantt", 320, true, 45)]
     [InlineData("gantt", 960, true, 45)]
-    public async Task MaximumSourceFontRetainsMeasuredAxesRowsAndMarkCaptions(string family, int width, bool graphite, double angle) {
+    public async Task MaximumSourceFontRetainsMeasuredAxesRowsAndMarkCaptions(string family, int width, bool dark, double angle) {
         var body = family == "radar" ? "radar-beta\naxis API,UI,Store\ncurve signal{17,31,73}\nmax 100\nticks 4"
             : "gantt\ndateFormat YYYY-MM-DD\naxisFormat %m-%d\nsection Delivery\nBuild :a,2026-03-02,3d\nReview :b,2026-03-05,3d";
         var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\n" + body);
         Assert.False(rendered.HasErrors);
         var chart = Assert.IsType<Chart>(rendered.Artifact!.Model);
-        chart.WithSize(width, 460); chart.Options.Theme.UseGraphiteLayout = graphite;
+        chart.WithSize(width, 460).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         if (family == "gantt") chart.WithDataLabels();
-        var authoredTickSize = chart.Options.Theme.TickLabelFontSize;
+        var authoredTickSize = chart.Options.Theme.Typography.AxisSize;
         chart.Options.XAxis.LabelAngle = angle;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg(); var labels = Texts(svg);
@@ -40,8 +42,8 @@ public sealed class MermaidPolarScheduleTypographyTests {
             foreach (var expected in new[] { "Delivery / Build", "Delivery / Review" }) Assert.Contains(labels, element => element.Value == expected);
             Assert.Equal(2, labels.Count(element => Role(element) == "data-label"));
         }
-        Assert.Equal(authoredTickSize, chart.Options.Theme.TickLabelFontSize);
-        Assert.Equal(256, chart.Options.Theme.DataLabelFontSize);
+        Assert.Equal(authoredTickSize, chart.Options.Theme.Typography.AxisSize);
+        Assert.Equal(256, chart.Options.Theme.Typography.DataLabelSize);
         Assert.NotEmpty(prepared.ToPng());
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><body style='margin:0'>" + svg, width, 460);
@@ -49,7 +51,7 @@ public sealed class MermaidPolarScheduleTypographyTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(captures)) return;
-        Directory.CreateDirectory(captures); var name = family + "-font-ceiling-" + width + "-" + graphite;
+        Directory.CreateDirectory(captures); var name = family + "-font-ceiling-" + width + "-" + dark;
         File.WriteAllBytes(Path.Combine(captures, name + ".native.png"), prepared.ToPng());
         await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + ".browser.png") });
     }

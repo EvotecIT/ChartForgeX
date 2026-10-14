@@ -26,6 +26,11 @@ public static class ChartArtifactRendering {
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
         artifact.Metadata["render.model"] = nameof(Chart);
         artifact.Metadata["chart.series"] = chart.Series.Count.ToString(CultureInfo.InvariantCulture);
+        for (var index = 0; index < chart.Series.Count; index++) {
+            var prefix = "chart.series." + index.ToString(CultureInfo.InvariantCulture);
+            artifact.Metadata[prefix + ".id"] = chart.Series[index].Id.Value;
+            artifact.Metadata[prefix + ".scope"] = chart.Series[index].Id.IsAutomatic ? "local" : "shared";
+        }
         if (chart.Series.Count > 0) artifact.Metadata["chart.kind"] = chart.Series[0].Kind.ToString();
         artifact.Accessibility.Name = chart.Accessibility.Name;
         artifact.Accessibility.Description = chart.Accessibility.Description;

@@ -10,7 +10,7 @@ internal static partial class VisualBlockRendering {
     private static readonly LabelPlacementService VennTextPlacement = new();
 
     public static IReadOnlyList<VennCaption> VennCaptions(VennDiagramBlock block, IReadOnlyList<VennSetPlacement> placements, ChartRect body) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         var requests = new List<LabelPlacementRequest>();
         var colors = new List<ChartColor>();
         var radius = placements[0].Radius;

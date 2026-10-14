@@ -17,8 +17,8 @@ public static class MermaidC4Rendering {
         options ??= new MermaidTopologyRenderOptions();
         var chart = TopologyChart.Create()
             .WithId(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-c4" : options.Id!.Trim())
-            .WithTitle(string.IsNullOrWhiteSpace(options.Title) ? ResolveTitle(document) : options.Title!)
-            .WithSubtitle(string.IsNullOrWhiteSpace(options.Subtitle) ? document.Header : options.Subtitle!)
+            .WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid C4 diagram"))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(TopologyLayoutMode.DenseGrouped, ToLayoutDirection(document.Direction));
 
@@ -81,7 +81,7 @@ public static class MermaidC4Rendering {
     /// <summary>Renders a Mermaid C4 document to static PNG.</summary>
     public static byte[] ToPng(this MermaidC4Document document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();
 
-    private static string ResolveTitle(MermaidC4Document document) => string.IsNullOrWhiteSpace(document.Title) ? "Mermaid C4 diagram" : document.Title!;
+
 
     private static string? BoundarySubtitle(MermaidC4Boundary boundary) {
         if (!string.IsNullOrWhiteSpace(boundary.Type)) return boundary.Type!;

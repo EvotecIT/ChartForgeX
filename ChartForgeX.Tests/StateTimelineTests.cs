@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
@@ -48,7 +49,7 @@ public sealed class StateTimelineTests {
     public void ToSvg_ContiguousBucketsInSameState_DrawAsOneRun() {
         var buckets = Enumerable.Range(0, 4).Select(index => new ChartStateTimelineSegment(Day.AddHours(index), Day.AddHours(index + 1), "up")).ToList();
         buckets.Add(new ChartStateTimelineSegment(Day.AddHours(4), Day.AddHours(5), "up", "patched"));
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 240).WithStateCategories(new ChartStateCategory("up", "Up", Up)).AddStateTimelineLane("DC01", buckets);
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 240).WithStateCategories(new ChartStateCategory("up", "Up", Up)).AddStateTimelineLane("DC01", buckets);
         var segments = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment");
         Assert.Equal(2, segments.Length);
         Assert.Equal(new[] { "0", "4" }, segments.Select(segment => (string)segment.Attribute("data-cfx-point")!).ToArray());
@@ -79,9 +80,9 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void ToSvg_UnregisteredState_UsesMutedColourAndRawKey() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 240).AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(2), "pending") });
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 240).AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(2), "pending") });
         var segment = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment").Single();
-        Assert.Equal(chart.Options.Theme.MutedText.ToCss(), (string)segment.RenderedAttribute("fill")!);
+        Assert.Equal(chart.Options.Theme.Resolve(chart.Options.ThemeMode).Muted.ToCss(), (string)segment.RenderedAttribute("fill")!);
         Assert.Equal("DC01 · pending", (string)segment.Attribute("data-cfx-label")!);
     }
 
@@ -95,14 +96,14 @@ public sealed class StateTimelineTests {
     }
 
     [Fact]
-    public void Validation_RejectsInvalidSegmentsStatesAndEmptyCharts() {
+    public void ValidationRejectsInvalidSegmentsAndStatesAndRendersEmptyLanesAsNoData() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStateTimelineSegment(Day, Day, "up"));
         Assert.Throws<ArgumentException>(() => new ChartStateTimelineSegment(Day, Day.AddHours(1), " "));
-        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithStateCategories(new ChartStateCategory("up", "Up", Up), new ChartStateCategory("up", "Again", Down)));
-        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddStateTimelineLane("DC01", new[] { default(ChartStateTimelineSegment) }));
-        var empty = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).AddStateTimelineLane("DC01", Array.Empty<ChartStateTimelineSegment>());
-        Assert.Throws<InvalidOperationException>(() => empty.ToSvg());
-        Assert.Throws<InvalidOperationException>(() => empty.ToPng());
+        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithStateCategories(new ChartStateCategory("up", "Up", Up), new ChartStateCategory("up", "Again", Down)));
+        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Report()).AddStateTimelineLane("DC01", new[] { default(ChartStateTimelineSegment) }));
+        var empty = Chart.Create().WithTheme(VisualTheme.Report()).AddStateTimelineLane("DC01", Array.Empty<ChartStateTimelineSegment>());
+        Assert.Empty(ByRole(XDocument.Parse(empty.ToSvg()), "state-timeline-segment"));
+        Assert.True(empty.ToPng().Length > 64);
     }
 
     [Fact]
@@ -130,7 +131,7 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_ManyLanes_KeepsBandsInsideTheirSlots() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(480, 240);
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(480, 240);
         for (var lane = 0; lane < 80; lane++) chart.AddStateTimelineLane("L" + lane.ToString(CultureInfo.InvariantCulture), new[] { new ChartStateTimelineSegment(Day, Day.AddHours(1), "up") });
         var tracks = Lanes(chart);
         Assert.Equal(80, tracks.Length);
@@ -157,12 +158,13 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void ToInteractiveHtmlFragment_SegmentsExposeHoverTargets() {
-        var html = CreateChart().ToInteractiveHtmlFragment();
+        var chart = CreateChart();
+        var html = chart.ToInteractiveHtmlFragment();
         Assert.Contains("data-cfx-role=\"state-timeline-segment\"", html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-status=\"down\"", html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-meta-duration=\"3h\"", html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-meta-detail=\"LDAP bind failed\"", html, StringComparison.Ordinal);
-        Assert.Contains("data-cfx-series-key=\"DC01\"", html, StringComparison.Ordinal);
+        Assert.Contains("data-cfx-series-key=\"" + chart.Series[0].Id.Value + "\"", html, StringComparison.Ordinal);
         Assert.Contains("aria-label=\"DC01 · Down · 2026-09-25 06:00 UTC", html, StringComparison.Ordinal);
         Assert.Contains("<script", html, StringComparison.Ordinal);
     }
@@ -192,7 +194,7 @@ public sealed class StateTimelineTests {
     public void Render_SubSecondTicks_RemainDistinctAndExactLabelsWin()
     {
         var end = Day.AddMilliseconds(80);
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 300).WithXAxisTimeScale()
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 300).WithXAxisTimeScale()
             .WithStateCategories(new ChartStateCategory("up", "Up", Up))
             .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, end, "up") });
         var model = ChartStateTimelineModel.Build(chart);
@@ -222,7 +224,7 @@ public sealed class StateTimelineTests {
     public void Render_ConfiguredVerticalGridStyle_AppliesToBothOutputs()
     {
         var chart = CreateChart();
-        chart.ConfigureGridStyle(style => { style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
+        chart.ConfigureGridStyle(style => { style.ShowVerticalLines = true; style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
         var lines = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-grid");
         Assert.NotEmpty(lines);
         Assert.All(lines, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal("4 6", (string?)line.RenderedAttribute("stroke-dasharray")); });
@@ -266,7 +268,7 @@ public sealed class StateTimelineTests {
     [Fact]
     public void Render_SubSecondSegment_MetadataRetainsEndpointsAndDuration() {
         var end = Day.AddMilliseconds(80);
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 300).WithXAxisTimeScale()
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 300).WithXAxisTimeScale()
             .WithStateCategories(new ChartStateCategory("up", "Up", Up))
             .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, end, "up") });
         var segment = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment").Single();
@@ -289,7 +291,7 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_DefaultDateTimeLane_UsesDistinctCalendarLabelsWithoutMutatingAxis() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 300)
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 300)
             .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
         var labels = Texts(XDocument.Parse(chart.ToSvg()), "schedule-tick-label");
         Assert.True(labels.Length > 1);
@@ -312,7 +314,7 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_DefaultDateTimeLane_SvgEndpointAnchorsMatchActualTextEdges() {
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 300)
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 300)
             .AddStateTimelineLane("Default DateTime lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
         var svg = XDocument.Parse(chart.ToSvg());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -330,7 +332,7 @@ public sealed class StateTimelineTests {
     [InlineData(720, 400)]
     public void Render_ManyStateCategories_BudgetsLegendAndKeepsVisibleLane(int width, int height) {
         var states = Enumerable.Range(0, 40).Select(i => new ChartStateCategory("s" + i, "Long category " + i, Up)).ToArray();
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(width, height).WithStateCategories(states)
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(width, height).WithStateCategories(states)
             .AddStateTimelineLane("Lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "s0") });
         var svg = XDocument.Parse(chart.ToSvg());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -443,7 +445,7 @@ public sealed class StateTimelineTests {
 
     private static Chart CreateChart() {
         // Tall enough for three readable lanes below the legend and summary header, with space for the axis and its title.
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(720, 360).WithXAxisTimeScale(showTimeZone: true)
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 360).WithXAxisTimeScale(showTimeZone: true)
             .WithStateCategories(
                 new ChartStateCategory("up", "Up", Up),
                 new ChartStateCategory("down", "Down", Down),

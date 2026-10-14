@@ -19,7 +19,7 @@ internal static class VisualRadialProgressCompiler {
             ? series.RadialLayers.Select((layer, index) => new VisualLegendEntry(layer.Name, layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), Id(index), series.Kind,
                 stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey,
                 paint: VisualChartPaint.Series(series, layer.Color ?? VisualRadialPrimitives.Color(series, index, colors), index, layer.Color.HasValue))).ToArray()
-            : series.Points.Select((point, index) => new VisualLegendEntry(VisualRadialPrimitives.Label(chart, point, index), VisualRadialPrimitives.Color(series, index, colors), Id(index), series.Kind,
+            : series.RenderPoints.Select((point, index) => new VisualLegendEntry(VisualRadialPrimitives.Label(chart, point, index), VisualRadialPrimitives.Color(series, index, colors), Id(index), series.Kind,
                 stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey,
                 paint: VisualChartPaint.Series(series, VisualRadialPrimitives.Color(series, index, colors), index))).ToArray();
     }
@@ -37,21 +37,21 @@ internal static class VisualRadialProgressCompiler {
 
     private static void Rings(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, double cx, double cy, double maximum, VisualThemeColors colors) {
         var series = chart.Series[0];
-        if (series.Points.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("radial.no-data", "Progress rings need at least one value.")); return; }
-        if (series.Points.Any(point => double.IsNaN(point.Y) || double.IsInfinity(point.Y) || point.Y < 0 || point.Y > 100))
+        if (series.RenderPoints.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("radial.no-data", "Progress rings need at least one value.")); return; }
+        if (series.RenderPoints.Any(point => double.IsNaN(point.Y) || double.IsInfinity(point.Y) || point.Y < 0 || point.Y > 100))
             throw new InvalidOperationException("Progress-ring values must be finite and between zero and 100.");
         var outer = Math.Min(maximum, maximum * .85 * chart.Options.RadialProgressRadiusScale);
         if (outer < 1) { builder.AddDiagnostic(new VisualDiagnostic("radial.insufficient-space", "The viewport is too small for progress rings.")); return; }
-        var average = series.Points.Average(point => point.Y);
+        var average = series.RenderPoints.Average(point => point.Y);
         var value = ChartNumericFormatter.FormatValue(chart.Options, average);
         var style = VisualRadialPrimitives.Style(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, 700);
         var captionStyle = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize);
         var requested = series.ShowDataLabels != false && chart.Options.ShowProgressRingCenterLabel
             ? Math.Max(Math.Max(builder.MeasureText(value, style).Width, builder.MeasureText(series.Name, captionStyle).Width) / 2,
                 (builder.MeasureText(value, style).Height + builder.MeasureText(series.Name, captionStyle).Height) / 2) + context.Theme.Spacing : 0;
-        var layout = ProgressRingLayout.Create(outer, series.Points.Count, chart.Options.RadialProgressStrokeScale, requested);
-        for (var index = 0; index < series.Points.Count; index++) {
-            var point = series.Points[index]; var label = VisualRadialPrimitives.Label(chart, point, index);
+        var layout = ProgressRingLayout.Create(outer, series.RenderPoints.Count, chart.Options.RadialProgressStrokeScale, requested);
+        for (var index = 0; index < series.RenderPoints.Count; index++) {
+            var point = series.RenderPoints[index]; var label = VisualRadialPrimitives.Label(chart, point, index);
             var formatted = ChartNumericFormatter.FormatValue(chart.Options, point.Y);
             var radius = layout.RadiusAt(index); var color = VisualRadialPrimitives.Color(series, index, colors);
             var bounds = new ChartRect(cx - radius - layout.StrokeWidth / 2, cy - radius - layout.StrokeWidth / 2,
@@ -135,6 +135,7 @@ internal static class VisualRadialProgressCompiler {
 
     private static string Id(int index) => "series-0-point-" + index.ToString(CultureInfo.InvariantCulture);
     private static IReadOnlyDictionary<string, string> Metadata(Chart chart, int index, string label, double value, double min, double max) => new Dictionary<string, string> {
+        ["data-cfx-series"] = "0", ["data-cfx-source-point"] = index.ToString(CultureInfo.InvariantCulture), ["data-cfx-source-count"] = "1",
         ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && chart.Series[0].StateRole != ChartSeriesState.None ? "true" : "false",
         ["data-cfx-point"] = index.ToString(CultureInfo.InvariantCulture), ["data-cfx-label"] = label, ["data-cfx-value"] = value.ToString("R", CultureInfo.InvariantCulture),
         ["data-cfx-min"] = min.ToString("R", CultureInfo.InvariantCulture), ["data-cfx-max"] = max.ToString("R", CultureInfo.InvariantCulture)

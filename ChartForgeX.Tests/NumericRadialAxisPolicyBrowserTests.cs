@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Observed browser text and native raster use the same oriented and density-aware prepared scene.</summary>
 public sealed class NumericRadialAxisPolicyBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, true, true, false, false)]
     [InlineData(true, false, false, true, false)]
     [InlineData(false, true, false, true, false)]
@@ -23,7 +23,7 @@ public sealed class NumericRadialAxisPolicyBrowserTests {
         if (!Enabled) return;
         var width = compact ? 360 : 800; var height = compact ? 360 : 440;
         var chart = all ? NumericRadialLabelDensityTests.CrowdedChart(bars) : NumericRadialAxisPolicyTests.RelativeChart(bars, compact);
-        chart.WithSize(width, height).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        chart.WithSize(width, height).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         if (fullTurn) chart.WithRadialGeometry(new(30, 390, .2, .25, .1));
         if (all) chart.WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Left);
         else {

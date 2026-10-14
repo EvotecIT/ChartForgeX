@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class SankeyOptionsBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 360)]
     [InlineData(false, 800)]
@@ -20,10 +20,9 @@ public sealed class SankeyOptionsBrowserTests {
         if (!Enabled) return;
         string variant = width < 500 ? "compact-options" : "options";
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, variant).WithSize(width, width < 500 ? 360 : 440)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Requests across processing stages").WithSubtitle("Aligned and ordered weighted flows");
         chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
-        chart.Series[0].WithInteractionKey("request-flows");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 630 : 640);

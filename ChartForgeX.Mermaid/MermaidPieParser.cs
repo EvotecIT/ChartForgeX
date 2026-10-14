@@ -5,6 +5,18 @@ using System.Globalization;
 namespace ChartForgeX.Mermaid;
 
 internal static class MermaidPieParser {
+    /// <summary>Reads the header forms <c>pie</c>, <c>pie showData</c>, and either followed by <c>title text</c>.</summary>
+    public static void ParseHeader(MermaidPieDocument document, string header) {
+        var rest = header.Trim();
+        rest = rest.Length > 3 ? rest.Substring(3).TrimStart() : string.Empty;
+        if (StartsWithKeyword(rest, "showData")) {
+            document.ShowData = true;
+            rest = rest.Substring("showData".Length).TrimStart();
+        }
+
+        if (StartsWithKeyword(rest, "title")) document.Title = Unquote(rest.Substring(5).Trim());
+    }
+
     public static void ParseStatements(MermaidPieDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
             var raw = lines[index];

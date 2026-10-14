@@ -22,7 +22,7 @@ public sealed class BoxPlotLayoutTests {
         chart.Options.BoxPlot.Orientation = ChartOrientation.Vertical;
         chart.ConfigureLabels(labels => { labels.Category = "Changed"; labels.Minimum = "Changed"; labels.Q1 = "Changed";
             labels.Median = "Changed"; labels.Q3 = "Changed"; labels.Maximum = "Changed"; });
-        chart.Series.Clear();
+        chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         var expected = new[] { "Kategoria", "Minimum lokalne", "Dolny kwartyl", "Mediana", "Górny kwartyl", "Maksimum" };
         Assert.Equal(expected, new[] { copied.Category, copied.Minimum, copied.Q1, copied.Median, copied.Q3, copied.Maximum });
@@ -59,13 +59,12 @@ public sealed class BoxPlotLayoutTests {
             Assert.Equal(Math.Abs(Value(values[item][3]) - Value(values[item][1])), horizontal ? bodies[item].Bounds.Width : bodies[item].Bounds.Height, 8);
             Assert.Equal(Value(values[item][2]), horizontal ? medians[item].Start.X : medians[item].Start.Y, 8);
             Assert.Equal(horizontal ? medians[item].Start.X : medians[item].Start.Y, horizontal ? medians[item].End.X : medians[item].End.Y, 8);
-            Assert.Equal("5", groups[item].Metadata["data-cfx-source-count"]);
+            Assert.Equal("1", groups[item].Metadata["data-cfx-source-count"]);
+            Assert.Equal((item < 3 ? item : item - 3).ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-source-point"]);
             Assert.Equal(categories[item].ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-x"]);
             var keys = new[] { "minimum", "q1", "median", "q3", "maximum" };
             for (var member = 0; member < 5; member++) {
                 Assert.Equal(values[item][member].ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-" + keys[member]]);
-                Assert.Equal(values[item][member].ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-source-" + member + "-y"]);
-                Assert.Equal(((item < 3 ? item : item - 3) * 5 + member).ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-source-" + member + "-index"]);
             }
             Assert.False(groups[item].Metadata.ContainsKey("data-cfx-base"));
         }
@@ -89,15 +88,20 @@ public sealed class BoxPlotLayoutTests {
     public void RawQuartilesInterpolateAtNMinusOneAndRetainDerivedSampleIdentity() {
         var samples = new[] { 30d, 0, 20, 10 };
         var chart = Chart.Create().WithAxes(false).WithLegend(false).AddBoxPlot("Raw", 1, samples);
-        Assert.Equal(new[] { 0d, 7.5, 15, 22.5, 30 }, chart.Series[0].Points.Select(point => point.Y));
+        var summary = chart.Series[0].BoxPlots[0];
+        Assert.Equal(new[] { 0d, 7.5, 15, 22.5, 30 }, new[] { summary.Minimum, summary.Q1, summary.Median, summary.Q3, summary.Maximum });
         var prepared = chart.Prepare(new VisualRenderContext()); var svg = prepared.ToSvg();
         var group = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "point");
         Assert.Equal("five-number-summary", group.Metadata["data-cfx-derived"]);
-        Assert.All(Enumerable.Range(0, 5), member => Assert.Equal("-1", group.Metadata["data-cfx-source-" + member + "-index"]));
-        samples[0] = 999; chart.Series[0].Points[2] = new ChartPoint(1, 16);
-        Assert.Equal(new[] { 30d, 0, 20, 10 }, chart.Series[0].BoxPlotSourceSamples); Assert.Equal(svg, prepared.ToSvg());
+        Assert.Equal("4", group.Metadata["data-cfx-source-count"]);
+        Assert.False(group.Metadata.ContainsKey("data-cfx-source-point"));
+        samples[0] = 999;
+        Assert.Equal(new[] { 30d, 0, 20, 10 }, chart.Series[0].BoxPlotSourceSamples);
+        chart.Series[0].UpdateBoxPlot(0, new ChartBoxPlot(1, 0, 7.5, 16, 22.5, 30));
+        Assert.Empty(chart.Series[0].BoxPlotSourceSamples); Assert.Equal(svg, prepared.ToSvg());
         var singleton = Chart.Create().AddBoxPlot("One", 1, new[] { 4d });
-        Assert.All(singleton.Series[0].Points, point => Assert.Equal(4, point.Y));
+        var one = Assert.Single(singleton.Series[0].BoxPlots);
+        Assert.All(new[] { one.Minimum, one.Q1, one.Median, one.Q3, one.Maximum }, value => Assert.Equal(4, value));
         singleton.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
         Assert.NotEmpty(singleton.Prepare(new VisualRenderContext()).Regions);
     }
@@ -110,7 +114,7 @@ public sealed class BoxPlotLayoutTests {
         Assert.Equal(10, range.MinX); Assert.Equal(100, range.MaxX); Assert.Equal(.5, range.MinY); Assert.Equal(6.5, range.MaxY);
         chart.Options.XAxis.WithScale(ChartScaleKind.Logarithmic);
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
-        chart.Series[0].Points[0] = new ChartPoint(2, 0);
+        chart.Series[0].UpdateBoxPlot(0, new ChartBoxPlot(2, 0, 20, 30, 50, 100));
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(new VisualRenderContext()));
     }
 

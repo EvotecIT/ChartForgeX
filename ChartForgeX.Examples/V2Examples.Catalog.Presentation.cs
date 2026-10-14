@@ -58,7 +58,10 @@ public static partial class V2Examples {
                 page.Append("<li>").Append(Escape(message)).Append("</li>");
             page.Append("</ul></aside>");
         }
-        page.Append("<section class=\"source-section\" aria-labelledby=\"source-heading\"><div class=\"source-heading\"><h2 id=\"source-heading\">Create this example</h2><button type=\"button\" data-copy-source>Copy C#</button><span data-copy-status role=\"status\"></span></div><p>Register the included Carlito font files to reproduce the exported typography.</p>");
+        page.Append("<section class=\"source-section\" aria-labelledby=\"source-heading\"><div class=\"source-heading\"><h2 id=\"source-heading\">Create this example</h2><button type=\"button\" data-copy-source>Copy C#</button><span data-copy-status role=\"status\"></span></div><p>Create a console project, add the ChartForgeX package, and replace Program.cs with this source. Run it to write SVG, PNG and HTML with the default system fonts.</p>");
+        page.Append("<p>For the same typography as the gallery, ");
+        AppendPairedLink(page, artifacts, selected, "download the gallery-font recipe", ".gallery.csharp.txt", download: true);
+        page.Append(" and copy the gallery’s fonts directory beside your program.</p>");
         foreach (var artifact in paired)
             page.Append("<pre data-visual-theme=\"").Append(artifact.Theme).Append("\"><code data-example-source>")
                 .Append(Escape(File.ReadAllText(Path.Combine(output, artifact.Id + ".csharp.txt")))).Append("</code></pre>");

@@ -1,3 +1,4 @@
+using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
@@ -5,11 +6,12 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task SharedPendingObserverReleasesACanceledShadowTreeWhileAnotherChartIsQueued() {
         if (!Enabled) return;
         const int queuedDelay = 1000;
         var html = new[] { Observations(false), Observations(false) }.ToInteractiveHtmlDashboardPage(options => {
+            options.Interaction.Features = ChartInteractionFeatures.Tooltips;
             options.Tooltip.Range = HtmlChartTooltipRange.Exact; options.Tooltip.DelayMilliseconds = queuedDelay;
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
         });
@@ -26,11 +28,16 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
                 document.querySelector('.cfx-shell').remove();
                 [window.firstChartHost,window.secondChartHost].forEach(host => host.style.cssText='display:inline-block;width:46%;vertical-align:top;');
                 const NativeObserver=window.MutationObserver;
-                window.tooltipObserverTargets=new Set();
+                window.tooltipObserverTargets=new Map();
                 window.MutationObserver=class extends NativeObserver {
-                    observe(tree,options) { if(tree instanceof Document || tree instanceof ShadowRoot) window.tooltipObserverTargets.add(tree); super.observe(tree,options); }
-                    disconnect() { window.tooltipObserverTargets.clear(); super.disconnect(); }
+                    constructor(callback) { super(callback); window.tooltipObserverTargets.set(this,new Set()); }
+                    observe(target,options) { super.observe(target,options); window.tooltipObserverTargets.get(this).add(target); }
+                    disconnect() { super.disconnect(); window.tooltipObserverTargets.get(this).clear(); }
                 };
+                // Pending readouts observe their enclosing elements as well as trees; chart lifetime observes only trees.
+                window.pendingTooltipObserverTrees=()=>new Set(Array.from(window.tooltipObserverTargets.values())
+                    .filter(targets=>Array.from(targets).some(target=>target instanceof Element))
+                    .flatMap(targets=>Array.from(targets).filter(target=>target instanceof Document || target instanceof ShadowRoot)));
                 // Two touch contacts can queue separate charts. Native MutationObserver and timers remain in use.
                 window.queueBothCharts=() => [window.firstHostedChart,window.hostedChart].forEach((root,index) => {
                     const node=root.querySelector('[data-cfx-role=point][data-cfx-series="0"][data-cfx-point="0"]'), b=node.getBoundingClientRect();
@@ -41,14 +48,16 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             """);
         await RecordHostExpiryAsync(page);
         await page.EvaluateAsync("() => window.queueBothCharts()");
-        Assert.Equal(3, await page.EvaluateAsync<int>("() => window.tooltipObserverTargets.size"));
+        Assert.Equal(3, await page.EvaluateAsync<int>("() => window.pendingTooltipObserverTrees().size"));
         await page.EvaluateAsync("() => window.firstHostedChart.getRootNode().host.remove()");
-        var retained = await page.EvaluateAsync<string[]>("() => Array.from(window.tooltipObserverTargets,tree => tree.host?.id || 'document').sort()");
+        var retained = await page.EvaluateAsync<string[]>("() => Array.from(window.pendingTooltipObserverTrees(),tree => tree.host?.id || 'document').sort()");
         await page.EvaluateAsync("() => window.hostedChart.getRootNode().host.remove()");
-        Assert.Empty(await page.EvaluateAsync<string[]>("() => Array.from(window.tooltipObserverTargets,tree => tree.host?.id || 'document')"));
+        Assert.Empty(await page.EvaluateAsync<string[]>("() => Array.from(window.pendingTooltipObserverTrees(),tree => tree.host?.id || 'document')"));
         await page.EvaluateAsync("""
             () => {
                 document.body.append(window.firstChartHost,window.secondChartHost);
+                ChartForgeXCharts.mount(window.firstHostedChart);
+                ChartForgeXCharts.mount(window.hostedChart);
                 window.queueBothCharts();
                 window.interleavedTimer=window.hostTimerTrace.queued.at(-1);
                 // A host update before another contact's exit must keep the already queued detach record.
@@ -58,7 +67,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
                     .dispatchEvent(new PointerEvent('pointerleave',{pointerId:1,pointerType:'touch',clientX:-1,clientY:-1}));
             }
             """);
-        var afterInterleavedDetach = await page.EvaluateAsync<string[]>("() => Array.from(window.tooltipObserverTargets,tree => tree.host?.id || 'document').sort()");
+        var afterInterleavedDetach = await page.EvaluateAsync<string[]>("() => Array.from(window.pendingTooltipObserverTrees(),tree => tree.host?.id || 'document').sort()");
         var timer = await page.EvaluateAsync<int>("() => window.interleavedTimer");
         await Task.Delay(queuedDelay + 80);
         var expiry = await HostReceiptAsync(page);

@@ -58,7 +58,7 @@ public sealed class MinimumSpanBodyLayoutTests {
 
     private static PreparedVisual Prepare(bool boxPlot, bool horizontal, ChartBarStyle style, bool reversed) {
         var chart = Chart.Create().WithSize(480, 320).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithAxes(false).WithGrid(false).WithBarStyle(style).WithTheme(ChartTheme.GraphiteLight())
+            .WithAxes(false).WithGrid(false).WithBarStyle(style).WithTheme(VisualTheme.Graphite())
             .WithFontFamily("Carlito").WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         var orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
         if (boxPlot) chart.ConfigureBoxPlot(options => options.Orientation = orientation).AddBoxPlot("Summary", Intervals.Select((interval, point) => {
@@ -97,12 +97,10 @@ public sealed class MinimumSpanBodyLayoutTests {
         var values = boxPlot ? new[] { low, low, (low + high) / 2, high, high } : new[] { interval.Start, interval.End };
         var names = boxPlot ? new[] { "minimum", "q1", "median", "q3", "maximum" } : new[] { "start", "end" };
         Assert.Equal(point, Number(group, "data-cfx-point")); Assert.Equal(point + 1, Number(group, "data-cfx-x"));
-        Assert.Equal(values.Length, Number(group, "data-cfx-source-count"));
+        Assert.Equal(1, Number(group, "data-cfx-source-count"));
+        Assert.Equal(point, Number(group, "data-cfx-source-point"));
         for (var member = 0; member < values.Length; member++) {
             Assert.Equal(values[member], Number(group, "data-cfx-" + names[member]));
-            Assert.Equal(values[member], Number(group, "data-cfx-source-" + member + "-y"));
-            Assert.Equal(point + 1, Number(group, "data-cfx-source-" + member + "-x"));
-            Assert.Equal(point * values.Length + member, Number(group, "data-cfx-source-" + member + "-index"));
         }
     }
 

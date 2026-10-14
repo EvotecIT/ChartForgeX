@@ -26,7 +26,7 @@ public sealed class HeatmapColorScaleLegendTests {
     [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false, "diverging")]
     public void CanonicalLegendsFitAndMatchSvgAndNativeCellPaint(ChartSeriesKind kind, int width, bool dark, string mode) {
         var chart = HeatmapColorScaleTests.Create(kind, 0, 10, 20).WithSize(width, 400)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         chart.ConfigureLabels(labels => labels.Value = "wartość");
         var scale = mode == "discrete" ? ChartColorScale.Discrete(new[] {
             new ChartColorBand(10, Low, "Niski"), new ChartColorBand(20, Middle, "Średni"), new ChartColorBand(null, High, "Wysoki")

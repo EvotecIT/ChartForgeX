@@ -17,13 +17,14 @@ using System.IO;
 using ChartForgeX.Stories;
 using ChartForgeX.Raster;
 using ChartForgeX.Terminal;
+using ChartForgeX.Themes;
 
 var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
     .Type("Console.WriteLine(\"Ready\");", TimeSpan.FromSeconds(2))
     .Pause(TimeSpan.FromSeconds(2));
 
 var story = VisualStory.Create("Write and run")
-    .WithTheme(VisualStoryTheme.GraphiteDark())
+    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
     .WithFormat(VisualStoryFormat.Widescreen);
 story.Scene("write", "Write the source", 4)
     .Panel("source", new VisualStorySourceSurface(editor,

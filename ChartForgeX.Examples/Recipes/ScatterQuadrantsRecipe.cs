@@ -1,0 +1,21 @@
+/// <summary>Places proposed work into effort and impact regions.</summary>
+public static class ScatterQuadrantsRecipe {
+    /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
+    public static Chart Create(string variant = "quadrants", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("quadrants" or "compact-quadrants")) throw new ArgumentOutOfRangeException(nameof(variant));
+        return Quadrants().WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static Chart Quadrants() {
+        var proposed = ChartSeries.CreateScatter(new ChartSeriesId("proposed-work"), "Proposed work", new[] {
+            new ChartPoint(1.4, 8.1), new ChartPoint(3.1, 7.3), new ChartPoint(7.2, 8.8),
+            new ChartPoint(8.4, 6.8), new ChartPoint(2.5, 2.1), new ChartPoint(6.5, 3.2)
+        });
+        return Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithDataLabels(false)
+            .WithXAxis("Effort (days)").WithYAxis("Impact (score)").AddSeries(proposed)
+            .AddPlotRegion(new(ChartColor.FromHex("#328c68"), xMaximum: 4, yMinimum: 6, label: "Prioritize", opacity: .18))
+            .AddPlotRegion(new(ChartColor.FromHex("#5487b8"), xMinimum: 4, yMinimum: 6, label: "Plan", opacity: .15))
+            .AddPlotRegion(new(ChartColor.FromHex("#ac9148"), xMaximum: 4, yMaximum: 6, label: "Consider", opacity: .13))
+            .AddPlotRegion(new(ChartColor.FromHex("#ba6d67"), xMinimum: 4, yMaximum: 6, label: "Reassess", opacity: .13));
+    }
+}

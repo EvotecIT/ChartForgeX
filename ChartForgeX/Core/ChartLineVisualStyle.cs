@@ -6,12 +6,12 @@ namespace ChartForgeX.Core;
 /// Defines reusable visual tokens for line, area boundary, trend, and slope strokes.
 /// </summary>
 public sealed class ChartLineVisualStyle {
-    private double _ambientHaloOpacity = 0.014;
-    private double _ambientHaloStrokeExtra = 2.4;
-    private double _haloOpacity = 0.055;
-    private double _haloStrokeExtra = 1.2;
-    private double _highlightOpacity = 0.035;
-    private double _highlightStrokeRatio = 0.18;
+    private double _ambientHaloOpacity;
+    private double _ambientHaloStrokeExtra;
+    private double _haloOpacity;
+    private double _haloStrokeExtra;
+    private double _highlightOpacity;
+    private double _highlightStrokeRatio = 0.30;
 
     /// <summary>
     /// Gets or sets the opacity used for the widest soft color halo.
@@ -83,21 +83,21 @@ public sealed class ChartLineVisualStyle {
     }
 
     /// <summary>
-    /// Creates the premium default line style used by dashboard and report charts. The default keeps lines crisp with subtle polish rather than glow.
+    /// Creates a lightly decorated line style for dashboard and report charts.
     /// </summary>
-    public static ChartLineVisualStyle Premium() => new();
+    public static ChartLineVisualStyle Premium() => new() {
+        AmbientHaloOpacity = 0.014,
+        AmbientHaloStrokeExtra = 2.4,
+        HaloOpacity = 0.055,
+        HaloStrokeExtra = 1.2,
+        HighlightOpacity = 0.035,
+        HighlightStrokeRatio = 0.18
+    };
 
     /// <summary>
     /// Creates a plain single-stroke line style without halo or highlight layers.
     /// </summary>
-    public static ChartLineVisualStyle Plain() => new() {
-        AmbientHaloOpacity = 0,
-        AmbientHaloStrokeExtra = 0,
-        HaloOpacity = 0,
-        HaloStrokeExtra = 0,
-        HighlightOpacity = 0,
-        HighlightStrokeRatio = 0.30
-    };
+    public static ChartLineVisualStyle Plain() => new();
 
     /// <summary>
     /// Creates a stronger luminous line style for deliberate glow-heavy dashboard treatments.

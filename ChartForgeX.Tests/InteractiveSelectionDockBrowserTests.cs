@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveSelectionDockBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Readable, 700, 460)]
     [InlineData(true, HtmlChartResponsiveLayout.Readable, 700, 360)]
     [InlineData(false, HtmlChartResponsiveLayout.Readable, 340, 560)]
@@ -45,7 +45,7 @@ public sealed class InteractiveSelectionDockBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task CompareControlsStayInsideAnEmbeddedHostAndPreserveTheFollowingContent(bool dark) {
@@ -70,7 +70,7 @@ public sealed class InteractiveSelectionDockBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SynchronizedDashboardDocksPreserveBothChartViewports() {
         if (!Enabled) return;
         var html = new[] { StatusLines(false), StatusLines(true) }.ToInteractiveHtmlDashboardPage(options => {

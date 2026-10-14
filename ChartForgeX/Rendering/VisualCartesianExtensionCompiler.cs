@@ -91,21 +91,17 @@ internal static partial class VisualCartesianCompiler {
         var description = series.Name + ": " + label.DisplayedText;
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(observation),
-            ["data-cfx-x"] = Number(series.Points[rawStart].X), ["data-cfx-y"] = Number(series.Points[rawStart].Y),
+            ["data-cfx-x"] = Number(series.RenderPoints[rawStart].X), ["data-cfx-y"] = Number(series.RenderPoints[rawStart].Y),
             ["data-cfx-label"] = label.DisplayedText, ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
             ["data-cfx-fill-pattern"] = ObservationPattern(series, observation).ToString(),
-            ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-source-count"] = Number(rawCount)
+            ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-source-count"] = "1",
+            ["data-cfx-break-before"] = series.RenderPoints[rawStart].BreakBefore ? "true" : "false"
         };
-        for (var member = 0; member < rawCount; member++) {
-            var raw = rawStart + member;
-            var point = series.Points[raw];
-            var prefix = "data-cfx-source-" + Number(member);
-            metadata[prefix + "-index"] = Number(series.TrendLineSourcePoints.Count > 0 || series.BoxPlotSourceSamples.Count > 0 ? -1 : raw < series.SourcePointIndices.Count ? series.SourcePointIndices[raw] : raw);
-            metadata[prefix + "-x"] = Number(point.X); metadata[prefix + "-y"] = Number(point.Y);
-            metadata[prefix + "-break"] = point.BreakBefore ? "true" : "false";
-        }
-        if (series.TrendLineSourcePoints.Count > 0) metadata["data-cfx-derived"] = "regression-endpoint";
-        if (series.BoxPlotSourceSamples.Count > 0) metadata["data-cfx-derived"] = "five-number-summary";
+        var sourceCount = series.TrendLineSourcePoints.Count > 0 ? series.TrendLineSourcePoints.Count : series.BoxPlotSourceSamples.Count;
+        if (sourceCount > 0) {
+            metadata["data-cfx-derived"] = series.TrendLineSourcePoints.Count > 0 ? "regression-endpoint" : "five-number-summary";
+            metadata["data-cfx-source-count"] = Number(sourceCount);
+        } else metadata["data-cfx-source-point"] = Number(observation < series.SourcePointIndices.Count ? series.SourcePointIndices[observation] : observation);
         foreach (var value in values) {
             metadata["data-cfx-" + value.Name] = Number(value.Value);
             description += " " + value.Name + "=" + Number(value.Value);

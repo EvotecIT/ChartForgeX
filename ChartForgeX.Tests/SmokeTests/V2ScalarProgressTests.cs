@@ -90,14 +90,20 @@ public sealed class V2ScalarProgressTests {
     }
 
     [Fact]
-    public void InvalidMutableRangesFailAndCompleteCustomLabelsSurviveCompactArtifactHandoff() {
+    public void InvalidTypedRangesLeaveCustomLabelsAndCompactArtifactHandoffIntact() {
         const string full = "An operator-provided measurement label which will be shortened on this compact circle";
         var chart = Chart.Create().AddCircle("Small", 70); chart.Series[0].WithPointLabel(0, full);
         var scene = Compile(chart, new ChartRect(0, 0, 100, 90));
         Assert.Contains(scene.Regions, region => region.Label == full);
-        Assert.Contains(full, new PreparedVisual(scene).ToArtifact("circle", VisualArtifactKind.Chart).ToSvg());
-        chart.Series[0].Points[1] = new ChartPoint(0, 70);
-        Assert.Throws<InvalidOperationException>(() => Compile(chart));
+        var artifact = new PreparedVisual(scene).ToArtifact("circle", VisualArtifactKind.Chart);
+        var svg = artifact.ToSvg();
+        Assert.Contains(full, svg);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].UpdateGaugeValue(0, default));
+        Assert.Equal(70, chart.Series[0].GaugeValues[0].Value);
+        Assert.Equal(full, chart.Series[0].PointLabels[0]);
+        chart.Series[0].UpdateGaugeValue(0, new ChartGaugeValue(85));
+        Assert.Equal("85", Assert.Single(Compile(chart).Nodes.OfType<VisualSceneGroup>(), group => group.Role == "circle-chart").Metadata["data-cfx-value"]);
+        Assert.Equal(svg, artifact.ToSvg());
     }
 
     private static VisualScene Compile(Chart chart, ChartRect? bounds = null) {

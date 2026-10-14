@@ -1,0 +1,21 @@
+/// <summary>Creates a tile map whose temperature scale has authored numeric color stops.</summary>
+public static class TileMapPositionedColorScaleRecipe {
+    /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
+    public static Chart Create(string variant = "positioned-color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("positioned-color-scale" or "compact-positioned-color-scale"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var codes = new[] { "CA", "TX", "NY", "FL", "WA", "IL", "CO" };
+        var values = new[] { 0d, 2.5, 5, 10, 22.5, 40, 55 };
+        var scale = ChartColorScale.Diverging(new[] {
+            new ChartColorStop(-20, ChartColor.FromHex("#2166AC")), new ChartColorStop(-3, ChartColor.FromHex("#67A9CF"))
+        }, new ChartColorStop(0, ChartColor.FromHex("#D1D5DB")), new[] {
+            new ChartColorStop(5, ChartColor.FromHex("#D9A441")), new ChartColorStop(40, ChartColor.FromHex("#B2182B"))
+        }).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border);
+        return Chart.Create().AddTileMap("Temperature", ChartTileMapCatalog.Get("us-states"),
+                codes.Select((code, index) => new ChartRegionMapItem(code, values[index])), id: new ChartSeriesId("state-temperatures"))
+            .WithMapLabels().WithMapColorScale(scale)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+}

@@ -24,13 +24,13 @@ internal static partial class VisualCartesianCompiler {
         var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.BoxPlot).ToArray();
         var padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth
             : Math.Max(ChartVisualPrimitives.BoxPlotStrokeWidth, ChartVisualPrimitives.BoxPlotMedianStrokeWidth));
-        var layout = ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].Points.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
+        var layout = ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].RenderPoints.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
             horizontal ? plot.Height : plot.Width, context.Theme.Spacing, participants.Length, Array.IndexOf(participants, index), requireMinimumFootprint: true,
             maximumThickness: 46, footprintPadding: padding);
         for (var item = 0; item < series.AuthoredObservationCount; item++) {
-            var raw = item * 5; var x = series.Points[raw].X;
-            var minimum = series.Points[raw].Y; var q1 = series.Points[raw + 1].Y; var median = series.Points[raw + 2].Y;
-            var q3 = series.Points[raw + 3].Y; var maximum = series.Points[raw + 4].Y;
+            var raw = item * 5; var x = series.RenderPoints[raw].X;
+            var minimum = series.RenderPoints[raw].Y; var q1 = series.RenderPoints[raw + 1].Y; var median = series.RenderPoints[raw + 2].Y;
+            var q3 = series.RenderPoints[raw + 3].Y; var maximum = series.RenderPoints[raw + 4].Y;
             var category = (horizontal ? map.Y(x) : map.X(x)) + layout.Offset;
             ChartPoint Project(double value) => horizontal ? new ChartPoint(map.X(value), category) : new ChartPoint(category, map.Y(value));
             var first = Project(q1); var third = Project(q3); var min = Project(minimum); var max = Project(maximum);
@@ -83,9 +83,9 @@ internal static partial class VisualCartesianCompiler {
 
     private static IReadOnlyList<VisualLegendEntry> BoxPlotLegendEntries(Chart chart, ChartSeries series, VisualThemeColors colors, ChartAxisValueFormatter.Cache cache) {
         var entries = new List<VisualLegendEntry>();
-        var categories = ChartCartesianCategoryLabels.Resolve(chart, series.Points.Select(point => point.X), cache);
+        var categories = ChartCartesianCategoryLabels.Resolve(chart, series.RenderPoints.Select(point => point.X), cache);
         for (var item = 0; item < series.AuthoredObservationCount; item++) {
-            var category = categories[series.Points[item * 5].X]; var pattern = ObservationPattern(series, item);
+            var category = categories[series.RenderPoints[item * 5].X]; var pattern = ObservationPattern(series, item);
             var color = PointColor(series, 0, item, colors); var paint = VisualChartPaint.Series(series, color, item);
             entries.Add(new VisualLegendEntry(category, color, PointId(0, item), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
                 marker: VisualMarkerScene.Legend(chart, series, color, paint, item, pattern), paint: paint, metadata: BoxPlotMetadata(chart, category)));

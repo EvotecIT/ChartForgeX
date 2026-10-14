@@ -20,9 +20,10 @@ internal static class GalleryVisuals {
         // legend colour. Keys past six are hollow on the page; their bars reuse the first series colours.
         // Horizontal bars stack from the bottom, so rows are listed in reverse to read in filter order from the top.
         var rows = categories.Length;
-        Chart Composition(VisualDesignTokens tokens) {
+        Chart Composition(VisualThemeMode mode) {
+            var palette = VisualTheme.Graphite().Resolve(mode).Palette;
             var chart = Chart.Create()
-                .WithDesignTokens(tokens)
+                .WithThemeMode(mode)
                 .WithTransparentBackground()
                 .WithCard(false)
                 .WithHeader(false)
@@ -34,12 +35,12 @@ internal static class GalleryVisuals {
             for (var index = 0; index < rows; index++) {
                 var row = rows - index;
                 var points = new[] { new ChartPoint(row, counts[index]) };
-                chart.AddHorizontalBar(categories[index].Label, points, tokens.Palette[index % 6]);
+                chart.AddHorizontalBar(categories[index].Label, points, palette[index % 6]);
             }
 
             return chart;
         }
-        var entry = output.Pair("gallery/categories", (tokens, _) => Composition(tokens).ToSvg("cfx-gallery-categories"));
+        var entry = output.Pair("gallery/categories", (mode, _) => Composition(mode).ToSvg("cfx-gallery-categories"));
         entry["total"] = counts.Sum();
         return entry;
     }

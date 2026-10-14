@@ -14,4 +14,7 @@ public sealed class ChartWaterfallOptions {
             _orientation = value;
         }
     }
+
+    /// <summary>Copies the configured state for isolated chart configuration.</summary>
+    internal ChartWaterfallOptions Clone() => (ChartWaterfallOptions)MemberwiseClone();
 }

@@ -318,11 +318,7 @@
     });
   });
 
-  // Gallery viewer. Generated programs keep their gallery-only setup (licensed font fixtures) in a "Setup" region so
-  // the download reproduces the published files; the viewer shows and copies the program without it.
-  function withoutSetup(text) {
-    return text.replace(/^#region Setup\b[^\n]*\n[\s\S]*?^#endregion[^\n]*\n?/gm, '').replace(/\n{3,}/g, '\n\n');
-  }
+  // Gallery viewer. Each example's .csharp.txt is a standalone program for the published package.
 
   var viewer = document.querySelector('[data-cfx-viewer]');
   if (viewer && typeof viewer.showModal === 'function') {
@@ -354,7 +350,7 @@
       fetch(source).then(function (response) { return response.ok ? response.text() : Promise.reject(); })
         .then(function (text) {
           if (ticket !== request) return;
-          block.cfxSource = withoutSetup(text);
+          block.cfxSource = text;
           code.textContent = block.cfxSource;
           highlight(code);
         })

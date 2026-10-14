@@ -6,7 +6,7 @@ namespace ChartForgeX.Core;
 /// Defines reusable visual tokens for bar and horizontal-bar marks.
 /// </summary>
 public sealed class ChartBarVisualStyle {
-    private ChartBarStyle _kind;
+    private ChartBarStyle _kind = ChartBarStyle.Flat;
     private double _bodyOpacity = 0.18;
     private double _capOpacity = 1.0;
     private double _capThickness = 7.0;
@@ -83,6 +83,7 @@ public sealed class ChartBarVisualStyle {
             ChartGuards.Finite(value, nameof(value));
             if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Corner radius must be non-negative.");
             _cornerRadius = value;
+            HasExplicitCornerRadius = true;
         }
     }
 
@@ -158,21 +159,12 @@ public sealed class ChartBarVisualStyle {
         CapHighlightOpacity = 0.26
     };
 
+    internal bool HasExplicitCornerRadius { get; private set; }
+
     /// <summary>
     /// Creates a copy that can be safely reused and customized.
     /// </summary>
-    public ChartBarVisualStyle Clone() => new() {
-        Kind = Kind,
-        BodyOpacity = BodyOpacity,
-        CapOpacity = CapOpacity,
-        CapThickness = CapThickness,
-        CapInset = CapInset,
-        CornerRadius = CornerRadius,
-        CapShadowOpacity = CapShadowOpacity,
-        CapShadowOffset = CapShadowOffset,
-        CapShadowSpread = CapShadowSpread,
-        CapHighlightOpacity = CapHighlightOpacity
-    };
+    public ChartBarVisualStyle Clone() => (ChartBarVisualStyle)MemberwiseClone();
 
     /// <summary>
     /// Sets the bar visual treatment.

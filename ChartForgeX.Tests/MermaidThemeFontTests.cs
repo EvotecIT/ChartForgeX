@@ -56,7 +56,7 @@ public sealed class MermaidThemeFontTests {
         Assert.Equal(familyOverride ? 1 : 0, rendered.Diagnostics.Count);
         Assert.All(rendered.Diagnostics, item => Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, item.Code));
         Assert.Equal(expected, rendered.Document!.Configuration.FontFamily);
-        Assert.Equal(expected, Assert.IsType<TopologyChart>(rendered.Artifact!.Model).Theme!.FontFamily);
+        Assert.Equal(expected, Assert.IsType<TopologyChart>(rendered.Artifact!.Model).Theme.Typography.Family);
         Assert.Contains(rendered.Document.Configuration.Settings, item => item.Path == "themeVariables.fontFamily" && item.Span.Line == 5);
     }
 
@@ -112,10 +112,10 @@ public sealed class MermaidThemeFontTests {
         foreach (var setting in expected.RootElement.GetProperty("configuration").EnumerateObject())
             Assert.Equal(setting.Value.GetString(), settings.Settings.Last(item => item.Path == setting.Name).Value);
         Assert.Equal(expected.RootElement.GetProperty("configuration").GetProperty("themeVariables.fontFamily").GetString(), settings.FontFamily);
-        Assert.Equal("Georgia, serif", Assert.IsType<TopologyChart>(result.Artifact!.Model).Theme!.FontFamily);
+        Assert.Equal("Georgia, serif", Assert.IsType<TopologyChart>(result.Artifact!.Model).Theme.Typography.Family);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("dark", 320)]
     [InlineData("default", 960)]
     public async Task NativeVariableFontIsObservedInCompactAndWideBrowserHosts(string theme, int width) {
@@ -136,10 +136,10 @@ public sealed class MermaidThemeFontTests {
     }
 
     private static string FontFamily(object model) => model switch {
-        TopologyChart topology => topology.Theme!.FontFamily,
+        TopologyChart topology => topology.Theme.Typography.Family,
         SequenceArtifact sequence => sequence.Theme.Typography.Family,
-        Chart chart => chart.Options.Theme.FontFamily,
-        IVisualBlock block => block.Options.Theme.FontFamily,
+        Chart chart => chart.Options.Theme.Typography.Family,
+        IVisualBlock block => block.Options.Theme.Typography.Family,
         _ => throw new InvalidOperationException("Unexpected native family.")
     };
 }

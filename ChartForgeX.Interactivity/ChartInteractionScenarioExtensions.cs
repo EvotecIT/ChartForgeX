@@ -146,7 +146,7 @@ public static class ChartInteractionScenarioExtensions {
     /// Adds an ordered step that targets a rendered chart series.
     /// </summary>
     /// <param name="scenario">The interaction scenario.</param>
-    /// <param name="seriesId">The adapter-defined series id or zero-based series index.</param>
+    /// <param name="seriesId">The stable rendered series ID, independent of its display name and position. Numeric IDs are treated as IDs.</param>
     /// <param name="label">The optional step label.</param>
     /// <param name="description">The optional step description.</param>
     /// <param name="configure">Optional step configuration.</param>

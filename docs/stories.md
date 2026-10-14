@@ -11,13 +11,14 @@ using ChartForgeX.Stories;
 using ChartForgeX.Raster;
 using ChartForgeX.Terminal;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 
 var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
     .Type("Console.WriteLine(\"Ready\");", TimeSpan.FromSeconds(2))
     .Pause(TimeSpan.FromSeconds(2));
 
 var story = VisualStory.Create("Write and run")
-    .WithTheme(VisualStoryTheme.GraphiteDark())
+    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
     .WithFormat(VisualStoryFormat.Widescreen);
 story.Scene("write", "Write the source", 4)
     .Panel("source", new VisualStorySourceSurface(editor,
@@ -57,17 +58,20 @@ Choose a faster cadence for short chapters. Explicit budgets support up to 3,600
 
 ## Desktop appearance and colored typing
 
-Choose `VisualStoryTheme.MacOS()`, `Windows()` or `Linux()` for a desktop gradient, coordinated source and replay colors, and window controls. Pass `light: true` for light surfaces. The same native geometry supplies SVG, PNG and animated exports. Graphite themes retain minimal chrome.
+Stories use the same immutable `VisualTheme` as charts, diagrams and canvases. Select the light or dark palette with `VisualThemeMode`; the mode also sets the HTML page's color scheme. Common colors and proportional and monospace fonts belong to the theme. Window chrome, gradients and syntax colors belong to `VisualStoryStyleOptions`.
+
+For a desktop appearance, pair `VisualStoryThemes.MacOS()`, `Windows()` or `Linux()` with the corresponding style factory. Each theme contains light and dark palettes; pass `light: true` to the style factory when selecting the light palette. The same native geometry supplies SVG, PNG and animated exports.
 
 ```csharp
-var theme = VisualStoryTheme.MacOS(light: false);
-theme.Syntax.Variable = ChartColor.FromHex("#74C7FF");
-story.WithTheme(theme);
+var style = VisualStoryStyleOptions.MacOS();
+style.Syntax!.Variable = ChartColor.FromHex("#74C7FF");
+story.WithTheme(VisualStoryThemes.MacOS(), VisualThemeMode.Dark)
+    .WithStyle(style);
 ```
 
-`WindowStyle` selects the chrome independently of the palette; `Minimal` uses a restrained title and `None` hides the title bar. `WindowHeader`, `Background`, `BackgroundEnd` and `Syntax` are customizable. Replay surfaces without an explicit terminal palette inherit the story colors with every window style. A palette supplied to `VisualStoryReplaySurface` takes precedence; authored terminal tabs keep their own palettes.
+`story.Style.WindowStyle` selects the chrome independently of the palette; `Minimal` uses a restrained title and `None` hides the title bar. The style also controls `WindowHeader`, `BackgroundEnd` and `Syntax`. Change the common background through a new theme snapshot, for example `theme.Configure(builder => builder.Dark.Background = ChartColor.FromHex("#101827"))`, then assign that snapshot with `WithTheme`. When `Syntax` is omitted, source colors derive from the shared palette with a readable foreground fallback. Explicit syntax colors remain caller choices.
 
-`VisualStoryReplaySurface.Theme` is nullable: `null` means inherit the story palette. To customize a replay separately, create a `TerminalTheme`, configure its colors, and pass it as the constructor's `theme` argument. Preparation captures both palettes. Code that previously changed the implicit `surface.Theme` should pass an explicit palette instead.
+Replay surfaces without an explicit theme inherit the story colors with every window style. To customize one separately, pass a `VisualTheme` and `themeMode` to `VisualStoryReplaySurface`; an optional `TerminalStyleOptions` supplies local header and cursor colors. Its nullable `Theme` property uses `null` for inheritance. Authored terminal tabs keep their own themes and modes. Preparation retains immutable theme snapshots and copies mutable style options, including syntax colors.
 
 Pass resolved source to `StorySourceTimeline.Type(source, duration)` to reveal syntax colors together with typed characters. A host tokenizer supplies `StorySourceText` spans before authoring; playback clips those spans to whole Unicode text elements and never calls a parser or executes source. String-based `Type(text, duration)` remains plain text. For edited demonstrations, supply newly resolved spans to `Edit` or `Paste`; Stories does not reparse an unfinished buffer.
 
@@ -80,6 +84,21 @@ Source editing accepts exact text and resolved syntax spans. `Type`, `Paste`, `D
 The editor uses a fixed font size, optional filename and line numbers. It wraps within its viewport and follows the caret vertically. Static source starts at the first line, or at `HighlightedLine` when specified. Long files retain their complete accessible transcript while the visible viewport stays bounded. Oversized combining sequences display a bounded marker. Use a focused excerpt for a small social image rather than reducing text until it becomes unreadable.
 
 Embedded `TerminalStory` panels play commands, output and tab changes at the current scene time. Their completed poster retains the final terminal state. Each scene starts its surfaces at zero; use separate authored terminal sequences when each chapter shows a different command.
+
+Configure a terminal's theme and style before authoring its commands. `TerminalThemes` supplies paired palettes for familiar shells, and the shared `VisualTheme` factories work here too:
+
+```csharp
+var terminal = TerminalStory.Create()
+    .WithTheme(TerminalThemes.PowerShell(), VisualThemeMode.Dark)
+    .WithStyle(new TerminalStyleOptions {
+        Cursor = ChartColor.FromHex("#74C7FF")
+    })
+    .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+    .Command("Get-Date")
+    .Output("2026-10-13", TerminalTextTone.Success);
+```
+
+`WithInitialTab`, `DeclareTab` and `OpenTab` accept a theme, explicit `themeMode` and local style for each session. Changing a palette does not choose window chrome or infer a mode from its brightness. Stories, terminals and canvases default to dark mode; charts and visual grids default to light mode. Pass the mode explicitly when sharing one theme across them.
 
 Pass `VisualStoryTerminalOptions` to an authored terminal surface to select a fixed-font viewport. Recorded replay surfaces use this viewport by default. It wraps and scrolls logical lines against the panel width without scaling a whole terminal image or retaining line breaks from the original terminal window. `FontSize`, `HistoryLines` and `Wrap` are explicit. The history limit bounds logical display lines per tab in both authored and recorded surfaces; the complete transcript retains every line. Authored tab transitions preserve both sessions with their configured opacity. A panel that cannot fit a readable line fails with an instruction to enlarge or rebalance it.
 

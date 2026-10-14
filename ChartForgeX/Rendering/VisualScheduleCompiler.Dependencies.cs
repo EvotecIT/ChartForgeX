@@ -8,7 +8,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualScheduleCompiler {
     private static void Dependencies(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        IReadOnlyList<RangeItem> items, IReadOnlyList<ChartGanttDependency> links, Func<double, double> project, double slot, double height, double minimum, double maximum) {
+        IReadOnlyDictionary<int, RangeItem> items, IReadOnlyList<ChartGanttOrdinalDependency> links, Func<double, double> project, double slot, double height, double minimum, double maximum) {
         var color = context.Theme.Resolve(context.ThemeMode).MutedForeground;
         var paint = VisualChartPaint.Stroke(color, SvgColorRole.Text);
         using (builder.PushClip(plot)) foreach (var link in links) {
@@ -23,7 +23,8 @@ internal static partial class VisualScheduleCompiler {
             var id = "gantt-dependency-" + previous.Index + "-" + item.Index;
             using (VisualStateSceneTools.Mark(builder, id, "gantt-dependency", new ChartRect(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y),
                 Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y)), chart.Series[previous.Index].Name + " → " + chart.Series[item.Index].Name,
-                new Dictionary<string, string> { ["data-cfx-source"] = "series-" + previous.Index, ["data-cfx-target"] = "series-" + item.Index })) {
+                new Dictionary<string, string> { ["data-cfx-source"] = "series-" + previous.Index, ["data-cfx-target"] = "series-" + item.Index,
+                    ["data-cfx-predecessor-id"] = chart.Series[previous.Index].Id.Value, ["data-cfx-successor-id"] = chart.Series[item.Index].Id.Value })) {
                 builder.Path(new ChartPath(new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(elbow, start.Y),
                     ChartPathCommand.LineTo(elbow, end.Y), ChartPathCommand.LineTo(end.X, end.Y) }), stroke: color,
                     strokeWidth: context.Theme.AxisStrokeWidth, role: "gantt-dependency-line", paint: paint);

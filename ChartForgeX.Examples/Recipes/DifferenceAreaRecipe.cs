@@ -1,0 +1,42 @@
+/// <summary>Builds actual-versus-forecast areas with crossings, gaps and stepped boundaries.</summary>
+public static class DifferenceAreaRecipe {
+    /// <summary>Creates the selected difference-area example from paired authored observations.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "dated-gaps" or "compact-dated-gaps"
+            or "step-start" or "step-middle" or "step-end" or "compact-step-middle"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var dated = variant is "dated-gaps" or "compact-dated-gaps";
+        var stepped = variant is "step-start" or "step-middle" or "step-end" or "compact-step-middle";
+        var day = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+        var actual = new[] { 42d, 68, stepped ? 78 : 48, 60, 74, 46, 62 };
+        var forecast = new[] { 56d, 54, stepped ? 62 : 60, 60, 58, 64, 50 };
+        var pairs = new ChartDifferencePoint[actual.Length];
+        for (var item = 0; item < pairs.Length; item++) pairs[item] = dated
+            ? new ChartDifferencePoint(day.AddDays(item + (item >= 4 ? 2 : 0)), actual[item], forecast[item], item == 4)
+            : new ChartDifferencePoint(item + 1, actual[item], forecast[item], stepped && item == 5);
+        var chart = Chart.Create().WithXAxis(dated ? "Observation date (UTC)" : "Observation")
+            .WithYAxis(dated ? "Primary reference" : "Completed requests");
+        if (dated) {
+            chart.ConfigureXAxis(axis => axis.WithTimeScale());
+            var reference = ChartSeries.CreateLine(new ChartSeriesId("primary-reference"), "Primary reference",
+                new[] { new ChartPoint(day, 1), new ChartPoint(day.AddDays(8), 2) });
+            chart.AddSeries(reference);
+        }
+        var comparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", pairs);
+        comparison.ConfigureDifferenceArea(options => {
+            options.FirstName = "Actual"; options.SecondName = "Forecast";
+            options.PositiveFill = ChartColor.FromHex("#267EAB"); options.NegativeFill = ChartColor.FromHex("#D47A34");
+            options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
+        }).ConfigureMarkers(markers => markers.Radius = 3);
+        if (stepped) comparison.WithInterpolation(ChartInterpolation.Step, variant switch {
+            "step-start" => ChartStepPosition.Start,
+            "step-end" => ChartStepPosition.End,
+            _ => ChartStepPosition.Middle
+        });
+        if (dated) {
+            comparison.UseSecondaryYAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
+            chart.WithSecondaryYAxis("Completed requests");
+        }
+        return chart.AddSeries(comparison).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

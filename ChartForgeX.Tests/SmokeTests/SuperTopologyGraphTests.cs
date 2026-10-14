@@ -38,7 +38,8 @@ internal static partial class SmokeTests {
         Assert(scene.Edges[0].Shape == GraphEdgeShape.Curve && scene.Edges[0].Directed, "Topology graph edges should preserve curved directed relationship hints.");
         Assert(scene.Edges[1].Shape == GraphEdgeShape.Polyline && scene.Edges[1].RoutePoints.Count >= 4, "Topology graph bridge should preserve orthogonal route geometry as reusable graph route points.");
         Assert(Math.Abs(scene.Edges[1].RoutePoints[0].X - (topology.Nodes[0].X + topology.Nodes[0].Width)) < 0.01, "Topology graph bridge should align prepared route endpoints to the visible card boundary.");
-        Assert(scene.Nodes[0].Style.BackgroundColor == "#CCFBF1" && scene.Nodes[0].Style.BorderColor == "#0F766E" && scene.Nodes[1].Style.BorderColor == "#F97316" && scene.Edges[0].Style.Color == "#7C3AED" && scene.Edges[0].Style.Width.HasValue, "Topology graph bridge should map explicit, status-derived, and emphasis topology styles into reusable GraphScene styling, not only metadata.");
+        var warning = topology.Theme.Resolve(topology.ThemeMode).Status.Medium.Fill.ToCss();
+        Assert(scene.Nodes[0].Style.BackgroundColor == "#CCFBF1" && scene.Nodes[0].Style.BorderColor == "#0F766E" && scene.Nodes[1].Style.BorderColor == warning && scene.Edges[0].Style.Color == "#7C3AED" && scene.Edges[0].Style.Width.HasValue, "Topology graph bridge should map explicit, status-derived, and emphasis topology styles into reusable GraphScene styling, not only metadata.");
         Assert(scene.Edges[1].Metadata["topology.metric.transport"] == "tcp" && scene.Edges[1].Metadata["topology.secondaryLabel"] == "32 ms" && scene.Edges[1].Metadata["topology.routePointCount"] == scene.Edges[1].RoutePoints.Count.ToString(), "Topology graph edges should carry topology metrics, secondary labels, and route diagnostics.");
         Assert(scene.Nodes[0].HasExplicitPosition && scene.Nodes[0].Fixed, "Manual topology coordinates should seed fixed graph positions for deterministic opening layouts.");
 
@@ -92,7 +93,8 @@ internal static partial class SmokeTests {
         dashedTopology.Edges[2].IsMuted = true;
         var dashedScene = dashedTopology.ToGraphScene();
         Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.DashPattern == "8 5" && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Style.DashPattern == "2 5", "Topology graph bridge should preserve auto status dashes and explicit dotted edge patterns.");
-        Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.Color == "#F97316" && dashedScene.Edges.Single(edge => edge.Id == "queue-api").Style.Color == "#CBD5E1", "Topology graph bridge should preserve status-derived edge colors, including muted fallback colors.");
+        var dashedColors = dashedTopology.Theme.Resolve(dashedTopology.ThemeMode);
+        Assert(dashedScene.Edges.Single(edge => edge.Id == "api-db").Style.Color == dashedColors.Status.Medium.Fill.ToCss() && dashedScene.Edges.Single(edge => edge.Id == "queue-api").Style.Color == dashedColors.Border.ToCss(), "Topology graph bridge should preserve status-derived edge colors and use the shared theme border for muted edges.");
         Assert(!dashedScene.Edges.Single(edge => edge.Id == "queue-api").Dashed && dashedScene.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted / queue 7 / 3m ago", "Topology graph bridge should keep muted auto-dash edges solid while preserving secondary and tertiary edge facts by default.");
         var compactLabels = dashedTopology.ToGraphScene(options => options.IncludeEdgeDetailInLabels = false);
         Assert(compactLabels.Edges.Single(edge => edge.Id == "db-queue").Label == "dotted", "Topology graph consumers should be able to opt into compact primary-only edge labels when their surface keeps detail in an inspector.");

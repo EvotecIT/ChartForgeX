@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task SharedPositionWatcherReleasesUnusedClosedTreesWithoutLosingQueuedSiblingRemoval(bool interleavedRemoval) {
@@ -27,6 +27,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await MountPositionFocusChartAsync(page, true, "position-b");
         await page.EvaluateAsync("()=>window.positionRootB=window.positionFocusChart");
         var baseline = await ListenerStateAsync(page);
+        var treeBaseline = await PositionTreeReceiptAsync(page);
+        var lifecycleShadowTrees = treeBaseline.GetProperty("shadowTrees").GetInt32();
         foreach (var name in new[] { "positionRootA", "positionRootB" }) {
             var p = await page.EvaluateAsync<double[]>("({name,selector})=>{const b=window[name].querySelector(selector).getBoundingClientRect();return[b.x+b.width/2,b.y+b.height/2];}", new { name, selector = Reading });
             await page.Mouse.ClickAsync((float)p[0], (float)p[1]);
@@ -38,8 +40,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
                 hidden:root.querySelector('.cfx-tooltip').hidden,pinned:root.dataset.cfxTooltipPinned,features:root.dataset.cfxInteractionFeatures,
                 target:node.dataset.cfxTargetId,box:{x:b.x,y:b.y,width:b.width,height:b.height},hit:hit?.tagName,hitTarget:hit?.closest('[data-cfx-target-id]')?.dataset.cfxTargetId};})
             """, Reading);
-        await CaptureAsync(page, "position-shared-shadow-acquisition-" + interleavedRemoval, new { baseline, both, native }, session);
-        Assert.Equal(4, both.GetProperty("shadowTrees").GetInt32());
+        await CaptureAsync(page, "position-shared-shadow-acquisition-" + interleavedRemoval, new { baseline, treeBaseline, both, native }, session);
+        Assert.Equal(lifecycleShadowTrees + 4, both.GetProperty("shadowTrees").GetInt32());
         Assert.Equal(2, both.GetProperty("shown").GetInt32());
         await page.EvaluateAsync("""
             interleaved=>{
@@ -53,8 +55,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await page.EvaluateAsync("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
         var released = await PositionTreeReceiptAsync(page);
         var listeners = await ListenerStateAsync(page);
-        await CaptureAsync(page, "position-shared-shadow-watchers-" + interleavedRemoval, new { baseline, both, released, listeners }, session);
-        Assert.Equal(interleavedRemoval ? 0 : 2, released.GetProperty("shadowTrees").GetInt32());
+        await CaptureAsync(page, "position-shared-shadow-watchers-" + interleavedRemoval, new { baseline, treeBaseline, both, released, listeners }, session);
+        Assert.Equal(lifecycleShadowTrees + (interleavedRemoval ? 0 : 2), released.GetProperty("shadowTrees").GetInt32());
         Assert.Equal(interleavedRemoval ? 0 : 1, released.GetProperty("shown").GetInt32());
         Assert.Equal(baseline.GetProperty("observed").GetInt32() + (interleavedRemoval ? 0 : 1), listeners.GetProperty("observed").GetInt32());
         if (interleavedRemoval) {
@@ -69,7 +71,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         }
         await page.EvaluateAsync("()=>window.positionRootB.querySelector('[data-cfx-reset]').dispatchEvent(new MouseEvent('click',{bubbles:true}))");
         var closed = await PositionTreeReceiptAsync(page);
-        Assert.Equal(0, closed.GetProperty("shadowTrees").GetInt32());
+        Assert.Equal(lifecycleShadowTrees, closed.GetProperty("shadowTrees").GetInt32());
         Assert.Equal(0, closed.GetProperty("shown").GetInt32());
         AssertNoConsoleErrors(session);
     }

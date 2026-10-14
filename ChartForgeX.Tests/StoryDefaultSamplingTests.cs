@@ -6,7 +6,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class StoryDefaultSamplingTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(480)]
     [InlineData(900)]
     public async Task DefaultLongStoryChaptersRemainSeekableInThePlayer(int width) {

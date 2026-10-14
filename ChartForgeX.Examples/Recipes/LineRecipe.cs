@@ -1,0 +1,30 @@
+/// <summary>Builds request-volume lines and a comparison of step positions and markers.</summary>
+public static class LineRecipe {
+    /// <summary>Creates the selected line example with its authored observations and styling.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant is "options" or "compact-options") {
+            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Recorded level");
+            var positions = new[] { ChartStepPosition.Start, ChartStepPosition.Middle, ChartStepPosition.End };
+            var shapes = new[] { ChartMarkerShape.Square, ChartMarkerShape.Diamond, ChartMarkerShape.Triangle };
+            var ids = new[] { "step-start", "step-middle", "step-end" };
+            for (var index = 0; index < positions.Length; index++) {
+                var points = new[] { 8d, 17, 11, 23, 16 }.Select((value, point) => new ChartPoint(point + 1, value + index * 30));
+                var series = ChartSeries.CreateLine(new ChartSeriesId(ids[index]), positions[index].ToString(), points)
+                    .WithInterpolation(ChartInterpolation.Step, positions[index]);
+                var shape = shapes[index];
+                series.ConfigureMarkers(markers => { markers.Shape = shape; markers.Enabled = true; markers.Radius = 5; });
+                chart.AddSeries(series);
+            }
+        }
+        else {
+            var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
+                .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6));
+            chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+                .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", points));
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

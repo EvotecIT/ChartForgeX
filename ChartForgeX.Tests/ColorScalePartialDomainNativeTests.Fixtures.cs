@@ -16,14 +16,17 @@ public sealed partial class ColorScalePartialDomainNativeTests {
     private static Chart Create(string family, double?[] values, int width = 800, bool dark = false) {
         const string font = "CFX Partial Color Carlito";
         FontRegistry.Register(font, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
-        var chart = Chart.Create().WithSize(width, 480).WithDataLabels(false).WithPngSupersampling(1).WithFontFamily(font)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        var chart = Chart.Create().WithSize(width, 480).WithDataLabels(false).WithPngSupersampling(1)
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(font), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         chart.Options.TransparentBackground = false; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.ShowGrid = false;
         if (family is "scatter" or "bubble") {
             var initial = values.Length > 0 ? values : new double?[] { 0 };
             if (family == "bubble") chart.AddBubble("Observed", initial.Select((value, index) => new ChartBubble(index + 1, 10 + index * 5, 36).WithColorValue(value)));
             else chart.AddScatter("Observed", initial.Select((value, index) => new ChartPoint(index + 1, 10 + index * 5).WithColorValue(value)));
-            if (values.Length == 0) chart.Series[0].Points.Clear();
+            if (values.Length == 0) {
+                if (family == "bubble") chart.Series[0].ReplaceBubbles(Array.Empty<ChartBubble>());
+                else chart.Series[0].Points.Clear();
+            }
             chart.WithXAxisBounds(0, 5).WithYAxisBounds(0, 35);
         } else if (family is "heatmap" or "hexbin") {
             // A refresh may clear observations while the row retains its declared columns.
@@ -34,7 +37,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
             var initial = values.Length > 0 ? values : new double?[] { 0 };
             chart.AddCalendarHeatmap("Observed", initial.Select((value, index) => (value, index))
                 .Where(item => item.value.HasValue).Select(item => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5).AddDays(item.index), item.value!.Value)));
-            if (values.Length == 0) chart.Series[0].Points.Clear();
+            if (values.Length == 0) chart.Series[0].ReplaceCalendarItems(Array.Empty<ChartCalendarHeatmapItem>());
         }
         else if (family is "treemap" or "sunburst") {
             var leaves = values.Select((value, index) => new ChartHierarchyItem("leaf-" + index, "Observation " + index,
@@ -48,7 +51,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
             var initial = items.Length > 0 ? items : new[] { new ChartRegionMapItem(codes[0], 0) };
             if (family == "region-map") chart.AddRegionMap("Observed", ChartMapCatalog.Get("us-states"), initial);
             else chart.AddTileMap("Observed", ChartTileMapCatalog.Get("us-states"), initial);
-            if (items.Length == 0) chart.Series[0].Points.Clear();
+            if (items.Length == 0) chart.Series[0].ReplaceRegionValues(Array.Empty<ChartRegionMapItem>());
             chart.WithMapLabels(false);
         }
         return chart;

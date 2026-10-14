@@ -22,8 +22,8 @@ public sealed class MermaidGanttInputDateFormatTests {
             Assert.Equal(expectedStart, Stamp(task.Start));
             Assert.Equal(expectedEnd, Stamp(task.End));
             var chart = document.ToChart();
-            Assert.Equal(task.Start.ToOADate(), chart.Series[0].Points[0].X);
-            Assert.Equal(task.End.ToOADate(), chart.Series[0].Points[0].Y);
+            Assert.Equal(task.Start.ToOADate(), chart.Series[0].GanttItems[0].Start);
+            Assert.Equal(task.End.ToOADate(), chart.Series[0].GanttItems[0].End);
             Assert.Equal(document.ToSvg(), Assert.Single(new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```").Artifacts).ToSvg());
             Assert.NotEmpty(document.ToPng());
         } finally { CultureInfo.CurrentCulture = previous; }

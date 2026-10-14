@@ -11,8 +11,8 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
     private static Chart Observations(bool dark) => Chart.Create().WithSize(800, 540).WithLegend(true).WithTitle("Pointer readout pacing")
-        .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-        .AddScatter("Reading", new[] { new ChartPoint(3, 5), new ChartPoint(7, 6) })
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("readings"), "Reading", new[] { new ChartPoint(3, 5), new ChartPoint(7, 6) }))
         .AddScatter("Companion", new[] { new ChartPoint(3, 2), new ChartPoint(7, 4) });
 
     private static void ConfigureDelay(HtmlChartInteractionOptions options, string range) {

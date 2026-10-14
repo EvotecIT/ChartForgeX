@@ -86,6 +86,7 @@ internal sealed partial class VisualSceneBuilder {
     internal TextMetrics MeasureText(string text, TextStyle style) => new VisualSceneTextFace(style).Prepare(text, style.EffectiveFontSize).Metrics;
     internal double TextAscent(double size, int weight = 400) => Face(weight).Ascent(size);
     internal double TextAscent(TextStyle style) => new VisualSceneTextFace(style).Ascent(style.EffectiveFontSize);
+    internal double TextAscentEnvelope(TextStyle style) => new VisualSceneTextFace(style).AscentEnvelope(style.EffectiveFontSize);
 
     internal void AddDiagnostic(VisualDiagnostic diagnostic) => _diagnostics.Add(diagnostic ?? throw new ArgumentNullException(nameof(diagnostic)));
     internal void AddRegion(VisualSemanticRegion region) => _regions.Add(region ?? throw new ArgumentNullException(nameof(region)));

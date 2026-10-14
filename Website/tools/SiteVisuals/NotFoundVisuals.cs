@@ -8,8 +8,8 @@ namespace SiteVisuals;
 
 internal static class NotFoundVisuals {
     public static Dictionary<string, object> Write(VisualOutput output) {
-        Chart Empty(VisualDesignTokens tokens) => Chart.Create()
-            .WithDesignTokens(tokens)
+        Chart Empty(VisualThemeMode mode) => Chart.Create()
+            .WithThemeMode(mode)
             .WithTransparentBackground()
             .WithCard(false)
             .WithHeader(false)
@@ -21,6 +21,6 @@ internal static class NotFoundVisuals {
             .WithHighlightedXAxisLabel(4)
             .AddBar("Pages found", new[] { new ChartPoint(1, 0), new ChartPoint(2, 0), new ChartPoint(3, 0), new ChartPoint(4, 0) });
 
-        return output.Pair("pages/not-found", (tokens, _) => Empty(tokens).ToSvg("cfx-not-found"));
+        return output.Pair("pages/not-found", (mode, _) => Empty(mode).ToSvg("cfx-not-found"));
     }
 }

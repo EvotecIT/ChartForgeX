@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Linq;
 using ChartForgeX;
@@ -113,10 +114,10 @@ internal static partial class SmokeTests {
     }
 
     private static void BulletLabelsCanBeSuppressed() {
-        var full = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var full = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(560, 260)
             .AddBullet("Long control label", 82, 90);
-        var compact = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var compact = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(560, 260)
             .AddBullet("Long control label", 82, 90);
         compact.Series[0].WithDataLabels(false);
@@ -176,19 +177,19 @@ internal static partial class SmokeTests {
 
     private static void IntrinsicSpecializedDataLabelStylesRenderAcrossFormats() {
         var cases = new (Func<Chart> Create, string Role, string Name)[] {
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 320).WithDataLabels().AddSankey("Flow", new[] { new ChartNode("Found", "Found"), new ChartNode("Fixed", "Fixed") }, new[] { new ChartFlowLink("flow-2", "Found", "Fixed", 10) }), "sankey-node-label", "Sankey"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddGauge("Score", 87), "gauge-label", "gauge"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 280).WithDataLabels().AddCircle("Progress", 72), "circle-label", "circle"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithLegend(false).WithDataLabels().AddProgressRing("Coverage", Points(90, 75, 66)), "progress-ring-value", "progress ring"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 320).WithDataLabels().AddFunnel("Pipeline", Points(100, 74, 51)), "funnel-label", "funnel"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(420, 300).WithDataLabels().AddDonut("Checks", Points(70, 30)), "donut-total-label", "donut center"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 340).WithDataLabels().AddTreemap("Findings", new[] { new ChartHierarchyItem("Spoofing", "Spoofing", value: 42), new ChartHierarchyItem("Policy", "Policy", value: 28) }), "treemap-label", "treemap"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 320).WithDataLabels().AddTree("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("Mail", "Mail"), new ChartNode("Web", "Web") }, new[] { new ChartTreeLink("Root", "Mail"), new ChartTreeLink("Root", "Web") }), "tree-node-label", "tree"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(520, 360).WithDataLabels().AddSunburst("Hierarchy", new[] { new ChartHierarchyItem("Root", "Root"), new ChartHierarchyItem("Mail", "Mail", "Root", 3), new ChartHierarchyItem("Web", "Web", "Root", 2) }), "sunburst-label", "sunburst"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)), "layered-radial-value", "layered radial"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(560, 260).WithDataLabels().AddBullet("Control", 82, 90), "bullet-row-label", "bullet"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 360).WithDataLabels().AddTimelineRange("Migration", 1, 5), "data-label", "timeline"),
-            (() => Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithSize(640, 360).WithDataLabels().AddGanttTask("Migration", 1, 5, 0.5), "data-label", "Gantt")
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(560, 320).WithDataLabels().AddSankey("Flow", new[] { new ChartNode("Found", "Found"), new ChartNode("Fixed", "Fixed") }, new[] { new ChartFlowLink("flow-2", "Found", "Fixed", 10) }), "sankey-node-label", "Sankey"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithDataLabels().AddGauge("Score", 87), "gauge-label", "gauge"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithDataLabels().AddCircle("Progress", 72), "circle-label", "circle"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(460, 320).WithLegend(false).WithDataLabels().AddProgressRing("Coverage", Points(90, 75, 66)), "progress-ring-value", "progress ring"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(460, 320).WithDataLabels().AddFunnel("Pipeline", Points(100, 74, 51)), "funnel-label", "funnel"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 300).WithDataLabels().AddDonut("Checks", Points(70, 30)), "donut-total-label", "donut center"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(520, 340).WithDataLabels().AddTreemap("Findings", new[] { new ChartHierarchyItem("Spoofing", "Spoofing", value: 42), new ChartHierarchyItem("Policy", "Policy", value: 28) }), "treemap-label", "treemap"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(560, 320).WithDataLabels().AddTree("Hierarchy", new[] { new ChartNode("Root", "Root"), new ChartNode("Mail", "Mail"), new ChartNode("Web", "Web") }, new[] { new ChartTreeLink("Root", "Mail"), new ChartTreeLink("Root", "Web") }), "tree-node-label", "tree"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(520, 360).WithDataLabels().AddSunburst("Hierarchy", new[] { new ChartHierarchyItem("Root", "Root"), new ChartHierarchyItem("Mail", "Mail", "Root", 3), new ChartHierarchyItem("Web", "Web", "Root", 2) }), "sunburst-label", "sunburst"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(460, 460).WithDataLabels().AddLayeredRadial("Capacity", layers => layers.Add("Limit", 100).Add("Used", 72, maximum: 100)), "layered-radial-value", "layered radial"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(560, 260).WithDataLabels().AddBullet("Control", 82, 90), "bullet-row-label", "bullet"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 360).WithDataLabels().AddTimelineRange("Migration", 1, 5), "data-label", "timeline"),
+            (() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 360).WithDataLabels().AddGanttTask("Migration", 1, 5, 0.5), "data-label", "Gantt")
         };
 
         foreach (var item in cases) {

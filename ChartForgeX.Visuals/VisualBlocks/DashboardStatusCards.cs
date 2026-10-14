@@ -123,12 +123,11 @@ public sealed class SegmentedMetricBlock : FactualVisualBlock<SegmentedMetricBlo
         return this;
     }
 
-    /// <summary>Adds a segmented metric item and configures it with a callback.</summary>
+    /// <summary>Adds an independent segmented metric item after successful configuration.</summary>
+    /// <remarks>Callback exceptions leave the item collection unchanged. Retained callback values remain independent of the installed item.</remarks>
     public SegmentedMetricBlock AddItem(string label, double value, Action<SegmentedMetricItem> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        var item = new SegmentedMetricItem(label, value);
-        configure(item);
-        return AddItem(item);
+        return AddItem(ChartOptionConfiguration.Configure(new SegmentedMetricItem(label, value), configure, item => item.Clone()));
     }
 
     /// <summary>Sets optional compact header symbol rendered in a badge.</summary>
@@ -245,4 +244,6 @@ public sealed class SegmentedMetricItem {
         DisplayValue = SegmentedMetricBlock.FormatDisplayValue(displayValue, format);
         return this;
     }
+
+    internal SegmentedMetricItem Clone() => (SegmentedMetricItem)MemberwiseClone();
 }

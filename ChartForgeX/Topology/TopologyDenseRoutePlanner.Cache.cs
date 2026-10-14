@@ -202,12 +202,13 @@ internal static partial class TopologyDenseRoutePlanner {
     }
 
     /// <summary>
-    /// The inputs of <see cref="TrunkKey"/> that come from the edge and the render options; the end side it also uses
-    /// is planned from the rest of the key. Keep the two in step.
+    /// The canonical inputs of <see cref="TrunkKey"/> from the edge and render options. The key adds the planned end side.
+    /// Only an active palette binding owns paint identity; authored colors and muted edges keep their existing policies.
     /// </summary>
     private static string TrunkInputs(TopologyEdge edge, TopologyRenderOptions options, TopologyHighlightState highlight) =>
         string.Join("|", edge.TargetNodeId.Length + ":" + edge.TargetNodeId, (int)edge.Kind, (int)edge.Status,
             (int)edge.Direction, (int)edge.Emphasis, edge.IsMuted, edge.Color?.Length + ":" + edge.Color,
+            !edge.IsMuted && string.IsNullOrWhiteSpace(edge.Color) ? edge.PaletteIndex : null,
             edge.StrokeWidth?.ToString("R", CultureInfo.InvariantCulture), edge.Opacity?.ToString("R", CultureInfo.InvariantCulture),
             (int?)edge.TargetMarker, edge.TargetPortId?.Length + ":" + edge.TargetPortId,
             options.SelectedEdgeIds.Contains(edge.Id), highlight.IsEdgeHighlighted(edge));

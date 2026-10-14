@@ -37,7 +37,7 @@ public sealed class CartesianReversalLabelTests {
     public void ContainedFallbackUsesMarkContrastAndPreservesAuthoredInk(bool horizontal, bool reversed) {
         var fill = ChartColor.FromHex("#172554");
         var chart = Chart.Create().WithSize(180, 180).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels().WithBarStyle(ChartBarStyle.Flat).WithTheme(ChartTheme.GraphiteLight());
+            .WithDataLabels().WithBarStyle(ChartBarStyle.Flat).WithTheme(VisualTheme.Graphite());
         if (horizontal) chart.AddHorizontalBar("Value", new[] { new ChartPoint(1, 100) }, fill);
         else chart.AddBar("Value", new[] { new ChartPoint(1, 100) }, fill);
         (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 100).WithReversal(reversed);

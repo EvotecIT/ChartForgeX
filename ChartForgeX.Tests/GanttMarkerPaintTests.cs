@@ -16,8 +16,9 @@ public sealed class GanttMarkerPaintTests {
     [InlineData(ChartSeriesState.Success)]
     [InlineData(ChartSeriesState.Quiet)]
     public void ExplicitStateUsesCanonicalStatusInk(ChartSeriesState state) {
-        var chart = Chart.Create().WithLegend(false).AddGanttTask("Work", 1, 9).AddGanttMarker("Deadline", 4)
-            .WithSeriesState("Deadline", state);
+        var marker = ChartSeries.CreateGanttMarker(new ChartSeriesId("deadline"), "Deadline", 4);
+        marker.StateRole = state;
+        var chart = Chart.Create().WithLegend(false).AddGanttTask("Work", 1, 9).AddSeries(marker);
         var context = new VisualRenderContext();
         var prepared = chart.Prepare(context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "annotation-line");
@@ -32,6 +33,7 @@ public sealed class GanttMarkerPaintTests {
         Assert.Equal(expected, line.Stroke);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("point", "--series", "rgb(0, 128, 0)")]
     [InlineData("series", "--series", "rgb(0, 128, 0)")]

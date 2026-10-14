@@ -37,23 +37,12 @@ public sealed partial class Chart {
     }
 
     private Chart AddDecimated(string name, ChartSeriesKind kind, IEnumerable<ChartPoint> points, int maximumPoints, ChartDecimationMode mode, ChartColor? color) {
-        var result = ChartDecimator.Decimate(points, maximumPoints, mode);
-        Add(name, kind, result.Points, color);
-        Series[Series.Count - 1].SetDecimation(result);
+        AppendSeries(ChartSeries.CreateDecimated(name, kind, points, maximumPoints, mode, color));
         return this;
     }
 
     private Chart AddAdaptive(string name, ChartSeriesKind kind, IEnumerable<ChartPoint> points, double viewportWidth, ChartResolutionPolicy? policy, ChartColor? color) {
-        if (points == null) throw new ArgumentNullException(nameof(points));
-        var source = points as IReadOnlyList<ChartPoint> ?? points.ToArray();
-        var effectivePolicy = policy ?? ChartResolutionPolicy.Trend();
-        var maximumPoints = effectivePolicy.ResolvePointBudget(viewportWidth);
-        if (source.Count > maximumPoints) AddDecimated(name, kind, source, maximumPoints, effectivePolicy.DecimationMode, color);
-        else Add(name, kind, source, color);
-        if (kind != ChartSeriesKind.Scatter && Series[Series.Count - 1].Points.Count > effectivePolicy.MaximumMarkerCount) {
-            Series[Series.Count - 1].WithMarkerRadius(0d);
-            Series[Series.Count - 1].PreserveHiddenMarkerInteractionTargets();
-        }
+        AppendSeries(ChartSeries.CreateAdaptive(name, kind, points, viewportWidth, policy, color));
         return this;
     }
 }

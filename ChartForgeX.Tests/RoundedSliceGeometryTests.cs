@@ -33,7 +33,7 @@ public sealed class RoundedSliceGeometryTests {
         chart.WithRadialGeometry(new(cornerRadius: 6));
         Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
         chart.WithRadialGeometry(new());
-        if (kind == ChartSeriesKind.Sunburst) chart.Series.Clear();
+        if (kind == ChartSeriesKind.Sunburst) chart.ClearSeries();
         chart.ConfigureSunburst(options => options.CornerRadius = 6);
         if (chart.Series.Count == 0) _ = chart.ToSvg();
         else Assert.Throws<InvalidOperationException>(() => chart.ToSvg());

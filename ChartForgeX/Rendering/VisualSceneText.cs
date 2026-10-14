@@ -25,6 +25,9 @@ internal sealed class VisualSceneTextFace {
 
     internal double Ascent(double size) => _face.Font?.Ascent(size) ?? TinyFont.Height * FallbackScale(size);
 
+    /// <summary>Reserves the face's alternate platform ascenders without changing its prepared baseline.</summary>
+    internal double AscentEnvelope(double size) => _face.Font?.AscentEnvelope(size) ?? Math.Max(size, Ascent(size));
+
     internal VisualScenePreparedText Prepare(string text, double size) {
         if (text == null) throw new ArgumentNullException(nameof(text));
         ChartGuards.Finite(size, nameof(size));

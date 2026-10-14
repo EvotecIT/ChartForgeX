@@ -1,0 +1,26 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+{{FONT_SETUP}}var mode = VisualThemeMode.{{MODE}};
+var theme = VisualTheme.Graphite();
+var model = {{FACTORY}}.Create({{VARIANT}}, mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize({{WIDTH}}, {{HEIGHT}})), theme, mode,
+    new VisualFrame({{TITLE}}, {{SUBTITLE}}, showLegend: {{LEGEND}}, showSurface: {{SURFACE}}){{FONT}});
+var prepared = model.Prepare(context{{VIEWPORT}});
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.{{ARTIFACT_KIND}}).ToHtmlPage());
+
+{{SOURCE}}

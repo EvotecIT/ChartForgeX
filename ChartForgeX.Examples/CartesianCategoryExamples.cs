@@ -9,13 +9,13 @@ internal static class CartesianCategoryExamples {
         var observations = new[] { new ChartPoint(1.5, 2), new ChartPoint(3.5, 3) };
         var mixed = Chart.Create().WithTitle("Bars and interval observations")
             .WithSubtitle("Each mark family retains its category margin")
-            .WithXAxis("Category").WithYAxis("Value").WithTheme(ChartTheme.ReportLight())
+            .WithXAxis("Category").WithYAxis("Value").WithTheme(VisualTheme.Report())
             .WithBarStyle(ChartBarStyle.Flat).WithDataLabels(false)
             .AddBar("Observed", observations)
             .AddRangeBar("Reference range", new[] { new ChartInterval(peer, 1, 4) });
         var stacked = Chart.Create().WithTitle("Horizontal category stacks")
             .WithSubtitle("Equivalent numeric categories share one slot")
-            .WithXAxis("Value").WithYAxis("Category").WithTheme(ChartTheme.ReportLight())
+            .WithXAxis("Value").WithYAxis("Category").WithTheme(VisualTheme.Report())
             .WithBarStyle(ChartBarStyle.Flat).WithDataLabels(false).WithStackedBars()
             .AddHorizontalBar("First", observations)
             .AddHorizontalBar("Second", new[] { new ChartPoint(peer, 4), new ChartPoint(3.5, 5) });

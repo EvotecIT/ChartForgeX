@@ -36,11 +36,10 @@ internal static partial class VisualNumericRadialCompiler {
                 .Select(metrics => Math.Sqrt(metrics.Width * metrics.Width + metrics.Height * metrics.Height)).DefaultIfEmpty(0).Max() + context.Theme.Spacing
             : 0;
         radius = Math.Max(0, radius - lane);
-        var radarExtent = chart.Series.Where(series => series.Kind == ChartSeriesKind.Radar && series.Points.Count > 0)
-            .Select(series => Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
-                ChartLineVisualLayers.Build(context.Theme.Resolve(context.ThemeMode).Accent,
-                    series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth,
-                    chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth) / 2)).DefaultIfEmpty(0).Max();
+        var radarExtent = chart.Series.Select((series, index) => series.Kind == ChartSeriesKind.Radar && series.RenderPoints.Count > 0
+            ? Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
+                VisualPolarSeriesScene.StrokeExtent(chart, context, series, ChartSeriesColours.Resolve(series, index, context.Theme.Resolve(context.ThemeMode))) / 2)
+            : 0).DefaultIfEmpty(0).Max();
         radius = Math.Max(0, radius - radarExtent);
         return new RadialSeriesGeometry(plot.Left + plot.Width / 2, plot.Top + plot.Height / 2, radius,
             radius * options.InnerRadiusRatio, start, sweep, lane);

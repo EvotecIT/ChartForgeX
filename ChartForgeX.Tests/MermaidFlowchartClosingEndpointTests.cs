@@ -8,6 +8,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidFlowchartClosingEndpointTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("--", "o--o", TopologyMarkerKind.Circle)]
     [InlineData("==", "x==x", TopologyMarkerKind.Cross)]

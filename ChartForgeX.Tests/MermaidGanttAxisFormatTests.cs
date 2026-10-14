@@ -56,17 +56,17 @@ public sealed class MermaidGanttAxisFormatTests {
     [InlineData("2021-01-01 00:00:00.000", "1609459200000|1609459200|+0000")]
     public void EpochAndZoneDirectivesUseDeterministicUtcWallClockInterpretation(string start, string expected) {
         var chart = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DD HH:mm:ss.SSS\naxisFormat %Q|%s|%Z\nTask :task, " + start + ", 1d").Document!.ToChart();
-        Assert.Equal(expected, chart.Options.XAxisValueFormatter!(chart.Series[0].Points[0].X));
+        Assert.Equal(expected, chart.Options.XAxisValueFormatter!(chart.Series[0].GanttItems[0].Start));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task FormattedWeekdayLabelsAreVisibleInNativeAndStaticBrowserOutput(bool dark, int width) {
         if (!InteractiveChartBrowser.Enabled) return;
         var document = new MermaidParser().ParseGantt("gantt\naxisFormat %a %d %b\nFirst :first, 2026-01-04, 4d").Document!;
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);
         var labels = await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync();
         Assert.Contains("Sun 04 Jan", labels);

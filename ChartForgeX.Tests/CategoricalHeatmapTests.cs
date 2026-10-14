@@ -130,7 +130,7 @@ public sealed class CategoricalHeatmapTests {
             .AddHeatmapCategoryRow("DC01", new List<ChartHeatmapCell> { new("pending"), new("pending") })
             .AddHeatmapCategoryRow("DC02", new ChartHeatmapCell("pending"), null, null);
         var svg = XDocument.Parse(chart.ToSvg());
-        Assert.Equal(chart.Options.Theme.MutedText.ToCss(), (string)ByRole(svg, "heatmap-cell")[0].RenderedAttribute("fill")!);
+        Assert.Equal(chart.Options.Theme.Resolve(chart.Options.ThemeMode).Muted.ToCss(), (string)ByRole(svg, "heatmap-cell")[0].RenderedAttribute("fill")!);
         Assert.Equal(3, ByRole(svg, "heatmap-column-label").Length);
         Assert.Equal(3, ByRole(svg, "heatmap-cell").Length);
     }

@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidQuadrantRegionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false)]
     [InlineData(800, true)]
     public async Task EqualPaletteSlotsFollowIndependentHostThemeValues(int width, bool dark) {
@@ -19,7 +19,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
         var tokens = dark ? VisualDesignTokens.Dark() : new VisualDesignTokens();
         tokens.Palette = new[] { neutral, neutral };
         var chart = new MermaidParser().ParseQuadrant("quadrantChart\nquadrant-1 Plan\nquadrant-2 Prioritize\nquadrant-3 Consider\nquadrant-4 Reassess\n")
-            .Document!.ToChart(new MermaidQuadrantRenderOptions { Width = width, Height = 440 }).WithDesignTokens(tokens);
+            .Document!.ToChart(new MermaidQuadrantRenderOptions { Width = width, Height = 440 }).WithTheme(new VisualTheme(tokens, tokens));
         var context = VisualExportRequest.ForChart(chart).Context;
         var svg = chart.Prepare(context).ToSvg(new VisualSvgOptions("equal-palette", tokens.ToSvgColorVariables(path => "--host-" + path.Replace('.', '-'))));
         await using var session = await OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, 440);
@@ -42,7 +42,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
                 Assert.Equal(pixels[1], pixels[0]);
             }
             var ink = ChartForgeX.Rendering.ChartColorMath.AccessibleTextOnBackground(plate);
-            Assert.Equal($"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").Nth(index)
+            await AssertCssColorsEqualAsync(session.Page, $"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").Nth(index)
                 .EvaluateAsync<string>("node => getComputedStyle(node).fill"));
         }
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
@@ -50,13 +50,13 @@ public sealed class MermaidQuadrantRegionBrowserTests {
             Directory.CreateDirectory(capture);
             var path = Path.Combine(capture, $"quadrant-equal-palette-{width}-{dark}");
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = path + ".browser.png" });
-            chart.WithDesignTokens(target);
+            chart.WithTheme(new VisualTheme(target, target));
             await File.WriteAllBytesAsync(path + ".native.png", chart.ToPng());
         }
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, 128)]
     [InlineData(360, 255)]
     [InlineData(800, 128)]
@@ -66,7 +66,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
         var color = ChartColor.FromRgba(224, 32, 48, (byte)initialAlpha);
         var chart = new MermaidParser().ParseQuadrant("quadrantChart\nquadrant-1 Plan\n").Document!
             .ToChart(new MermaidQuadrantRenderOptions { Width = width, Height = 440 });
-        chart.WithTheme(ChartTheme.GraphiteLight().WithPalette(new[] { color }));
+        chart.WithTheme(VisualTheme.Graphite().WithPalette(new[] { color }));
         var context = VisualExportRequest.ForChart(chart).Context;
         var lightSurface = context.Theme.Resolve(context.ThemeMode).Surface;
         var light = new SvgColorVariables().Add("--surface", lightSurface, SvgColorRole.Surface).Add("--region", color, SvgColorRole.Series);
@@ -91,12 +91,12 @@ public sealed class MermaidQuadrantRegionBrowserTests {
                 await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, $"quadrant-translucent-host-{width}-{initialAlpha}-{dark}.png") });
             }
             var ink = ChartForgeX.Rendering.ChartColorMath.AccessibleTextOnBackground(expected);
-            Assert.Equal($"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+            await AssertCssColorsEqualAsync(session.Page, $"rgb({ink.R}, {ink.G}, {ink.B})", await session.Page.Locator("[data-cfx-role=plot-region-label] text").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
         }
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false)]
     [InlineData(800, true)]
     public async Task HostPaletteAndPointFreeDescriptionsReachStaticBrowserOutput(int width, bool dark) {
@@ -104,7 +104,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
         var chart = new MermaidParser().ParseQuadrant("quadrantChart\ntitle Priorities\nquadrant-1 Plan\nquadrant-2 Prioritize\nquadrant-3 Consider\nquadrant-4 Reassess\n")
             .Document!.ToChart(new MermaidQuadrantRenderOptions { Width = width, Height = 440 });
         var palette = new[] { "#E02030", "#20B040", "#3040D0", "#D08010" }.Select(ChartColor.FromHex).ToArray();
-        chart.WithTheme((dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithPalette(palette));
+        chart.WithTheme(VisualTheme.Graphite().WithPalette(palette), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = "<!doctype html><html><body style='margin:0'>" + prepared.ToSvg() + "</body></html>";
         await using var session = await OpenAsync(html, width, 440);
@@ -124,7 +124,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false)]
     [InlineData(800, true)]
     public async Task NativeQuadrantCaptionsRemainInsideTheirRegionsInBrowserOutput(int width, bool dark) {

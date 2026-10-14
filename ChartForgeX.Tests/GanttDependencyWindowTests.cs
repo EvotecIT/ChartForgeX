@@ -26,19 +26,19 @@ public sealed class GanttDependencyWindowTests {
         Assert.Equal(expected, XDocument.Parse(prepared.ToSvg()).Descendants().Count(element =>
             (string?)element.Attribute("data-cfx-role") == "gantt-dependency-arrow"));
         Assert.NotEmpty(prepared.ToPng());
-        Assert.Equal(firstStart, chart.Series[0].Points[0].X);
-        Assert.Equal(nextEnd, chart.Series[1].Points[0].Y);
+        Assert.Equal(firstStart, chart.Series[0].GanttItems[0].Start);
+        Assert.Equal(nextEnd, chart.Series[1].GanttItems[0].End);
         Assert.Single(chart.GanttDependencies);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 320)]
     [InlineData(true, 960)]
     public async Task ClippedTasksDoNotLeavePhantomDependencyInkInStaticBrowserOutput(bool dark, int width) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Create(1, 2, 3, 4, false, width)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
-        chart.AddGanttTask("Visible", 12, 18).AddGanttDependency(1, 2);
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        chart.AddGanttTask("Visible", 12, 18).AddGanttDependency(chart.Series[1], chart.Series[2]);
         await using var session = await InteractiveChartBrowser.OpenAsync(
             "<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);
         Assert.Equal(1, await session.Page.Locator("[data-cfx-role='gantt-dependency-arrow']").CountAsync());
@@ -59,6 +59,6 @@ public sealed class GanttDependencyWindowTests {
             .ConfigureXAxis(axis => { axis.Minimum = 10; axis.Maximum = 20; });
         if (milestones) chart.AddGanttMilestone("First", firstStart).AddGanttMilestone("Next", nextStart);
         else chart.AddGanttTask("First", firstStart, firstEnd).AddGanttTask("Next", nextStart, nextEnd);
-        return chart.AddGanttDependency(0, 1);
+        return chart.AddGanttDependency(chart.Series[0], chart.Series[1]);
     }
 }

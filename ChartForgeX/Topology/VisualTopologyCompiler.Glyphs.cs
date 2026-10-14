@@ -15,7 +15,7 @@ internal sealed partial class VisualTopologyCompiler {
         var authored = node.Color ?? ResolveNodeIcon(node, _options)?.Color;
         var source = string.IsNullOrWhiteSpace(authored) ? sourcePaint : SourcePaint(authored, baseColor, role, fallback: fallback);
         var background = BackgroundPaint(_colors.Background);
-        var tintPaint = source.HasCssVariable || background.HasCssVariable ? SvgPaint.Mix(baseTint, background, source, .10)
+        var tintPaint = node.PaletteIndex.HasValue || source.HasCssVariable || background.HasCssVariable ? SvgPaint.Mix(baseTint, background, source, .10)
             : SvgPaint.Mix(baseTint, _colors.Background, SvgColorRole.Surface, baseColor, role, .10);
         var paint = new VisualScenePaintBinding(opacity == 1 ? tintPaint : tintPaint.WithOpacity(tint, opacity), sourcePaint);
         var center = Point(new ChartPoint(x, y));

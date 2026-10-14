@@ -15,8 +15,10 @@ internal sealed partial class VisualTopologyCompiler {
         var points = source.Select(Point).ToArray();
         var colorRole = edge.IsMuted ? SvgColorRole.Surface : !string.IsNullOrWhiteSpace(edge.Color) ? SvgColorRole.Any : SvgColorRole.Status;
         var authoredColor = EdgeColor(edge, _svgTheme ?? Theme(), _options);
+        var usePalette = !edge.IsMuted && string.IsNullOrWhiteSpace(edge.Color) && edge.PaletteIndex.HasValue;
         var cssVariable = SvgPaint.TryCssVariable(authoredColor, edge.IsMuted ? _colors.Border : Status(edge.Status), out var resolvedColor, out var sourcePaint);
         if (!cssVariable) resolvedColor = Color(authoredColor, edge.IsMuted ? _colors.Border : Status(edge.Status));
+        if (usePalette) resolvedColor = PaletteColor(edge.PaletteIndex!.Value);
         var paintOpacity = _highlight.IsEdgeHighlighted(edge) || !_highlight.IsActive ? 1 : _highlight.DimmedOpacity;
         var color = Highlight(resolvedColor, _highlight.IsEdgeHighlighted(edge));
         if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options) || edge.Opacity.HasValue) {
@@ -26,7 +28,8 @@ internal sealed partial class VisualTopologyCompiler {
         var width = (edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth) * _scale;
         if (edge.Emphasis == TopologyEdgeEmphasis.Strong) width *= 1.6;
         if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !_options.UseForceGraphPresentation && !IsMonitoringDashboardStyle(_options)) { width *= .7; color = color.WithOpacity(color.A / 255d * .5); paintOpacity *= .5; }
-        var edgePaint = cssVariable ? paintOpacity >= 1 ? sourcePaint : sourcePaint.WithOpacity(color, paintOpacity)
+        var edgePaint = usePalette ? PalettePaint(edge.PaletteIndex!.Value, color, paintOpacity)
+            : cssVariable ? paintOpacity >= 1 ? sourcePaint : sourcePaint.WithOpacity(color, paintOpacity)
             : SvgPaint.Of(color, colorRole);
         if (_options.SelectedEdgeIds.Contains(edge.Id)) width *= 1.5;
         if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options)) width = EdgeStrokeWidth(edge, _options.SelectedEdgeIds.Contains(edge.Id), _options) * _scale;

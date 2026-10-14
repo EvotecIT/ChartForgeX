@@ -41,7 +41,7 @@ public sealed partial class CartesianPlotRegionTests {
         Assert.Equal("Low/low", (string?)metadata[0].Attribute("data-cfx-label"));
         Assert.Equal(2, prepared.Regions.Count(region => region.Role == "point"));
         Capture(prepared.ToSvg(), prepared.ToPng(), "quadrants-" + reverseX + "-" + reverseY);
-        var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.PlotRegions.Clear(); chart.Series.Clear();
+        var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.PlotRegions.Clear(); chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -75,7 +75,7 @@ public sealed partial class CartesianPlotRegionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void OverlappingBackgroundCaptionsKeepOpaqueReadableInkWithinTheirRegion(bool dark) {
-        var chart = Bare().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Bare().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddPlotRegion(new(new ChartColor(0, 0, 0), opacity: 1))
             .AddPlotRegion(new(new ChartColor(255, 255, 255, 128), label: "Review", opacity: .14));
@@ -176,7 +176,7 @@ public sealed partial class CartesianPlotRegionTests {
     }
 
     private static Chart Bare() => Chart.Create().WithSize(600, 360).WithHeader(false).WithLegend(false)
-        .WithAxes(false).WithGrid(false).WithDataLabels(false).WithTheme(ChartTheme.GraphiteLight());
+        .WithAxes(false).WithGrid(false).WithDataLabels(false).WithTheme(VisualTheme.Graphite());
     private static double Luminance(ChartColor color) {
         double Channel(byte value) { var n = value / 255d; return n <= .04045 ? n / 12.92 : Math.Pow((n + .055) / 1.055, 2.4); }
         return .2126 * Channel(color.R) + .7152 * Channel(color.G) + .0722 * Channel(color.B);

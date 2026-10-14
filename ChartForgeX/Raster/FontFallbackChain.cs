@@ -29,16 +29,16 @@ internal sealed class FontFallbackChain {
         "Noto Sans", "DejaVu Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK TC", "Noto Sans CJK KR", "Noto Sans SC",
         "Noto Sans JP", "Noto Sans TC", "Noto Sans KR", "Noto Sans Arabic", "Noto Naskh Arabic", "Noto Sans Hebrew", "Noto Sans Devanagari",
         "Noto Sans Bengali", "Noto Sans Tamil", "Noto Sans Thai", "Noto Sans Armenian", "Noto Sans Georgian", "Noto Sans Ethiopic",
-        "Noto Sans Symbols", "Noto Sans Symbols 2", "Noto Sans Math", "Noto Emoji", "WenQuanYi Zen Hei", "WenQuanYi Micro Hei",
+        "Noto Sans Symbols", "Noto Sans Symbols 2", "Noto Sans Math", "Noto Emoji", "Noto Color Emoji", "WenQuanYi Zen Hei", "WenQuanYi Micro Hei",
         "Droid Sans Fallback", "Liberation Sans", "FreeSans", "Unifont"
     };
 
     private static readonly string[] MacFamilies = {
         "Helvetica Neue", "Lucida Grande", "PingFang SC", "PingFang TC", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Apple SD Gothic Neo",
-        "Geeza Pro", "Arial Hebrew", "Kohinoor Devanagari", "Thonburi", "Apple Symbols", "Arial Unicode MS", "STHeiti"
+        "Geeza Pro", "Arial Hebrew", "Kohinoor Devanagari", "Thonburi", "Apple Symbols", "Apple Color Emoji", "Arial Unicode MS", "STHeiti"
     };
 
-    // Families whose faces carry emoji outlines; a cluster asking for emoji presentation tries them first.
+    // Families whose faces carry emoji glyphs; a cluster asking for emoji presentation tries them first.
     private static readonly string[] EmojiFamilies = { "Segoe UI Emoji", "Noto Emoji", "Noto Color Emoji", "Apple Color Emoji" };
 
     private readonly object _lock = new();

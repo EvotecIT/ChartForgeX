@@ -64,7 +64,7 @@ internal sealed class TopologyGeographicCallout {
 }
 
 internal static class TopologyGeographicCallouts {
-    public static List<TopologyGeographicCallout> Build(TopologyChart chart, TopologyRenderOptions options, TopologyTheme theme) {
+    public static List<TopologyGeographicCallout> Build(TopologyChart chart, TopologyRenderOptions options, TopologyPaint theme) {
         if (!options.IncludeGeographicCallouts || chart.LayoutMode != TopologyLayoutMode.Geographic || options.GeographicCalloutMaxItems <= 0) return new List<TopologyGeographicCallout>();
 
         var map = TopologyMapProjection.MapRect(chart);

@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveResetControlBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ResetControl_SelectionOnly_ShowsUntilDeselectedClearedOrReset(bool dark) {
@@ -41,7 +41,7 @@ public sealed class InteractiveResetControlBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ResetControl_SynchronizedSelectionOnly_TracksBothChartsWithoutCompareMarkers() {
         if (!Enabled) return;
         var html = new[] { StatusLines(false), StatusLines(false) }.ToInteractiveHtmlDashboardPage(options => {
@@ -65,7 +65,7 @@ public sealed class InteractiveResetControlBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ResetControl_ViewChanges_ShowsContextualButtonOnlyUntilReset(bool dark) {
@@ -102,7 +102,7 @@ public sealed class InteractiveResetControlBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ResetControl_CompactReportReview_HasNoToolbarAndStaysInView(bool dark) {
@@ -124,7 +124,7 @@ public sealed class InteractiveResetControlBrowserTests {
         await ResetAsync(page);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 380, HtmlChartResponsiveLayout.Readable)]
     [InlineData(false, 380, HtmlChartResponsiveLayout.Fit)]
     [InlineData(false, 900, HtmlChartResponsiveLayout.Readable)]
@@ -137,7 +137,7 @@ public sealed class InteractiveResetControlBrowserTests {
         if (!Enabled) return;
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, "compact-options", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(360, 360).WithTitle("Requests across processing stages").WithSubtitle("Aligned and ordered weighted flows")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = layout), width, 650);
         var page = session.Page;
         var target = page.Locator("[data-cfx-target-kind='node'][data-cfx-target-id='south-support']");

@@ -8,12 +8,9 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Checks the published examples at their native geometry in one bounded browser session.</summary>
 public sealed class V2GalleryBrowserMatrixTests {
-    [Fact]
+    [BrowserFact(RequiresGallery = true)]
     public async Task EveryFamilyKeepsReadableNativeSvgAndHealthyPairedPng() {
-        var url = Environment.GetEnvironmentVariable("CFX_V2_GALLERY_URL");
-        if (!Enabled || string.IsNullOrWhiteSpace(url)) return;
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !uri.IsLoopback || uri.Scheme != Uri.UriSchemeHttp)
-            throw new InvalidOperationException("CFX_V2_GALLERY_URL must be a task-owned loopback HTTP URL.");
+        var url = BrowserTestPrerequisites.RequireGalleryUrl();
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>", 1200, 900);
         await session.Page.GotoAsync(url);
         await session.Page.EvaluateAsync("async () => { await document.fonts.ready; }");

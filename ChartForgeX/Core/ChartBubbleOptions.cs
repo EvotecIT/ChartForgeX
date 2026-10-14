@@ -56,6 +56,9 @@ public sealed class ChartBubbleOptions {
     /// <returns>The current options.</returns>
     public ChartBubbleOptions UseAutomaticSizeDomain() { MinimumValue = null; MaximumValue = null; return this; }
 
+    /// <summary>Copies the configured state for isolated chart configuration.</summary>
+    internal ChartBubbleOptions Clone() => (ChartBubbleOptions)MemberwiseClone();
+
     internal void Validate() {
         if (MaximumRadius.HasValue && MaximumRadius.Value < MinimumRadius)
             throw new InvalidOperationException("The bubble maximum radius must be at least the minimum radius.");

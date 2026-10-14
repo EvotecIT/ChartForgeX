@@ -132,7 +132,9 @@ public sealed class SameValueColorPresentationTests {
         frozen = true;
         options.Name = "Changed"; options.ValueFormat = ChartValueFormat.Custom(_ => throw new InvalidOperationException());
         chart.Options.Labels.NoData = "Changed";
-        var first = chart.Series[0].Points[0]; chart.Series[0].Points[0] = new ChartPoint(first.X, 999);
+        if (kind == ChartSeriesKind.CalendarHeatmap) chart.Series[0].UpdateCalendarItem(0, new ChartCalendarHeatmapItem(chart.Series[0].CalendarItems[0].Date, 999));
+        else if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.RegionMap) chart.Series[0].UpdateRegionValue(0, new ChartRegionMapItem(chart.Series[0].RegionValues[0].Region, 999));
+        else { var first = chart.Series[0].Points[0]; chart.Series[0].Points[0] = new ChartPoint(first.X, 999); }
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.All(calls.Values, count => Assert.Equal(1, count));
     }

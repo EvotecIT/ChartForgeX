@@ -45,7 +45,7 @@ public sealed class V2MatrixTests {
         var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
         var offset = ((int)(cells[0].Bounds.Top + cells[0].Bounds.Height / 2) * image.Width + (int)(cells[0].Bounds.Left + cells[0].Bounds.Width / 2)) * 4;
         Assert.Equal(color.R, image.Pixels[offset]); Assert.Equal(color.G, image.Pixels[offset + 1]); Assert.Equal(color.B, image.Pixels[offset + 2]);
-        var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.Series.Clear(); chart.Options.XAxisLabels.Clear();
+        var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.ClearSeries(); chart.Options.XAxisLabels.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(640, image.Width); Assert.Equal(400, image.Height);
     }
@@ -72,9 +72,11 @@ public sealed class V2MatrixTests {
     [Fact]
     public void CalendarRetainsZeroMissingLocalizedDatesAndSizingAcrossBothBackends() {
         var start = new DateTime(2026, 9, 28);
-        var chart = Chart.Create().AddCalendarHeatmap("Activity", new[] { new ChartCalendarHeatmapItem(start, 0), new ChartCalendarHeatmapItem(start.AddDays(2), 5) },
-            firstDayOfWeek: DayOfWeek.Monday, dayNames: new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" });
-        chart.WithCalendarHeatmapCells(maximumSize: 18, gap: 4);
+        var chart = Chart.Create().ConfigureCalendar(options => {
+            options.FirstDayOfWeek = DayOfWeek.Monday;
+            options.DayNames = new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" };
+            options.MaximumCellSize = 18; options.Gap = 4;
+        }).AddCalendarHeatmap("Activity", new[] { new ChartCalendarHeatmapItem(start, 0), new ChartCalendarHeatmapItem(start.AddDays(2), 5) });
         chart.Options.Labels.DateFormatter = date => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         var cells = prepared.Regions.Where(region => region.Role == "calendar-cell").ToArray(); Assert.Equal(7, cells.Length);
@@ -107,7 +109,7 @@ public sealed class V2MatrixTests {
         var chart = Chart.Create().WithStateCategories(state).WithMarkBackdrop(ChartMarkBackdrop.Background)
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapCategoryRow("Service", new ChartHeatmapCell("quiet", "Ready"));
         var context = Context(VisualThemeMode.Dark); var prepared = chart.Prepare(context);
-        var svg = prepared.ToSvg(); chart.Options.Theme = ChartTheme.Light();
+        var svg = prepared.ToSvg(); chart.Options.Theme = VisualTheme.Report();
         Assert.Equal(svg, prepared.ToSvg());
         var colors = context.Theme.Resolve(context.ThemeMode);
         var ink = ChartMarkText.OnStateMark(chart, colors, context.Frame, ChartStateMark.For(state, colors.Background));

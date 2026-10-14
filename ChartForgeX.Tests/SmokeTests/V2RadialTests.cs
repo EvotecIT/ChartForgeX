@@ -72,7 +72,7 @@ public sealed class V2RadialTests {
         var chart = Donut(1, 9, 2, 8, 3).WithXLabels("A", "B", "C", "D", "E");
         chart.Options.MaximumPieSlices = 3;
         var light = Compile(chart);
-        chart.WithTheme(ChartTheme.GraphiteLight());
+        chart.WithTheme(VisualTheme.Graphite());
         var graphite = Compile(chart);
         var expected = new[] { "series-0-point-1", "series-0-point-3", "series-0-point-other" };
         Assert.Equal(expected, light.Nodes.OfType<VisualSceneSlice>().Select(slice => slice.Id));

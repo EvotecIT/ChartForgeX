@@ -10,7 +10,7 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderTableCellMicroVisual(SvgMarkupWriter writer, ChartTable table, ChartTableCell cell, double x, double y, double width, double height, int columnIndex) {
-        var theme = table.Options.Theme;
+        var theme = table.Options.ResolvedTheme;
         var color = cell.MicroVisualColor ?? VisualBlockRendering.PaletteAt(theme, columnIndex);
         var bounds = VisualFactBlockRendering.TableCellMicroVisualBounds(cell);
         writer.StartElement("g")

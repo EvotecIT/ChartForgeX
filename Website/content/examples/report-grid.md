@@ -5,13 +5,14 @@ description: "Facet typed records into a deterministic multi-panel chart report 
 layout: example
 ---
 
-Typed records become one chart per site, laid out as a grid. The output above is this program's SVG; the site adds `WithDesignTokens` to each panel to show it in its light and dark themes.
+Typed records become one chart per site, laid out as a grid. The output above is this program's SVG; the site adds `WithThemeMode` to each panel to show it in its light and dark themes.
 
 ## Load typed records
 
 `ChartDataset<T>` keeps your own record type, so the chart reads properties instead of parallel arrays.
 
 ```csharp
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Data;
 

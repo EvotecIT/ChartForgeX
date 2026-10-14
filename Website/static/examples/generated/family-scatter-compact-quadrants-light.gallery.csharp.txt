@@ -1,0 +1,49 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = ScatterQuadrantsRecipe.Create("compact-quadrants", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Effort and impact", "Four background regions share an authored effort and impact pivot", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Places proposed work into effort and impact regions.</summary>
+public static class ScatterQuadrantsRecipe {
+    /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
+    public static Chart Create(string variant = "quadrants", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("quadrants" or "compact-quadrants")) throw new ArgumentOutOfRangeException(nameof(variant));
+        return Quadrants().WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static Chart Quadrants() {
+        var proposed = ChartSeries.CreateScatter(new ChartSeriesId("proposed-work"), "Proposed work", new[] {
+            new ChartPoint(1.4, 8.1), new ChartPoint(3.1, 7.3), new ChartPoint(7.2, 8.8),
+            new ChartPoint(8.4, 6.8), new ChartPoint(2.5, 2.1), new ChartPoint(6.5, 3.2)
+        });
+        return Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithDataLabels(false)
+            .WithXAxis("Effort (days)").WithYAxis("Impact (score)").AddSeries(proposed)
+            .AddPlotRegion(new(ChartColor.FromHex("#328c68"), xMaximum: 4, yMinimum: 6, label: "Prioritize", opacity: .18))
+            .AddPlotRegion(new(ChartColor.FromHex("#5487b8"), xMinimum: 4, yMinimum: 6, label: "Plan", opacity: .15))
+            .AddPlotRegion(new(ChartColor.FromHex("#ac9148"), xMaximum: 4, yMaximum: 6, label: "Consider", opacity: .13))
+            .AddPlotRegion(new(ChartColor.FromHex("#ba6d67"), xMinimum: 4, yMaximum: 6, label: "Reassess", opacity: .13));
+    }
+}

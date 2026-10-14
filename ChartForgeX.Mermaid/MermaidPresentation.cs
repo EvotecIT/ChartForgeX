@@ -28,27 +28,20 @@ internal static class MermaidPresentation {
         } else if (model is TopologyChart topology) {
             topology.Accessibility.Name = document.Accessibility.Name;
             topology.Accessibility.Description = document.Accessibility.Description;
-            if (document.Theme != null) topology.Theme = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? TopologyTheme.Dark() : TopologyTheme.Light();
-            if (document.Configuration.FontFamily != null) {
-                topology.Theme ??= TopologyTheme.Light();
-                topology.Theme.FontFamily = document.Configuration.FontFamily;
-            }
-            if (document.Configuration.FontSize.HasValue) {
-                topology.Theme ??= TopologyTheme.Light();
-                topology.Theme.Typography = Typography(topology.Theme.Typography, document.Configuration);
-            }
+            if (document.Theme != null) topology.ThemeMode = Mode(document.Theme);
+            topology.Theme = topology.Theme.WithTypography(Typography(topology.Theme.Typography, document.Configuration));
         } else if (model is Chart chart) {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;
-            if (document.Theme != null) chart.WithTheme(string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light());
-            if (document.Configuration.FontFamily != null) chart.WithFontFamily(document.Configuration.FontFamily);
-            ScaleChartTypography(chart.Options.Theme, document.Configuration.FontSize);
+            if (document.Theme != null) chart.WithThemeMode(Mode(document.Theme));
+            chart.WithTheme(chart.Options.Theme.WithTypography(Typography(chart.Options.Theme.Typography, document.Configuration)));
+            document.Configuration.ChartColors?.Apply(chart);
+            document.Configuration.RadarTheme?.Apply(chart);
         } else if (model is IVisualBlock block) {
             block.Options.Accessibility.Name = document.Accessibility.Name;
             block.Options.Accessibility.Description = document.Accessibility.Description;
-            if (document.Theme != null) block.Options.Theme = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light();
-            if (document.Configuration.FontFamily != null) block.Options.Theme.FontFamily = document.Configuration.FontFamily;
-            ScaleChartTypography(block.Options.Theme, document.Configuration.FontSize);
+            if (document.Theme != null) block.Options.ThemeMode = Mode(document.Theme);
+            block.Options.Theme = block.Options.Theme.WithTypography(Typography(block.Options.Theme.Typography, document.Configuration));
         }
         return model;
     }
@@ -57,14 +50,8 @@ internal static class MermaidPresentation {
         var scale = configuration.FontSize.HasValue ? configuration.FontSize.Value / source.DataLabelSize : 1;
         return new VisualTypography(configuration.FontFamily ?? source.Family, source.TitleSize * scale,
             source.SubtitleSize * scale, source.AxisSize * scale, source.LegendSize * scale,
-            source.DataLabelSize * scale, source.ScalarValueSize * scale, source.CenterValueSize * scale);
+            source.DataLabelSize * scale, source.ScalarValueSize * scale, source.CenterValueSize * scale,
+            source.AxisTitleSize * scale, source.MonospaceFamily);
     }
-
-    private static void ScaleChartTypography(ChartTheme theme, double? fontSize) {
-        if (!fontSize.HasValue) return;
-        var scale = fontSize.Value / theme.DataLabelFontSize;
-        theme.WithTypography(theme.TitleFontSize * scale, theme.SubtitleFontSize * scale,
-            theme.AxisTitleFontSize * scale, theme.TickLabelFontSize * scale,
-            theme.LegendFontSize * scale, fontSize.Value);
-    }
+    private static VisualThemeMode Mode(string theme) => string.Equals(theme, "dark", StringComparison.OrdinalIgnoreCase) ? VisualThemeMode.Dark : VisualThemeMode.Light;
 }

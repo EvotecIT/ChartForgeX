@@ -53,6 +53,7 @@ public sealed class TopologyMotionVisualParityTests {
             Assert.Equal(expected, (string?)Role(XDocument.Parse(presentation.Sample(progress).ToSvg()), "topology-motion-marker").Attribute("fill"));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

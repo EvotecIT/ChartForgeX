@@ -19,7 +19,7 @@ public static class MermaidPacketRendering {
         options ??= new MermaidPacketRenderOptions();
         var block = PacketLayoutBlock.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithPadding(options.Padding)
             .WithBitsPerRow(options.BitsPerRow ?? document.Configuration.Packet?.BitsPerRow ?? 32)
@@ -65,14 +65,7 @@ public static class MermaidPacketRendering {
         document.ToPacketLayoutBlock(options).ToPng();
 
     private static string ResolveTitle(MermaidPacketDocument document, MermaidPacketRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid packet";
-    }
-
-    private static string ResolveSubtitle(MermaidPacketDocument document, MermaidPacketRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid packet");
     }
 
     private static int TotalBits(MermaidPacketDocument document) =>

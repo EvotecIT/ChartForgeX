@@ -44,8 +44,7 @@ public sealed class RangeBarAutoBoundsTests {
         }).ToArray();
         Assert.Equal("32", (string?)groups[5].Attribute("data-cfx-start"));
         Assert.Equal("12", (string?)groups[5].Attribute("data-cfx-end"));
-        Assert.Equal("2", (string?)groups[5].Attribute("data-cfx-source-0-index"));
-        Assert.Equal("3", (string?)groups[5].Attribute("data-cfx-source-1-index"));
+        Assert.Equal("1", (string?)groups[5].Attribute("data-cfx-source-point"));
         Assert.Equal(new[] { "Standard", "Express", "Premium", "Bulk" }, prepared.Scene.Nodes.OfType<VisualSceneText>()
             .Where(text => text.Role == "axis-y-label").Select(text => string.Concat(text.Text.Lines.Select(line => line.Text))));
         Capture(prepared, scenario, paint);

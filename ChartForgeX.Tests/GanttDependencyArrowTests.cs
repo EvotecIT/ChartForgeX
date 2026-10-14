@@ -8,6 +8,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class GanttDependencyArrowTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, 960, false)]
     [InlineData(true, false, 320, false)]
@@ -18,7 +19,8 @@ public sealed class GanttDependencyArrowTests {
     [InlineData(false, true, 960, true)]
     [InlineData(true, true, 320, true)]
     public async Task ArrowheadInkRemainsVisibleOverSuccessorBarsAndMilestones(bool dark, bool milestone, int width, bool endpoint) {
-        var chart = Create(dark, milestone, width, endpoint).AddGanttDependency(0, 1);
+        var chart = Create(dark, milestone, width, endpoint);
+        chart.AddGanttDependency(chart.Series[0], chart.Series[1]);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var arrow = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
         var tip = arrow.Commands[1];
@@ -59,7 +61,7 @@ public sealed class GanttDependencyArrowTests {
 
     private static Chart Create(bool dark, bool milestone, int width, bool endpoint) {
         var chart = Chart.Create().WithSize(width, 360).WithLegend(false).WithDataLabels(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddGanttTask("First", 1, 4);
         if (milestone) chart.AddGanttMilestone("Gate", endpoint ? 9 : 4);
         else chart.AddGanttTask("Next", endpoint ? 9 : 4, endpoint ? 9 : 8);

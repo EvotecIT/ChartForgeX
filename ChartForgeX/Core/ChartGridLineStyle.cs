@@ -20,7 +20,7 @@ public sealed class ChartGridLineStyle {
     /// <summary>
     /// Gets or sets whether vertical category grid lines are drawn.
     /// </summary>
-    public bool ShowVerticalLines { get; set; } = true;
+    public bool ShowVerticalLines { get; set; }
 
     /// <summary>
     /// Gets or sets horizontal grid line opacity.
@@ -53,6 +53,7 @@ public sealed class ChartGridLineStyle {
             ChartGuards.Finite(value, nameof(value));
             if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Grid stroke width must be greater than zero.");
             _strokeWidth = value;
+            HasExplicitStrokeWidth = true;
         }
     }
 
@@ -98,18 +99,12 @@ public sealed class ChartGridLineStyle {
         Gap = 6.0
     };
 
+    internal bool HasExplicitStrokeWidth { get; private set; }
+
     /// <summary>
     /// Creates a copy that can be safely reused and customized.
     /// </summary>
-    public ChartGridLineStyle Clone() => new() {
-        ShowHorizontalLines = ShowHorizontalLines,
-        ShowVerticalLines = ShowVerticalLines,
-        HorizontalOpacity = HorizontalOpacity,
-        VerticalOpacity = VerticalOpacity,
-        StrokeWidth = StrokeWidth,
-        Dash = Dash,
-        Gap = Gap
-    };
+    public ChartGridLineStyle Clone() => (ChartGridLineStyle)MemberwiseClone();
 
     /// <summary>
     /// Sets whether horizontal value grid lines are drawn.

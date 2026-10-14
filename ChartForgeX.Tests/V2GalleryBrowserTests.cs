@@ -6,14 +6,11 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Opt-in rendered-catalog contracts using the existing HtmlTinkerX-owned browser fixture.</summary>
 public sealed class V2GalleryBrowserTests {
-    [Theory]
+    [BrowserTheory(RequiresGallery = true)]
     [InlineData(1200, 900)]
     [InlineData(390, 844)]
     public async Task InlineCatalog_PreservesScopedClipsFontsAndCompactLayout(int width, int height) {
-        var url = Environment.GetEnvironmentVariable("CFX_V2_GALLERY_URL");
-        if (!Enabled || string.IsNullOrWhiteSpace(url)) return;
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !uri.IsLoopback || uri.Scheme != Uri.UriSchemeHttp)
-            throw new InvalidOperationException("CFX_V2_GALLERY_URL must be a task-owned loopback HTTP URL.");
+        var url = BrowserTestPrerequisites.RequireGalleryUrl();
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>", width, height);
         var page = session.Page;
         await page.GotoAsync(url);
@@ -49,20 +46,27 @@ public sealed class V2GalleryBrowserTests {
                         if (!text.textContent.trim()) continue;
                         const matrix = text.getScreenCTM();
                         const size = parseFloat(getComputedStyle(text).fontSize) * Math.hypot(matrix.a, matrix.b);
-                        if (size < 10) defects.push('Preview text below 10 CSS pixels: ' + text.textContent + ' (' + size.toFixed(2) + ')');
+                        if (size < 10) {
+                            const family = preview.closest('[data-gallery-family]')?.dataset.galleryFamily || 'unknown';
+                            const role = text.closest('[data-cfx-role]')?.getAttribute('data-cfx-role') || 'unknown';
+                            defects.push('Preview text below 10 CSS pixels [' + family + ', ' + role + ', ' + preview.getAttribute('href') + ']: ' + text.textContent + ' (' + size.toFixed(2) + ')');
+                        }
                     }
                 }
                 return defects;
             }
             """);
-        Assert.Empty(defects);
-        Assert.True(await page.Locator(".tile").CountAsync() >= 4);
-        AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");
         if (!string.IsNullOrWhiteSpace(captures)) {
+            if (!Path.IsPathRooted(captures)) throw new InvalidOperationException("CFX_V2_CAPTURE_ROOT must be an explicit absolute output path.");
             Directory.CreateDirectory(captures);
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "catalog-" + width + ".png") });
+            await File.WriteAllTextAsync(Path.Combine(captures, "catalog-" + width + ".json"),
+                System.Text.Json.JsonSerializer.Serialize(new { width, height, defects }) + "\n");
         }
+        AssertNoConsoleErrors(session);
+        Assert.Empty(defects);
+        Assert.True(await page.Locator(".tile").CountAsync() >= 4);
 
         await page.Locator("[data-set-theme=dark]").ClickAsync();
         Assert.Equal("dark", await page.Locator("html").GetAttributeAsync("data-theme"));
@@ -87,6 +91,7 @@ public sealed class V2GalleryBrowserTests {
         await page.Locator("[data-gallery-search]").FillAsync("heatmap");
         var example = page.Locator("[data-gallery-family]:visible a.preview:visible").First;
         await example.ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         Assert.Equal("dark", await page.Locator("html").GetAttributeAsync("data-theme"));
         Assert.Equal(1, await page.Locator(".full:visible").CountAsync());
         Assert.Equal(width <= 600 ? "360" : "800", await page.Locator(".full[data-output-format=svg]:visible > svg").GetAttributeAsync("width"));
@@ -94,9 +99,11 @@ public sealed class V2GalleryBrowserTests {
             Assert.Contains("-compact-", page.Url, StringComparison.Ordinal);
             // Compact is a navigation default, while the explicit Standard choice stays usable.
             await page.Locator(".variant-nav").GetByText("Standard", new LocatorGetByTextOptions { Exact = true }).ClickAsync();
+            await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
             Assert.Equal("800", await page.Locator(".full[data-output-format=svg]:visible > svg").GetAttributeAsync("width"));
         }
         await page.Locator(".variant-nav").GetByText("Compact", new LocatorGetByTextOptions { Exact = true }).ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         var compactSvg = page.Locator(".full[data-output-format=svg]:visible > svg");
         Assert.Equal("360", await compactSvg.GetAttributeAsync("width"));
         Assert.True(await compactSvg.EvaluateAsync<bool>("svg => svg.getBoundingClientRect().width <= Number(svg.getAttribute('width')) + .01"));
@@ -117,7 +124,22 @@ public sealed class V2GalleryBrowserTests {
         Assert.Equal("light", await page.Locator("html").GetAttributeAsync("data-theme"));
         var lightDownloads = await page.Locator(".export-row a").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.getAttribute('href'))");
         Assert.All(lightDownloads, href => Assert.Contains("-light.", href, StringComparison.Ordinal));
+        var source = page.Locator("[data-example-source]:visible");
+        Assert.Equal(1, await source.CountAsync());
+        var sourceText = await source.TextContentAsync() ?? throw new InvalidOperationException("The visible recipe has no source text.");
+        Assert.Contains("public static class", sourceText, StringComparison.Ordinal);
+        Assert.Contains("File.WriteAllBytes(\"visual.png\", prepared.ToPng())", sourceText, StringComparison.Ordinal);
+        var gallerySource = page.Locator(".source-section a[href$='.gallery.csharp.txt']:visible");
+        Assert.Equal(1, await gallerySource.CountAsync());
+        // Intercept the clipboard boundary while exercising the real copy button, preserving the desktop clipboard.
+        await page.EvaluateAsync("() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__cfxCopiedSource = text; } } })");
+        await page.Locator("[data-copy-source]").ClickAsync();
+        Assert.Equal(sourceText, await page.EvaluateAsync<string>("() => window.__cfxCopiedSource"));
+        await page.Locator(".source-heading").EvaluateAsync("node => node.scrollIntoView({ block: 'start', behavior: 'instant' })");
+        if (!string.IsNullOrWhiteSpace(captures))
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "example-source-" + width + ".png") });
         await page.Locator(".back-link").ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         Assert.Equal("heatmap", await page.Locator("[data-gallery-search]").InputValueAsync());
         Assert.True(await page.Locator("[data-gallery-family]:visible").CountAsync() > 0);
 
@@ -135,6 +157,7 @@ public sealed class V2GalleryBrowserTests {
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ColorScheme = ColorScheme.Light });
         await page.WaitForFunctionAsync("() => document.documentElement.dataset.theme === 'light'");
         await page.Locator(".back-link").ClickAsync();
+        await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
         Assert.Equal("heatmap", await page.Locator("[data-gallery-search]").InputValueAsync());
         AssertNoConsoleErrors(session);
     }

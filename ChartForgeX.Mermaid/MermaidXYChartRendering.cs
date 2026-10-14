@@ -19,7 +19,7 @@ public static class MermaidXYChartRendering {
 
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height);
 
         var horizontal = document.Orientation == ChartOrientation.Horizontal;
@@ -83,14 +83,7 @@ public static class MermaidXYChartRendering {
         document.ToChart(options).ToPng();
 
     private static string ResolveTitle(MermaidXYChartDocument document, MermaidXYChartRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid XY chart";
-    }
-
-    private static string ResolveSubtitle(MermaidXYChartDocument document, MermaidXYChartRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid XY chart");
     }
 
     private static ChartPoint[] BuildPoints(MermaidXYChartDocument document, MermaidXYChartSeries series) {

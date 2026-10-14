@@ -13,13 +13,13 @@ public sealed partial class Chart {
     /// <param name="name">The row name.</param>
     /// <param name="points">The cell values. The x values identify columns and the y values set cell intensity.</param>
     /// <param name="color">An optional high-intensity cell color.</param>
+    /// <param name="id">Optional stable identity assigned before attachment. Omit for chart-local automatic identity.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHeatmapRow(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) {
+    public Chart AddHeatmapRow(string name, IEnumerable<ChartPoint> points, ChartColor? color = null, ChartSeriesId? id = null) {
         EnsureCanAddSeries();
         var materialized = ChartGuards.Points(points, nameof(points));
         if (materialized.Count == 0) throw new ArgumentException("Heatmap rows must contain at least one cell value.", nameof(points));
-        AppendSeries(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), ChartSeriesKind.Heatmap, materialized) { Color = color });
-        return this;
+        return Add(name, ChartSeriesKind.Heatmap, materialized, color, id: id);
     }
 
     /// <summary>
@@ -28,8 +28,9 @@ public sealed partial class Chart {
     /// <param name="name">The row name.</param>
     /// <param name="values">The cell intensities. Values are assigned to columns one through N.</param>
     /// <param name="color">An optional high-intensity cell color.</param>
+    /// <param name="id">Optional stable identity assigned before attachment. Omit for chart-local automatic identity.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHeatmapRow(string name, IEnumerable<double> values, ChartColor? color = null) => AddHeatmapRow(name, ChartGuards.Values(values, nameof(values)), color);
+    public Chart AddHeatmapRow(string name, IEnumerable<double> values, ChartColor? color = null, ChartSeriesId? id = null) => AddHeatmapRow(name, ChartGuards.Values(values, nameof(values)), color, id);
 
     /// <summary>
     /// Adds a heatmap row series from one-based optional cell values.
@@ -37,10 +38,11 @@ public sealed partial class Chart {
     /// <param name="name">The row name.</param>
     /// <param name="values">The cell intensities. Null cells reserve their column position but do not render.</param>
     /// <param name="color">An optional high-intensity cell color.</param>
+    /// <param name="id">Optional stable identity assigned before attachment. Omit for chart-local automatic identity.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHeatmapRow(string name, IEnumerable<double?> values, ChartColor? color = null) {
+    public Chart AddHeatmapRow(string name, IEnumerable<double?> values, ChartColor? color = null, ChartSeriesId? id = null) {
         var points = OptionalValues(values, nameof(values), out var columnCount);
-        AddHeatmapRow(name, points, color);
+        AddHeatmapRow(name, points, color, id);
         Series[Series.Count - 1].HeatmapColumnCount = columnCount;
         return this;
     }
@@ -68,13 +70,13 @@ public sealed partial class Chart {
     /// <param name="name">The row name.</param>
     /// <param name="points">The cell values. The x values identify columns and the y values set hexagon intensity.</param>
     /// <param name="color">An optional high-intensity hexagon color.</param>
+    /// <param name="id">Optional stable identity assigned before attachment. Omit for chart-local automatic identity.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHexbinHeatmapRow(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) {
+    public Chart AddHexbinHeatmapRow(string name, IEnumerable<ChartPoint> points, ChartColor? color = null, ChartSeriesId? id = null) {
         EnsureCanAddSeries();
         var materialized = ChartGuards.Points(points, nameof(points));
         if (materialized.Count == 0) throw new ArgumentException("Hexbin heatmap rows must contain at least one cell value.", nameof(points));
-        AppendSeries(new ChartSeries(name ?? throw new ArgumentNullException(nameof(name)), ChartSeriesKind.HexbinHeatmap, materialized) { Color = color });
-        return this;
+        return Add(name, ChartSeriesKind.HexbinHeatmap, materialized, color, id: id);
     }
 
     /// <summary>
@@ -83,8 +85,9 @@ public sealed partial class Chart {
     /// <param name="name">The row name.</param>
     /// <param name="values">The hexagon intensities. Values are assigned to columns one through N.</param>
     /// <param name="color">An optional high-intensity hexagon color.</param>
+    /// <param name="id">Optional stable identity assigned before attachment. Omit for chart-local automatic identity.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHexbinHeatmapRow(string name, IEnumerable<double> values, ChartColor? color = null) => AddHexbinHeatmapRow(name, ChartGuards.Values(values, nameof(values)), color);
+    public Chart AddHexbinHeatmapRow(string name, IEnumerable<double> values, ChartColor? color = null, ChartSeriesId? id = null) => AddHexbinHeatmapRow(name, ChartGuards.Values(values, nameof(values)), color, id);
 
     /// <summary>
     /// Adds a hexbin heatmap row series from one-based optional cell values.
@@ -92,10 +95,11 @@ public sealed partial class Chart {
     /// <param name="name">The row name.</param>
     /// <param name="values">The hexagon intensities. Null cells reserve their column position but do not render.</param>
     /// <param name="color">An optional high-intensity hexagon color.</param>
+    /// <param name="id">Optional stable identity assigned before attachment. Omit for chart-local automatic identity.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHexbinHeatmapRow(string name, IEnumerable<double?> values, ChartColor? color = null) {
+    public Chart AddHexbinHeatmapRow(string name, IEnumerable<double?> values, ChartColor? color = null, ChartSeriesId? id = null) {
         var points = OptionalValues(values, nameof(values), out var columnCount);
-        AddHexbinHeatmapRow(name, points, color);
+        AddHexbinHeatmapRow(name, points, color, id);
         Series[Series.Count - 1].HeatmapColumnCount = columnCount;
         return this;
     }

@@ -35,14 +35,14 @@ public sealed class HtmlVisualBlockRenderer {
     /// <summary>Renders a visual block as a complete HTML document.</summary>
     public string RenderPage(IVisualBlock block) {
         VisualBlockRendering.Validate(block);
-        var theme = block.Options.Theme;
-        var bg = block.Options.TransparentBackground ? theme.CardBackground : theme.Background.A == 0 ? theme.CardBackground : theme.Background;
+        var theme = block.Options.ResolvedTheme;
+        var bg = HtmlSurfacePolish.PageBackground(block.Options.TransparentBackground ? theme.CardBackground : theme.Background, theme.CardBackground);
         var title = string.IsNullOrWhiteSpace(block.AccessibleName) ? "ChartForgeX visual block" : block.AccessibleName;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", block.Options.Accessibility.Language ?? "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, VisualBlockRendering.CssFontFamily(theme.FontFamily), theme.FlatMarks) + ".chartforgex-visual-block{width:min(100%," + block.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-visual-block svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-visual-block{width:100%;max-width:none}.chartforgex-visual-block svg{width:100%;height:auto}"));
+        HtmlChartRenderer.WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, VisualBlockRendering.CssFontFamily(theme.FontFamily), true) + ".chartforgex-visual-block{width:min(100%," + block.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-visual-block svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-visual-block{width:100%;max-width:none}.chartforgex-visual-block svg{width:100%;height:auto}"));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragment(block, "html-page", constrainMaxWidth: false)).Line()

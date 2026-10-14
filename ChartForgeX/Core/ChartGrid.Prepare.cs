@@ -11,12 +11,14 @@ public sealed partial class ChartGrid : IVisualRenderable {
     /// <summary>Gets the text alternative for the complete chart comparison.</summary>
     public VisualAccessibility Accessibility { get; } = new();
 
-    /// <summary>Prepares all panels once in the supplied fixed viewport with a shared theme and frame.</summary>
+    /// <summary>Prepares all panels once in the supplied fixed viewport and common frame.</summary>
     /// <remarks>Panel spans, column preservation and shared axis bounds configured on the source grid are retained.
     /// The common frame permits panel legends, plot surfaces and cards; a false visibility setting hides that feature
     /// in every panel, while a true setting preserves each chart's own visibility choice. Panel headings, legend
     /// positions and padding come from each chart. Common legend limits also cap each panel's model limits.
-    /// Child scenes are translated and clipped directly; no child SVG is parsed or rasterized.</remarks>
+    /// By default the context also supplies every panel's theme, mode and font. With UsePanelThemes enabled,
+    /// each chart supplies those three values, including its native font-file request; explicit context theme/font
+    /// overrides then apply only to the outer frame. Child scenes are translated and clipped directly.</remarks>
     public PreparedVisual Prepare(VisualRenderContext context) {
         if (context == null) throw new ArgumentNullException(nameof(context));
         if (Charts.Count == 0) throw new InvalidOperationException("Chart grids must contain at least one chart.");
@@ -65,15 +67,17 @@ public sealed partial class ChartGrid : IVisualRenderable {
                     frame.ShowSurface && options.ShowPlotBackground && modelFrame, transparentBackground: true,
                     legendStyle: frame.LegendStyle, legendMaximumRows: maximumRows,
                     legendMaximumHeightFraction: Math.Min(frame.LegendMaximumHeightFraction, options.LegendMaximumHeightFraction),
-                    showCard: frame.ShowCard && options.ShowCard && options.Theme.UseCard && modelFrame, legendTitle: frame.LegendTitle);
+                    showCard: frame.ShowCard && options.ShowCard && modelFrame, legendTitle: frame.LegendTitle);
                 var padding = options.HostOwnsFrame ? ChartPadding.All(0) : options.Padding;
                 var panelPadding = new ChartPadding(Math.Min(padding.Left, width / 4), Math.Min(padding.Top, height / 4),
                     Math.Min(padding.Right, width / 4), Math.Min(padding.Bottom, height / 4));
                 var panelContext = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), panelPadding),
-                    context.Theme, context.ThemeMode, panelFrame, context.Font);
+                    UsePanelThemes ? options.Theme : context.Theme, UsePanelThemes ? options.ThemeMode : context.ThemeMode,
+                    panelFrame, UsePanelThemes ? VisualExportRequest.ChartFont(options) : context.Font);
                 var child = chart.Prepare(panelContext);
                 builder.AddRegion(new VisualSemanticRegion(panelId, "panel", new ChartRect(x, y, width, height), chart.Title));
-                using (builder.PushClip(cell)) builder.Append(child.Scene, x, y, panelId);
+                using (builder.PushClip(cell)) builder.Append(child.Scene, x, y, panelId,
+                    UsePanelThemes ? new VisualSceneColorScope(options.SvgColorVariables) : null);
             }
         }
         var accessibility = Accessibility.Clone();

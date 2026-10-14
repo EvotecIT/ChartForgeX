@@ -15,9 +15,9 @@ public sealed class GraphiteRenderingTests {
     [InlineData(true, true)]
     public void InsideBarLabelsHaveReadablePairedInkAndRespectExplicitColours(bool dark, bool semantic) {
         var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
-        var chart = Chart.Create().WithDesignTokens(tokens).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
+        var chart = Chart.Create().WithTheme(new VisualTheme(tokens, tokens)).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
             .AddBar("Counts", new[] { new ChartPoint(1, 80), new ChartPoint(2, 60) });
-        if (semantic) chart.WithSeriesState("Counts", ChartSeriesState.Danger);
+        if (semantic) chart.Series[0].WithState(ChartSeriesState.Danger);
         var prepared = Prepare(chart);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
         var bars = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bar").ToArray();
@@ -38,7 +38,7 @@ public sealed class GraphiteRenderingTests {
         const string family = "Calibri, \"Segoe UI\", \"Sample & Family\", sans-serif";
         var chart = Chart.Create().WithSize(600, 360).WithXLabels("One", "Two").WithDataLabels()
             .AddBar("Counts", new[] { new ChartPoint(1, 12), new ChartPoint(2, 24) });
-        chart.Options.Theme.FontFamily = family; chart.Options.XAxis.LabelAngle = rotation;
+        chart.Options.Theme = chart.Options.Theme.WithFontFamily(family); chart.Options.XAxis.LabelAngle = rotation;
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Contains(nodes, node => (string?)node.Attribute("data-cfx-role") == "axis-x-label");
         Assert.Contains(nodes, node => (string?)node.Attribute("data-cfx-role") == "axis-y-label");
@@ -58,7 +58,7 @@ public sealed class GraphiteRenderingTests {
         var prepared = Prepare(chart);
         Assert.Equal(chart.Series.Select(series => series.Name), prepared.Regions.Where(region => region.Role == "legend").Select(region => region.Label));
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "legend-label"),
-            node => Assert.Equal(chart.Options.Theme.LegendFontSize, node.Text.Size));
+            node => Assert.Equal(chart.Options.Theme.Typography.LegendSize, node.Text.Size));
     }
 
     [Fact]
@@ -74,13 +74,15 @@ public sealed class GraphiteRenderingTests {
 
     [Fact]
     public void StateLinesUseSemanticPaintAndHealthySeriesIsUnderneath() {
-        var chart = Chart.Create().AddLine("Failures", new[] { new ChartPoint(0, 3), new ChartPoint(1, 4), new ChartPoint(2, 2) })
-            .AddLine("Healthy", new[] { new ChartPoint(0, 8), new ChartPoint(1, 9), new ChartPoint(2, 10) })
-            .WithSeriesState("Failures", ChartSeriesState.Danger).WithSeriesState("Healthy", ChartSeriesState.Quiet);
+        var failures = new ChartSeries(new ChartSeriesId("failures"), "Failures", ChartSeriesKind.Line,
+            new[] { new ChartPoint(0, 3), new ChartPoint(1, 4), new ChartPoint(2, 2) }).WithState(ChartSeriesState.Danger);
+        var healthy = new ChartSeries(new ChartSeriesId("healthy"), "Healthy", ChartSeriesKind.Line,
+            new[] { new ChartPoint(0, 8), new ChartPoint(1, 9), new ChartPoint(2, 10) }).WithState(ChartSeriesState.Quiet);
+        var chart = Chart.Create().AddSeries(failures).AddSeries(healthy);
         var prepared = Prepare(chart);
         var series = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "series").ToArray();
         Assert.Equal("1", series[0].Metadata["data-cfx-series"]);
-        Assert.Equal(chart.Options.Theme.Positive, prepared.Scene.Nodes.OfType<VisualScenePath>().First(path => path.Role == "line").Stroke!.Value);
+        Assert.Equal(chart.Options.Theme.Resolve(chart.Options.ThemeMode).Positive, prepared.Scene.Nodes.OfType<VisualScenePath>().First(path => path.Role == "line").Stroke!.Value);
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "marker"));
         chart.WithLineMarkers(ChartLineMarkerMode.All);
         Assert.Equal(6, Prepare(chart).Scene.Nodes.Count(node => node.Role == "marker"));

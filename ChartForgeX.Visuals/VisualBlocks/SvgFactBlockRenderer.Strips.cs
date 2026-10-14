@@ -11,7 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderDateStrip(SvgMarkupWriter writer, DateStripBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, block, ref y, content.X, content.Width);
@@ -62,7 +62,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void RenderEntityStrip(SvgMarkupWriter writer, EntityStripBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         if (block.Title.Length > 0) {
@@ -100,7 +100,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderSectionHeader(SvgMarkupWriter writer, SectionHeaderBlock block) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(block.Options);
         var titleSize = Math.Max(16, Math.Min(theme.TitleFontSize, theme.SubtitleFontSize + 10));
         var baseline = content.Y + content.Height * 0.60;

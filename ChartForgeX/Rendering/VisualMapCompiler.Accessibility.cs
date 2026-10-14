@@ -8,14 +8,14 @@ internal static partial class VisualMapCompiler {
         var series = chart.Series[0];
         if (series.Kind == ChartSeriesKind.DottedMap)
             return new ChartDescriptionFacts(group ? ChartDescriptionKind.DottedMapGroup : ChartDescriptionKind.DottedMap,
-                chart.Title, new[] { series.Name }, series.Points.Count);
+                chart.Title, new[] { series.Name }, series.RenderPoints.Count);
         int count; int total; string name;
         if (series.Kind == ChartSeriesKind.RegionMap) {
-            var definition = chart.Options.RegionMapDefinition ?? throw new InvalidOperationException("A region map requires a geometry definition.");
+            var definition = chart.Series[0].RegionMapDefinition ?? throw new InvalidOperationException("A region map requires a geometry definition.");
             count = Values(chart, key => definition.TryResolveRegion(key, out var code) ? code : null).Count;
             total = definition.Regions.Count; name = definition.Name;
         } else {
-            var definition = chart.Options.TileMapDefinition ?? throw new InvalidOperationException("A tile map requires a tile definition.");
+            var definition = chart.Series[0].TileMapDefinition ?? throw new InvalidOperationException("A tile map requires a tile definition.");
             count = Values(chart, key => definition.TryResolveRegion(key, out var code) ? code : null).Count;
             total = definition.Regions.Count; name = definition.Name;
         }

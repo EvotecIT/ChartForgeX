@@ -116,9 +116,9 @@ internal static partial class VisualCartesianCompiler {
 
     private static Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? FinancialLegend(Chart chart, ChartSeries series,
         int index, VisualThemeColors colors, int point = -1, ChartFillPattern pattern = ChartFillPattern.None) {
-        if (!series.Financial.IsConfigured || series.Kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) return null;
+        if (!series.Financial.HasOverrides || series.Kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) return null;
         var candle = series.Kind == ChartSeriesKind.Candlestick;
-        var rising = point < 0 || series.Points[point * 4 + 3].Y >= series.Points[point * 4].Y;
+        var rising = point < 0 || series.RenderPoints[point * 4 + 3].Y >= series.RenderPoints[point * 4].Y;
         var first = FinancialStyle(series, index, point, rising, colors);
         var second = FinancialStyle(series, index, -1, false, colors);
         return (builder, bounds, context) => {

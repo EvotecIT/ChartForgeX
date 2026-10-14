@@ -4,6 +4,8 @@ using ChartForgeX.Primitives;
 using ChartForgeX.SvgRaster;
 
 public static partial class GalleryWriter {
+    private static readonly IReadOnlyDictionary<string, string> PngStandaloneCustomProperties = new Dictionary<string, string>();
+
     // A shared frame intentionally reaches the canvas edge. Only its declared stroke geometry and colours are
     // allowed there; arbitrary marks, text, or extra strokes still count as edge ink.
     private static PngFrameAllowance? ReadPngFrameAllowance(string pngPath, AssetDimensions png) {
@@ -26,15 +28,15 @@ public static partial class GalleryWriter {
                 var stroke=SurfaceNumber(frame,"stroke-width",1);
                 if (stroke>0 && stroke<=2 && Math.Abs(x-stroke/2)<=.01 && Math.Abs(y-stroke/2)<=.01 &&
                     Math.Abs(width+stroke-svg.LogicalWidth)<=.01 && Math.Abs(height+stroke-svg.LogicalHeight)<=.01 &&
-                    SvgRasterColor.TryParse((string?)frame.Attribute("fill")??"",out var fill) && fill.A==255 &&
-                    SvgRasterColor.TryParse((string?)frame.Attribute("stroke")??"",out var line))
+                    TryPngSurfaceColor((string?)frame.Attribute("fill"),out var fill) && fill.A==255 &&
+                    TryPngSurfaceColor((string?)frame.Attribute("stroke"),out var line))
                     allowance=new PngFrameAllowance(x*scale,y*scale,width*scale,height*scale,SurfaceNumber(frame,"rx")*scale,stroke*scale,fill,line);
             }
             var backgrounds=new List<PngSurface>(); var shadows=new List<PngSurface>();
             foreach (var element in root.Elements().Where(e=>e.Name.LocalName=="rect" && e.Attribute("transform")==null)) {
                 var role=(string?)element.Attribute("data-cfx-role");
                 if (role is not ("background" or "frame-card-shadow") ||
-                    !SvgRasterColor.TryParse((string?)element.Attribute("fill")??"",out var color)) continue;
+                    !TryPngSurfaceColor((string?)element.Attribute("fill"),out var color)) continue;
                 var x=SurfaceNumber(element,"x"); var y=SurfaceNumber(element,"y");
                 var width=SurfaceNumber(element,"width"); var height=SurfaceNumber(element,"height");
                 if (x<0 || y<0 || width<=0 || height<=0 || x+width>svg.LogicalWidth+.001 || y+height>svg.LogicalHeight+.001) continue;
@@ -58,6 +60,9 @@ public static partial class GalleryWriter {
     private static double SurfaceNumber(XElement element,string name,double fallback=0) =>
         double.TryParse((string?)element.Attribute(name),NumberStyles.Float,CultureInfo.InvariantCulture,out var value)?value:fallback;
 
+    private static bool TryPngSurfaceColor(string? paint, out ChartColor color) =>
+        SvgRasterColor.TryParse(SvgRasterCssVariables.Resolve(paint ?? string.Empty, PngStandaloneCustomProperties), out color);
+
     private static bool TryPngSurfaceScale(AssetDimensions svg,AssetDimensions png,out double scale) {
         scale=0;
         if (svg.LogicalWidth<=0 || svg.LogicalHeight<=0) return false;
@@ -75,7 +80,7 @@ public static partial class GalleryWriter {
             var root=XDocument.Load(svgPath).Root;
             if (root == null) return false;
             foreach (var background in root.Descendants().Where(e=>(string?)e.Attribute("data-cfx-role")=="background")) {
-                if (!SvgRasterColor.TryParse((string?)background.Attribute("fill")??"",out var color) || color.A!=0) return false;
+                if (!TryPngSurfaceColor((string?)background.Attribute("fill"),out var color) || color.A!=0) return false;
             }
             var frames=root.Elements().Where(e=>(string?)e.Attribute("data-cfx-role")=="frame-card").ToArray();
             if (frames.Length!=1 || frames[0].Parent!=root || frames[0].Attribute("transform")!=null || root.Attribute("transform")!=null) return false;
