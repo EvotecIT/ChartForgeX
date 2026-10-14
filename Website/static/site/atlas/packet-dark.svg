@@ -1,32 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-10df6e60" width="900" height="420" viewBox="0 0 900 420" role="img" aria-labelledby="cfx-visual-10df6e60-title cfx-visual-10df6e60-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-10df6e60-title">Mermaid packet</title>
-<desc id="cfx-visual-10df6e60-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-aa392da5" width="760" height="570" viewBox="0 0 760 570" role="img" aria-labelledby="cfx-visual-aa392da5-title cfx-visual-aa392da5-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-aa392da5-title">TCP header</title>
+<desc id="cfx-visual-aa392da5-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-10df6e60 .cfx-guide-stroke,#cfx-visual-10df6e60 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-10df6e60 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-10df6e60-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-10df6e60-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-10df6e60-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1C202A" stop-opacity="1"/><stop offset="100%" stop-color="#070B14" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-10df6e60-visualCardClip"><rect x="0" y="0" width="900" height="420" rx="12"/></clipPath>
+<style>#cfx-visual-aa392da5 .cfx-guide-stroke,#cfx-visual-aa392da5 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-aa392da5 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-aa392da5-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-aa392da5-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-aa392da5-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1C202A" stop-opacity="1"/><stop offset="100%" stop-color="#070B14" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-aa392da5-visualCardClip"><rect x="0" y="0" width="760" height="570" rx="12"/></clipPath>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-10df6e60-visualBackground)"/>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="899" height="419" rx="11.5" fill="url(#cfx-visual-10df6e60-visualCard)" stroke="rgba(148,163,184,0.133)"/>
-<rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="897" height="417" rx="10.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
-<text data-cfx-role="visual-title" x="30" y="56.978" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="800">Mermaid packet</text>
-<text data-cfx-role="visual-subtitle" x="30" y="83.741" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">packet-beta</text>
-<rect data-cfx-role="packet-field" data-bit-start="0" data-bit-end="15" x="30" y="115.878" width="419" height="52" rx="7" fill="rgba(96,165,250,0.188)" stroke="#60A5FA"/>
+<rect width="100%" height="100%" fill="url(#cfx-visual-aa392da5-visualBackground)"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="569" rx="11.5" fill="url(#cfx-visual-aa392da5-visualCard)" stroke="rgba(148,163,184,0.133)"/>
+<rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="757" height="567" rx="10.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
+<text data-cfx-role="visual-title" x="30" y="56.978" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="800">TCP header</text>
+<text data-cfx-role="visual-subtitle" x="30" y="83.741" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">Packet</text>
+<rect data-cfx-role="packet-field" data-bit-start="0" data-bit-end="15" x="30" y="115.878" width="349" height="52" rx="7" fill="rgba(96,165,250,0.188)" stroke="#60A5FA"/>
 <text data-cfx-role="packet-bit-start" x="31" y="111.878" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">0</text>
-<text data-cfx-role="packet-bit-end" x="448" y="111.878" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">15</text>
-<text data-cfx-role="visual-text" x="239.5" y="146.038" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700">Source Port</text>
-<rect data-cfx-role="packet-field" data-bit-start="16" data-bit-end="31" x="450" y="115.878" width="419" height="52" rx="7" fill="rgba(34,211,238,0.188)" stroke="#22D3EE"/>
-<text data-cfx-role="packet-bit-start" x="451" y="111.878" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">16</text>
-<text data-cfx-role="packet-bit-end" x="868" y="111.878" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">31</text>
-<text data-cfx-role="visual-text" x="659.5" y="146.038" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700">Destination Port</text>
-<rect data-cfx-role="packet-field" data-bit-start="32" data-bit-end="63" x="30" y="192.878" width="839" height="52" rx="7" fill="rgba(52,211,153,0.188)" stroke="#34D399"/>
-<text data-cfx-role="packet-bit-start" x="31" y="188.878" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">32</text>
-<text data-cfx-role="packet-bit-end" x="868" y="188.878" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">63</text>
-<text data-cfx-role="visual-text" x="449.5" y="223.038" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700">Sequence Number</text>
-<rect data-cfx-role="packet-field" data-bit-start="64" data-bit-end="95" x="30" y="269.878" width="839" height="52" rx="7" fill="rgba(251,191,36,0.188)" stroke="#FBBF24"/>
-<text data-cfx-role="packet-bit-start" x="31" y="265.878" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">64</text>
-<text data-cfx-role="packet-bit-end" x="868" y="265.878" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">95</text>
-<text data-cfx-role="visual-text" x="449.5" y="300.038" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700">Acknowledgment Number</text>
+<text data-cfx-role="packet-bit-end" x="378" y="111.878" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">15</text>
+<text data-cfx-role="visual-text" x="204.5" y="146.038" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700">Source Port</text>
+<rect data-cfx-role="packet-field" data-bit-start="16" data-bit-end="31" x="380" y="115.878" width="349" height="52" rx="7" fill="rgba(34,211,238,0.188)" stroke="#22D3EE"/>
+<text data-cfx-role="packet-bit-start" x="381" y="111.878" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">16</text>
+<text data-cfx-role="packet-bit-end" x="728" y="111.878" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">31</text>
+<text data-cfx-role="visual-text" x="554.5" y="146.038" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700">Destination Port</text>
+<rect data-cfx-role="packet-field" data-bit-start="32" data-bit-end="63" x="30" y="195.878" width="699" height="52" rx="7" fill="rgba(52,211,153,0.188)" stroke="#34D399"/>
+<text data-cfx-role="packet-bit-start" x="31" y="191.878" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">32</text>
+<text data-cfx-role="packet-bit-end" x="728" y="191.878" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">63</text>
+<text data-cfx-role="visual-text" x="379.5" y="226.038" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700">Sequence Number</text>
+<rect data-cfx-role="packet-field" data-bit-start="64" data-bit-end="95" x="30" y="275.878" width="699" height="52" rx="7" fill="rgba(251,191,36,0.188)" stroke="#FBBF24"/>
+<text data-cfx-role="packet-bit-start" x="31" y="271.878" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">64</text>
+<text data-cfx-role="packet-bit-end" x="728" y="271.878" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.021" font-weight="700">95</text>
+<text data-cfx-role="visual-text" x="379.5" y="306.038" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700">Acknowledgment Number</text>
 </svg>

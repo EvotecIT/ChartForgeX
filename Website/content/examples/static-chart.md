@@ -23,7 +23,8 @@ var chart = Chart.Create()
     .WithSize(1180, 640)
     .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
     .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120))
-    .AddSmoothLine("Failed", Points(22, 30, 28, 21, 18), ChartColor.FromRgb(248, 113, 113));
+    .AddSmoothLine("Failed", Points(22, 30, 28, 21, 18),
+        ChartColor.FromRgb(248, 113, 113));
 ```
 
 ## Save each surface

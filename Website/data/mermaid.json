@@ -22,16 +22,16 @@
       "id": "flows",
       "name": "Flows and structure",
       "families": [
-        { "id": "flowchart", "name": "Flowchart", "purpose": "Steps, decisions and branches in a process.", "source": "playground:mermaid-flowchart" },
-        { "id": "sequence", "name": "Sequence", "purpose": "Messages between participants, in the order they happen.", "source": "playground:mermaid-sequence" },
-        { "id": "class", "name": "Class", "purpose": "Types, their members and how they relate.", "source": "playground:mermaid-class" },
-        { "id": "state", "name": "State", "purpose": "States an item moves through and what triggers each move.", "source": "playground:mermaid-state" },
-        { "id": "er", "name": "Entity relationship", "purpose": "Entities, their attributes and the cardinality between them.", "source": "playground:mermaid-er" },
-        { "id": "requirement", "name": "Requirement", "purpose": "Requirements and the elements that satisfy or verify them.", "source": "site:requirement" },
-        { "id": "architecture", "name": "Architecture", "purpose": "Services, groups and connections on a system map.", "source": "site:architecture" },
+        { "title": "Incident response", "id": "flowchart", "name": "Flowchart", "purpose": "Steps, decisions and branches in a process.", "source": "site:flowchart" },
+        { "title": "Dashboard sign-in", "id": "sequence", "name": "Sequence", "purpose": "Messages between participants, in the order they happen.", "source": "playground:mermaid-sequence" },
+        { "title": "Chart model", "id": "class", "name": "Class", "purpose": "Types, their members and how they relate.", "source": "playground:mermaid-class" },
+        { "title": "Document review", "id": "state", "name": "State", "purpose": "States an item moves through and what triggers each move.", "source": "playground:mermaid-state" },
+        { "title": "Orders schema", "id": "er", "name": "Entity relationship", "purpose": "Entities, their attributes and the cardinality between them.", "source": "playground:mermaid-er" },
+        { "title": "Sign-in requirements", "id": "requirement", "name": "Requirement", "purpose": "Requirements and the elements that satisfy or verify them.", "source": "site:requirement" },
+        { "title": "Report platform", "id": "architecture", "name": "Architecture", "purpose": "Services, groups and connections on a system map.", "source": "site:architecture" },
         { "id": "c4", "name": "C4", "purpose": "People and software systems in a C4 context view.", "source": "fixture:c4-basic" },
-        { "id": "block", "name": "Block", "purpose": "Blocks placed on a column grid, joined by links.", "source": "site:block" },
-        { "id": "packet", "name": "Packet", "purpose": "Bit ranges of a protocol header, row by row.", "source": "fixture:packet-basic" }
+        { "title": "Render pipeline", "id": "block", "name": "Block", "purpose": "Blocks placed on a column grid, joined by links.", "source": "site:block" },
+        { "title": "TCP header", "id": "packet", "name": "Packet", "purpose": "Bit ranges of a protocol header, row by row.", "source": "fixture:packet-basic" }
       ]
     },
     {
@@ -41,11 +41,11 @@
         { "id": "gantt", "name": "Gantt", "purpose": "Tasks, dependencies and milestones on a calendar.", "source": "playground:mermaid-gantt" },
         { "id": "timeline", "name": "Timeline", "purpose": "Events grouped into periods along one axis.", "source": "playground:mermaid-timeline" },
         { "id": "journey", "name": "Journey", "purpose": "Tasks scored by how each actor experiences them.", "source": "playground:mermaid-journey" },
-        { "id": "kanban", "name": "Kanban", "purpose": "Work items in board columns, with optional metadata.", "source": "playground:mermaid-kanban" },
-        { "id": "gitgraph", "name": "Git graph", "purpose": "Commits, branches, merges and tags.", "source": "playground:mermaid-gitgraph" },
-        { "id": "swimlane", "name": "Swimlane", "purpose": "A process split into lanes by who owns each step.", "source": "site:swimlane" },
-        { "id": "usecase", "name": "Use case", "purpose": "Actors and the use cases inside a system boundary.", "source": "fixture:usecase-basic" },
-        { "id": "eventmodeling", "name": "Event modeling", "purpose": "Screens, commands, events and views across time frames.", "source": "fixture:eventmodeling-basic" }
+        { "title": "Playground launch", "id": "kanban", "name": "Kanban", "purpose": "Work items in board columns, with optional metadata.", "source": "playground:mermaid-kanban" },
+        { "title": "Release 2.0 branch", "id": "gitgraph", "name": "Git graph", "purpose": "Commits, branches, merges and tags.", "source": "playground:mermaid-gitgraph" },
+        { "title": "Pull request flow", "id": "swimlane", "name": "Swimlane", "purpose": "A process split into lanes by who owns each step.", "source": "site:swimlane" },
+        { "title": "Online store", "id": "usecase", "name": "Use case", "purpose": "Actors and the use cases inside a system boundary.", "source": "fixture:usecase-basic" },
+        { "title": "Shopping cart events", "id": "eventmodeling", "name": "Event modeling", "purpose": "Screens, commands, events and views across time frames.", "source": "fixture:eventmodeling-basic" }
       ]
     },
     {
@@ -54,9 +54,9 @@
       "families": [
         { "id": "pie", "name": "Pie", "purpose": "Parts of a whole, with optional values.", "source": "playground:mermaid-pie" },
         { "id": "xychart", "name": "XY chart", "purpose": "Bars and lines on shared category and value axes.", "source": "playground:mermaid-xychart" },
-        { "id": "sankey", "name": "Sankey", "purpose": "Flows between stages, sized by volume.", "source": "playground:mermaid-sankey" },
+        { "title": "Sign-ins by network and method", "id": "sankey", "name": "Sankey", "purpose": "Flows between stages, sized by volume.", "source": "playground:mermaid-sankey" },
         { "id": "radar", "name": "Radar", "purpose": "Several measures compared on radial axes.", "source": "playground:mermaid-radar" },
-        { "id": "treemap", "name": "Treemap", "purpose": "Hierarchical totals as nested rectangles.", "source": "playground:mermaid-treemap" },
+        { "title": "Device inventory", "id": "treemap", "name": "Treemap", "purpose": "Hierarchical totals as nested rectangles.", "source": "playground:mermaid-treemap" },
         { "id": "quadrant", "name": "Quadrant", "purpose": "Items placed on two axes split into four quadrants.", "source": "playground:mermaid-quadrant" }
       ]
     },
@@ -64,10 +64,10 @@
       "id": "thinking",
       "name": "Thinking tools",
       "families": [
-        { "id": "mindmap", "name": "Mind map", "purpose": "Ideas branching out from a central topic.", "source": "playground:mermaid-mindmap" },
-        { "id": "treeview", "name": "Tree view", "purpose": "A folder or outline hierarchy.", "source": "fixture:treeview-basic" },
+        { "title": "What ChartForgeX covers", "id": "mindmap", "name": "Mind map", "purpose": "Ideas branching out from a central topic.", "source": "playground:mermaid-mindmap" },
+        { "title": "Repository layout", "id": "treeview", "name": "Tree view", "purpose": "A folder or outline hierarchy.", "source": "fixture:treeview-basic" },
         { "id": "venn", "name": "Venn", "purpose": "Overlapping sets and what their intersections share.", "source": "fixture:venn-basic" },
-        { "id": "ishikawa", "name": "Ishikawa", "purpose": "Causes grouped by category behind one effect.", "source": "fixture:ishikawa-basic" },
+        { "title": "Why the release slipped", "id": "ishikawa", "name": "Ishikawa", "purpose": "Causes grouped by category behind one effect.", "source": "fixture:ishikawa-basic" },
         { "id": "wardley", "name": "Wardley", "purpose": "Components mapped by visibility and evolution.", "source": "fixture:wardley-basic" },
         { "id": "cynefin", "name": "Cynefin", "purpose": "Situations sorted into Cynefin decision domains.", "source": "fixture:cynefin-basic" }
       ]

@@ -31,9 +31,10 @@ internal static class ExampleVisuals {
             tokens => TeamHierarchy(tokens).ToHtmlPage());
 
         // The interactive example's output is the explorer page itself; the static SVG is its card image.
-        var estate = output.Pair("examples/interactive-topology", (_, _) => Estate().ToGraphSvg(configure: options => {
+        var estate = output.Pair("examples/interactive-topology", (_, dark) => Estate().ToGraphSvg(configure: options => {
             options.Width = 1180;
             options.Height = 640;
+            options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
         }));
         output.Text("examples/interactive-topology.html", Estate().ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = HtmlGraphRenderBackend.Svg;
@@ -103,24 +104,40 @@ internal static class ExampleVisuals {
     }
 
     // content/examples/organization-hierarchy.md
-    public static TopologyChart TeamHierarchy(VisualDesignTokens tokens) => TopologyChart.Create()
-        .WithDesignTokens(tokens)
-        .WithTitle("Platform team")
-        .WithSubtitle("Standard, compact and vertical branches in one hierarchy")
-        .WithViewport(1180, 620, 28)
-        .AddTeam("platform", "Platform team", new[] {
-            new TopologyTeamMember("marta", "Marta", "Head of platform") { LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard },
-            new TopologyTeamMember("jonas", "Jonas", "Sales lead") { ParentId = "marta", LayoutPolicy = TopologyHierarchyLayoutPolicy.Vertical },
-            new TopologyTeamMember("deniz", "Deniz", "Design lead") { ParentId = "marta", LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact },
-            new TopologyTeamMember("ana", "Ana", "Product designer") { ParentId = "deniz" },
-            new TopologyTeamMember("pawel", "Pawel", "Illustrator") { ParentId = "deniz", Status = TopologyHealthStatus.Warning },
-            new TopologyTeamMember("ruben", "Ruben", "Brand designer") { ParentId = "deniz" },
-            new TopologyTeamMember("emre", "Emre", "Product designer") { ParentId = "deniz" },
-            new TopologyTeamMember("vipul", "Vipul", "Account manager") { ParentId = "jonas" },
-            new TopologyTeamMember("karan", "Karan", "Account manager") { ParentId = "jonas" },
-            new TopologyTeamMember("lena", "Lena", "Sales engineer") { ParentId = "jonas" }
-        }, new TopologyTeamOptions { MaxLevel = 3 });
+    public static TopologyChart TeamHierarchy(VisualDesignTokens tokens) {
+        var members = new[] {
+            new TopologyTeamMember("marta", "Marta", "Head of platform") {
+                LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard
+            },
+            new TopologyTeamMember("jonas", "Jonas", "Sales lead") {
+                ParentId = "marta",
+                LayoutPolicy = TopologyHierarchyLayoutPolicy.Vertical
+            },
+            new TopologyTeamMember("deniz", "Deniz", "Design lead") {
+                ParentId = "marta",
+                LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact
+            },
+            Reports("ana", "Ana", "Product designer", "deniz"),
+            Reports("pawel", "Pawel", "Illustrator", "deniz", TopologyHealthStatus.Warning),
+            Reports("ruben", "Ruben", "Brand designer", "deniz"),
+            Reports("emre", "Emre", "Product designer", "deniz"),
+            Reports("vipul", "Vipul", "Account manager", "jonas"),
+            Reports("karan", "Karan", "Account manager", "jonas"),
+            Reports("lena", "Lena", "Sales engineer", "jonas")
+        };
 
+        return TopologyChart.Create()
+            .WithDesignTokens(tokens)
+            .WithTitle("Platform team")
+            .WithSubtitle("Standard, compact and vertical branches")
+            .WithViewport(1180, 620, 28)
+            .AddTeam("platform", "Platform team", members,
+                new TopologyTeamOptions { MaxLevel = 3 });
+
+        static TopologyTeamMember Reports(string id, string name, string role, string manager,
+            TopologyHealthStatus status = TopologyHealthStatus.Unknown) =>
+            new(id, name, role) { ParentId = manager, Status = status };
+    }
     // content/examples/interactive-topology.md
     public static GraphScene Estate() {
         var graph = GraphScene.Create("estate", "Global estate")
@@ -143,7 +160,7 @@ internal static class ExampleVisuals {
             .AddEdge("global-europe", "global", "europe", configure: edge => edge.Directed = true)
             .AddEdge("global-americas", "global", "americas", configure: edge => edge.Directed = true)
             .AddEdge("global-apac", "global", "apac", configure: edge => edge.Directed = true)
-            .AddEdge("europe-americas", "europe", "americas", "replication", edge => edge.Status = "warning");
+            .AddEdge("europe-apac", "europe", "apac", "replication", edge => edge.Status = "warning");
 
         foreach (var (id, label, region) in new[] {
             ("warsaw", "Warsaw", "europe"), ("london", "London", "europe"), ("frankfurt", "Frankfurt", "europe"),
@@ -151,10 +168,11 @@ internal static class ExampleVisuals {
             ("sydney", "Sydney", "apac"), ("singapore", "Singapore", "apac")
         }) {
             graph.AddNode(id, label, node => node.ParentId = region)
-                .AddEdge(region + "-" + id, region, id);
+                .AddEdge(region + "-" + id, region, id, configure: edge => edge.Directed = true);
         }
 
         graph.Options.UseSuperTopologyDefaults();
+        graph.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
         graph.Options.Hierarchy.InitialRootNodeId = "global";
         graph.Options.Hierarchy.InitialDepth = 1;
         return graph;

@@ -16,21 +16,29 @@ internal static class GalleryVisuals {
         var counts = categories.Select(category => (double)gallery.RootElement.GetProperty("items").EnumerateArray()
             .Count(item => item.GetProperty("category").GetString() == category.Id)).ToArray();
 
-        // Horizontal bars stack from the bottom, so reverse the categories to read in filter order from the top.
-        Array.Reverse(categories);
-        Array.Reverse(counts);
+        // One stacked series per category, each with a single value on its own row, so every bar takes its category's
+        // legend colour. Keys past six are hollow on the page; their bars reuse the first series colours.
+        // Horizontal bars stack from the bottom, so rows are listed in reverse to read in filter order from the top.
+        var rows = categories.Length;
+        Chart Composition(VisualDesignTokens tokens) {
+            var chart = Chart.Create()
+                .WithDesignTokens(tokens)
+                .WithTransparentBackground()
+                .WithCard(false)
+                .WithHeader(false)
+                .WithLegend(false)
+                .WithSize(560, 300)
+                .WithStackedBars()
+                .WithStackTotals()
+                .WithXLabels(Enumerable.Reverse(categories).Select(category => category.Label).ToArray());
+            for (var index = 0; index < rows; index++) {
+                var row = rows - index;
+                var points = new[] { new ChartPoint(row, counts[index]) };
+                chart.AddHorizontalBar(categories[index].Label, points, tokens.Palette[index % 6]);
+            }
 
-        Chart Composition(VisualDesignTokens tokens) => Chart.Create()
-            .WithDesignTokens(tokens)
-            .WithTransparentBackground()
-            .WithCard(false)
-            .WithHeader(false)
-            .WithLegend(false)
-            .WithSize(560, 300)
-            .WithXLabels(categories.Select(category => category.Label).ToArray())
-            .WithDataLabels()
-            .AddHorizontalBar("Examples", counts.Select((count, index) => new ChartPoint(index + 1, count)).ToArray());
-
+            return chart;
+        }
         var entry = output.Pair("gallery/categories", (tokens, _) => Composition(tokens).ToSvg("cfx-gallery-categories"));
         entry["total"] = counts.Sum();
         return entry;

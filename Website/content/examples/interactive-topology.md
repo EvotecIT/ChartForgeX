@@ -33,10 +33,14 @@ var graph = GraphScene.Create("estate", "Global estate")
         node.SecondaryLabel = "2 sites · 10 workloads";
         node.Status = "healthy";
     })
-    .AddEdge("global-europe", "global", "europe", configure: edge => edge.Directed = true)
-    .AddEdge("global-americas", "global", "americas", configure: edge => edge.Directed = true)
-    .AddEdge("global-apac", "global", "apac", configure: edge => edge.Directed = true)
-    .AddEdge("europe-americas", "europe", "americas", "replication", edge => edge.Status = "warning");
+    .AddEdge("global-europe", "global", "europe",
+        configure: edge => edge.Directed = true)
+    .AddEdge("global-americas", "global", "americas",
+        configure: edge => edge.Directed = true)
+    .AddEdge("global-apac", "global", "apac",
+        configure: edge => edge.Directed = true)
+    .AddEdge("europe-apac", "europe", "apac", "replication",
+        edge => edge.Status = "warning");
 ```
 
 ## Add the sites
@@ -45,21 +49,24 @@ Sites hang under their region. Stable ids keep selection and links valid when th
 
 ```csharp
 foreach (var (id, label, region) in new[] {
-    ("warsaw", "Warsaw", "europe"), ("london", "London", "europe"), ("frankfurt", "Frankfurt", "europe"),
-    ("new-york", "New York", "americas"), ("toronto", "Toronto", "americas"),
-    ("sydney", "Sydney", "apac"), ("singapore", "Singapore", "apac")
+    ("warsaw", "Warsaw", "europe"), ("london", "London", "europe"),
+    ("frankfurt", "Frankfurt", "europe"), ("new-york", "New York", "americas"),
+    ("toronto", "Toronto", "americas"), ("sydney", "Sydney", "apac"),
+    ("singapore", "Singapore", "apac")
 }) {
     graph.AddNode(id, label, node => node.ParentId = region)
-        .AddEdge(region + "-" + id, region, id);
+        .AddEdge(region + "-" + id, region, id,
+            configure: edge => edge.Directed = true);
 }
 ```
 
-## Start at the top level
+## Lay it out as a hierarchy
 
-The explorer opens on the global node with one level of children; readers drill into a region from there.
+The hierarchical layout sets regions under the global node and sites under their region. The explorer opens on the global node with one level of children; readers drill into a region from there.
 
 ```csharp
 graph.Options.UseSuperTopologyDefaults();
+graph.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
 graph.Options.Hierarchy.InitialRootNodeId = "global";
 graph.Options.Hierarchy.InitialDepth = 1;
 ```
@@ -78,4 +85,4 @@ var html = graph.ToGraphExplorerHtmlPage(options => {
 File.WriteAllText("estate.html", html);
 ```
 
-`graph.ToGraphSvg()` writes a script-free SVG of the same scene for documents that cannot run script.
+`graph.ToGraphSvg()` writes a script-free SVG of the same scene for documents that cannot run script; set `Theme` in its options for a dark export. The card image on the examples page is that export, in both themes.

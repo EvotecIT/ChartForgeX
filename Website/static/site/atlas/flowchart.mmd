@@ -1,8 +1,10 @@
-flowchart LR
+---
+title: Incident response
+---
+flowchart TD
   alert([Alert raised]) --> triage{Known issue?}
   triage -->|yes| runbook[Run the runbook]
   triage -->|no| owner[Page the service owner]
   runbook --> verify[Verify recovery]
   owner --> fix[Ship a fix]
   fix --> verify
-  verify --> close((Close))

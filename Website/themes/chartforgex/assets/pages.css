@@ -71,8 +71,8 @@
 
 .cfx-atlas__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
+  gap: 24px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -93,8 +93,8 @@
   display: grid;
   place-items: center;
   margin: 0;
-  padding: 14px;
-  aspect-ratio: 16 / 10;
+  padding: 12px;
+  aspect-ratio: 4 / 3;
   border-top: 3px solid var(--key);
   border-bottom: 1px solid var(--cfx-line);
   background:
@@ -102,7 +102,9 @@
     repeating-linear-gradient(to bottom, var(--cfx-grid) 0 1px, transparent 1px 24px),
     var(--cfx-page);
 }
-.cfx-family__plate img { position: absolute; inset: 14px; width: calc(100% - 28px); height: calc(100% - 28px); object-fit: contain; }
+.cfx-family__plate > a { position: absolute; inset: 12px; display: block; border-radius: 6px; }
+.cfx-family__plate > a:hover { outline: 1px solid var(--cfx-line-strong); outline-offset: 2px; }
+.cfx-family__plate img { width: 100%; height: 100%; object-fit: contain; }
 .cfx-family__text { padding: 14px 18px 4px; }
 .cfx-family__text h4 { font-size: 1.0625rem; font-weight: 720; font-stretch: 108%; }
 .cfx-family__text p { margin-top: 4px; color: var(--cfx-ink-2); font-size: .9063rem; line-height: 1.45; }
@@ -131,12 +133,14 @@
   left: 0;
   right: 0;
   z-index: 2;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 4 / 3;
 }
 .cfx-family__source .cfx-codeblock pre { height: 100%; border-width: 0 0 1px; border-radius: 0; font-size: .75rem; }
 .cfx-family__edit { padding: 8px 6px; color: var(--cfx-accent); font-size: .875rem; font-weight: 620; text-decoration: none; }
 .cfx-family__edit:hover { text-decoration: underline; }
 
+.cfx-atlas__group--recognised .cfx-atlas__grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.cfx-family--pending .cfx-family__plate { aspect-ratio: 16 / 5; }
 .cfx-family--pending { border-style: dashed; border-color: var(--cfx-line-strong); background: transparent; }
 .cfx-family--pending .cfx-family__plate {
   border-top: 0;
@@ -255,7 +259,7 @@
 .cfx-exmosaic a:hover { border-color: rgba(255, 255, 255, .3); }
 .cfx-exmosaic__bar { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-bottom: 1px solid rgba(255, 255, 255, .08); background: #0c0f13; color: #8d96a2; font-family: var(--cfx-mono); font-size: .6875rem; }
 .cfx-exmosaic__bar::before { content: ""; width: 7px; height: 7px; border-radius: 2px; background: var(--cfx-glow); }
-.cfx-exmosaic img { aspect-ratio: 16 / 10; object-fit: cover; object-position: top center; }
+.cfx-exmosaic img { aspect-ratio: 16 / 10; padding: 6px; object-fit: contain; }
 
 .cfx-examples { padding-top: clamp(48px, 6vw, 80px); }
 .cfx-exgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; margin: 0; padding: 0; list-style: none; }

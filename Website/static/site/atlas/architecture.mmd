@@ -1,12 +1,15 @@
+---
+title: Report platform
+---
 architecture-beta
 group edge(cloud)[Edge]
-group core(cloud)[Report platform]
+group core(cloud)[Platform]
 group data(database)[Data] in core
-service web(internet)[Web front end] in edge
-service api(server)[Report API] in core
-service renderer(server)[ChartForgeX renderer] in core
-service sql(database)[SQL store] in data
-service blob(disk)[Image cache] in data
+service web(internet)[Web] in edge
+service api(server)[API] in core
+service renderer(server)[Renderer] in core
+service sql(database)[SQL] in data
+service blob(disk)[Cache] in data
 web:R --> L:api
 api:R --> L:renderer
 renderer:B --> T:blob

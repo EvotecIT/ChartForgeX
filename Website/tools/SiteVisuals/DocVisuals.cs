@@ -62,12 +62,15 @@ internal static class DocVisuals {
             ["canvas"] = output.Pair("docs/surface-canvas", (tokens, _) => Canvas(tokens).ToSvg("cfx-sf-canvas")),
             ["topology"] = VisualOutput.Reuse(topology),
             ["graph"] = Example("interactive-topology"),
-            ["markup"] = output.Pair("docs/surface-markup", (_, dark) => MermaidAtlas.Render("surface-markup", """
+            ["markup"] = output.Pair("docs/surface-markup", (_, dark) => VisualOutput.Fit(MermaidAtlas.Render("surface-markup", """
+                ---
+                title: Markdown to visuals
+                ---
                 flowchart LR
                   md[Markdown fence] --> parse{Parse}
                   parse --> chart[Chart]
                   parse --> diagram[Diagram]
-                """, dark, new List<string>()))
+                """, dark, new List<string>()), 1.6))
         };
 
         return new Dictionary<string, object> { ["figures"] = figures, ["surfaces"] = surfaces };

@@ -61,8 +61,12 @@
         {{~ r = renders[f.id] ~}}
         <li class="cfx-family">
           <figure class="cfx-family__plate">
-            <img class="cfx-only-light" src="{{ r.base }}-light.svg" width="{{ r.w }}" height="{{ r.h }}" loading="lazy" decoding="async" alt="{{ f.name }} diagram rendered by ChartForgeX from its Mermaid source." />
-            <img class="cfx-only-dark" src="{{ r.base }}-dark.svg" width="{{ r.w }}" height="{{ r.h }}" loading="lazy" decoding="async" alt="{{ f.name }} diagram rendered by ChartForgeX from its Mermaid source, dark theme." />
+            <a class="cfx-only-light" href="{{ r.base }}-light.svg" aria-label="Open the {{ f.name }} render full size, light theme">
+              <img src="{{ r.base }}-light.svg" width="{{ r.w }}" height="{{ r.h }}" loading="lazy" decoding="async" alt="{{ f.name }} diagram rendered by ChartForgeX from its Mermaid source." />
+            </a>
+            <a class="cfx-only-dark" href="{{ r.base }}-dark.svg" aria-label="Open the {{ f.name }} render full size, dark theme">
+              <img src="{{ r.base }}-dark.svg" width="{{ r.w }}" height="{{ r.h }}" loading="lazy" decoding="async" alt="{{ f.name }} diagram rendered by ChartForgeX from its Mermaid source, dark theme." />
+            </a>
           </figure>
           <div class="cfx-family__text">
             <h4>{{ f.name }}</h4>

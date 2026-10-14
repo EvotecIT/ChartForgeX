@@ -122,6 +122,73 @@ internal sealed class VisualOutput {
             (int)Math.Round(double.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture)));
     }
 
+    /// <summary>
+    /// Crops an SVG to what it draws, then widens the crop to <paramref name="aspect"/> so a card of that shape shows the
+    /// content filling it. The SVG is rasterized by ChartForgeX to find the drawn area; the frame edge and its shadow are
+    /// ignored and the dominant colour inside is taken as the background. Only the root viewBox and size change.
+    /// </summary>
+    public static string Fit(string svg, double aspect, int inset = 18, int margin = 20) {
+        var (width, height) = Size(svg);
+        var image = ChartForgeX.Raster.RasterImageDecoder.Decode(ChartForgeX.SvgRaster.SvgRasterizer.ToPng(svg, width, height));
+        int Offset(int x, int y) => (y * image.Width + x) * 4;
+        var counts = new Dictionary<int, int>();
+        for (var y = inset; y < image.Height - inset; y += 3) {
+            for (var x = inset; x < image.Width - inset; x += 3) {
+                var o = Offset(x, y);
+                var key = (image.Pixels[o] >> 3) << 10 | (image.Pixels[o + 1] >> 3) << 5 | (image.Pixels[o + 2] >> 3);
+                counts[key] = counts.TryGetValue(key, out var count) ? count + 1 : 1;
+            }
+        }
+        if (counts.Count == 0) return svg;
+        var background = counts.OrderByDescending(pair => pair.Value).First().Key;
+        int br = ((background >> 10) & 31) << 3, bg = ((background >> 5) & 31) << 3, bb = (background & 31) << 3;
+        int minX = int.MaxValue, minY = int.MaxValue, maxX = -1, maxY = -1;
+        for (var y = inset; y < image.Height - inset; y++) {
+            for (var x = inset; x < image.Width - inset; x++) {
+                var o = Offset(x, y);
+                if (image.Pixels[o + 3] < 128) continue;
+                var distance = Math.Abs(image.Pixels[o] - br) + Math.Abs(image.Pixels[o + 1] - bg) + Math.Abs(image.Pixels[o + 2] - bb);
+                if (distance <= 42) continue;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+        if (maxX < 0) return svg;
+
+        double x0 = Math.Max(0, minX - margin), y0 = Math.Max(0, minY - margin);
+        double x1 = Math.Min(width, maxX + margin), y1 = Math.Min(height, maxY + margin);
+        if ((x1 - x0) / (y1 - y0) > aspect) {
+            var grow = (x1 - x0) / aspect - (y1 - y0);
+            y0 -= grow / 2;
+            y1 += grow / 2;
+        } else {
+            var grow = (y1 - y0) * aspect - (x1 - x0);
+            x0 -= grow / 2;
+            x1 += grow / 2;
+        }
+
+        // Keep the crop on the canvas: shift it back inside, and stop widening at the canvas edge.
+        (x0, x1) = Clamp(x0, x1, width);
+        (y0, y1) = Clamp(y0, y1, height);
+        var viewBox = string.Format(CultureInfo.InvariantCulture, "{0:0.#} {1:0.#} {2:0.#} {3:0.#}", x0, y0, x1 - x0, y1 - y0);
+        var root = RootTag.Match(svg);
+        var tag = root.Value;
+        tag = Regex.Replace(tag, @"(?<=\s)viewBox=""[^""]*""", $"viewBox=\"{viewBox}\"");
+        tag = Regex.Replace(tag, @"(?<=\s)width=""[\d.]+""", string.Format(CultureInfo.InvariantCulture, "width=\"{0:0}\"", x1 - x0));
+        tag = Regex.Replace(tag, @"(?<=\s)height=""[\d.]+""", string.Format(CultureInfo.InvariantCulture, "height=\"{0:0}\"", y1 - y0));
+        return svg.Substring(0, root.Index) + tag + svg.Substring(root.Index + root.Length);
+
+        static (double, double) Clamp(double start, double end, double size) {
+            if (end - start >= size) return (0, size);
+            if (start < 0) return (0, end - start);
+            if (end > size) return (size - (end - start), size);
+            return (start, end);
+        }
+    }
+
+    private static readonly Regex RootTag = new(@"<svg\b[^>]*>", RegexOptions.Compiled);
     public static void Report(string label, IEnumerable<string> diagnostics) {
         foreach (var diagnostic in diagnostics) Console.WriteLine($"[{label}] {diagnostic}");
     }

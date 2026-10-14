@@ -10,23 +10,35 @@ layout: example
 
 ## Describe the people
 
-Each member names its parent. A layout policy on a member applies to the branch below it and is inherited, so most of a tree can stay automatic while one team becomes compact or vertical.
+Each member names its manager; the small `Reports` helper keeps the leaf entries short. A layout policy on a member applies to the branch below it and is inherited, so most of a tree can stay automatic while one team becomes compact or vertical.
 
 ```csharp
 using ChartForgeX.Topology;
 
 var members = new[] {
-    new TopologyTeamMember("marta", "Marta", "Head of platform") { LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard },
-    new TopologyTeamMember("jonas", "Jonas", "Sales lead") { ParentId = "marta", LayoutPolicy = TopologyHierarchyLayoutPolicy.Vertical },
-    new TopologyTeamMember("deniz", "Deniz", "Design lead") { ParentId = "marta", LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact },
-    new TopologyTeamMember("ana", "Ana", "Product designer") { ParentId = "deniz" },
-    new TopologyTeamMember("pawel", "Pawel", "Illustrator") { ParentId = "deniz", Status = TopologyHealthStatus.Warning },
-    new TopologyTeamMember("ruben", "Ruben", "Brand designer") { ParentId = "deniz" },
-    new TopologyTeamMember("emre", "Emre", "Product designer") { ParentId = "deniz" },
-    new TopologyTeamMember("vipul", "Vipul", "Account manager") { ParentId = "jonas" },
-    new TopologyTeamMember("karan", "Karan", "Account manager") { ParentId = "jonas" },
-    new TopologyTeamMember("lena", "Lena", "Sales engineer") { ParentId = "jonas" }
+    new TopologyTeamMember("marta", "Marta", "Head of platform") {
+        LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard
+    },
+    new TopologyTeamMember("jonas", "Jonas", "Sales lead") {
+        ParentId = "marta",
+        LayoutPolicy = TopologyHierarchyLayoutPolicy.Vertical
+    },
+    new TopologyTeamMember("deniz", "Deniz", "Design lead") {
+        ParentId = "marta",
+        LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact
+    },
+    Reports("ana", "Ana", "Product designer", "deniz"),
+    Reports("pawel", "Pawel", "Illustrator", "deniz", TopologyHealthStatus.Warning),
+    Reports("ruben", "Ruben", "Brand designer", "deniz"),
+    Reports("emre", "Emre", "Product designer", "deniz"),
+    Reports("vipul", "Vipul", "Account manager", "jonas"),
+    Reports("karan", "Karan", "Account manager", "jonas"),
+    Reports("lena", "Lena", "Sales engineer", "jonas")
 };
+
+static TopologyTeamMember Reports(string id, string name, string role, string manager,
+    TopologyHealthStatus status = TopologyHealthStatus.Unknown) =>
+    new(id, name, role) { ParentId = manager, Status = status };
 ```
 
 ## Pick a policy per branch
@@ -43,9 +55,10 @@ var members = new[] {
 ```csharp
 var chart = TopologyChart.Create()
     .WithTitle("Platform team")
-    .WithSubtitle("Standard, compact and vertical branches in one hierarchy")
+    .WithSubtitle("Standard, compact and vertical branches")
     .WithViewport(1180, 620, 28)
-    .AddTeam("platform", "Platform team", members, new TopologyTeamOptions { MaxLevel = 3 });
+    .AddTeam("platform", "Platform team", members,
+        new TopologyTeamOptions { MaxLevel = 3 });
 ```
 
 ## Save it

@@ -38,7 +38,8 @@ var report = ChartGrid.FromFacets(
     (site, rows) => Chart.Create()
         .WithTitle(site)
         .WithYAxis("CPU (%)")
-        .AddLine("CPU", rows, sample => sample.Minute, sample => sample.Cpu),
+        .AddLine("CPU", rows,
+            sample => sample.Minute, sample => sample.Cpu),
     columns: 2);
 ```
 
