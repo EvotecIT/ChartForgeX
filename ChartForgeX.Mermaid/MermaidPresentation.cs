@@ -35,6 +35,8 @@ internal static class MermaidPresentation {
             chart.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) chart.WithThemeMode(Mode(document.Theme));
             chart.WithTheme(chart.Options.Theme.WithTypography(Typography(chart.Options.Theme.Typography, document.Configuration)));
+            document.Configuration.ChartColors?.Apply(chart);
+            document.Configuration.RadarTheme?.Apply(chart);
         } else if (model is IVisualBlock block) {
             block.Options.Accessibility.Name = document.Accessibility.Name;
             block.Options.Accessibility.Description = document.Accessibility.Description;

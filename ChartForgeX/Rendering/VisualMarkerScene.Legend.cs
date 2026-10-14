@@ -30,7 +30,7 @@ internal static partial class VisualMarkerScene {
             or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.RangeArea or ChartSeriesKind.RangeBand;
         var radarArea = series.Kind == ChartSeriesKind.Radar && series.Radar.Form == ChartLineAreaForm.Area;
         // Retain ordinary area/line swatches until their marker or radar paint is explicitly configured.
-        if (!series.Markers.IsConfigured && (connected || radarArea && !series.Radar.FillOpacity.HasValue)) return null;
+        if (!series.Markers.IsConfigured && (connected || radarArea && !series.Radar.FillOpacity.HasValue && series.Radar.OutlineStroke == null)) return null;
         return (builder, bounds, context) => {
             var colors = context.Theme.Resolve(context.ThemeMode);
             var x = bounds.Left + bounds.Width / 2; var y = bounds.Top + bounds.Height / 2;
@@ -44,8 +44,18 @@ internal static partial class VisualMarkerScene {
                 var hatchOpacity = radarArea ? Math.Min(1, opacity / Math.Max(.000001, context.Theme.AreaOpacity)) : 1;
                 VisualFrameLayout.DrawLegendPattern(builder, bounds, pattern, context, hatchOpacity, "legend-area-pattern");
             }
-            if (line) builder.Line(bounds.Left, y, bounds.Right, y, color,
-                series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth, role: "legend-line", paint: VisualChartPaint.Stroke(paint));
+            if (line) {
+                var outline = series.Kind == ChartSeriesKind.Radar ? series.Radar.OutlineStroke : null;
+                var width = VisualReferenceStroke.PaintedWidth(outline, color,
+                    series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth);
+                var source = outline?.Color ?? color;
+                var opacity = outline?.Opacity ?? 1;
+                var actual = ChartColorMath.WithOpacity(source, opacity);
+                var outlinePaint = outline?.Color != null ? SvgPaint.Literal(source) : paint;
+                if (width > 0) builder.Line(bounds.Left, y, bounds.Right, y, actual, outline == null ? width : Math.Min(width, bounds.Height),
+                    role: "legend-line", dash: outline?.ResolveDash(Array.Empty<double>()),
+                    paint: VisualChartPaint.Stroke(outlinePaint.WithOpacity(actual, opacity)));
+            }
             var familyDefault = connected ? !chart.Options.IsSparkline && chart.Options.LineMarkerMode != ChartLineMarkerMode.None : true;
             if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea)
                 familyDefault = series.MarkerRadius.HasValue || series.PointColors.Any(value => value.HasValue)

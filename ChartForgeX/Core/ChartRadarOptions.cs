@@ -7,6 +7,13 @@ public sealed class ChartRadarOptions {
     private ChartLineAreaForm _form;
     private double? _fillOpacity;
     private double? _curveTension;
+    private ChartStrokeStyle? _outlineStroke;
+
+    /// <summary>Gets or sets immutable outline-stroke overrides. Null uses the series color and width; zero width hides the outline while retaining the area, markers and observations. Dedicated and mixed radial layouts share these overrides.</summary>
+    public ChartStrokeStyle? OutlineStroke {
+        get => _outlineStroke;
+        set { _outlineStroke = value; IsConfigured = true; }
+    }
 
     /// <summary>Gets or sets the radar form. Area preserves the default of AddRadar.</summary>
     public ChartLineAreaForm Form {
