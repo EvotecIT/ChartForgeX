@@ -9,6 +9,6 @@ pwsh Website/build.ps1 -Serve
 - `site.json`, `pipeline.json` and `themes/chartforgex/` define the site.
 - `content/project-docs/docs/` and `content/examples/` are shared with the hub through `WebsiteArtifacts/project-manifest.json`.
 - `data/gallery.json` and `static/examples/generated/` hold the generated gallery; refresh them with `build/Sync-GeneratedExamples.ps1`.
-- `tools/SiteVisuals` renders the hero, surface and Mermaid visuals with ChartForgeX.
+- `tools/SiteVisuals` renders the hero, surface, navigation, Mermaid atlas, docs and example visuals with ChartForgeX.
 
 See [AGENTS.md](AGENTS.md) for the full workflow and validation steps.
