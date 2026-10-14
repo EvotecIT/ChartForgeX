@@ -45,4 +45,11 @@
     <ProjectReference Include="..\..\..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" />
     <ProjectReference Include="..\..\..\ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj" />
   </ItemGroup>
+
+  <!-- Carlito (SIL OFL 1.1) gives the browser, which has no installed fonts, real text metrics; see PlaygroundFonts.cs. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Regular.ttf" LogicalName="Fonts.Carlito-Regular.ttf" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Bold.ttf" LogicalName="Fonts.Carlito-Bold.ttf" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\OFL.txt" LogicalName="Fonts.Carlito-OFL.txt" />
+  </ItemGroup>
 </Project>

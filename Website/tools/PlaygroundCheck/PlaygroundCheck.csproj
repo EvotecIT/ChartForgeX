@@ -18,6 +18,10 @@
     <Compile Include="..\Playground\PlaygroundEngine.cs" Link="Engine\PlaygroundEngine.cs" />
     <Compile Include="..\Playground\PlaygroundJson.cs" Link="Engine\PlaygroundJson.cs" />
     <Compile Include="..\Playground\PlaygroundSamples.cs" Link="Engine\PlaygroundSamples.cs" />
+    <Compile Include="..\Playground\PlaygroundFonts.cs" Link="Engine\PlaygroundFonts.cs" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Regular.ttf" LogicalName="Fonts.Carlito-Regular.ttf" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Bold.ttf" LogicalName="Fonts.Carlito-Bold.ttf" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\OFL.txt" LogicalName="Fonts.Carlito-OFL.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ChartForgeX\ChartForgeX.csproj" />

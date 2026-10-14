@@ -37,6 +37,7 @@ public static class PlaygroundEngine {
         var stopwatch = Stopwatch.StartNew();
         var outcome = new RenderOutcome();
         try {
+            PlaygroundFonts.EnsureRegistered();
             RenderCore(language, source, theme, outcome);
         } catch (Exception exception) {
             outcome.Fail("Internal renderer error (" + exception.GetType().Name + "): " + exception.Message, null, null);
