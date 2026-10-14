@@ -38,6 +38,11 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Setup Node.js for Mermaid conformance
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+
       - name: Install Native AOT prerequisites
         if: runner.os == 'Linux'
         shell: bash

@@ -309,6 +309,8 @@ chart.SaveInteractiveHtml("explore.html", options => {
 
 The adapter also offers legend controls, crosshairs, brushing, synchronized charts, and zoom/pan. Current standalone zoom transforms the rendered SVG; native numeric X viewports are a separate core contract with narrower family support. See [interactivity](docs/interactivity.md) for feature policies and [graph explorer](docs/graph-explorer.md) for large topology navigation.
 
+For a page that refreshes data, prepare a new chart section in C# and pass it to the adapter's `ChartForgeXCharts` controller. Its `mount`, `update`, `resize` and `dispose` methods manage the browser view and its resources. Updates retain surviving explicit series and observation IDs; see the [chart lifecycle example](docs/interactivity.md#updating-embedded-charts).
+
 ## Choose the packages you need
 
 | Package | Purpose |
@@ -339,6 +341,8 @@ For the repository quality loop, run:
 ```
 
 The quality loop builds and tests the solution, checks the pinned Mermaid reference corpus, runs the AOT smoke, generates examples, checks visual-health baselines, and packs and inspects packages. `-QualifyPackages` additionally builds and runs isolated consumers of the packed packages.
+
+Use a supported Node.js runtime for the Mermaid reference checks. CI selects Node 24, starting at 24.15.0; the npm restore enforces dependency engine requirements.
 
 For rendered browser and interaction checks, run the same required lane used by CI:
 

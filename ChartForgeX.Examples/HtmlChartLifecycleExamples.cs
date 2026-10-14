@@ -1,35 +1,34 @@
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Themes;
 
 /// <summary>Shows native data replacement inside a retained interactive chart host.</summary>
 public static class HtmlChartLifecycleExamples {
+    /// <summary>Writes the interactive example and its matching native preview.</summary>
+    /// <param name="output">Directory for the generated files.</param>
+    /// <param name="dark">Whether to use the dark Graphite palette.</param>
+    public static void Write(string output, bool dark = false) {
+        Directory.CreateDirectory(output);
+        var name = Path.Combine(output, "graphite-" + (dark ? "dark" : "light") + "-chart-lifecycle");
+        File.WriteAllText(name + ".html", CreatePage(dark));
+        var preview = CreateChart(false, dark);
+        preview.SaveSvg(name + ".svg");
+        preview.SavePng(name + ".png");
+    }
+
     /// <summary>Creates an example with source-backed updates and explicit browser disposal/remounting.</summary>
     /// <param name="dark">Whether to use the dark Graphite palette.</param>
     /// <returns>A self-contained HTML page.</returns>
     public static string CreatePage(bool dark = false) {
-        Chart Create(bool updated) {
-            var values = updated ? new[] { new ChartBubble(2, 9, 25), new ChartBubble(1, 17, 64) }
-                : new[] { new ChartBubble(1, 5, 9), new ChartBubble(2, 8, 25) };
-            var samples = ChartSeries.CreateBubble(new ChartSeriesId("samples"), "Samples", values)
-                .WithObservationId(updated ? 1 : 0, new ChartObservationId("north"))
-                .WithObservationId(updated ? 0 : 1, new ChartObservationId("south"));
-            var reference = ChartSeries.CreateLine(new ChartSeriesId("reference"), "Reference",
-                new[] { new ChartPoint(0, 20), new ChartPoint(3, 20) });
-            var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
-                .WithTitle("Measurements that keep their identity")
-                .WithSubtitle("Select a bubble or mute Reference, then update the measurements")
-                .WithXAxisBounds(0, 3).WithYAxisBounds(0, 25).WithLegend().WithDataLabels(false);
-            return updated ? chart.AddSeries(reference).AddSeries(samples) : chart.AddSeries(samples).AddSeries(reference);
-        }
         void Configure(HtmlChartInteractionOptions options) {
             options.Interaction.ChartId = "measurement-lifecycle";
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
         }
-        var initial = Create(false);
+        var initial = CreateChart(false, dark);
         var fragments = JsonSerializer.Serialize(new[] {
-            initial.ToInteractiveHtmlFragmentWithoutAssets(Configure), Create(true).ToInteractiveHtmlFragmentWithoutAssets(Configure)
+            initial.ToInteractiveHtmlFragmentWithoutAssets(Configure), CreateChart(true, dark).ToInteractiveHtmlFragmentWithoutAssets(Configure)
         });
         const string controls = "<div class='cfx-toolbar cfx-lifecycle-controls' aria-label='Example host controls'><button class='cfx-tool' type='button' id='update-measurements'>Update measurements</button>"
             + "<button class='cfx-tool' type='button' id='dispose-chart'>Dispose chart</button><button class='cfx-tool' type='button' id='mount-chart' hidden>Mount again</button>"
@@ -52,5 +51,20 @@ public static class HtmlChartLifecycleExamples {
         return initial.ToInteractiveHtmlPage(Configure).Replace("<section class=\"cfx-interactive-chart\"", "<div class='cfx-lifecycle-demo'>" + controls + "<section class=\"cfx-interactive-chart\"", StringComparison.Ordinal)
             .Replace("</main>", "</div></main>", StringComparison.Ordinal).Replace("</head>", style + "</head>", StringComparison.Ordinal)
             .Replace("</body>", script + "</body>", StringComparison.Ordinal);
+    }
+
+    private static Chart CreateChart(bool updated, bool dark) {
+        var values = updated ? new[] { new ChartBubble(2, 9, 25), new ChartBubble(1, 17, 64) }
+            : new[] { new ChartBubble(1, 5, 9), new ChartBubble(2, 8, 25) };
+        var samples = ChartSeries.CreateBubble(new ChartSeriesId("samples"), "Samples", values)
+            .WithObservationId(updated ? 1 : 0, new ChartObservationId("north"))
+            .WithObservationId(updated ? 0 : 1, new ChartObservationId("south"));
+        var reference = ChartSeries.CreateLine(new ChartSeriesId("reference"), "Reference",
+            new[] { new ChartPoint(0, 20), new ChartPoint(3, 20) });
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTitle("Measurements that keep their identity")
+            .WithSubtitle("Select a bubble or mute Reference, then update the measurements")
+            .WithXAxisBounds(0, 3).WithYAxisBounds(0, 25).WithLegend().WithDataLabels(false);
+        return updated ? chart.AddSeries(reference).AddSeries(samples) : chart.AddSeries(samples).AddSeries(reference);
     }
 }

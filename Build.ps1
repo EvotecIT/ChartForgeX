@@ -534,7 +534,7 @@ function Invoke-MermaidConformance {
         throw "Mermaid conformance package was not found: $conformanceRoot"
     }
 
-    Invoke-NodeCommand -FileName 'npm' -Arguments @('ci', '--ignore-scripts', '--no-audit', '--no-fund') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance restore' -TimeoutSeconds $TimeoutSeconds -Quiet
+    Invoke-NodeCommand -FileName 'npm' -Arguments @('ci', '--engine-strict', '--ignore-scripts', '--no-audit', '--no-fund') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance restore' -TimeoutSeconds $TimeoutSeconds -Quiet
     Invoke-NodeCommand -FileName 'node' -Arguments @('validate-mermaid.mjs') -WorkingDirectory $conformanceRoot -Description 'Mermaid.js conformance validation' -TimeoutSeconds $TimeoutSeconds
 }
 

@@ -311,6 +311,58 @@
       }
     },
     {
+      "id": "graphite-light-chart-lifecycle",
+      "title": "Update measurements in a retained chart",
+      "category": "charts",
+      "summary": "Select a bubble or mute the reference series, then refresh reordered measurements while keeping their explicit identities.",
+      "alt": "Light bubble chart with North and South measurements and a reference line.",
+      "useCase": "Refresh a chart inside an existing page and release its browser resources when the view closes.",
+      "capabilities": ["retained identity", "data replacement", "interactive HTML", "disposal and remounting"],
+      "source": {
+        "path": "ChartForgeX.Examples/HtmlChartLifecycleExamples.cs",
+        "entry": "HtmlChartLifecycleExamples.Write(output)",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/HtmlChartLifecycleExamples.cs"
+      },
+      "build": {
+        "command": "dotnet run --project ./ChartForgeX.Examples -c Release -- --graphite-only",
+        "outputPath": "ChartForgeX.Examples/bin/Release/net8.0/output/graphite-light-chart-lifecycle.html"
+      },
+      "artifacts": {
+        "preview": "/examples/generated/graphite-light-chart-lifecycle.png",
+        "html": "/examples/generated/graphite-light-chart-lifecycle.html",
+        "svg": "/examples/generated/graphite-light-chart-lifecycle.svg",
+        "png": "/examples/generated/graphite-light-chart-lifecycle.png",
+        "width": 800,
+        "height": 440
+      }
+    },
+    {
+      "id": "graphite-dark-chart-lifecycle",
+      "title": "Refresh a dark chart without losing its identity",
+      "category": "charts",
+      "summary": "The same retained chart workflow in a dark theme, with host controls for replacement, disposal and remounting.",
+      "alt": "Dark bubble chart with North and South measurements and a reference line.",
+      "useCase": "Keep a dashboard view responsive to new data and clean up its listeners, readouts and playback when disposed.",
+      "capabilities": ["retained identity", "data replacement", "dark theme", "disposal and remounting"],
+      "source": {
+        "path": "ChartForgeX.Examples/HtmlChartLifecycleExamples.cs",
+        "entry": "HtmlChartLifecycleExamples.Write(output, dark: true)",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/HtmlChartLifecycleExamples.cs"
+      },
+      "build": {
+        "command": "dotnet run --project ./ChartForgeX.Examples -c Release -- --graphite-only",
+        "outputPath": "ChartForgeX.Examples/bin/Release/net8.0/output/graphite-dark-chart-lifecycle.html"
+      },
+      "artifacts": {
+        "preview": "/examples/generated/graphite-dark-chart-lifecycle.png",
+        "html": "/examples/generated/graphite-dark-chart-lifecycle.html",
+        "svg": "/examples/generated/graphite-dark-chart-lifecycle.svg",
+        "png": "/examples/generated/graphite-dark-chart-lifecycle.png",
+        "width": 800,
+        "height": 440
+      }
+    },
+    {
       "id": "graphite-light-delayed-tooltips",
       "title": "Delayed pointer tooltips in a light chart",
       "category": "charts",

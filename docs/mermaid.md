@@ -26,7 +26,7 @@ For each Mermaid family ChartForgeX supports, the implementation should:
 
 Reference rendering tools can be useful in tests and compatibility checks, but they are not a runtime dependency for ChartForgeX packages.
 
-The current semantic reference is Mermaid.js 12.1.0. The test harness also qualifies its recorded examples against pinned 10.9.8 and 11.17.2 references. Older spellings such as `graph`, `stateDiagram`/`stateDiagram-v2`, and `xychart`/`xychart-beta` are accepted where implemented. These fixture results do not establish complete compatibility with every Mermaid 10, 11 or 12 release.
+The current semantic reference is Mermaid.js 12.2.0. The test harness also qualifies its recorded examples against pinned 10.9.8 and 11.17.2 references. Older spellings such as `graph`, `stateDiagram`/`stateDiagram-v2`, and `xychart`/`xychart-beta` are accepted where implemented. These fixture results do not establish complete compatibility with every Mermaid 10, 11 or 12 release.
 
 The [Mermaid roadmap](../TODO.md#mermaid) plans newer-syntax adoption and regression coverage for supported older syntax. The [support matrix](mermaid-support-matrix.md) separates native render paths, retained-only features, approximate mappings and missing families. CFX uses its own deterministic scene and appearance; syntax compatibility does not imply the same layout or pixels as Mermaid's browser renderer.
 
@@ -430,6 +430,8 @@ var png = document!.ToPng();
 ```
 
 The conversion target for mindmaps is `TopologyChart` with `TopologyLayoutMode.MindMap`. Nodes retain hierarchy, shape tokens, classes, icon markers, source spans, and generated stable ids.
+
+Mindmap `colorBy` settings remain source configuration with `CFXM005` diagnostics; native branch/depth palette assignment is still open. The existing positive corpus passes the 12.2.0 reference, while depth coloring and the release's label/routing/swimlane changes need their own semantic and rendered fixtures.
 
 ## Tree View Diagrams
 
