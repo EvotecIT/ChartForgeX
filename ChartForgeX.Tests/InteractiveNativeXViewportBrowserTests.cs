@@ -57,6 +57,13 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal(zoomed.GetProperty("xLabels").EnumerateArray().Select(item => item.GetString()), exportedX);
         Assert.Equal("false", (string?)Assert.Single(svg.Descendants(), node => (string?)node.Attribute("data-cfx-observation-id") == "sample-0").Attribute("data-cfx-visible"));
         await SaveDownloadAsync(download, "committed-" + width + ".svg");
+        var pngDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=png]").ClickAsync());
+        var pngPath = await pngDownload.PathAsync() ?? throw new InvalidOperationException("No committed PNG export was downloaded.");
+        var png = await File.ReadAllBytesAsync(pngPath);
+        Assert.Equal(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }, png.Take(8).ToArray());
+        Assert.Equal(800, System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(png.AsSpan(16, 4)));
+        Assert.Equal(440, System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(png.AsSpan(20, 4)));
+        await SaveDownloadAsync(pngDownload, "committed-" + width + ".png");
         await page.Locator("[data-cfx-reset]").ClickAsync(); await WaitForChangesAsync(page, 2);
         var reset = await SceneAsync(page);
         Assert.Equal(0, reset.GetProperty("projection").GetProperty("minimum").GetDouble());
@@ -107,6 +114,47 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             """);
         Assert.Equal(2, await page.EvaluateAsync<int>("()=>nativeRequests.length"));
         await CaptureAsync(page, "pan-" + reversed, projection);
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
+    [InlineData(false, 980, ChartSeriesKind.Line)]
+    [InlineData(true, 380, ChartSeriesKind.StepLine)]
+    public async Task NativeWindowWithoutObservationsKeepsCrossingPaintWithoutInventingTargets(bool dark, int width, ChartSeriesKind kind) {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTitle("A native window between observations").WithSubtitle("The connected path crosses this window; source observations remain outside")
+            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+            .AddSeries(new ChartSeries(new ChartSeriesId("crossing"), "Crossing", kind, new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) })
+                .WithObservationId(0, new ChartObservationId("outside-left")).WithObservationId(1, new ChartObservationId("outside-right")));
+        chart.Series[0].Markers.Enabled = false;
+        var renderer = new HtmlInteractiveChartRenderer();
+        var window = renderer.PrepareSection(chart, new ChartXViewport(4, 6), Configure);
+        var initial = renderer.PrepareSection(chart, configure: Configure);
+        var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
+            + "</style></head><body style='margin:12px'>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
+        await using var session = await OpenAsync(html, width, 680);
+        var page = session.Page; await ControlledConnectionAsync(page);
+        await page.Locator("[data-cfx-zoom=in]").ClickAsync(); await page.WaitForFunctionAsync("()=>controlled.length===1");
+        await page.EvaluateAsync("html=>controlled[0].resolve(html)", window.Html); await WaitForChangesAsync(page, 1);
+        Assert.Equal(2, await page.Locator("g[data-cfx-role=point][data-cfx-visible=false]").CountAsync());
+        Assert.Equal(0, await page.Locator("g[data-cfx-role=point] [data-cfx-browser-hit-area],g[data-cfx-role=point] .cfx-prepared-point-marker").CountAsync());
+        Assert.Equal(0, await page.Locator("g[data-cfx-role=point][tabindex='0']").CountAsync());
+        Assert.NotEmpty(await page.Locator("[data-cfx-role=line]").GetAttributeAsync("d") ?? string.Empty);
+        var plot = window.PreparedVisual.XProjection!.PlotBounds;
+        await page.EvaluateAsync("""
+            ({x,y})=>{const svg=chartController.root.querySelector('svg'),point=new DOMPoint(x,y).matrixTransform(svg.getScreenCTM());
+                window.emptyWindowPointer={x:point.x,y:point.y};}
+            """, new { x = plot.Left + plot.Width / 2, y = plot.Top + plot.Height / 2 });
+        var pointer = await page.EvaluateAsync<JsonElement>("()=>emptyWindowPointer");
+        await page.Mouse.MoveAsync((float)pointer.GetProperty("x").GetDouble(), (float)pointer.GetProperty("y").GetDouble());
+        Assert.Equal(0, await page.Locator("g[data-cfx-role=point].cfx-hovered").CountAsync());
+        await CaptureAsync(page, "crossing-" + width, await SceneAsync(page));
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            await File.WriteAllTextAsync(Path.Combine(directory, "native-x-crossing-native-" + width + ".svg"), window.PreparedVisual.ToSvg());
+            await File.WriteAllBytesAsync(Path.Combine(directory, "native-x-crossing-native-" + width + ".png"), window.PreparedVisual.ToPng());
+        }
         AssertNoConsoleErrors(session);
     }
 
