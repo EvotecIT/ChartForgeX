@@ -105,10 +105,12 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     public void OversizedAxisFittingUsesTheCompleteFootprint(double angle) {
         var builder = new VisualSceneBuilder(new VisualSize(200, 100), FontSpec.FromFamily("Arial"));
         var style = new TextStyle { Font = FontSpec.FromFamily("Arial"), FontSize = 32 };
-        var bounds = new ChartRect(0, 0, 100, 50);
+        // September needs more than 50 pixels when rotated at the readable 10-pixel floor on Linux.
+        var bounds = new ChartRect(0, 0, 100, 60);
         var fitted = VisualAxisText.FitOversized(builder, style, bounds, new[] { "September" }, angle);
         var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText("September", fitted), angle);
         Assert.True(metrics.Width <= bounds.Width && metrics.Height <= bounds.Height);
+        Assert.InRange(fitted.EffectiveFontSize, 10, 32);
         Assert.Equal(32, style.FontSize);
     }
 

@@ -157,6 +157,11 @@ internal static partial class VisualBlockRendering {
         return ChartTextFitting.FitEnd(value, maxWidth, text => TextLayoutEngine.Measure(text, style).Width, "...");
     }
 
+    public static double MeasureTextWidth(string value, double fontSize, string fontFamily, int weight) {
+        var style = new TextStyle { Font = new FontSpec { Family = fontFamily, Weight = weight }, FontSize = fontSize, LineHeight = 1 };
+        return TextLayoutEngine.Measure(SingleLineText(value), style).Width;
+    }
+
     // These block captions are emitted as a single SVG text run. Match its default XML whitespace rules in both backends.
     public static string SingleLineText(string value) {
         var result = new StringBuilder(value.Length);

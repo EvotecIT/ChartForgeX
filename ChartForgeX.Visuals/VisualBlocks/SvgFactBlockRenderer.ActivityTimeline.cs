@@ -81,12 +81,12 @@ public sealed partial class SvgFactBlockRenderer {
         writer.StartElement("circle").Attribute("data-cfx-role", "activity-event-node").Attribute("cx", spineX).Attribute("cy", y + 15).Attribute("r", nodeRadius).Attribute("fill", nodeFill.ToCss()).Attribute("stroke", color.ToCss()).Attribute("stroke-width", item.Symbol.Length > 0 ? 0 : 2).EndEmptyElement().Line();
         if (item.Symbol.Length > 0) WriteText(writer, item.Symbol, spineX - nodeRadius, y + 19, nodeRadius * 2, TextAlignment.Center, ChartColor.White, theme.FontFamily, Math.Max(8, theme.SubtitleFontSize - 3), "850");
 
-        var trailingWidth = ActivityTrailingWidth(item, theme.SubtitleFontSize);
+        var trailingWidth = ActivityTrailingWidth(item, theme.SubtitleFontSize, theme.FontFamily);
         WriteText(writer, item.Title, x + 40, y + 15, width - 56 - trailingWidth, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "800");
         if (item.Badge.Length > 0) {
-            var badgeWidth = Math.Min(116, VisualBlockRendering.EstimateTextWidth(item.Badge, theme.SubtitleFontSize) + 18);
+            var badgeWidth = ActivityBadgeWidth(item, theme.SubtitleFontSize, theme.FontFamily);
             writer.StartElement("rect").Attribute("data-cfx-role", "activity-badge").Attribute("x", x + width - badgeWidth).Attribute("y", y).Attribute("width", badgeWidth).Attribute("height", 22).Attribute("rx", 8).Attribute("fill", color.WithAlpha(38).ToCss()).EndEmptyElement().Line();
-            WriteText(writer, item.Badge, x + width - badgeWidth + 7, y + 15, badgeWidth - 14, TextAlignment.Center, color, theme.FontFamily, theme.SubtitleFontSize, "750");
+            WriteText(writer, item.Badge, x + width - badgeWidth + 7, y + 15, badgeWidth - 14, TextAlignment.Center, color, theme.FontFamily, theme.SubtitleFontSize, "700");
         } else if (item.Timestamp.Length > 0) {
             var timestampWidth = ActivityTimestampWidth(item.Timestamp, theme.SubtitleFontSize);
             WriteText(writer, item.Timestamp, x + width - timestampWidth, y + 15, timestampWidth, TextAlignment.Right, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
@@ -95,11 +95,14 @@ public sealed partial class SvgFactBlockRenderer {
         if (item.Detail.Length > 0) WriteText(writer, item.Detail, x + 40, y + 34, width - 40, TextAlignment.Left, theme.MutedText, theme.FontFamily, theme.SubtitleFontSize, "500");
     }
 
-    private static double ActivityTrailingWidth(ActivityTimelineItem item, double fontSize) {
-        if (item.Badge.Length > 0) return Math.Min(116, VisualBlockRendering.EstimateTextWidth(item.Badge, fontSize) + 26);
+    private static double ActivityTrailingWidth(ActivityTimelineItem item, double fontSize, string fontFamily) {
+        if (item.Badge.Length > 0) return ActivityBadgeWidth(item, fontSize, fontFamily) + 8;
         if (item.Timestamp.Length > 0) return ActivityTimestampWidth(item.Timestamp, fontSize) + 10;
         return 0;
     }
+
+    private static double ActivityBadgeWidth(ActivityTimelineItem item, double fontSize, string fontFamily) =>
+        Math.Min(116, VisualBlockRendering.MeasureTextWidth(item.Badge, fontSize, fontFamily, 700) + 18);
 
     private static double ActivityTimestampWidth(string timestamp, double fontSize) => Math.Min(190, Math.Max(110, VisualBlockRendering.EstimateTextWidth(timestamp, fontSize) + 8));
 

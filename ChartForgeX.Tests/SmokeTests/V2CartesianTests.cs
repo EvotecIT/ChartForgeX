@@ -85,7 +85,8 @@ public sealed class V2CartesianTests {
         });
         var context = new VisualRenderContext();
         var builder = new VisualSceneBuilder(new VisualSize(640, 400), context.Font);
-        var viewport = new ChartRect(70, 30, 90, 120);
+        // Keep enough vertical room for the resolved font's line metrics; the narrow width exercises shortening.
+        var viewport = new ChartRect(70, 30, 90, 200);
         if (dropped) VisualCartesianCompiler.Build(chart, context, builder, viewport, viewport);
         else VisualCartesianCompiler.BuildInViewport(chart, context, builder, viewport);
         var scene = builder.Build();
