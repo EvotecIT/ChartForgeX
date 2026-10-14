@@ -258,7 +258,7 @@ public sealed class TopologyGroup {
 /// <summary>
 /// Represents a topology node.
 /// </summary>
-public sealed class TopologyNode {
+public sealed partial class TopologyNode {
     private string _id = string.Empty;
     private string _label = string.Empty;
     private TopologyNodeKind _kind = TopologyNodeKind.Generic;
@@ -430,7 +430,7 @@ public sealed class TopologyNode {
 /// <summary>
 /// Represents a topology edge between two nodes.
 /// </summary>
-public sealed class TopologyEdge {
+public sealed partial class TopologyEdge {
     private string _id = string.Empty;
     private string _sourceNodeId = string.Empty;
     private string _targetNodeId = string.Empty;

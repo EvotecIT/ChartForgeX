@@ -26,8 +26,12 @@ internal sealed partial class VisualTopologyCompiler {
     private static SvgPaint SourcePaint(string? source, ChartColor result, SvgColorRole role, double opacity = 1, ChartColor? fallback = null) =>
         SvgPaint.TryCssVariable(source, fallback ?? result, out _, out var paint) ? (opacity == 1 ? paint : paint.WithOpacity(result, opacity)) : SvgPaint.Of(result, role);
 
-    private SvgPaint NodeAccentPaint(TopologyNode node, ChartColor accent, bool active, double opacity = 1) =>
-        SourcePaint(node.Color ?? ResolveNodeIcon(node, _options)?.Color ?? _svgTheme.StatusColor(node.Status), accent, AccentRole(node.Color ?? ResolveNodeIcon(node, _options)?.Color), HighlightFactor(active) * opacity, Status(node.Status));
+    private SvgPaint NodeAccentPaint(TopologyNode node, ChartColor accent, bool active, double opacity = 1) {
+        var authored = node.Color ?? ResolveNodeIcon(node, _options)?.Color;
+        return node.PaletteIndex.HasValue && string.IsNullOrWhiteSpace(authored)
+            ? PalettePaint(node.PaletteIndex.Value, accent, HighlightFactor(active) * opacity)
+            : SourcePaint(authored ?? _svgTheme.StatusColor(node.Status), accent, AccentRole(authored), HighlightFactor(active) * opacity, Status(node.Status));
+    }
 
     private SvgPaint GroupAccentPaint(TopologyGroup group, ChartColor accent, bool active, double opacity = 1) =>
         SourcePaint(group.Color ?? ResolveGroupIcon(group, _options)?.Color ?? _svgTheme.StatusColor(group.Status), accent, AccentRole(group.Color ?? ResolveGroupIcon(group, _options)?.Color), HighlightFactor(active) * opacity, Status(group.Status));
@@ -38,7 +42,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (EffectiveNodeSurfaceStyle(_options) == TopologyNodeSurfaceStyle.Card) return CardPaint(result, HighlightFactor(active));
         var source = NodeAccentPaint(node, accent, true);
         var background = BackgroundPaint(_colors.Background);
-        var tint = source.HasCssVariable || background.HasCssVariable
+        var tint = node.PaletteIndex.HasValue || source.HasCssVariable || background.HasCssVariable
             ? SvgPaint.Mix(fill, background, source, IsMonitoringDashboardStyle(_options) ? .065 : .10)
             : SvgPaint.Mix(fill, _colors.Background, SvgColorRole.Surface, accent, role, IsMonitoringDashboardStyle(_options) ? .065 : .10);
         return HighlightFactor(active) == 1 ? tint : tint.WithOpacity(result, HighlightFactor(active));

@@ -411,6 +411,7 @@ Supported mindmap parsing includes:
 - Common node delimiters such as round, square, circle, cloud, and hexagon forms.
 - Class markers with `:::className`.
 - Icon markers with `::icon(...)`.
+- Branch coloring by default, or `mindmap.colorBy: depth` to color equal parent-child depths alike.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -431,7 +432,25 @@ var png = document!.ToPng();
 
 The conversion target for mindmaps is `TopologyChart` with `TopologyLayoutMode.MindMap`. Nodes retain hierarchy, shape tokens, classes, icon markers, source spans, and generated stable ids.
 
-Mindmap `colorBy` settings remain source configuration with `CFXM005` diagnostics; native branch/depth palette assignment is still open. The existing positive corpus passes the 12.2.0 reference, while depth coloring and the release's label/routing/swimlane changes need their own semantic and rendered fixtures.
+Use frontmatter or an init directive to choose depth coloring:
+
+```mermaid
+---
+config:
+  mindmap:
+    colorBy: depth
+---
+mindmap
+  Roadmap
+    Planning
+      Tasks
+    Delivery
+      Releases
+```
+
+The root has its own color section. Branch mode gives each first-level branch and its descendants one section; depth mode counts parent-child relationships, so uneven indentation widths do not affect the colors. Both modes cycle through eleven non-root sections, and each incoming edge uses its child's section. The active `VisualTheme` supplies the colors; a shorter palette cycles through its own colors without changing the hierarchy or section assignments.
+
+For direct conversion, set `document.ColorBy = MermaidMindMapColorMode.Depth`. The resulting topology retains palette indexes, so changing its `Theme` or `ThemeMode` resolves the new palette when it is prepared again. Explicit node or edge `Color` takes precedence, explicit node `BackgroundColor` remains its surface, and status badges retain health colors. Mindmaps use the native tinted mind-map style; set `DefaultRenderOptions` or pass topology render options to choose another treatment. Class and icon tokens remain source metadata rather than applying external CSS or fetching icon libraries.
 
 ## Tree View Diagrams
 

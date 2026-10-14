@@ -22,8 +22,8 @@ internal sealed partial class VisualTopologyCompiler {
         var icon = ResolveNodeIcon(node, _options);
         if (_options.RequireResolvedIcons && node.IconId != null && icon == null) throw new InvalidOperationException("Unresolved topology icon: " + node.IconId);
         var authoredAccent = node.Color ?? icon?.Color;
-        var accentRole = AccentRole(authoredAccent);
-        var baseAccent = Color(authoredAccent, Status(node.Status));
+        var accentRole = node.PaletteIndex.HasValue && string.IsNullOrWhiteSpace(authoredAccent) ? SvgColorRole.Series : AccentRole(authoredAccent);
+        var baseAccent = NodeAccent(node);
         var accent = Highlight(baseAccent, active);
         var baseFill = string.IsNullOrWhiteSpace(node.BackgroundColor) && EffectiveNodeSurfaceStyle(_options) != TopologyNodeSurfaceStyle.Card
             ? ChartColorMath.BlendPremultiplied(_colors.Background, baseAccent, IsMonitoringDashboardStyle(_options) ? .065 : .10)
@@ -255,7 +255,9 @@ internal sealed partial class VisualTopologyCompiler {
         var authored = node.Color ?? icon?.Color;
         var opacity = artworkOpacity ?? HighlightFactor(_highlight.IsNodeHighlighted(node));
         var fallback = sourceFallback ?? Status(node.Status);
-        var glyphPaint = SourcePaint(authored ?? (glyphRole == SvgColorRole.Text ? _svgTheme?.Foreground : glyphRole == SvgColorRole.Series ? _svgTheme?.Accent : _svgTheme?.StatusColor(node.Status)), color, glyphRole, opacity, fallback);
+        var glyphPaint = node.PaletteIndex.HasValue && string.IsNullOrWhiteSpace(authored)
+            ? PalettePaint(node.PaletteIndex.Value, color, opacity)
+            : SourcePaint(authored ?? (glyphRole == SvgColorRole.Text ? _svgTheme?.Foreground : glyphRole == SvgColorRole.Series ? _svgTheme?.Accent : _svgTheme?.StatusColor(node.Status)), color, glyphRole, opacity, fallback);
         var baseColor = SvgPaint.TryCssVariable(authored, fallback, out var variableFallback, out _) ? variableFallback : Color(authored, color);
         BuildGlyphSurface(node, shape, x, y, color, glyphScale, glyphRole, glyphPaint, baseColor,
             string.IsNullOrWhiteSpace(authored) ? 1 : opacity, fallback);

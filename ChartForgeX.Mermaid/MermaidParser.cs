@@ -121,6 +121,7 @@ public sealed partial class MermaidParser {
         document.Accessibility.Name = presentation.Accessibility.Name;
         document.Accessibility.Description = presentation.Accessibility.Description;
         document.Configuration = configuration;
+        if (document is MermaidMindMapDocument mindMap && configuration.MindMap != null) mindMap.ColorBy = configuration.MindMap.ColorBy;
         ReportRadarCurvePolicy(document, result);
         result.Document = document;
         return result;

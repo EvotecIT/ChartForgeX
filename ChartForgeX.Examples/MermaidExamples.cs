@@ -4,7 +4,12 @@ using ChartForgeX.VisualArtifacts;
 
 internal static class MermaidExamples {
     internal static void Write(string output) {
+        const string mindMap = "mindmap\n    root((Roadmap))\n          plan[Planning]\n            tasks[Tasks]\n                review[Review]\n          delivery[Delivery]\n              releases[Releases]\n                support[Support]\n";
         var examples = new Dictionary<string, string> {
+            ["mermaid-mindmap-branch-light"] = "---\nconfig:\n  mindmap:\n    colorBy: branch\n---\n" + mindMap,
+            ["mermaid-mindmap-depth-light"] = "---\nconfig:\n  mindmap:\n    colorBy: depth\n---\n" + mindMap,
+            ["mermaid-mindmap-branch-dark"] = "---\nconfig:\n  theme: dark\n  mindmap:\n    colorBy: branch\n---\n" + mindMap,
+            ["mermaid-mindmap-depth-dark"] = "---\nconfig:\n  theme: dark\n  mindmap:\n    colorBy: depth\n---\n" + mindMap,
             ["mermaid-flowchart-shape-aliases"] = "flowchart LR\nA@{ shape: fr-rect, label: \"Framed process\" } --> B@{ shape: framed-rectangle, label: \"Subprocess\" }\nC@{ shape: question, label: \"Decision\" } --> D@{ shape: odd, label: \"Asymmetric\" }\nE@{ shape: lean-right, label: \"Input\" } --> F@{ shape: lean-left, label: \"Output\" }\nG@{ shape: manual, label: \"Manual task\" } --> H@{ shape: trapezoid-top, label: \"Operation\" }\nI@{ shape: priority, label: \"Priority\" } --> J@{ shape: trapezoid-bottom, label: \"Action\" }\n",
             ["mermaid-quadrant-regions"] = "quadrantChart\ntitle Work priorities\nx-axis Low effort --> High effort\ny-axis Low impact --> High impact\nquadrant-1 Plan\nquadrant-2 Prioritize\nquadrant-3 Consider\nquadrant-4 Reassess\nOpportunity: [0.2, 0.8]\nInvestment: [0.8, 0.8]\nRoutine: [0.2, 0.2]\nReview: [0.8, 0.2]\n",
             ["mermaid-xychart-horizontal-bar"] = "xychart-beta horizontal\ntitle \"Monthly count\"\nx-axis Month [Jan, Feb, Mar]\ny-axis Count 0 --> 100\nbar [20, 50, 80]\n",

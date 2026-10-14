@@ -10,6 +10,7 @@ public sealed class MermaidSourceConfiguration {
     internal MermaidRadarSettings? Radar { get; set; }
     internal MermaidSankeySettings? Sankey { get; set; }
     internal MermaidTreemapSettings? Treemap { get; set; }
+    internal MermaidMindMapSettings? MindMap { get; set; }
 
     /// <summary>Gets the effective source theme; MermaidDocument.Theme can also set this value for direct conversion.</summary>
     public string? Theme { get; internal set; }

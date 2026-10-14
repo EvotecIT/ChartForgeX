@@ -316,6 +316,7 @@ internal static class VisualArtifactInterchangeSnapshot {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeTopologyNode {
             Kind = source.Kind,
+            PaletteIndex = source.PaletteIndex,
             Status = source.Status,
             DisplayMode = source.DisplayMode,
             Shape = source.Shape,
@@ -355,6 +356,7 @@ internal static class VisualArtifactInterchangeSnapshot {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeTopologyEdge {
             Kind = source.Kind,
+            PaletteIndex = source.PaletteIndex,
             Status = source.Status,
             Direction = source.Direction,
             SourcePort = source.SourcePort,

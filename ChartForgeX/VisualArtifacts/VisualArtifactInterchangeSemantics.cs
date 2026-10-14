@@ -193,6 +193,8 @@ public sealed class VisualArtifactInterchangeTopologyGroup {
 public sealed class VisualArtifactInterchangeTopologyNode {
     /// <summary>Gets or sets the exact node kind.</summary>
     public TopologyNodeKind Kind { get; set; }
+    /// <summary>Gets or sets an optional nonnegative categorical slot in the active theme palette.</summary>
+    public int? PaletteIndex { get; set; }
     /// <summary>Gets or sets the semantic status.</summary>
     public TopologyHealthStatus Status { get; set; }
     /// <summary>Gets or sets the effective display mode.</summary>
@@ -249,6 +251,8 @@ public sealed class VisualArtifactInterchangePoint {
 public sealed class VisualArtifactInterchangeTopologyEdge {
     /// <summary>Gets or sets the exact edge kind.</summary>
     public TopologyEdgeKind Kind { get; set; }
+    /// <summary>Gets or sets an optional nonnegative categorical slot in the active theme palette.</summary>
+    public int? PaletteIndex { get; set; }
     /// <summary>Gets or sets the semantic status.</summary>
     public TopologyHealthStatus Status { get; set; }
     /// <summary>Gets or sets the exact edge direction.</summary>

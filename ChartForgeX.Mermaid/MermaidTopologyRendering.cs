@@ -107,25 +107,6 @@ public static partial class MermaidTopologyRendering {
         return MermaidPresentation.Apply(chart, document);
     }
 
-    /// <summary>Converts a Mermaid mindmap to a topology chart.</summary>
-    public static TopologyChart ToTopologyChart(this MermaidMindMapDocument document, MermaidTopologyRenderOptions? options = null) {
-        if (document == null) throw new ArgumentNullException(nameof(document));
-        options ??= new MermaidTopologyRenderOptions();
-        var title = document.Nodes.Count == 0 ? ResolveTitle(options, "Mermaid mindmap") : ResolveTitle(options, document.Nodes[0].Text);
-        var chart = CreateTopology(options, "mermaid-mindmap", title, document.Header, TopologyLayoutMode.MindMap, TopologyLayoutDirection.LeftToRight);
-        foreach (var item in document.Nodes) {
-            chart.AddAutoNode(item.Id, item.Text, item.ParentId == null ? TopologyNodeKind.Hub : TopologyNodeKind.Branch, TopologyHealthStatus.Unknown, width: item.ParentId == null ? 150 : 120, height: 58, symbol: item.ParentId == null ? "M" : null, cssClass: "cfx-mermaid-mindmap-node");
-            var node = chart.Nodes[chart.Nodes.Count - 1];
-            node.Metadata["mermaid.shape"] = item.Shape ?? "default";
-            node.Metadata["mermaid.level"] = item.Level.ToString(CultureInfo.InvariantCulture);
-            if (item.Classes.Count > 0) node.Metadata["mermaid.classes"] = string.Join(",", item.Classes);
-            if (item.Icons.Count > 0) node.Metadata["mermaid.icons"] = string.Join(",", item.Icons);
-            if (item.ParentId != null) chart.AddEdge("mindmap-edge-" + item.Id, item.ParentId, item.Id, null, TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved);
-        }
-
-        return MermaidPresentation.Apply(chart, document);
-    }
-
     /// <summary>Converts a Mermaid tree view to a topology chart.</summary>
     public static TopologyChart ToTopologyChart(this MermaidTreeViewDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));

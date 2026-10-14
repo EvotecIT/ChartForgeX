@@ -69,6 +69,8 @@ chart.WithTheme(theme, VisualThemeMode.Dark);
 
 Use `theme.ToJson()` and `VisualTheme.FromJson(json)` for the versioned full-theme format. Use `VisualTheme.FromPaletteJson(json)` for the generated HtmlForgeX color document. These formats have different purposes and validation.
 
+Topology nodes and edges can select the same categorical palette with `PaletteIndex`. Indexes are zero-based, cannot be negative, and wrap to the active palette length during preparation. Explicit node `Color` or resolved icon color takes precedence; explicit node `BackgroundColor` remains its surface. Edge `Color` takes precedence, and muted edges keep their neutral treatment. A null index preserves status-based accents, while status badges always retain health colors. Clone, prepared scene metadata and visual-artifact interchange preserve the optional indexes. Reprepare a retained model after changing its theme; an existing prepared result keeps its original colors and palette bindings.
+
 Chart grids share their own theme, mode and font across all panels by default. Use `WithPanelThemes()` for a theme comparison or a report containing independently styled charts:
 
 ```csharp
