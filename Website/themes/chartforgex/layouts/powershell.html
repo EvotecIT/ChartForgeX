@@ -13,44 +13,18 @@
 </head>
 <body class="cfx-body cfx-body--powershell{{ if body_class != "" }} {{ body_class }}{{ end }}">
 {{ include "site-header" }}
-<main id="main" class="cfx-main">
-  {{~ ip = data.imageplayground ~}}
-  <article class="cfx-page cfx-page--wide">
-    <header class="cfx-page__head">
-      <h1>{{ page.title }}</h1>
-      <p class="cfx-lede">{{ data.powershell.intro }}</p>
-      <div class="cfx-install cfx-psp__install">
-        <code><span class="cfx-install__prompt" aria-hidden="true">PS&gt;</span> {{ ip.module.install }}</code>
-        <button type="button" class="cfx-copy" data-cfx-copy="{{ ip.module.install }}">Copy</button>
-      </div>
-      <p class="cfx-muted">ImagePlayground exports {{ ip.module.commandCount }} commands for {{ ip.module.powerShell }}. {{ ip.module.chartForgeXCommandCount }} of them are powered by ChartForgeX.</p>
-    </header>
-    {{ include "imageplayground-about" }}
-    <ul class="cfx-psp__families">
-      {{~ for f in ip.families ~}}
-      <li><strong>{{ f.commandCount }}</strong><span>{{ f.title }}</span><p>{{ f.description }}</p></li>
-      {{~ end ~}}
-    </ul>
-    <p class="cfx-muted">{{ data.powershell.note }}</p>
-    <div class="cfx-psp__list">
-      {{~ for s in data.powershell.showcases ~}}
-      <section class="cfx-psp__item" aria-labelledby="cfx-psp-{{ s.id }}">
-        <div class="cfx-psp__code">
-          <h3 id="cfx-psp-{{ s.id }}">{{ s.title }}</h3>
-          <p>{{ s.body }}</p>
-          <pre><code class="language-powershell">{{ s.code | html.escape }}</code></pre>
-          <p class="cfx-psp__source"><a class="cfx-link" href="https://github.com/EvotecIT/ImagePlayground/blob/master/{{ s.script }}">{{ s.script }} on GitHub</a></p>
-        </div>
-        <figure class="cfx-psp__media">
-          <img src="{{ s.image }}" width="{{ s.width }}" height="{{ s.height }}" loading="lazy" decoding="async" alt="Output of {{ s.script }}: {{ s.title | string.downcase }}." />
-        </figure>
-      </section>
-      {{~ end ~}}
-    </div>
-    <div class="cfx-prose">
-{{ content }}
-    </div>
-  </article>
+<main id="main" class="cfx-main cfx-psp">
+{{~ psx = data["powershell-examples"]; ex = {}; for e in psx.examples; ex[e.id] = e; end ~}}
+{{ include "powershell/hero" }}
+{{ include "powershell/flagship" }}
+{{~ family = "charts"; band = data.powershell.sections.charts ~}}
+{{ include "powershell/family" }}
+{{~ family = "diagrams"; band = data.powershell.sections.diagrams ~}}
+{{ include "powershell/family" }}
+{{~ family = "stories"; band = data.powershell.sections.stories ~}}
+{{ include "powershell/family" }}
+{{ include "powershell/commands" }}
+{{ include "powershell/roadmap" }}
 </main>
 {{ include "site-footer" }}
 {{ assets.js_html }}

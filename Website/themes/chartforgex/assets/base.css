@@ -430,6 +430,22 @@ code, pre, kbd { font-family: var(--cfx-mono); }
 .cfx-footer__family a { color: var(--cfx-ink-2); text-decoration: none; font-weight: 560; }
 .cfx-footer__family a:hover { color: var(--cfx-accent); }
 
+/* Scrollbars: thin, a muted thumb on a transparent track. Dark surfaces (code, terminals, the dark bands)
+   keep a light thumb in both themes. Browsers with scrollbar-color use it; the webkit rules are the fallback
+   and brighten the thumb on hover. */
+:root { --cfx-scroll-thumb: rgba(22, 24, 28, .26); --cfx-scroll-thumb-hover: rgba(22, 24, 28, .46); }
+:root[data-theme="dark"],
+.cfx-code, .cfx-prose pre, pre[class*="language-"], .cfx-pscode, .cfx-term, .cfx-hero, .cfx-ps, .cfx-cta {
+  --cfx-scroll-thumb: rgba(242, 243, 245, .24);
+  --cfx-scroll-thumb-hover: rgba(242, 243, 245, .44);
+}
+* { scrollbar-width: thin; scrollbar-color: var(--cfx-scroll-thumb) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 999px; background: var(--cfx-scroll-thumb) padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--cfx-scroll-thumb-hover) padding-box; }
+.cfx-install code { padding-bottom: 3px; }
+
 /* Compact layouts */
 @media (max-width: 900px) {
   .cfx-nav-toggle__label {

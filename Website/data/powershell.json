@@ -1,6 +1,27 @@
 {
-  "intro": "ImagePlayground is the Evotec PowerShell module for visual automation. It wraps ChartForgeX, ChartForgeX.Visuals and ChartForgeX.Stories, so a script can turn objects into charts, service maps, dashboards, social cards and animated terminal stories.",
-  "note": "Each example below is taken from the Examples folder of the ImagePlayground repository and shown next to the file it produced.",
+  "intro": "ImagePlayground is the Evotec PowerShell module for visual automation. It wraps ChartForgeX, so a script can turn the objects it already has into charts, service maps, dashboards, social cards and animated terminal stories.",
+  "hero": {
+    "lede": "Charts, service maps, dashboards and animated stories from the objects your scripts already have. Every script on this page ran as shown against the published module, next to the files it wrote and the console output it printed.",
+    "badges": [
+      "Windows PowerShell 5.1 and PowerShell 7",
+      "PNG, SVG, JPEG and HTML from one definition",
+      "No browser, no Node.js"
+    ]
+  },
+  "sections": {
+    "charts": {
+      "title": "Charts from pipeline objects",
+      "body": "Each chart starts from rows a script already has: Import-Csv, Group-Object or a hashtable. The console block under every chart is what the script printed."
+    },
+    "diagrams": {
+      "title": "Maps, org charts and motion",
+      "body": "Topology and organization charts take nodes and links from data. Positions, statuses and labels come from columns, not from a drawing tool."
+    },
+    "stories": {
+      "title": "Stories and canvases",
+      "body": "Replay a terminal session for documentation, or compose a fixed-size card for link previews, from the same objects as the report."
+    }
+  },
   "about": {
     "title": "One module, three libraries",
     "body": "A single Install-Module gives scripts the same .NET libraries that applications reference directly, so charts, QR codes and photo edits come from one toolset.",
@@ -27,69 +48,17 @@
         "url": "https://www.powershellgallery.com/packages/ImagePlayground"
       },
       {
-        "title": "Source and examples",
-        "url": "https://github.com/EvotecIT/ImagePlayground"
-      },
-      {
         "title": "Command reference",
         "url": "https://evotec.xyz/projects/imageplayground/api/"
       },
       {
         "title": "Project overview",
         "url": "https://evotec.xyz/projects/imageplayground/"
+      },
+      {
+        "title": "Source",
+        "url": "https://github.com/EvotecIT/ImagePlayground"
       }
     ]
-  },
-  "showcases": [
-    {
-      "id": "canvas",
-      "title": "A social card from three info tiles",
-      "body": "New-ImageCanvas composes fixed-size artwork: text, tiles with mini charts, progress and accents from the Graphite tokens.",
-      "script": "Examples/Canvas.SocialPreview.ps1",
-      "image": "/powershell/social-preview-dark.png",
-      "width": 1200,
-      "height": 630,
-      "code": "$tokens = [ChartForgeX.Themes.VisualDesignTokens]::GraphiteDark()\n\nNew-ImageCanvas -Preset SocialPreview -Theme Dark -Title 'Service health overview' -LayerDefinition {\n    New-ImageCanvasText -X 72 -Y 72 -Width 1056 -Text 'Service health' -FontSize 58 -Color $tokens.Foreground -Emphasized\n    New-ImageCanvasText -X 72 -Y 154 -Width 1056 -Text 'A clear view of requests, latency, and capacity' -FontSize 26 -Color $tokens.MutedForeground\n    New-ImageCanvasInfoTile -X 72 -Y 260 -Width 336 -Height 176 -Icon API -Label Requests -Value '12,840' -Detail '+12% this week' -Accent $tokens.Accent -MiniChartKind Area -MiniValues 8200, 9400, 10100, 12840\n    New-ImageCanvasInfoTile -X 432 -Y 260 -Width 336 -Height 176 -Icon DB -Label 'Database latency' -Value '32 ms' -Detail 'Above the 25 ms target' -Accent $tokens.Warning -MiniChartKind Sparkline -MiniValues 18, 21, 24, 32\n    New-ImageCanvasInfoTile -X 792 -Y 260 -Width 336 -Height 176 -Icon CPU -Label Capacity -Value '74%' -Detail '26% available' -Accent $tokens.Positive -Progress 0.74\n} -FilePath social-preview-dark.png"
-    },
-    {
-      "id": "grid",
-      "title": "A service health dashboard",
-      "body": "Metric cards, lists, tables and timelines become one grid with New-ImageVisualGrid, exported as HTML, SVG or PNG.",
-      "script": "Examples/VisualGrid.ServiceHealth.ps1",
-      "image": "/powershell/service-health-dark.png",
-      "width": 736,
-      "height": 536,
-      "code": "$blocks = @(\n    New-ImageMetricCard -Label Requests -Value 12840 -Format N0 -Trend '+12% this week' -Caption 'Completed API requests' -Status Positive -MiniValues 8200, 9400, 10100, 12840 -Width 336 -Height 176 -Theme Dark\n    New-ImageListBlock -Title Checks -Item API, Database, Queue -Value Healthy, Warning, Healthy -Status Positive, Warning, Positive -Theme Dark\n    New-ImageTableBlock -Title Services -Column Name, Status -StatusColumn Status -Row @(\n        @{ Name = 'API'; Status = 'Healthy' }\n        @{ Name = 'Database'; Status = 'Warning' }\n        @{ Name = 'Queue'; Status = 'Healthy' }\n    ) -Theme Dark\n)\n\n$wide = New-ImageVisualGrid -Title 'Service health' -Subtitle 'Last refresh 14:24 UTC' -Columns 2 -Gap 16 -Padding 24 -AdaptiveRowHeights -Theme Dark -Content $blocks\n$wide | New-ImageVisualStory -FilePath service-health-dark.png"
-    },
-    {
-      "id": "console",
-      "title": "An animated terminal session",
-      "body": "New-ImageConsoleStory records authored commands and output as a GIF, APNG, SVG or HTML replay. The displayed commands are never executed.",
-      "script": "Examples/ConsoleStory.PowerShell.ps1",
-      "image": "/powershell/powershell-console-story-dark.gif",
-      "width": 640,
-      "height": 350,
-      "code": "$projects = @(\n    [pscustomobject]@{ Project = 'ChartForgeX'; Stack = '.NET'; Status = 'ready' }\n    [pscustomobject]@{ Project = 'ImagePlayground'; Stack = 'PowerShell'; Status = 'ready' }\n)\n\n$story = New-ImageConsoleStory -Title 'pwsh - OpenSource' -WorkingDirectory OpenSource -Theme Dark -WindowStyle WindowsTerminal -Width 640 -Content {\n    New-ImageConsoleStoryCommand -Text 'Get-ActivePortfolio'\n    $projects | New-ImageConsoleStoryTable -Property Project, Stack, Status -Header PROJECT, STACK, STATUS\n    New-ImageConsoleStoryBlankLine\n    New-ImageConsoleStoryCommand -Text './build.ps1'\n    New-ImageConsoleStoryOutput -Text 'PASS  all checks' -Style Success\n}\n$story | Export-ImageConsoleStory -Path powershell-console-story-dark.gif -FramesPerSecond 8 -EndHoldSeconds 1.5"
-    },
-    {
-      "id": "topology",
-      "title": "A service map in five lines",
-      "body": "Nodes and edges carry kind, status and labels. New-ImageTopology lays them out and writes SVG, PNG or interactive HTML.",
-      "script": "Examples/Topology.ServiceMap.ps1",
-      "image": "/powershell/service-map-dark.png",
-      "width": 900,
-      "height": 420,
-      "code": "$definition = {\n    New-ImageTopologyNode -Id gateway -Label Gateway -Kind Network -Status Healthy -Symbol GW -Width 180 -Height 72\n    New-ImageTopologyNode -Id api -Label 'Application API' -Kind Service -Status Healthy -Symbol API -Width 180 -Height 72\n    New-ImageTopologyNode -Id database -Label Database -Kind Database -Status Warning -Symbol SQL -Width 180 -Height 72\n    New-ImageTopologyEdge -SourceNodeId gateway -TargetNodeId api -Label HTTPS -Kind Connectivity -Status Healthy -Direction Forward\n    New-ImageTopologyEdge -SourceNodeId api -TargetNodeId database -Label '32 ms' -Kind Dependency -Status Warning -Direction Forward\n}\n\nNew-ImageTopology -TopologyDefinition $definition -Title 'Service topology' -Subtitle 'Database latency above target' -Layout Layered -Direction LeftToRight -Theme Dark -Width 900 -Height 420 -Padding 24 -FitContentToViewport -FilePath service-map-dark.png"
-    },
-    {
-      "id": "chart",
-      "title": "A chart from typed definitions",
-      "body": "Series cmdlets such as New-ImageChartLine return definitions; New-ImageChart renders them with options, themes and titles.",
-      "script": "Examples/Charts.ChartForgeX.Showcase.ps1",
-      "image": "/powershell/ChartsChartForgeXTrend.png",
-      "width": 760,
-      "height": 420,
-      "code": "$trend = @(\n    New-ImageChartLine -Name 'CPU' -Value 31,42,37,55,68,61,74,58,49,63 -Marker Circle -Smooth\n    New-ImageChartLine -Name 'Memory' -Value 48,51,55,57,60,62,59,64,66,69 -Marker Circle -Smooth\n)\n\n$options = New-ImageChartOptions -ShowLegend -LegendPosition Bottom -TickCount 4\nNew-ImageChart -Definition $trend -Title 'Resource usage' -Subtitle 'Ten samples from one workstation' -Theme Dark -ShowGrid -XTitle 'Sample' -YTitle 'Usage %' -Options $options -FilePath ChartsChartForgeXTrend.png -Width 760 -Height 420"
-    }
-  ]
+  }
 }

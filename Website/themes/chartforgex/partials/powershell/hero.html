@@ -1,0 +1,33 @@
+{{~ ip = data.imageplayground; flag = ex["service-health"]; board = null ~}}
+{{~ for o in flag.outputs ~}}{{~ if o.file == flag.show[0] ~}}{{~ board = o ~}}{{~ end ~}}{{~ end ~}}
+<section class="cfx-ps cfx-psh" aria-labelledby="cfx-psh-title">
+  <div class="cfx-ps__inner cfx-psh__inner">
+    <div class="cfx-psh__copy">
+      <p class="cfx-psh__eyebrow">ImagePlayground {{ psx.module.version }}</p>
+      <h1 id="cfx-psh-title"><span>ChartForgeX</span> <span class="cfx-hero__accent">in PowerShell</span></h1>
+      <p class="cfx-psh__lede">{{ data.powershell.hero.lede }}</p>
+      <div class="cfx-psh__actions">
+        <a class="cfx-btn cfx-btn--glow" href="#service-health">See a complete script</a>
+        <a class="cfx-btn cfx-btn--ghost" href="#roadmap">What is covered</a>
+      </div>
+      <div class="cfx-install cfx-install--dark">
+        <code><span class="cfx-install__prompt" aria-hidden="true">PS&gt;</span> {{ ip.module.install }}</code>
+        <button type="button" class="cfx-copy" data-cfx-copy="{{ ip.module.install }}">Copy</button>
+      </div>
+      <ul class="cfx-hero__badges" aria-label="Highlights">
+        {{~ for b in data.powershell.hero.badges ~}}<li>{{ b }}</li>{{~ end ~}}
+        <li>{{ ip.module.chartForgeXCommandCount }} commands built on ChartForgeX</li>
+      </ul>
+    </div>
+    <div class="cfx-psh__stage">
+      <figure class="cfx-psh__board">
+        <img src="{{ board.url }}" width="{{ board.width }}" height="{{ board.height }}" fetchpriority="high" decoding="async" alt="Service health dashboard written by the script below: three metric cards, a services table, a checklist and an Orders latency chart against a 250 ms target." />
+        <figcaption>{{ board.file }}</figcaption>
+      </figure>
+      <figure class="cfx-term cfx-psh__term">
+        <figcaption><i aria-hidden="true"></i>PS&gt; ./{{ flag.id }}.ps1</figcaption>
+        <pre>{{ flag.console | html.escape }}</pre>
+      </figure>
+    </div>
+  </div>
+</section>

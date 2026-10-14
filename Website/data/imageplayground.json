@@ -2,10 +2,9 @@
   "generatedBy": "Website/build/Sync-ImagePlayground.ps1",
   "module": {
     "name": "ImagePlayground",
-    "version": "3.2.8",
-    "commit": "3c6fac0",
-    "commandCount": 132,
-    "chartForgeXCommandCount": 77,
+    "version": "3.2.7",
+    "commandCount": 131,
+    "chartForgeXCommandCount": 76,
     "install": "Install-Module -Name ImagePlayground -Scope CurrentUser",
     "powerShell": "Windows PowerShell 5.1 and PowerShell 7+"
   },
@@ -13,7 +12,7 @@
     {
       "id": "charts",
       "title": "Charts",
-      "description": "Line, area, bar, donut, radar, heatmap, treemap, waterfall, word cloud and more, as PNG, SVG or HTML.",
+      "description": "Line, area, bar, donut, radar, heatmap, treemap, waterfall, word cloud and more, as PNG, SVG, JPEG or HTML.",
       "commandCount": 34,
       "commands": [
         "New-ImageChart",
@@ -55,7 +54,7 @@
     {
       "id": "topology",
       "title": "Topology and org charts",
-      "description": "Service maps, dependencies, ports, scenarios, route motion and organization charts.",
+      "description": "Service maps, groups, ports, node details, geographic layout, scenarios, route motion and organization charts.",
       "commandCount": 12,
       "commands": [
         "Get-ImageTopologyDiagnostics",
@@ -75,7 +74,7 @@
     {
       "id": "dashboards",
       "title": "Dashboards and canvases",
-      "description": "Metric cards, tables, lists, timelines and fixed-size social cards or wallpapers.",
+      "description": "Metric cards, tables, lists and timelines in one grid, plus fixed-size social cards and wallpapers.",
       "commandCount": 10,
       "commands": [
         "New-ImageCanvas",
@@ -92,9 +91,9 @@
     },
     {
       "id": "stories",
-      "title": "Stories and animation",
-      "description": "Animated terminal sessions and source-to-result stories as SVG, HTML, GIF or APNG.",
-      "commandCount": 21,
+      "title": "Stories, motion and export",
+      "description": "Animated terminal sessions, source-to-result stories, motion cues, watermarks and visual artifacts.",
+      "commandCount": 20,
       "commands": [
         "ConvertTo-ImageStorySource",
         "ConvertTo-ImageVisualArtifact",
@@ -111,7 +110,6 @@
         "New-ImageStory",
         "New-ImageStoryOutcome",
         "New-ImageStoryPanel",
-        "New-ImageStoryReplay",
         "New-ImageStoryScene",
         "New-ImageVisualMotionCue",
         "New-ImageVisualStory",

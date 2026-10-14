@@ -1,0 +1,35 @@
+{{~ coverage = data["powershell-roadmap"] ~}}
+<section class="cfx-ps cfx-psroad" id="roadmap" aria-labelledby="cfx-psroad-title">
+  <div class="cfx-psroad__inner">
+    <div class="cfx-psroad__head">
+      <h2 id="cfx-psroad-title">Coverage and roadmap</h2>
+      <p>{{ coverage.intro }}</p>
+    </div>
+    {{ include "imageplayground-about" }}
+    <ul class="cfx-psroad__legend" aria-label="Status">
+      <li><i class="cfx-status cfx-status--available">Available</i> works in ImagePlayground {{ psx.module.version }}</li>
+      <li><i class="cfx-status cfx-status--partial">Partial</i> works with the limits noted</li>
+      <li><i class="cfx-status cfx-status--planned">Planned</i> in ChartForgeX, not yet a command</li>
+    </ul>
+    <div class="cfx-psroad__groups">
+      {{~ for g in coverage.groups ~}}
+      <section class="cfx-psroad__group" aria-label="{{ g.title }}">
+        <h3>{{ g.title }}</h3>
+        <ul>
+          {{~ for r in g.rows ~}}
+          <li class="cfx-psroad__row">
+            <i class="cfx-status cfx-status--{{ r.status }}">{{ r.status | string.capitalize }}</i>
+            <div>
+              <p>{{ r.capability }}</p>
+              {{~ if r.commands && r.commands.size > 0 ~}}<p class="cfx-psroad__cmds">{{~ for c in r.commands ~}}<a href="https://evotec.xyz/projects/imageplayground/api/{{ c | string.downcase }}/">{{ c }}</a>{{~ end ~}}</p>{{~ end ~}}
+              {{~ if r.note ~}}<p class="cfx-psroad__note">{{ r.note }}</p>{{~ end ~}}
+            </div>
+          </li>
+          {{~ end ~}}
+        </ul>
+      </section>
+      {{~ end ~}}
+    </div>
+    <p class="cfx-psroad__track"><a class="cfx-link" href="{{ coverage.tracking.url }}">{{ coverage.tracking.title }}</a></p>
+  </div>
+</section>

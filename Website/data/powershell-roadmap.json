@@ -1,0 +1,262 @@
+{
+  "intro": "ChartForgeX ships features first; ImagePlayground exposes them as commands. Each row was checked against ImagePlayground 3.2.7, so scripts can rely on what is marked available today. Partial rows work with the limits noted, often through -ChartScript, which hands a script the ChartForgeX chart and its full .NET API.",
+  "tracking": {
+    "title": "Request a command or vote on the roadmap",
+    "url": "https://github.com/EvotecIT/ImagePlayground/issues"
+  },
+  "groups": [
+    {
+      "title": "Charts",
+      "rows": [
+        {
+          "capability": "Thirty chart kinds as commands: line, area, stacked and step area, bar, horizontal bar, scatter, bubble, lollipop, range, box plot, histogram, heatmap, pie, donut, radial, gauge, progress, pictorial, bullet, funnel, treemap, waterfall, radar, polar, slope and word cloud",
+          "status": "available",
+          "commands": [
+            "New-ImageChart",
+            "New-ImageChartLine",
+            "New-ImageChartBar",
+            "New-ImageChartDonut",
+            "New-ImageChartTreemap",
+            "New-ImageChartWaterfall"
+          ]
+        },
+        {
+          "capability": "Legend, data labels, palette, grid, axis titles, transparent backgrounds and donut centre text",
+          "status": "available",
+          "commands": [
+            "New-ImageChartOptions"
+          ]
+        },
+        {
+          "capability": "Reference lines and point callouts",
+          "status": "available",
+          "commands": [
+            "New-ImageChartAnnotation"
+          ]
+        },
+        {
+          "capability": "Chart titles and category labels",
+          "status": "partial",
+          "commands": [
+            "New-ImageChart"
+          ],
+          "note": "3.2.7 has no -Title or category-label parameter. Set them on the chart from -ChartScript or -PassThru, as two examples above do. -Title and -Subtitle are already in the ImagePlayground source for the next release."
+        },
+        {
+          "capability": "Sankey, sunburst, chord, Gantt, timeline, candlestick and calendar heatmap",
+          "status": "partial",
+          "commands": [
+            "New-ImageChart"
+          ],
+          "note": "No dedicated commands yet. The ChartForgeX methods (AddSankey, AddSunburst, AddGanttTask and others) are reachable from -ChartScript."
+        },
+        {
+          "capability": "Dotted, region and tile maps",
+          "status": "partial",
+          "commands": [
+            "New-ImageChart"
+          ],
+          "note": "Reachable from -ChartScript with AddDottedMap, AddRegionMap and AddTileMap; no map commands yet."
+        },
+        {
+          "capability": "Bar and line combinations in one chart",
+          "status": "planned",
+          "note": "New-ImageChart rejects definitions of different kinds, and all lines must share one marker setting. ChartForgeX has AddBarLineCombo and related combos."
+        },
+        {
+          "capability": "Graphite design tokens and brand kits",
+          "status": "partial",
+          "commands": [
+            "New-ImageChart"
+          ],
+          "note": "-Theme offers fourteen named themes. The Graphite tokens and brand kits that chartforgex.com uses need the .NET API."
+        }
+      ]
+    },
+    {
+      "title": "Topology and org charts",
+      "rows": [
+        {
+          "capability": "Service maps with kinds, statuses, groups, ports, node details and edge labels",
+          "status": "available",
+          "commands": [
+            "New-ImageTopology",
+            "New-ImageTopologyNode",
+            "New-ImageTopologyEdge",
+            "New-ImageTopologyGroup",
+            "New-ImageTopologyNodePort",
+            "New-ImageTopologyNodeDetail"
+          ]
+        },
+        {
+          "capability": "Manual, grouped, hub, force-directed, radial, mind-map and geographic layouts",
+          "status": "available",
+          "commands": [
+            "New-ImageTopology"
+          ]
+        },
+        {
+          "capability": "Automatic layered layout for branching graphs",
+          "status": "partial",
+          "commands": [
+            "New-ImageTopology"
+          ],
+          "note": "In 3.2.7, -Layout Layered packs graphs deeper than two levels into two columns. Use -Layout Manual with positions from data, as the service map above does."
+        },
+        {
+          "capability": "Organization charts from manager links",
+          "status": "available",
+          "commands": [
+            "New-ImageOrganizationChart",
+            "New-ImageOrganizationMember"
+          ]
+        },
+        {
+          "capability": "Scenarios and route motion as animated SVG or GIF",
+          "status": "available",
+          "commands": [
+            "New-ImageTopologyScenario",
+            "New-ImageTopologyScenarioStep",
+            "New-ImageTopologyMotion"
+          ]
+        },
+        {
+          "capability": "Interactive HTML with pan, zoom and node details",
+          "status": "available",
+          "commands": [
+            "New-ImageTopology"
+          ]
+        },
+        {
+          "capability": "Layout diagnostics and collision checks",
+          "status": "available",
+          "commands": [
+            "Get-ImageTopologyDiagnostics"
+          ]
+        },
+        {
+          "capability": "Vendor icon packs (Azure, Fortinet, Veeam)",
+          "status": "planned",
+          "note": "Nodes accept -IconId, but no command loads a ChartForgeX icon pack yet."
+        },
+        {
+          "capability": "Graph explorer for large graphs (Canvas and WebGL)",
+          "status": "planned",
+          "note": "Part of ChartForgeX.Interactivity.Html, not yet exposed."
+        }
+      ]
+    },
+    {
+      "title": "Dashboards and canvases",
+      "rows": [
+        {
+          "capability": "Dashboards of metric cards, tables, lists, timelines and charts",
+          "status": "available",
+          "commands": [
+            "New-ImageVisualGrid",
+            "New-ImageVisualGridItem",
+            "New-ImageMetricCard",
+            "New-ImageListBlock",
+            "New-ImageTimelineBlock"
+          ]
+        },
+        {
+          "capability": "Table blocks from pipeline objects",
+          "status": "partial",
+          "commands": [
+            "New-ImageTableBlock"
+          ],
+          "note": "3.2.7 rejects [pscustomobject] rows with 'Row value count must match table column count'. Pass hashtables or arrays of values, as the dashboard above does."
+        },
+        {
+          "capability": "Social preview cards and desktop wallpapers",
+          "status": "available",
+          "commands": [
+            "New-ImageCanvas",
+            "New-ImageCanvasText",
+            "New-ImageCanvasInfoTile"
+          ]
+        },
+        {
+          "capability": "Watermarks on charts, maps and exported artifacts",
+          "status": "available",
+          "commands": [
+            "New-ImageVisualWatermark"
+          ]
+        },
+        {
+          "capability": "Visual artifacts with accessible names and descriptions",
+          "status": "partial",
+          "commands": [
+            "ConvertTo-ImageVisualArtifact",
+            "Export-ImageVisualArtifact"
+          ],
+          "note": "Charts and topology convert; a visual grid is rejected in 3.2.7. Export grids with New-ImageVisualStory."
+        }
+      ]
+    },
+    {
+      "title": "Stories and output",
+      "rows": [
+        {
+          "capability": "Animated terminal sessions as SVG, HTML, GIF or APNG",
+          "status": "available",
+          "commands": [
+            "New-ImageConsoleStory",
+            "New-ImageConsoleStoryCommand",
+            "New-ImageConsoleStoryTable",
+            "Export-ImageConsoleStory"
+          ],
+          "note": "A .png path writes the final frame; use .apng for animation."
+        },
+        {
+          "capability": "Source-to-result stories with code and media panels",
+          "status": "available",
+          "commands": [
+            "New-ImageStory",
+            "New-ImageStoryScene",
+            "New-ImageStoryPanel",
+            "ConvertTo-ImageStorySource"
+          ]
+        },
+        {
+          "capability": "Motion cues on dashboards",
+          "status": "available",
+          "commands": [
+            "New-ImageVisualStory",
+            "New-ImageVisualMotionCue"
+          ]
+        },
+        {
+          "capability": "PNG, SVG, JPEG and static HTML, chosen by file extension",
+          "status": "available",
+          "commands": [
+            "New-ImageChart",
+            "New-ImageTopology",
+            "New-ImageVisualStory"
+          ]
+        },
+        {
+          "capability": "Interactive chart HTML: tooltips, selection, zoom and brushing",
+          "status": "planned",
+          "note": "Chart HTML from 3.2.7 is static and script-free. Only topology has -InteractiveHtml."
+        }
+      ]
+    },
+    {
+      "title": "Mermaid and Markdown",
+      "rows": [
+        {
+          "capability": "Mermaid diagrams rendered by ChartForgeX.Mermaid",
+          "status": "planned",
+          "note": "ChartForgeX.Mermaid is not part of the module yet."
+        },
+        {
+          "capability": "ChartForgeX Markup fences: charts and diagrams from Markdown",
+          "status": "planned",
+          "note": "ChartForgeX.Markup is not part of the module yet."
+        }
+      ]
+    }
+  ]
+}

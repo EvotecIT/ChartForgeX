@@ -1,40 +1,39 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Snapshots the ImagePlayground command catalog and ChartForgeX sample outputs for chartforgex.com.
+    Snapshots the ImagePlayground commands powered by ChartForgeX for chartforgex.com.
 
 .DESCRIPTION
-    Reads CmdletsToExport from ImagePlayground.psd1, groups the ChartForgeX-powered commands into families and writes
-    Website/data/imageplayground.json. When -SamplesPath is supplied, copies the selected example outputs into
-    Website/static/powershell/. Produce the samples by running the ImagePlayground example scripts against a current
-    build, for example:
-
-        $env:IMAGEPLAYGROUND_DEVELOPMENT = '1'
-        ./Examples/Charts.ChartForgeX.Showcase.ps1 -OutputDirectory <samples> -Theme Dark
+    Reads CmdletsToExport from an ImagePlayground module manifest, groups the ChartForgeX-powered commands into
+    families and writes Website/data/imageplayground.json. Point it at the same published module version that
+    Render-PowerShellExamples.ps1 runs, so the command list and the examples describe one release.
 
 .EXAMPLE
-    pwsh ./Website/build/Sync-ImagePlayground.ps1 -ImagePlaygroundRoot C:\Support\GitHub\ImagePlayground -SamplesPath D:\Scratch\ip-samples
+    pwsh ./Website/build/Sync-ImagePlayground.ps1
+
+.EXAMPLE
+    pwsh ./Website/build/Sync-ImagePlayground.ps1 -ModulePath D:\Modules\ImagePlayground\3.2.7\ImagePlayground.psd1
 #>
 [CmdletBinding()]
 param(
-    [string] $ImagePlaygroundRoot = (Join-Path ($env:EVOTEC_GITHUB_ROOT ?? 'C:\Support\GitHub') 'ImagePlayground'),
-    [string] $SamplesPath
+    [string] $ModulePath
 )
 
 $ErrorActionPreference = 'Stop'
 $website = Split-Path -Parent $PSScriptRoot
-$manifestPath = Join-Path $ImagePlaygroundRoot 'ImagePlayground.psd1'
-if (-not (Test-Path -LiteralPath $manifestPath)) {
-    throw "ImagePlayground.psd1 was not found under '$ImagePlaygroundRoot'. Pass -ImagePlaygroundRoot."
+if (-not $ModulePath) {
+    $installed = Get-Module ImagePlayground -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
+    if (-not $installed) { throw 'ImagePlayground is not installed. Run Install-Module ImagePlayground or pass -ModulePath.' }
+    $ModulePath = $installed.Path
 }
 
-$manifest = Import-PowerShellDataFile -LiteralPath $manifestPath
+$manifest = Import-PowerShellDataFile -LiteralPath $ModulePath
 $cmdlets = @($manifest.CmdletsToExport | Sort-Object -Unique)
 $families = @(
-    [ordered]@{ id = 'charts'; title = 'Charts'; pattern = '^New-ImageChart'; description = 'Line, area, bar, donut, radar, heatmap, treemap, waterfall, word cloud and more, as PNG, SVG or HTML.' }
-    [ordered]@{ id = 'topology'; title = 'Topology and org charts'; pattern = 'Topology|Organization'; description = 'Service maps, dependencies, ports, scenarios, route motion and organization charts.' }
-    [ordered]@{ id = 'dashboards'; title = 'Dashboards and canvases'; pattern = '^New-Image(Canvas|VisualGrid|MetricCard|ListBlock|TableBlock|TimelineBlock|TimelineItem)'; description = 'Metric cards, tables, lists, timelines and fixed-size social cards or wallpapers.' }
-    [ordered]@{ id = 'stories'; title = 'Stories and animation'; pattern = 'ConsoleStory|ImageStory|VisualStory|VisualMotionCue|VisualWatermark|VisualArtifact|StorySource'; description = 'Animated terminal sessions and source-to-result stories as SVG, HTML, GIF or APNG.' }
+    [ordered]@{ id = 'charts'; title = 'Charts'; pattern = '^New-ImageChart'; description = 'Line, area, bar, donut, radar, heatmap, treemap, waterfall, word cloud and more, as PNG, SVG, JPEG or HTML.' }
+    [ordered]@{ id = 'topology'; title = 'Topology and org charts'; pattern = 'Topology|Organization'; description = 'Service maps, groups, ports, node details, geographic layout, scenarios, route motion and organization charts.' }
+    [ordered]@{ id = 'dashboards'; title = 'Dashboards and canvases'; pattern = '^New-Image(Canvas|VisualGrid|MetricCard|ListBlock|TableBlock|TimelineBlock|TimelineItem)'; description = 'Metric cards, tables, lists and timelines in one grid, plus fixed-size social cards and wallpapers.' }
+    [ordered]@{ id = 'stories'; title = 'Stories, motion and export'; pattern = 'ConsoleStory|ImageStory|VisualStory|VisualMotionCue|VisualWatermark|VisualArtifact|StorySource'; description = 'Animated terminal sessions, source-to-result stories, motion cues, watermarks and visual artifacts.' }
 )
 
 $familyResults = foreach ($family in $families) {
@@ -48,13 +47,11 @@ $familyResults = foreach ($family in $families) {
     }
 }
 
-$commit = (git -C $ImagePlaygroundRoot rev-parse --short HEAD 2>$null) ?? ''
 $catalog = [ordered]@{
     generatedBy = 'Website/build/Sync-ImagePlayground.ps1'
     module = [ordered]@{
         name = 'ImagePlayground'
         version = $manifest.ModuleVersion
-        commit = $commit
         commandCount = $cmdlets.Count
         chartForgeXCommandCount = [int](@($familyResults | ForEach-Object { $_.commandCount }) | Measure-Object -Sum).Sum
         install = 'Install-Module -Name ImagePlayground -Scope CurrentUser'
@@ -65,17 +62,3 @@ $catalog = [ordered]@{
 $catalogPath = Join-Path $website 'data/imageplayground.json'
 $catalog | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $catalogPath -Encoding utf8NoBOM
 Write-Host "ImagePlayground $($manifest.ModuleVersion): $($cmdlets.Count) commands, $($catalog.module.chartForgeXCommandCount) powered by ChartForgeX -> $catalogPath"
-
-if ($SamplesPath) {
-    $target = Join-Path $website 'static/powershell'
-    New-Item -ItemType Directory -Force -Path $target | Out-Null
-    $samples = 'social-preview-dark.png', 'service-health-dark.png', 'service-map-dark.png', 'service-map-dark.svg',
-        'powershell-console-story-dark.gif', 'ChartsChartForgeXTrend.png', 'ChartsChartForgeXTrend.svg',
-        'ChartsChartForgeXDonut.png', 'ChartsChartForgeXWordCloud.png'
-    foreach ($sample in $samples) {
-        $source = Join-Path $SamplesPath $sample
-        if (-not (Test-Path -LiteralPath $source)) { throw "Missing sample '$source'. Run the ImagePlayground examples first." }
-        Copy-Item -LiteralPath $source -Destination (Join-Path $target $sample) -Force
-    }
-    Write-Host "Copied $($samples.Count) samples to $target"
-}

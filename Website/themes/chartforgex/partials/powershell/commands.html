@@ -1,0 +1,16 @@
+{{~ ip = data.imageplayground ~}}
+<section class="cfx-section cfx-pscmds" id="commands" aria-labelledby="cfx-pscmds-title">
+  <div class="cfx-section__head">
+    <h2 id="cfx-pscmds-title">Every command built on ChartForgeX</h2>
+    <p>ImagePlayground {{ ip.module.version }} exports {{ ip.module.commandCount }} commands for {{ ip.module.powerShell }}. These {{ ip.module.chartForgeXCommandCount }} render through ChartForgeX; each name opens its reference page with parameters and examples.</p>
+  </div>
+  <div class="cfx-pscmds__grid">
+    {{~ for f in ip.families ~}}
+    <section class="cfx-pscmds__family" aria-labelledby="cfx-pscmds-{{ f.id }}">
+      <h3 id="cfx-pscmds-{{ f.id }}">{{ f.title }} <span>{{ f.commandCount }}</span></h3>
+      <p>{{ f.description }}</p>
+      <ul>{{~ for c in f.commands ~}}<li><a href="https://evotec.xyz/projects/imageplayground/api/{{ c | string.downcase }}/">{{ c }}</a></li>{{~ end ~}}</ul>
+    </section>
+    {{~ end ~}}
+  </div>
+</section>

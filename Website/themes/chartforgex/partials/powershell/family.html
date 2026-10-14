@@ -1,0 +1,38 @@
+{{~ count = 0; for e in psx.examples; if e.family == family; count = count + 1; end; end ~}}
+{{~ first = count % 2 == 1 ~}}
+<section class="cfx-section cfx-psfam" id="{{ family }}" aria-labelledby="cfx-psfam-{{ family }}">
+  <div class="cfx-section__head">
+    <h2 id="cfx-psfam-{{ family }}">{{ band.title }}</h2>
+    <p>{{ band.body }}</p>
+  </div>
+  <div class="cfx-pscards">
+    {{~ for e in psx.examples ~}}{{~ if e.family == family ~}}
+    {{~ shown = null ~}}
+    {{~ if e.show && e.show.size > 0 ~}}
+      {{~ for o in e.outputs ~}}{{~ if o.file == e.show[0] ~}}{{~ shown = o ~}}{{~ end ~}}{{~ end ~}}
+    {{~ else ~}}
+      {{~ for o in e.outputs ~}}{{~ if shown == null && (o.kind == "png" || o.kind == "svg") ~}}{{~ shown = o ~}}{{~ end ~}}{{~ end ~}}
+    {{~ end ~}}
+    <article class="cfx-pscard{{ if first }} cfx-pscard--wide{{ end }}" id="{{ e.id }}" aria-labelledby="cfx-pscard-{{ e.id }}">
+      <div class="cfx-pscard__lead">
+        <h3 id="cfx-pscard-{{ e.id }}"><a href="#{{ e.id }}">{{ e.title }}</a></h3>
+        <p>{{ e.body }}</p>
+        <figure class="cfx-pscard__media">
+          <img src="{{ shown.url }}" width="{{ shown.width }}" height="{{ shown.height }}" loading="lazy" decoding="async" alt="{{ e.title }}: {{ shown.file }} as written by {{ e.id }}.ps1." />
+        </figure>
+        <ul class="cfx-psfiles" aria-label="Files written by {{ e.id }}.ps1">
+          {{~ for o in e.outputs ~}}<li><a href="{{ o.url }}">{{ o.file }}</a></li>{{~ end ~}}
+        </ul>
+      </div>
+      <div class="cfx-pscard__run">
+        <pre class="cfx-pscode"><code class="language-powershell">{{ e.script | html.escape }}</code></pre>
+        <figure class="cfx-term">
+          <figcaption><i aria-hidden="true"></i>PS&gt; ./{{ e.id }}.ps1</figcaption>
+          <pre>{{ e.console | html.escape }}</pre>
+        </figure>
+      </div>
+    </article>
+    {{~ first = false ~}}
+    {{~ end ~}}{{~ end ~}}
+  </div>
+</section>
