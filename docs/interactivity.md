@@ -316,7 +316,58 @@ These commands preserve the same host events, deep-link updates, synchronized ch
 
 ## State Bookmarks
 
-The current zoom and pan controls transform the complete rendered SVG, including its axes and labels. They do not change data domains or regenerate ticks. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
+Standalone zoom and pan controls transform the complete rendered SVG, including its axes and labels. Connected hosts can use native X windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
+
+## Connected native X windows
+
+Use `HtmlInteractiveChartRenderer.PrepareSection` when a host needs the asset-free section and its matching detached native scene. Both come from one preparation. Enable `Zoom` and `Pan` explicitly in the interaction options; establishing a connection does not enable those features.
+
+```csharp
+var renderer = new HtmlInteractiveChartRenderer();
+void Configure(HtmlChartInteractionOptions options) {
+    options.Interaction.ChartId = "measurements";
+    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan);
+}
+var initial = renderer.PrepareSection(chart, configure: Configure);
+
+HtmlChartSection PrepareWindow(HtmlChartSection basis, string kind, double left, double right) {
+    var viewport = kind == "reset" ? null
+        : basis.PreparedVisual.XProjection!.ConstrainViewport(left, right);
+    return renderer.PrepareSection(chart, viewport, Configure);
+}
+```
+
+`left` and `right` are logical SVG positions sent by the browser. `ConstrainViewport` uses the captured native projection, handles a reversed X axis, and shifts an edge-crossing window into the full bounds while retaining its span. It returns null when the request covers the full span. Reset also uses null, restoring ordinary preparation. Explicit `ChartXViewport` values remain strict and must lie within the full resolved bounds.
+
+Connect the mounted controller to an application callback that returns the new section's HTML. The callback is the response path; `cfxviewportrequest` is a notification. Each request contains `chartId`, an opaque `requestId`, the committed `sceneRevision`, and `kind` (`zoom`, `pan`, or `reset`). Zoom and pan also contain logical `left` and `right`; reset omits them.
+
+Keep native preparation associated with the committed scene. A mutable "latest rendered section" is insufficient when renders finish out of order. In this example, `renderNativeWindow` is the application's C# bridge. It resolves `basis` to an immutable `HtmlChartSection`, calls `PrepareWindow`, stores the result under a fresh opaque token, and returns `{ token, html }`. The browser seeds its association with the token for `initial` and advances it only after a commit:
+
+```javascript
+const controller = ChartForgeXCharts.mount(root);
+const bases = new Map([[controller.sceneRevision, initialNativeToken]]);
+const candidates = new Map();
+
+root.addEventListener('cfxviewportchange', ({ detail }) => {
+    bases.set(detail.sceneRevision, candidates.get(detail.requestId));
+    candidates.delete(detail.requestId);
+});
+root.addEventListener('cfxviewporterror', ({ detail }) => candidates.delete(detail.requestId));
+controller.connectXViewport(async (request, signal) => {
+    const basis = bases.get(request.sceneRevision);
+    const result = await renderNativeWindow({ ...request, basis }, signal);
+    if (signal.aborted) throw new DOMException('Canceled', 'AbortError');
+    candidates.set(request.requestId, result.token);
+    signal.addEventListener('abort', () => candidates.delete(request.requestId), { once: true });
+    return result.html;
+});
+```
+
+The application owns transport, chart data and retention of its native sections. Discard rejected or aborted candidates and retire old basis tokens when the application no longer needs them. After an ordinary `controller.update`, seed the new `controller.sceneRevision` with that replacement's native token before accepting another gesture.
+
+Only the latest request for the current scene and connection can commit. A newer request, ordinary update, reconnect, disconnect, disposal, removal, or Escape aborts pending work. A rejected, invalid or stale reply leaves the committed SVG and export intact. `cfxviewportchange` carries the accepted `requestId`, new `sceneRevision` and `kind`. A failed current reply emits `cfxviewporterror` with its request identity and message. Pass null to `connectXViewport` to disconnect.
+
+Native X windows support vertical, non-sparkline Line and StepLine charts with the existing linear X projection and supported interpolation. The adapter disables native zoom/pan controls while a connected section lacks that projection, including empty and unsupported charts. A window can contain no observations while a line still crosses it. Native preparation keeps the full source facts and authored observation identities, excludes off-window marks from pointer and keyboard access, regenerates X ticks and keeps the full-data Y bounds. A native commit clears transient brush and tooltip state and removes the previous whole-SVG transform. Export uses the committed native window. Bookmark and synchronization transforms retain their existing geometric meaning; they do not request native domains.
 
 Enable `ChartInteractionFeatures.StateBookmarks` when a host wants to save and replay user exploration state. The adapter captures only reusable chart state:
 

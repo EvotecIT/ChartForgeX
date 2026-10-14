@@ -4,6 +4,9 @@
     const crosshair = root.querySelector('.cfx-crosshair');
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
+    listenChart(root, root, 'keydown', event => {
+      if (event.key === 'Escape') cancelXViewportRequest(chartLifetimes.get(root));
+    }, true);
     applyRenderedTargetContract(root);
     prepareRootBranchHighlights(root);
     if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
@@ -191,6 +194,7 @@
       });
       listenChart(root, stage, 'wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
+        if (connectedXViewport(root) && !chartXProjection(root)) return;
         event.preventDefault();
         zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92);
       }, { passive: false });
@@ -202,6 +206,13 @@
       listenChart(root, stage, 'pointerdown', (event) => {
         if (event.button !== 0) return;
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
+          if (connectedXViewport(root)) {
+            const x = logicalXPointer(root, event);
+            if (x === null || !chartXProjection(root)) return;
+            drag = { mode: 'native-pan', id: event.pointerId, x, delta: 0 };
+            event.preventDefault(); stage.setPointerCapture(event.pointerId);
+            return;
+          }
           const state = getState(root);
           const point = stagePointer(stage, event);
           drag = { mode: 'pan', id: event.pointerId, x: point.x, y: point.y, panX: state.panX, panY: state.panY };
@@ -227,7 +238,10 @@
           updateNearestPoint(root, crosshair, tip, event);
           return;
         }
-        if (drag.mode === 'pan') {
+        if (drag.mode === 'native-pan') {
+          const x = logicalXPointer(root, event);
+          if (x !== null) drag.delta = x - drag.x;
+        } else if (drag.mode === 'pan') {
           const point = stagePointer(stage, event);
           applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
         } else if (drag.mode === 'brush' && brush) {
@@ -242,7 +256,10 @@
       });
       listenChart(root, stage, 'pointerup', (event) => {
         if (!drag || drag.id !== event.pointerId) return;
-        if (drag.mode === 'brush' && brush) {
+        if (drag.mode === 'native-pan') {
+          const plot = chartXProjection(root)?.plotBounds;
+          if (plot && Math.abs(drag.delta) > 0.5) requestXViewport(root, 'pan', plot.x - drag.delta, plot.x + plot.width - drag.delta);
+        } else if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           syncResetControl(root);
           const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
@@ -283,6 +300,10 @@
     const reset = root.querySelector('[data-cfx-reset]');
     if (reset) listenChart(root, window, 'resize', () => syncResetControl(root));
     if (reset) listenChart(root, reset, 'click', () => {
+      if (connectedXViewport(root) && chartXProjection(root) && (nativeXWindowChanged(root) || chartLifetimes.get(root)?.xViewportPending)) {
+        requestXViewport(root, 'reset');
+        return;
+      }
       resetViewport(root);
       emitHostEvent(root, 'cfxreset', {});
       emitHostEvent(root, 'cfxviewport', { state: getState(root) });

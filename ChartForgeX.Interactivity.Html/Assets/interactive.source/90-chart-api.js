@@ -6,22 +6,28 @@
     if (existing && !existing.disposed) return existing.controller;
     readChartSection(root);
     if (!root.isConnected) throw new TypeError('Mount the chart after inserting its section into the document.');
-    const lifetime = { cleanups: new Set(), disposed: false, controller: null };
+    const lifetime = { cleanups: new Set(), disposed: false, controller: null, xViewportConnection: null,
+      xViewportPending: null, sceneRevision: nextChartSceneRevision() };
     const requireMounted = () => {
       if (lifetime.disposed || !root.isConnected) { controller.dispose(); throw new Error('The chart controller is disposed; mount the connected section again.'); }
     };
     const controller = Object.freeze({
       root,
+      get sceneRevision() { return lifetime.sceneRevision; },
       update: section => {
         requireMounted();
         const next = readChartSection(section, true).cloneNode(true);
-        const state = chartUpdateState(root);
-        releaseChartLifetime(root);
-        installChartSection(root, next);
-        // Keep this controller and the host root stable while replacing all owned browser work.
-        lifetime.disposed = false; chartLifetimes.set(root, lifetime); mountedCharts.add(root);
-        bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state);
+        replaceChartSection(root, lifetime, next);
         emitHostEvent(root, 'cfxupdated', {});
+        return controller;
+      },
+      connectXViewport: connection => {
+        requireMounted();
+        if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected an X viewport callback or null to disconnect.');
+        cancelXViewportRequest(lifetime);
+        lifetime.xViewportConnection = connection;
+        if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
+        syncXViewportControls(root);
         return controller;
       },
       resize: () => {

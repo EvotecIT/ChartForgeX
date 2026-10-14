@@ -105,6 +105,7 @@
       node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
       node._cfxFillInteriors = Object.freeze((region.fillInteriors || []).map(candidate => Object.freeze(candidate.slice())));
       if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
+      if (data.cfxVisible === 'false') return;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -119,7 +120,7 @@
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
       // Retained numeric facts have keyboard semantics without a pointer surface.
-      if (retainedGeometryFact(node) || data.cfxVisible === 'false') return;
+      if (retainedGeometryFact(node)) return;
       // A hollow candle's unpainted interior still belongs to its observation's browser target.
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');

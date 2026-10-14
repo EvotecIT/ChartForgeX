@@ -257,7 +257,7 @@
     if (!node || !isInteractiveTarget(node)) return null;
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
     if (legend) return childPaint(node, true, styles);
-    if (node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
+    if (node.dataset.cfxVisible === 'false' || node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
     return observationPaint(node, styles);
   };
   const tooltipReadoutAvailable = (node, event, styles = new Map()) => {

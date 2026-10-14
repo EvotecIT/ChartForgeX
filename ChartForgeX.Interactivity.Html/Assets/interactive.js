@@ -882,7 +882,7 @@
     if (!node || !isInteractiveTarget(node)) return null;
     const legend = (node.dataset || {}).cfxRole === 'legend-item';
     if (legend) return childPaint(node, true, styles);
-    if (node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
+    if (node.dataset.cfxVisible === 'false' || node.closest('.cfx-series-muted') || retainedGeometryFact(node)) return null;
     return observationPaint(node, styles);
   };
   const tooltipReadoutAvailable = (node, event, styles = new Map()) => {
@@ -1473,6 +1473,7 @@
       node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
       node._cfxFillInteriors = Object.freeze((region.fillInteriors || []).map(candidate => Object.freeze(candidate.slice())));
       if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
+      if (data.cfxVisible === 'false') return;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -1487,7 +1488,7 @@
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
       // Retained numeric facts have keyboard semantics without a pointer surface.
-      if (retainedGeometryFact(node) || data.cfxVisible === 'false') return;
+      if (retainedGeometryFact(node)) return;
       // A hollow candle's unpainted interior still belongs to its observation's browser target.
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
@@ -1688,10 +1689,12 @@
   const releaseChartLifetime = (root) => {
     const lifetime = chartLifetimes.get(root);
     if (!lifetime || lifetime.disposed) return;
+    cancelXViewportRequest(lifetime);
     lifetime.disposed = true;
     for (const cleanup of Array.from(lifetime.cleanups)) cleanup();
     clearChartBrowserState(root);
     mountedCharts.delete(root); chartLifetimes.delete(root); watchChartLifetimes();
+    syncResetControl(root);
   };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
   const trendSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'rangearea', 'slope', 'trendline']);
@@ -1889,6 +1892,7 @@
   };
   // The reset control is contextual: it exists only while the reader has changed the view.
   const viewChanged = (root) => {
+    if (connectedXViewport(root) && nativeXWindowChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
@@ -2015,6 +2019,10 @@
   };
   const zoomBy = (root, factor) => {
     if (!hasFeature(root, 'Zoom')) return;
+    if (chartLifetimes.get(root)?.xViewportConnection) {
+      requestXViewportZoom(root, factor);
+      return;
+    }
     const state = getState(root);
     state.zoom *= factor;
     applyViewport(root, state);
@@ -2086,6 +2094,7 @@
   };
   // Data and legend are separate roving components. Source identities stay on the actual rendered marks.
   const keyboardTargetAvailable = (node) => {
+    if (node.dataset.cfxVisible === 'false') return false;
     if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, new Map())) return false;
     // Muted data leaves navigation; its legend remains an entry point for restoring the series.
     if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
@@ -3251,6 +3260,9 @@
     const crosshair = root.querySelector('.cfx-crosshair');
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
+    listenChart(root, root, 'keydown', event => {
+      if (event.key === 'Escape') cancelXViewportRequest(chartLifetimes.get(root));
+    }, true);
     applyRenderedTargetContract(root);
     prepareRootBranchHighlights(root);
     if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
@@ -3438,6 +3450,7 @@
       });
       listenChart(root, stage, 'wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
+        if (connectedXViewport(root) && !chartXProjection(root)) return;
         event.preventDefault();
         zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92);
       }, { passive: false });
@@ -3449,6 +3462,13 @@
       listenChart(root, stage, 'pointerdown', (event) => {
         if (event.button !== 0) return;
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
+          if (connectedXViewport(root)) {
+            const x = logicalXPointer(root, event);
+            if (x === null || !chartXProjection(root)) return;
+            drag = { mode: 'native-pan', id: event.pointerId, x, delta: 0 };
+            event.preventDefault(); stage.setPointerCapture(event.pointerId);
+            return;
+          }
           const state = getState(root);
           const point = stagePointer(stage, event);
           drag = { mode: 'pan', id: event.pointerId, x: point.x, y: point.y, panX: state.panX, panY: state.panY };
@@ -3474,7 +3494,10 @@
           updateNearestPoint(root, crosshair, tip, event);
           return;
         }
-        if (drag.mode === 'pan') {
+        if (drag.mode === 'native-pan') {
+          const x = logicalXPointer(root, event);
+          if (x !== null) drag.delta = x - drag.x;
+        } else if (drag.mode === 'pan') {
           const point = stagePointer(stage, event);
           applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
         } else if (drag.mode === 'brush' && brush) {
@@ -3489,7 +3512,10 @@
       });
       listenChart(root, stage, 'pointerup', (event) => {
         if (!drag || drag.id !== event.pointerId) return;
-        if (drag.mode === 'brush' && brush) {
+        if (drag.mode === 'native-pan') {
+          const plot = chartXProjection(root)?.plotBounds;
+          if (plot && Math.abs(drag.delta) > 0.5) requestXViewport(root, 'pan', plot.x - drag.delta, plot.x + plot.width - drag.delta);
+        } else if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           syncResetControl(root);
           const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
@@ -3530,6 +3556,10 @@
     const reset = root.querySelector('[data-cfx-reset]');
     if (reset) listenChart(root, window, 'resize', () => syncResetControl(root));
     if (reset) listenChart(root, reset, 'click', () => {
+      if (connectedXViewport(root) && chartXProjection(root) && (nativeXWindowChanged(root) || chartLifetimes.get(root)?.xViewportPending)) {
+        requestXViewport(root, 'reset');
+        return;
+      }
       resetViewport(root);
       emitHostEvent(root, 'cfxreset', {});
       emitHostEvent(root, 'cfxviewport', { state: getState(root) });
@@ -3572,6 +3602,7 @@
         || typeof item.local !== 'boolean' || typeof item.kind !== 'string' || typeof item.state !== 'string'
         || !Array.isArray(item.indices) || item.indices.some(index => !Number.isSafeInteger(index) || index < 0))
       || new Set(metadata.series.map(item => item.key)).size !== metadata.series.length
+      || metadata.xProjection !== undefined && !validXProjection(metadata.xProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
       || metadata.regions.some(item => !item || typeof item.id !== 'string' || typeof item.role !== 'string'
         || ![item.x, item.y, item.width, item.height].every(Number.isFinite) || item.width < 0 || item.height < 0
@@ -3611,7 +3642,7 @@
       root.style.setProperty(property, next.style.getPropertyValue(property), next.style.getPropertyPriority(property));
     root.replaceChildren(...Array.from(next.childNodes).map(node => node.cloneNode(true)));
   };
-  const restoreChartUpdateState = (root, state) => {
+  const restoreChartUpdateState = (root, state, nativeCommit = false) => {
     // Explicit identity survives position changes; anonymous ordinal facts never inherit full-replacement state.
     clearSelections(root);
     for (const target of state.selected) interactiveTargets(root).forEach(node => {
@@ -3619,12 +3650,98 @@
     });
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
     for (const target of state.isolated) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesIsolation(root, resolved, true); }
-    applyViewport(root, state.viewport); renderCompare(root); refreshKeyboardNavigation(root); syncResetControl(root);
+    applyViewport(root, nativeCommit ? { zoom: 1, panX: 0, panY: 0 } : state.viewport);
+    renderCompare(root); refreshKeyboardNavigation(root); syncResetControl(root);
     const focused = state.focused && interactiveTargets(root).find(node => seriesKey(node) === state.focused.seriesKey && matchesTargetIdentity(node, state.focused));
     if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused);
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
     // Focus recovery must not resurrect a pinned or stale readout from the previous scene.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
+  };
+  // Connected hosts return a C#-prepared scene. JavaScript owns gesture geometry and reply lifetime only.
+  let chartSceneSequence = 0, chartViewportRequestSequence = 0;
+  const nextChartSceneRevision = () => 'cfx-scene-' + (++chartSceneSequence);
+  const validXProjection = projection => {
+    const box = projection?.plotBounds;
+    return !!projection && [projection.fullMinimum, projection.fullMaximum, projection.minimum, projection.maximum].every(Number.isFinite)
+      && projection.fullMinimum < projection.fullMaximum && projection.minimum < projection.maximum
+      && projection.minimum >= projection.fullMinimum && projection.maximum <= projection.fullMaximum
+      && typeof projection.reversed === 'boolean' && !!box && [box.x, box.y, box.width, box.height].every(Number.isFinite)
+      && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
+  };
+  const chartXProjection = root => {
+    try { return JSON.parse(root.dataset.cfxPreparedChart).xProjection || null; } catch { return null; }
+  };
+  const nativeXWindowChanged = root => {
+    const projection = chartXProjection(root);
+    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+  };
+  const connectedXViewport = root => !!chartLifetimes.get(root)?.xViewportConnection;
+  const syncXViewportControls = root => {
+    const unsupported = connectedXViewport(root) && !chartXProjection(root);
+    root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = unsupported; });
+    if (unsupported && root.dataset.cfxMode === 'pan') applyMode(root, '');
+    syncResetControl(root);
+  };
+  const cancelXViewportRequest = lifetime => {
+    const pending = lifetime?.xViewportPending;
+    if (!pending) return;
+    lifetime.xViewportPending = null;
+    pending.abort.abort();
+  };
+  const logicalXPointer = (root, event) => {
+    const matrix = root.querySelector('.cfx-stage svg')?.getScreenCTM();
+    if (!matrix) return null;
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+    return Number.isFinite(point.x) ? point.x : null;
+  };
+  const replaceChartSection = (root, lifetime, next, nativeKind = '') => {
+    const state = chartUpdateState(root);
+    if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
+    releaseChartLifetime(root);
+    installChartSection(root, next);
+    // The application owns the root and connection; each installed scene owns fresh browser work.
+    lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();
+    chartLifetimes.set(root, lifetime); mountedCharts.add(root);
+    bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind);
+    syncXViewportControls(root);
+  };
+  const requestXViewport = (root, kind, left, right) => {
+    const lifetime = chartLifetimes.get(root), connection = lifetime?.xViewportConnection;
+    if (!connection || lifetime.disposed || !root.isConnected || !chartXProjection(root)) return;
+    if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return;
+    cancelXViewportRequest(lifetime);
+    const request = Object.freeze({ chartId: root.dataset.cfxChartId, requestId: 'cfx-request-' + (++chartViewportRequestSequence),
+      sceneRevision: lifetime.sceneRevision, kind, ...(kind === 'reset' ? {} : { left, right }) });
+    const pending = { request, abort: new AbortController() }; lifetime.xViewportPending = pending;
+    const current = () => root.isConnected && chartLifetimes.get(root) === lifetime && !lifetime.disposed
+      && lifetime.xViewportConnection === connection && lifetime.xViewportPending === pending
+      && lifetime.sceneRevision === request.sceneRevision && !pending.abort.signal.aborted;
+    emitHostEvent(root, 'cfxviewportrequest', request);
+    Promise.resolve().then(() => {
+      if (!current()) return;
+      return connection(request, pending.abort.signal);
+    }).then(html => {
+      if (!current()) return;
+      if (typeof html !== 'string') throw new TypeError('The viewport connection must return a fresh generated section HTML string.');
+      const next = readChartSection(html, true).cloneNode(true);
+      if (next.dataset.cfxChartId !== request.chartId || !chartXProjection(next))
+        throw new TypeError('The viewport reply must retain the chart identity and a supported X projection.');
+      lifetime.xViewportPending = null;
+      replaceChartSection(root, lifetime, next, kind);
+      emitHostEvent(root, 'cfxviewportchange', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind });
+    }).catch(error => {
+      if (!current()) return;
+      lifetime.xViewportPending = null;
+      emitHostEvent(root, 'cfxviewporterror', { requestId: request.requestId, sceneRevision: request.sceneRevision, kind,
+        message: error instanceof Error ? error.message : String(error) });
+    });
+  };
+  const requestXViewportZoom = (root, factor) => {
+    const plot = chartXProjection(root)?.plotBounds;
+    if (!plot || !Number.isFinite(factor) || factor <= 0) return;
+    const middle = plot.x + plot.width / 2, half = plot.width / (2 * factor);
+    requestXViewport(root, 'zoom', middle - half, middle + half);
   };
   const chartRoot = target => typeof target === 'string' ? document.querySelector(target) : target;
   const mountChart = target => {
@@ -3634,22 +3751,28 @@
     if (existing && !existing.disposed) return existing.controller;
     readChartSection(root);
     if (!root.isConnected) throw new TypeError('Mount the chart after inserting its section into the document.');
-    const lifetime = { cleanups: new Set(), disposed: false, controller: null };
+    const lifetime = { cleanups: new Set(), disposed: false, controller: null, xViewportConnection: null,
+      xViewportPending: null, sceneRevision: nextChartSceneRevision() };
     const requireMounted = () => {
       if (lifetime.disposed || !root.isConnected) { controller.dispose(); throw new Error('The chart controller is disposed; mount the connected section again.'); }
     };
     const controller = Object.freeze({
       root,
+      get sceneRevision() { return lifetime.sceneRevision; },
       update: section => {
         requireMounted();
         const next = readChartSection(section, true).cloneNode(true);
-        const state = chartUpdateState(root);
-        releaseChartLifetime(root);
-        installChartSection(root, next);
-        // Keep this controller and the host root stable while replacing all owned browser work.
-        lifetime.disposed = false; chartLifetimes.set(root, lifetime); mountedCharts.add(root);
-        bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state);
+        replaceChartSection(root, lifetime, next);
         emitHostEvent(root, 'cfxupdated', {});
+        return controller;
+      },
+      connectXViewport: connection => {
+        requireMounted();
+        if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected an X viewport callback or null to disconnect.');
+        cancelXViewportRequest(lifetime);
+        lifetime.xViewportConnection = connection;
+        if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
+        syncXViewportControls(root);
         return controller;
       },
       resize: () => {

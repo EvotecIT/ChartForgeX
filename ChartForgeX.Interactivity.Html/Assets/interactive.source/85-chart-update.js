@@ -22,6 +22,7 @@
         || typeof item.local !== 'boolean' || typeof item.kind !== 'string' || typeof item.state !== 'string'
         || !Array.isArray(item.indices) || item.indices.some(index => !Number.isSafeInteger(index) || index < 0))
       || new Set(metadata.series.map(item => item.key)).size !== metadata.series.length
+      || metadata.xProjection !== undefined && !validXProjection(metadata.xProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
       || metadata.regions.some(item => !item || typeof item.id !== 'string' || typeof item.role !== 'string'
         || ![item.x, item.y, item.width, item.height].every(Number.isFinite) || item.width < 0 || item.height < 0
@@ -61,7 +62,7 @@
       root.style.setProperty(property, next.style.getPropertyValue(property), next.style.getPropertyPriority(property));
     root.replaceChildren(...Array.from(next.childNodes).map(node => node.cloneNode(true)));
   };
-  const restoreChartUpdateState = (root, state) => {
+  const restoreChartUpdateState = (root, state, nativeCommit = false) => {
     // Explicit identity survives position changes; anonymous ordinal facts never inherit full-replacement state.
     clearSelections(root);
     for (const target of state.selected) interactiveTargets(root).forEach(node => {
@@ -69,7 +70,8 @@
     });
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
     for (const target of state.isolated) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesIsolation(root, resolved, true); }
-    applyViewport(root, state.viewport); renderCompare(root); refreshKeyboardNavigation(root); syncResetControl(root);
+    applyViewport(root, nativeCommit ? { zoom: 1, panX: 0, panY: 0 } : state.viewport);
+    renderCompare(root); refreshKeyboardNavigation(root); syncResetControl(root);
     const focused = state.focused && interactiveTargets(root).find(node => seriesKey(node) === state.focused.seriesKey && matchesTargetIdentity(node, state.focused));
     if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused);
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }

@@ -22,6 +22,7 @@
   };
   // The reset control is contextual: it exists only while the reader has changed the view.
   const viewChanged = (root) => {
+    if (connectedXViewport(root) && nativeXWindowChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
@@ -148,6 +149,10 @@
   };
   const zoomBy = (root, factor) => {
     if (!hasFeature(root, 'Zoom')) return;
+    if (chartLifetimes.get(root)?.xViewportConnection) {
+      requestXViewportZoom(root, factor);
+      return;
+    }
     const state = getState(root);
     state.zoom *= factor;
     applyViewport(root, state);
