@@ -37,8 +37,8 @@ public sealed class GanttEndpointMarkTests {
         var source = Role(document, "gantt-milestone");
         Assert.Equal(Start.ToOADate(), (double)source[0].Attribute("data-cfx-start")!);
         Assert.Equal(Finish.ToOADate(), (double)source[1].Attribute("data-cfx-start")!);
-        Assert.Equal(Start.ToOADate(), chart.Series[1].Points[0].X);
-        Assert.Equal(Finish.ToOADate(), chart.Series[2].Points[0].X);
+        Assert.Equal(Start.ToOADate(), chart.Series[1].GanttItems[0].Start);
+        Assert.Equal(Finish.ToOADate(), chart.Series[2].GanttItems[0].Start);
         var window = Assert.Single(Role(document, "gantt-chart"));
         Assert.Equal(Start.ToOADate(), (double)window.Attribute("data-cfx-min")!);
         Assert.Equal(Finish.ToOADate(), (double)window.Attribute("data-cfx-max")!);
@@ -68,8 +68,8 @@ public sealed class GanttEndpointMarkTests {
         var milestones = prepared.Regions.Where(region => region.Role == "gantt-milestone").ToArray();
         Assert.Equal(minimum, milestones[0].Bounds.Left < plot.Left - .001);
         Assert.Equal(maximum, milestones[1].Bounds.Right > plot.Right + .001);
-        Assert.Equal(Start.ToOADate(), chart.Options.XAxis.Minimum ?? chart.Series[1].Points[0].X);
-        Assert.Equal(Finish.ToOADate(), chart.Options.XAxis.Maximum ?? chart.Series[2].Points[0].X);
+        Assert.Equal(Start.ToOADate(), chart.Options.XAxis.Minimum ?? chart.Series[1].GanttItems[0].Start);
+        Assert.Equal(Finish.ToOADate(), chart.Options.XAxis.Maximum ?? chart.Series[2].GanttItems[0].Start);
     }
 
     [Theory]
@@ -109,19 +109,22 @@ public sealed class GanttEndpointMarkTests {
         var instant = prepared.Regions.Single(region => region.Id == "series-1-point-0");
         Assert.True(instant.Bounds.Width >= 1);
         Assert.True(instant.Bounds.Right <= plot.Right + .001);
-        Assert.Equal(Finish.ToOADate(), chart.Series[1].Points[0].X);
-        Assert.Equal(Finish.ToOADate(), chart.Series[1].Points[0].Y);
+        Assert.Equal(Finish.ToOADate(), chart.Series[1].GanttItems[0].Start);
+        Assert.Equal(Finish.ToOADate(), chart.Series[1].GanttItems[0].End);
     }
 
-    private static Chart Milestones(int width, bool dark) => Chart.Create().WithSize(width, 360)
-        .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLegend(false)
+    private static Chart Milestones(int width, bool dark) {
+        var chart = Chart.Create().WithSize(width, 360)
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(false)
         .ConfigureGridStyle(style => style.ShowVerticalLines = true)
         .AddGanttTask("Work", Start, Finish, .5)
-        .AddGanttMilestone("Start", Start, color: MilestoneColor).AddGanttMilestone("Delivery", Finish, dependsOn: 0, color: MilestoneColor)
+        .AddGanttMilestone("Start", Start, color: MilestoneColor).AddGanttMilestone("Delivery", Finish, color: MilestoneColor)
         .ConfigureXAxis(axis => {
             axis.Labels.Add(new ChartAxisLabel(Start, "Start")); axis.Labels.Add(new ChartAxisLabel(Finish, "Delivery"));
             axis.LabelDensity = ChartLabelDensity.All;
         });
+        return chart.AddGanttDependency(chart.Series[0], chart.Series[2]);
+    }
 
     private static XElement[] Role(XDocument document, string role) => document.Descendants()
         .Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();

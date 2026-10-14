@@ -184,7 +184,7 @@ public sealed class CartesianStackTotalLayoutTests {
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
     }
 
-    private static Chart DashboardRows(int sign) => Chart.Create().WithSize(640, 300).WithTheme(ChartTheme.DashboardLight())
+    private static Chart DashboardRows(int sign) => Chart.Create().WithSize(640, 300).WithTheme(VisualTheme.Dashboard())
         .WithDashboardStackedRowStyle(showTotals: true).WithXLabels("Engineering", "Maintenance", "HSEQ")
         .AddHorizontalBar("All employee", Points(68, 62, 74, sign), ChartColor.FromHex("#7057E6"))
         .AddHorizontalBar("Terminated", Points(25, 28, 24, sign), ChartColor.FromHex("#5FD3D9"))

@@ -14,34 +14,11 @@ public sealed partial class Chart {
     /// <param name="cells">The row cells in column order.</param>
     /// <param name="group">Optional group the row is listed under. Consecutive rows with the same group share one
     /// header row; a row without a group after a grouped one is set apart by a small gap.</param>
+    /// <param name="id">Optional stable series identity. When omitted, the chart assigns a local ID.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHeatmapCategoryRow(string name, IEnumerable<ChartHeatmapCell?> cells, string? group = null) {
-        EnsureCanAddSeries();
-        if (name == null) throw new ArgumentNullException(nameof(name));
-        if (cells == null) throw new ArgumentNullException(nameof(cells));
-        var points = new List<ChartPoint>();
-        var visible = new List<ChartHeatmapCell>();
-        var column = 0;
-        foreach (var cell in cells) {
-            column++;
-            if (!cell.HasValue) continue;
-            if (cell.Value.State == null) throw new ArgumentException("Heatmap cells must be created with a state.", nameof(cells));
-            points.Add(new ChartPoint(column, 0));
-            visible.Add(cell.Value);
-        }
-
-        var series = new ChartSeries(name, ChartSeriesKind.Heatmap, points) {
-            HeatmapColumnCount = column,
-            ShowInLegend = false,
-            IsCategoricalHeatmapRow = true,
-            LaneGroup = string.IsNullOrWhiteSpace(group) ? null : group
-        };
-        foreach (var cell in visible) {
-            series.HeatmapCells.Add(cell);
-            series.PointLabels.Add(cell.Text);
-        }
-
-        AppendSeries(series);
+    public Chart AddHeatmapCategoryRow(string name, IEnumerable<ChartHeatmapCell?> cells, string? group = null, ChartSeriesId? id = null) {
+        AppendSeries(id.HasValue ? ChartSeries.CreateHeatmapCategoryRow(id.Value, name, cells, group)
+            : ChartSeries.CreateHeatmapCategoryRow(name, cells, group));
         return this;
     }
 
@@ -49,12 +26,13 @@ public sealed partial class Chart {
     /// <param name="name">The row name.</param>
     /// <param name="cells">The row cells in column order.</param>
     /// <param name="group">Optional group the row is listed under.</param>
+    /// <param name="id">Optional stable series identity. When omitted, the chart assigns a local ID.</param>
     /// <returns>The current chart.</returns>
-    public Chart AddHeatmapCategoryRow(string name, IEnumerable<ChartHeatmapCell> cells, string? group = null) {
+    public Chart AddHeatmapCategoryRow(string name, IEnumerable<ChartHeatmapCell> cells, string? group = null, ChartSeriesId? id = null) {
         if (cells == null) throw new ArgumentNullException(nameof(cells));
         var nullable = new List<ChartHeatmapCell?>();
         foreach (var cell in cells) nullable.Add(cell);
-        return AddHeatmapCategoryRow(name, nullable, group);
+        return AddHeatmapCategoryRow(name, nullable, group, id);
     }
 
     /// <summary>Adds a categorical heatmap row from cells in column order; null cells are masked.</summary>

@@ -9,7 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidGanttReferenceTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task AuthoredMilestoneRangeProducesOrderedStaticMarks(bool dark, int width) {
@@ -17,7 +17,7 @@ public sealed class MermaidGanttReferenceTests {
         var fixture = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "gantt-milestone-dependencies.mmd");
         var result = new MermaidParser().ParseGantt(File.ReadAllText(fixture));
         Assert.False(result.HasErrors);
-        var chart = result.Document!.ToChart().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        var chart = result.Document!.ToChart().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style=\"margin:0\">" + chart.ToHtmlFragment() + "</body></html>", width, 600);
         var marks = session.Page.Locator("[data-cfx-role=\"gantt-task-shape\"], [data-cfx-role=\"gantt-milestone-shape\"]");
         Assert.Equal(3, await marks.CountAsync());
@@ -117,10 +117,10 @@ public sealed class MermaidGanttReferenceTests {
         Assert.Equal(new DateTime(2026, 1, visibleDay), document.Tasks[0].RenderEnd);
         Assert.Equal(document.Tasks[0].End, document.Tasks[2].Start);
         Assert.Equal(document.Tasks[2].End, document.Tasks[3].Start);
-        Assert.Equal(document.Tasks[0].RenderEnd.ToOADate(), document.ToChart().Series[0].Points[0].Y);
+        Assert.Equal(document.Tasks[0].RenderEnd.ToOADate(), document.ToChart().Series[0].GanttItems[0].End);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task ExcludedUntilEndpointKeepsTheBarBeforeItsDependent(bool dark, int width) {
@@ -128,7 +128,7 @@ public sealed class MermaidGanttReferenceTests {
         var source = "gantt\nexcludes 2026-01-05\nWindow :window, 2026-01-02, until anchor\nAnchor :anchor, 2026-01-05, 1d\nTail :tail, after window, 1d";
         var result = new MermaidParser().ParseGantt(source);
         Assert.False(result.HasErrors);
-        var chart = result.Document!.ToChart().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        var chart = result.Document!.ToChart().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style=\"margin:0\">" + chart.ToHtmlFragment() + "</body></html>", width, 600);
         var bars = session.Page.Locator("[data-cfx-role=\"gantt-task-shape\"]");
         Assert.Equal(3, await bars.CountAsync());
@@ -156,6 +156,6 @@ public sealed class MermaidGanttReferenceTests {
         Assert.Equal(new DateTime(2026, 1, 2), document.Tasks[0].Start);
         Assert.Equal(new DateTime(2026, 1, 4), document.Tasks[0].End);
         Assert.Equal(document.Tasks[0].End, document.Tasks[1].Start);
-        Assert.Equal(new DateTime(2026, 1, 3).ToOADate(), document.ToChart().Series[0].Points[0].X);
+        Assert.Equal(new DateTime(2026, 1, 3).ToOADate(), document.ToChart().Series[0].GanttItems[0].Start);
     }
 }

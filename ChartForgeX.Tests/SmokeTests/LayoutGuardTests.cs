@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Linq;
 using ChartForgeX.Core;
@@ -7,7 +8,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void LegendsAndDataLabelsKeepGuardGaps() {
-        var topLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var topLegend = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 320)
             .WithLegendPosition(ChartLegendPosition.Top)
             .AddLine("First long legend item", Points(12, 18, 26))
@@ -20,7 +21,7 @@ internal static partial class SmokeTests {
             "Top legends should retain all series and reserve a visible gap before the actual plot guard.");
         Assert(topPrepared.ToPng().Length > 64, "Top legend guard gaps should render PNG output.");
 
-        var bottomLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var bottomLegend = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 320)
             .WithLegendPosition(ChartLegendPosition.Bottom)
             .AddLine("First long legend item", Points(12, 18, 26))
@@ -34,7 +35,7 @@ internal static partial class SmokeTests {
             "Bottom legends should retain all series inside the authored padding and clear the actual plot guard.");
         Assert(bottomPrepared.ToPng().Length > 64, "Bottom legend guard gaps should render PNG output.");
 
-        var radialLegend = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var radialLegend = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(520, 320)
             .WithLegendPosition(ChartLegendPosition.Bottom)
             .WithProgressRingCenterLabel(false)
@@ -45,7 +46,7 @@ internal static partial class SmokeTests {
             "Bottom progress-ring legends should stay inside the authored padding instead of sitting on the canvas edge.");
         Assert(radialPrepared.ToPng().Length > 64, "Bottom progress-ring legend guard gaps should render PNG output.");
 
-        var edgeLabels = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var edgeLabels = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(420, 280)
             .WithDataLabels()
             .WithYAxisBounds(0, 100)

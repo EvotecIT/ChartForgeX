@@ -1,0 +1,51 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = MixedRadialRecipe.Create("mixed-angular-reversal", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Regional counts and targets", "Columns, reference area and target line share reversed category angles", showLegend: true, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Observed counts compared with a radar reference area and an unfilled target line.</summary>
+public static class MixedRadialRecipe {
+    /// <summary>Creates shared radial categories with optional closed curves or reversed angular order.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, double? curveTension = null) {
+        if (variant is not ("wide" or "compact" or "mixed" or "compact-mixed" or "mixed-curves" or "compact-mixed-curves" or "mixed-angular-reversal" or "compact-mixed-angular-reversal"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var tension = curveTension ?? (variant is "mixed-curves" or "compact-mixed-curves" ? 1d : (double?)null);
+        var reference = new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.Radar, Points(1000, 900, 1100, 1000))
+            .ConfigureRadar(options => { options.FillOpacity = .15; options.CurveTension = tension; })
+            .ConfigureMarkers(markers => markers.Enabled = false);
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.RadialColumn, Points(1200, 700, 1050, 950));
+        var target = new ChartSeries(new ChartSeriesId("target"), "Target", ChartSeriesKind.Radar, Points(1400, 1200, 1300, 1250))
+            .ConfigureRadar(options => { options.Form = ChartLineAreaForm.Line; options.CurveTension = tension; })
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 4; });
+        var chart = Chart.Create().WithXLabels("North", "East", "South", "West").WithYAxisBounds(0, 1600).WithDataLabels(false)
+            .WithRadialGeometry(new ChartRadialGeometryOptions(innerRadiusRatio: .22, cornerRadius: 4))
+            .AddSeries(reference).AddSeries(observed).AddSeries(target);
+        if (variant is "mixed-angular-reversal" or "compact-mixed-angular-reversal") chart.ConfigureXAxis(axis => axis.WithReversal());
+        return chart;
+    }
+
+    private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+}

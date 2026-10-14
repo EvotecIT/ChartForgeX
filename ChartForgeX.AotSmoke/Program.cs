@@ -15,7 +15,7 @@ var chart = Chart.Create()
     .WithTitle("AOT smoke")
     .WithSubtitle("Static report output")
     .WithSize(420, 240)
-    .WithTheme(ChartTheme.ReportLight())
+    .WithTheme(VisualTheme.Report())
     .WithXAxis("Run")
     .WithYAxis("Value")
     .AddSmoothLine("Values", new[] { new ChartPoint(1, 2), new ChartPoint(2, 5), new ChartPoint(3, 4) })
@@ -25,14 +25,15 @@ AssertContains(chart.ToSvg(), "<svg", "SVG render failed.");
 AssertContains(chart.ToHtmlPage(), "<html", "HTML page render failed.");
 AssertPng(chart.ToPng(), "PNG render failed.");
 
-foreach (var theme in new[] { ChartTheme.GraphiteLight(), ChartTheme.GraphiteDark() }) {
-    var graphite = Chart.Create().WithSize(420, 300).WithTheme(theme).WithTitle("Graphite AOT")
+foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+    var theme = VisualTheme.Graphite();
+    var graphite = Chart.Create().WithSize(420, 300).WithTheme(theme, mode).WithTitle("Graphite AOT")
         .AddLinearGauge("Readiness", 87).ConfigureGauge(options => { options.Target = 90; options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning)); });
     AssertContains(graphite.ToSvg(), "data-cfx-role=\"gauge-value-marker\"", "Graphite gauge SVG failed.");
     AssertPng(graphite.ToPng(), "Graphite gauge PNG failed.");
-    var graphiteHeatmap = Chart.Create().WithTheme(theme).WithXLabels("A", "B", "C")
+    var graphiteHeatmap = Chart.Create().WithTheme(theme, mode).WithXLabels("A", "B", "C")
         .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapRow("Counts", new[] { 0d, 4, 8 });
-    AssertContains(graphiteHeatmap.WithSvgColorVariables((theme.Text.Equals(ChartTheme.GraphiteLight().Text)
+    AssertContains(graphiteHeatmap.WithSvgColorVariables((mode == VisualThemeMode.Light
         ? VisualDesignTokens.GraphiteLight() : VisualDesignTokens.GraphiteDark()).ToSvgColorVariables()).ToSvg(), "ramps-sequential", "Graphite token mapping failed.");
     AssertPng(graphiteHeatmap.ToPng(), "Graphite heatmap PNG failed.");
 }
@@ -52,7 +53,7 @@ var metric = MetricCard.Create()
     .WithIcon(VisualIcon.Lightning)
     .WithTrend("+2.4 pp")
     .WithStatus(VisualStatus.Positive)
-    .WithTheme(ChartTheme.ReportLight())
+    .WithTheme(VisualTheme.Report())
     .WithSize(320, 170);
 AssertContains(metric.ToSvg("aot-metric"), "data-cfx-role=\"metric-label\"", "Metric card SVG render failed.");
 AssertPng(metric.ToPng(), "Metric card PNG render failed.");

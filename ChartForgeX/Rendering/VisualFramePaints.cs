@@ -8,6 +8,7 @@ internal sealed class VisualFramePaints {
     internal SvgPaint Surface { get; set; }
     internal SvgPaint ElevatedSurface { get; set; }
     internal SvgPaint Border { get; set; }
+    internal SvgPaint? PlotBorder { get; set; }
     internal SvgPaint Foreground { get; set; }
     internal SvgPaint MutedForeground { get; set; }
 }

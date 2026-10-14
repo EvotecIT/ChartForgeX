@@ -10,7 +10,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart ConfigureBubble(Action<ChartBubbleOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.Bubble);
+        Options.Bubble = ChartOptionConfiguration.Configure(Options.Bubble, configure, options => options.Clone());
         return this;
     }
 
@@ -22,14 +22,9 @@ public sealed partial class Chart {
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddBubble(string name, IEnumerable<ChartBubble> bubbles, ChartColor? color = null) {
-        if (bubbles == null) throw new ArgumentNullException(nameof(bubbles));
-        var points = new List<ChartPoint>();
-        foreach (var bubble in bubbles) {
-            points.Add(new ChartPoint(bubble.X, bubble.Y).WithColorValue(bubble.ColorValue));
-            points.Add(new ChartPoint(bubble.X, bubble.Size));
-        }
-
-        if (points.Count == 0) throw new ArgumentException("Bubble charts must contain at least one bubble.", nameof(bubbles));
-        return Add(name, ChartSeriesKind.Bubble, points, color);
+        var series = ChartSeries.CreateBubble(name, bubbles, color);
+        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(bubbles));
+        AppendSeries(series);
+        return this;
     }
 }

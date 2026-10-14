@@ -1,0 +1,21 @@
+/// <summary>Creates a branched assessment workflow with typed lanes and semantic statuses.</summary>
+public static class FlowRecipe {
+    /// <summary>Creates the expanded workflow model.</summary>
+    /// <param name="variant">Use wide or expanded for the workflow.</param>
+    /// <param name="mode">The rendering mode; diagram colors are resolved when the model is prepared.</param>
+    public static FlowArtifact Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "expanded"))
+            throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or expanded.");
+
+        return FlowArtifact.Create("assessment-flow").WithSize(900, 600)
+            .AddLane("service", "Service").AddLane("review", "Review")
+            .AddStep("received", "Request received", FlowArtifactStepKind.Start, "service")
+            .AddStep("decision", "Automatic checks pass?", FlowArtifactStepKind.Decision, "service")
+            .AddStep("manual", "Review observations", FlowArtifactStepKind.Process, "review", VisualStatus.Warning)
+            .AddStep("complete", "Assessment complete", FlowArtifactStepKind.End, "service", VisualStatus.Positive)
+            .AddConnector("received", "decision", "Evaluate")
+            .AddConnector("decision", "manual", "Review required")
+            .AddConnector("decision", "complete", "Passed")
+            .AddConnector("manual", "complete", "Accepted");
+    }
+}

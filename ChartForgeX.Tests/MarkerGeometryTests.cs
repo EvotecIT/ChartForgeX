@@ -18,7 +18,7 @@ public sealed class MarkerGeometryTests {
         var series = Chart.Create().AddScatter("Samples", new[] { new ChartPoint(1, 2) }).Series[0];
         Assert.Equal(ChartMarkerShape.Circle, series.Markers.Shape);
         Assert.Null(series.Markers.Enabled); Assert.Null(series.Markers.Radius);
-        series.WithMarkerRadius(12);
+        series.ConfigureMarkers(markers => markers.Radius = 12);
         Assert.Equal(12, series.Markers.Radius);
         series.Markers.Radius = 7;
         Assert.Equal(7, series.MarkerRadius);
@@ -38,7 +38,7 @@ public sealed class MarkerGeometryTests {
         bar.Series[0].Markers.Enabled = false;
         Assert.Throws<InvalidOperationException>(() => Prepare(bar));
         var map = Bare().AddDottedMap("Places", new[] { new ChartMapPoint("Origin", 0, 0) });
-        map.Series[0].WithMarkerRadius(9);
+        map.Series[0].ConfigureMarkers(markers => markers.Radius = 9);
         Assert.NotEmpty(Prepare(map).ToPng());
         map.Series[0].Markers.Shape = ChartMarkerShape.Diamond;
         Assert.Throws<InvalidOperationException>(() => Prepare(map));

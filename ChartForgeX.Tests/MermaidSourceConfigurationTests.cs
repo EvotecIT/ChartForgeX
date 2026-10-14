@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
@@ -17,14 +18,14 @@ public sealed class MermaidSourceConfigurationTests {
         var rendered = MermaidRenderer.Render("%%{init: {'fontFamily': 'Arial, sans-serif'}}%%\n" + body);
         Assert.Empty(rendered.Diagnostics);
         var model = rendered.Artifact!.Model;
-        var family = model is TopologyChart topology ? topology.Theme!.FontFamily
-            : model is Chart chart ? chart.Options.Theme.FontFamily : Assert.IsAssignableFrom<IVisualBlock>(model).Options.Theme.FontFamily;
+        var family = model is TopologyChart topology ? topology.Theme.Typography.Family
+            : model is Chart chart ? chart.Options.Theme.Typography.Family : Assert.IsAssignableFrom<IVisualBlock>(model).Options.Theme.Typography.Family;
         Assert.Equal("Arial, sans-serif", family);
         Assert.Contains("Arial", rendered.Artifact.ToSvg());
         Assert.NotEmpty(rendered.Artifact.ToPng());
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("dark", 320)]
     [InlineData("default", 960)]
     public async Task ConfiguredSourceRemainsReadableInStaticHosts(string theme, int width) {
@@ -65,10 +66,11 @@ public sealed class MermaidSourceConfigurationTests {
         Assert.Contains(parsed.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration && item.Span.Line == 6);
         var artifact = ((MermaidDocument)document).ToVisualArtifact();
         var topology = Assert.IsType<TopologyChart>(artifact.Model);
-        Assert.Equal("#0B1120", topology.Theme!.Background);
-        Assert.Equal("Arial, sans-serif", topology.Theme.FontFamily);
+        Assert.Equal(VisualThemeMode.Dark, topology.ThemeMode);
+        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Background, topology.Theme.Resolve(topology.ThemeMode).Background);
+        Assert.Equal("Arial, sans-serif", topology.Theme.Typography.Family);
         Assert.Equal("classic", artifact.Metadata["mermaid.config.look"]);
-        Assert.Contains("#0B1120", artifact.ToSvg());
+        Assert.Contains(topology.Theme.Resolve(topology.ThemeMode).Background.ToHex(), artifact.ToSvg());
         Assert.NotEmpty(artifact.ToPng());
     }
 
@@ -144,6 +146,8 @@ public sealed class MermaidSourceConfigurationTests {
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedLayout && item.Message.Contains("defaultRenderer"));
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration && item.Message.Contains("sequence.theme"));
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration && item.Message.Contains("forest"));
-        Assert.Equal("#FFFFFF", Assert.IsType<TopologyChart>(result.Artifact!.Model).Theme!.Background);
+        var topology = Assert.IsType<TopologyChart>(result.Artifact!.Model);
+        Assert.Equal(VisualThemeMode.Light, topology.ThemeMode);
+        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Background, topology.Theme.Resolve(topology.ThemeMode).Background);
     }
 }

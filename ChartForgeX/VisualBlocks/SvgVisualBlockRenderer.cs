@@ -28,23 +28,21 @@ public sealed partial class SvgVisualBlockRenderer {
         var scope = idScope ?? string.Empty;
         var provisionalId = BuildProvisionalId(block, scope);
         var svg = render(block, provisionalId);
-        if (block.Options.Theme.UseGraphiteLayout) {
-            var font = new Typography.FontSpec { Family = block.Options.Theme.FontFamily };
-            using var measurement = ChartLabelScene.OpenFontScope(font);
-            svg = ChartLabelScene.Create(svg, font).ToSvg();
-        }
+        var font = block.Options.Theme.Typography.ToFontSpec();
+        using var measurement = ChartLabelScene.OpenFontScope(font);
+        svg = ChartLabelScene.Create(svg, font).ToSvg();
         return BindVisualIdentity(svg, provisionalId, scope);
     }
 
     internal ChartLabelScene RenderLabelScene(IVisualBlock block) {
-        var font = new Typography.FontSpec { Family = block.Options.Theme.FontFamily };
+        var font = new Typography.FontSpec { Family = block.Options.ResolvedTheme.FontFamily };
         using var measurement = ChartLabelScene.OpenFontScope(font);
         return ChartLabelScene.Create(RenderCore(block, BuildProvisionalId(block, string.Empty)), font);
     }
 
     internal static string RenderSurface(IVisualBlock block, string id, Action<SvgMarkupWriter> renderContent) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var accessibility = options.Accessibility;
         var surfaceBackground = VisualBlockRendering.SurfaceBackground(options);
         var writer = new SvgMarkupWriter(4096);
@@ -61,7 +59,7 @@ public sealed partial class SvgVisualBlockRenderer {
             .Attribute("preserveAspectRatio", "xMidYMid meet")
             .Attribute("shape-rendering", "geometricPrecision")
             .Attribute("text-rendering", "geometricPrecision")
-            .Attribute("data-cfx-look", theme.UseGraphiteLayout ? "graphite" : null)
+            .Attribute("data-cfx-look", "graphite")
             .Attribute("data-cfx-host-frame", options.HostOwnsFrame ? "true" : null)
             .Attribute("style", "max-width:100%;height:auto;display:block")
             .EndStartElement()
@@ -74,28 +72,22 @@ public sealed partial class SvgVisualBlockRenderer {
 
         writer.StartElement("defs").EndStartElement().Line();
         SvgSurfacePolish.WriteScopedStrokeStyle(writer, id);
-        if (!theme.FlatMarks) {
-            SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualBackground", surfaceBackground);
-            SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualCard", theme.CardBackground);
-            SvgSurfacePolish.WriteSurfaceGradient(writer, id, "visualPlot", theme.PlotBackground);
-        }
         writer.StartElement("clipPath").Attribute("id", id + "-visualCardClip").EndStartElement()
             .StartElement("rect").Attribute("x", 0).Attribute("y", 0).Attribute("width", options.Size.Width).Attribute("height", options.Size.Height).Attribute("rx", Math.Max(0, theme.CornerRadius)).EndEmptyElement()
             .EndElement()
             .Line();
         writer.EndElement().Line();
 
-        if (!options.HostOwnsFrame && !options.TransparentBackground && surfaceBackground.A > 0 && !(theme.FlatMarks && options.ShowCard && theme.UseCard)) writer.StartElement("rect").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", theme.FlatMarks ? surfaceBackground.ToCss() : "url(#" + id + "-visualBackground)").EndEmptyElement().Line();
-        if (options.ShowCard && theme.UseCard && !options.HostOwnsFrame) {
-            writer.StartElement("rect").Attribute("data-cfx-role", "visual-card").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", 0.5).Attribute("y", 0.5).Attribute("width", Math.Max(0, options.Size.Width - 1)).Attribute("height", Math.Max(0, options.Size.Height - 1)).Attribute("rx", Math.Max(0, theme.CornerRadius - 0.5)).Attribute("fill", theme.FlatMarks ? theme.CardBackground.ToCss() : "url(#" + id + "-visualCard)").Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
-            if (theme.CardBackground.A > 0 && !theme.FlatMarks) writer.StartElement("rect").Attribute("data-cfx-role", "visual-card-highlight").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", ChartVisualPrimitives.CardInnerHighlightInset).Attribute("y", ChartVisualPrimitives.CardInnerHighlightInset).Attribute("width", Math.Max(0, options.Size.Width - ChartVisualPrimitives.CardInnerHighlightInset * 2)).Attribute("height", Math.Max(0, options.Size.Height - ChartVisualPrimitives.CardInnerHighlightInset * 2)).Attribute("rx", Math.Max(0, theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset)).Attribute("fill", "none").Attribute("stroke", "#fff").Attribute("stroke-opacity", ChartVisualPrimitives.CardInnerHighlightOpacity).EndEmptyElement().Line();
+        if (!options.HostOwnsFrame && !options.TransparentBackground && surfaceBackground.A > 0) writer.StartElement("rect").Attribute("data-cfx-role", "visual-background").Attribute("width", "100%").Attribute("height", "100%").Attribute("fill", surfaceBackground.ToCss()).EndEmptyElement().Line();
+        if (options.ShowCard && !options.HostOwnsFrame) {
+            writer.StartElement("rect").Attribute("data-cfx-role", "visual-card").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", 0.5).Attribute("y", 0.5).Attribute("width", Math.Max(0, options.Size.Width - 1)).Attribute("height", Math.Max(0, options.Size.Height - 1)).Attribute("rx", Math.Max(0, theme.CornerRadius - 0.5)).Attribute("fill", theme.CardBackground.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
         }
 
         renderContent(writer);
 
         writer.EndElement().Line();
         var markup = writer.Build();
-        return theme.UseGraphiteLayout ? markup.Replace("font-weight=\"850\"", "font-weight=\"700\"").Replace("font-weight=\"800\"", "font-weight=\"700\"").Replace("font-weight=\"750\"", "font-weight=\"700\"") : markup;
+        return markup.Replace("font-weight=\"850\"", "font-weight=\"700\"").Replace("font-weight=\"800\"", "font-weight=\"700\"").Replace("font-weight=\"750\"", "font-weight=\"700\"");
     }
     private static string RenderCore(IVisualBlock block, string id) => RenderSurface(block, id, writer => {
         if (block is PacketLayoutBlock packet) RenderPacketLayout(writer, packet);
@@ -108,11 +100,11 @@ public sealed partial class SvgVisualBlockRenderer {
     });
 
     internal static void RenderBlockHeading(SvgMarkupWriter writer, IVisualBlock block, ref double y, double contentX, double contentWidth) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         var headings = VisualBlockRendering.Headings(block);
         var titleSize = headings.TitleFontSize; var subtitleSize = headings.SubtitleFontSize;
         if (block.Title.Length > 0) {
-            var weight = theme.UseGraphiteLayout ? 700 : 800;
+            var weight = 700;
             writer.StartElement("text").Attribute("data-cfx-role", "visual-title").Attribute("x", contentX).Attribute("y", y + headings.TitleAscent).Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", titleSize).Attribute("font-weight", weight).Text(VisualBlockRendering.FitMeasuredText(block.Title, titleSize, contentWidth, theme.FontFamily, weight)).EndElement().Line();
             y += headings.TitleAdvance;
         }

@@ -21,7 +21,7 @@ public static class MermaidJourneyRendering {
         var labels = document.Tasks.Select(task => string.IsNullOrWhiteSpace(task.Section) ? task.Text : task.Section + " - " + task.Text).ToArray();
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithXAxis("Journey task")
             .WithYAxis("Score")
@@ -71,14 +71,7 @@ public static class MermaidJourneyRendering {
         document.ToChart(options).ToPng();
 
     private static string ResolveTitle(MermaidJourneyDocument document, MermaidJourneyRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid journey";
-    }
-
-    private static string ResolveSubtitle(MermaidJourneyDocument document, MermaidJourneyRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid journey");
     }
 
     private static int CountActors(MermaidJourneyDocument document) =>

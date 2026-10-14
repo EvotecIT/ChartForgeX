@@ -21,9 +21,11 @@ public sealed class PolarPointDescriptionTests {
             });
         if (mixed) chart.AddRadialColumn("Observed", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) });
         var points = new[] { new ChartPoint(1, 12.5), new ChartPoint(2, 0), new ChartPoint(3, 30) };
-        if (kind == ChartSeriesKind.Polar) chart.AddPolar("Target", points); else chart.AddRadarLine("Target", points);
+        var target = new ChartSeries(new ChartSeriesId("target-source"), "Target", kind, points);
+        if (kind == ChartSeriesKind.Radar) target.ConfigureRadar(options => options.Form = ChartLineAreaForm.Line);
+        chart.AddSeries(target);
         var series = mixed ? 1 : 0;
-        chart.Series[series].WithPointLabel(2, "Authored caption").WithInteractionKey("target-source");
+        target.WithPointLabel(2, "Authored caption");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         var document = XDocument.Parse(svg);
@@ -37,6 +39,7 @@ public sealed class PolarPointDescriptionTests {
             Assert.Equal(points[point].Y.ToString("R", CultureInfo.InvariantCulture), (string?)node.Attribute("data-cfx-value"));
             Assert.Equal(points[point].X.ToString("R", CultureInfo.InvariantCulture), (string?)node.Attribute("data-cfx-category"));
             Assert.Equal(point.ToString(), (string?)node.Attribute("data-cfx-point"));
+            Assert.Equal(target.Id.Value, (string?)node.Attribute("data-cfx-series-key"));
             Assert.Equal("false", (string?)node.Attribute("data-cfx-missing"));
         }
         Assert.Equal(1, calls[12.5]);

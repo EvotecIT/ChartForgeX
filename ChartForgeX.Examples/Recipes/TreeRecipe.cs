@@ -1,0 +1,17 @@
+/// <summary>A connected team hierarchy with stable node identities independent of display labels.</summary>
+public static class TreeRecipe {
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var nodes = new[] {
+            new ChartNode("all", "All teams"), new ChartNode("engineering", "Engineering"), new ChartNode("operations", "Operations"),
+            new ChartNode("platform", "Platform"), new ChartNode("engineering-support", variant == "options" ? "Support" : "Services"),
+            new ChartNode("operations-support", "Support")
+        };
+        var links = new[] {
+            new ChartTreeLink("all", "engineering", 60), new ChartTreeLink("all", "operations", 40),
+            new ChartTreeLink("engineering", "platform", 35), new ChartTreeLink("engineering", "engineering-support", 25),
+            new ChartTreeLink("operations", "operations-support", 40)
+        };
+        var teams = ChartSeries.CreateTree(new ChartSeriesId("teams"), "Teams", nodes, links);
+        return Chart.Create().WithDataLabels().AddSeries(teams).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

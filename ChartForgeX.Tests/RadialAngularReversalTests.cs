@@ -20,7 +20,7 @@ public sealed class RadialAngularReversalTests {
         var chart = Bare().WithPolarGridShape(radar ? ChartPolarGridShape.Circle : ChartPolarGridShape.Polygon);
         chart.Options.ShowAxes = false; chart.Options.PolarGridRingCount = 1; chart.Options.XAxis.TickCount = 4;
         if (radar) chart.AddRadarLine("Signal", points); else chart.AddPolar("Signal", points);
-        chart.Series[0].WithPointColor(1, color).WithMarkerRadius(6);
+        chart.Series[0].WithPointColor(1, color).ConfigureMarkers(markers => markers.Radius = 6);
         var normal = Prepare(chart); chart.Options.XAxis.WithReversal(); var reversed = Prepare(chart);
         var role = radar ? "radar-ring" : "polar-ring";
         var guide = Assert.Single(reversed.Scene.Nodes, node => node.Role == role);
@@ -59,7 +59,7 @@ public sealed class RadialAngularReversalTests {
         var chart = Bare().WithXLabels("North", "East", "South", "West").WithSecondaryYAxisBounds(0, 10)
             .AddRadarArea("Observed", new[] { new ChartPoint(3, 60), new ChartPoint(1, 80), new ChartPoint(2, 50), new ChartPoint(4, 70) })
             .AddRadarLine("Target", new[] { new ChartPoint(4, reverseSecondaryRadius ? 3 : 7), new ChartPoint(1, reverseSecondaryRadius ? 2 : 8), new ChartPoint(2, 5) });
-        chart.Series[0].WithPointColor(0, color).WithPointLabel(0, "South source").WithMarkerRadius(6);
+        chart.Series[0].WithPointColor(0, color).WithPointLabel(0, "South source").ConfigureMarkers(markers => markers.Radius = 6);
         chart.Series[1].UseSecondaryYAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
         var normal = Prepare(chart);
         chart.Options.XAxis.WithReversal();
@@ -100,7 +100,7 @@ public sealed class RadialAngularReversalTests {
             .AddPolar("Target", new[] { new ChartPoint(Math.PI / 2, reverseSecondaryRadius ? 4 : 6) });
         chart.Options.XAxis.TickCount = 8;
         chart.Options.XAxis.LabelFormatter = angle => (angle * 180 / Math.PI).ToString("0", CultureInfo.InvariantCulture) + "°";
-        chart.Series[0].WithPointColor(2, color).WithPointLabel(2, "Negative-angle source").WithMarkerRadius(6);
+        chart.Series[0].WithPointColor(2, color).WithPointLabel(2, "Negative-angle source").ConfigureMarkers(markers => markers.Radius = 6);
         chart.Series[1].UseSecondaryYAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
         var normal = Prepare(chart); chart.Options.XAxis.WithReversal(); var reversed = Prepare(chart);
         var spokes = reversed.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "polar-spoke").ToArray();

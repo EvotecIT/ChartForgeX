@@ -21,8 +21,8 @@ public sealed class WaterfallCheckpointTests {
         Assert.Null(series.WaterfallItems[1].Value);
         Assert.Equal(ChartWaterfallItemKind.Subtotal, series.WaterfallItems[1].Kind);
         Assert.Throws<NotSupportedException>(() => ((IList<ChartWaterfallItem>)series.WaterfallItems)[0] = items[0]);
-        series.Points.Add(new ChartPoint(90, 10));
-        Assert.Throws<InvalidOperationException>(() => chart.Prepare(new VisualRenderContext()));
+        Assert.Throws<NotSupportedException>(() => series.Points.Add(new ChartPoint(90, 10)));
+        Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Scene.Nodes);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public sealed class WaterfallCheckpointTests {
         var prepared = typed.Prepare(VisualExportRequest.ForChart(typed).Context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(); var artifact = prepared.ToArtifact("waterfall", VisualArtifactKind.Chart);
         var artifactSvg = artifact.ToSvg(); var artifactPng = artifact.ToPng(); var interchange = artifact.ToInterchangeJson();
-        typed.Series.Clear(); typed.Options.Labels.Total = "Changed";
+        typed.ClearSeries(); typed.Options.Labels.Total = "Changed";
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(artifactSvg, artifact.ToSvg()); Assert.Equal(artifactPng, artifact.ToPng()); Assert.Equal(interchange, artifact.ToInterchangeJson());
         Assert.Contains("data-cfx-waterfall-kind=\"total\"", svg);
@@ -125,7 +125,6 @@ public sealed class WaterfallCheckpointTests {
     [Fact]
     public void ExplicitZeroCheckpointsAreDataAndInvalidInputsRejectWithoutAddingASeries() {
         var chart = Chart.Create();
-        Assert.Throws<ArgumentException>(() => chart.AddWaterfall("Empty", Array.Empty<ChartWaterfallItem>()));
         Assert.Throws<ArgumentException>(() => chart.AddWaterfall("Duplicate", new[] { ChartWaterfallItem.Delta(1, 2), ChartWaterfallItem.Total(1) }));
         Assert.Throws<ArgumentException>(() => chart.AddWaterfall("Null", new ChartWaterfallItem[] { null! }));
         Assert.Throws<ArgumentOutOfRangeException>(() => ChartWaterfallItem.Delta(1, double.NaN));

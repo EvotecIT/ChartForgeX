@@ -5,14 +5,16 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Fits oversized authored typography against measured native layout bounds.</summary>
 internal static class VisualTextFitting {
+    internal const double MinimumOrdinaryFontSize = 10;
     internal const double MaximumOrdinaryFontSize = 18;
     internal static TextStyle FitOversized(VisualSceneBuilder builder, TextStyle style, double availableHeight, Func<TextStyle, bool> fits) {
-        if (availableHeight <= 0) return style;
-        // Ordinary text keeps its native shortening policy. Oversized authored text also fits width.
-        if (builder.MeasureText("Mg", style).Height <= availableHeight &&
-            (style.EffectiveFontSize <= MaximumOrdinaryFontSize || fits(style))) return style;
+        // Ordinary captions keep readable type; their owner places, wraps, shortens or thins them.
+        // A per-tick or per-mark allocation must not force the complete axis below its requested size.
+        if (availableHeight <= 0 || style.EffectiveFontSize <= MaximumOrdinaryFontSize) return style;
+        if (builder.MeasureText("Mg", style).Height <= availableHeight && fits(style)) return style;
         var fitted = style.Clone();
-        fitted.FontSize = ChartTextFitting.FitFontSize(Math.Min(8, style.FontSize), style.FontSize, size => {
+        var minimum = Math.Min(style.FontSize, MinimumOrdinaryFontSize * style.FontSize / style.EffectiveFontSize);
+        fitted.FontSize = ChartTextFitting.FitFontSize(minimum, style.FontSize, size => {
             fitted.FontSize = size;
             return fits(fitted);
         });

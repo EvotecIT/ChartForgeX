@@ -37,8 +37,8 @@ public sealed class IndependentColorDimensionTests {
         Assert.Equal("true", (string?)points[2].Attribute("data-cfx-color-missing"));
         if (bubble) {
             Assert.Equal("9", (string?)points[0].Attribute("data-cfx-size"));
-            Assert.Equal("0", (string?)points[0].Attribute("data-cfx-source-0-index"));
-            Assert.Equal("1", (string?)points[0].Attribute("data-cfx-source-1-index"));
+            Assert.Equal("0", (string?)points[0].Attribute("data-cfx-source-point"));
+            Assert.Equal("1", (string?)points[0].Attribute("data-cfx-source-count"));
         } else Assert.Equal("0", (string?)points[0].Attribute("data-cfx-source-point"));
         Assert.Equal(Role(ordinary, bubble ? "bubble" : "marker").Select(mark => mark.RenderedColor("fill")),
             Role(svg, bubble ? "bubble" : "marker").Select(mark => mark.RenderedColor("fill")));

@@ -130,7 +130,7 @@ public static partial class TopologyChartExtensions {
                 page = TopologyChart.Create().WithId((chart.Id ?? "topology") + "-page-" + (pages.Count + 1).ToString(CultureInfo.InvariantCulture))
                     .WithTitle(VisualArtifactInterchangeMapping.BoundedGeneratedText(source.Title!, pageSuffix))
                     .WithViewport(options.PageWidth, options.PageHeight, margin);
-                page.Theme = source.Theme;
+                page.Theme = source.Theme; page.ThemeMode = source.ThemeMode;
                 page.Accessibility.Name = source.Accessibility.Name;
                 page.Accessibility.Description = source.Accessibility.Description;
                 page.Accessibility.Language = source.Accessibility.Language;
@@ -179,7 +179,7 @@ public static partial class TopologyChartExtensions {
             .WithSubtitle(source.Nodes.Count.ToString(CultureInfo.InvariantCulture) + " objects across " + pages.Count.ToString(CultureInfo.InvariantCulture) + " detail pages")
             .WithViewport(options.PageWidth, options.PageHeight)
             .WithLayout(TopologyLayoutMode.Matrix);
-        overview.Theme = source.Theme;
+        overview.Theme = source.Theme; overview.ThemeMode = source.ThemeMode;
         overview.Accessibility.Name = source.Accessibility.Name;
         overview.Accessibility.Description = source.Accessibility.Description;
         overview.Accessibility.Language = source.Accessibility.Language;

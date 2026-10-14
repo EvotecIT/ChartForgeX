@@ -69,11 +69,11 @@ internal sealed partial class VisualSceneBuilder {
     }
 
     /// <summary>Places an immutable child scene without rendering or reshaping it.</summary>
-    internal void Append(VisualScene scene, double x, double y, string panelId) {
+    internal void Append(VisualScene scene, double x, double y, string panelId, VisualSceneColorScope? colorScope = null) {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
         if (string.IsNullOrWhiteSpace(panelId)) throw new ArgumentException("A panel identity is required.", nameof(panelId));
         using (PushTranslation(x, y))
-        using (PushGroup(panelId, "panel")) {
+        using (OpenGroup(new VisualSceneGroup("panel", panelId, null, null, colorScope: colorScope))) {
             foreach (var node in scene.Nodes) _nodes.Add(node);
         }
         foreach (var diagnostic in scene.Diagnostics) _diagnostics.Add(diagnostic);

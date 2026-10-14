@@ -1,0 +1,65 @@
+{
+  "configuration": {
+    "themeVariables.titleColor": "#7C3AED",
+    "themeVariables.cScale0": "#2563EB",
+    "themeVariables.cScale1": "#EA580C",
+    "themeVariables.radar.axisColor": "#16A34A",
+    "themeVariables.radar.axisStrokeWidth": 3,
+    "themeVariables.radar.axisLabelFontSize": 15,
+    "themeVariables.radar.graticuleColor": "#64748B",
+    "themeVariables.radar.graticuleOpacity": 0.12,
+    "themeVariables.radar.graticuleStrokeWidth": 1.5,
+    "themeVariables.radar.curveOpacity": 0.25,
+    "themeVariables.radar.curveStrokeWidth": 4,
+    "themeVariables.radar.legendFontSize": 16
+  },
+  "radar": {
+    "axes": [
+      [
+        "a",
+        "Coverage"
+      ],
+      [
+        "b",
+        "Policy"
+      ],
+      [
+        "c",
+        "Response"
+      ],
+      [
+        "d",
+        "Recovery"
+      ]
+    ],
+    "curves": [
+      [
+        "current",
+        "Current",
+        [
+          90,
+          45,
+          80,
+          60
+        ]
+      ],
+      [
+        "target",
+        "Target",
+        [
+          95,
+          85,
+          90,
+          80
+        ]
+      ]
+    ],
+    "options": {
+      "showLegend": true,
+      "ticks": 5,
+      "min": 0,
+      "max": 100,
+      "graticule": "circle"
+    }
+  }
+}

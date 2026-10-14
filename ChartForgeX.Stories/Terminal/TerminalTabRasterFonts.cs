@@ -25,7 +25,7 @@ internal sealed class TerminalTabRasterFonts {
         if (story == null) throw new ArgumentNullException(nameof(story));
         return Create(
             story,
-            tab => TrueTypeFont.TryLoadForFamily(tab.Theme.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault());
+            tab => TrueTypeFont.TryLoadForFamily(tab.ResolvedStyle.FontFamily, out _) ?? TrueTypeFont.TryLoadDefault());
     }
 
     internal static TerminalTabRasterFonts WithOutline(TerminalStory story, TrueTypeFont? outlineFont) {
@@ -39,7 +39,7 @@ internal sealed class TerminalTabRasterFonts {
         foreach (var tab in story.Tabs) {
             var outline = resolveOutline(tab);
             outlines.Add(tab.Id, outline);
-            tables.Add(tab.Id, PngTerminalStoryRenderer.ResolveTableFont(tab.Theme, outline));
+            tables.Add(tab.Id, PngTerminalStoryRenderer.ResolveTableFont(tab.ResolvedStyle, outline));
         }
         return new TerminalTabRasterFonts(outlines, tables);
     }

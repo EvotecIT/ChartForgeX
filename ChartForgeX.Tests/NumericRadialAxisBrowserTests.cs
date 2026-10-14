@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class NumericRadialAxisBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("axes-wide-light", -75, 800, false, false, true)]
     [InlineData("axes-compact-dark-reversed", -75, 360, true, true, true)]
     [InlineData("gallery-axes-wide-light", 0, 800, false, false, true)]
@@ -24,7 +24,7 @@ public sealed class NumericRadialAxisBrowserTests {
         var chart = dual ? NumericRadialAxisLabelTests.DualAxes(width, reversed) : NumericRadialAxisLabelTests.Categories(start, width, reversed);
         if (name.StartsWith("gallery-", StringComparison.Ordinal)) chart = V2GalleryModels.CreateRadialBarScales().WithSize(width, width == 360 ? 360 : 440)
             .WithTitle("Requests and resolution rate").WithSubtitle("Request counts and percentages use independent scales");
-        chart.WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        chart.WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width + 40, width == 360 ? 420 : 510);
         await CaptureAsync(session, chart, name);
         var displayed = await session.Page.Locator(dual ? "[data-cfx-role='radial-value-label'] text" : "[data-cfx-role='radial-category-label'] text").CountAsync();
@@ -42,7 +42,7 @@ public sealed class NumericRadialAxisBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, true, 1)]
     [InlineData(true, true, 1)]
     [InlineData(false, true, -1)]
@@ -56,7 +56,7 @@ public sealed class NumericRadialAxisBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(0)]
     [InlineData(-90)]
     public async Task FullTurnCategoryOverflowRetainsItsDescriptionsInActualHosts(int start) {

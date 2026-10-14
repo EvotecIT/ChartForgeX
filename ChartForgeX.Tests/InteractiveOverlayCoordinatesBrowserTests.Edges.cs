@@ -11,20 +11,20 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 650, 1)]
     [InlineData(true, 340, 0.8)]
     public async Task ExplicitPlotEdgesRetainGuideInkAndRejectOffPlotObservationAnchors(bool graphite, int width, double scale) {
         if (!Enabled) return;
         // Use the public chart path that exposed the three-decimal SVG/full-precision plot mismatch.
         var chart = Chart.Create().WithSize(600, 440).WithTitle("Explicit plot edges").WithLegend(false).WithDataLabels(false)
-            .WithTheme(graphite ? ChartTheme.GraphiteDark() : ChartTheme.Light())
+            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report(), graphite ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-            .AddScatter("Boundary", new[] {
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("boundary-source"), "Boundary", new[] {
                 new ChartPoint(0, 5), new ChartPoint(10, 5), new ChartPoint(5, 0),
                 new ChartPoint(5, 10), new ChartPoint(5, 5), new ChartPoint(10.01, 2)
-            });
-        chart.Series[0].WithInteractionKey("boundary-source").WithPointLabel(5, "Outside plot");
+            }));
+        chart.Series[0].WithPointLabel(5, "Outside plot");
         var features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Crosshair;
         await using var session = await OpenAsync(Host(graphite, HtmlChartResponsiveLayout.Fit, width, scale, false, features, chart), 950, 760);
         var page = session.Page;

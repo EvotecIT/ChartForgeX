@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
 using ChartForgeX.Interactivity.Html;
@@ -6,8 +7,8 @@ internal static class TopologyTypographyExamples {
     public static void Write(string output) {
         Directory.CreateDirectory(output);
         foreach (var (name, family) in new[] { ("sans", "Arial, sans-serif"), ("mono", "monospace") }) {
-            var theme = TopologyTheme.Light();
-            theme.FontFamily = family;
+            var theme = VisualTheme.Graphite();
+            theme = theme.WithFontFamily(family);
             var chart = TopologyChart.Create().WithTheme(theme).WithViewport(1000, 420)
                 .WithTitle("Measured labels across cards, compact cards, and tiles")
                 .AddNode("card", "Wide WWW characters\nSecond title line", 55, 150, width: 260, height: 150, subtitle: "Service ownership")

@@ -10,17 +10,17 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class RangeBarBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task NeighboringHorizontalIntervalsKeepLocalizedRawReadoutsAndIndependentSelectionAndMuting() {
         if (!Enabled) return;
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
         var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, "compact-horizontal")
-            .WithSize(360, 440).WithTheme(ChartTheme.GraphiteDark()).WithDataLabels(false).WithFontFamily("Carlito")
+            .WithSize(360, 440).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithDataLabels(false).WithFontFamily("Carlito")
             .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         chart.Options.XAxis.WithBounds(0, 60);
         chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
-        chart.Series[0].WithInteractionKey("expected").WithPointLabel(1, "Promised delivery"); chart.Series[1].WithInteractionKey("observed");
+        chart.Series[0].WithPointLabel(1, "Promised delivery");
         chart.Options.YAxis.Labels.AddRange(chart.Options.XAxis.Labels.Select(label => new ChartAxisLabel(label.Value,
             label.Value == 2 ? "Express delivery" : label.Text)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
@@ -52,10 +52,9 @@ public sealed class RangeBarBrowserTests {
         await page.Locator(neighbor).FocusAsync();
         Assert.Equal(rawRows, await RowsAsync(page));
         Assert.Equal(defaultHeading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
-        Assert.Equal("32", await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-0-y"));
-        Assert.Equal("12", await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-1-y"));
-        Assert.Equal("2", await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-0-index"));
-        Assert.Equal("3", await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-1-index"));
+        Assert.Equal("32", await page.Locator(neighbor).GetAttributeAsync("data-cfx-start"));
+        Assert.Equal("12", await page.Locator(neighbor).GetAttributeAsync("data-cfx-end"));
+        Assert.Equal("1", await page.Locator(neighbor).GetAttributeAsync("data-cfx-source-point"));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(neighbor).GetAttributeAsync("aria-selected"));
         Assert.Equal("observed:1", await page.EvaluateAsync<string>("() => window.rangeSelections.at(-1).targetId"));

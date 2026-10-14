@@ -1,0 +1,37 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = WordCloudRecipe.Create("wide", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Topics in service observations", "Explore the data, then download the chart", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Deterministic placement of weighted service-observation terms.</summary>
+public static class WordCloudRecipe {
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) =>
+        Chart.Create().AddWordCloud("Topics", new[] {
+            new ChartWordCloudItem("Availability", 20), new ChartWordCloudItem("Identity", 16), new ChartWordCloudItem("Network", 14),
+            new ChartWordCloudItem("Storage", 12), new ChartWordCloudItem("Recovery", 10), new ChartWordCloudItem("Capacity", 8),
+            new ChartWordCloudItem("Services", 6), new ChartWordCloudItem("Validation", 4)
+        }).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+}

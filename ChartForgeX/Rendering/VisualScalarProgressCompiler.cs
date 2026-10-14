@@ -12,7 +12,7 @@ namespace ChartForgeX.Rendering;
 /// <summary>Compiles scalar circular progress, bullet comparisons and labeled progress rows.</summary>
 internal static partial class VisualScalarProgressCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) => chart.Series
-        .Select((series, index) => new { series, index }).Where(item => item.series.ShowInLegend)
+        .Select((series, index) => new { series, index }).Where(item => item.series.ShowInLegend && item.series.HasSourceData)
         .Select(item => {
             var circle = item.series.Kind == ChartSeriesKind.Circle;
             var bullet = item.series.Kind == ChartSeriesKind.Bullet;
@@ -29,7 +29,8 @@ internal static partial class VisualScalarProgressCompiler {
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind) || kind != ChartSeriesKind.Bullet && chart.Series.Count != 1)
             throw new InvalidOperationException("Scalar progress charts require one family; only bullet charts support multiple series.");
-        if (chart.Series.SelectMany(series => series.Points).Any(point => !Finite(point.X) || !Finite(point.Y)))
+        if (chart.Series.All(series => !series.HasSourceData)) { builder.AddDiagnostic(new VisualDiagnostic("progress.no-data", "Scalar progress charts need a measured value.")); return; }
+        if (chart.Series.SelectMany(series => series.RenderPoints).Any(point => !Finite(point.X) || !Finite(point.Y)))
             throw new InvalidOperationException("Scalar progress values must be finite.");
         if (plot.Width <= 0 || plot.Height <= 0) { builder.AddDiagnostic(new VisualDiagnostic("progress.insufficient-space", "No viewport remains for scalar progress marks.")); return; }
         var colors = context.Theme.Resolve(context.ThemeMode);
@@ -43,7 +44,7 @@ internal static partial class VisualScalarProgressCompiler {
     private static void Circle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
         var series = chart.Series[0];
         Range(series, out var min, out var max);
-        var raw = series.Points[0].Y; var ratio = VisualRadialPrimitives.Clamp((VisualRadialPrimitives.Clamp(raw, min, max) - min) / (max - min));
+        var raw = series.RenderPoints[0].Y; var ratio = VisualRadialPrimitives.Clamp((VisualRadialPrimitives.Clamp(raw, min, max) - min) / (max - min));
         var status = ratio < .6 ? "negative" : ratio < .8 ? "warning" : "positive";
         var state = series.StateRole == ChartSeriesState.None ? RatioState(ratio) : series.StateRole;
         var color = CircleColor(series, colors);
@@ -58,6 +59,7 @@ internal static partial class VisualScalarProgressCompiler {
         var cx = plot.Left + plot.Width / 2; var cy = plot.Top + (plot.Height - statusHeight) / 2;
         builder.AddRegion(new VisualSemanticRegion(Id(0), "circle", new ChartRect(cx - radius - stroke / 2, cy - radius - stroke / 2, radius * 2 + stroke, radius * 2 + stroke), series.Name + ": " + value));
         using (builder.PushGroup(Id(0), "circle-chart", new Dictionary<string, string> {
+            ["data-cfx-series"] = "0", ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
             ["data-cfx-value"] = N(raw), ["data-cfx-min"] = N(min), ["data-cfx-max"] = N(max), ["data-cfx-percent"] = N(ratio),
             ["data-cfx-status"] = status, ["data-cfx-state"] = state.ToString(), ["data-cfx-full-label"] = value,
             ["data-cfx-radius-scale"] = N(chart.Options.CircleRadiusScale), ["data-cfx-stroke-scale"] = N(chart.Options.CircleStrokeScale)
@@ -82,15 +84,15 @@ internal static partial class VisualScalarProgressCompiler {
 
     private static ChartColor CircleColor(ChartSeries series, VisualThemeColors colors) {
         Range(series, out var min, out var max);
-        var ratio = (VisualRadialPrimitives.Clamp(series.Points[0].Y, min, max) - min) / (max - min);
+        var ratio = (VisualRadialPrimitives.Clamp(series.RenderPoints[0].Y, min, max) - min) / (max - min);
         var state = series.StateRole == ChartSeriesState.None ? RatioState(ratio) : series.StateRole;
         return series.PointColors.Count > 0 && series.PointColors[0].HasValue ? series.PointColors[0]!.Value : series.Color ?? ChartSeriesColours.State(state, colors, colors.Accent);
     }
 
     private static ChartSeriesState RatioState(double ratio) => ratio < .6 ? ChartSeriesState.Danger : ratio < .8 ? ChartSeriesState.Warning : ChartSeriesState.Success;
     private static void Range(ChartSeries series, out double min, out double max) {
-        if (series.Points.Count < 2) throw new InvalidOperationException("Circle and bullet charts require minimum and maximum points.");
-        min = series.Points[0].X; max = series.Points[1].X;
+        if (series.RenderPoints.Count < 2) throw new InvalidOperationException("Circle and bullet charts require minimum and maximum points.");
+        min = series.RenderPoints[0].X; max = series.RenderPoints[1].X;
         if (!Finite(min) || !Finite(max) || max <= min || !Finite(max - min)) throw new InvalidOperationException("Scalar progress charts require a finite positive range.");
     }
     private static string Value(Chart chart, ChartSeries series, int index, double value) => index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, value);

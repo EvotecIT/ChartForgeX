@@ -10,8 +10,8 @@ internal sealed class ChartPairedBoundaryGeometry {
     internal List<ChartPoint> Second { get; } = new();
 
     internal ChartPairedBoundaryGeometry(ChartSeries series, ChartMapper map) {
-        for (var item = 0; item < series.Points.Count; item += 2) {
-            var first = series.Points[item]; var second = series.Points[item + 1];
+        for (var item = 0; item < series.RenderPoints.Count; item += 2) {
+            var first = series.RenderPoints[item]; var second = series.RenderPoints[item + 1];
             var x = map.X(first.X); var split = first.BreakBefore || second.BreakBefore;
             First.Add(new ChartPoint(x, map.Y(first.Y), split));
             Second.Add(new ChartPoint(x, map.Y(second.Y), split));

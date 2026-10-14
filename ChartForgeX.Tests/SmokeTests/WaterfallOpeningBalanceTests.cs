@@ -121,7 +121,7 @@ public sealed class WaterfallOpeningBalanceTests {
         var svg = detached.ToSvg(); var png = detached.ToPng();
         var artifact = detached.ToArtifact("opening", VisualArtifactKind.Chart);
         var artifactSvg = artifact.ToSvg(); var artifactPng = artifact.ToPng(); var interchange = artifact.ToInterchangeJson();
-        chart.Series.Clear(); chart.ConfigureLabels(labels => labels.OpeningBalance = "Changed");
+        chart.ClearSeries(); chart.ConfigureLabels(labels => labels.OpeningBalance = "Changed");
         Assert.Equal(svg, detached.ToSvg()); Assert.Equal(png, detached.ToPng()); Assert.Equal(callbackCalls, calls);
         Assert.Equal(artifactSvg, artifact.ToSvg()); Assert.Equal(artifactPng, artifact.ToPng()); Assert.Equal(interchange, artifact.ToInterchangeJson());
     }

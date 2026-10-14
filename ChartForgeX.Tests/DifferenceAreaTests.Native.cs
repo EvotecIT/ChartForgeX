@@ -39,14 +39,11 @@ public sealed partial class DifferenceAreaTests {
         Assert.Equal("5", Group(prepared, "series-0-point-1")["data-cfx-second"]);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void EitherTupleMemberBreaksBothNativeBoundariesAndFill(bool breakSecond) {
+    [Fact]
+    public void TypedPairBreaksBothNativeBoundariesAndFill() {
         var chart = Model(new(0, 8, 2), new(1, 8, 2), new(3, 8, 2, true), new(4, 8, 2));
         chart.Series[0].WithStrokeWidth(1);
-        chart.Series[0].Points[4] = new ChartPoint(3, 8, !breakSecond);
-        chart.Series[0].Points[5] = new ChartPoint(3, 2, breakSecond);
+        chart.Series[0].UpdateDifferencePoint(2, new ChartDifferencePoint(3, 8, 2, true));
         var prepared = Prepare(chart);
         foreach (var role in new[] { "difference-first", "difference-second" })
             Assert.Equal(2, Boundary(prepared, role).Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));

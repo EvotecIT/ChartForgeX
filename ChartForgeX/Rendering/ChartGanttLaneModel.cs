@@ -124,8 +124,10 @@ internal sealed class ChartGanttLaneModel {
     private static List<ChartGanttLanePlacedItem> Pack(ChartSeries series, ChartStateCategoryLegend legend, double? now, double min, double max, ChartRect plot) {
         var placed = new List<ChartGanttLanePlacedItem>(series.GanttLaneItems.Count);
         var subRowEnds = new List<double>();
-        for (var i = 0; i < series.GanttLaneItems.Count; i++) {
-            var item = series.GanttLaneItems[i];
+        foreach (var entry in series.GanttLaneItems.Select((item, index) => (Item: item, Index: index))
+            .OrderBy(entry => entry.Item.Start).ThenBy(entry => entry.Item.End ?? double.MaxValue).ThenBy(entry => entry.Index)) {
+            var i = entry.Index;
+            var item = entry.Item;
             var end = item.End ?? (now.HasValue && now.Value >= item.Start ? now.Value : Math.Max(max, item.Start));
             var instant = item.IsOpen && now.HasValue && now.Value == item.Start;
             if (instant ? item.Start < min || item.Start > max : end <= min || item.Start >= max) {

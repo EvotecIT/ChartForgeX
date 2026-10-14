@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -150,9 +151,18 @@ public static partial class TopologyChartExtensions {
     /// <param name="chart">The topology chart.</param>
     /// <param name="theme">The theme to use.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithTheme(this TopologyChart chart, TopologyTheme theme) {
+    /// <param name="mode">An explicit mode, or null to retain the current mode.</param>
+    public static TopologyChart WithTheme(this TopologyChart chart, VisualTheme theme, VisualThemeMode? mode = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        if (mode.HasValue) chart.ThemeMode = mode.Value;
+        return chart;
+    }
+
+    /// <summary>Sets the explicit light or dark mode without changing the shared theme.</summary>
+    public static TopologyChart WithThemeMode(this TopologyChart chart, VisualThemeMode mode) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        chart.ThemeMode = mode;
         return chart;
     }
 
@@ -697,11 +707,10 @@ public static partial class TopologyChartExtensions {
     /// <param name="chart">The topology chart.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart ConfigureTheme(this TopologyChart chart, Action<TopologyTheme> configure) {
+    public static TopologyChart ConfigureTheme(this TopologyChart chart, Action<VisualThemeBuilder> configure) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        chart.Theme ??= TopologyTheme.Light();
-        configure(chart.Theme);
+        chart.Theme = chart.Theme.Configure(configure);
         return chart;
     }
 

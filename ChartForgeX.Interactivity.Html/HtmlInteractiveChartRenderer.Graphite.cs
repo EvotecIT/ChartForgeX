@@ -4,8 +4,7 @@ namespace ChartForgeX.Interactivity.Html;
 
 public sealed partial class HtmlInteractiveChartRenderer {
     private static string GraphiteInteractionTokens(Chart chart) {
-        var t = chart.Options.Theme;
-        if (!t.UseGraphiteLayout) return string.Empty;
+        var t = chart.Options.ResolvedTheme;
         var dark = (0.2126 * t.CardBackground.R + 0.7152 * t.CardBackground.G + 0.0722 * t.CardBackground.B) / 255 < 0.5;
         var shadow = dark
             ? "0 10px 30px rgba(0,0,0,.55),0 0 0 1px " + t.CardBorder.ToCss()

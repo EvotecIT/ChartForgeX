@@ -13,15 +13,9 @@ public sealed partial class Chart {
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddErrorBar(string name, IEnumerable<ChartErrorBar> errorBars, ChartColor? color = null) {
-        if (errorBars == null) throw new ArgumentNullException(nameof(errorBars));
-        var points = new List<ChartPoint>();
-        foreach (var errorBar in errorBars) {
-            points.Add(new ChartPoint(errorBar.X, errorBar.Y));
-            points.Add(new ChartPoint(errorBar.X, errorBar.Lower));
-            points.Add(new ChartPoint(errorBar.X, errorBar.Upper));
-        }
-
-        if (points.Count == 0) throw new ArgumentException("Error bars must contain at least one value.", nameof(errorBars));
-        return Add(name, ChartSeriesKind.ErrorBar, points, color);
+        var series = ChartSeries.CreateErrorBar(name, errorBars, color);
+        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(errorBars));
+        AppendSeries(series);
+        return this;
     }
 }

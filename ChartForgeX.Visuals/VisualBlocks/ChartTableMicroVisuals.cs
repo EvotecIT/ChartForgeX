@@ -119,6 +119,17 @@ public sealed partial class ChartTableCell {
         return this;
     }
 
+    internal ChartTableCell Clone() {
+        var copy = new ChartTableCell(Text) {
+            Alignment = Alignment, Foreground = Foreground, Background = Background, Status = Status,
+            MicroVisualKind = MicroVisualKind, MicroVisualMinimum = MicroVisualMinimum,
+            MicroVisualMaximum = MicroVisualMaximum, MicroVisualColor = MicroVisualColor, SparklineData = SparklineData,
+            BadgeText = BadgeText, BadgeStatus = BadgeStatus, BadgeStyle = BadgeStyle, BadgeColor = BadgeColor
+        };
+        copy._microVisualValues.AddRange(_microVisualValues);
+        return copy;
+    }
+
     private void SetMicroVisual(ChartTableCellMicroVisualKind kind, IEnumerable<double> values, double? minimum, double? maximum, ChartColor? color) {
         if (values == null) throw new ArgumentNullException(nameof(values));
         SparklineData = null;

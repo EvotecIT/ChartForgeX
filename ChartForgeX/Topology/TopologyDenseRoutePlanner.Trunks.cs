@@ -133,11 +133,6 @@ internal static partial class TopologyDenseRoutePlanner {
         Math.Sign(original[1].X - original[0].X) == Math.Sign(candidate[1].X - candidate[0].X) &&
         Math.Sign(original[1].Y - original[0].Y) == Math.Sign(candidate[1].Y - candidate[0].Y);
 
-    private static string TrunkKey(PlannedRoute route, TopologyRenderOptions options, TopologyHighlightState highlight) {
-        var edge = route.Request.Edge;
-        return string.Join("|", edge.TargetNodeId.Length + ":" + edge.TargetNodeId, (int)edge.Kind, (int)edge.Status,
-            (int)edge.Direction, (int)edge.Emphasis, edge.IsMuted, edge.Color?.Length + ":" + edge.Color, edge.StrokeWidth, edge.Opacity,
-            (int?)edge.TargetMarker, (int)route.End.Side, edge.TargetPortId?.Length + ":" + edge.TargetPortId,
-            options.SelectedEdgeIds.Contains(edge.Id), highlight.IsEdgeHighlighted(edge));
-    }
+    private static string TrunkKey(PlannedRoute route, TopologyRenderOptions options, TopologyHighlightState highlight) =>
+        TrunkInputs(route.Request.Edge, options, highlight) + "|" + (int)route.End.Side;
 }

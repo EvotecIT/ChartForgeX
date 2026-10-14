@@ -82,7 +82,7 @@ public sealed class V2InterpolationTests {
     [Fact]
     public void NativeRasterPaintsTheSelectedMiddleTransitionAndLeavesOtherPositionsClear() {
         var chart = Model(ChartSeriesKind.Line, new[] { new ChartPoint(0, 2), new ChartPoint(2, 8) });
-        chart.Series[0].WithColor(ChartColor.FromHex("#E45236")).WithMarkerRadius(0).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        chart.Series[0].WithColor(ChartColor.FromHex("#E45236")).ConfigureMarkers(markers => markers.Radius = 0).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         var prepared = chart.Prepare(Context());
         var path = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "line");
         var first = path.Commands[0]; var last = path.Commands[^1];
@@ -115,7 +115,7 @@ public sealed class V2InterpolationTests {
 
     [Fact]
     public void InvalidAndUnsupportedChoicesFailInsteadOfRenderingAnIgnoredOption() {
-        var series = new ChartSeries("Data", ChartSeriesKind.Line, new[] { new ChartPoint(0, 1) });
+        var series = new ChartSeries(new ChartSeriesId("fixture-series"), "Data", ChartSeriesKind.Line, new[] { new ChartPoint(0, 1) });
         Assert.Throws<ArgumentOutOfRangeException>(() => series.Interpolation = (ChartInterpolation)99);
         Assert.Throws<ArgumentOutOfRangeException>(() => series.StepPosition = (ChartStepPosition)99);
         Assert.Throws<ArgumentException>(() => series.WithInterpolation(ChartInterpolation.Linear, ChartStepPosition.Middle));
@@ -146,8 +146,8 @@ public sealed class V2InterpolationTests {
 
     private static Chart Model(ChartSeriesKind kind, IEnumerable<ChartPoint> points) {
         var chart = Chart.Create().WithAxes(false).WithGrid(false).WithLegend(false).WithDataLabels(false);
-        chart.Series.Add(new ChartSeries("Observations", kind, points));
-        chart.Series[0].WithMarkerRadius(0);
+        chart.AddSeries(new ChartSeries(new ChartSeriesId("fixture-series"), "Observations", kind, points));
+        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 0);
         return chart;
     }
 

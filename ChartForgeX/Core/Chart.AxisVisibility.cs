@@ -22,9 +22,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart ConfigureGridStyle(System.Action<ChartGridLineStyle> configure) {
         if (configure == null) throw new System.ArgumentNullException(nameof(configure));
-        var style = Options.GridLineStyle.Clone();
-        configure(style);
-        Options.GridLineStyle = style;
+        Options.ConfigureGridLineStyle(configure);
         return this;
     }
 

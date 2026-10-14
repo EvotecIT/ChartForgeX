@@ -12,7 +12,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveCrosshairStylesBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false, 950, HtmlChartCrosshairLineStyle.Solid)]
     [InlineData(false, true, 340, HtmlChartCrosshairLineStyle.Dashed)]
     [InlineData(true, false, 340, HtmlChartCrosshairLineStyle.Dotted)]
@@ -25,14 +25,10 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         var page = session.Page;
         var baseline = await ObserveAsync(page);
         var defaultPaint = await PaintAsync(page);
-        var defaultX = defaultPaint[0];
-        Assert.Equal(graphite ? "dashed" : "none", defaultX.GetProperty("pattern").GetString());
-        if (graphite) {
-            Assert.Equal("1px", defaultX.GetProperty("width").GetString());
-            Assert.Equal("none", defaultX.GetProperty("shadow").GetString());
-        } else {
-            Assert.Equal("1px", defaultX.GetProperty("height").GetString());
-            Assert.NotEqual("none", defaultX.GetProperty("shadow").GetString());
+        foreach (var line in defaultPaint) {
+            Assert.Equal("dashed", line.GetProperty("pattern").GetString());
+            Assert.Equal("1px", line.GetProperty("width").GetString());
+            Assert.Equal("none", line.GetProperty("shadow").GetString());
         }
         await CaptureAsync(session, "crosshair-default-" + Variant(graphite, dark, width), new { baseline, defaultPaint });
 
@@ -57,18 +53,18 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
             """, ChartColor.FromArgb(128, 37, 99, 235).ToCss());
         Assert.Equal(baseline.GetRawText(), configured.GetRawText());
         Assert.Equal(!showLabel, await page.Locator(".cfx-crosshair__label").IsHiddenAsync());
-        Assert.All(paint, line => {
+        foreach (var line in paint) {
             Assert.Equal(lineStyle.ToString().ToLowerInvariant(), line.GetProperty("pattern").GetString());
             Assert.Equal("2px", line.GetProperty("width").GetString());
-            Assert.Equal(expectedStroke, line.GetProperty("color").GetString());
+            await AssertCssColorsEqualAsync(page, expectedStroke, line.GetProperty("color").GetString()!);
             Assert.Equal("none", line.GetProperty("shadow").GetString());
-            Assert.Equal("rgba(0, 0, 0, 0)", line.GetProperty("background").GetString());
-        });
+            await AssertCssColorsEqualAsync(page, "rgba(0, 0, 0, 0)", line.GetProperty("background").GetString()!);
+        }
         await CaptureAsync(session, "crosshair-styled-" + Variant(graphite, dark, width) + "-" + lineStyle, new { configured, paint });
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task StyledLinesDoNotEnableADisabledGuideOrPreventTooltips() {
         if (!Enabled) return;
         var chart = Observation(true, false);
@@ -88,7 +84,7 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, true)]
     [InlineData(true, true)]
     [InlineData(false, false)]
@@ -101,12 +97,12 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
         }), 700, 720);
         var contract = await ObserveAsync(session.Page);
         var paint = await PaintAsync(session.Page);
-        Assert.All(paint, line => {
-            Assert.Equal(graphite ? "dashed" : "solid", line.GetProperty("pattern").GetString());
+        foreach (var line in paint) {
+            Assert.Equal("dashed", line.GetProperty("pattern").GetString());
             Assert.Equal(zeroWidth ? "0px" : "1px", line.GetProperty("width").GetString());
-            if (!zeroWidth) Assert.Equal("rgba(0, 0, 0, 0)", line.GetProperty("color").GetString());
+            if (!zeroWidth) await AssertCssColorsEqualAsync(session.Page, "rgba(0, 0, 0, 0)", line.GetProperty("color").GetString()!);
             Assert.Equal("none", line.GetProperty("shadow").GetString());
-        });
+        }
         Assert.False(await session.Page.Locator(".cfx-crosshair__label").IsHiddenAsync());
         Assert.True(await session.Page.Locator(".cfx-crosshair").EvaluateAsync<bool>("""
             c => { const b=c.getBoundingClientRect(), l=c.querySelector('[data-cfx-crosshair-label]').getBoundingClientRect();
@@ -118,10 +114,9 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
 
     private static Chart Observation(bool graphite, bool dark) {
         var chart = Chart.Create().WithSize(800, 440).WithLegend(false).WithHeader(false)
-            .WithTheme(graphite ? dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight() : dark ? ChartTheme.Dark() : ChartTheme.Light())
+            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-            .AddScatter("Reading", new[] { new ChartPoint(5, 5) });
-        chart.Series[0].WithInteractionKey("reading-source");
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), "Reading", new[] { new ChartPoint(5, 5) }));
         return chart;
     }
 

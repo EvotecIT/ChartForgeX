@@ -14,9 +14,9 @@ public sealed class VisualCanvasTextThemeTests {
     [InlineData(true)]
     public void UncoloredTextUsesCanonicalForegroundInSvgAndPng(bool dark) {
         var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
-        var canvas = VisualCanvas.Create(320, 100).WithDesignTokens(tokens)
+        var canvas = VisualCanvas.Create(320, 100).WithTheme(new VisualTheme(tokens, tokens))
             .AddText(12, 12, 296, "Theme text", 36);
-        var control = VisualCanvas.Create(320, 100).WithDesignTokens(tokens)
+        var control = VisualCanvas.Create(320, 100).WithTheme(new VisualTheme(tokens, tokens))
             .AddText(12, 12, 296, "Theme text", 36, tokens.Foreground);
 
         Assert.Equal(tokens.Foreground.ToCss(), TextFill(canvas.ToSvg()));
@@ -27,12 +27,12 @@ public sealed class VisualCanvasTextThemeTests {
 
     [Fact]
     public void BorrowedCanvasArtifactKeepsInheritedTextWhenItsThemeChanges() {
-        var canvas = VisualCanvas.Create(320, 100).WithDesignTokens(VisualDesignTokens.GraphiteLight())
+        var canvas = VisualCanvas.Create(320, 100).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
             .AddLayer(new VisualCanvasTextLayer(12, 12, 296, "Theme text", 36));
         var borrowed = canvas.ToVisualArtifact().Clone();
         var dark = VisualDesignTokens.GraphiteDark();
-        canvas.WithDesignTokens(dark);
-        var control = VisualCanvas.Create(320, 100).WithDesignTokens(dark)
+        canvas.WithTheme(new VisualTheme(dark, dark));
+        var control = VisualCanvas.Create(320, 100).WithTheme(new VisualTheme(dark, dark))
             .AddText(12, 12, 296, "Theme text", 36, dark.Foreground);
 
         Assert.Equal(dark.Foreground.ToCss(), TextFill(borrowed.ToSvg()));
@@ -59,10 +59,10 @@ public sealed class VisualCanvasTextThemeTests {
         var layer = assignProperty
             ? new VisualCanvasTextLayer(12, 12, 296, "Explicit text", 36) { Color = color }
             : new VisualCanvasTextLayer(12, 12, 296, "Explicit text", 36, color);
-        var canvas = VisualCanvas.Create(320, 100).WithDesignTokens(VisualDesignTokens.GraphiteLight())
+        var canvas = VisualCanvas.Create(320, 100).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
             .WithBackdrop(VisualCanvasBackdropStyle.Transparent).AddLayer(layer);
         foreach (var tokens in new[] { VisualDesignTokens.GraphiteLight(), VisualDesignTokens.GraphiteDark() }) {
-            canvas.WithDesignTokens(tokens);
+            canvas.WithTheme(new VisualTheme(tokens, tokens));
             Assert.Equal(color.ToCss(), TextFill(canvas.ToSvg()));
             var raster = canvas.RenderRgba();
             if (color.A == 0) {

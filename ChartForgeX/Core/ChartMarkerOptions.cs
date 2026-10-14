@@ -51,6 +51,9 @@ public sealed class ChartMarkerOptions {
     internal bool IsConfigured { get; private set; }
     internal bool HasNonRadiusConfiguration { get; private set; }
 
+    /// <summary>Copies fields directly so configuration tracking remains unchanged.</summary>
+    internal ChartMarkerOptions Clone() => (ChartMarkerOptions)MemberwiseClone();
+
     private static void NonNegative(double? value) {
         if (!value.HasValue) return;
         ChartGuards.Finite(value.Value, nameof(value));

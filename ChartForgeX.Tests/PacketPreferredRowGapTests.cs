@@ -9,6 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class PacketPreferredRowGapTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -63,6 +64,7 @@ public sealed class PacketPreferredRowGapTests {
         Assert.NotEmpty(block.ToPng());
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

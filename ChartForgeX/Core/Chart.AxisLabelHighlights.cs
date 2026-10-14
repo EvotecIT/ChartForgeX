@@ -12,7 +12,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart WithHighlightedXAxisLabel(double value, ChartColor? color = null) {
         ChartGuards.Finite(value, nameof(value));
-        Options.XAxisLabelHighlights[value] = color ?? Options.Theme.Palette[0];
+        Options.XAxisLabelHighlights[value] = color ?? Options.ResolvedTheme.Palette[0];
         return this;
     }
 
@@ -35,7 +35,7 @@ public sealed partial class Chart {
         ChartGuards.Finite(value, nameof(value));
         ChartGuards.Finite(halfWidth, nameof(halfWidth));
         if (halfWidth <= 0) throw new ArgumentOutOfRangeException(nameof(halfWidth), halfWidth, "Category focus width must be positive.");
-        var focusColor = color ?? Options.Theme.Palette[0];
+        var focusColor = color ?? Options.ResolvedTheme.Palette[0];
         WithHighlightedXAxisLabel(value, focusColor);
         var left = value - halfWidth;
         var right = value + halfWidth;
@@ -66,7 +66,7 @@ public sealed partial class Chart {
         ChartGuards.Finite(start, nameof(start));
         ChartGuards.Finite(end, nameof(end));
         ChartGuards.UnitInterval(opacity, nameof(opacity));
-        var rangeColor = color ?? Options.Theme.Palette[0];
+        var rangeColor = color ?? Options.ResolvedTheme.Palette[0];
         var annotation = new ChartAnnotation(ChartAnnotationKind.VerticalBand, start, end, label, rangeColor, opacity);
         Annotations.Add(annotation);
         Options.XAxisFocusGuideAnnotations.Add(annotation);
@@ -113,6 +113,6 @@ public sealed partial class Chart {
 
     private ChartColor PaletteColor(int paletteIndex) {
         if (paletteIndex < 0) throw new ArgumentOutOfRangeException(nameof(paletteIndex), paletteIndex, "Palette index must be non-negative.");
-        return Options.Theme.Palette[paletteIndex % Options.Theme.Palette.Length];
+        return Options.ResolvedTheme.Palette[paletteIndex % Options.ResolvedTheme.Palette.Length];
     }
 }

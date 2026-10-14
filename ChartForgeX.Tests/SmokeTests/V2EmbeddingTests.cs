@@ -67,7 +67,7 @@ public sealed class V2EmbeddingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void VisualGridHostsSharePreparedChartSourcesWithoutMutatingTransparency(bool dark) {
-        var chart = Sample().WithTheme(dark ? ChartTheme.ReportDark() : ChartTheme.ReportLight());
+        var chart = Sample().WithTheme(VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         chart.WithTransparentBackground(false).WithPngOutputScale(2);
         var grid = VisualGrid.Create().WithPadding(0).WithGap(0).WithPanelSize(240, 160).Add(chart);
         var svg = new SvgVisualGridRenderer().Render(grid);

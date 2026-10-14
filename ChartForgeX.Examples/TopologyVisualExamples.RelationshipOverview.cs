@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
 internal static partial class TopologyVisualExamples {
@@ -7,7 +8,7 @@ internal static partial class TopologyVisualExamples {
             .WithTitle("Entity Relationship Overview")
             .WithSubtitle("Domain, certificate, DNS, ownership, hosting, and finding evidence in one reusable topology model.")
             .WithViewport(1180, 620, 28)
-            .WithTheme(TopologyTheme.Light())
+            .WithTheme(VisualTheme.Graphite())
             .WithLegend(TopologyLegend.Create("Relationship Legend")
                 .AddNodeKind("Domain", TopologyNodeKind.Namespace, "#16A34A", "D", iconId: "chartforgex-identity-directory:domain")
                 .AddNodeKind("Certificate", TopologyNodeKind.Certificate, "#2563EB", "TLS", iconId: "chartforgex-identity-directory:certificate")
@@ -69,7 +70,7 @@ internal static partial class TopologyVisualExamples {
             .WithTitle("Mini Correlation Map")
             .WithSubtitle("Small dashboard-card relationship map for selected assets.")
             .WithViewport(920, 420, 24)
-            .WithTheme(TopologyTheme.Light())
+            .WithTheme(VisualTheme.Graphite())
             .WithLegend(TopologyLegend.Create(null)
                 .AddEdgeKind("Verified", TopologyEdgeKind.Mapping, "#16A34A", TopologyEdgeLineStyle.Solid)
                 .AddEdgeKind("Observed", TopologyEdgeKind.Link, "#2563EB", TopologyEdgeLineStyle.Dashed)
@@ -98,7 +99,7 @@ internal static partial class TopologyVisualExamples {
             .WithTitle("Evidence Timeline Relationship")
             .WithSubtitle("Timeline-shaped evidence stream connected to one reusable entity card.")
             .WithViewport(980, 470, 24)
-            .WithTheme(TopologyTheme.Light())
+            .WithTheme(VisualTheme.Graphite())
             .WithLegend(TopologyLegend.Create("Timeline Legend")
                 .AddEdgeKind("Observed Event", TopologyEdgeKind.Link, "#2563EB", TopologyEdgeLineStyle.Dashed)
                 .AddEdgeKind("Confirmed Event", TopologyEdgeKind.Mapping, "#16A34A", TopologyEdgeLineStyle.Solid)

@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Themes;
 using System.Globalization;
 using System.Text;
 using ChartForgeX.Core;
@@ -67,7 +68,11 @@ public sealed class HtmlVisualGridRenderer {
         var originalTheme = block.Options.Theme;
         try {
             block.Options.TransparentBackground = true;
-            if (originalTheme.UseGraphiteLayout) { block.Options.Theme = originalTheme.Clone(); block.Options.Theme.TitleFontSize = 15; }
+            block.Options.Theme = originalTheme.Configure(builder => {
+                var font = originalTheme.Typography;
+                builder.Typography = new VisualTypography(font.Family, 15, font.SubtitleSize, font.AxisSize, font.LegendSize,
+                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily);
+            });
             return _blockRenderer.Render(block, childScope);
         }
         finally {
@@ -80,14 +85,14 @@ public sealed class HtmlVisualGridRenderer {
     public string RenderPage(VisualGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
-        var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
-        var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
+        var theme = grid.ResolvedTheme;
+        var background = HtmlSurfacePolish.PageBackground(theme.Background, theme.CardBackground);
         var title = grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(grid, background, theme.Text.ToCss(), theme.MutedText.ToCss(), theme.CardBorder.ToCss(), VisualBlockRendering.CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.SubtitleFontSize, theme.UseGraphiteLayout));
+        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildCss(grid, background, theme.Text.ToCss(), theme.MutedText.ToCss(), theme.CardBorder.ToCss(), VisualBlockRendering.CssFontFamily(theme.FontFamily), theme.TitleFontSize, theme.SubtitleFontSize, true));
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line()
             .RawTrusted(RenderFragment(grid, "html-page")).Line()
@@ -110,7 +115,7 @@ public sealed class HtmlVisualGridRenderer {
         var value = "chartforgex-visual-grid";
         if (grid.PanelSize.HasValue) value += " has-fixed-panels";
         if (grid.PanelSize.HasValue && grid.PanelFit == VisualPanelFit.Stretch) value += " fit-stretch";
-        if (grid.FrameVisible && !(grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0])).FlatMarks) value += " has-frame";
+        if (grid.FrameVisible) value += " has-frame";
         return value;
     }
 

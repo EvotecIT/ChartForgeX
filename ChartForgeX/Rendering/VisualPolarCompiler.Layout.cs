@@ -18,9 +18,12 @@ internal static partial class VisualPolarCompiler {
             height = Math.Max(height, Math.Min(plot.Height * .2, measured.Height));
         }
         var gap = context.Theme.Spacing;
-        var markExtent = chart.Series.Max(series => Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
-            ChartLineVisualLayers.Build(context.Theme.Resolve(context.ThemeMode).Accent,
-                series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth, chart.Options.LineVisualStyle).Max(layer => layer.StrokeWidth) / 2));
+        var colors = context.Theme.Resolve(context.ThemeMode);
+        var markExtent = chart.Series.Select((series, index) => Math.Max(VisualMarkerScene.Extent(series, VisualMarkerScene.Radius(series, context)),
+            VisualPolarSeriesScene.StrokeExtent(chart, context, series, ChartSeriesColours.Resolve(series, index, colors)) / 2)).Max();
+        if (chart.Options.ShowGrid) markExtent = Math.Max(markExtent, Math.Max(
+            VisualReferenceStroke.PaintedWidth(chart.Options.PolarAxisStroke, colors.Axis, context.Theme.AxisStrokeWidth),
+            VisualReferenceStroke.PaintedWidth(chart.Options.PolarGridStroke, colors.Grid, context.Theme.GridStrokeWidth)) / 2);
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - width - gap, plot.Height / 2 - height - gap) - markExtent);
         var count = chart.Options.PolarGridRingCount;
         var guideFraction = chart.Options.ShowGrid && count.HasValue && count.Value > 0 ? count.Value / Math.Ceiling(count.Value) : 1;
@@ -35,6 +38,19 @@ internal static partial class VisualPolarCompiler {
     private static void Grid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, PolarLayout geometry,
         double[] categories, string[] axes, Dictionary<ChartAxisSide, RadialValueScale> scales, bool radar, List<PolarLabel> labels) {
         var colors = context.Theme.Resolve(context.ThemeMode); var style = FittedTickStyle(chart, context, builder, plot, axes);
+        var gridStroke = chart.Options.PolarGridStroke; var axisStroke = chart.Options.PolarAxisStroke;
+        var gridPaint = VisualReferenceStroke.Paint(gridStroke, colors.Grid, SvgColorRole.Grid, out var gridColor);
+        var axisPaint = VisualReferenceStroke.Paint(axisStroke, colors.Axis, SvgColorRole.Axis, out var axisColor);
+        var gridWidth = VisualReferenceStroke.PaintedWidth(gridStroke, colors.Grid, context.Theme.GridStrokeWidth);
+        var axisWidth = VisualReferenceStroke.PaintedWidth(axisStroke, colors.Axis, context.Theme.AxisStrokeWidth);
+        var fillOpacity = chart.Options.PolarGridFillOpacity ?? (chart.Options.PolarGridFill.HasValue ? 1 : 0);
+        var fillSource = chart.Options.PolarGridFill ?? gridStroke?.Color ?? colors.Grid;
+        ChartColor? fill = fillOpacity > 0 ? ChartColorMath.WithOpacity(fillSource, fillOpacity) : (ChartColor?)null;
+        if (fill.HasValue) {
+            var fillPaint = chart.Options.PolarGridFill.HasValue || gridStroke?.Color != null
+                ? SvgPaint.Literal(fillSource) : SvgPaint.Of(fillSource, SvgColorRole.Grid);
+            gridPaint = new VisualScenePaintBinding(fillPaint.WithOpacity(fill.Value, fillOpacity), gridPaint.Stroke);
+        }
         var intervalCount = chart.Options.PolarGridRingCount;
         var polygonGrid = chart.Options.PolarGridShape == ChartPolarGridShape.Polygon ||
             chart.Options.PolarGridShape == ChartPolarGridShape.Automatic && radar;
@@ -53,8 +69,10 @@ internal static partial class VisualPolarCompiler {
                 var r = intervalCount.HasValue ? geometry.GridRadius * ((index + 1d) / ringCount) : geometry.Radius * scale.Normalize(ticks[index]);
                 if (chart.Options.ShowGrid && pair.Key == gridSide) {
                     if (polygonGrid) builder.Path(ChartPathBuilder.FromPoints(Enumerable.Range(0, categories.Length).Select(i => On(geometry, radar ? CategoryAngle(chart.Options.XAxis, i, categories.Length) : PolarAngle(chart.Options.XAxis, categories[i]), r)).ToArray(), ChartInterpolation.Linear),
-                        stroke: colors.Border, strokeWidth: context.Theme.GridStrokeWidth, role: ringRole, close: true, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
-                    else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, null, colors.Border, context.Theme.GridStrokeWidth, ringRole, paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+                        fill: fill, stroke: gridColor, strokeWidth: gridWidth, role: ringRole, close: true, dash: gridStroke?.ResolveDash(Array.Empty<double>()), paint: gridPaint);
+                    else if (gridStroke?.Dash != null && gridStroke.Dash.Count > 0)
+                        builder.Path(ChartPathBuilder.Ellipse(geometry.Cx, geometry.Cy, r, r), fill, gridColor, gridWidth, ringRole, close: true, dash: gridStroke.ResolveDash(Array.Empty<double>()), paint: gridPaint);
+                    else builder.Ellipse(geometry.Cx, geometry.Cy, r, r, fill, gridColor, gridWidth, ringRole, paint: gridPaint);
                 }
                 if (chart.Options.ShowAxes && axis.Visible && index < ticks.Count) {
                     var labelRadius = geometry.Radius * scale.Normalize(ticks[index]);
@@ -72,7 +90,7 @@ internal static partial class VisualPolarCompiler {
             var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, categories[index]);
             if (chart.Options.ShowGrid) {
                 var end = On(geometry, angle, geometry.Radius * chart.Options.PolarAxisScaleFactor);
-                builder.Line(geometry.Cx, geometry.Cy, end.X, end.Y, colors.Border, context.Theme.GridStrokeWidth, radar ? "radar-spoke" : "polar-spoke", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
+                builder.Line(geometry.Cx, geometry.Cy, end.X, end.Y, axisColor, axisWidth, radar ? "radar-spoke" : "polar-spoke", dash: axisStroke?.ResolveDash(Array.Empty<double>()), paint: axisPaint);
             }
             if (!chart.Options.ShowAxes || !chart.Options.XAxis.Visible) continue;
             var target = On(geometry, angle, geometry.Radius * chart.Options.PolarAxisLabelFactor + context.Theme.Spacing);

@@ -4,7 +4,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("light", "attribute")]
     [InlineData("light", "child-list")]
     [InlineData("nested-closed", "attribute")]

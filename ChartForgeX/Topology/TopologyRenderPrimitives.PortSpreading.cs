@@ -101,7 +101,7 @@ internal static partial class TopologyRenderPrimitives {
     private static List<TopologyEdge> EndpointPortPeers(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, string nodeId, TopologyEdgePort port) {
         return chart.Edges
             .Where(candidate => EndpointUsesPort(candidate, nodeId, port, nodes))
-            .OrderBy(candidate => EndpointPeerSortKey(candidate, nodeId, nodes))
+            .OrderBy(candidate => EndpointPeerSortKey(candidate, nodeId, port, nodes))
             .ThenBy(candidate => candidate.Id, StringComparer.Ordinal)
             .ToList();
     }
@@ -129,12 +129,20 @@ internal static partial class TopologyRenderPrimitives {
             : (toward.Y >= center.Y ? TopologyEdgePort.Bottom : TopologyEdgePort.Top);
     }
 
-    private static double EndpointPeerSortKey(TopologyEdge edge, string nodeId, IReadOnlyDictionary<string, TopologyNode> nodes) {
+    private static double EndpointPeerSortKey(TopologyEdge edge, string nodeId, TopologyEdgePort port, IReadOnlyDictionary<string, TopologyNode> nodes) {
         var otherId = string.Equals(edge.SourceNodeId, nodeId, StringComparison.Ordinal) ? edge.TargetNodeId : edge.SourceNodeId;
         if (!nodes.TryGetValue(nodeId, out var node) || !nodes.TryGetValue(otherId, out var other)) return 0;
-        var dx = CenterX(other) - CenterX(node);
-        var dy = CenterY(other) - CenterY(node);
-        return Math.Atan2(dy, dx);
+        var horizontalCrossAxis = port is TopologyEdgePort.Top or TopologyEdgePort.Bottom;
+        var center = horizontalCrossAxis ? CenterX(node) : CenterY(node);
+        // Fan offsets increase along the port's cross axis. Angular order reverses that order on
+        // some sides, while the first cross-axis turn of an authored route identifies its corridor.
+        var fromSource = string.Equals(edge.SourceNodeId, nodeId, StringComparison.Ordinal);
+        for (var i = 0; i < edge.Waypoints.Count; i++) {
+            var point = edge.Waypoints[fromSource ? i : edge.Waypoints.Count - 1 - i];
+            var cross = horizontalCrossAxis ? point.X : point.Y;
+            if (Math.Abs(cross - center) > 0.0001) return cross;
+        }
+        return horizontalCrossAxis ? CenterX(other) : CenterY(other);
     }
 
 }

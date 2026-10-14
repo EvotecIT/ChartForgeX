@@ -41,17 +41,27 @@ public sealed class ChartGaugeOptions {
     /// <summary>Gets or sets the caption beneath the value. Null uses the series name.</summary>
     public string? Caption { get; set; }
     /// <summary>Gets the optional bands. Overlap is rejected when rendering.</summary>
-    public List<ChartGaugeBand> Bands { get; } = new();
+    public List<ChartGaugeBand> Bands { get; private set; } = new();
+
+    /// <summary>Copies the configured state and detaches the band list while retaining immutable band values.</summary>
+    internal ChartGaugeOptions Clone() {
+        var clone = (ChartGaugeOptions)MemberwiseClone();
+        clone.Bands = new List<ChartGaugeBand>(Bands);
+        return clone;
+    }
 }
 
 public sealed partial class ChartOptions {
     /// <summary>Gets gauge anatomy, target and band settings.</summary>
-    public ChartGaugeOptions Gauge { get; } = new();
+    public ChartGaugeOptions Gauge { get; internal set; } = new();
 }
 
 public sealed partial class Chart {
     /// <summary>Configures arc, needle or linear gauge anatomy.</summary>
-    public Chart ConfigureGauge(Action<ChartGaugeOptions> configure) { if (configure == null) throw new ArgumentNullException(nameof(configure)); configure(Options.Gauge); return this; }
+    public Chart ConfigureGauge(Action<ChartGaugeOptions> configure) {
+        Options.Gauge = ChartOptionConfiguration.Configure(Options.Gauge, configure, options => options.Clone());
+        return this;
+    }
     /// <summary>Adds a linear gauge with a value, range and optional explicit colour.</summary>
     public Chart AddLinearGauge(string name, double value, double min = 0, double max = 100, ChartForgeX.Primitives.ChartColor? color = null) { AddGauge(name, value, min, max, color); Options.Gauge.Form = ChartGaugeForm.Linear; return this; }
 }

@@ -71,6 +71,9 @@ public sealed class ChartChordOptions {
             _labelContent = value;
         }
     }
+
+    /// <summary>Copies the configured state for isolated chart configuration.</summary>
+    internal ChartChordOptions Clone() => (ChartChordOptions)MemberwiseClone();
 }
 
 /// <summary>Controls the native target cue on directed chord ribbons.</summary>

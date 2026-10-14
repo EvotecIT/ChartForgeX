@@ -67,6 +67,8 @@ public sealed class ChartMapDefinition {
         _canonicalAliases = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var regionCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var region in regions) {
+            if (string.IsNullOrWhiteSpace(region.Code) || string.IsNullOrWhiteSpace(region.Name) || string.IsNullOrWhiteSpace(region.Path))
+                throw new ArgumentException("Map definitions must contain initialized regions with a code, name and path.", nameof(regions));
             if (!regionCodes.Add(region.Code)) throw new ArgumentException("Duplicate map region code: " + region.Code + ".", nameof(regions));
             materialized.Add(region);
             AddAlias(region.Code, region.Code, isCanonical: true);

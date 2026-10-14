@@ -94,18 +94,26 @@ public sealed class MarkupTimelineParser {
             .WithSubtitle(state.Subtitle)
             .WithSize(state.Width, state.Height);
         if (state.Today.HasValue) chart.WithGanttToday(state.Today.Value.ToAxisValue());
+        var ganttItems = new List<ChartSeries>();
 
         foreach (var item in state.Items) {
             var color = string.IsNullOrWhiteSpace(item.Color) ? (ChartColor?)null : ChartColor.FromHex(item.Color!);
             var start = item.Start.ToAxisValue();
             var end = item.End.ToAxisValue();
+            var predecessor = item.DependsOn >= 0 && IsGanttItem(state, item) ? ganttItems[item.DependsOn] : null;
             if (item.Kind == TimelineItemKind.Milestone) {
-                if (state.Mode == TimelineMode.Gantt) chart.AddGanttMilestone(item.Label, start, item.DependsOn, color);
+                if (state.Mode == TimelineMode.Gantt) {
+                    chart.AddGanttMilestone(item.Label, start, predecessor, color);
+                    ganttItems.Add(chart.Series[chart.Series.Count - 1]);
+                }
                 else chart.AddTimelineRange(item.Label, start, start, color);
                 continue;
             }
 
-            if (state.Mode == TimelineMode.Gantt || item.Kind == TimelineItemKind.Task) chart.AddGanttTask(item.Label, start, end, item.Progress, item.DependsOn, color);
+            if (state.Mode == TimelineMode.Gantt || item.Kind == TimelineItemKind.Task) {
+                chart.AddGanttTask(item.Label, start, end, item.Progress, predecessor, color);
+                ganttItems.Add(chart.Series[chart.Series.Count - 1]);
+            }
             else chart.AddTimelineRange(item.Label, start, end, color);
         }
 

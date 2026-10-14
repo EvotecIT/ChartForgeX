@@ -18,7 +18,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart ConfigureTextStyle(ChartTextRole role, System.Action<TextStyleOverride> configure) {
         if (configure == null) throw new System.ArgumentNullException(nameof(configure));
-        configure(Options.GetTextStyle(role));
+        Options.SetTextStyle(role, ChartOptionConfiguration.Configure(Options.GetTextStyle(role), configure, style => style.Clone()));
         return this;
     }
 
@@ -346,9 +346,10 @@ public sealed partial class Chart {
 
         if (dottedMap == null) throw new System.InvalidOperationException("Map routes between points require AddDottedMap to be called before the route is added.");
         var trimmed = pointLabel.Trim();
-        var count = System.Math.Min(dottedMap.Points.Count, Options.XAxisLabels.Count);
+        var count = dottedMap.MapPoints.Count;
         for (var i = 0; i < count; i++) {
-            if (string.Equals(Options.XAxisLabels[i].Text, trimmed, System.StringComparison.OrdinalIgnoreCase)) return dottedMap.Points[i];
+            if (string.Equals(dottedMap.MapPoints[i].Label, trimmed, System.StringComparison.OrdinalIgnoreCase))
+                return new ChartPoint(dottedMap.MapPoints[i].Longitude, dottedMap.MapPoints[i].Latitude);
         }
 
         throw new System.ArgumentException("Map point label was not found in the current dotted map: " + trimmed + ".", parameterName);

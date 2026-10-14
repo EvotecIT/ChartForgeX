@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using ChartForgeX.Typography;
 
 namespace ChartForgeX.Core;
 
@@ -32,10 +31,12 @@ public sealed partial class ChartGrid {
                 PngOutputScale = PngOutputScale,
                 PanelSize = PanelSize,
                 PanelFit = PanelFit,
-                Theme = Theme ?? _charts[0].Options.Theme
+                Theme = Theme,
+                ThemeMode = ThemeMode,
+                UsePanelThemes = UsePanelThemes
             };
-            CopyStyle(TitleStyle, grid.TitleStyle);
-            CopyStyle(SubtitleStyle, grid.SubtitleStyle);
+            grid.TitleStyle = TitleStyle.Clone();
+            grid.SubtitleStyle = SubtitleStyle.Clone();
             grid.SvgColorVariables = SvgColorVariables?.Clone();
             grid.Accessibility.Name = Accessibility.Name;
             grid.Accessibility.Description = Accessibility.Description;
@@ -51,20 +52,4 @@ public sealed partial class ChartGrid {
         return pages.AsReadOnly();
     }
 
-    private static void CopyStyle(TextStyleOverride source, TextStyleOverride target) {
-        target.Color = source.Color;
-        target.FontFamily = source.FontFamily;
-        target.FontWeight = source.FontWeight;
-        target.FontSize = source.FontSize;
-        target.Italic = source.Italic;
-        target.Underline = source.Underline;
-        target.UnderlineStyle = source.UnderlineStyle;
-        target.Strikethrough = source.Strikethrough;
-        target.StrikethroughStyle = source.StrikethroughStyle;
-        target.Baseline = source.Baseline;
-        target.TextCase = source.TextCase;
-        target.OpenTypeLanguageTag = source.OpenTypeLanguageTag;
-        target.Variations = source.Variations;
-        target.ColorPaletteIndex = source.ColorPaletteIndex;
-    }
 }

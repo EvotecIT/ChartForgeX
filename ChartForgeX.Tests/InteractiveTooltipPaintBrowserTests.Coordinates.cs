@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPaintBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("heatmap", false, true)]
     [InlineData("heatmap", true, false)]
     [InlineData("map", false, false)]
@@ -47,7 +47,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task AVisiblePointLabelCannotReplaceItsHiddenPrimaryMarker() {
         if (!Enabled) return;
         var chart = Frame(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithDataLabels()

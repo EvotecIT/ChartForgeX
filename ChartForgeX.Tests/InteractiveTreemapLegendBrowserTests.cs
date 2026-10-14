@@ -24,13 +24,12 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         if (missing) items = items.Where(item => item.Id != FirstId);
         if (reordered) items = items.Reverse().Select(item => new ChartHierarchyItem(item.Id,
             item.Id == FirstId ? "Customer care" : item.Label, item.ParentId, item.Value, item.ColorValue));
-        var chart = Chart.Create().WithPointLegend().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
-            .WithTitle("Work by team").AddTreemap("Allocation", items);
-        chart.Series[0].WithInteractionKey("allocation-source");
+        var chart = Chart.Create().WithPointLegend().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTitle("Work by team").AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("allocation-source"), "Allocation", items));
         return chart;
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 800)]
     [InlineData(true, 800)]
     [InlineData(false, 360)]
@@ -79,7 +78,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task SyncedLeafKeysResolveIDsAcrossReorderAndRenameAndSkipAbsentItems(bool dark) {
@@ -113,7 +112,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task LeafKeysHonorTheLegendToggleFeatureGate() {
         if (!Enabled) return;
         var html = Model(false).WithSize(540, 350).ToInteractiveHtmlPage(options => options.Interaction.Features =
@@ -125,13 +124,13 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LeafKeysKeepZeroAndTinyRawValuesWithoutInventingPaintedArea(bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithDataLabels().WithPointLegend().WithSize(540, 350)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).AddTreemap("Sizes", new[] {
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddTreemap("Sizes", new[] {
                 new ChartHierarchyItem("large", "Large", value: 1e308),
                 new ChartHierarchyItem("tiny", "Tiny", value: 1e-310), new ChartHierarchyItem("zero", "Zero", value: 0)
             });
@@ -165,7 +164,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task LeafKeysOutsideTheNativeLegendBudgetRemainDescriptiveWithoutKeyboardTargets() {
         if (!Enabled) return;
         var chart = Model(false).WithSize(360, 360); chart.Options.LegendMaximumHeightFraction = .03;
@@ -177,7 +176,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 800)]
     public async Task HostPaletteChangesKeepLeafTilesKeysAndTooltipSwatchesConsistent(bool dark, int width) {
@@ -185,7 +184,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         var red = ChartColor.FromRgb(255, 0, 0); var blue = ChartColor.FromRgb(0, 0, 255);
         var missing = ChartColor.FromRgb(13, 47, 81);
         var chart = Chart.Create().WithPointLegend().WithSize(width, 360)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).AddTreemap("Colors", new[] {
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddTreemap("Colors", new[] {
                 new ChartHierarchyItem("low", "Low", value: 4, colorValue: 0),
                 new ChartHierarchyItem("explicit", "Explicit", value: 3, colorValue: 100),
                 new ChartHierarchyItem("missing", "Missing", value: 2)
@@ -202,10 +201,10 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         foreach (var (id, expected) in new[] { ("low", "rgb(0, 255, 0)"), ("explicit", "rgb(255, 0, 255)"), ("missing", "rgb(255, 255, 0)") }) {
             var tile = page.Locator(Node(id) + " > [data-cfx-role=treemap-tile-mark]");
             var key = page.Locator(Key(id));
-            Assert.Equal(expected, await tile.EvaluateAsync<string>("node => getComputedStyle(node).fill"));
-            Assert.Equal(expected, await key.Locator("[data-cfx-role=legend-swatch]").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+            await AssertCssColorsEqualAsync(page, expected, await tile.EvaluateAsync<string>("node => getComputedStyle(node).fill"));
+            await AssertCssColorsEqualAsync(page, expected, await key.Locator("[data-cfx-role=legend-swatch]").EvaluateAsync<string>("node => getComputedStyle(node).fill"));
             await key.FocusAsync();
-            Assert.Equal(expected, await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+            await AssertCssColorsEqualAsync(page, expected, await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         }
         await Capture(page, html, "leaf-legend-host-palette-" + width + "-" + dark);
         AssertNoConsoleErrors(session);

@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 public sealed class InteractiveKeyboardFocusRecoveryBrowserTests {
     private const string DataStop = "[data-cfx-keyboard-component='data'][tabindex='0']";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(true, true)]
     public async Task MutingTheFocusedSeriesRecoversNavigationWithinTheLocalOrPeerChart(bool synchronized, bool dark) {
@@ -44,7 +44,7 @@ public sealed class InteractiveKeyboardFocusRecoveryBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task MutingAllFocusedDataRecoversToTheLegendForKeyboardUnmute() {
         if (!Enabled) return;
         await using var session = await OpenAsync(StatusLines(true).ToInteractiveHtmlPage());
@@ -70,7 +70,7 @@ public sealed class InteractiveKeyboardFocusRecoveryBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SynchronizedMutePreservesEligibleDataControlAndExternalHostFocus() {
         if (!Enabled) return;
         var html = new[] { StatusLines(false), StatusLines(false) }.ToInteractiveHtmlDashboardPage(options => {

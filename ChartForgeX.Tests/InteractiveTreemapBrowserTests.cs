@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTreemapBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("wide", false, 800)]
     [InlineData("wide", true, 800)]
     [InlineData("wide", false, 360)]
@@ -24,9 +24,8 @@ public sealed class InteractiveTreemapBrowserTests {
         if (!Enabled) return;
         var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
         var chart = V2GalleryModels.Create(ChartSeriesKind.Treemap, variant, mode).WithSize(width, width < 500 ? 340 : 460)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithTitle("Allocated work by team")
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("Allocated work by team")
             .WithSubtitle("Area: allocated work · Color: change (%)");
-        chart.Series[0].WithInteractionKey("allocation-source");
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 490 : 610);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
@@ -51,7 +50,7 @@ public sealed class InteractiveTreemapBrowserTests {
         if (variant == "options") {
             var warning = VisualTheme.Graphite().Resolve(mode).Status.Medium.Fill;
             Assert.Equal("Warning", await support.GetAttributeAsync("data-cfx-state"));
-            Assert.Equal($"rgb({warning.R}, {warning.G}, {warning.B})",
+            await AssertCssColorsEqualAsync(page, $"rgb({warning.R}, {warning.G}, {warning.B})",
                 await support.Locator(":scope > [data-cfx-role=treemap-tile-mark]").EvaluateAsync<string>("node => getComputedStyle(node).stroke"));
         }
         await support.FocusAsync(); await page.Keyboard.PressAsync("Space");
@@ -68,19 +67,19 @@ public sealed class InteractiveTreemapBrowserTests {
         Assert.Contains("Support", await TooltipTextAsync(page)); Assert.Contains("22", await TooltipTextAsync(page));
         var mark = await support.Locator(":scope > [data-cfx-role=treemap-tile-mark]").EvaluateAsync<string>("node => getComputedStyle(node).fill");
         var expected = chart.Options.Treemap.ColorScale!.ColorFor(8);
-        Assert.Equal($"rgb({expected.R}, {expected.G}, {expected.B})", mark);
+        await AssertCssColorsEqualAsync(page, $"rgb({expected.R}, {expected.G}, {expected.B})", mark);
         await Capture(chart, page, name + "-selection", html, native: false);
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task RenamedReorderedItemsKeepAuthoredHostEventIdentity(bool dark) {
         if (!Enabled) return;
         var items = TreemapHierarchyTests.ForestItems().AsEnumerable().Reverse().Select(item => new ChartHierarchyItem(item.Id,
             item.Id == "south-support" ? "Customer care" : item.Label, item.ParentId, item.Value, item.ColorValue));
-        var chart = Chart.Create().WithSize(640, 400).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).AddTreemap("Allocation", items);
+        var chart = Chart.Create().WithSize(640, 400).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddTreemap("Allocation", items);
         var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html, 680, 520);
         await session.Page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.selection = event.detail.target)");
         var target = session.Page.Locator("[data-cfx-node=south-support]"); await target.FocusAsync(); await session.Page.Keyboard.PressAsync("Space");
@@ -91,13 +90,13 @@ public sealed class InteractiveTreemapBrowserTests {
         await Capture(chart, session.Page, "treemap-reordered-" + (dark ? "dark" : "light"), html); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task MissingColorSingletonUsesNoDataPaintWithoutZeroScaleReadout(bool dark) {
         if (!Enabled) return;
         var missing = ChartColor.FromRgb(81, 124, 148);
-        var chart = Chart.Create().WithSize(360, 320).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(360, 320).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("One independent team").AddTreemap("Team", new[] { new ChartHierarchyItem("support", "Support", value: 8) })
             .ConfigureTreemap(options => options.ColorScale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White).WithNoDataColor(missing));
         var html = chart.ToInteractiveHtmlPage(); await using var session = await OpenAsync(html, 400, 440);

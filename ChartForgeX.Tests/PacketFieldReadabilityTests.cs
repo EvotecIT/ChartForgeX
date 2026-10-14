@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.VisualBlocks;
@@ -10,8 +11,8 @@ public sealed class PacketFieldReadabilityTests {
     public void WrappedCaptionShortensAtReadableSizeInsteadOfShrinkingBelowEightPixels() {
         var packet = PacketLayoutBlock.Create().WithBitsPerRow(16).WithBitWidth(18).WithRowHeight(40).WithFieldGap(3)
             .AddField(0, 3, "Flags").AddField(4, 17, "Payload").AddField(18, 23, "Tail");
-        packet.Options.Theme.FontFamily = "Consolas, DejaVu Sans Mono, monospace";
-        packet.Options.Theme.DataLabelFontSize = 32;
+        packet.Options.Theme = packet.Options.Theme.WithFontFamily("Consolas, DejaVu Sans Mono, monospace");
+        packet.Options.Theme = packet.Options.Theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 32, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var captions = XDocument.Parse(packet.ToSvg()).Descendants().Where(node => node.Name.LocalName == "text"
             && (string?)node.Attribute("data-cfx-role") == "visual-text").ToArray();
         Assert.Equal(4, captions.Length);

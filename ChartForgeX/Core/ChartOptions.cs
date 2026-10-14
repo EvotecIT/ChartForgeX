@@ -11,7 +11,9 @@ namespace ChartForgeX.Core;
 public sealed partial class ChartOptions {
     private ChartSize _size = new(1000, 560);
     private ChartPadding _padding = ChartPadding.All(24);
-    private ChartTheme _theme = ChartTheme.GraphiteLight();
+    private VisualTheme _theme = VisualTheme.Graphite();
+    private VisualThemeMode _themeMode;
+    private ResolvedVisualTheme? _resolvedTheme;
     private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
     private ChartLegendPosition _legendPosition = ChartLegendPosition.TopLeft;
     private bool? _showPlotBackground;
@@ -82,16 +84,23 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets the visual theme used by renderers.
     /// </summary>
-    public ChartTheme Theme {
+    public VisualTheme Theme {
         get => _theme;
-        set => _theme = value ?? throw new ArgumentNullException(nameof(value));
+        set { _theme = value ?? throw new ArgumentNullException(nameof(value)); _resolvedTheme = null; }
     }
+
+    /// <summary>Gets or sets the explicit color-palette mode.</summary>
+    public VisualThemeMode ThemeMode {
+        get => _themeMode;
+        set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; _resolvedTheme = null; }
+    }
+    internal ResolvedVisualTheme ResolvedTheme => _resolvedTheme ??= Theme.ResolvePresentation(ThemeMode);
 
     /// <summary>
     /// Gets or sets the preferred TrueType font file or TrueType collection used by the PNG renderer.
     /// </summary>
     /// <remarks>
-    /// SVG and HTML use <see cref="ChartTheme.FontFamily"/>. PNG rendering uses this .ttf or .ttc file when it can be loaded and falls back to an auto-detected platform font or the built-in tiny font.
+    /// SVG and HTML use <see cref="VisualTypography.Family"/>. PNG rendering uses this .ttf or .ttc file when it can be loaded and falls back to an auto-detected platform font or the built-in tiny font.
     /// </remarks>
     public string? PngFontPath {
         get => _pngFontPath;
@@ -210,7 +219,7 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets a value indicating whether the plot background surface is rendered.
     /// </summary>
-    public bool ShowPlotBackground { get => _showPlotBackground ?? !Theme.FlatMarks; set => _showPlotBackground = value; }
+    public bool ShowPlotBackground { get => _showPlotBackground ?? false; set => _showPlotBackground = value; }
 
     internal bool HasExplicitLegendPosition { get; private set; }
     internal void SetDefaultLegendPosition(ChartLegendPosition position) { if (!HasExplicitLegendPosition) _legendPosition = position; }

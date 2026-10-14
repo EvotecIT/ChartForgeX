@@ -6,7 +6,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class StoryChapterPlayerBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task AutomaticChaptersUseAuthoredBoundariesWhileButtonsSeekReadableSamples() {
         if (!Enabled) return;
         var story = VisualStory.Create("Chapter clocks").WithSize(480, 320);

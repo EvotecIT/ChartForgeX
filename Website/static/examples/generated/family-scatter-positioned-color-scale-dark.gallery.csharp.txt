@@ -1,0 +1,55 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = ScatterPositionedColorScaleRecipe.Create("positioned-color-scale", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Processing time by workload", "Absolute color anchors use uneven numeric intervals", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Maps observed temperatures to explicitly positioned color stops.</summary>
+public static class ScatterPositionedColorScaleRecipe {
+    /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
+    public static Chart Create(string variant = "positioned-color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("positioned-color-scale" or "compact-positioned-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
+        return PositionedColorScale(mode).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+
+    private static Chart PositionedColorScale(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var temperatures = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
+        var minutes = new[] { 24d, 36, 45, 20, 32, 50, 28, 41, 18, 35, 22, 48 };
+        var recorded = ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", temperatures.Select((value, index) =>
+            new ChartPoint((index + 1) * 8, minutes[index]).WithColorValue(value)));
+        recorded.WithColorScale(TemperatureScale().WithNoDataColor(colors.Border));
+        return NumericAxes().ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; }).AddSeries(recorded);
+    }
+
+    private static Chart NumericAxes() => Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+
+    private static ChartColorScale TemperatureScale() => ChartColorScale.Diverging(new[] {
+        new ChartColorStop(-20, ChartColor.FromHex("#2166AC")), new ChartColorStop(-3, ChartColor.FromHex("#67A9CF"))
+    }, new ChartColorStop(0, ChartColor.FromHex("#D1D5DB")), new[] {
+        new ChartColorStop(5, ChartColor.FromHex("#D9A441")), new ChartColorStop(40, ChartColor.FromHex("#B2182B"))
+    }).WithLabels("Cold", "Freezing", "Warm");
+}

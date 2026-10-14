@@ -13,16 +13,9 @@ public sealed partial class Chart {
     /// <param name="color">An optional series color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddOhlc(string name, IEnumerable<ChartCandlestick> values, ChartColor? color = null) {
-        if (values == null) throw new ArgumentNullException(nameof(values));
-        var points = new List<ChartPoint>();
-        foreach (var value in values) {
-            points.Add(new ChartPoint(value.X, value.Open));
-            points.Add(new ChartPoint(value.X, value.High));
-            points.Add(new ChartPoint(value.X, value.Low));
-            points.Add(new ChartPoint(value.X, value.Close));
-        }
-
-        if (points.Count == 0) throw new ArgumentException("OHLC charts must contain at least one value.", nameof(values));
-        return Add(name, ChartSeriesKind.Ohlc, points, color);
+        var series = ChartSeries.CreateOhlc(name, values, color);
+        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(values));
+        AppendSeries(series);
+        return this;
     }
 }

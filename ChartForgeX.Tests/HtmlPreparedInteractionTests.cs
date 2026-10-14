@@ -14,8 +14,7 @@ public sealed class HtmlPreparedInteractionTests {
     public void InteractiveHostEmbedsPreparedSourceIdentitiesAndCompletedRegions() {
         const string name = "Observations <script> & \"quoted\"";
         var chart = Chart.Create().WithSize(520, 320).WithXLabels("First", "Second", "Third")
-            .AddLine(name, ChartPoints.FromValues(3, 7, 5));
-        chart.Series[0].WithInteractionKey("observed-values");
+            .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("observed-values"), name, ChartPoints.FromValues(3, 7, 5)));
         var html = chart.ToInteractiveHtmlFragmentWithoutAssets();
         using var metadata = Metadata(html);
         var series = metadata.RootElement.GetProperty("series")[0];
@@ -42,9 +41,7 @@ public sealed class HtmlPreparedInteractionTests {
 
     [Fact]
     public void DecimatedInteractiveTargetsRetainOriginalPointIndicesWithoutALegend() {
-        var chart = Chart.Create().WithLegend(false).AddDecimatedLine("Latency",
-            Enumerable.Range(0, 100).Select(index => new ChartPoint(index, Math.Sin(index / 3d))), 12);
-        chart.Series[0].WithInteractionKey("latency");
+        var chart = Chart.Create().WithLegend(false).AddSeries(ChartSeries.CreateDecimated(new ChartSeriesId("latency"), "Latency", ChartSeriesKind.Line, Enumerable.Range(0, 100).Select(index => new ChartPoint(index, Math.Sin(index / 3d))), 12));
         var html = chart.ToInteractiveHtmlFragmentWithoutAssets();
         using var metadata = Metadata(html);
         Assert.Equal(chart.Series[0].SourcePointIndices, metadata.RootElement.GetProperty("series")[0].GetProperty("indices").EnumerateArray().Select(item => item.GetInt32()));

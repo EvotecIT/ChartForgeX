@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
@@ -27,31 +28,55 @@ internal static partial class VisualSceneSvgRenderer {
     }
 
     private static string ExportIdentity(VisualScene scene, string identity, VisualSvgOptions? options) {
-        if (options == null || options.Variables == null && options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive) return identity;
+        var colorScopes = ColorScopeOptions(scene, options);
+        if (colorScopes == null && (options == null || options.Variables == null && options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive)) return identity;
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
-            writer.Write(identity); writer.Write((int)options.LinkTarget);
-            if (options.Responsive) writer.Write("responsive");
-            foreach (var node in scene.Nodes) {
+            writer.Write(identity); writer.Write((int)(options?.LinkTarget ?? VisualSvgLinkTarget.SameContext));
+            if (options?.Responsive == true) writer.Write("responsive");
+            for (var i = 0; i < scene.Nodes.Count; i++) {
+                var node = scene.Nodes[i];
+                var paintOptions = colorScopes == null ? options : colorScopes[i];
                 if (node is VisualSceneMark mark) Mark(mark);
                 else if (node is VisualSceneText text) {
-                    writer.Write(ResolvePaint(text.Color, text.Paint, options));
-                    writer.Write(ResolvePaint(text.Stroke, text.StrokePaint, options));
+                    writer.Write(ResolvePaint(text.Color, text.Paint, paintOptions));
+                    writer.Write(ResolvePaint(text.Stroke, text.StrokePaint, paintOptions));
                 }
                 else if (node is VisualSceneGradient gradient) {
                     Mark(gradient.Shape);
-                    foreach (var stop in gradient.Stops) writer.Write(ResolvePaint(stop.Color, stop.Paint, options));
+                    foreach (var stop in gradient.Stops) writer.Write(ResolvePaint(stop.Color, stop.Paint, paintOptions));
                 }
-            }
-            void Mark(VisualSceneMark mark) {
-                writer.Write(ResolvePaint(mark.Fill, mark.Paint?.Fill, options));
-                writer.Write(ResolvePaint(mark.Stroke, mark.Paint?.Stroke, options));
+                void Mark(VisualSceneMark mark) {
+                    writer.Write(ResolvePaint(mark.Fill, mark.Paint?.Fill, paintOptions));
+                    writer.Write(ResolvePaint(mark.Stroke, mark.Paint?.Stroke, paintOptions));
+                }
             }
         }
         stream.FlushFinalBlock();
         var prefix = new StringBuilder("cfx-v2-");
         foreach (var value in hash.Hash!) prefix.Append(value.ToString("x2", CultureInfo.InvariantCulture));
         return prefix.ToString();
+    }
+
+    // Scope resolution is shared by paint attributes, gradient definitions and deterministic export identity.
+    // Ordinary scenes keep the existing allocation-free path. Scope mappings were detached during preparation.
+    private static VisualSvgOptions?[]? ColorScopeOptions(VisualScene scene, VisualSvgOptions? options) {
+        var hasScope = false;
+        foreach (var node in scene.Nodes) if (node is VisualSceneGroup group && group.ColorScope != null) { hasScope = true; break; }
+        if (!hasScope) return null;
+        var result = new VisualSvgOptions?[scene.Nodes.Count];
+        var stack = new Stack<VisualSvgOptions?>();
+        var current = options;
+        for (var i = 0; i < scene.Nodes.Count; i++) {
+            if (scene.Nodes[i] is VisualSceneGroup group) {
+                stack.Push(current);
+                if (group.ColorScope != null) current = new VisualSvgOptions(colorVariables: group.ColorScope.Variables,
+                    linkTarget: options?.LinkTarget ?? VisualSvgLinkTarget.SameContext);
+            }
+            result[i] = current;
+            if (scene.Nodes[i] is VisualSceneEndGroup) current = stack.Pop();
+        }
+        return result;
     }
 }

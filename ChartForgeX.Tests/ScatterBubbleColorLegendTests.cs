@@ -74,7 +74,7 @@ public sealed class ScatterBubbleColorLegendTests {
             Assert.Null(key.Attribute("data-cfx-min-value")); Assert.Null(key.Attribute("data-cfx-max-value"));
             Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.color-scale-overflow");
         }
-        chart.Series[0].Points.Clear();
+        chart.Series[0].ReplaceBubbles(Array.Empty<ChartBubble>());
         Assert.Empty(Role(XDocument.Parse(Prepare(chart).ToSvg()), "color-scale-0"));
     }
 

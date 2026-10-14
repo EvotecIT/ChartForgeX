@@ -14,6 +14,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidFinalTypographyOwnerTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(10.5, 360, true, false)]
     [InlineData(16.79, 360, true, false)]
@@ -25,9 +26,10 @@ public sealed class MermaidFinalTypographyOwnerTests {
     [InlineData(256, 800, true, true)]
     [InlineData(256, 360, false, true)]
     public async Task WardleyBoundaryAnnotationsRetainTheirCompleteCircle(double fontSize, int width, bool hostOwnsFrame, bool dark) {
-        var theme = dark ? ChartTheme.Dark() : ChartTheme.Light();
-        theme.FontFamily = "Arial"; theme.DataLabelFontSize = fontSize;
-        var map = WardleyMapBlock.Create().WithSize(width, 320).WithTheme(theme);
+        var theme = VisualTheme.Report();
+        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        theme = theme.WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: fontSize, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        var map = WardleyMapBlock.Create().WithSize(width, 320).WithTheme(theme, mode);
         map.Options.HostOwnsFrame = hostOwnsFrame;
         map.AddNode("api", "API", .5, .5);
         map.AddAnnotation(1, "", 1, 1);
@@ -55,6 +57,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         }
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(420, 1800, ChartLegendPosition.Right)]
     [InlineData(420, 1800, ChartLegendPosition.Bottom)]
@@ -74,6 +77,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         await Capture(prepared.ToSvg(), prepared.ToPng(), "legend-" + width + "-" + height + "-" + position, width, height);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(360, 320, ChartDataLabelPlacement.Inside, false)]
     [InlineData(760, 420, ChartDataLabelPlacement.Inside, false)]
@@ -114,6 +118,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         await Capture(prepared.ToSvg(), prepared.ToPng(), "pie-" + width + "-" + placement + "-" + donut, width, height);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(32, false, false)]
     [InlineData(256, false, false)]
@@ -148,6 +153,7 @@ public sealed class MermaidFinalTypographyOwnerTests {
         await Capture(svg, artifact.ToPng(), "class-endpoints-" + size + "-" + fenced + "-" + padded, (int)width, (int)height);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(TopologyEdgeRouting.Curved)]
     [InlineData(TopologyEdgeRouting.Straight)]

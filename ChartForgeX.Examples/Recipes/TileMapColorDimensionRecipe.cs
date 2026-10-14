@@ -1,0 +1,29 @@
+/// <summary>Creates a tile map with independently formatted temperature values and color legends.</summary>
+public static class TileMapColorDimensionRecipe {
+    /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
+    public static Chart Create(string variant = "color-dimension", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("color-dimension" or "compact-color-dimension"
+            or "gradient-color-legend" or "compact-gradient-color-legend"
+            or "swatch-color-legend" or "compact-swatch-color-legend"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var codes = new[] { "CA", "TX", "NY", "FL", "WA", "IL", "CO" };
+        var values = new[] { 0d, 2.5, 5, 10, 22.5, 40, 55 };
+        var scale = ChartColorScale.Diverging(new[] {
+            new ChartColorStop(-20, ChartColor.FromHex("#2166AC")), new ChartColorStop(-3, ChartColor.FromHex("#67A9CF"))
+        }, new ChartColorStop(0, ChartColor.FromHex("#D1D5DB")), new[] {
+            new ChartColorStop(5, ChartColor.FromHex("#D9A441")), new ChartColorStop(40, ChartColor.FromHex("#B2182B"))
+        }).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border);
+        return Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled")
+            .AddTileMap("Daily mean", ChartTileMapCatalog.Get("us-states"),
+                codes.Select((code, index) => new ChartRegionMapItem(code, values[index])), id: new ChartSeriesId("state-temperatures"))
+            .WithMapLabels().WithMapColorScale(scale)
+            .ConfigureMapColorDimension(options => {
+                options.Name = "Temperature";
+                options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
+                options.LegendStyle = variant is "gradient-color-legend" or "compact-gradient-color-legend" ? ChartColorLegendStyle.Gradient
+                    : variant is "swatch-color-legend" or "compact-swatch-color-legend" ? ChartColorLegendStyle.Swatches : ChartColorLegendStyle.Auto;
+            });
+    }
+}

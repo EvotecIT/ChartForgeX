@@ -140,7 +140,7 @@ public sealed class RadarCurveTests {
         Assert.Contains(other.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(320, .17, false)]
     [InlineData(960, .17, false)]
     [InlineData(320, 1, false)]

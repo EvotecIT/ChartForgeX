@@ -1,0 +1,48 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = GanttLaneRecipe.Create("compact", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Incidents and recovery in parallel", "The same data in a compact view", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Overlapping and open incidents share a deliberate current instant.</summary>
+public static class GanttLaneRecipe {
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+        var primary = ChartSeries.CreateGanttLane(new ChartSeriesId("primary"), "Primary", new[] {
+            new ChartGanttLaneItem(start, start.AddHours(5), "warning", "Investigation", "Degraded response time"),
+            new ChartGanttLaneItem(start.AddHours(3), start.AddHours(7), "critical", "Recovery"),
+            new ChartGanttLaneItem(start.AddHours(9), null, "warning", "Monitoring")
+        }, "Production");
+        var secondary = ChartSeries.CreateGanttLane(new ChartSeriesId("secondary"), "Secondary", new[] {
+            new ChartGanttLaneItem(start.AddHours(2), start.AddHours(6), "warning", "Maintenance")
+        }, "Production");
+        return Chart.Create().WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
+            new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
+            new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
+            .WithGanttLaneNow(start.AddHours(12)).AddSeries(primary).AddSeries(secondary)
+            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

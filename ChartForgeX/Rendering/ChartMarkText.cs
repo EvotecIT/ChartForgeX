@@ -49,32 +49,13 @@ internal static class ChartMarkText {
     /// <summary>Returns the text colour on a matrix or hexbin heatmap cell drawn by <see cref="ChartHeatmapSurface.CellBlend(Chart, ChartColor?, double, double, double)"/>.</summary>
     public static ChartColorBlend OnHeatmapCell(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var fill = ChartHeatmapSurface.CellBlend(chart, highColor, value, min, max);
-        return chart.Options.Theme.UseGraphiteLayout
-            ? ChartColorBlend.Contrast(fill.Color, fill.FromRole ?? SvgColorRole.Ramp)
-            : For(chart, fill.Color, ChartHeatmapSurface.IsStrongCell(chart, highColor, value, min, max));
+        return ChartColorBlend.Contrast(fill.Color, fill.FromRole ?? SvgColorRole.Ramp);
     }
 
-    /// <summary>Returns the text colour on a state mark: fully filled marks are strong, quiet and outlined tints weak.</summary>
+    /// <summary>Returns readable text for a state mark using the shared mark policy.</summary>
     public static ChartColorBlend OnStateMark(Chart chart, ChartStateMark mark) =>
-        chart.Options.Theme.UseGraphiteLayout
-            ? mark.FillOpacity >= 0.999 ? ChartColorBlend.Contrast(mark.Color, SvgColorRole.Status) : ChartColorBlend.Solid(chart.Options.Theme.Text, SvgColorRole.Text)
-            : For(chart, mark.Surface, mark.FillOpacity >= 0.999);
-
-    private static ChartColorBlend For(Chart chart, ChartColor fill, bool strong) {
-        var surface = ChartStateMark.Backdrop(chart);
-        var text = chart.Options.Theme.Text;
-        return For(surface, text, fill, strong);
-    }
-
-    private static ChartColorBlend For(ChartColor surface, ChartColor text, ChartColor fill, bool strong) {
-        // Translucent text is judged as it appears on the fill.
-        var shownText = Over(text, fill);
-        var preferred = strong ? surface : shownText;
-        var other = strong ? shownText : surface;
-        var preferredContrast = ChartColorMath.ContrastRatio(fill, preferred);
-        var surfaceText = strong != (preferredContrast < MinimumContrast && ChartColorMath.ContrastRatio(fill, other) > preferredContrast);
-        return ChartColorBlend.Solid(surfaceText ? surface : text, surfaceText ? SvgColorRole.Surface : SvgColorRole.Text);
-    }
+        mark.FillOpacity >= 0.999 ? ChartColorBlend.Contrast(mark.Color, SvgColorRole.Status)
+            : ChartColorBlend.Solid(chart.Options.ResolvedTheme.Text, SvgColorRole.Text);
 
     private static ChartColor Over(ChartColor top, ChartColor bottom) {
         return ChartColorMath.CompositeOverOpaque(top, bottom);

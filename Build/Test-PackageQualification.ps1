@@ -8,7 +8,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-Import-Module PSPublishModule -MinimumVersion 3.0.158 -ErrorAction Stop
+Import-Module PSPublishModule -MinimumVersion 3.0.168 -ErrorAction Stop
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $packageRootResolved = (Resolve-Path -LiteralPath $PackageRoot).Path
 $reportRoot = if ($ReportOutput) { [IO.Path]::GetFullPath($ReportOutput) } else { Join-Path $packageRootResolved 'qualification' }
@@ -23,6 +23,10 @@ $metadataParameters = @{
 if ($Version) { $metadataParameters.Version = $Version }
 $metadata = Invoke-ReleaseValidation @metadataParameters
 $metadata | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $reportRoot 'packages.json') -Encoding utf8
+
+$cli = Invoke-ReleaseValidation -ConfigPath (Join-Path $PSScriptRoot 'PackageValidation/cli.json') `
+    -ProjectRoot $repositoryRoot -Version $metadata.Version -Variables @{ PackageRoot = $packageRootResolved }
+$cli | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $reportRoot 'cli.json') -Encoding utf8
 
 $sourceRoot = Join-Path $PSScriptRoot 'PackageConsumers'
 $compileRoot = Join-Path ([IO.Path]::GetTempPath()) ('ChartForgeX-package-compile-' + [guid]::NewGuid().ToString('N'))

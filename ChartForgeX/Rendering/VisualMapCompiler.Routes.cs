@@ -71,7 +71,7 @@ internal static partial class VisualMapCompiler {
 
     private static double EndpointTrim(ChartSeries series, ChartPoint coordinate, double?[] weights, double dot, double min, double max) {
         var trim = dot * 2;
-        for (var index = 0; index < series.Points.Count; index++) if (ChartMath.SameCoordinate(series.Points[index].X, coordinate.X) && ChartMath.SameCoordinate(series.Points[index].Y, coordinate.Y))
+        for (var index = 0; index < series.RenderPoints.Count; index++) if (ChartMath.SameCoordinate(series.RenderPoints[index].X, coordinate.X) && ChartMath.SameCoordinate(series.RenderPoints[index].Y, coordinate.Y))
             trim = Math.Max(trim, (series.MarkerRadius ?? PointRadius(dot, weights[index], min, max)) + Math.Max(1, dot * .55) + Math.Max(1.5, dot * .45));
         return trim;
     }

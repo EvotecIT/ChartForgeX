@@ -10,10 +10,10 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void VisualBlocksRenderTablesListsAndMetricCards() {
-        var table = ChartTable.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var table = ChartTable.Create().WithTheme(VisualTheme.Report())
             .WithTitle("Drive summary")
             .WithSubtitle("Exact facts in a visual block, not a chart series")
-            .WithTheme(ChartTheme.TransparentOverlayDark())
+            .WithTheme(VisualTheme.TransparentOverlay(), VisualThemeMode.Dark)
             .WithTransparentBackground()
             .AddColumn("Drive")
             .AddColumn("Used", TextAlignment.Right, format: "0%")
@@ -30,7 +30,11 @@ internal static partial class SmokeTests {
 
         var tableSvg = table.ToSvg("visual-block-table");
         Assert(tableSvg.Contains("<svg", StringComparison.Ordinal), "ChartTable should render SVG.");
-        Assert(tableSvg.Contains("-visualCard", StringComparison.Ordinal) && tableSvg.Contains("class=\"cfx-guide-stroke\"", StringComparison.Ordinal), "Visual block SVG cards should use premium gradient surfaces and crisp strokes.");
+        var tableCard = System.Xml.Linq.XDocument.Parse(tableSvg).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "visual-card");
+        var tableColors = table.Options.Theme.Resolve(table.Options.ThemeMode);
+        Assert((string?)tableCard.Attribute("fill") == tableColors.ElevatedSurface.ToCss()
+            && (string?)tableCard.Attribute("stroke") == tableColors.Border.ToCss()
+            && (string?)tableCard.Attribute("class") == "cfx-guide-stroke", "Visual block cards should retain their configured flat surface and crisp border.");
         Assert(tableSvg.Contains("data-cfx-role=\"table-status\"", StringComparison.Ordinal), "ChartTable should render status markers.");
         Assert(tableSvg.Contains("data-cfx-role=\"table-cell-microvisual\"", StringComparison.Ordinal), "ChartTable should render cell microvisual groups.");
         Assert(tableSvg.Contains("data-cfx-role=\"table-cell-sparkline\"", StringComparison.Ordinal), "ChartTable should render cell sparklines.");
@@ -38,10 +42,12 @@ internal static partial class SmokeTests {
         Assert(tableSvg.Contains("data-cfx-role=\"visual-badge\"", StringComparison.Ordinal), "ChartTable should render shared visual badges.");
         Assert(tableSvg.Contains("data-cfx-style=\"Soft\"", StringComparison.Ordinal), "ChartTable badges should expose style metadata.");
         Assert(!tableSvg.Contains("<script", StringComparison.OrdinalIgnoreCase), "Visual block SVG should stay script-free.");
-        Assert(table.ToHtmlPage().Contains("chartforgex-visual-block", StringComparison.Ordinal) && table.ToHtmlPage().Contains("linear-gradient(180deg", StringComparison.Ordinal), "ChartTable should render a polished static HTML page.");
+        var tableHtml = table.ToHtmlPage();
+        Assert(tableHtml.Contains("chartforgex-visual-block", StringComparison.Ordinal), "ChartTable should render its static HTML content.");
+        AssertFlatHtmlBackground(tableHtml, tableColors.ElevatedSurface, "Transparent table standalone pages");
         Assert(table.ToPng().Length > 64, "ChartTable should render PNG output.");
 
-        var list = ChartList.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var list = ChartList.Create().WithTheme(VisualTheme.Report())
             .WithTitle("Security checks")
             .WithMarker(VisualListMarker.Status)
             .AddStatusItem("Disk encryption", VisualStatus.Positive, "ready")
@@ -51,13 +57,13 @@ internal static partial class SmokeTests {
         Assert(listSvg.Contains("data-cfx-role=\"list-marker\"", StringComparison.Ordinal), "ChartList should render list markers.");
         Assert(list.ToPng().Length > 64, "ChartList should render PNG output.");
 
-        var checklist = ChartList.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var checklist = ChartList.Create().WithTheme(VisualTheme.Report())
             .WithTitle("Release checklist")
             .AddCheckItem("Static HTML", true)
             .AddCheckItem("External dependencies", false);
         Assert(checklist.ToSvg("visual-block-checklist").Contains("data-cfx-role=\"list-check\"", StringComparison.Ordinal), "Checklist lists should render check paths without relying on font glyphs.");
 
-        var metric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var metric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Coverage", 0.982, "P1")
             .WithIcon(VisualIcon.Lightning)
             .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
@@ -67,7 +73,7 @@ internal static partial class SmokeTests {
             .AddDetail("Ready", "84%", VisualStatus.Positive)
             .AddDetail("Risk", "6%", VisualStatus.Warning)
             .WithMiniBars(new[] { 72d, 78d, 83d, 80d, 98d }, maximum: 100)
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(360, 190);
         var metricSvg = metric.ToSvg("visual-block-metric");
         Assert(metricSvg.Contains("data-cfx-role=\"metric-status-bar\"", StringComparison.Ordinal), "MetricCard should render status styling.");
@@ -80,19 +86,19 @@ internal static partial class SmokeTests {
         Assert(metric.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "MetricCard should render an embeddable HTML fragment.");
         Assert(metric.ToPng().Length > 64, "MetricCard should render PNG output.");
 
-        var symbolMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var symbolMetric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Patch Rate", "94%", "OK")
             .WithSymbol("WRN")
             .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
             .WithStatus(VisualStatus.Warning)
-            .WithTheme(ChartTheme.TransparentOverlayDark())
+            .WithTheme(VisualTheme.TransparentOverlay(), VisualThemeMode.Dark)
             .WithSize(300, 170);
         var symbolMetricSvg = symbolMetric.ToSvg("visual-block-metric-symbol");
         Assert(symbolMetricSvg.Contains("data-cfx-role=\"metric-symbol\"", StringComparison.Ordinal), "MetricCard should render text symbols when no icon is configured.");
         Assert(symbolMetricSvg.Contains("dominant-baseline=\"central\"", StringComparison.Ordinal), "MetricCard symbols should be vertically centered inside their badge.");
         Assert(symbolMetric.ToPng().Length > 64, "MetricCard symbol badges should render in PNG output.");
 
-        var valueSurfaceMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var valueSurfaceMetric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Litres of water", "4.5", unit: "Litres")
             .WithIcon(VisualIcon.Droplet)
             .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
@@ -103,7 +109,7 @@ internal static partial class SmokeTests {
         Assert(valueSurfaceSvg.Contains("data-cfx-role=\"metric-unit\"", StringComparison.Ordinal), "MetricCard should render optional metric units separately from emphasized values.");
         Assert(valueSurfaceMetric.ToPng().Length > 64, "MetricCard compact value surfaces should render PNG output.");
 
-        var narrowValueSurfaceMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var narrowValueSurfaceMetric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Energy", "123456789", unit: "kilocalories-per-day")
             .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .WithSize(210, 140);
@@ -112,7 +118,7 @@ internal static partial class SmokeTests {
         Assert(!narrowValueSurfaceSvg.Contains("kilocalories-per-day", StringComparison.Ordinal) && narrowValueSurfaceSvg.Contains("...", StringComparison.Ordinal), "MetricCard value surfaces should fit unit text to the remaining inset width.");
         Assert(narrowValueSurfaceMetric.ToPng().Length > 64, "MetricCard narrow value surfaces should render PNG output.");
 
-        var compactValueSurfaceMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var compactValueSurfaceMetric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Compact", "123", unit: "kilocalories-per-day")
             .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .WithSize(210, 90);
@@ -124,7 +130,7 @@ internal static partial class SmokeTests {
         Assert(compactValueSurfaceY + compactValueSurfaceHeight <= 90, "MetricCard compact inset value surfaces should stay within the card bounds.");
         Assert(compactValueSurfaceMetric.ToPng().Length > 64, "MetricCard compact inset values should render PNG output.");
 
-        var sparkMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var sparkMetric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Network", "842 Mbps")
             .WithStatus(VisualStatus.Info)
             .WithMiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
@@ -134,7 +140,7 @@ internal static partial class SmokeTests {
         Assert(sparkSvg.Contains("842 Mbps", StringComparison.Ordinal), "MetricCard should shrink long values enough to fit beside micro visuals.");
         Assert(sparkMetric.ToPng().Length > 64, "MetricCard sparkline should render PNG output.");
 
-        var areaSparkMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var areaSparkMetric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Hydration", "4.5 L")
             .WithMiniSparkline(new[] { 1d, 2d, 3d })
             .WithSecondaryMiniSparkline(new[] { 100d, 120d, 140d });
@@ -143,7 +149,7 @@ internal static partial class SmokeTests {
         Assert(areaSparkSvg.Contains("data-cfx-max=\"3\"", StringComparison.Ordinal), "Area-style MetricCard sparklines should derive bounds from the visible primary series only.");
         Assert(!areaSparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-secondary\"", StringComparison.Ordinal), "Area-style MetricCard sparklines should not render hidden secondary series.");
 
-        var heroSparkMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var heroSparkMetric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Running", "30 mins")
             .WithMiniSparkline(new[] { 18d, 30d, 34d, 25d, 28d, 43d, 45d, 44d, 48d })
             .WithSecondaryMiniSparkline(new[] { 15d, 27d, 31d, 23d, 25d, 40d, 42d, 41d, 45d })
@@ -158,7 +164,7 @@ internal static partial class SmokeTests {
         Assert(heroSparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-start\"", StringComparison.Ordinal), "MetricCard line-style sparklines should mark the starting value.");
         Assert(heroSparkMetric.ToPng().Length > 64, "MetricCard hero line sparkline should render PNG output.");
 
-        var compactHeroSparkMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var compactHeroSparkMetric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Compact", "10")
             .WithMiniSparkline(new[] { 2d, 5d, 3d, 8d })
             .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
@@ -174,7 +180,7 @@ internal static partial class SmokeTests {
         Assert(!compactHeroSparkSvg.Contains("data-cfx-role=\"metric-detail\"", StringComparison.Ordinal), "MetricCard compact hero sparklines should skip detail pills when there is no non-overlapping space.");
         Assert(compactHeroSparkMetric.ToPng().Length > 64, "MetricCard compact hero sparkline should render PNG output.");
 
-        var retainedSparklineStyleMetric = MetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var retainedSparklineStyleMetric = MetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Style", "1")
             .WithMiniSparkline(new[] { 1d, 2d })
             .WithMiniSparklineStyle(ChartLineAreaForm.Line)
@@ -182,7 +188,7 @@ internal static partial class SmokeTests {
             .WithMiniSparkline(new[] { 2d, 4d });
         Assert(retainedSparklineStyleMetric.ToSvg("visual-block-metric-retained-sparkline-style").Contains("data-cfx-style=\"line\"", StringComparison.Ordinal), "MetricCard should preserve configured sparkline style after clearing and replacing sparkline data.");
 
-        var radialMetric = RadialMetricCard.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light())
+        var radialMetric = RadialMetricCard.Create().WithTheme(VisualTheme.Report())
             .WithMetric("Capacity left", "42%")
             .WithIcon(VisualIcon.Flame)
             .AddLayer("Track", 100, color: ChartColor.FromHex("#E2E8F0"), configure: layer => layer.WithGeometry(1, 0.16).WithLineCap(ChartRadialLayerCap.Butt))
@@ -195,7 +201,7 @@ internal static partial class SmokeTests {
         var segmented = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithTitle("Project Progress")
             .WithSubtitle("Reusable fixed-count progress rows")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 250)
             .WithHeaderSymbol("%")
             .AddItem("Performing Progress", 89, segments: 44, color: ChartColor.FromHex("#34C77B"), delta: "+10.2%", status: VisualStatus.Positive)
@@ -205,17 +211,39 @@ internal static partial class SmokeTests {
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-progress-rows\"", StringComparison.Ordinal), "SegmentedMetricBlock should render progress-row treatments.");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-header-badge\"", StringComparison.Ordinal), "SegmentedMetricBlock should render optional header badges.");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-progress-strip\"", StringComparison.Ordinal), "SegmentedMetricBlock should render segmented strips.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-segment-shadow\"", StringComparison.Ordinal), "SegmentedMetricBlock should render dimensional segment shadows.");
-        Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-segment-highlight\"", StringComparison.Ordinal), "SegmentedMetricBlock should render dimensional segment highlights.");
+        var progressStrips = System.Xml.Linq.XDocument.Parse(segmentedSvg).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "segmented-metric-progress-strip").ToArray();
+        var filledCounts = new[] { 39, 29 };
+        Assert(progressStrips.Length == 2, "SegmentedMetricBlock should retain both authored progress rows.");
+        var segmentedPixels = ReadPngRgba(segmented.ToPng(), out var segmentedWidth, out _);
+        for (var rowIndex = 0; rowIndex < progressStrips.Length; rowIndex++) {
+            var segments = progressStrips[rowIndex].Elements().ToArray();
+            var filled = segments.Where(element => (string?)element.Attribute("data-cfx-role") == "segmented-metric-segment-filled").ToArray();
+            var empty = segments.Where(element => (string?)element.Attribute("data-cfx-role") == "segmented-metric-segment-empty").ToArray();
+            var color = segmented.Items[rowIndex].Color!.Value;
+            Assert(segments.Length == 44 && filled.Length == filledCounts[rowIndex] && empty.Length == 44 - filledCounts[rowIndex],
+                "Flat progress strips should retain the exact authored segment count and filled share.");
+            Assert(filled.All(element => (string?)element.Attribute("fill") == color.ToCss()
+                && (string?)element.Attribute("stroke") == color.WithAlpha(120).ToCss())
+                && empty.All(element => (string?)element.Attribute("fill") == segmented.Options.Theme.Resolve(segmented.Options.ThemeMode).ElevatedSurface.ToCss()),
+                "Flat progress segments should preserve their authored accent, border and empty surface colors.");
+            var first = filled[0];
+            double Coordinate(string name) => double.Parse(first.Attribute(name)!.Value, System.Globalization.CultureInfo.InvariantCulture);
+            var centerX = (int)Math.Floor(Coordinate("x") + Coordinate("width") / 2);
+            var centerY = (int)Math.Floor(Coordinate("y") + Coordinate("height") / 2);
+            var pixel = (centerY * segmentedWidth + centerX) * 4;
+            Assert(segmentedPixels[pixel] == color.R && segmentedPixels[pixel + 1] == color.G
+                && segmentedPixels[pixel + 2] == color.B && segmentedPixels[pixel + 3] == 255,
+                "Native PNG should paint the same opaque authored accent inside each progress strip.");
+        }
         Assert(segmentedSvg.Contains("data-cfx-segments=\"44\"", StringComparison.Ordinal), "SegmentedMetricBlock should preserve fixed segment counts in SVG metadata.");
         Assert(segmentedSvg.Contains("data-cfx-filled=\"39\"", StringComparison.Ordinal), "SegmentedMetricBlock should derive filled segment counts from value and maximum.");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-delta-pill\"", StringComparison.Ordinal), "SegmentedMetricBlock should render delta pills.");
         Assert(segmentedSvg.Contains("Up by 6% compared to last week", StringComparison.Ordinal), "SegmentedMetricBlock should render comparison facts as subtitle text.");
-        Assert(segmented.ToPng().Length > 64, "SegmentedMetricBlock progress rows should render PNG output.");
 
         var subtitleOnlyHeader = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
             .WithSubtitle("Subtitle without title")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(420, 180)
             .AddItem("Ready", 1, segments: 8);
         var subtitleOnlyHeaderSvg = subtitleOnlyHeader.ToSvg("visual-block-segmented-subtitle-only-header");
@@ -227,7 +255,7 @@ internal static partial class SmokeTests {
         Assert(subtitleOnlyHeader.ToPng().Length > 64, "SegmentedMetricBlock subtitle-only headers should render PNG output.");
 
         var performanceRows = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 260)
             .AddItem(new SegmentedMetricItem("Posts", 86)
                 .WithProgress(100, 44)
@@ -249,7 +277,7 @@ internal static partial class SmokeTests {
         var capsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
             .WithTitle("Certificate Count")
             .WithSubtitle("Reusable capsule loop")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 260)
             .AddItem("Valid", 42, color: ChartColor.FromHex("#34C77B"), displayValue: "42")
             .AddItem("Expiring", 12, color: ChartColor.FromHex("#FFB05C"), displayValue: "12")
@@ -266,8 +294,8 @@ internal static partial class SmokeTests {
         Assert(capsule.ToPng().Length > 64, "SegmentedMetricBlock capsule loops should render PNG output.");
 
         var paletteFallback = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
-            .WithTheme(ChartTheme.ReportLight())
-            .WithPalette("#112233", "#445566")
+            .WithTheme(VisualTheme.Report())
+            .WithPalette(ChartPalettes.FromHex("#112233", "#445566"))
             .WithSize(420, 220)
             .AddItem("First", 3)
             .AddItem("Second", 2);
@@ -278,7 +306,7 @@ internal static partial class SmokeTests {
         var funnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
             .WithTitle("Conversion Funnel")
             .WithSubtitle("Ordered stage counts")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 280)
             .AddItem("Clicks", 82000, segments: 24, color: ChartColor.FromHex("#34C77B"), displayValue: "82,000")
             .AddItem("Added", 7200, segments: 16, color: ChartColor.FromHex("#FFB05C"), displayValue: "7,200")
@@ -293,7 +321,7 @@ internal static partial class SmokeTests {
         var compactFunnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
             .WithTitle("Compact Funnel")
             .WithSubtitle("Longer factual header")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(360, 170)
             .AddItem("First", 10, segments: 12)
             .AddItem("Second", 8, segments: 10)
@@ -304,10 +332,10 @@ internal static partial class SmokeTests {
         Assert(compactBarY >= 0 && compactBarHeight > 0 && compactBarY + compactBarHeight <= 170, "SegmentedMetricBlock compact funnel bars should cap to the available plot height instead of overlapping the header.");
         var lastStageX = GetAttribute(compactFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-x");
         var lastStageWidth = GetAttribute(compactFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
-        Assert(lastStageX + lastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock funnel stage geometry should fit within the card content width.");
+        Assert(lastStageX + lastStageWidth <= compactFunnel.Options.Size.Width - compactFunnel.Options.Padding.Right + 0.1, "SegmentedMetricBlock funnel stage geometry should fit within the card content width.");
 
         var denseFunnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(360, 180)
             .AddItem("First", 100, segments: 120)
             .AddItem("Second", 80, segments: 120)
@@ -315,12 +343,12 @@ internal static partial class SmokeTests {
         var denseFunnelSvg = denseFunnel.ToSvg("visual-block-segmented-dense-funnel");
         var denseLastStageX = GetAttribute(denseFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-x");
         var denseLastStageWidth = GetAttribute(denseFunnelSvg, "data-cfx-label=\"Third\"", "data-cfx-width");
-        Assert(denseLastStageX + denseLastStageWidth <= 360 - 22 + 0.1, "SegmentedMetricBlock dense funnel stages should preserve fitted widths instead of overflowing after a minimum bar clamp.");
+        Assert(denseLastStageX + denseLastStageWidth <= denseFunnel.Options.Size.Width - denseFunnel.Options.Padding.Right + 0.1, "SegmentedMetricBlock dense funnel stages should preserve fitted widths instead of overflowing after a minimum bar clamp.");
 
         var compactCapsule = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
             .WithTitle("Compact Capsule")
             .WithSubtitle("Tight card")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(360, 170)
             .AddItem("First", 10)
             .AddItem("Second", 8)
@@ -330,7 +358,7 @@ internal static partial class SmokeTests {
         Assert(compactCapsuleHeight > 0 && compactCapsuleHeight < 72, "SegmentedMetricBlock compact capsule loops should fit available plot height.");
 
         var configuredItems = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(460, 220)
             .AddItem("Configured", 5, item => {
                 item.Maximum = 10;
@@ -347,13 +375,13 @@ internal static partial class SmokeTests {
         Assert(configuredItemsSvg.Contains("data-cfx-role=\"segmented-metric-delta-pill\"", StringComparison.Ordinal), "SegmentedMetricBlock should render configured item deltas.");
 
         var formattedDisplayValue = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(420, 220)
             .AddItem("Formatted", 1234.56, segments: 6, displayValue: 1234.56, displayFormat: "0.0");
         Assert(formattedDisplayValue.ToSvg("visual-block-segmented-formatted-display-value").Contains(">1234.6<", StringComparison.Ordinal), "SegmentedMetricBlock display values should accept formatted objects.");
 
         var fluentItems = SegmentedMetricBlock.Create(SegmentedMetricStyle.DistributionRows)
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(460, 260)
             .WithMetric("Inventory", 30)
             .AddItem(new SegmentedMetricItem("Certificates (TLS)", 18)
@@ -372,7 +400,7 @@ internal static partial class SmokeTests {
         var composition = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
             .WithTitle("Overall Tasks")
             .WithSubtitle("Spread across 6 projects.")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 360)
             .WithMetric("Tasks", 23, "Task")
             .AddItem("On Going", 12, color: ChartColor.FromHex("#5EA2F6"), status: VisualStatus.Info, pattern: ChartFillPattern.DiagonalForward)
@@ -385,7 +413,7 @@ internal static partial class SmokeTests {
         Assert(compositionSvg.Contains("data-cfx-pattern=\"DiagonalForward\"", StringComparison.Ordinal), "SegmentedMetricBlock should preserve segment pattern hints in SVG metadata.");
         Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-legend-swatch\"", StringComparison.Ordinal), "SegmentedMetricBlock should render legend swatches.");
         var formattedComposition = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(520, 300)
             .WithMetric("Certificates", 150)
             .AddItem("Valid", 100, displayValue: 99.5, displayFormat: "0.0")
@@ -397,7 +425,7 @@ internal static partial class SmokeTests {
         var distribution = SegmentedMetricBlock.Create(SegmentedMetricStyle.DistributionRows)
             .WithTitle("Net Earning")
             .WithSubtitle("Currency split")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 360)
             .WithMetric("Net earning", "EUR 56,980.00", caption: "Last month")
             .AddItem("Russian Ruble (RUB)", 9.74, color: ChartColor.FromHex("#FF3B13"), symbol: "RUB", displayValue: "EUR 12.23")
@@ -414,7 +442,7 @@ internal static partial class SmokeTests {
 
         var heatmap = HeatmapInsightCard.Create()
             .WithTitle("Appointment Volume")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 320)
             .WithPeriodLabel("Week 1")
             .WithColumns("S", "M", "T")
@@ -434,7 +462,7 @@ internal static partial class SmokeTests {
 
         var dateStrip = DateStripBlock.Create()
             .WithHeader("May 9, 2026")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 150)
             .AddItem("S", "9", selected: true, color: ChartColor.FromHex("#0F83F7"))
             .AddItem("M", "10")
@@ -449,7 +477,7 @@ internal static partial class SmokeTests {
 
         var entityStrip = EntityStripBlock.Create()
             .WithTitle("Duel with friends")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 150)
             .AddItem("Karrem", color: ChartColor.FromHex("#0F83F7"))
             .AddItem("Peter", avatarText: "P", color: ChartColor.FromHex("#FF7A1A"));
@@ -462,7 +490,7 @@ internal static partial class SmokeTests {
 
         var sectionHeader = SectionHeaderBlock.Create()
             .WithTitle("Today's Goals")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 48)
             .WithCard(false)
             .WithTransparentBackground();
@@ -473,7 +501,7 @@ internal static partial class SmokeTests {
         var workload = WorkloadListBlock.Create()
             .WithTitle("Today Staff Workload")
             .WithSubtitle("Capacity share by staff member")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 320)
             .AddPerson("Panji Dwi", "Zumba Trainer", 4, 8, VisualStatus.Neutral, "PD", "4/8", ChartColor.FromHex("#0E7490"))
             .AddPerson("Raihan Fikri", "Aerobik Trainer", 10, 8, VisualStatus.Negative, "RF", "10/8", ChartColor.FromHex("#DC2626"), "Overload")
@@ -489,7 +517,7 @@ internal static partial class SmokeTests {
         var activity = ActivityTimelineBlock.Create()
             .WithTitle("Shipment Timeline")
             .WithSubtitle("Shipment status feed")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 620)
             .WithEventSurfaces(false)
             .AddSection("In-progress")
@@ -514,7 +542,7 @@ internal static partial class SmokeTests {
         var schedule = ScheduleTimelineBlock.Create()
             .WithTitle("Project Timeline")
             .WithSubtitle("Dense schedule lanes")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(760, 360)
             .WithTimeRange(8, 17, 1)
             .WithCurrentTime(14.2)
@@ -553,7 +581,7 @@ internal static partial class SmokeTests {
         var grid = VisualGrid.Create()
             .WithTitle("System snapshot")
             .WithSubtitle("Charts and exact-fact blocks share one export surface")
-            .WithTheme(ChartTheme.ReportDark())
+            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
             .WithColumns(2)
             .WithPanelSize(420, 260)
             .WithFrame()
@@ -563,13 +591,20 @@ internal static partial class SmokeTests {
 
         var svg = grid.ToSvg("visual-grid-smoke");
         Assert(svg.Contains("data-cfx-role=\"visual-grid-frame\"", StringComparison.Ordinal), "VisualGrid should render optional premium frames in SVG.");
-        Assert(svg.Contains("-visualGridSurface", StringComparison.Ordinal) && svg.Contains("class=\"cfx-guide-stroke\"", StringComparison.Ordinal), "VisualGrid SVG should use polished scalable report surfaces and frame strokes.");
+        var gridDocument = System.Xml.Linq.XDocument.Parse(svg);
+        var gridBackground = gridDocument.Root!.Elements().Single(element => element.Name.LocalName == "rect" && (string?)element.Attribute("width") == "100%" && (string?)element.Attribute("height") == "100%");
+        var gridFrame = gridDocument.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "visual-grid-frame");
+        var gridColors = grid.Theme.Resolve(grid.ThemeMode);
+        Assert((string?)gridBackground.Attribute("fill") == gridColors.ElevatedSurface.ToCss()
+            && (string?)gridFrame.Attribute("stroke") == gridColors.Border.ToCss()
+            && (string?)gridFrame.Attribute("class") == "cfx-guide-stroke", "VisualGrid should paint its flat report background and configured frame border.");
         Assert(svg.Contains("data-cfx-role=\"visual-grid-panel\"", StringComparison.Ordinal), "VisualGrid should mark child panels.");
         Assert(svg.Contains("data-cfx-role=\"metric-value\"", StringComparison.Ordinal), "VisualGrid should embed visual block SVG.");
         Assert(svg.Contains("Trend", StringComparison.Ordinal), "VisualGrid should embed chart SVG.");
         var gridHtml = grid.ToHtmlPage();
         Assert(gridHtml.Contains("chartforgex-visual-grid has-fixed-panels has-frame", StringComparison.Ordinal), "VisualGrid should render optional premium frames in static HTML pages.");
-        Assert(gridHtml.Contains("linear-gradient(180deg", StringComparison.Ordinal) && gridHtml.Contains(".chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}", StringComparison.Ordinal), "VisualGrid HTML pages should use polished surfaces while keeping child content inside each panel.");
+        AssertFlatHtmlBackground(gridHtml, gridColors.ElevatedSurface, "Visual grid standalone pages");
+        Assert(gridHtml.Contains(".chartforgex-visual-grid-panel{min-width:0;width:100%;min-height:var(--cfx-visual-grid-panel-height,auto);display:grid;place-items:center;overflow:hidden}", StringComparison.Ordinal), "VisualGrid HTML should keep child content inside each panel.");
         Assert(grid.ToPng().Length > 64, "VisualGrid should render PNG output.");
 
         var sparseGrid = VisualGrid.Create()
@@ -593,12 +628,12 @@ internal static partial class SmokeTests {
         Assert(fixedHtml.Contains(".chartforgex-visual-grid.has-fixed-panels .chartforgex-visual-grid-panel svg{width:100%;height:100%", StringComparison.Ordinal), "VisualGrid HTML contain mode should scale embedded SVGs to fixed panel bounds.");
         Assert(fixedHtml.Contains("min-height:calc((var(--cfx-visual-grid-panel-height) * 2) + (var(--cfx-visual-grid-gap) * 1))", StringComparison.Ordinal), "VisualGrid HTML should reserve physical height for row-spanning fixed panels.");
 
-        var backgroundTrapTheme = ChartTheme.DashboardLight()
-            .WithSurfaceColors(ChartColor.FromHex("#FACC15"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#E5E7EB"), ChartColor.FromHex("#E5E7EB"))
-            .WithCornerRadius(18, 8);
-        var childSurfaceTheme = ChartTheme.DashboardLight()
-            .WithSurfaceColors(ChartColor.FromHex("#111827"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#E5E7EB"), ChartColor.FromHex("#E5E7EB"))
-            .WithCornerRadius(18, 8);
+        var backgroundTrapTheme = VisualTheme.Dashboard()
+            .Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#FACC15"); builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White; builder.Light.Surface = builder.Dark.Surface = ChartColor.White; builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#E5E7EB"); builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#E5E7EB"); })
+            .Configure(builder => { builder.CardRadius = 18; builder.PlotRadius = builder.BarRadius = 8; });
+        var childSurfaceTheme = VisualTheme.Dashboard()
+            .Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#111827"); builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White; builder.Light.Surface = builder.Dark.Surface = ChartColor.White; builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#E5E7EB"); builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#E5E7EB"); })
+            .Configure(builder => { builder.CardRadius = 18; builder.PlotRadius = builder.BarRadius = 8; });
         var backgroundTrapBlock = MetricCard.Create()
             .WithMetric("No square", 1)
             .WithTheme(childSurfaceTheme)
@@ -613,8 +648,8 @@ internal static partial class SmokeTests {
         var backgroundTrapSvg = backgroundTrapGrid.ToSvg("visual-grid-background-trap");
         var backgroundTrapHtml = backgroundTrapGrid.ToHtmlFragment();
         var backgroundTrapPixels = ReadPngRgba(backgroundTrapGrid.ToPng(), out var backgroundTrapWidth, out _);
-        Assert(!backgroundTrapSvg.Contains("-visualBackground)", StringComparison.Ordinal), "VisualGrid SVG should suppress child block background rectangles so rounded cards do not get square backplates.");
-        Assert(!backgroundTrapHtml.Contains("-visualBackground)", StringComparison.Ordinal), "VisualGrid HTML should suppress child block background rectangles so rounded cards do not get square backplates.");
+        Assert(!backgroundTrapSvg.Contains("data-cfx-role=\"visual-background\"", StringComparison.Ordinal), "VisualGrid SVG should suppress child block background rectangles so rounded cards do not get square backplates.");
+        Assert(!backgroundTrapHtml.Contains("data-cfx-role=\"visual-background\"", StringComparison.Ordinal), "VisualGrid HTML should suppress child block background rectangles so rounded cards do not get square backplates.");
         Assert(CountNearColorInRect(backgroundTrapPixels, backgroundTrapWidth, 24, 24, 8, 8, 17, 24, 39, 36) == 0, "VisualGrid PNG should not paint child visual-block surface color behind rounded card corners.");
         Assert(!backgroundTrapBlock.Options.TransparentBackground, "VisualGrid child transparency should be scoped to rendering and should not mutate the caller's visual block.");
 

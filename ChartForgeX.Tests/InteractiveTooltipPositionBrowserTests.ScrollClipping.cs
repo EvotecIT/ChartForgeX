@@ -11,11 +11,10 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Fact]
+    [BrowserFact]
     public async Task PinnedReadableScrollDismissesOutOfViewSourceAndKeyboardRecovers() {
         if (!Enabled) return;
         var chart = StatusLines(true);
-        chart.Series[0].WithInteractionKey("passed");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 390, 844);
         var page = session.Page;
         var first = page.Locator(Point(0, 0));
@@ -54,7 +53,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task PointerReadoutDismissesWhenReadableViewportClipsItsSource() {
         if (!Enabled) return;
         await using var session = await OpenAsync(StatusLines(false).ToInteractiveHtmlPage(options => {
@@ -70,7 +69,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ClosedShadowScrollDismissesPinAndReleasesTreeListeners() {
         if (!Enabled) return;
         await using var session = await OpenAsync("<html><body></body></html>", 390, 844);
@@ -119,10 +118,10 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task PairedNativeExtentDismissesEvenWhileTransparentHitAreaStillOverlaps() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(ChartTheme.GraphiteLight()).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite()).WithHeader(false).WithLegend(false)
             .WithDataLabels(false).WithXAxisBounds(0, 2).WithYAxisBounds(0, 10).AddDifferenceArea("Envelope", new[] {
                 new ChartDifferencePoint(0, 8, 8.01), new ChartDifferencePoint(1, 8, 8.01), new ChartDifferencePoint(2, 8, 8.01)
             });
@@ -157,7 +156,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("x", false)]
     [InlineData("y", true)]
     public async Task NestedHostClipKeepsPartialSourceThenDismissesFullyClippedPin(string axis, bool dark) {

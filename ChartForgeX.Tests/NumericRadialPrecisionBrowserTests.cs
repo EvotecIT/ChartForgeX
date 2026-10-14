@@ -10,7 +10,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class NumericRadialPrecisionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(true, 0, false)]
     [InlineData(true, 1, false)]
     [InlineData(true, 2, false)]

@@ -6,7 +6,7 @@ namespace ChartForgeX.Terminal;
 /// <summary>
 /// Defines the visual tokens used by terminal story renderers.
 /// </summary>
-public sealed class TerminalTheme {
+internal sealed partial class ResolvedTerminalStyle {
     /// <summary>Gets or sets the outer page color.</summary>
     public ChartColor PageBackground { get; set; } = ChartColor.FromHex("#07111F");
 
@@ -44,16 +44,16 @@ public sealed class TerminalTheme {
     public string FontFamily { get; set; } = ChartFontStacks.Mono;
 
     /// <summary>Creates the restrained default dark terminal palette.</summary>
-    public static TerminalTheme Dark() => new();
+    public static ResolvedTerminalStyle Dark() => new();
 
     /// <summary>Creates a terminal theme from the shared Graphite light design tokens.</summary>
-    public static TerminalTheme GraphiteLight() => VisualDesignTokens.GraphiteLight().ApplyTo(new TerminalTheme());
+    public static ResolvedTerminalStyle GraphiteLight() => FromTheme(VisualTheme.Graphite(), VisualThemeMode.Light);
 
     /// <summary>Creates a terminal theme from the shared Graphite dark design tokens.</summary>
-    public static TerminalTheme GraphiteDark() => VisualDesignTokens.GraphiteDark().ApplyTo(new TerminalTheme());
+    public static ResolvedTerminalStyle GraphiteDark() => FromTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
 
     /// <summary>Creates a PowerShell-oriented dark theme.</summary>
-    public static TerminalTheme PowerShell() => new() {
+    public static ResolvedTerminalStyle PowerShell() => new() {
         PageBackground = ChartColor.FromHex("#07101E"),
         Background = ChartColor.FromHex("#091426"),
         HeaderBackground = ChartColor.FromHex("#101C30"),
@@ -63,7 +63,7 @@ public sealed class TerminalTheme {
     };
 
     /// <summary>Creates the classic Windows PowerShell blue palette.</summary>
-    public static TerminalTheme WindowsPowerShell() => new() {
+    public static ResolvedTerminalStyle WindowsPowerShell() => new() {
         PageBackground = ChartColor.FromHex("#071326"),
         Background = ChartColor.FromHex("#012456"),
         HeaderBackground = ChartColor.FromHex("#202020"),
@@ -78,7 +78,7 @@ public sealed class TerminalTheme {
     };
 
     /// <summary>Creates an Ubuntu terminal-inspired aubergine palette.</summary>
-    public static TerminalTheme Ubuntu() => new() {
+    public static ResolvedTerminalStyle Ubuntu() => new() {
         PageBackground = ChartColor.FromHex("#14040F"),
         Background = ChartColor.FromHex("#300A24"),
         HeaderBackground = ChartColor.FromHex("#2C2C2C"),
@@ -93,7 +93,7 @@ public sealed class TerminalTheme {
     };
 
     /// <summary>Creates the Windows Terminal Campbell palette.</summary>
-    public static TerminalTheme Campbell() => new() {
+    public static ResolvedTerminalStyle Campbell() => new() {
         PageBackground = ChartColor.FromHex("#090909"),
         Background = ChartColor.FromHex("#0C0C0C"),
         HeaderBackground = ChartColor.FromHex("#2B2B2B"),
@@ -108,7 +108,7 @@ public sealed class TerminalTheme {
     };
 
     /// <summary>Creates a classic near-black terminal theme.</summary>
-    public static TerminalTheme Classic() => new() {
+    public static ResolvedTerminalStyle Classic() => new() {
         PageBackground = ChartColor.FromHex("#090B0F"),
         Background = ChartColor.FromHex("#0C0F13"),
         HeaderBackground = ChartColor.FromHex("#15191F"),
@@ -123,7 +123,7 @@ public sealed class TerminalTheme {
     };
 
     /// <summary>Creates a light terminal theme suitable for printed documentation.</summary>
-    public static TerminalTheme Light() => new() {
+    public static ResolvedTerminalStyle Light() => new() {
         PageBackground = ChartColor.FromHex("#E8EDF4"),
         Background = ChartColor.FromHex("#F8FAFC"),
         HeaderBackground = ChartColor.FromHex("#E9EEF5"),
@@ -138,7 +138,7 @@ public sealed class TerminalTheme {
     };
 
     /// <summary>Creates an independent copy of this palette.</summary>
-    public TerminalTheme Copy() => new() {
+    public ResolvedTerminalStyle Copy() => new() {
         PageBackground = PageBackground,
         Background = Background,
         HeaderBackground = HeaderBackground,

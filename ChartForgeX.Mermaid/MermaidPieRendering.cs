@@ -18,7 +18,7 @@ public static class MermaidPieRendering {
         options ??= new MermaidPieRenderOptions();
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithPointLegend()
             .WithXLabels(GetLabels(document));
@@ -58,14 +58,7 @@ public static class MermaidPieRendering {
         document.ToChart(options).ToPng();
 
     private static string ResolveTitle(MermaidPieDocument document, MermaidPieRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid pie";
-    }
-
-    private static string ResolveSubtitle(MermaidPieDocument document, MermaidPieRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid pie");
     }
 
     private static string[] GetLabels(MermaidPieDocument document) {

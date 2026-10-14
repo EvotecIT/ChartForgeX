@@ -8,6 +8,7 @@ namespace ChartForgeX.Tests;
 
 public sealed class NativePolarCoordinateBrowserTests {
     [Theory]
+    [Trait("Category", "Browser")]
     [InlineData(ChartSeriesKind.Pie)]
     [InlineData(ChartSeriesKind.Donut)]
     [InlineData(ChartSeriesKind.Radar)]

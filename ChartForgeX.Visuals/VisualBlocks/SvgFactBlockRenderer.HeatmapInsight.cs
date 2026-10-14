@@ -12,7 +12,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderHeatmapInsightCard(SvgMarkupWriter writer, HeatmapInsightCard card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, card, ref y, content.X, content.Width);
@@ -67,7 +67,7 @@ public sealed partial class SvgFactBlockRenderer {
 
 
     private static void RenderHeatmapInsightRail(SvgMarkupWriter writer, HeatmapInsightCard card, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         writer.StartElement("g").Attribute("data-cfx-role", "heatmap-insight-rail").EndStartElement().Line();
         WriteText(writer, card.InsightTitle, x, y + 14, width, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(11, theme.SubtitleFontSize), "800");
         var itemY = y + 42;

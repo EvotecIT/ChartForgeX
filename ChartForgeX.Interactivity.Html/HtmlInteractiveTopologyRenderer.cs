@@ -87,7 +87,7 @@ public sealed class HtmlInteractiveTopologyRenderer {
         Func<PreparedTopology, string>? renderSvg) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = Prepare(options ?? chart.DefaultRenderOptions);
-        var theme = chart.Theme ?? TopologyTheme.Light();
+        var theme = chart.ResolvedTheme;
         var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()

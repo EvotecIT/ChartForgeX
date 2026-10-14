@@ -82,9 +82,11 @@ public sealed class MixedNumericRadialTests {
     [Fact]
     public void SparseCategoriesRetainAuthoredZerosSourcePaintAndDetachedSnapshots() {
         var color = ChartColor.FromHex("#AB1234");
-        var chart = Bare().AddRadarArea("Reference", new[] { new ChartPoint(3, 80), new ChartPoint(1, 0), new ChartPoint(2, 50) })
+        var reference = new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.Radar,
+            new[] { new ChartPoint(3, 80), new ChartPoint(1, 0), new ChartPoint(2, 50) });
+        var chart = Bare().AddSeries(reference)
             .AddRadialColumn("Observed", new[] { new ChartPoint(1, 0), new ChartPoint(4, 20) });
-        chart.Series[0].WithPointColor(0, color).WithPointLabel(0, "Source caption").WithInteractionKey("reference");
+        reference.WithPointColor(0, color).WithPointLabel(0, "Source caption");
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Equal("3", Point(prepared, 0, 0)["data-cfx-category"]);
         Assert.Equal("0", Point(prepared, 0, 0)["data-cfx-source-point"]);
@@ -134,7 +136,7 @@ public sealed class MixedNumericRadialTests {
         chart = Bare().AddRadialColumn("Observed", new[] { new ChartPoint(1, 40) }).AddRadarLine("Target", new[] { new ChartPoint(2, 70) });
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         foreach (var kind in new[] { ChartSeriesKind.RadialBar, ChartSeriesKind.Polar, ChartSeriesKind.PolarArea }) {
-            chart = Mixed(); chart.Series.Add(new ChartSeries("Other", kind, Values(20)));
+            chart = Mixed(); chart.AddSeries(new ChartSeries(new ChartSeriesId("other"), "Other", kind, Values(20)));
             Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         }
         var empty = Bare().AddRadialColumn("Observed", Array.Empty<ChartPoint>()).AddRadarLine("Target", Array.Empty<ChartPoint>());

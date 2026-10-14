@@ -20,7 +20,7 @@ public static class MermaidQuadrantRendering {
         var points = document.Points.Select(point => new ChartPoint(point.X, point.Y)).ToArray();
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithXAxis(FormatAxis(document.XAxisStart, document.XAxisEnd, "X"))
             .WithYAxis(FormatAxis(document.YAxisStart, document.YAxisEnd, "Y"))
@@ -74,14 +74,7 @@ public static class MermaidQuadrantRendering {
         document.ToChart(options).ToPng();
 
     private static string ResolveTitle(MermaidQuadrantDocument document, MermaidQuadrantRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid quadrant";
-    }
-
-    private static string ResolveSubtitle(MermaidQuadrantDocument document, MermaidQuadrantRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid quadrant");
     }
 
     private static string FormatAxis(string? start, string? end, string fallback) {

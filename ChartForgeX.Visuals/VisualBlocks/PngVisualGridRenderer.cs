@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Themes;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
@@ -19,16 +20,13 @@ public sealed class PngVisualGridRenderer {
     internal RgbaCanvas RenderCanvas(VisualGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         var layout = VisualGridLayout.FromGrid(grid);
-        var theme = grid.Theme ?? VisualGridLayout.ItemTheme(grid.Items[0]);
+        var theme = grid.ResolvedTheme;
         var background = theme.Background.A == 0 ? theme.CardBackground : theme.Background;
         using var emphasis = RgbaCanvas.OpenEmphasisScope();
         var canvas = new RgbaCanvas(layout.Width, layout.Height, 1, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), grid.PngOutputScale);
         canvas.Clear(background);
-        if (background.A == 255 && !theme.FlatMarks) {
-            var surfaceInset = ChartSurfacePolish.EdgeSafeSurfaceInset(layout.Width, layout.Height);
-            canvas.FillRoundedRectVerticalGradient(surfaceInset, surfaceInset, Math.Max(1, layout.Width - surfaceInset * 2), Math.Max(1, layout.Height - surfaceInset * 2), 0, ChartSurfacePolish.GradientTop(background), ChartSurfacePolish.GradientBottom(background));
-        }
-        if (grid.FrameVisible && !theme.FlatMarks) {
+
+        if (grid.FrameVisible) {
             var inset = Math.Max(8, grid.Padding * 0.5);
             canvas.StrokeRoundedRect(inset, inset, Math.Max(1, layout.Width - inset * 2), Math.Max(1, layout.Height - inset * 2), Math.Max(theme.CornerRadius, 26), theme.CardBorder, 1.4);
             if (background.A > 0) canvas.StrokeRoundedRect(inset + ChartVisualPrimitives.CardInnerHighlightInset, inset + ChartVisualPrimitives.CardInnerHighlightInset, Math.Max(1, layout.Width - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(1, layout.Height - inset * 2 - ChartVisualPrimitives.CardInnerHighlightInset * 2), Math.Max(theme.CornerRadius - ChartVisualPrimitives.CardInnerHighlightInset, 24), ChartColorMath.WithOpacity(ChartColor.White, ChartVisualPrimitives.CardInnerHighlightOpacity), 1);
@@ -54,7 +52,11 @@ public sealed class PngVisualGridRenderer {
         var originalTheme = block.Options.Theme;
         try {
             block.Options.TransparentBackground = true;
-            if (originalTheme.UseGraphiteLayout) { block.Options.Theme = originalTheme.Clone(); block.Options.Theme.TitleFontSize = 15; }
+            block.Options.Theme = originalTheme.Configure(builder => {
+                var font = originalTheme.Typography;
+                builder.Typography = new VisualTypography(font.Family, 15, font.SubtitleSize, font.AxisSize, font.LegendSize,
+                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily);
+            });
             if (block is IFactualVisualPixels factual) return factual.RenderAtScale(density);
             if (SvgVisualBlockRenderer.IsNativeBlock(block)) return new PngVisualBlockRenderer().RenderCanvas(block, density).ToImage();
             return block.RenderRgba();

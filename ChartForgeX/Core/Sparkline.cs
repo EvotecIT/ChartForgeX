@@ -66,7 +66,7 @@ public sealed class Sparkline : IVisualRenderable {
             for (var index = 0; index < points.Length; index++) points[index] = new ChartPoint(points[index].X, points[index].Y);
         }
         var series = new ChartSeries("Trend", kind, points) { Color = Color, Smooth = Smooth, ShowInLegend = false };
-        chart.Series.Add(series);
+        chart.AddSeries(series);
         return chart.Prepare(context);
     }
 }

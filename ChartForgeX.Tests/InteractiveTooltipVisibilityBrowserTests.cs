@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveTooltipVisibilityBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("display:none", false, 700, false, false)]
     [InlineData("visibility:hidden", true, 340, false, false)]
     [InlineData("opacity:0", false, 700, false, false)]
@@ -49,7 +49,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 700)]
     [InlineData(true, 340)]
     public async Task AuthoredBarHatchRetainsSharedObservationUntilWholePointIsHidden(bool dark, int width) {
@@ -80,7 +80,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 700)]
     [InlineData(true, 340)]
     public async Task DecorativeSvgRetainsSharedPointerTooltipsForVisuallyPaintedObservations(bool dark, int width) {
@@ -99,7 +99,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false, 700)]
     [InlineData(true, true, 340)]
     public async Task VisiblePrimaryMarksOverrideInheritedHiddenVisibility(bool wrapMark, bool dark, int width) {
@@ -133,7 +133,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task VisibleLinePathOverridesInheritedHiddenSeriesVisibility() {
         if (!Enabled) return;
         var chart = Frame(true, "Restored connected surface").WithLineMarkers(ChartLineMarkerMode.All)
@@ -150,7 +150,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         Assert.Equal("hidden", await page.Locator(series).EvaluateAsync<string>("node => getComputedStyle(node).visibility"));
         Assert.Equal("visible", await page.Locator(path).EvaluateAsync<string>("node => getComputedStyle(node).visibility"));
         Assert.Equal(new[] { "Current", "Baseline" }, restoredRows.Select(row => row[0]).ToArray());
-        Assert.Equal("rgb(123, 97, 232)", restoredRows[1][2]);
+        await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", restoredRows[1][2]);
         await page.Locator(path).EvaluateAsync("node => node.style.setProperty('visibility', 'hidden', 'important')");
         await page.Locator(Point(0, 1)).BlurAsync();
         await page.Locator(Point(0, 1)).FocusAsync();
@@ -158,7 +158,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 700)]
     [InlineData(true, 340)]
     public async Task HiddenLineMarkersRetainVisibleSeriesPaintButHiddenPathsDoNotUseLegendPaint(bool dark, int width) {
@@ -173,7 +173,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         var visiblePathRows = await RowsAsync(page);
         await RecordAsync(page, "tooltip-hidden-line-marker-" + (dark ? "dark" : "light") + "-" + width, new { visiblePathRows });
         Assert.Equal(new[] { "Current", "Baseline" }, visiblePathRows.Select(row => row[0]).ToArray());
-        Assert.Equal("rgb(123, 97, 232)", visiblePathRows[1][2]);
+        await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", visiblePathRows[1][2]);
         Assert.Equal("none", await page.Locator(Point(1, 1) + " [data-cfx-role='marker']").EvaluateAsync<string>("node => getComputedStyle(node).display"));
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "[data-cfx-role='series'][data-cfx-series='1'] [data-cfx-role='line'] { display:none !important; }" });
         await page.Locator(Point(0, 1)).BlurAsync();
@@ -183,11 +183,11 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         Assert.Equal(new[] { "Current" }, hiddenPathRows.Select(row => row[0]).ToArray());
         // A visible legend remains independently usable even when this observation has no painted mark.
         await page.Locator(Legend(1)).FocusAsync();
-        Assert.Equal("rgb(123, 97, 232)", await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+        await AssertCssColorsEqualAsync(page, "rgb(123, 97, 232)", await page.Locator(".cfx-tooltip__swatch").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(24)]
     [InlineData(240)]
     public async Task SharedTooltipResolvesStylesOnlyForMatchingXCandidates(int observations) {
@@ -226,7 +226,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
     }
 
     private static Chart Frame(bool dark, string title) => Chart.Create().WithSize(596, 338).WithTitle(title)
-        .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
 
     private static Task<string[][]> RowsAsync(IPage page) => page.EvaluateAsync<string[][]>("() => Array.from(document.querySelectorAll('.cfx-tooltip dt')).map(row => [row.textContent, row.nextElementSibling.textContent, row.querySelector('.cfx-tooltip__swatch') ? getComputedStyle(row.querySelector('.cfx-tooltip__swatch')).backgroundColor : ''])");
 

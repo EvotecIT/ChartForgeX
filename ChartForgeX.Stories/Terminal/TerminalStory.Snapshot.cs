@@ -15,7 +15,7 @@ public sealed partial class TerminalStory {
         copy._tabs.Clear(); copy._tabsById.Clear();
         foreach (var tab in _tabs) {
             var detached = new TerminalTab(tab.Id, tab.Title, tab.Dialect, tab.WorkingDirectory,
-                tab.CustomPrompt, tab.Theme.Copy(), tab.Icon);
+                tab.CustomPrompt, tab.Theme, tab.Icon, tab.ThemeMode, tab.Style);
             copy._tabs.Add(detached); copy._tabsById.Add(detached.Id, detached);
         }
         var tables = new Dictionary<TerminalTable, TerminalTable>();

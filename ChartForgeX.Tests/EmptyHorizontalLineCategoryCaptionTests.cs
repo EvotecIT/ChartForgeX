@@ -8,6 +8,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class EmptyHorizontalLineCategoryCaptionTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, true, 360, true)]
     [InlineData(true, true, 800, false)]
@@ -15,7 +16,7 @@ public sealed class EmptyHorizontalLineCategoryCaptionTests {
     [InlineData(true, false, 360, true)]
     public async Task EmptyLineCompanionsPreserveBarCategoryCaptionsAndPixels(bool step, bool legacy, int width, bool dark) {
         var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddHorizontalBar("Readings", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40), new ChartPoint(3, 60) });
         chart.WithSize(width, 320);
         chart.Options.LineOrientation = ChartOrientation.Horizontal;

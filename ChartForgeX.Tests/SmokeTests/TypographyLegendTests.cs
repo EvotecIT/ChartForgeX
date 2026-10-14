@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
@@ -9,7 +10,7 @@ internal static partial class SmokeTests {
     private static void LegendCasingDrivesAllocationBeforeSerialization() {
         var font = System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert(System.IO.File.Exists(font), "The existing Carlito fixture must be available.");
-        var chart = Chart.Create().WithTheme(ChartForgeX.Themes.ChartTheme.Light()).WithPngFont(font).WithSize(800, 280)
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithPngFont(font).WithSize(800, 280)
             .AddLine("wwwwwwww", Points(1, 2, 3))
             .AddLine("wwwwwwww", Points(2, 3, 4))
             .AddLine("wwwwwwww", Points(3, 4, 5));

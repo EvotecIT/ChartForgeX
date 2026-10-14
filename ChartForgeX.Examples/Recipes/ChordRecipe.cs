@@ -1,0 +1,29 @@
+/// <summary>Directed team transfers retain parallel, reciprocal, self and zero-valued flow identities.</summary>
+public static class ChordRecipe {
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var configured = variant == "options";
+        var transfers = ChartSeries.CreateChord(new ChartSeriesId("transfer-source"), "Transfers", new[] {
+            new ChartNode("north", "North"), new ChartNode("south", "South"),
+            new ChartNode("north-support", configured ? "Support" : "Services"), new ChartNode("south-support", "Support")
+        }, new[] {
+            new ChartFlowLink("north-south", "north", "south", 18), new ChartFlowLink("south-north", "south", "north", 7),
+            new ChartFlowLink("north-standard", "north", "north-support", 12), new ChartFlowLink("north-priority", "north", "north-support", 5),
+            new ChartFlowLink("support-south", "north-support", "south", 9), new ChartFlowLink("south-support", "south", "south-support", 14),
+            new ChartFlowLink("support-return", "south-support", "north", 4), new ChartFlowLink("support-internal", "south-support", "south-support", 3),
+            new ChartFlowLink("zero-transfer", "north-support", "south-support", 0)
+        });
+        var chart = Chart.Create().AddSeries(transfers).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        if (configured) {
+            chart.ConfigureChord(options => {
+                options.StartAngleDegrees = -120; options.SweepAngleDegrees = 300;
+                options.NodeGapDegrees = 5; options.NodeThicknessRatio = .09; options.RibbonOpacity = .45;
+                options.LabelContent = ChartChordLabelContent.LabelAndTotals;
+            });
+            transfers.WithNodeState("north-support", ChartSeriesState.Warning)
+                .WithFlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
+                    fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex("#764415"), strokeWidth: 1))
+                .WithFlowState("north-priority", ChartSeriesState.Warning).WithFlowStyle("support-internal", new ChartFlowStyle(strokeWidth: 1));
+        }
+        return chart;
+    }
+}

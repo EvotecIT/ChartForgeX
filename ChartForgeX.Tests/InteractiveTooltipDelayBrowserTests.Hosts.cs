@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("light")]
     [InlineData("open")]
     [InlineData("nested-open")]
@@ -32,7 +32,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("light", "root", "distance")]
     [InlineData("light", "root", "nearest")]
     [InlineData("light", "stage", "nearest")]

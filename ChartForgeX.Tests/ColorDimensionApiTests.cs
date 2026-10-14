@@ -22,22 +22,27 @@ public sealed class ColorDimensionApiTests {
     }
 
     [Fact]
-    public void ConfigurationEditsExistingOwnedOptionsAndResetsEachPolicyIndependently() {
+    public void ConfigurationOwnsDetachedSnapshotsAndResetsEachPolicyIndependently() {
         var chart = Chart.Create().AddScatter("Samples", new[] { new ChartPoint(1, 2) });
         var series = chart.Series[0];
         var options = new[] { series.ColorDimension, chart.Options.MapColorDimension, chart.Options.HeatmapColorDimension,
             chart.Options.Treemap.ColorDimension, chart.Options.Sunburst.ColorDimension };
         Assert.Equal(options.Length, options.Distinct().Count());
         var format = ChartValueFormat.Number("0.0");
-        Assert.Same(series, series.ConfigureColorDimension(value => { Assert.Same(options[0], value); value.Name = "Temperature"; value.ValueFormat = format; }));
-        Assert.Same(chart, chart.ConfigureMapColorDimension(value => { Assert.Same(options[1], value); value.Name = "Rainfall"; }));
-        Assert.Same(chart, chart.ConfigureHeatmapColorDimension(value => { Assert.Same(options[2], value); value.ValueFormat = format; }));
-        Assert.Same(chart, chart.ConfigureTreemap(value => { Assert.Same(options[3], value.ColorDimension); value.ColorDimension.Name = "Margin"; }));
-        Assert.Same(chart, chart.ConfigureSunburst(value => { Assert.Same(options[4], value.ColorDimension); value.ColorDimension.Name = "Risk"; }));
+        Assert.Same(series, series.ConfigureColorDimension(value => { value.Name = "Temperature"; value.ValueFormat = format; }));
+        Assert.Same(chart, chart.ConfigureMapColorDimension(value => value.Name = "Rainfall"));
+        Assert.Same(chart, chart.ConfigureHeatmapColorDimension(value => value.ValueFormat = format));
+        Assert.Same(chart, chart.ConfigureTreemap(value => value.ColorDimension.Name = "Margin"));
+        Assert.Same(chart, chart.ConfigureSunburst(value => value.ColorDimension.Name = "Risk"));
+        Assert.All(options, original => { Assert.Null(original.Name); Assert.Null(original.ValueFormat); });
+        Assert.Equal("Rainfall", chart.Options.MapColorDimension.Name);
+        Assert.Same(format, chart.Options.HeatmapColorDimension.ValueFormat);
+        Assert.Equal("Margin", chart.Options.Treemap.ColorDimension.Name);
+        Assert.Equal("Risk", chart.Options.Sunburst.ColorDimension.Name);
         series.ConfigureColorDimension(value => value.Name = null);
-        Assert.Null(options[0].Name); Assert.Same(format, options[0].ValueFormat);
+        Assert.Null(series.ColorDimension.Name); Assert.Same(format, series.ColorDimension.ValueFormat);
         series.ConfigureColorDimension(value => { value.Name = "Temperature"; value.ValueFormat = null; });
-        Assert.Equal("Temperature", options[0].Name); Assert.Null(options[0].ValueFormat);
+        Assert.Equal("Temperature", series.ColorDimension.Name); Assert.Null(series.ColorDimension.ValueFormat);
         Assert.Throws<ArgumentNullException>(() => series.ConfigureColorDimension(null!));
         Assert.Throws<ArgumentNullException>(() => chart.ConfigureMapColorDimension(null!));
         Assert.Throws<ArgumentNullException>(() => chart.ConfigureHeatmapColorDimension(null!));
@@ -74,7 +79,8 @@ public sealed class ColorDimensionApiTests {
         options.Name = "Measurement";
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         options.Name = null;
-        Assert.NotNull(Prepare(chart));
+        Assert.Throws<InvalidOperationException>(() => Prepare(chart));
+        Assert.NotNull(Prepare(Chart.Create().AddLine("Unconfigured", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) })));
     }
 
     [Fact]
@@ -84,6 +90,6 @@ public sealed class ColorDimensionApiTests {
         chart.ConfigureHeatmapColorDimension(options => options.ValueFormat = ChartValueFormat.Number());
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         chart.Options.HeatmapColorDimension.ValueFormat = null;
-        Assert.NotNull(Prepare(chart));
+        Assert.Throws<InvalidOperationException>(() => Prepare(chart));
     }
 }

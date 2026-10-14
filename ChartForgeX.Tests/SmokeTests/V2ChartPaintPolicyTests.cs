@@ -47,7 +47,7 @@ public sealed class V2ChartPaintPolicyTests {
         var tokens = new VisualDesignTokens { Border = border };
         var context = new VisualRenderContext(theme: new VisualTheme(tokens, tokens));
         var chart = Fixture(ChartSeriesKind.Line)
-            .WithGridStyle(new ChartGridLineStyle().WithHorizontalOpacity(0.5).WithVerticalOpacity(0.25));
+            .WithGridStyle(new ChartGridLineStyle().WithVerticalLines().WithHorizontalOpacity(0.5).WithVerticalOpacity(0.25));
         var prepared = chart.Prepare(context);
         var literal = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
         foreach (var role in new[] { "grid-x", "grid-y" }) {

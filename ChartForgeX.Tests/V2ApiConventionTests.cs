@@ -12,7 +12,7 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-/// <summary>Guards the reviewed v2 contract boundary without applying new rules to unmigrated legacy APIs.</summary>
+/// <summary>Guards the reviewed v2 contract boundary including immutable paired themes and detached option callbacks.</summary>
 public sealed class V2ApiConventionTests {
     private static readonly Type[] ImmutableContracts = {
         typeof(VisualSize), typeof(VisualLayoutOptions), typeof(VisualFrame), typeof(VisualRenderContext),
@@ -26,13 +26,13 @@ public sealed class V2ApiConventionTests {
             Assert.Empty(type.GetFields(BindingFlags.Public | BindingFlags.Instance));
             Assert.All(type.GetProperties(BindingFlags.Public | BindingFlags.Instance), property => Assert.Null(property.SetMethod));
             foreach (var method in Methods(type)) {
-                var factory = type == typeof(VisualTheme) && method.IsStatic && method.ReturnType == type && (method.Name is "Graphite" or "FromJson" or "FromThemeJson");
+                var factory = type == typeof(VisualTheme) && method.IsStatic && method.ReturnType == type && !method.IsSpecialName;
                 var resolve = type == typeof(VisualTheme) && method.Name == "Resolve" && method.ReturnType == typeof(VisualThemeColors);
-                var export = (type == typeof(PreparedVisual) || type == typeof(VisualTheme)) && method.Name.StartsWith("To", StringComparison.Ordinal);
-                var copy = type == typeof(VisualTheme) && !method.IsStatic && method.Name == nameof(VisualTheme.WithTypography)
-                    && method.ReturnType == type && method.GetParameters().Select(parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VisualTypography) });
+                var export = (type == typeof(PreparedVisual) || type == typeof(VisualTheme) || type == typeof(VisualTypography)) && method.Name.StartsWith("To", StringComparison.Ordinal);
+                var copy = (type == typeof(VisualTheme) || type == typeof(VisualTypography)) && !method.IsStatic && method.ReturnType == type
+                    && (method.Name.StartsWith("With", StringComparison.Ordinal) || method.Name == nameof(VisualTheme.Configure));
                 Assert.True(factory || resolve || export || copy,
-                    type.Name + "." + method.Name + " needs a reviewed operation role. Immutable render contracts use constructors, factories, and explicitly reviewed copy operations; Add/Configure belong to mutable model builders.");
+                    type.Name + "." + method.Name + " needs a reviewed operation role. Immutable render contracts use constructors, factories, and copy operations; theme configuration snapshots its independent builder.");
             }
         }
         var prepare = typeof(Chart).GetMethod(nameof(Chart.Prepare), new[] { typeof(VisualRenderContext) });
@@ -43,7 +43,7 @@ public sealed class V2ApiConventionTests {
     }
 
     [Fact]
-    public void ModelBuilderSelection_WithConfigures_AddAddsData_ConfigureEditsExistingSubObject() {
+    public void ModelBuilderSelection_WithSetsOptions_AddAddsData_ConfigureInstallsDetachedOptions() {
         // This selection is the mutable model bridge used by Phase 1, not a blanket legacy API audit.
         var chart = Chart.Create();
         Assert.Same(chart, chart.WithTitle("Capacity").WithSubtitle("Observed"));
@@ -51,64 +51,47 @@ public sealed class V2ApiConventionTests {
         Assert.Equal("Capacity", chart.Title);
         var axis = chart.Options.XAxis;
         Assert.Same(chart, chart.ConfigureXAxis(existing => existing.Minimum = 1));
-        Assert.Same(axis, chart.Options.XAxis);
-        Assert.Equal(1d, axis.Minimum);
+        Assert.Null(axis.Minimum);
+        Assert.Equal(1d, chart.Options.XAxis.Minimum);
+        var configuredAxis = chart.Options.XAxis;
         Assert.Empty(chart.Series);
         Assert.Same(chart, chart.AddLine("Used", new[] { new ChartPoint(1, 3), new ChartPoint(2, 5) }));
         Assert.Single(chart.Series);
         Assert.Equal(2, chart.Series[0].Points.Count);
         Assert.Equal("Capacity", chart.Title);
-        Assert.Same(axis, chart.Options.XAxis);
+        Assert.Same(configuredAxis, chart.Options.XAxis);
         var configure = typeof(Chart).GetMethod(nameof(Chart.ConfigureXAxis))!;
         Assert.Equal(typeof(Action<ChartAxis>), Assert.Single(configure.GetParameters()).ParameterType);
         Assert.Equal(typeof(Chart), configure.ReturnType);
     }
 
     [Fact]
-    public void FamilyConfigurationCallbacks_EditExistingOptionsAndReturnTheirBuilder() {
+    public void FamilyConfigurationCallbacksApplyOptionsAndReturnTheirBuilderWithoutChangingData() {
         var chart = Chart.Create().AddRadar("Signal", new[] { new ChartPoint(1, 50), new ChartPoint(2, 70) });
-        var funnel = chart.Options.Funnel;
-        var pyramid = chart.Options.Pyramid;
-        var chord = chart.Options.Chord;
-        var sankey = chart.Options.Sankey;
         Assert.Same(chart, chart.ConfigureFunnel(options => {
-            Assert.Same(funnel, options);
             options.Orientation = ChartOrientation.Horizontal;
         }));
         Assert.Same(chart, chart.ConfigurePyramid(options => {
-            Assert.Same(pyramid, options);
             options.ValueEncoding = ChartPyramidValueEncoding.Area;
         }));
         Assert.Same(chart, chart.ConfigureChord(options => {
-            Assert.Same(chord, options);
             options.RibbonOpacity = .2;
         }));
         Assert.Same(chart, chart.ConfigureSankey(options => {
-            Assert.Same(sankey, options);
             options.NodeWidth = 18;
         }));
-        Assert.Same(funnel, chart.Options.Funnel);
-        Assert.Same(pyramid, chart.Options.Pyramid);
-        Assert.Same(chord, chart.Options.Chord);
-        Assert.Same(sankey, chart.Options.Sankey);
         Assert.Equal(ChartOrientation.Horizontal, chart.Options.Funnel.Orientation);
         Assert.Equal(ChartPyramidValueEncoding.Area, chart.Options.Pyramid.ValueEncoding);
         Assert.Equal(.2, chart.Options.Chord.RibbonOpacity);
         Assert.Equal(18, chart.Options.Sankey.NodeWidth);
 
         var series = chart.Series[0];
-        var markers = series.Markers;
-        var radar = series.Radar;
         Assert.Same(series, series.ConfigureMarkers(options => {
-            Assert.Same(markers, options);
             options.Radius = 7;
         }));
         Assert.Same(series, series.ConfigureRadar(options => {
-            Assert.Same(radar, options);
             options.FillOpacity = .4;
         }));
-        Assert.Same(markers, series.Markers);
-        Assert.Same(radar, series.Radar);
         Assert.Equal(7d, series.Markers.Radius);
         Assert.Equal(.4, series.Radar.FillOpacity);
         Assert.Single(chart.Series);
@@ -129,7 +112,12 @@ public sealed class V2ApiConventionTests {
             Assert.StartsWith("Configure", method.Name, StringComparison.Ordinal);
             if (method.IsStatic) Assert.True(method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), inherit: false));
             var receiver = method.IsStatic ? method.GetParameters()[0].ParameterType : method.DeclaringType;
-            Assert.Equal(receiver, method.ReturnType);
+            if (method.ReturnType.IsGenericParameter) {
+                Assert.True(receiver!.IsGenericTypeDefinition);
+                Assert.Contains(method.ReturnType.GetGenericParameterConstraints(), constraint =>
+                    constraint.IsGenericType && constraint.GetGenericTypeDefinition() == receiver
+                    && constraint.GetGenericArguments().Contains(method.ReturnType));
+            } else Assert.Equal(receiver, method.ReturnType);
         }
     }
 

@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, "hidden")]
     [InlineData(true, "auto")]
     public async Task DisplayContentsOverflowDoesNotClipVisibleNativeReadout(bool shadow, string overflow) {
@@ -55,17 +55,16 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("x", false, 1)]
     [InlineData("y", false, .8)]
     [InlineData("x", true, .8)]
     [InlineData("y", true, 1)]
     public async Task KeyboardNavigationRevealsNativeSourceThroughNestedOuterScrollAncestors(string axis, bool shadow, double scale) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(shadow ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite(), shadow ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Keyboard access through host scrollers").WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-            .AddScatter("Reading", new[] { new ChartPoint(1, 9), new ChartPoint(5, 5), new ChartPoint(9, 1) });
-        chart.Series[0].WithInteractionKey("scroll-reading");
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("scroll-reading"), "Reading", new[] { new ChartPoint(1, 9), new ChartPoint(5, 5), new ChartPoint(9, 1) }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;

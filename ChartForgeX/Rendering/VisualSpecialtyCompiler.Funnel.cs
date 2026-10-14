@@ -14,17 +14,17 @@ internal static partial class VisualSpecialtyCompiler {
         var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
         var show = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
         var form = chart.Options.Funnel.Form;
-        var layout = ChartFunnelLayout.Compute(series.Points, plot, chart.Options.Funnel, context.Theme.Spacing, show);
+        var layout = ChartFunnelLayout.Compute(series.RenderPoints, plot, chart.Options.Funnel, context.Theme.Spacing, show);
         using var group = builder.PushGroup("funnel-chart", "funnel-chart", new Dictionary<string, string> {
             ["data-cfx-form"] = form == ChartFunnelForm.StageBars ? "stage-bars" : "cone",
             ["data-cfx-orientation"] = chart.Options.Funnel.Orientation == ChartOrientation.Vertical ? "vertical" : "horizontal"
         });
         foreach (var connection in layout.Connections) FunnelConnection(chart, builder, connection, colors, form);
         foreach (var stage in layout.Stages) {
-            var index = stage.SourceIndex; var raw = series.Points[index].Y;
+            var index = stage.SourceIndex; var raw = series.RenderPoints[index].Y;
             var color = Color(series, index, colors);
-            var previous = index == 0 ? raw : series.Points[index - 1].Y;
-            var retention = series.Points[0].Y <= 0 ? (double?)null : raw / series.Points[0].Y;
+            var previous = index == 0 ? raw : series.RenderPoints[index - 1].Y;
+            var retention = series.RenderPoints[0].Y <= 0 ? (double?)null : raw / series.RenderPoints[0].Y;
             var drop = previous <= 0 || index == 0 ? (double?)null : (previous - raw) / previous;
             var metadata = new Dictionary<string, string> { ["data-cfx-zero"] = raw == 0 ? "true" : "false",
                 ["data-cfx-retention-defined"] = retention.HasValue ? "true" : "false",
@@ -51,7 +51,7 @@ internal static partial class VisualSpecialtyCompiler {
                 if (show) FunnelLabels(chart, context, builder, stage, color, colors, raw, retention, drop, form);
             }
         }
-        if (series.Points.All(point => point.Y == 0))
+        if (series.RenderPoints.All(point => point.Y == 0))
             builder.AddDiagnostic(new VisualDiagnostic("funnel.all-zero", "All funnel stage values are zero; their category slots remain visible."));
     }
 
@@ -62,13 +62,13 @@ internal static partial class VisualSpecialtyCompiler {
         var fill = ChartColorMath.WithOpacity(color, opacity);
         var id = Id(connection.FromIndex) + "-connection";
         var summary = Category(chart, connection.FromIndex) + " to " + Category(chart, connection.ToIndex) + ": "
-            + VisualStateSceneTools.Value(chart, series, connection.FromIndex, series.Points[connection.FromIndex].Y)
-            + " to " + VisualStateSceneTools.Value(chart, series, connection.ToIndex, series.Points[connection.ToIndex].Y);
+            + VisualStateSceneTools.Value(chart, series, connection.FromIndex, series.RenderPoints[connection.FromIndex].Y)
+            + " to " + VisualStateSceneTools.Value(chart, series, connection.ToIndex, series.RenderPoints[connection.ToIndex].Y);
         using (VisualStateSceneTools.Mark(builder, id, "funnel-connection", connection.Bounds, summary,
             new Dictionary<string, string> {
                 ["data-cfx-from-point"] = N(connection.FromIndex), ["data-cfx-to-point"] = N(connection.ToIndex),
-                ["data-cfx-from-value"] = N(series.Points[connection.FromIndex].Y),
-                ["data-cfx-to-value"] = N(series.Points[connection.ToIndex].Y)
+                ["data-cfx-from-value"] = N(series.RenderPoints[connection.FromIndex].Y),
+                ["data-cfx-to-value"] = N(series.RenderPoints[connection.ToIndex].Y)
             })) {
             builder.Path(connection.Path, fill, role: form == ChartFunnelForm.Cone ? "funnel-connection-area" : "funnel-dropoff", close: true,
                 paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, connection.FromIndex).WithOpacity(fill, opacity)));

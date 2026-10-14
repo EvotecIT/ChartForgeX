@@ -31,7 +31,7 @@ public sealed class HtmlChartGridRenderer {
         var request = VisualExportRequest.ForGrid(grid);
         var colors = request.Context.Theme.Resolve(request.Context.ThemeMode);
         var title = grid.Title.Length == 0 ? "ChartForgeX report" : grid.Title;
-        var css = HtmlSurfacePolish.CenteredBodyCss(colors.Background,
+        var css = HtmlSurfacePolish.CenteredBodyCss(HtmlSurfacePolish.PageBackground(colors.Background, colors.ElevatedSurface),
             HtmlChartRenderer.CssFontFamily(request.Context.Font.Family), flat: true)
             + ".chartforgex-grid{margin:0 auto}.chartforgex-grid svg{width:100%;height:auto;display:block}"
             + HtmlSurfacePolish.ResponsiveCenteredBodyCss

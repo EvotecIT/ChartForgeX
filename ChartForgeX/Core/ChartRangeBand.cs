@@ -22,13 +22,17 @@ public readonly struct ChartRangeBand {
     /// </summary>
     public readonly double Upper;
 
+    /// <summary>Gets whether both boundaries begin a disconnected segment at this observation.</summary>
+    public bool BreakBefore { get; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartRangeBand"/> struct.
     /// </summary>
     /// <param name="x">The horizontal coordinate.</param>
     /// <param name="lower">The lower band value.</param>
     /// <param name="upper">The upper band value.</param>
-    public ChartRangeBand(double x, double lower, double upper) {
+    /// <param name="breakBefore">Whether both boundaries begin a disconnected segment.</param>
+    public ChartRangeBand(double x, double lower, double upper, bool breakBefore = false) {
         ChartPrimitiveGuards.Finite(x, nameof(x));
         ChartPrimitiveGuards.Finite(lower, nameof(lower));
         ChartPrimitiveGuards.Finite(upper, nameof(upper));
@@ -36,6 +40,7 @@ public readonly struct ChartRangeBand {
         X = x;
         Lower = lower;
         Upper = upper;
+        BreakBefore = breakBefore;
     }
 
     /// <summary>
@@ -44,6 +49,7 @@ public readonly struct ChartRangeBand {
     /// <param name="x">The date/time x value.</param>
     /// <param name="lower">The lower band value.</param>
     /// <param name="upper">The upper band value.</param>
-    public ChartRangeBand(DateTime x, double lower, double upper) : this(ChartDateTime.ToOADate(x), lower, upper) {
+    /// <param name="breakBefore">Whether both boundaries begin a disconnected segment.</param>
+    public ChartRangeBand(DateTime x, double lower, double upper, bool breakBefore = false) : this(ChartDateTime.ToOADate(x), lower, upper, breakBefore) {
     }
 }

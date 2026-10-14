@@ -22,8 +22,8 @@ internal static class ChartCartesianOrientation {
 
     internal static bool UsesLegacyCategoryLabels(Chart chart) {
         if (!IsHorizontal(chart)) return false;
-        var hasObservations = chart.Series.Any(series => series.Points.Count > 0);
-        return !chart.Series.Any(series => IsHorizontalLine(chart, series) && (series.Points.Count > 0 || !hasObservations));
+        var hasObservations = chart.Series.Any(series => series.RenderPoints.Count > 0);
+        return !chart.Series.Any(series => IsHorizontalLine(chart, series) && (series.RenderPoints.Count > 0 || !hasObservations));
     }
 
     internal static IReadOnlyList<ChartAxisLabel> CategoryLabels(Chart chart) => UsesLegacyCategoryLabels(chart) && chart.Options.YAxis.Labels.Count == 0
@@ -35,5 +35,5 @@ internal static class ChartCartesianOrientation {
             : annotation.Kind;
 
     internal static IEnumerable<double> Categories(ChartSeries series) => series.Kind == ChartSeriesKind.Waterfall
-        ? ChartWaterfallSteps.Create(series).Select(step => step.X) : series.Points.Select(point => point.X);
+        ? ChartWaterfallSteps.Create(series).Select(step => step.X) : series.RenderPoints.Select(point => point.X);
 }

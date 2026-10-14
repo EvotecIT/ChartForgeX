@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Globalization;
 using System.Text.Json;
 using System.Xml.Linq;
@@ -68,6 +69,7 @@ public sealed class MermaidGanttDateAnchorTests {
 
     private static string Fixture(string name) => Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", name);
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
@@ -76,7 +78,7 @@ public sealed class MermaidGanttDateAnchorTests {
             new MermaidRenderOptions { ParseOptions = new MermaidParseOptions { GanttDateAnchor = Anchor } });
         Assert.Empty(rendered.Diagnostics);
         var chart = Assert.IsType<MermaidGanttDocument>(rendered.Document).ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(dark ? ChartForgeX.Themes.ChartTheme.GraphiteDark() : ChartForgeX.Themes.ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         var name = "gantt-date-anchor-" + (dark ? "dark-" : "light-") + width;
         if (!string.IsNullOrWhiteSpace(captures)) {

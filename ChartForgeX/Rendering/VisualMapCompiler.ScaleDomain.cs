@@ -7,7 +7,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
     private static bool MapHasDomain(Chart chart, ChartColorScale scale, double min, double max) =>
-        ChartColorScaleSurface.HasDomain(scale, chart.Series[0].Points.Count > 0 ? min : null, chart.Series[0].Points.Count > 0 ? max : null);
+        ChartColorScaleSurface.HasDomain(scale, chart.Series[0].RenderPoints.Count > 0 ? min : null, chart.Series[0].RenderPoints.Count > 0 ? max : null);
 
     private static MapLayout MissingScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, ChartColorPresentation presentation) {

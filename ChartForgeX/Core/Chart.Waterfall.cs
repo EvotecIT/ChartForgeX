@@ -9,7 +9,7 @@ public sealed partial class Chart {
     /// <remarks>Horizontal waterfalls use the primary X value axis and Y category axis. Configure before or after adding the series.</remarks>
     public Chart ConfigureWaterfall(Action<ChartWaterfallOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.Waterfall);
+        Options.Waterfall = ChartOptionConfiguration.Configure(Options.Waterfall, configure, options => options.Clone());
         return this;
     }
 
@@ -28,9 +28,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     /// <remarks>Use existing axis labels and point overrides; point overrides index every authored item, including checkpoints.</remarks>
     public Chart AddWaterfall(string name, IEnumerable<ChartWaterfallItem> items, ChartColor? color = null) {
-        var series = new ChartSeries(name, ChartSeriesKind.Waterfall, Array.Empty<ChartPoint>()) { Color = color };
-        series.SetWaterfallItems(items);
-        AppendSeries(series);
+        AppendSeries(ChartSeries.CreateWaterfall(name, items, color));
         return this;
     }
 }

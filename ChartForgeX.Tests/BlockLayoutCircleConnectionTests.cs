@@ -10,6 +10,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class BlockLayoutCircleConnectionTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(BlockLayoutShape.Rectangle, BlockLayoutShape.Circle, 960, 0, false, false)]
     [InlineData(BlockLayoutShape.Circle, BlockLayoutShape.Rectangle, 960, 0, false, false)]
@@ -22,10 +23,9 @@ public sealed class BlockLayoutCircleConnectionTests {
     [InlineData(BlockLayoutShape.Circle, BlockLayoutShape.Circle, 320, 0, false, true)]
     public async Task ConnectorsMeetThePaintedCircleBoundaryInSvgAndPng(BlockLayoutShape firstShape,
         BlockLayoutShape secondShape, int width, int layout, bool reverse, bool graphite) {
-        var theme = graphite ? ChartTheme.GraphiteDark() : ChartTheme.Light();
-        theme.UseGraphiteLayout = graphite;
-        theme.Axis = ChartColor.FromHex("#FF0000");
-        theme.Palette = new[] { ChartColor.FromHex("#2563EB") };
+        var theme = graphite ? VisualTheme.Graphite() : VisualTheme.Report();
+        theme = theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#FF0000"); });
+        theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.FromHex("#2563EB") }; });
         var block = BlockLayoutBlock.Create().WithSize(width, 300).WithCard(false).WithTheme(theme)
             .WithColumns(layout == 1 ? 1 : 2).AddItem("a", "A", shape: firstShape);
         if (layout == 2) block.AddSpace().AddSpace();

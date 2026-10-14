@@ -13,7 +13,7 @@ internal static partial class VisualBlockRendering {
 
     // Ordinary long captions retain truncation at their default size. Larger requested
     // sizes fit the measured width and height of their semantic cell first.
-    public static TextStyle FitBodyTextStyle(ChartTheme theme, string text, double defaultSize, double width, double height, int weight) {
+    public static TextStyle FitBodyTextStyle(ResolvedVisualTheme theme, string text, double defaultSize, double width, double height, int weight) {
         var preferred = BodyFontSize(theme, defaultSize);
         var style = new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = weight }, FontSize = preferred, LineHeight = 1 };
         var normalized = SingleLineText(text);

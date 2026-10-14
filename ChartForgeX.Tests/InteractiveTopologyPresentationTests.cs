@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Interactivity.Html;
@@ -75,14 +76,14 @@ public sealed class InteractiveTopologyPresentationTests {
         Assert.Equal("delivery", options.ActiveScenarioId);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(1024, false, false)]
     [InlineData(1024, false, true)]
     [InlineData(390, true, true)]
     public async Task TopologyPresentationKeepsSelectionAndViewportControlsWorking(int width, bool dark, bool animate) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = CreateTopology();
-        chart.Theme = dark ? TopologyTheme.Dark() : TopologyTheme.Light();
+        chart.WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var renderer = new HtmlInteractiveTopologyRenderer();
         var html = animate
             ? renderer.RenderPresentationPage(chart,
@@ -137,7 +138,7 @@ public sealed class InteractiveTopologyPresentationTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task PointerReleaseOutsideViewportDoesNotResumePanningOnReentry() {
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync(
@@ -162,7 +163,7 @@ public sealed class InteractiveTopologyPresentationTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("pointercancel")]
     [InlineData("lostpointercapture")]
     [InlineData("blur")]

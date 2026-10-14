@@ -4,8 +4,18 @@ using ChartForgeX.VisualArtifacts;
 
 internal static class MermaidExamples {
     internal static void Write(string output) {
+        const string mindMap = "mindmap\n    root((Roadmap))\n          plan[Planning]\n            tasks[Tasks]\n                review[Review]\n          delivery[Delivery]\n              releases[Releases]\n                support[Support]\n";
         var examples = new Dictionary<string, string> {
+            ["mermaid-theme-timeline-dark"] = "%%{init: {'theme':'dark'}}%%\ntimeline\ntitle Rendering history\n2024 : Fluent chart API : SVG and PNG output\n2025 : Topology diagrams\n",
+            ["mermaid-theme-packet-dark"] = "---\ntitle: Packet fields\nconfig:\n  theme: dark\n---\npacket-beta\n0-7: \"Header\"\n8-15: \"Payload\"\n",
+            ["mermaid-radar-theme"] = "---\nconfig:\n  themeVariables:\n    titleColor: '#7C3AED'\n    cScale0: '#2563EB'\n    cScale1: '#EA580C'\n    radar:\n      axisColor: '#16A34A'\n      axisStrokeWidth: 3\n      axisLabelFontSize: 15\n      graticuleColor: '#64748B'\n      graticuleOpacity: 0.12\n      graticuleStrokeWidth: 1.5\n      curveOpacity: 0.25\n      curveStrokeWidth: 4\n      legendFontSize: 16\n---\nradar-beta\ntitle Authored radar paint\naxis a[\"Coverage\"], b[\"Policy\"], c[\"Response\"], d[\"Recovery\"]\ncurve current[\"Current\"]{90,45,80,60}\ncurve target[\"Target\"]{95,85,90,80}\nmin 0\nmax 100\ngraticule circle\n",
+            ["mermaid-mindmap-branch-light"] = "---\nconfig:\n  mindmap:\n    colorBy: branch\n---\n" + mindMap,
+            ["mermaid-mindmap-depth-light"] = "---\nconfig:\n  mindmap:\n    colorBy: depth\n---\n" + mindMap,
+            ["mermaid-mindmap-branch-dark"] = "---\nconfig:\n  theme: dark\n  mindmap:\n    colorBy: branch\n---\n" + mindMap,
+            ["mermaid-mindmap-depth-dark"] = "---\nconfig:\n  theme: dark\n  mindmap:\n    colorBy: depth\n---\n" + mindMap,
             ["mermaid-flowchart-shape-aliases"] = "flowchart LR\nA@{ shape: fr-rect, label: \"Framed process\" } --> B@{ shape: framed-rectangle, label: \"Subprocess\" }\nC@{ shape: question, label: \"Decision\" } --> D@{ shape: odd, label: \"Asymmetric\" }\nE@{ shape: lean-right, label: \"Input\" } --> F@{ shape: lean-left, label: \"Output\" }\nG@{ shape: manual, label: \"Manual task\" } --> H@{ shape: trapezoid-top, label: \"Operation\" }\nI@{ shape: priority, label: \"Priority\" } --> J@{ shape: trapezoid-bottom, label: \"Action\" }\n",
+            ["mermaid-flowchart-shape-captions"] = "flowchart LR\nrequest[Request] --> approved{Approved?} --> done((Done))\nstore[(Audit log)] --> complete(((Complete))) --> manual[/Manual<br/>review/]\n",
+            ["mermaid-flowchart-lengths"] = "flowchart LR\nA[Receive] ----> B[Validate]\nB -. accepted ..-> C[Store]\n",
             ["mermaid-quadrant-regions"] = "quadrantChart\ntitle Work priorities\nx-axis Low effort --> High effort\ny-axis Low impact --> High impact\nquadrant-1 Plan\nquadrant-2 Prioritize\nquadrant-3 Consider\nquadrant-4 Reassess\nOpportunity: [0.2, 0.8]\nInvestment: [0.8, 0.8]\nRoutine: [0.2, 0.2]\nReview: [0.8, 0.2]\n",
             ["mermaid-xychart-horizontal-bar"] = "xychart-beta horizontal\ntitle \"Monthly count\"\nx-axis Month [Jan, Feb, Mar]\ny-axis Count 0 --> 100\nbar [20, 50, 80]\n",
             ["mermaid-xychart-horizontal-line"] = "xychart-beta horizontal\ntitle \"Monthly count\"\nx-axis Month [Jan, Feb, Mar]\ny-axis Count 0 --> 100\nline [30, 60, 90]\n",

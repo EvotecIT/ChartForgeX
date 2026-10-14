@@ -99,20 +99,26 @@ public sealed class VisualCanvasKeyValueBlockLayer : VisualCanvasLayer {
     public bool ValueEmphasized { get; set; }
 
     /// <summary>Measures the block height using the current text and wrapping settings and the default theme font family.</summary>
-    public double MeasureHeight() => MeasureHeight(new VisualCanvasTheme());
+    public double MeasureHeight() => VisualCanvasKeyValueBlockLayout.Build(this, VisualCanvas.Create(1, 1).ResolveStyle()).Height;
 
     /// <summary>Measures the block height with the font family the block draws with on a canvas using <paramref name="theme"/>.</summary>
-    public double MeasureHeight(VisualCanvasTheme theme) {
+    public double MeasureHeight(ChartForgeX.Themes.VisualTheme theme, ChartForgeX.Themes.VisualThemeMode mode = ChartForgeX.Themes.VisualThemeMode.Light, VisualCanvasStyleOptions? style = null) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
-        return VisualCanvasKeyValueBlockLayout.Build(this, theme).Height;
+        return VisualCanvasKeyValueBlockLayout.Build(this, VisualCanvas.ResolveStyle(theme, mode, style)).Height;
     }
 
-    internal string ResolveFontFamily(VisualCanvasTheme theme) => string.IsNullOrWhiteSpace(FontFamilyName) ? theme.FontFamily : FontFamilyName;
+    /// <summary>Measures using the exact shared theme, mode and local measurement settings of a canvas.</summary>
+    public double MeasureHeight(VisualCanvas canvas) {
+        if (canvas == null) throw new ArgumentNullException(nameof(canvas));
+        return VisualCanvasKeyValueBlockLayout.Build(this, canvas.ResolveStyle()).Height;
+    }
 
-    internal VisualCanvasTextFace LabelFace(VisualCanvasTheme theme) =>
+    internal string ResolveFontFamily(ResolvedVisualCanvasStyle theme) => string.IsNullOrWhiteSpace(FontFamilyName) ? theme.FontFamily : FontFamilyName;
+
+    internal VisualCanvasTextFace LabelFace(ResolvedVisualCanvasStyle theme) =>
         VisualCanvasTextFace.Resolve(ResolveFontFamily(theme), LabelEmphasized ? VisualCanvasFontWeights.Emphasized : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
 
-    internal VisualCanvasTextFace ValueFace(VisualCanvasTheme theme) =>
+    internal VisualCanvasTextFace ValueFace(ResolvedVisualCanvasStyle theme) =>
         VisualCanvasTextFace.Resolve(ResolveFontFamily(theme), ValueEmphasized ? VisualCanvasFontWeights.KeyValueEmphasizedValue : VisualCanvasFontWeights.Regular, theme.TextMeasurementMode);
 }
 
@@ -129,7 +135,7 @@ internal sealed class VisualCanvasKeyValueBlockLayout {
     public double ValueWidth { get; }
     public double Height { get; }
 
-    public static VisualCanvasKeyValueBlockLayout Build(VisualCanvasKeyValueBlockLayer block, VisualCanvasTheme theme) {
+    public static VisualCanvasKeyValueBlockLayout Build(VisualCanvasKeyValueBlockLayer block, ResolvedVisualCanvasStyle theme) {
         if (block == null) throw new ArgumentNullException(nameof(block));
         var labelFace = block.LabelFace(theme);
         var valueFace = block.ValueFace(theme);

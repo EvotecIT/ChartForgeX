@@ -11,7 +11,7 @@ internal static partial class TopologyRenderPrimitives {
         return EffectiveNodeSurfaceStyle(options) == TopologyNodeSurfaceStyle.AccentBand;
     }
 
-    public static string NodeFill(TopologyNode node, TopologyTheme theme, string accent, TopologyRenderOptions options) {
+    public static string NodeFill(TopologyNode node, TopologyPaint theme, string accent, TopologyRenderOptions options) {
         if (!string.IsNullOrWhiteSpace(node.BackgroundColor)) return node.BackgroundColor!.Trim();
         return EffectiveNodeSurfaceStyle(options) == TopologyNodeSurfaceStyle.Card
             ? theme.Card

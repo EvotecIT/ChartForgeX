@@ -14,16 +14,14 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddTreemap(string name, IEnumerable<ChartHierarchyItem> items, ChartColor? color = null) {
         EnsureCanAddSeries();
-        var series = new ChartSeries(name, ChartSeriesKind.Treemap, Array.Empty<ChartPoint>()) { Color = color };
-        series.SetRelationships(ChartRelationshipIndex.AreaHierarchy(items, allowForest: true, requireNullGroups: true));
-        AppendSeries(series);
+        AppendSeries(ChartSeries.CreateTreemap(name, items, color));
         return this;
     }
 
     /// <summary>Configures treemap spacing, group captions and the independent numeric color scale.</summary>
     public Chart ConfigureTreemap(Action<ChartTreemapOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.Treemap);
+        Options.Treemap = ChartOptionConfiguration.Configure(Options.Treemap, configure, options => options.Clone());
         return this;
     }
 }

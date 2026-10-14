@@ -18,7 +18,7 @@ public static class MermaidBlockRendering {
         var columns = document.Columns ?? options.Columns;
         var block = BlockLayoutBlock.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithPadding(options.Padding)
             .WithColumns(columns)
@@ -65,14 +65,7 @@ public static class MermaidBlockRendering {
         document.ToBlockLayoutBlock(options).ToPng();
 
     private static string ResolveTitle(MermaidBlockDocument document, MermaidBlockRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid block";
-    }
-
-    private static string ResolveSubtitle(MermaidBlockDocument document, MermaidBlockRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid block");
     }
 
     private static int VisibleItemCount(MermaidBlockDocument document) {

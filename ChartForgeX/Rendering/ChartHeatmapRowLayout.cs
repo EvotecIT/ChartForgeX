@@ -31,7 +31,7 @@ internal sealed class ChartHeatmapRowLayout {
     /// SVG and PNG place rows identically.
     /// </summary>
     public static ChartHeatmapRowLayout Build(Chart chart, IReadOnlyList<ChartSeries> rows, double plotHeight) {
-        return Build(rows, plotHeight, chart.Options.Theme.TickLabelFontSize);
+        return Build(rows, plotHeight, chart.Options.ResolvedTheme.TickLabelFontSize);
     }
 
     internal static ChartHeatmapRowLayout Build(IReadOnlyList<ChartSeries> rows, double plotHeight, double fontSize) {

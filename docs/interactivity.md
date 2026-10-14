@@ -12,13 +12,13 @@ Every rendered interaction surface is normalized to `data-cfx-target-kind` and `
 
 Explicitly decimated series keep their original point identity. `data-cfx-point` remains the rendered ordinal, while the series source-index map and each host event's `sourcePoint` identify the caller's original point.
 
-Aggregate marks such as histogram bins, merged timeline runs, and pie slices expose contributing source observations through `target.sourcePoints`, a numeric array in hover and selection events. An empty histogram bin reports `[]`. For these marks, `target.sourcePoint` is `undefined` because one source observation cannot identify an aggregate. Target IDs include the interaction key and derivation kind. Histogram identities also retain interval bounds, terminal-boundary inclusion, aggregation, and encoding; matching intervals can synchronize across different bin ordinals, while different summary policies remain independent. Grouped pie slices use their contributing source indices, and merged timeline runs use their start/end interval. Derived summaries cannot select an unrelated observation or a different summary kind merely because their rendered ordinals match. Point legends share their mark's contributors and target ID. Hosts should route aggregate selection by the opaque `targetId` and read `sourcePoints` when they need the underlying observations.
+Aggregate marks such as histogram bins, merged timeline runs, and pie slices expose contributing source observations through `target.sourcePoints`, a numeric array in hover and selection events. An empty histogram bin reports `[]`. For these marks, `target.sourcePoint` is `undefined` because one source observation cannot identify an aggregate. Target IDs include the stable series ID and derivation kind. Histogram identities also retain interval bounds, terminal-boundary inclusion, aggregation, and encoding; matching intervals can synchronize across different bin ordinals, while different summary policies remain independent. Grouped pie slices use their contributing source indices, and merged timeline runs use their start/end interval. Derived summaries cannot select an unrelated observation or a different summary kind merely because their rendered ordinals match. Point legends share their mark's contributors and target ID. Hosts should route aggregate selection by the opaque `targetId` and read `sourcePoints` when they need the underlying observations.
 
 Point-legend muting and isolation use the same identity rules across charts. Zero-valued pie and donut legends retain their derived identity and contributors even when no slice is painted. Isolating a point keeps its mark at full strength, including a previously muted point; clearing isolation restores its prior mute state.
 
 Raw trend-line and box-plot summaries omit both singular `sourcePoint` and contributor arrays. Their source data remains available through the series' immutable `TrendLineSourcePoints` and `BoxPlotSourceSamples` collections. Migration: derived target IDs now include their derivation kind; use event-provided IDs instead of constructing IDs from point ordinals.
 
-Radar fills missing categories with zero geometry. Those categories are `region` targets identified by the series interaction key and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category.
+Radar fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category.
 
 ## Keyboard navigation
 
@@ -37,6 +37,8 @@ Legend tooltips summarize the series for readers: the name with its colour swatc
 Muting a series retains it at 30% opacity and strikes through its legend label. Keyboard targets use a 2 px focus outline in the host accent.
 
 There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `IncludeResetButton` (on by default) adds a 28 px "Reset view" ghost button below the chart, keeping titles and marks clear. It appears only while the view differs from its initial state (zoomed, panned, brushed, a point selected, or a series muted or isolated) and hides again after reset, returning keyboard focus to the chart. Resetting also clears selections, focus trails, and pinned tooltips. Hosts can set `--cfx-host-accent` on the interactive container to align that outline with their own controls. Static exports retain the same flat marks and colour roles without browser behavior.
+
+A cancelled brush gesture restores the previous brush presentation without committing new bounds or changing the existing selection.
 
 ## Tooltip modes
 
@@ -130,23 +132,61 @@ Delayed pointer readouts use the latest pointer and live anchor bounds when show
 
 ## Semantic Series Identity
 
-Series ordinals are local rendering details. Synchronized dashboards therefore match legend, hover, and selection state by `data-cfx-series-key`, never by an ordinal from a different chart. The series name is the automatic key, so charts with the same named measure work without extra configuration. Set an explicit key when display labels differ but the underlying measure is the same:
+Create a series with a `ChartSeriesId` when equivalent measures should synchronize across charts. Retain the series handle to configure it, then attach it with `AddSeries`. Each chart receives its own series instance; equivalent series share the same explicit ID:
 
 ```csharp
-var current = Chart.Create()
-    .AddLine("Current pass rate", points);
-current.Series[0].WithInteractionKey("quality.pass-rate");
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 
-var history = Chart.Create()
-    .AddSmoothArea("Pass rate history", historyPoints);
-history.Series[0].WithInteractionKey("quality.pass-rate");
+var passRateId = new ChartSeriesId("quality.pass-rate");
+var currentSeries = ChartSeries.CreateLine(passRateId, "Current pass rate",
+    ChartPoints.FromValues(96, 98, 99));
+var historySeries = ChartSeries.CreateArea(passRateId, "Pass rate history",
+    ChartPoints.FromValues(92, 96, 98)).WithInterpolation(ChartInterpolation.Smooth);
+
+var current = Chart.Create().AddSeries(currentSeries);
+var history = Chart.Create().AddSeries(historySeries);
+
+currentSeries.WithName("Pass rate today");
 ```
 
-Point-level legend entries retain their point identity, so toggling one pie or radial item does not mute the complete containing series. A peer chart that does not contain the semantic key is left unchanged. Call `UseAutomaticInteractionKey()` to return to name-based identity.
+`series.Id` is immutable. Renaming the display text with `WithName`, configuring the handle or moving it with `chart.MoveSeries` preserves its ID. Display names may repeat; IDs must be unique within a chart. `Chart.Series` is a read-only view of attached handles, with structural changes made through `AddSeries`, `RemoveSeries`, `MoveSeries` and `ClearSeries`.
 
-Interaction keys cannot contain only digits because numeric scenario targets are reserved for local zero-based series ordinals. Digits-only display names receive an automatic `series:` identity prefix; prefer an explicit domain key such as `quality.pass-rate` in public dashboards. Point legends are emitted only for chart families whose visible geometry is point-scoped. Connected line, area, radar, polar, and other aggregate paths retain a series legend so a point toggle never leaves the main shape visibly active.
+Fluent `chart.AddLine(...)`, `AddBar(...)` and other `Add*` helpers allocate deterministic chart-local IDs. These remain fixed through renaming and reordering, but do not synchronize series or observation interactions across charts. Equal display names do not connect charts. The `cfx:auto:` namespace is reserved for these automatic IDs; supply an explicit ID when connecting equivalent measures in a dashboard.
 
-Scenario routes use the same identity contract. `AddSeriesStep(...)` accepts a stable non-numeric interaction key or, for local legacy routes, a zero-based series ordinal. Prefer the interaction key when series can be reordered or reused across dashboards.
+Synchronized legend, hover and selection state uses `data-cfx-series-key`, which carries `series.Id.Value`. Series positions remain local rendering details. A peer without the explicit series ID remains unchanged. Point-level legends retain their observation identity, so toggling one pie or radial item affects that item. Connected line, area, radar, polar and other aggregate paths retain a series legend.
+
+### Observation identity
+
+Use `WithObservationId` when equivalent charts can present their source observations in a different order:
+
+```csharp
+var latency = ChartSeries.CreateScatter(new ChartSeriesId("service.latency"), "Latency",
+    new[] { new ChartPoint(1, 24), new ChartPoint(2, 31) })
+    .WithObservationId(0, new ChartObservationId("east"))
+    .WithObservationId(1, new ChartObservationId("west"));
+var latencyChart = Chart.Create().AddSeries(latency);
+```
+
+The index refers to the authored source observation, including an original observation retained by decimation. Assign the same observation ID to the corresponding source position in each peer chart. IDs are unique within a series. Typed `Update*` methods preserve the observation's ID; `Replace*` methods clear observation IDs when replacing the complete source.
+
+Prepared output captures explicit IDs in `data-cfx-observation-id`; host event targets expose `observationId`. Point legends carry their referenced observation's identity. Use the event's opaque `targetId` to address a rendered target, and `sourcePoint` to read its source position. Aggregate identities continue to describe their derivation and contributors.
+
+### Series scenario steps
+
+Pass the retained series ID to `AddSeriesStep`. The typed overload is available from `ChartForgeX.Interactivity.Html` and delegates to the host-neutral scenario contract:
+
+```csharp
+using ChartForgeX.Interactivity;
+using ChartForgeX.Interactivity.Html;
+
+current.SaveInteractiveHtml("pass-rate.html", options => {
+    options.Interaction.AddScenario("quality-review", "Quality review", scenario => scenario
+        .AddSeriesStep(currentSeries.Id, "Inspect pass rate"));
+});
+```
+
+The string overload also addresses an exact stable series ID. Numeric strings have the same meaning: `AddSeriesStep("0", ...)` targets the series created with `new ChartSeriesId("0")`, regardless of its position or display name. To target an automatically identified series in its own chart, pass that handle's `Id`.
 
 ## Host-Owned Assets
 
@@ -162,6 +202,34 @@ chart.SaveInteractiveHtml(Path.Combine(bundle, "latency.html"), options => optio
 ```
 
 `HtmlInteractiveDashboardOptions.ExternalAssets` and `HtmlGraphExplorerOptions.ExternalAssets` work the same way, and `HtmlInteractiveTopologyRenderer.RenderPage(chart, options, assets)` links the topology runtime from `HtmlInteractiveAssetFiles.TopologyScript(options)` (topology page styles stay inline because they depend on the render options). File names carry a content hash (`cfx-interactive.<hash>.js`), so every page of a bundle points at the same file and an upgraded runtime never collides with a cached copy. `WriteTo` leaves identical files untouched. Set `IncludeIntegrity = true` to add `sha384` Subresource Integrity attributes for hosted bundles; it is off by default because browsers refuse integrity-checked assets on `file://` pages, and integrity-checked assets are requested with `crossorigin="anonymous"`, so assets on another origin need CORS headers. Script nonces are kept on external script tags.
+
+## Updating embedded charts
+
+Use `ChartForgeXCharts.mount` when a host inserts a chart after registering the shared runtime. Pages and fragments that include their runtime mount automatically. Mounting the same connected section again returns its existing controller:
+
+```js
+const root = document.querySelector('.cfx-interactive-chart');
+const controller = ChartForgeXCharts.mount(root);
+
+// replacementHtml is a fresh ToInteractiveHtmlFragmentWithoutAssets result.
+controller.update(replacementHtml);
+controller.resize();
+
+// Release browser work when the host no longer needs the chart.
+controller.dispose();
+```
+
+Prepare replacement content through the same C# chart API used for the original view. Update typed observations or replace their collection, assign the intended observation IDs, and call `chart.ToInteractiveHtmlFragmentWithoutAssets(...)` again. `update` accepts that HTML string or its unmounted section element. It validates the section, SVG and prepared metadata before changing the current chart. Keep the adapter's matching SVG and metadata together; an SVG alone is insufficient. Chart data, axes, ticks and text layout remain owned by native preparation.
+
+The [light lifecycle example](../Website/static/examples/generated/graphite-light-chart-lifecycle.html) and [dark lifecycle example](../Website/static/examples/generated/graphite-dark-chart-lifecycle.html) let you select measurements, update their values and order, dispose the chart, and mount it again. Generate both through the existing `--graphite-only` examples command.
+
+The controller retains the original section element, host attributes such as `id` and `slot`, and host CSS properties outside the `--cfx-` namespace. Existing host event listeners remain attached. The replacement supplies the chart's generated attributes, theme variables, controls, SVG and readout. `cfxupdated` fires on the section after its replacement is ready.
+
+Selection and legend mute/isolation follow surviving explicitly identified series. Point selection and point-legend mute/isolation also require an authored observation ID; full replacement clears state for anonymous ordinal points. Named nodes, links and regions retain their identity within their explicit series. Removed targets lose their state. Hover, pinned or delayed tooltips and focus trails clear; keyboard focus follows a surviving identified target or returns to the chart section. The geometric viewport remains in place.
+
+`resize()` refreshes browser hit geometry, navigation and active readout placement after host layout changes. The adapter also observes ordinary container resizing and hidden-host reveal. To change the native design size, prepare another chart at that size and pass its generated section to `update`; scaling a fixed SVG does not regenerate its ticks or typography.
+
+`dispose()` releases chart listeners, observers, scheduled frames, pending readouts, exports and scenario playback immediately. It also clears the compare tray, brush rectangle, selection readouts and mute/isolation presentation while the section remains connected. It is safe to call more than once. Removing a chart also releases its work when the browser delivers the removal. Reinserted sections require a fresh `mount`; a disposed controller cannot update or resize them. Register shared assets once, and mount newly inserted sections explicitly instead of executing another copy of the runtime.
 
 ## Topology motion with HTML controls
 
@@ -189,16 +257,19 @@ The adapter prepares a detached topology once and passes it to the SVG producer.
 
 ## Scenario Timelines
 
-Scenarios are ordered, host-neutral timelines rather than browser-only tours. Configure pacing and visual intent on the scenario model; adapters consume the same contract:
+Scenarios are ordered, host-neutral timelines. Configure pacing and visual intent on the scenario model; adapters consume the same contract. Retain the `pressure` and `success` series handles from chart construction and use their IDs in the route:
 
 ```csharp
+using ChartForgeX.Interactivity;
+using ChartForgeX.Interactivity.Html;
+
 interaction.AddScenario("recovery", "Recovery route", scenario => scenario
     .WithDescription("Inspect pressure, then confirm the recovered signal.")
     .WithPlayback(stepDurationMilliseconds: 1100, loop: false, autoPlay: false)
     .WithFocusMode(ChartInteractionScenarioFocusMode.Highlight)
-    .AddSeriesStep("incident-pressure", "Inspect pressure",
+    .AddSeriesStep(pressure.Id, "Inspect pressure",
         configure: step => step.WithDuration(1600))
-    .AddSeriesStep("probe-success", "Confirm recovery"));
+    .AddSeriesStep(success.Id, "Confirm recovery"));
 ```
 
 `Highlight` is the default: it emphasizes route members while preserving titles, axes, and surrounding data context. Use `Spotlight` only when dimming non-route data is intentional. Playback and autoplay are opt in, autoplay is suppressed when the browser requests reduced motion, and the HTML adapter exposes previous/next controls plus an accessible range scrubber for direct step selection. Individual step durations override the scenario default; both accept 200-60000 milliseconds.
@@ -245,7 +316,58 @@ These commands preserve the same host events, deep-link updates, synchronized ch
 
 ## State Bookmarks
 
-The current zoom and pan controls transform the complete rendered SVG, including its axes and labels. They do not change data domains or regenerate ticks. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
+Standalone zoom and pan controls transform the complete rendered SVG, including its axes and labels. Connected hosts can use native X windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
+
+## Connected native X windows
+
+Use `HtmlInteractiveChartRenderer.PrepareSection` when a host needs the asset-free section and its matching detached native scene. Both come from one preparation. Enable `Zoom` and `Pan` explicitly in the interaction options; establishing a connection does not enable those features.
+
+```csharp
+var renderer = new HtmlInteractiveChartRenderer();
+void Configure(HtmlChartInteractionOptions options) {
+    options.Interaction.ChartId = "measurements";
+    options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan);
+}
+var initial = renderer.PrepareSection(chart, configure: Configure);
+
+HtmlChartSection PrepareWindow(HtmlChartSection basis, string kind, double left, double right) {
+    var viewport = kind == "reset" ? null
+        : basis.PreparedVisual.XProjection!.ConstrainViewport(left, right);
+    return renderer.PrepareSection(chart, viewport, Configure);
+}
+```
+
+`left` and `right` are logical SVG positions sent by the browser. `ConstrainViewport` uses the captured native projection, handles a reversed X axis, and shifts an edge-crossing window into the full bounds while retaining its span. It returns null when the request covers the full span. Reset also uses null, restoring ordinary preparation. Explicit `ChartXViewport` values remain strict and must lie within the full resolved bounds.
+
+Connect the mounted controller to an application callback that returns the new section's HTML. The callback is the response path; `cfxviewportrequest` is a notification. Each request contains `chartId`, an opaque `requestId`, the committed `sceneRevision`, and `kind` (`zoom`, `pan`, or `reset`). Zoom and pan also contain logical `left` and `right`; reset omits them.
+
+Keep native preparation associated with the committed scene. A mutable "latest rendered section" is insufficient when renders finish out of order. In this example, `renderNativeWindow` is the application's C# bridge. It resolves `basis` to an immutable `HtmlChartSection`, calls `PrepareWindow`, stores the result under a fresh opaque token, and returns `{ token, html }`. The browser seeds its association with the token for `initial` and advances it only after a commit:
+
+```javascript
+const controller = ChartForgeXCharts.mount(root);
+const bases = new Map([[controller.sceneRevision, initialNativeToken]]);
+const candidates = new Map();
+
+root.addEventListener('cfxviewportchange', ({ detail }) => {
+    bases.set(detail.sceneRevision, candidates.get(detail.requestId));
+    candidates.delete(detail.requestId);
+});
+root.addEventListener('cfxviewporterror', ({ detail }) => candidates.delete(detail.requestId));
+controller.connectXViewport(async (request, signal) => {
+    const basis = bases.get(request.sceneRevision);
+    const result = await renderNativeWindow({ ...request, basis }, signal);
+    if (signal.aborted) throw new DOMException('Canceled', 'AbortError');
+    candidates.set(request.requestId, result.token);
+    signal.addEventListener('abort', () => candidates.delete(request.requestId), { once: true });
+    return result.html;
+});
+```
+
+The application owns transport, chart data and retention of its native sections. Discard rejected or aborted candidates and retire old basis tokens when the application no longer needs them. After an ordinary `controller.update`, seed the new `controller.sceneRevision` with that replacement's native token before accepting another gesture.
+
+Only the latest request for the current scene and connection can commit. A newer request, ordinary update, reconnect, disconnect, disposal, removal, or Escape aborts pending work. A rejected, invalid or stale reply leaves the committed SVG and export intact. `cfxviewportchange` carries the accepted `requestId`, new `sceneRevision` and `kind`. A failed current reply emits `cfxviewporterror` with its request identity and message. Pass null to `connectXViewport` to disconnect.
+
+Native X windows support vertical, non-sparkline Line and StepLine charts with the existing linear X projection and supported interpolation. The adapter disables native zoom/pan controls while a connected section lacks that projection, including empty and unsupported charts. A window can contain no observations while a line still crosses it. Native preparation keeps the full source facts and authored observation identities, excludes off-window marks from pointer and keyboard access, regenerates X ticks and keeps the full-data Y bounds. A native commit clears transient brush and tooltip state and removes the previous whole-SVG transform. Export uses the committed native window. Bookmark and synchronization transforms retain their existing geometric meaning; they do not request native domains.
 
 Enable `ChartInteractionFeatures.StateBookmarks` when a host wants to save and replay user exploration state. The adapter captures only reusable chart state:
 

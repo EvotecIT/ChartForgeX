@@ -60,6 +60,7 @@
     (root._cfxBranchHighlights || []).forEach(node => {
       delete node.dataset.cfxHighlightState;
       const paint = node.querySelector('[data-cfx-highlight-paint]');
+      if (!paint) return;
       paint.style.removeProperty('--cfx-highlight-opacity');
       paint.style.removeProperty('--cfx-highlight-stroke');
       paint.style.removeProperty('--cfx-highlight-stroke-width');

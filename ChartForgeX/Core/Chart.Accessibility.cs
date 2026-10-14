@@ -5,12 +5,12 @@ namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
     /// <summary>Gets accessibility metadata shared by capable renderers and hosts.</summary>
-    public VisualAccessibility Accessibility { get; } = new();
+    public VisualAccessibility Accessibility { get; private set; } = new();
 
     /// <summary>Configures the chart text alternative and language metadata.</summary>
     public Chart ConfigureAccessibility(Action<VisualAccessibility> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Accessibility);
+        Accessibility = ChartOptionConfiguration.Configure(Accessibility, configure, options => options.Clone());
         return this;
     }
 

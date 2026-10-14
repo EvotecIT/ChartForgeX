@@ -10,7 +10,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderSegmentedMetricProgressRows(SvgMarkupWriter writer, SegmentedMetricBlock card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderSegmentedMetricHeading(writer, card, ref y, content.X, content.Width);
@@ -40,7 +40,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
 
-    private static void RenderSegmentedStrip(SvgMarkupWriter writer, SegmentedMetricItem row, double x, double y, double width, double height, ChartColor accent, ChartForgeX.Themes.ChartTheme theme) {
+    private static void RenderSegmentedStrip(SvgMarkupWriter writer, SegmentedMetricItem row, double x, double y, double width, double height, ChartColor accent, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var filled = VisualFactBlockRendering.FilledSegments(row);
         var empty = theme.CardBackground.A > 0 ? theme.CardBackground : ChartColor.White;
         var emptyStroke = theme.PlotBorder.WithAlpha(120);
@@ -54,16 +54,6 @@ public sealed partial class SvgFactBlockRenderer {
         foreach (var segment in VisualFactBlockRendering.SegmentedProgressStripSegments(row, x, y, width, height)) {
             var role = segment.Filled ? "segmented-metric-segment-filled" : "segmented-metric-segment-empty";
             var color = segment.Filled ? accent : empty;
-            if (!theme.FlatMarks) writer.StartElement("rect")
-                .Attribute("data-cfx-role", "segmented-metric-segment-shadow")
-                .Attribute("data-cfx-index", segment.Index)
-                .Attribute("x", segment.X + 0.6)
-                .Attribute("y", segment.Y + 1.2)
-                .Attribute("width", segment.Width)
-                .Attribute("height", segment.Height)
-                .Attribute("rx", segment.Radius)
-                .Attribute("fill", theme.MutedText.WithAlpha(segment.Filled ? (byte)28 : (byte)18).ToCss())
-                .EndEmptyElement().Line();
             writer.StartElement("rect")
                 .Attribute("data-cfx-role", role)
                 .Attribute("data-cfx-index", segment.Index)
@@ -75,16 +65,6 @@ public sealed partial class SvgFactBlockRenderer {
                 .Attribute("fill", color.ToCss())
                 .Attribute("stroke", segment.Filled ? accent.WithAlpha(120).ToCss() : emptyStroke.ToCss())
                 .Attribute("stroke-width", 0.8)
-                .EndEmptyElement().Line();
-            if (!theme.FlatMarks) writer.StartElement("rect")
-                .Attribute("data-cfx-role", "segmented-metric-segment-highlight")
-                .Attribute("data-cfx-index", segment.Index)
-                .Attribute("x", segment.X + 1)
-                .Attribute("y", segment.Y + 1)
-                .Attribute("width", Math.Max(1, segment.Width - 2))
-                .Attribute("height", Math.Max(1, segment.Height * 0.32))
-                .Attribute("rx", Math.Min(3, segment.Width * 0.28))
-                .Attribute("fill", ChartColor.White.WithAlpha(segment.Filled ? (byte)48 : (byte)92).ToCss())
                 .EndEmptyElement().Line();
         }
 

@@ -66,7 +66,7 @@ public sealed class NumericRadialOwnerClosureTests {
         if (emptyPrimary) Assert.DoesNotContain(scene.Nodes, node => node.Role == "radial-value-grid");
         Assert.Single(scene.Nodes, node => node.Role == "radial-value-rule");
         var grouped = NumericRadialSeriesTests.Marks(NumericRadialSeriesTests.Compile(first))[0];
-        first.Series.RemoveAt(1);
+        first.RemoveSeries(first.Series[1]);
         var single = NumericRadialSeriesTests.Marks(NumericRadialSeriesTests.Compile(first))[0];
         Assert.Equal(2, bars ? (single.Outer - single.Inner) / (grouped.Outer - grouped.Inner) : single.Sweep / grouped.Sweep, 10);
         var partial = EmptyAxisChart(bars, emptyPrimary, false);

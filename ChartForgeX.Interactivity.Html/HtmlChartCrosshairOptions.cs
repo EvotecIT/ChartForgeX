@@ -36,7 +36,7 @@ public sealed class HtmlChartCrosshairOptions {
         }
     }
 
-    /// <summary>Gets or sets the pattern of both guide lines. Null retains the palette's line pattern.</summary>
+    /// <summary>Gets or sets the pattern of both guide lines. Null retains the default dashed pattern for every palette.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The line style is not a defined enum value.</exception>
     public HtmlChartCrosshairLineStyle? LineStyle {
         get => _lineStyle;

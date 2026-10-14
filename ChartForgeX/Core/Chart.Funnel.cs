@@ -7,7 +7,7 @@ public sealed partial class Chart {
     /// <remarks>The options can be configured before or after adding the funnel series.</remarks>
     public Chart ConfigureFunnel(Action<ChartFunnelOptions> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.Funnel);
+        Options.Funnel = ChartOptionConfiguration.Configure(Options.Funnel, configure, options => options.Clone());
         return this;
     }
 }

@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("nearest")]
     [InlineData("distance")]
     [InlineData("exact")]
@@ -51,7 +51,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("target-paint")]
     [InlineData("root-hidden")]
     [InlineData("root-removed")]
@@ -84,7 +84,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task BriefHostDetachCancelsBeforeReattachmentAndFreshAcquisitionCanRecover() {
         if (!Enabled) return;
         await using var session = await OpenAsync(Observations(false).ToInteractiveHtmlPage(options => ConfigureDelay(options, "exact")), 950, 760);
@@ -109,7 +109,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task ResetFromKeyboardCancelsPointerWorkWithoutPointerLeave() {
         if (!Enabled) return;
         await using var session = await OpenAsync(Observations(false).ToInteractiveHtmlPage(options => { ConfigureDelay(options, "exact"); options.Interaction.Enable(ChartInteractionFeatures.Zoom); }), 950, 760);
@@ -127,12 +127,11 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SynchronizedMuteInvalidatesPendingDataWhileLegendAccessStaysImmediate() {
         if (!Enabled) return;
         var source = Observations(false);
-        var peer = Chart.Create().WithSize(800, 540).WithLegend(true).AddScatter("Different label", new[] { new ChartPoint(3, 5), new ChartPoint(7, 6) });
-        source.Series[0].WithInteractionKey("readings"); peer.Series[0].WithInteractionKey("readings");
+        var peer = Chart.Create().WithSize(800, 540).WithLegend(true).AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("readings"), "Different label", new[] { new ChartPoint(3, 5), new ChartPoint(7, 6) }));
         var html = new[] { source, peer }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1; options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.DelayMilliseconds = Delay; options.Tooltip.Range = HtmlChartTooltipRange.Exact;

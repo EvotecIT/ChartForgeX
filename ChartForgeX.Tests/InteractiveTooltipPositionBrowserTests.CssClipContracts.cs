@@ -13,10 +13,9 @@ namespace ChartForgeX.Tests;
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     private static string CssClipChart(bool keyboard = true, bool dark = false, bool readable = false) {
         var chart = Chart.Create().WithSize(650, 338).WithHeader(false).WithLegend(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-            .AddScatter("Reading", new[] { new ChartPoint(1, 5), new ChartPoint(5, 5), new ChartPoint(9, 5) });
-        chart.Series[0].WithInteractionKey("css-reading");
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("css-reading"), "Reading", new[] { new ChartPoint(1, 5), new ChartPoint(5, 5), new ChartPoint(9, 5) }));
         return chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = readable ? HtmlChartResponsiveLayout.Readable : HtmlChartResponsiveLayout.Fit;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection
@@ -25,7 +24,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         });
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("inline", true)]
     [InlineData("contents", true)]
     [InlineData("block", false)]
@@ -51,7 +50,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("hidden", true)]
     [InlineData("clip", false)]
     [InlineData("auto", true)]
@@ -84,7 +83,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task KeyboardRevealsSmoothNativeStageBeforeAcquiringReadout() {
         if (!Enabled) return;
         await using var session = await OpenAsync(CssClipChart(true, false, true), 390, 844);
@@ -100,7 +99,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("paint")]
     [InlineData("content")]
     [InlineData("strict")]
@@ -132,7 +131,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("absolute", false)]
     [InlineData("fixed", false)]
     [InlineData("absolute", true)]
@@ -159,7 +158,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task SlottedChartScrollUsesNativeComposedClipAndReleasesWatchers(bool closed) {
@@ -240,7 +239,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task NativeMobileVisualViewportDismissesPinAndReleasesListeners() {
         if (!Enabled) return;
         await using var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
@@ -262,7 +261,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
                 visualViewport.removeEventListener=(name,listener,options)=>{visualListeners[name]?.delete(listener);remove(name,listener,options)};
             }
             """);
-        await cdp.SendAsync("Input.synthesizePinchGesture", new Dictionary<string, object> { ["x"] = 100, ["y"] = 250, ["scaleFactor"] = 2, ["relativeSpeed"] = 800, ["gestureSourceType"] = "touch" });
+        // Exercise native visual viewport movement independently of physical pinch recognition.
+        await cdp.SendAsync("Emulation.setPageScaleFactor", new Dictionary<string, object> { ["pageScaleFactor"] = 2 });
         await SettleObservedPositionAsync(page);
         await page.Locator(Point(0, 0)).EvaluateAsync("node=>node.focus({preventScroll:true})"); await page.Keyboard.PressAsync("Space");
         await SettleObservedPositionAsync(page);
@@ -271,6 +271,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await CaptureAsync(page, "css-mobile-visual-before", before, session);
         Assert.True(before.GetProperty("viewport").GetProperty("scale").GetDouble() > 1.5);
         Assert.False(before.GetProperty("source").GetProperty("hidden").GetBoolean());
+        Assert.True(before.GetProperty("source").GetProperty("pinned").GetBoolean());
         await cdp.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object> { ["type"] = "touchStart", ["touchPoints"] = new[] { new { x = 150, y = 20 } } });
         for (var step = 1; step <= 8; step++) {
             await cdp.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object> { ["type"] = "touchMove", ["touchPoints"] = new[] { new { x = 150 - step * 17, y = 20 } } });
@@ -283,6 +284,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         Assert.True(after.GetProperty("viewport").GetProperty("left").GetDouble() > after.GetProperty("source").GetProperty("node").GetProperty("right").GetDouble(), after.ToString());
         Assert.True(after.GetProperty("events").GetProperty("scroll").GetInt32() > 0);
         Assert.True(after.GetProperty("source").GetProperty("hidden").GetBoolean());
+        Assert.False(after.GetProperty("source").GetProperty("pinned").GetBoolean());
+        Assert.Equal("css-reading:0", after.GetProperty("source").GetProperty("selected").GetString());
         var card = before.GetProperty("source").GetProperty("card"); var visual = before.GetProperty("viewport");
         Assert.True(card.GetProperty("left").GetDouble() >= visual.GetProperty("left").GetDouble());
         Assert.True(card.GetProperty("right").GetDouble() <= visual.GetProperty("left").GetDouble() + visual.GetProperty("width").GetDouble());

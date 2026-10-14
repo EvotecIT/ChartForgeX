@@ -32,7 +32,7 @@ public sealed class CalendarHeatmapOptionsTests {
     [Fact]
     public void DayAndMonthNamesAndScaleWords_AreLocalized() {
         // Small cells: weekday labels go on Monday, Wednesday, and Friday only.
-        var chart = TwoWeeks(DayOfWeek.Monday, GermanDays, GermanMonths).WithCalendarHeatmapCells(maximumSize: 9).ConfigureLabels(labels => {
+        var chart = TwoWeeks(DayOfWeek.Monday, GermanDays, GermanMonths).ConfigureCalendar(options => options.MaximumCellSize = 9).ConfigureLabels(labels => {
             labels.Less = "Weniger";
             labels.More = "Mehr";
             labels.NoData = "Keine Daten";
@@ -58,9 +58,9 @@ public sealed class CalendarHeatmapOptionsTests {
 
     [Fact]
     public void Names_MustCoverEveryDayAndMonth() {
-        Assert.Throws<ArgumentException>(() => Chart.Create().AddCalendarHeatmap("C", Items(), dayNames: new[] { "Mo" }));
-        Assert.Throws<ArgumentException>(() => Chart.Create().AddCalendarHeatmap("C", Items(), monthNames: GermanDays));
-        Assert.Throws<ArgumentOutOfRangeException>(() => Chart.Create().WithCalendarHeatmapCells(size: 1));
+        Assert.Throws<ArgumentException>(() => Chart.Create().ConfigureCalendar(options => options.DayNames = new[] { "Mo" }));
+        Assert.Throws<ArgumentException>(() => Chart.Create().ConfigureCalendar(options => options.MonthNames = GermanDays));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Chart.Create().ConfigureCalendar(options => options.CellSize = 1));
     }
 
     [Fact]
@@ -70,10 +70,10 @@ public sealed class CalendarHeatmapOptionsTests {
         var small = CellSize(TwoWeeks(DayOfWeek.Monday).WithSize(560, 300));
         var tall = CellSize(TwoWeeks(DayOfWeek.Monday).WithSize(560, 560));
         Assert.True(tall > small * 2, "Taller charts give the calendar larger cells.");
-        Assert.Equal(20, CellSize(TwoWeeks(DayOfWeek.Monday).WithSize(560, 560).WithCalendarHeatmapCells(maximumSize: 20)), 3);
-        Assert.Equal(16, CellSize(TwoWeeks(DayOfWeek.Monday).WithSize(560, 560).WithCalendarHeatmapCells(size: 16)), 3);
-        Assert.Equal(small, CellSize(TwoWeeks(DayOfWeek.Monday).WithSize(560, 300).WithCalendarHeatmapCells(size: 60)), 3);
-        var gapped = ByRole(XDocument.Parse(TwoWeeks(DayOfWeek.Monday).WithSize(560, 560).WithCalendarHeatmapCells(size: 16, gap: 6).ToSvg()), "calendar-cell");
+        Assert.Equal(20, CellSize(TwoWeeks(DayOfWeek.Monday).WithSize(560, 560).ConfigureCalendar(options => options.MaximumCellSize = 20)), 3);
+        Assert.Equal(16, CellSize(TwoWeeks(DayOfWeek.Monday).WithSize(560, 560).ConfigureCalendar(options => options.CellSize = 16)), 3);
+        Assert.Equal(small, CellSize(TwoWeeks(DayOfWeek.Monday).WithSize(560, 300).ConfigureCalendar(options => options.CellSize = 60)), 3);
+        var gapped = ByRole(XDocument.Parse(TwoWeeks(DayOfWeek.Monday).WithSize(560, 560).ConfigureCalendar(options => { options.CellSize = 16; options.Gap = 6; }).ToSvg()), "calendar-cell");
         var first = double.Parse((string)gapped[0].RenderedAttribute("y")!, CultureInfo.InvariantCulture);
         var second = double.Parse((string)gapped[1].RenderedAttribute("y")!, CultureInfo.InvariantCulture);
         Assert.Equal(22, second - first, 3);
@@ -118,7 +118,7 @@ public sealed class CalendarHeatmapOptionsTests {
     [InlineData(DayOfWeek.Wednesday)]
     [InlineData(DayOfWeek.Saturday)]
     public void AnyFirstDay_KeepsWholeWeeksAndLabelsTheSameRowsInSvgAndPng(DayOfWeek firstDay) {
-        var chart = TwoWeeks(firstDay).WithCalendarHeatmapCells(maximumSize: 9);
+        var chart = TwoWeeks(firstDay).ConfigureCalendar(options => options.MaximumCellSize = 9);
         var svg = XDocument.Parse(chart.ToSvg());
         var cells = ByRole(svg, "calendar-cell");
         Assert.Equal(0, cells.Length % 7);
@@ -130,7 +130,7 @@ public sealed class CalendarHeatmapOptionsTests {
     [Fact]
     public void WindowStartingAtTheEndOfAMonth_NamesTheNextMonthInstead() {
         var items = Enumerable.Range(0, 60).Select(day => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 31).AddDays(day), day % 4)).ToArray();
-        var svg = XDocument.Parse(Chart.Create().WithSize(760, 300).WithCalendarHeatmapCells(maximumSize: 10).AddCalendarHeatmap("C", items).ToSvg());
+        var svg = XDocument.Parse(Chart.Create().WithSize(760, 300).ConfigureCalendar(options => options.MaximumCellSize = 10).AddCalendarHeatmap("C", items).ToSvg());
         var months = ByRole(svg, "calendar-month").Select(label => label.Value).ToArray();
         Assert.Equal("Feb", months[0]);
         Assert.Contains("Mar", months);
@@ -206,18 +206,18 @@ public sealed class CalendarHeatmapOptionsTests {
     }
 
     [Fact]
-    public void WithCalendarHeatmapCells_InvalidValue_ChangesNothing() {
-        var chart = Chart.Create().WithCalendarHeatmapCells(size: 12, maximumSize: 30, gap: 2);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.WithCalendarHeatmapCells(size: 14, maximumSize: 500));
-        Assert.Equal(12, chart.Options.CalendarCellSize);
-        Assert.Equal(30, chart.Options.CalendarMaximumCellSize);
-        Assert.Equal(2, chart.Options.CalendarCellGap);
+    public void ConfigureCalendar_InvalidValue_ChangesNothing() {
+        var chart = Chart.Create().ConfigureCalendar(options => { options.CellSize = 12; options.MaximumCellSize = 30; options.Gap = 2; });
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.ConfigureCalendar(options => { options.CellSize = 14; options.MaximumCellSize = 500; }));
+        Assert.Equal(12, chart.Options.Calendar.CellSize);
+        Assert.Equal(30, chart.Options.Calendar.MaximumCellSize);
+        Assert.Equal(2, chart.Options.Calendar.Gap);
     }
 
     [Fact]
     public void YearCalendar_LargePreferredGap_KeepsCellsInsideViewport() {
         var chart = Chart.Create().WithSize(760, 220).WithHeader(false).WithCard(false)
-            .WithCalendarHeatmapCells(gap: 24)
+            .ConfigureCalendar(options => options.Gap = 24)
             .AddCalendarHeatmap("Year", Enumerable.Range(0, 365).Select(i => new ChartCalendarHeatmapItem(new DateTime(2025, 1, 1).AddDays(i), i % 5)).ToArray());
         var cells = ByRole(XDocument.Parse(chart.ToSvg()), "calendar-cell");
         Assert.Equal(371, cells.Length); // Whole weeks include six days outside the requested year.
@@ -230,7 +230,8 @@ public sealed class CalendarHeatmapOptionsTests {
     }
 
     private static Chart TwoWeeks(DayOfWeek firstDay, IReadOnlyList<string>? days = null, IReadOnlyList<string>? months = null) =>
-        Chart.Create().WithSize(560, 300).AddCalendarHeatmap("Changes", Items(), ChartColor.FromHex("#2a78d6"), firstDay, days, months);
+        Chart.Create().WithSize(560, 300).ConfigureCalendar(options => { options.FirstDayOfWeek = firstDay; options.DayNames = days; options.MonthNames = months; })
+            .AddCalendarHeatmap("Changes", Items(), ChartColor.FromHex("#2a78d6"));
 
     private static ChartCalendarHeatmapItem[] Items() {
         // Two weeks from Monday 2026-09-07; the Tuesday has an explicit zero and the weekend has no data.

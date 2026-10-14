@@ -22,11 +22,11 @@ internal static partial class VisualMatrixCompiler {
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("Matrix families cannot mix different layout kinds.");
         if (kind == ChartSeriesKind.CalendarHeatmap) { Calendar(chart, context, builder, viewport, presentation); return; }
         var rows = chart.Series.ToArray();
-        var columns = rows.SelectMany(row => row.Points.Select(point => point.X)
+        var columns = rows.SelectMany(row => row.RenderPoints.Select(point => point.X)
             .Concat(Enumerable.Range(1, row.HeatmapColumnCount ?? 0).Select(index => (double)index))).Distinct().OrderBy(value => value).ToArray();
         if (columns.Any(value => !ChartMath.IsFinite(value))) throw new InvalidOperationException("Matrix column coordinates must be finite.");
         if (columns.Length == 0) { NoData(chart, context, builder, viewport); return; }
-        var values = rows.SelectMany(row => row.Points).Select(point => point.Y).ToArray();
+        var values = rows.SelectMany(row => row.RenderPoints).Select(point => point.Y).ToArray();
         if (values.Any(value => !ChartMath.IsFinite(value))) throw new InvalidOperationException("Matrix values must be finite; omit missing cells rather than supplying NaN.");
         var min = values.Length == 0 ? 0 : values.Min(); var max = values.Length == 0 ? 0 : values.Max();
         var hasDomain = ChartColorScaleSurface.HasDomain(chart.Options.HeatmapColorScale, values.Length > 0 ? min : null, values.Length > 0 ? max : null);
@@ -70,8 +70,9 @@ internal static partial class VisualMatrixCompiler {
                 using (builder.PushGroup("series-" + rowIndex, "series", new Dictionary<string, string> {
                     ["data-cfx-series"] = rowIndex.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-series-name"] = series.Name
                 })) {
-                    for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
-                        var point = series.Points[pointIndex]; var columnIndex = Array.BinarySearch(columns, point.X);
+                    for (var renderIndex = 0; renderIndex < series.RenderPoints.Count; renderIndex++) {
+                        var point = series.RenderPoints[renderIndex]; var columnIndex = Array.BinarySearch(columns, point.X);
+                        var pointIndex = categorical ? (int)point.X - 1 : renderIndex;
                         var bounds = new ChartRect(plot.Left + columnIndex * (cellWidth + gap), y, cellWidth, cellHeight);
                         ChartPath? hexPath = null;
                         if (kind == ChartSeriesKind.HexbinHeatmap) {
@@ -121,7 +122,7 @@ internal static partial class VisualMatrixCompiler {
                           CellLabel(chart, context, builder, series, pointIndex, bounds, viewport,
                               stateMark.HasValue ? ChartMarkText.OnStateMark(chart, colors, context.Frame, stateMark.Value)
                                   : ChartMarkText.OnHeatmapCell(chart, colors, context.Frame, fill, series.Color, point.Y, min, max,
-                                      blend.FromRole ?? SvgColorRole.Ramp, blend), cell, id, presentation);
+                                      blend.FromRole ?? SvgColorRole.Ramp, blend), cell, id, presentation, point.Y);
                         }
                     }
                 }

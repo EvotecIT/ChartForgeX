@@ -77,7 +77,7 @@ public sealed class ScheduleTickPlacementTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The licensed Carlito fixture must be available for repeatable edge-label measurements.");
         var end = Start.AddHours(12);
-        var chart = Chart.Create().WithSize(360, 360).WithTheme(ChartTheme.GraphiteLight()).WithPngFont(font)
+        var chart = Chart.Create().WithSize(360, 360).WithTheme(VisualTheme.Graphite()).WithPngFont(font)
             .WithLegend(false).WithXAxisTimeScale()
             .ConfigureTickLabelStyle(style => style.WithFontSize(fontSize).WithWeight("700").WithColor(TickColor));
         switch (kind) {

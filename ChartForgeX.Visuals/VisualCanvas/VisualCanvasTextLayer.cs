@@ -43,5 +43,5 @@ public sealed class VisualCanvasTextLayer : VisualCanvasLayer {
     /// <summary>Gets or sets whether the text should use the emphasized raster/SVG treatment.</summary>
     public bool Emphasized { get; set; }
 
-    internal ChartColor ResolveColor(VisualCanvasTheme theme) => _explicitColor ?? theme.HeroTitleColor;
+    internal ChartColor ResolveColor(ResolvedVisualCanvasStyle theme) => _explicitColor ?? theme.HeroTitleColor;
 }

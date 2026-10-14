@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 public sealed class GalleryHtmlHealthTests {
     [Fact]
     public void NativeGridAndHostOwnedFlatSurfacesQualifyWhileClippingAndMissingPagePoliciesFail() {
-        var chart = Chart.Create().WithSize(320, 220).WithTitle("Counts").WithTheme(ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithSize(320, 220).WithTitle("Counts").WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
             .AddBar("Counts", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50) });
         var grid = ChartGrid.Create().WithTitle("Comparison").WithColumns(1).Add(chart);
         var gridHtml = grid.ToHtmlPage();
@@ -19,7 +19,7 @@ public sealed class GalleryHtmlHealthTests {
         Assert.Contains("data-cfx-role=\"panel\"", gridHtml);
         var host = chart.WithHostFrame().ToHtmlPage();
         Assert.DoesNotContain("data-cfx-role=\"frame-card\"", host);
-        var table = ChartTable.Create().WithTitle("Release gates").WithTheme(ChartTheme.GraphiteLight())
+        var table = ChartTable.Create().WithTitle("Release gates").WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
             .WithColumns("Gate", "Status").AddRow("Build", "Passed");
         var tableHtml = table.ToHtmlPage();
         var artifactHtml = TableArtifact.Create("packed-table").AddColumn("gate", "Gate")

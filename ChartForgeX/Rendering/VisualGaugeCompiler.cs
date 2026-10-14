@@ -12,12 +12,14 @@ namespace ChartForgeX.Rendering;
 /// <summary>Compiles every gauge anatomy into the same detached numeric scene.</summary>
 internal static class VisualGaugeCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
+        if (!chart.Series[0].HasSourceData) return Array.Empty<VisualLegendEntry>();
         var data = Read(chart, colors);
         return chart.Series[0].ShowInLegend ? new[] { new VisualLegendEntry(chart.Series[0].Name, data.Color, "series-0", ChartSeriesKind.Gauge,
             stateRole: data.State, seriesKey: chart.Series[0].InteractionIdentityKey, paint: GaugePaint(chart.Series[0], data)) } : Array.Empty<VisualLegendEntry>();
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
+        if (!chart.Series[0].HasSourceData) { builder.AddDiagnostic(new VisualDiagnostic("gauge.no-data", "Gauge charts need one measured value.")); return; }
         var colors = context.Theme.Resolve(context.ThemeMode);
         var data = Read(chart, colors);
         var series = chart.Series[0]; var options = chart.Options.Gauge;
@@ -42,6 +44,7 @@ internal static class VisualGaugeCompiler {
         var max = scaleCaptions.Length > 0 ? scaleCaptions[scaleCaptions.Length - 1] : null;
         builder.AddRegion(new VisualSemanticRegion("series-0", "gauge", plot, series.Name + ": " + value));
         using (builder.PushGroup("series-0", "gauge", new Dictionary<string, string> {
+            ["data-cfx-series"] = "0", ["data-cfx-point"] = "0", ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
             ["data-cfx-value"] = N(data.Raw), ["data-cfx-min"] = N(data.Min), ["data-cfx-max"] = N(data.Max),
             ["data-cfx-percent"] = N(data.Ratio), ["data-cfx-status"] = data.State.ToString(),
             ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors ? "true" : "false",
@@ -57,8 +60,8 @@ internal static class VisualGaugeCompiler {
 
     private static GaugeData Read(Chart chart, VisualThemeColors colors) {
         var series = chart.Series[0];
-        if (series.Points.Count < 2) throw new InvalidOperationException("A gauge requires its minimum/value and maximum points.");
-        var min = series.Points[0].X; var max = series.Points[1].X; var raw = series.Points[0].Y;
+        if (series.RenderPoints.Count < 2) throw new InvalidOperationException("A gauge requires its minimum/value and maximum points.");
+        var min = series.RenderPoints[0].X; var max = series.RenderPoints[1].X; var raw = series.RenderPoints[0].Y;
         ChartGuards.Finite(min, nameof(chart)); ChartGuards.Finite(max, nameof(chart)); ChartGuards.Finite(raw, nameof(chart));
         if (max <= min || double.IsInfinity(max - min)) throw new InvalidOperationException("A gauge requires a finite positive range.");
         var bands = chart.Options.Gauge.Bands.OrderBy(band => band?.Minimum).ToArray();
@@ -168,8 +171,11 @@ internal static class VisualGaugeCompiler {
             var down = Math.Sin(angle); var sideways = Math.Abs(Math.Cos(angle));
             var depth = down > 0 && sideways > .000001
                 ? Math.Min((radius - stroke) * down, half * down / sideways) : 0;
+            // Browser SVG can use the face's Windows ascent even when the native painter uses
+            // its shorter horizontal-header ascent. Move the shared row by that measured extent.
+            var ascenderOverflow = Math.Max(0, builder.TextAscentEnvelope(style) - builder.TextAscent(style));
             return cy + Math.Max(stroke / 3 + gap / 2,
-                depth + Math.Max(1, context.Theme.SeriesStrokeWidth) / 2 + gap / 2);
+                depth + Math.Max(1, context.Theme.SeriesStrokeWidth) / 2 + gap / 2) + ascenderOverflow;
         }
         bool Fits(TextStyle style) {
             var start = ClearTop(value, style, radius * 1.4);

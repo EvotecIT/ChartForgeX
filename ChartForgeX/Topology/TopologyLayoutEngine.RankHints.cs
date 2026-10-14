@@ -14,7 +14,7 @@ internal static partial class TopologyLayoutEngine {
             .OrderBy(edge => edge.Id, StringComparer.Ordinal)
             .ToList();
         var adjacency = nodes.Keys.ToDictionary(id => id, _ => new List<string>(), StringComparer.Ordinal);
-        foreach (var edge in edges) adjacency[edge.SourceNodeId].Add(edge.TargetNodeId);
+        foreach (var edge in edges) adjacency[RankSource(edge)].Add(RankTarget(edge));
 
         var components = StronglyConnectedComponents(nodes.Keys, adjacency);
         var componentByNode = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -34,8 +34,8 @@ internal static partial class TopologyLayoutEngine {
         var outgoing = Enumerable.Range(0, components.Count).ToDictionary(component => component, _ => new List<TopologyEdge>());
         var indegree = Enumerable.Range(0, components.Count).ToDictionary(component => component, _ => 0);
         foreach (var edge in edges) {
-            var source = componentByNode[edge.SourceNodeId];
-            var target = componentByNode[edge.TargetNodeId];
+            var source = componentByNode[RankSource(edge)];
+            var target = componentByNode[RankTarget(edge)];
             if (source == target) continue;
             outgoing[source].Add(edge);
             indegree[target]++;
@@ -46,7 +46,7 @@ internal static partial class TopologyLayoutEngine {
             var component = ready.Min;
             ready.Remove(component);
             foreach (var edge in outgoing[component].OrderBy(item => item.Id, StringComparer.Ordinal)) {
-                var target = componentByNode[edge.TargetNodeId];
+                var target = componentByNode[RankTarget(edge)];
                 componentRanks[target] = Math.Max(componentRanks[target], componentRanks[component] + edge.MinimumRankSpan);
                 indegree[target]--;
                 if (indegree[target] == 0) ready.Add(target);
@@ -58,6 +58,10 @@ internal static partial class TopologyLayoutEngine {
             node.Metadata["layout.rankHintsApplied"] = "true";
         }
     }
+
+    // Rank constraints follow the painted relationship without changing authored endpoints.
+    private static string RankSource(TopologyEdge edge) => edge.Direction == VisualLinkDirection.Backward ? edge.TargetNodeId : edge.SourceNodeId;
+    private static string RankTarget(TopologyEdge edge) => edge.Direction == VisualLinkDirection.Backward ? edge.SourceNodeId : edge.TargetNodeId;
 
     private static List<List<string>> StronglyConnectedComponents(IEnumerable<string> nodeIds, IReadOnlyDictionary<string, List<string>> adjacency) {
         var nextIndex = 0;

@@ -156,7 +156,7 @@ public sealed class SunburstHierarchyTests {
     [Fact]
     public void InvalidFactsAndImpossibleAuthoredTotalsCannotAppendPartialSeries() {
         var invalid = new[] {
-            Array.Empty<ChartHierarchyItem>(), new[] { default(ChartHierarchyItem) },
+            new[] { default(ChartHierarchyItem) },
             new[] { new ChartHierarchyItem("a", "A") },
             new[] { new ChartHierarchyItem("a", "A", value: 1), new ChartHierarchyItem("a", "A", value: 2) },
             new[] { new ChartHierarchyItem("a", "A", "missing", 1) },

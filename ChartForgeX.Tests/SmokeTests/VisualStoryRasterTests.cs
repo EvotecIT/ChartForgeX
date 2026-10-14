@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Linq;
 using System.Xml.Linq;
@@ -11,8 +12,8 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     internal static void VisualStoryRasterLayoutStaysBoundedAtEveryDensity() {
-        var theme = VisualStoryTheme.PremiumDark();
-        theme.Muted = ChartColor.FromRgb(255, 0, 128);
+        var theme = VisualStoryThemes.Premium();
+        theme = theme.Configure(builder => builder.Dark.MutedForeground = ChartColor.FromRgb(255, 0, 128));
         var split = VisualStory.Create("Bounded panel titles")
             .WithSize(480, 320)
             .WithTheme(theme);

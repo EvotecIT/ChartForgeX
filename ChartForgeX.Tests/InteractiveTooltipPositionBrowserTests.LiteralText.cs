@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(340, false, false)]
     [InlineData(340, true, true)]
     [InlineData(950, true, false)]
@@ -18,7 +18,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         var detail = "JobCorrelationId=" + new string('a', 96) + " & \"retained\" <script>window.cfxDetailInjection=1</script> 'verbatim'";
         var start = new DateTime(2026, 10, 10, 8, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().WithSize(800, 440).WithTitle("Job execution")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithXAxisTimeScale()
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithXAxisTimeScale()
             .WithStateCategories(new VisualStatusTokens().SeverityCategories())
             .AddGanttLane("Worker", new[] { new ChartGanttLaneItem(start, start.AddHours(2), "info", "Export", detail) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {

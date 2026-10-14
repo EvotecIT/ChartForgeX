@@ -618,20 +618,27 @@ internal static class DashboardPortfolioExamples {
 
     private static string CurrencyK(double value) => "$" + (value / 1000d).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "K";
 
-    private static ChartTheme DashboardTheme() => ChartTheme.DashboardLight();
+    private static VisualTheme DashboardTheme() => VisualTheme.Dashboard();
 
-    private static ChartTheme SaasTheme() => ChartTheme.SaasDashboardLight();
+    private static VisualTheme SaasTheme() => VisualTheme.SaasDashboard();
 
-    private static ChartTheme RestaurantTheme() => ChartTheme.RestaurantDashboardLight();
+    private static VisualTheme RestaurantTheme() => VisualTheme.RestaurantDashboard();
 
-    private static ChartTheme TicketingTheme() => ChartTheme.DashboardLight()
-        .WithSurfaceColors(ChartColor.FromHex("#F7F8F8"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#ECF3F2"), ChartColor.FromHex("#D8E7E5"))
-        .WithTextColors(ChartColor.FromHex("#16191D"), ChartColor.FromHex("#656D76"))
-        .WithPalette(TicketTeal.ToHex(), TicketLavender.ToHex(), TicketAmber.ToHex(), TicketRose.ToHex(), TicketMint.ToHex())
-        .WithTypography(22, 11.5, 10.5, 11, 11.5, 10.5)
-        .WithCornerRadius(18, 8)
-        .WithShadowOpacity(0.045)
-        .WithMarkerRadius(4.4);
+    private static VisualTheme TicketingTheme() => VisualTheme.Dashboard().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F7F8F8");
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.White;
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#ECF3F2");
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#D8E7E5");
+            builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#16191D");
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#656D76");
+            builder.Light.Palette = builder.Dark.Palette = new[] { TicketTeal, TicketLavender, TicketAmber, TicketRose, TicketMint };
+            builder.Typography = new VisualTypography(builder.Typography.Family, titleSize: 22, subtitleSize: 11.5, axisTitleSize: 10.5, axisSize: 11, legendSize: 11.5, dataLabelSize: 10.5);
+            builder.CardRadius = 18;
+            builder.PlotRadius = builder.BarRadius = 8;
+            builder.CardShadowOpacity = 0.045;
+            builder.MarkerRadius = 4.4;
+        });
 
     private static string Euros(double value) => "EUR " + (value / 1000d).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + "K";
 }

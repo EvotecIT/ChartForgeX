@@ -11,10 +11,6 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Compiles geographic points, reusable region geometry and categorical hex tiles into one numeric scene.</summary>
 internal static partial class VisualMapCompiler {
-    internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) =>
-        chart.Series.Where(series => series.ShowInLegend).Select(series => new VisualLegendEntry(series.Name,
-            ChartSeriesColours.Resolve(series, 0, colors), "series-0", series.Kind, series.FillPattern, series.StateRole, series.InteractionIdentityKey)).ToArray();
-
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartColorPresentation? presentation = null) {
         if (chart.Series.Count != 1) throw new InvalidOperationException("Prepared map charts require one map series.");
         var series = chart.Series[0];
@@ -23,16 +19,16 @@ internal static partial class VisualMapCompiler {
             throw new InvalidOperationException("Map region stroke width must be non-negative and finite.");
         var colors = context.Theme.Resolve(context.ThemeMode);
         if (series.Kind == ChartSeriesKind.DottedMap) { Dotted(chart, context, builder, plot, colors); return; }
-        if (series.Points.Any(point => !Finite(point.X) || !Finite(point.Y) || point.Y < 0))
+        if (series.RenderPoints.Any(point => !Finite(point.X) || !Finite(point.Y) || point.Y < 0))
             throw new InvalidOperationException("Map values must be finite and non-negative.");
-        var minimum = series.Points.Count == 0 ? 0 : series.Points.Min(point => point.Y);
-        var maximum = series.Points.Count == 0 ? 0 : series.Points.Max(point => point.Y);
+        var minimum = series.RenderPoints.Count == 0 ? 0 : series.RenderPoints.Min(point => point.Y);
+        var maximum = series.RenderPoints.Count == 0 ? 0 : series.RenderPoints.Max(point => point.Y);
         var layout = ScaleLayout(chart, context, builder, plot, minimum, maximum, presentation);
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey,
             ["data-cfx-label"] = series.Name
         };
-        if (series.Points.Count > 0) { metadata["data-cfx-min-value"] = N(minimum); metadata["data-cfx-max-value"] = N(maximum); }
+        if (series.RenderPoints.Count > 0) { metadata["data-cfx-min-value"] = N(minimum); metadata["data-cfx-max-value"] = N(maximum); }
         using (builder.PushGroup("series-0", "map-series", metadata)) {
             if (series.Kind == ChartSeriesKind.RegionMap) Regions(chart, context, builder, layout.Map, colors, minimum, maximum, presentation);
             else if (series.Kind == ChartSeriesKind.TileMap) Tiles(chart, context, builder, layout.Map, colors, minimum, maximum, presentation);
@@ -42,10 +38,10 @@ internal static partial class VisualMapCompiler {
     }
 
     private static Dictionary<string, int> Values(Chart chart, Func<string, string?> resolve) {
-        var values = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        for (var index = 0; index < chart.Series[0].Points.Count; index++) {
-            var key = ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, chart.Series[0].Points[index].X);
-            var code = key == null ? null : resolve(key);
+        var values = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (var index = 0; index < chart.Series[0].RenderPoints.Count; index++) {
+            var key = chart.Series[0].RegionValues[index].Region;
+            var code = resolve(key);
             if (code == null) throw new InvalidOperationException("A map observation must identify a known, unambiguous region.");
             if (values.ContainsKey(code)) throw new InvalidOperationException("Map observations must contain one aggregated value per region.");
             values.Add(code, index);
@@ -59,14 +55,14 @@ internal static partial class VisualMapCompiler {
         if (!index.HasValue) return ChartHeatmapSurface.MapNoDataBlend(chart, colors);
         var series = chart.Series[0]; var point = index.Value;
         return ChartHeatmapSurface.MapBlend(chart, colors,
-            point < series.PointColors.Count ? series.PointColors[point] : null, High(series, colors), series.Points[point].Y, min, max, VisualChartPaint.SeriesRole(series));
+            point < series.PointColors.Count && series.PointColors[point].HasValue ? series.PointColors[point] : series.RegionValues[point].Color, High(series, colors), series.RenderPoints[point].Y, min, max, VisualChartPaint.SeriesRole(series));
     }
     private static ChartFillPattern Pattern(ChartSeries series, int? index) => index.HasValue && index.Value < series.PointFillPatterns.Count && series.PointFillPatterns[index.Value].HasValue
         ? series.PointFillPatterns[index.Value]!.Value : series.FillPattern;
     private static TextStyle TickStyle(Chart chart, VisualRenderContext context, ChartColor? color = null) => chart.Options.TickLabelStyle.Resolve(new TextStyle {
         Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = color ?? context.Theme.Resolve(context.ThemeMode).MutedForeground
     });
-    private static string Formatted(Chart chart, int? source, ChartColorPresentation presentation) => source.HasValue ? presentation.Value(chart.Series[0].Points[source.Value].Y) : presentation.NoData;
+    private static string Formatted(Chart chart, int? source, ChartColorPresentation presentation) => source.HasValue ? presentation.Value(chart.Series[0].RenderPoints[source.Value].Y) : presentation.NoData;
     private static void Surface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds, VisualThemeColors colors, string role) {
         if (!chart.Options.ShowMapSurface) return;
         builder.Rect(bounds, ChartColorMath.WithOpacity(ChartColorMath.Blend(colors.Surface, colors.Border, .12), .16),
@@ -77,7 +73,7 @@ internal static partial class VisualMapCompiler {
     }
     private static Dictionary<string, string> Source(Chart chart, string code, string name, int? source, double? value, string full, double min, double max, ChartColorPresentation presentation) {
         var metadata = new Dictionary<string, string> {
-            ["data-cfx-region"] = code, ["data-cfx-region-name"] = name, ["data-cfx-label"] = name, ["data-cfx-point"] = source.HasValue ? N(source.Value) : "-1",
+            ["data-cfx-series"] = "0", ["data-cfx-region"] = code, ["data-cfx-region-name"] = name, ["data-cfx-label"] = name, ["data-cfx-point"] = source.HasValue ? N(source.Value) : "-1",
             ["data-cfx-empty"] = source.HasValue ? "false" : "true", ["data-cfx-value"] = value.HasValue ? N(value.Value) : "",
             ["data-cfx-formatted-value"] = full, ["aria-label"] = name + " (" + code + "): " + full
         };

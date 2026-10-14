@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 internal static class ChartTreeLayout {
     public static ChartTreeModel Build(Chart chart, ChartRect plot, bool fitViewport = false) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Tree);
-        if (series?.Relationships == null) return ChartTreeModel.Empty;
+        if (series?.Relationships == null || series.Nodes.Count == 0) return ChartTreeModel.Empty;
         var facts = series.Relationships;
         var nodeCount = facts.Nodes.Count;
         var links = new List<ChartTreeLayoutLink>();

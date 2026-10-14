@@ -30,10 +30,15 @@ internal static class ReportingExamples {
         var chart = Chart.Create()
             .WithTitle("Konfigurationsänderungen pro Tag")
             .WithSubtitle("Letzte zwei Wochen; Tage ohne Änderungen bleiben neutral")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(760, 360)
             .WithPngOutputScale(pngOutputScale)
-            .WithCalendarHeatmapCells(maximumSize: 30)
+            .ConfigureCalendar(options => {
+                options.MaximumCellSize = 30;
+                options.FirstDayOfWeek = DayOfWeek.Monday;
+                options.DayNames = new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" };
+                options.MonthNames = new[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+            })
             .ConfigureLabels(labels => {
                 labels.Less = "Weniger";
                 labels.More = "Mehr";
@@ -44,9 +49,7 @@ internal static class ReportingExamples {
                     _ => null
                 };
             })
-            .AddCalendarHeatmap("Änderungen", items, ChartColor.FromHex("#2a78d6"), DayOfWeek.Monday,
-                new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" },
-                new[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" });
+            .AddCalendarHeatmap("Änderungen", items, ChartColor.FromHex("#2a78d6"));
 
         chart.SaveSvg(Path.Combine(output, "reporting-change-calendar.svg"));
         chart.SaveHtml(Path.Combine(output, "reporting-change-calendar.html"));
@@ -71,7 +74,7 @@ internal static class ReportingExamples {
         var chart = Chart.Create()
             .WithTitle("Sign-in failures by hour and weekday")
             .WithSubtitle("Four weeks of events; darker cells had more failures")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(1180, 440)
             .WithPngOutputScale(pngOutputScale)
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Hidden)
@@ -90,7 +93,7 @@ internal static class ReportingExamples {
         var chart = Chart.Create()
             .WithTitle("Incidents by service")
             .WithSubtitle("Last 48 hours; overlapping incidents stack within a lane and open incidents run to now")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(1180, 560)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
@@ -115,7 +118,7 @@ internal static class ReportingExamples {
         var chart = Chart.Create()
             .WithTitle("Directory health by domain controller")
             .WithSubtitle("Worst finding per check, grouped by site; select a cell to open its evidence")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(1180, 620)
             .WithPngOutputScale(pngOutputScale)
             .WithStateCategories(
@@ -163,7 +166,7 @@ internal static class ReportingExamples {
         var chart = Chart.Create()
             .WithTitle("Domain controller availability")
             .WithSubtitle("15-minute rollups over the last 24 hours, grouped by site; gaps mean no data was collected")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(1180, 620)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale(showTimeZone: true)
@@ -214,7 +217,7 @@ internal static class ReportingExamples {
         var end = start + 200.0 / 86400000;
         var fast = Chart.Create().WithTitle("Sub-second time-axis fallback")
             .WithSubtitle("Fractional OLE Automation dates keep distinct values below one second")
-            .WithTheme(ChartTheme.ReportLight()).WithSize(1000, 340).WithPngOutputScale(pngOutputScale)
+            .WithTheme(VisualTheme.Report()).WithSize(1000, 340).WithPngOutputScale(pngOutputScale)
             .WithXAxisTimeScale().WithXAxis("Observed (OLE Automation days)").WithYAxis("Sample")
             .AddLine("Signal", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
         fast.Options.XAxis.WithBounds(start, end);
@@ -225,7 +228,7 @@ internal static class ReportingExamples {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Example/Plus5", TimeSpan.FromHours(5), "UTC+05", "UTC+05");
         var schedule = Chart.Create().WithTitle("Classic wall-clock schedule")
             .WithSubtitle("Date-based schedules retain wall-clock dates and do not advertise an unapplied display zone")
-            .WithTheme(ChartTheme.ReportLight()).WithSize(1000, 340).WithPngOutputScale(pngOutputScale)
+            .WithTheme(VisualTheme.Report()).WithSize(1000, 340).WithPngOutputScale(pngOutputScale)
             .WithXAxis("Window").WithXAxisTimeScale(zone, showTimeZone: true, label: "UTC+05")
             .WithTickCount(3)
             .AddGanttTask("Maintenance", WindowStart.Date, WindowStart.Date.AddDays(2));
@@ -247,7 +250,7 @@ internal static class ReportingExamples {
         var chart = Chart.Create()
             .WithTitle("LDAP bind latency")
             .WithSubtitle("5-minute rollups; the collection outage stays empty instead of being bridged")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(1180, 480)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxis("Observed")
@@ -255,7 +258,7 @@ internal static class ReportingExamples {
             .WithXAxisTimeScale(showTimeZone: true)
             .AddLine("p50", samples.Select(sample => Point(sample, P50(sample.Index))), ChartColor.FromHex("#2a78d6"))
             .AddLine("p95", samples.Select(sample => Point(sample, P95(sample.Index))), ChartColor.FromHex("#0f9f8c"));
-        foreach (var series in chart.Series) series.WithStrokeWidth(2).WithMarkerRadius(0);
+        foreach (var series in chart.Series) series.WithStrokeWidth(2).ConfigureMarkers(markers => markers.Radius = 0);
 
         chart.SaveSvg(Path.Combine(output, "reporting-time-axis-utc.svg"));
         chart.SaveHtml(Path.Combine(output, "reporting-time-axis-utc.html"));

@@ -94,7 +94,7 @@ internal static class ChartGuards {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts support exactly one series.");
         }
 
-        if (!preparing && ChartSeriesKindTraits.RequiresPositiveValues(exclusiveKinds[0]) && !chart.Series[0].Points.Any(point => point.Y > 0)) {
+        if (!preparing && ChartSeriesKindTraits.RequiresPositiveValues(exclusiveKinds[0]) && !chart.Series[0].RenderPoints.Any(point => point.Y > 0)) {
             throw new InvalidOperationException(exclusiveKinds[0].ToString() + " charts require at least one positive value.");
         }
 
@@ -103,11 +103,7 @@ internal static class ChartGuards {
         }
 
         if (exclusiveKinds[0] == ChartSeriesKind.Radar) {
-            var categoryCount = chart.Series
-                .Where(series => series.Kind == ChartSeriesKind.Radar)
-                .SelectMany(series => series.Points.Select(point => point.X))
-                .Distinct()
-                .Count();
+            var categoryCount = ValidateUniqueRadialCategories(chart);
             if (categoryCount < 3 && (!preparing || categoryCount > 0)) throw new InvalidOperationException("Radar charts require at least three categories.");
         }
 
@@ -119,7 +115,7 @@ internal static class ChartGuards {
                 throw new InvalidOperationException("Polar charts require a non-negative radial-axis minimum.");
             }
 
-            if (!preparing && !chart.Series.SelectMany(series => series.Points).Any(point => point.Y > 0)) {
+            if (!preparing && !chart.Series.SelectMany(series => series.RenderPoints).Any(point => point.Y > 0)) {
                 throw new InvalidOperationException("Polar charts require at least one positive radius.");
             }
         }
@@ -131,17 +127,20 @@ internal static class ChartGuards {
         var geometry = chart.Options.RadialGeometry;
         if (Math.Abs(geometry.EndAngleDegrees - geometry.StartAngleDegrees - 360) > 1e-9)
             throw new NotSupportedException("Mixed radial columns and radar series require a full-turn radial viewport.");
-        var categories = new List<double>();
+        var categoryCount = ValidateUniqueRadialCategories(chart);
+        if (categoryCount < 3 && chart.Series.Any(series => series.Kind == ChartSeriesKind.Radar && series.RenderPoints.Count > 0))
+            throw new InvalidOperationException("Radar charts require at least three categories.");
+    }
+
+    private static int ValidateUniqueRadialCategories(Chart chart) {
         foreach (var series in chart.Series) {
-            var ordered = series.Points.Select(point => point.X).OrderBy(value => value).ToArray();
+            var ordered = series.RenderPoints.Select(point => point.X).OrderBy(value => value).ToArray();
             for (var index = 0; index < ordered.Length; index++) {
                 if (index > 0 && ChartMath.SameCoordinate(ordered[index - 1], ordered[index]))
-                    throw new InvalidOperationException("Mixed radial series require unique categories within each series.");
-                if (!categories.Any(value => ChartMath.SameCoordinate(value, ordered[index]))) categories.Add(ordered[index]);
+                    throw new InvalidOperationException("Radar and mixed radial series require unique categories within each series.");
             }
         }
-        if (categories.Count < 3 && chart.Series.Any(series => series.Kind == ChartSeriesKind.Radar && series.Points.Count > 0))
-            throw new InvalidOperationException("Radar charts require at least three categories.");
+        return ChartBarCoordinateMap.Create(chart).Categories.Count;
     }
 
     private static void ValidateRenderableChart(Chart chart, bool preparing) {
@@ -182,34 +181,33 @@ internal static class ChartGuards {
         series.ValidateFinancialOptions();
         series.ValidateColorValues();
         if (ChartSeries.IsRelationshipKind(series.Kind)) series.ValidateRelationships(preparing);
-        if (series.Points.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
+        if (series.RenderPoints.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
             && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea && series.Kind != ChartSeriesKind.DifferenceArea)
             throw new InvalidOperationException("Segment breaks are supported only for line, step-line, area, step-area, stacked-area, range-band, range-area, difference-area, and scatter series.");
         if (series.HistogramBinLayout != null) ValidateHistogramSeries(series);
-        // An empty tuple series is a native no-data scene; incomplete nonempty tuples
-        // still pass through the same canonical shape validation below.
-        if (preparing && series.Points.Count == 0) return;
+        // Typed observation projections are derived snapshots; empty data retains the native no-data scene.
+        if (preparing && series.RenderPoints.Count == 0) return;
         if (series.Kind == ChartSeriesKind.Bubble) {
             ValidateTupleSeries(series, 2, "Bubble");
-            for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-                RequireSameX(series.Points[i], series.Points[i + 1], "Bubble value and size points must share the same x value.");
-                if (series.Points[i + 1].Y <= 0) throw new InvalidOperationException("Bubble sizes must be positive.");
+            for (var i = 0; i + 1 < series.RenderPoints.Count; i += 2) {
+                RequireSameX(series.RenderPoints[i], series.RenderPoints[i + 1], "Bubble value and size points must share the same x value.");
+                if (series.RenderPoints[i + 1].Y <= 0) throw new InvalidOperationException("Bubble sizes must be positive.");
             }
         } else if (series.Kind == ChartSeriesKind.ErrorBar) {
             ValidateTupleSeries(series, 3, "Error-bar");
-            for (var i = 0; i + 2 < series.Points.Count; i += 3) {
-                RequireSameX(series.Points[i], series.Points[i + 1], "Error-bar point and lower bound must share the same x value.");
-                RequireSameX(series.Points[i], series.Points[i + 2], "Error-bar point and upper bound must share the same x value.");
-                if (series.Points[i + 1].Y > series.Points[i].Y) throw new InvalidOperationException("Error-bar lower bounds must be less than or equal to the point estimate.");
-                if (series.Points[i + 2].Y < series.Points[i].Y) throw new InvalidOperationException("Error-bar upper bounds must be greater than or equal to the point estimate.");
+            for (var i = 0; i + 2 < series.RenderPoints.Count; i += 3) {
+                RequireSameX(series.RenderPoints[i], series.RenderPoints[i + 1], "Error-bar point and lower bound must share the same x value.");
+                RequireSameX(series.RenderPoints[i], series.RenderPoints[i + 2], "Error-bar point and upper bound must share the same x value.");
+                if (series.RenderPoints[i + 1].Y > series.RenderPoints[i].Y) throw new InvalidOperationException("Error-bar lower bounds must be less than or equal to the point estimate.");
+                if (series.RenderPoints[i + 2].Y < series.RenderPoints[i].Y) throw new InvalidOperationException("Error-bar upper bounds must be greater than or equal to the point estimate.");
             }
         } else if (series.Kind == ChartSeriesKind.Candlestick || series.Kind == ChartSeriesKind.Ohlc) {
             ValidateTupleSeries(series, 4, series.Kind == ChartSeriesKind.Candlestick ? "Candlestick" : "OHLC");
-            for (var i = 0; i + 3 < series.Points.Count; i += 4) {
-                var open = series.Points[i];
-                var high = series.Points[i + 1];
-                var low = series.Points[i + 2];
-                var close = series.Points[i + 3];
+            for (var i = 0; i + 3 < series.RenderPoints.Count; i += 4) {
+                var open = series.RenderPoints[i];
+                var high = series.RenderPoints[i + 1];
+                var low = series.RenderPoints[i + 2];
+                var close = series.RenderPoints[i + 3];
                 RequireSameX(open, high, "Financial OHLC points in one tuple must share the same x value.");
                 RequireSameX(open, low, "Financial OHLC points in one tuple must share the same x value.");
                 RequireSameX(open, close, "Financial OHLC points in one tuple must share the same x value.");
@@ -218,23 +216,23 @@ internal static class ChartGuards {
             }
         } else if (series.Kind == ChartSeriesKind.RangeBand || series.Kind == ChartSeriesKind.RangeArea) {
             ValidateTupleSeries(series, 2, series.Kind == ChartSeriesKind.RangeBand ? "Range-band" : "Range-area");
-            for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-                RequireSameX(series.Points[i], series.Points[i + 1], "Range lower and upper points must share the same x value.");
-                if (series.Points[i].Y > series.Points[i + 1].Y) throw new InvalidOperationException("Range lower values must be less than or equal to upper values.");
+            for (var i = 0; i + 1 < series.RenderPoints.Count; i += 2) {
+                RequireSameX(series.RenderPoints[i], series.RenderPoints[i + 1], "Range lower and upper points must share the same x value.");
+                if (series.RenderPoints[i].Y > series.RenderPoints[i + 1].Y) throw new InvalidOperationException("Range lower values must be less than or equal to upper values.");
             }
         } else if (series.Kind == ChartSeriesKind.RangeBar || series.Kind == ChartSeriesKind.Dumbbell) {
             ValidateTupleSeries(series, 2, series.Kind == ChartSeriesKind.RangeBar ? "Range-bar" : "Dumbbell");
-            for (var i = 0; i + 1 < series.Points.Count; i += 2) {
-                RequireSameX(series.Points[i], series.Points[i + 1], "Paired comparison points must share the same x value.");
+            for (var i = 0; i + 1 < series.RenderPoints.Count; i += 2) {
+                RequireSameX(series.RenderPoints[i], series.RenderPoints[i + 1], "Paired comparison points must share the same x value.");
             }
         } else if (series.Kind == ChartSeriesKind.BoxPlot) {
             ValidateTupleSeries(series, 5, "Box plot");
-            for (var i = 0; i + 4 < series.Points.Count; i += 5) {
-                var minimum = series.Points[i];
-                var q1 = series.Points[i + 1];
-                var median = series.Points[i + 2];
-                var q3 = series.Points[i + 3];
-                var maximum = series.Points[i + 4];
+            for (var i = 0; i + 4 < series.RenderPoints.Count; i += 5) {
+                var minimum = series.RenderPoints[i];
+                var q1 = series.RenderPoints[i + 1];
+                var median = series.RenderPoints[i + 2];
+                var q3 = series.RenderPoints[i + 3];
+                var maximum = series.RenderPoints[i + 4];
                 RequireSameX(minimum, q1, "Box plot summary points must share the same x value.");
                 RequireSameX(minimum, median, "Box plot summary points must share the same x value.");
                 RequireSameX(minimum, q3, "Box plot summary points must share the same x value.");
@@ -246,19 +244,19 @@ internal static class ChartGuards {
 
     private static void ValidateHistogramSeries(ChartSeries series) {
         var layout = series.HistogramBinLayout!;
-        if (series.Kind != ChartSeriesKind.Bar || series.Points.Count != layout.Count) {
+        if (series.Kind != ChartSeriesKind.Bar || series.RenderPoints.Count != layout.Count) {
             throw new InvalidOperationException("Histogram series must retain exactly one bar point per layout bin.");
         }
 
-        for (var index = 0; index < series.Points.Count; index++) {
-            if (series.Points[index].X != layout.GetCenter(index) || series.Points[index].Y != (series.HistogramBins[index].Value ?? 0)) {
+        for (var index = 0; index < series.RenderPoints.Count; index++) {
+            if (series.RenderPoints[index].X != layout.GetCenter(index) || series.RenderPoints[index].Y != (series.HistogramBins[index].Value ?? 0)) {
                 throw new InvalidOperationException("Histogram series points must retain their layout order, centers and raw aggregates; rebuild the histogram to change observations.");
             }
         }
     }
 
     private static void ValidateTupleSeries(ChartSeries series, int tupleSize, string chartName) {
-        if (series.Points.Count == 0 || series.Points.Count % tupleSize != 0) {
+        if (series.RenderPoints.Count == 0 || series.RenderPoints.Count % tupleSize != 0) {
             throw new InvalidOperationException(chartName + " series require complete " + tupleSize.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-point tuple(s).");
         }
     }
@@ -270,10 +268,10 @@ internal static class ChartGuards {
     private static void ValidateSpecializedShape(Chart chart, ChartSeriesKind kind, bool preparing) {
         if (kind == ChartSeriesKind.Heatmap || kind == ChartSeriesKind.HexbinHeatmap) {
             // Fully masked rows keep their position (for example a weekday with no samples) when the column span is known.
-            if (!preparing || chart.Series.Any(series => series.Points.Count > 0))
+            if (!preparing || chart.Series.Any(series => series.RenderPoints.Count > 0))
                 ValidateMinimumPointCount(chart.Series.Where(series => !series.HeatmapColumnCount.HasValue).ToArray(), kind, 1);
             // A categorical matrix may list entities nothing is known about, so it can be empty; a numeric one cannot.
-            if (!preparing && !chart.Series.Any(series => series.Points.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
+            if (!preparing && !chart.Series.Any(series => series.RenderPoints.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
             if (kind == ChartSeriesKind.Heatmap) ValidateHeatmapCategories(chart);
             if (chart.Options.HeatmapColorScale == null && chart.Options.HeatmapRelativeScale && chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) {
                 throw new InvalidOperationException("Relative (count) heatmaps use a neutral sequential scale; the semantic status scale is reserved for status data.");
@@ -288,36 +286,42 @@ internal static class ChartGuards {
             if (!preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
             ValidateNonNegativeValues(chart.Series[0], kind);
         }
-        else if (kind == ChartSeriesKind.Gauge || kind == ChartSeriesKind.Circle) ValidateScalePair(chart.Series[0], kind.ToString());
+        else if (kind == ChartSeriesKind.Gauge || kind == ChartSeriesKind.Circle) {
+            if (!preparing || chart.Series[0].HasSourceData) ValidateScalePair(chart.Series[0], kind.ToString());
+        }
         else if (kind == ChartSeriesKind.ProgressRing) ValidateProgressRing(chart.Series[0], preparing);
         else if (kind == ChartSeriesKind.LayeredRadial) ValidateLayeredRadial(chart.Series[0], preparing);
         else if (kind == ChartSeriesKind.Polar) {
             if (!preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
             foreach (var series in chart.Series) ValidateNonNegativeValues(series, kind);
         }
-        else if (kind == ChartSeriesKind.Bullet) ValidateBullets(chart.Series);
+        else if (kind == ChartSeriesKind.Bullet) {
+            if (!preparing || chart.Series.Any(series => series.HasSourceData)) ValidateBullets(chart.Series);
+        }
         else if (kind == ChartSeriesKind.Timeline) ValidateMinimumPointCount(chart.Series, kind, 1);
-        else if (kind == ChartSeriesKind.StateTimeline) ValidateStateTimeline(chart);
-        else if (kind == ChartSeriesKind.GanttLane) ValidateGanttLanes(chart);
-        else if (kind == ChartSeriesKind.Gantt) ValidateGantt(chart.Series);
-        else if (kind == ChartSeriesKind.Pyramid) ChartPyramidWeights.Total(chart.Series[0].Points);
+        else if (kind == ChartSeriesKind.StateTimeline) ValidateStateTimeline(chart, preparing);
+        else if (kind == ChartSeriesKind.GanttLane) ValidateGanttLanes(chart, preparing);
+        else if (kind == ChartSeriesKind.Gantt) {
+            if (!preparing || chart.Series.Any(series => series.HasSourceData)) ValidateGantt(chart.Series);
+        }
+        else if (kind == ChartSeriesKind.Pyramid) ChartPyramidWeights.Total(chart.Series[0].RenderPoints);
         else if (kind == ChartSeriesKind.Funnel || kind == ChartSeriesKind.Pie || kind == ChartSeriesKind.Donut || kind == ChartSeriesKind.PolarArea || kind == ChartSeriesKind.Pictorial || kind == ChartSeriesKind.ProgressBar || kind == ChartSeriesKind.WordCloud) ValidateNonNegativeValues(chart.Series[0], kind);
     }
 
     private static void ValidateNonNegativeValues(ChartSeries series, ChartSeriesKind kind) {
-        foreach (var point in series.Points) {
+        foreach (var point in series.RenderPoints) {
             if (point.Y < 0) throw new InvalidOperationException(kind.ToString() + " charts require non-negative values.");
         }
     }
 
     private static void ValidateScalePair(ChartSeries series, string chartName) {
-        if (series.Points.Count < 2) throw new InvalidOperationException(chartName + " charts require scale minimum and maximum points.");
-        if (series.Points[1].X <= series.Points[0].X) throw new InvalidOperationException(chartName + " chart maximum must be greater than minimum.");
+        if (series.RenderPoints.Count < 2) throw new InvalidOperationException(chartName + " charts require scale minimum and maximum points.");
+        if (series.RenderPoints[1].X <= series.RenderPoints[0].X) throw new InvalidOperationException(chartName + " chart maximum must be greater than minimum.");
     }
 
     private static void ValidateProgressRing(ChartSeries series, bool preparing) {
-        if (!preparing && series.Points.Count == 0) throw new InvalidOperationException("ProgressRing charts require at least one value.");
-        foreach (var point in series.Points) {
+        if (!preparing && series.RenderPoints.Count == 0) throw new InvalidOperationException("ProgressRing charts require at least one value.");
+        foreach (var point in series.RenderPoints) {
             if (point.Y < 0 || point.Y > 100) throw new InvalidOperationException("ProgressRing chart values must be between zero and 100.");
         }
     }
@@ -332,8 +336,8 @@ internal static class ChartGuards {
 
     private static void ValidateBullets(IReadOnlyList<ChartSeries> series) {
         foreach (var item in series) {
-            if (item.Points.Count < 2) throw new InvalidOperationException("Bullet charts require value and target points.");
-            if (item.Points[1].X <= item.Points[0].X) throw new InvalidOperationException("Bullet chart maximum must be greater than minimum.");
+            if (!item.HasSourceData) continue;
+            if (item.BulletValues.Count != 1) throw new InvalidOperationException("Bullet charts require one typed value and target observation per series.");
         }
     }
 
@@ -349,7 +353,6 @@ internal static class ChartGuards {
         var categorical = 0;
         foreach (var row in chart.Series) {
             if (!row.IsCategoricalHeatmapRow) continue;
-            if (row.HeatmapCells.Count != row.Points.Count) throw new InvalidOperationException("Categorical heatmap rows require one cell per point.");
             categorical++;
         }
 
@@ -358,26 +361,19 @@ internal static class ChartGuards {
         ValidateStateCategories(chart);
     }
 
-    private static void ValidateGanttLanes(Chart chart) {
+    private static void ValidateGanttLanes(Chart chart, bool preparing) {
         if (chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time)
             throw new InvalidOperationException("GanttLane charts require a linear or time x-axis to preserve elapsed-time geometry.");
         ValidateStateCategories(chart);
         var items = 0;
         foreach (var lane in chart.Series) {
-            if (lane.GanttLaneItems.Count != lane.Points.Count) throw new InvalidOperationException("Gantt lanes require one item per point.");
-            for (var i = 0; i < lane.Points.Count; i++) {
-                var item = lane.GanttLaneItems[i];
-                var point = lane.Points[i];
-                if (point.X != item.Start || point.Y != (item.End ?? item.Start))
-                    throw new InvalidOperationException("Gantt lane points must match their items; rebuild the lane after changing its data.");
-            }
-            items += lane.Points.Count;
+            items += lane.GanttLaneItems.Count;
         }
 
-        if (items == 0) throw new InvalidOperationException("GanttLane charts require at least one item.");
+        if (!preparing && items == 0) throw new InvalidOperationException("GanttLane charts require at least one item.");
     }
 
-    private static void ValidateStateTimeline(Chart chart) {
+    private static void ValidateStateTimeline(Chart chart, bool preparing) {
         if (chart.Options.XAxis.Scale != ChartScaleKind.Linear && chart.Options.XAxis.Scale != ChartScaleKind.Time)
             throw new InvalidOperationException("StateTimeline charts require a linear or time x-axis to preserve elapsed-time geometry.");
         ValidateStateCategories(chart);
@@ -385,12 +381,10 @@ internal static class ChartGuards {
         var series = chart.Series;
         var segments = 0;
         foreach (var lane in series) {
-            if (lane.PointLabels.Count != lane.Points.Count || lane.PointLabels.Any(string.IsNullOrWhiteSpace)) throw new InvalidOperationException("State timeline segments require a state key for every segment.");
-            if (lane.Points.Any(point => point.Y <= point.X)) throw new InvalidOperationException("State timeline segment ends must be later than their starts.");
-            segments += lane.Points.Count;
+            segments += lane.StateTimelineSegments.Count;
         }
 
-        if (segments == 0) throw new InvalidOperationException("StateTimeline charts require at least one segment.");
+        if (!preparing && segments == 0) throw new InvalidOperationException("StateTimeline charts require at least one segment.");
     }
 
     private static void ValidateMinimumPointCount(IReadOnlyList<ChartSeries> series, ChartSeriesKind kind, int count) {
@@ -402,18 +396,8 @@ internal static class ChartGuards {
     private static void ValidateGantt(IReadOnlyList<ChartSeries> series) {
         for (var i = 0; i < series.Count; i++) {
             var item = series[i];
-            if (item.Points.Count < 3) throw new InvalidOperationException("Gantt charts require range, metadata, and type points per series.");
-            if (item.Points[0].Y < item.Points[0].X) throw new InvalidOperationException("Gantt task end must be greater than or equal to start.");
-            if (item.Points[1].X < 0 || item.Points[1].X > 1) throw new InvalidOperationException("Gantt progress values must be between zero and one.");
-            var dependency = WholeNumberIndex(item.Points[1].Y, "Gantt dependencies");
-            if (dependency < -1 || dependency >= i) throw new InvalidOperationException("Gantt dependencies must reference earlier task indexes.");
+            if (item.GanttItems.Count > 1) throw new InvalidOperationException("Gantt charts require at most one typed schedule item per series.");
         }
-    }
-
-    private static int WholeNumberIndex(double value, string message) {
-        var index = (int)Math.Round(value);
-        if (Math.Abs(value - index) > 0.000001) throw new InvalidOperationException(message + " must be whole-number indexes.");
-        return index;
     }
 
 }

@@ -478,36 +478,65 @@ internal static class DashboardPatternExamples {
         for (var i = 0; i < y.Length; i++) yield return new ChartPoint(i + 1, y[i]);
     }
 
-    private static ChartTheme OperationsTheme() => ChartTheme.DashboardLight()
-        .WithSurfaceColors(ChartColor.FromHex("#F6F8F7"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#EBF1F1"), ChartColor.FromHex("#DDE7E8"))
-        .WithTextColors(ChartColor.FromHex("#101820"), ChartColor.FromHex("#70777B"))
-        .WithPalette(Teal.ToHex(), Mint.ToHex(), Green.ToHex(), Red.ToHex())
-        .WithCornerRadius(16, 8)
-        .WithShadowOpacity(0.04);
+    private static VisualTheme OperationsTheme() => VisualTheme.Dashboard().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F6F8F7");
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.White;
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#EBF1F1");
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#DDE7E8");
+            builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#101820");
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#70777B");
+            builder.Light.Palette = builder.Dark.Palette = new[] { Teal, Mint, Green, Red };
+            builder.CardRadius = 16;
+            builder.PlotRadius = builder.BarRadius = 8;
+            builder.CardShadowOpacity = 0.04;
+        });
 
-    private static ChartTheme ProjectTheme() => ChartTheme.DashboardLight()
-        .WithSurfaceColors(ChartColor.FromHex("#F2F2F3"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#ECEEF2"), ChartColor.FromHex("#DCDDE3"))
-        .WithTextColors(ChartColor.FromHex("#202235"), ChartColor.FromHex("#7A7D86"))
-        .WithPalette(Blue.ToHex(), Orange.ToHex(), Green.ToHex(), Purple.ToHex())
-        .WithCornerRadius(18, 8)
-        .WithShadowOpacity(0.05);
+    private static VisualTheme ProjectTheme() => VisualTheme.Dashboard().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F2F2F3");
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.White;
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#ECEEF2");
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#DCDDE3");
+            builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#202235");
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#7A7D86");
+            builder.Light.Palette = builder.Dark.Palette = new[] { Blue, Orange, Green, Purple };
+            builder.CardRadius = 18;
+            builder.PlotRadius = builder.BarRadius = 8;
+            builder.CardShadowOpacity = 0.05;
+        });
 
-    private static ChartTheme ShipmentTheme() => ProjectTheme()
-        .WithTypography(20, 12, 10, 11, 12, 11)
-        .WithPalette(Blue.ToHex(), Green.ToHex(), SoftGray.ToHex(), Purple.ToHex());
+    private static VisualTheme ShipmentTheme() => ProjectTheme().Configure(builder => {
+            builder.Typography = new VisualTypography(builder.Typography.Family, titleSize: 20, subtitleSize: 12, axisTitleSize: 10, axisSize: 11, legendSize: 12, dataLabelSize: 11);
+            builder.Light.Palette = builder.Dark.Palette = new[] { Blue, Green, SoftGray, Purple };
+        });
 
-    private static ChartTheme HrTheme() => ChartTheme.DashboardLight()
-        .WithSurfaceColors(ChartColor.FromHex("#F4F7FB"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#EDF1F7"), ChartColor.FromHex("#DCE3EF"))
-        .WithTextColors(ChartColor.FromHex("#171927"), ChartColor.FromHex("#717682"))
-        .WithPalette(Purple.ToHex(), Mint.ToHex(), Orange.ToHex(), Green.ToHex(), Blue.ToHex())
-        .WithCornerRadius(18, 8)
-        .WithShadowOpacity(0.04)
-        .WithMarkerRadius(4.2);
+    private static VisualTheme HrTheme() => VisualTheme.Dashboard().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F4F7FB");
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.White;
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#EDF1F7");
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#DCE3EF");
+            builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#171927");
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#717682");
+            builder.Light.Palette = builder.Dark.Palette = new[] { Purple, Mint, Orange, Green, Blue };
+            builder.CardRadius = 18;
+            builder.PlotRadius = builder.BarRadius = 8;
+            builder.CardShadowOpacity = 0.04;
+            builder.MarkerRadius = 4.2;
+        });
 
-    private static ChartTheme PaymentTheme() => ChartTheme.SaasDashboardLight()
-        .WithSurfaceColors(ChartColor.FromHex("#F6F6F5"), ChartColor.White, ChartColor.White, ChartColor.FromHex("#EFEFEE"), ChartColor.FromHex("#DCDDDD"))
-        .WithTextColors(ChartColor.FromHex("#111827"), ChartColor.FromHex("#68707A"))
-        .WithPalette(Blue.ToHex(), Teal.ToHex(), Green.ToHex(), Orange.ToHex(), Red.ToHex(), Purple.ToHex())
-        .WithCornerRadius(14, 7)
-        .WithShadowOpacity(0.035);
+    private static VisualTheme PaymentTheme() => VisualTheme.SaasDashboard().Configure(builder => {
+            builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F6F6F5");
+            builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
+            builder.Light.Surface = builder.Dark.Surface = ChartColor.White;
+            builder.Light.Border = builder.Dark.Border = ChartColor.FromHex("#EFEFEE");
+            builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.FromHex("#DCDDDD");
+            builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#111827");
+            builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#68707A");
+            builder.Light.Palette = builder.Dark.Palette = new[] { Blue, Teal, Green, Orange, Red, Purple };
+            builder.CardRadius = 14;
+            builder.PlotRadius = builder.BarRadius = 7;
+            builder.CardShadowOpacity = 0.035;
+        });
 }

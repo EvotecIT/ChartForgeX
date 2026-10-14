@@ -32,10 +32,10 @@ internal static partial class SmokeTests {
     }
 
     private static void PngAutomaticFontsHonorThemeFamilies() {
-        var serifTheme = ChartTheme.Light();
-        serifTheme.FontFamily = ChartFontStacks.Serif;
-        var monoTheme = ChartTheme.Light();
-        monoTheme.FontFamily = ChartFontStacks.Mono;
+        var serifTheme = VisualTheme.Report();
+        serifTheme = serifTheme.WithFontFamily(ChartFontStacks.Serif);
+        var monoTheme = VisualTheme.Report();
+        monoTheme = monoTheme.WithFontFamily(ChartFontStacks.Mono);
         var serifChart = Chart.Create().WithTheme(serifTheme).WithSize(420, 240).WithTitle("Typography 012345").AddLine("Values", Points(10, 20, 30));
         var monoChart = Chart.Create().WithTheme(monoTheme).WithSize(420, 240).WithTitle("Typography 012345").AddLine("Values", Points(10, 20, 30));
         var serif = serifChart.GetPngFontInfo();

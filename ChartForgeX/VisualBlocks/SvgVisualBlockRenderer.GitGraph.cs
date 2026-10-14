@@ -8,7 +8,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgVisualBlockRenderer {
     private static void RenderGitGraph(SvgMarkupWriter writer, GitGraphBlock graph) {
         var options = graph.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, graph, ref y, content.X, content.Width);
@@ -41,7 +41,7 @@ public sealed partial class SvgVisualBlockRenderer {
         for (var index = 0; index < layout.Placements.Count; index++) WriteGitGraphCommit(writer, graph, layout, layout.Placements[index], theme);
     }
 
-    private static void WriteGitGraphEdges(SvgMarkupWriter writer, VisualBlockRendering.GitGraphLayout layout, VisualBlockRendering.GitGraphCommitPlacement placement, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteGitGraphEdges(SvgMarkupWriter writer, VisualBlockRendering.GitGraphLayout layout, VisualBlockRendering.GitGraphCommitPlacement placement, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var commit = placement.Commit;
         for (var index = 0; index < commit.ParentIds.Count; index++) {
             if (!layout.PlacementsById.TryGetValue(commit.ParentIds[index], out var parent)) continue;
@@ -62,7 +62,7 @@ public sealed partial class SvgVisualBlockRenderer {
         }
     }
 
-    private static void WriteGitGraphCommit(SvgMarkupWriter writer, GitGraphBlock graph, VisualBlockRendering.GitGraphLayout layout, VisualBlockRendering.GitGraphCommitPlacement placement, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteGitGraphCommit(SvgMarkupWriter writer, GitGraphBlock graph, VisualBlockRendering.GitGraphLayout layout, VisualBlockRendering.GitGraphCommitPlacement placement, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var commit = placement.Commit;
         var branchIndex = BranchIndex(layout, commit.BranchName);
         var color = VisualBlockRendering.PaletteAt(theme, branchIndex);
@@ -98,7 +98,7 @@ public sealed partial class SvgVisualBlockRenderer {
         if (commit.Tag.Length > 0) WriteGitGraphTag(writer, VisualBlockRendering.GitTag(layout, theme, commit.Tag, placement.X, placement.Y, radius), commit.Tag, theme);
     }
 
-    private static void WriteGitGraphTag(SvgMarkupWriter writer, VisualBlockRendering.GitTagMetrics tagLayout, string tag, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteGitGraphTag(SvgMarkupWriter writer, VisualBlockRendering.GitTagMetrics tagLayout, string tag, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var bounds = tagLayout.Bounds;
         writer.StartElement("rect").Attribute("data-cfx-role", "git-tag").Attribute("x", F(bounds.X)).Attribute("y", F(bounds.Y)).Attribute("width", F(bounds.Width)).Attribute("height", F(bounds.Height)).Attribute("rx", 7).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
         WriteText(writer, tag, bounds.X + tagLayout.Inset, tagLayout.Baseline, bounds.Width - tagLayout.Inset * 2, TextAlignment.Center, theme.MutedText, theme.FontFamily, tagLayout.FontSize, "700", "git-tag-label");

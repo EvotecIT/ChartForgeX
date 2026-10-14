@@ -75,5 +75,5 @@ internal static partial class VisualMapCompiler {
     }
 
     private static bool HasMissingMapValues(Chart chart) =>
-        (chart.Options.RegionMapDefinition?.Regions.Count ?? chart.Options.TileMapDefinition?.Regions.Count ?? 0) > chart.Series[0].Points.Count;
+        (chart.Series[0].RegionMapDefinition?.Regions.Count ?? chart.Series[0].TileMapDefinition?.Regions.Count ?? 0) > chart.Series[0].RenderPoints.Count;
 }

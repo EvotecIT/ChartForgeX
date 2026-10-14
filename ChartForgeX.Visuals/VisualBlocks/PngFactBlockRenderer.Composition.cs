@@ -11,7 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngFactBlockRenderer {
     private static void DrawSegmentedMetricComposition(RgbaCanvas canvas, SegmentedMetricBlock card) {
         var options = card.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawSegmentedMetricHeading(canvas, card, ref y, content.X, content.Width);
@@ -25,7 +25,7 @@ public sealed partial class PngFactBlockRenderer {
     }
 
     private static void DrawCompositionLegend(RgbaCanvas canvas, SegmentedMetricBlock card, ChartRect content, ref double y, double rowHeight, double legendBottom) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var total = VisualFactBlockRendering.SegmentedTotal(card);
         for (var i = 0; i < card.Items.Count && VisualFactBlockRendering.CanRenderLegendRow(y, rowHeight, legendBottom); i++) {
             var segment = card.Items[i];
@@ -40,7 +40,7 @@ public sealed partial class PngFactBlockRenderer {
     }
 
     private static void DrawCompositionStrip(RgbaCanvas canvas, SegmentedMetricBlock card, double x, double y, double width, double height) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         foreach (var segment in VisualFactBlockRendering.SegmentedStackSegments(card, x, y, width, height, 4)) {
             var color = VisualFactBlockRendering.SegmentedItemColor(theme, segment.Item, segment.Index);
             canvas.FillRoundedRect(segment.X, segment.Y, segment.Width, segment.Height, Math.Min(7, height / 2), color);

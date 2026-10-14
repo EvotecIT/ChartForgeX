@@ -6,21 +6,21 @@ public sealed partial class Chart {
     /// <summary>Configures the primary horizontal axis.</summary>
     public Chart ConfigureXAxis(Action<ChartAxis> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.XAxis);
+        Options.XAxis = ChartOptionConfiguration.Configure(Options.XAxis, configure, axis => axis.Clone());
         return this;
     }
 
     /// <summary>Configures the primary vertical axis.</summary>
     public Chart ConfigureYAxis(Action<ChartAxis> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.YAxis);
+        Options.YAxis = ChartOptionConfiguration.Configure(Options.YAxis, configure, axis => axis.Clone());
         return this;
     }
 
     /// <summary>Configures the secondary vertical axis.</summary>
     public Chart ConfigureSecondaryYAxis(Action<ChartAxis> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.SecondaryYAxis);
+        Options.SecondaryYAxis = ChartOptionConfiguration.Configure(Options.SecondaryYAxis, configure, axis => axis.Clone());
         return this;
     }
 

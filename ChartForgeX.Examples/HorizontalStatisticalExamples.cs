@@ -9,7 +9,7 @@ internal static class HorizontalStatisticalExamples {
             var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 15), new ChartPoint(3, 20), new ChartPoint(4, 50) };
             var chart = Chart.Create().WithSize(width, 420).WithLegend(false)
                 .WithTitle("Observed latency").WithXAxis("Latency").WithYAxis("Run")
-                .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+                .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
                 .AddLine("Observations", points)
                 .AddMeanLine("Mean", points).AddMedianLine("Median", points)
                 .AddStandardDeviationBand("Deviation", points);

@@ -22,6 +22,7 @@
   };
   // The reset control is contextual: it exists only while the reader has changed the view.
   const viewChanged = (root) => {
+    if (connectedXViewport(root) && nativeXWindowChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
@@ -44,10 +45,31 @@
   };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
+    // Automatically allocated identities are local handles, never accidental matches in a peer chart.
+    const sharedTarget = target => target && target.seriesScope !== 'local';
+    if (payload.target?.seriesScope === 'local') {
+      if (['hover', 'crosshair', 'navigate'].includes(payload.action) && root._cfxSharedHover) emitSync(root, { action: 'hover-clear' });
+      return;
+    }
+    payload = { ...payload };
+    for (const field of ['targets', 'trail']) if (Array.isArray(payload[field])) {
+      const shared = payload[field].filter(sharedTarget);
+      if (payload[field].length && !shared.length) return;
+      payload[field] = shared;
+    }
+    if (payload.action === 'state' && payload.state) {
+      const targets = payload.state.selectedTargets || [], shared = targets.filter(sharedTarget);
+      if (targets.length && !shared.length) return;
+      payload.state = { ...payload.state, selectedTargets: shared };
+    }
+    if (payload.action === 'hover-clear') {
+      if (!root._cfxSharedHover) return;
+      delete root._cfxSharedHover;
+    } else if (['hover', 'crosshair', 'navigate'].includes(payload.action)) root._cfxSharedHover = true;
     const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
     root.dispatchEvent(new CustomEvent('cfxsync', { detail }));
     document.querySelectorAll('.cfx-interactive-chart').forEach((peer) => {
-      if (sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
+      if (chartLifetimes.get(peer)?.disposed === false && sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
     });
   };
   const applyMode = (root, mode) => {
@@ -60,6 +82,8 @@
   const resetViewport = (root) => {
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
     root.dataset.cfxBrush = '';
+    const brush = root.querySelector('.cfx-brush-box');
+    if (brush) brush.hidden = true;
     root.dataset.cfxMode = '';
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
     syncResetControl(root);
@@ -125,6 +149,10 @@
   };
   const zoomBy = (root, factor) => {
     if (!hasFeature(root, 'Zoom')) return;
+    if (chartLifetimes.get(root)?.xViewportConnection) {
+      requestXViewportZoom(root, factor);
+      return;
+    }
     const state = getState(root);
     state.zoom *= factor;
     applyViewport(root, state);
@@ -166,7 +194,12 @@
     const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
     const sourceUrl = URL.createObjectURL(source);
     const image = new Image();
+    let canceled = false;
+    const release = ownChartWork(root, () => {
+      canceled = true; image.onload = null; image.onerror = null; image.src = ''; URL.revokeObjectURL(sourceUrl);
+    });
     image.onload = () => {
+      if (canceled) return;
       const size = svgSize(serialized.svg);
       const scale = Math.max(1, Math.ceil(window.devicePixelRatio || 1));
       const canvas = document.createElement('canvas');
@@ -174,17 +207,18 @@
       canvas.height = size.height * scale;
       const context = canvas.getContext('2d');
       if (!context) {
-        URL.revokeObjectURL(sourceUrl);
+        release();
         return;
       }
       context.setTransform(scale, 0, 0, scale, 0, 0);
       context.clearRect(0, 0, size.width, size.height);
       context.drawImage(image, 0, 0, size.width, size.height);
       canvas.toBlob((blob) => {
-        URL.revokeObjectURL(sourceUrl);
-        if (blob) downloadBlob(root, blob, 'png', 'png');
+        if (canceled) return;
+        release();
+        if (blob && root.isConnected) downloadBlob(root, blob, 'png', 'png');
       }, 'image/png');
     };
-    image.onerror = () => URL.revokeObjectURL(sourceUrl);
+    image.onerror = release;
     image.src = sourceUrl;
   };

@@ -36,8 +36,8 @@ public sealed class V2GalleryArtifactTests {
             var artifact = Assert.Single(manifest.RootElement.GetProperty("artifacts").EnumerateArray(),
                 candidate => candidate.GetProperty("id").GetString() == id);
             var model = V2GalleryModels.Create(ChartSeriesKind.Bubble, variant, mode);
-            var expected = model.Series.SelectMany((series, seriesIndex) => Enumerable.Range(0, series.Points.Count / 2)
-                .Select(point => (seriesIndex, point, series.Points[point * 2].X, series.Points[point * 2].Y, series.Points[point * 2 + 1].Y))).ToArray();
+            var expected = model.Series.SelectMany((series, seriesIndex) => series.Bubbles
+                .Select((bubble, point) => (seriesIndex, point, bubble.X, bubble.Y, bubble.Size))).ToArray();
             var svg = XDocument.Load(Path.Combine(output, artifact.GetProperty("svg").GetString()!));
             var actual = svg.Descendants().Where(element => element.Attribute("data-cfx-size") != null)
                 .Select(element => ((int)element.Attribute("data-cfx-series")!, (int)element.Attribute("data-cfx-point")!,
@@ -46,7 +46,8 @@ public sealed class V2GalleryArtifactTests {
 
             var sourceFile = artifact.GetProperty("source").GetString()!;
             var source = File.ReadAllText(Path.Combine(output, sourceFile));
-            Assert.Contains($"V2GalleryModels.Create(ChartSeriesKind.Bubble, \"{variant}\", VisualThemeMode.{mode})", source, StringComparison.Ordinal);
+            Assert.Contains($"var mode = VisualThemeMode.{mode};", source, StringComparison.Ordinal);
+            Assert.Contains($".Create(\"{variant}\", mode)", source, StringComparison.Ordinal);
             Assert.Matches(@"\.ConfigureBubble\s*\(", source);
             var options = model.Options.Bubble;
             Assert.Matches($@"\.WithSizeDomain\s*\(\s*{NumberPattern(options.MinimumValue!.Value)}\s*,\s*{NumberPattern(options.MaximumValue!.Value)}\s*\)", source);

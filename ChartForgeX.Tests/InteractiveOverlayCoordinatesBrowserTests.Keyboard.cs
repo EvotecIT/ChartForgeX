@@ -6,7 +6,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Fit, 950, "Enter")]
     [InlineData(true, HtmlChartResponsiveLayout.Fit, 950, "Space")]
     [InlineData(false, HtmlChartResponsiveLayout.Readable, 340, "Space")]

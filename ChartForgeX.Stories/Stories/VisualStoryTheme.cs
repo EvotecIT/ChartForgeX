@@ -57,7 +57,7 @@ public sealed class StorySyntaxPalette {
 /// <summary>
 /// Defines premium but restrained visual-story colors and typography.
 /// </summary>
-public sealed partial class VisualStoryTheme {
+internal sealed partial class ResolvedVisualStoryStyle {
     /// <summary>Gets or sets the outer background color.</summary>
     public ChartColor Background { get; set; } = ChartColor.FromHex("#050B16");
     /// <summary>Gets or sets the panel background color.</summary>
@@ -80,16 +80,16 @@ public sealed partial class VisualStoryTheme {
     public StorySyntaxPalette Syntax { get; set; } = new();
 
     /// <summary>Creates the default premium dark visual-story theme.</summary>
-    public static VisualStoryTheme PremiumDark() => new();
+    public static ResolvedVisualStoryStyle PremiumDark() => new();
 
     /// <summary>Creates a visual-story theme from the shared Graphite light design tokens.</summary>
-    public static VisualStoryTheme GraphiteLight() => VisualDesignTokens.GraphiteLight().ApplyTo(new VisualStoryTheme());
+    public static ResolvedVisualStoryStyle GraphiteLight() => FromTheme(VisualTheme.Graphite(), VisualThemeMode.Light);
 
     /// <summary>Creates a visual-story theme from the shared Graphite dark design tokens.</summary>
-    public static VisualStoryTheme GraphiteDark() => VisualDesignTokens.GraphiteDark().ApplyTo(new VisualStoryTheme());
+    public static ResolvedVisualStoryStyle GraphiteDark() => FromTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
 
     /// <summary>Creates a light visual-story theme suitable for documentation and printing.</summary>
-    public static VisualStoryTheme Light() => new() {
+    public static ResolvedVisualStoryStyle Light() => new() {
         Background = ChartColor.FromHex("#E9EEF5"),
         Panel = ChartColor.FromHex("#FFFFFF"),
         Border = ChartColor.FromHex("#C7D1DE"),
@@ -114,8 +114,8 @@ public sealed partial class VisualStoryTheme {
     };
 
     /// <summary>Creates a shallow copy with an independent syntax palette.</summary>
-    public VisualStoryTheme Clone() {
-        var clone = (VisualStoryTheme)MemberwiseClone();
+    public ResolvedVisualStoryStyle Clone() {
+        var clone = (ResolvedVisualStoryStyle)MemberwiseClone();
         clone.Syntax = Syntax.Clone();
         return clone;
     }

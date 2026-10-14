@@ -156,7 +156,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
         var variant = compact ? "compact-partial-color-range" : "partial-color-range";
         var chart = V2GalleryModels.Create(kind, variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithDataLabels(false).WithPngSupersampling(1)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         var key = Role(document, kind == ChartSeriesKind.TileMap ? "map-scale" : "color-scale-0").Single();
         Assert.Equal(kind == ChartSeriesKind.TileMap ? "0" : "55", (string?)key.Attribute("data-cfx-min-value"));

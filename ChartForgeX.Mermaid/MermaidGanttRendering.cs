@@ -18,7 +18,7 @@ public static class MermaidGanttRendering {
         options ??= new MermaidGanttRenderOptions();
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height);
         if (!string.IsNullOrWhiteSpace(document.AxisFormat))
             chart.WithXAxisValueFormatter(value => FormatAxisValue(value, document, null, chart.Options.XAxis.TimeZone));
@@ -41,10 +41,10 @@ public static class MermaidGanttRendering {
         }
         for (var index = 0; index < document.Tasks.Count; index++) {
             var task = document.Tasks[index];
-            if (task.DependencyIndex >= 0) chart.AddGanttDependency(task.DependencyIndex, index);
+            if (task.DependencyIndex >= 0) chart.AddGanttDependency(chart.Series[task.DependencyIndex], chart.Series[index]);
             foreach (var id in task.DependencyIds) {
                 if (!ids.TryGetValue(id, out var predecessor)) throw new ArgumentException("Gantt dependency id '" + id + "' is not declared.", nameof(document));
-                chart.AddGanttDependency(predecessor, index);
+                chart.AddGanttDependency(chart.Series[predecessor], chart.Series[index]);
             }
         }
 
@@ -94,14 +94,7 @@ public static class MermaidGanttRendering {
         document.ToChart(options).ToPng();
 
     private static string ResolveTitle(MermaidGanttDocument document, MermaidGanttRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid Gantt";
-    }
-
-    private static string ResolveSubtitle(MermaidGanttDocument document, MermaidGanttRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid Gantt");
     }
 
     private static string FormatAxisValue(double value, MermaidGanttDocument document, ChartTimeTickUnit? effectiveInterval, TimeZoneInfo? displayZone) {

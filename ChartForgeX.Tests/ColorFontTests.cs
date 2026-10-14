@@ -145,6 +145,38 @@ public sealed class ColorFontTests {
             Assert.Contains(image.Pixels.Chunk(4),p=>p.SequenceEqual(new byte[]{0,255,0,255}));
         }finally{FontRegistry.Clear();File.Delete(path);}
     }
+    [Theory]
+    [InlineData("color-cbdt1", 0, 255, 0)]
+    [InlineData("color-sbix", 255, 0, 0)]
+    public void BitmapOnlyFacesAreDiscoveredAndRegisteredUnderTheirDeclaredFamily(string name, byte red, byte green, byte blue) {
+        var folder = Path.Combine(Path.GetTempPath(), "CFX-colour-discovery-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(folder);
+        try {
+            var data = Bytes(name);
+            // CBDT1 already has no outlines. Remove the original sbix fixture's optional
+            // outline tables to exercise the bitmap-only branch used by installed fonts.
+            var tableCount = BinaryPrimitives.ReadUInt16BigEndian(data.AsSpan(4));
+            for (var i = 0; i < tableCount; i++) {
+                var at = 12 + i * 16;
+                var tag = System.Text.Encoding.ASCII.GetString(data, at, 4);
+                if (tag == "glyf" || tag == "loca") data[at] = (byte)'X';
+            }
+            var path = Path.Combine(folder, "colour.ttf");
+            File.WriteAllBytes(path, data);
+            var index = InstalledFontCatalog.Index(new[] { folder });
+            var family = Assert.Single(index).Key;
+            var candidate = InstalledFontCatalog.Find(index, family, 400, false);
+            Assert.NotNull(candidate);
+            Assert.Equal(path, candidate.Path);
+            Assert.True(candidate.LoadFont()!.IsColorFace);
+            foreach (var directoryRegistration in new[] { false, true }) {
+                FontRegistry.Clear();
+                Assert.Equal(1, directoryRegistration ? FontRegistry.RegisterDirectory(folder) : FontRegistry.RegisterFile(path));
+                var image = SvgRasterizer.ToImage("<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><text x='40' y='65.6' font-family='" + family + "' font-size='32'>😀</text></svg>");
+                Assert.Contains(image.Pixels.Chunk(4), p => p.SequenceEqual(new byte[] { red, green, blue, 255 }));
+            }
+        } finally { FontRegistry.Clear(); Directory.Delete(folder, recursive: true); }
+    }
     [Fact]
     public void TruncatedStrikeIndexCannotReadOutsideItsDeclaredExtent() {
         var data=Bytes("color-cbdt2");var offset=Table(data,"CBLC");

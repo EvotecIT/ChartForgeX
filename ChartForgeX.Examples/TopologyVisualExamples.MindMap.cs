@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
 internal static partial class TopologyVisualExamples {
@@ -19,7 +20,7 @@ internal static partial class TopologyVisualExamples {
             .WithId("visual-identity-mind-map")
             .WithTitle("Identity Mind Map")
             .WithViewport(1600, 900, 38)
-            .WithTheme(TopologyTheme.Light())
+            .WithTheme(VisualTheme.Graphite())
             .AddMindMap(new[] {
                 Item("identity", "Cloud Identity", null, TopologyNodeKind.Cloud, "cloud:cloud", navy, navySoft, "central service"),
                 Item("users", "Users", "identity", TopologyNodeKind.Person, "people:person", yellow, yellowSoft, "accounts").WithMetadata("mindmap.side", "right").WithMetadata("mindmap.order", "10"),

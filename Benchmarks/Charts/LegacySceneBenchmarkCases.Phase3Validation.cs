@@ -25,11 +25,12 @@ public static partial class LegacySceneBenchmarkCases {
                 var days = root.Descendants().Where(element => element.Attribute("data-cfx-date") != null && element.Attribute("data-cfx-value") != null
                     && !string.Equals((string?)element.Attribute("data-cfx-empty"), "true", StringComparison.OrdinalIgnoreCase))
                     .ToDictionary(element => (string)element.Attribute("data-cfx-date")!);
-                Require(days.Count == chart.Series[0].Points.Count, "Calendar source-day count changed.");
-                foreach (var point in chart.Series[0].Points) {
-                    var date = DateTime.FromOADate(point.X).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+                var calendarItems = CalendarFacts(chart);
+                Require(days.Count == calendarItems.Count, "Calendar source-day count changed.");
+                foreach (var item in calendarItems) {
+                    var date = item.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
                     Require(days.TryGetValue(date, out var day), "A calendar source day was lost.");
-                    Require(Near(Parse(day!, "data-cfx-value"), point.Y), "Calendar source value changed."); RequireDrawing(day!);
+                    Require(Near(Parse(day!, "data-cfx-value"), item.Value), "Calendar source value changed."); RequireDrawing(day!);
                 }
                 break;
             case "progress":
@@ -58,8 +59,8 @@ public static partial class LegacySceneBenchmarkCases {
             case "map":
                 var locations = Role(root, "dotted-map-point", "dotted-map-point-source").Where(element => element.Attribute("data-cfx-longitude") != null)
                     .ToDictionary(element => Index(element, "data-cfx-point"));
-                var items = MapItems(); Require(locations.Count == items.Length, "Map source-point count changed.");
-                for (var index = 0; index < items.Length; index++) {
+                var items = MapFacts(chart); Require(locations.Count == items.Count, "Map source-point count changed.");
+                for (var index = 0; index < items.Count; index++) {
                     Require(locations.TryGetValue(index, out var mark), "A map source point was lost."); var item = items[index];
                     Require((string?)mark!.Attribute("data-cfx-label") == item.Label && Near(Parse(mark, "data-cfx-longitude"), item.Longitude)
                         && Near(Parse(mark, "data-cfx-latitude"), item.Latitude) && Near(Parse(mark, "data-cfx-value"), item.Value!.Value), "Map source data changed."); RequireDrawing(mark);

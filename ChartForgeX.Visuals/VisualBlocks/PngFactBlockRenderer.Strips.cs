@@ -11,7 +11,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class PngFactBlockRenderer {
     private static void DrawDateStrip(RgbaCanvas canvas, DateStripBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         DrawHeading(canvas, block, ref y, content.X, content.Width);
@@ -58,7 +58,7 @@ public sealed partial class PngFactBlockRenderer {
 
     private static void DrawEntityStrip(RgbaCanvas canvas, EntityStripBlock block) {
         var options = block.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         if (block.Title.Length > 0) {
@@ -92,7 +92,7 @@ public sealed partial class PngFactBlockRenderer {
     }
 
     private static void DrawSectionHeader(RgbaCanvas canvas, SectionHeaderBlock block) {
-        var theme = block.Options.Theme;
+        var theme = block.Options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(block.Options);
         var titleSize = Math.Max(16, Math.Min(theme.TitleFontSize, theme.SubtitleFontSize + 10));
         var y = content.Y + (content.Height - titleSize) * 0.48;

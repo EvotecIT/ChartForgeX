@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class MixedNumericRadialBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -18,11 +18,8 @@ public sealed class MixedNumericRadialBrowserTests {
         if (!Enabled) return;
         var chart = V2GalleryModels.CreateMixedRadial()
             .WithSize(compact ? 360 : 800, compact ? 360 : 440)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Regional counts and targets").WithLegend();
-        chart.Series[0].WithInteractionKey("reference");
-        chart.Series[1].WithInteractionKey("observed");
-        chart.Series[2].WithInteractionKey("target");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var owner = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Id == "series-1-point-0");
         double Fact(string key) => double.Parse(owner.Metadata[key], CultureInfo.InvariantCulture);

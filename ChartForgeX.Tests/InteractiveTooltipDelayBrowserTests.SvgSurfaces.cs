@@ -7,7 +7,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("rect", "nearest", 0)]
     [InlineData("rect", "distance", 0)]
     [InlineData("foreignObject", "nearest", 0)]
@@ -62,7 +62,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, "nearest", 0)]
     [InlineData(false, "distance", 0)]
     [InlineData(true, "nearest", 0)]

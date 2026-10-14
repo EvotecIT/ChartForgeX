@@ -1,0 +1,33 @@
+/// <summary>Builds delivery-time distributions from typed five-number summaries.</summary>
+public static class BoxPlotRecipe {
+    /// <summary>Creates the selected box-plot example and its orientation.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = Chart.Create();
+        if (variant is "options" or "compact-options" or "horizontal" or "compact-horizontal") {
+            var horizontal = variant is "horizontal" or "compact-horizontal";
+            var expected = ChartSeries.CreateBoxPlot(new ChartSeriesId("expected"), "Expected", new[] {
+                new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35),
+                new ChartBoxPlot(3, 12, 20, 28, 35, 45), new ChartBoxPlot(4, 20, 30, 35, 45, 55)
+            });
+            var observed = ChartSeries.CreateBoxPlot(new ChartSeriesId("observed"), "Observed", new[] {
+                new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
+                new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58)
+            }).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
+            chart.WithXLabels("Standard", "Express", "Premium", "Bulk").AddSeries(expected).AddSeries(observed)
+                .ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .WithDataLabels();
+            if (horizontal) chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+            else chart.WithYAxis("Delivery time (minutes)");
+        }
+        else {
+            var count = variant == "sparse" ? 2 : 5;
+            var distributions = Enumerable.Range(1, count)
+                .Select(index => new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index));
+            var delivery = ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery-time"), "Delivery time", distributions);
+            chart.WithXLabels("Standard", "Express", "Premium", "Bulk", "Return").AddSeries(delivery);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}

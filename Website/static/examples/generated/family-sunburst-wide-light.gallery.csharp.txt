@@ -1,0 +1,68 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = SunburstRecipe.Create("wide", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Allocation through the team hierarchy", "Explore the data, then download the chart", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Creates a sunburst showing allocation through a team hierarchy.</summary>
+public static class SunburstRecipe {
+    /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"
+            or "authored-total" or "compact-authored-total"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+
+        var inclusive = variant is "authored-total" or "compact-authored-total";
+        var configured = inclusive || variant is "options" or "compact-options";
+        var items = new[] {
+            new ChartHierarchyItem("all", "All teams", value: configured ? 140 : null, colorValue: configured ? -10 : null),
+            new ChartHierarchyItem("engineering", "Engineering", "all", configured ? 80 : null, configured ? 12 : null),
+            new ChartHierarchyItem("operations", "Operations", "all", colorValue: configured ? 0 : null),
+            new ChartHierarchyItem("platform", "Platform", "engineering", 35, configured ? -4 : null),
+            new ChartHierarchyItem("engineering-support", "Support", "engineering", 25, configured ? 5 : null),
+            new ChartHierarchyItem("operations-support", "Support", "operations", 40),
+            new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
+        };
+        var allocation = ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocated work", items);
+        var chart = Chart.Create().WithDataLabels().AddSeries(allocation);
+        if (configured) {
+            var colors = VisualTheme.Graphite().Resolve(mode);
+            var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+            var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+            chart.ConfigureSunburst(options => {
+                options.CornerRadius = 6;
+                options.SecondaryLabelFormatter = context => context.Item.Id == "all" ? "Allocation" : context.Item.Id == "engineering" ? "Delivery teams"
+                    : context.Item.Id == "operations-support" ? "Shared service" : null;
+                options.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate;
+                options.ColorDimension.Name = "Change (%)";
+                options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
+                    .WithLabels("Decrease", "No change", "Increase").WithNoDataColor(colors.Surface);
+            });
+            allocation.WithNodeState("engineering-support", ChartSeriesState.Warning);
+            allocation.WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+}

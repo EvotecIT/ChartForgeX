@@ -13,17 +13,17 @@ internal static partial class VisualBlockRendering {
 
     public static PacketRowMetrics PacketRows(PacketLayoutBlock packet, ChartRect content, double top, int rows, IReadOnlyList<PacketLayoutSlice> slices) {
         var remaining = Math.Max(0, content.Bottom - top);
-        var preferredLabelTop = packet.ShowBitNumbers ? BodyFontSize(packet.Options.Theme, 16) : 0;
+        var preferredLabelTop = packet.ShowBitNumbers ? BodyFontSize(packet.Options.ResolvedTheme, 16) : 0;
         double gap = 0, labelTop = 0, height = 0;
         FitRows(preferredLabelTop);
         var bitWidth = Math.Min(packet.BitWidth ?? content.Width / packet.BitsPerRow, content.Width / packet.BitsPerRow);
         var fieldGap = packet.FieldGap ?? 1;
-        var bits = Math.Min(BodyFontSize(packet.Options.Theme, 9.5), labelTop * .75);
-        var bitStyle = new TextStyle { Font = new FontSpec { Family = packet.Options.Theme.FontFamily, Weight = 700 }, FontSize = Math.Max(.001, bits), LineHeight = 1 };
+        var bits = Math.Min(BodyFontSize(packet.Options.ResolvedTheme, 9.5), labelTop * .75);
+        var bitStyle = new TextStyle { Font = new FontSpec { Family = packet.Options.ResolvedTheme.FontFamily, Weight = 700 }, FontSize = Math.Max(.001, bits), LineHeight = 1 };
         if (bits > 0) bits = ChartTextFitting.FitFontSize(0, bits, FitsBits);
         if (bits > 0 && !FitsBits(bits)) bits = 0;
         if (bits == 0 && labelTop > 0) FitRows(0);
-        var label = Math.Min(BodyFontSize(packet.Options.Theme, Math.Max(9, Math.Min(13.5, height * .31))), height * .6);
+        var label = Math.Min(BodyFontSize(packet.Options.ResolvedTheme, Math.Max(9, Math.Min(13.5, height * .31))), height * .6);
         return new PacketRowMetrics(labelTop, gap, height, bits, label, bitWidth, fieldGap);
 
         void FitRows(double preferredTop) {
@@ -79,7 +79,7 @@ internal static partial class VisualBlockRendering {
     // The same measured cell fitting serves both exporters. A narrow wrapped slice
     // shortens its caption before width fitting makes ordinary text unreadably small.
     public static double PacketFieldFontSize(PacketLayoutBlock packet, PacketLayoutSlice slice, double width, double height) {
-        var theme = packet.Options.Theme;
+        var theme = packet.Options.ResolvedTheme;
         var defaultSize = Math.Max(9, Math.Min(13.5, height * .31));
         var fitted = FitBodyTextStyle(theme, slice.Field.Label, defaultSize, Math.Max(1, width - 2 * PacketFieldInset(width)), height * .6, 700).FontSize;
         var minimum = Math.Min(8, BodyFontSize(theme, defaultSize));

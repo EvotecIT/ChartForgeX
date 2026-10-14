@@ -21,9 +21,12 @@ public sealed class SvgColorVariablesTests {
         Assert.Contains("stroke=\"var(--cfx-series-1, #2A78D6)\"", themed, StringComparison.Ordinal);
         Assert.Contains("fill=\"var(--cfx-text-primary, #16181C)\"", themed, StringComparison.Ordinal);
         Assert.Contains("fill=\"var(--cfx-surface-card, #FFFFFF)\"", themed, StringComparison.Ordinal);
-        Assert.Contains("color-mix(in srgb, var(--cfx-surface-line, #E2E4E7)", themed, StringComparison.Ordinal);
+        var guides = System.Xml.Linq.XDocument.Parse(themed).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "grid-y").ToArray();
+        Assert.NotEmpty(guides);
+        Assert.All(guides, element => Assert.Equal("var(--cfx-surface-line, #E2E4E7)", (string?)element.Attribute("stroke")));
         Assert.Contains("fill=\"var(--cfx-text-secondary, #4D525B)\"", themed, StringComparison.Ordinal);
-        Assert.Contains("stroke=\"" + Lines().Options.Theme.Grid.ToCss() + "\"", literal, StringComparison.Ordinal);
+        Assert.Contains("stroke=\"" + Lines().Options.Theme.Resolve(VisualThemeMode.Light).Grid.ToCss() + "\"", literal, StringComparison.Ordinal);
         Assert.Equal(NormalizeIdentity(literal), NormalizeIdentity(Strip(themed)));
         Assert.Equal(Lines().ToPng(), Lines().WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToPng());
     }
@@ -99,7 +102,7 @@ public sealed class SvgColorVariablesTests {
         Assert.Equal("<rect fill=\"var(--card, #FFFFFF)\"/><text fill=\"#FFFFFF\" stroke=\"var(--card, #FFFFFF)\">a</text><tspan style=\"fill:#FFFFFF;stroke:var(--card, #FFFFFF)\"/><text fill=\"var(--ink, #112233)\">b</text>", result);
 
         // A caller's white text and the white card share RGB values but have different paint roles.
-        var bars = Chart.Create().WithSize(640, 360).WithDesignTokens(Graphite)
+        var bars = Chart.Create().WithSize(640, 360).WithTheme(new VisualTheme(Graphite, Graphite))
             .AddTileMap("Sites", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 10), new ChartRegionMapItem("NY", 0) })
             .WithMapColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#EEF2F8"), ChartColor.FromHex("#1D4F9E")))
             .ConfigureTickLabelStyle(style => style.WithColor("#FFFFFF"));
@@ -130,9 +133,9 @@ public sealed class SvgColorVariablesTests {
         Assert.DoesNotContain("\uFDD0", svg, StringComparison.Ordinal);
 
         var chart = TopologyChart.Create().WithId("sites").AddAutoNode("dc1", "DC1");
-        chart.Theme = Graphite.ApplyTo(TopologyTheme.Light());
+        chart.Theme = new VisualTheme(Graphite, Graphite);
         var prepared = chart.Prepare(new TopologyRenderOptions { SvgColorVariables = Graphite.ToSvgColorVariables() }).ToSvg();
-        Assert.Contains("var(--cfx-surface-card, #FFFFFF)", prepared, StringComparison.Ordinal);
+        Assert.Contains("var(--cfx-surface-card-alt, #F8F9FA)", prepared, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -150,19 +153,19 @@ public sealed class SvgColorVariablesTests {
     public void Topology_WritesTokenColoursAsVariablesAndKeepsPngLiteral() {
         TopologyChart Map() {
             var chart = TopologyChart.Create().WithId("sites").AddAutoNode("dc1", "DC1").AddAutoNode("dc2", "DC2").AddEdge("a", "dc1", "dc2");
-            chart.Theme = Graphite.ApplyTo(TopologyTheme.Light());
+            chart.Theme = new VisualTheme(Graphite, Graphite);
             return chart;
         }
 
         var options = new TopologyRenderOptions { SvgColorVariables = Graphite.ToSvgColorVariables() };
         var svg = Map().ToSvg(options);
-        Assert.Contains("var(--cfx-surface-card, #FFFFFF)", svg, StringComparison.Ordinal);
+        Assert.Contains("var(--cfx-surface-card-alt, #F8F9FA)", svg, StringComparison.Ordinal);
         Assert.Contains("var(--cfx-text-primary, #16181C)", svg, StringComparison.Ordinal);
         Assert.Equal(NormalizeIdentity(Map().ToSvg()), NormalizeIdentity(Strip(svg)));
         Assert.Equal(Map().ToPng(), Map().ToPng(options));
     }
 
-    private static Chart Lines() => Chart.Create().WithTitle("Traffic").WithSize(640, 320).WithDesignTokens(Graphite)
+    private static Chart Lines() => Chart.Create().WithTitle("Traffic").WithSize(640, 320).WithTheme(new VisualTheme(Graphite, Graphite))
         .AddLine("Inbound", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3), new ChartPoint(2, 2) })
         .AddLine("Outbound", new[] { new ChartPoint(0, 2), new ChartPoint(1, 1), new ChartPoint(2, 3) });
 

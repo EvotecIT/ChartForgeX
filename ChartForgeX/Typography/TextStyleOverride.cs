@@ -16,6 +16,8 @@ public sealed class TextStyleOverride {
     private TextCaseTransform? _textCase;
     private string? _openTypeLanguageTag;
     private int? _colorPaletteIndex;
+    private bool _italic, _underline, _strikethrough;
+    private bool _hasItalic, _hasUnderline, _hasStrikethrough;
     /// <summary>Gets or sets an optional zero-based CPAL palette. Null inherits; zero resets to the default.</summary>
     public int? ColorPaletteIndex {
         get => _colorPaletteIndex;
@@ -54,10 +56,10 @@ public sealed class TextStyleOverride {
     }
 
     /// <summary>Gets or sets a value indicating whether text is italic.</summary>
-    public bool Italic { get; set; }
+    public bool Italic { get => _italic; set { _italic = value; _hasItalic = true; } }
 
     /// <summary>Gets or sets a value indicating whether text is underlined.</summary>
-    public bool Underline { get; set; }
+    public bool Underline { get => _underline; set { _underline = value; _hasUnderline = true; } }
 
     /// <summary>Gets or sets an optional underline pattern. None explicitly disables a fallback underline.</summary>
     public TextDecorationStyle? UnderlineStyle {
@@ -66,7 +68,7 @@ public sealed class TextStyleOverride {
     }
 
     /// <summary>Gets or sets a compatibility value that enables a single solid strikethrough.</summary>
-    public bool Strikethrough { get; set; }
+    public bool Strikethrough { get => _strikethrough; set { _strikethrough = value; _hasStrikethrough = true; } }
 
     /// <summary>Gets or sets an optional strikethrough pattern. None explicitly disables a fallback strike.</summary>
     public TextDecorationStyle? StrikethroughStyle {
@@ -87,7 +89,7 @@ public sealed class TextStyleOverride {
     }
 
     /// <summary>Gets a value indicating whether this instance contains explicit overrides.</summary>
-    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || Italic || Underline || UnderlineStyle.HasValue || Strikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue || OpenTypeLanguageTag != null || Variations != null || ColorPaletteIndex.HasValue;
+    public bool HasOverrides => Color.HasValue || FontFamily != null || FontWeight != null || FontSize.HasValue || _hasItalic || _hasUnderline || UnderlineStyle.HasValue || _hasStrikethrough || StrikethroughStyle.HasValue || Baseline.HasValue || TextCase.HasValue || OpenTypeLanguageTag != null || Variations != null || ColorPaletteIndex.HasValue;
 
     /// <summary>Resolves these overrides over a complete text style without mutating the fallback.</summary>
     public TextStyle Resolve(TextStyle fallback) {
@@ -97,11 +99,11 @@ public sealed class TextStyleOverride {
         if (FontFamily != null) resolved.Font.Family = FontFamily;
         if (FontWeight != null) resolved.Font.Weight = ResolveWeight(FontWeight, resolved.Font.Weight);
         if (FontSize.HasValue) resolved.FontSize = FontSize.Value;
-        if (Italic) resolved.Font.Italic = true;
+        if (_hasItalic) resolved.Font.Italic = Italic;
         if (UnderlineStyle.HasValue) resolved.UnderlineStyle = UnderlineStyle.Value;
-        else if (Underline) resolved.UnderlineStyle = TextDecorationStyle.Single;
+        else if (_hasUnderline) resolved.UnderlineStyle = Underline ? TextDecorationStyle.Single : TextDecorationStyle.None;
         if (StrikethroughStyle.HasValue) resolved.StrikethroughStyle = StrikethroughStyle.Value;
-        else if (Strikethrough) resolved.StrikethroughStyle = TextDecorationStyle.Single;
+        else if (_hasStrikethrough) resolved.StrikethroughStyle = Strikethrough ? TextDecorationStyle.Single : TextDecorationStyle.None;
         if (Baseline.HasValue) resolved.Baseline = Baseline.Value;
         if (TextCase.HasValue) resolved.TextCase = TextCase.Value;
         if (OpenTypeLanguageTag != null) resolved.OpenTypeLanguageTag = OpenTypeLanguageTag == "normal" ? null : OpenTypeLanguageTag;

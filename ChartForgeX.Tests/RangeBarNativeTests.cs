@@ -15,7 +15,7 @@ public sealed class RangeBarNativeTests {
     public void GroupedBodiesCapsAndPointPaintRemainDistinctInNativeExports(bool horizontal) {
         var chart = Chart.Create().WithSize(horizontal ? 360 : 800, 440).WithTitle("Delivery time ranges")
             .WithSubtitle("Expected and observed intervals by service").WithXLabels("Standard", "Express")
-            .WithTheme(horizontal ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithDataLabels().WithFontFamily("Carlito")
+            .WithTheme(VisualTheme.Graphite(), horizontal ? VisualThemeMode.Dark : VisualThemeMode.Light).WithDataLabels().WithFontFamily("Carlito")
             .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
             .WithBarStyle(horizontal ? ChartBarStyle.SegmentedCapsule : ChartBarStyle.Flat)
             .ConfigureRangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)

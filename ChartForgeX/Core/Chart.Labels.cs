@@ -8,7 +8,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart ConfigureLabels(Action<ChartLabels> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(Options.Labels);
+        Options.Labels = ChartOptionConfiguration.Configure(Options.Labels, configure, labels => labels.Capture());
         return this;
     }
 }

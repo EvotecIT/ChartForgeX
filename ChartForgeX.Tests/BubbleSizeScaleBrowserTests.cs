@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects native browser hits and readable raw-size facts when an authored domain caps bubble geometry.</summary>
 public sealed class BubbleSizeScaleBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]
@@ -21,7 +21,7 @@ public sealed class BubbleSizeScaleBrowserTests {
         var chart = Chart.Create().WithTitle("Workload and request volume")
             .WithSubtitle("One radius scale for both services")
             .WithSize(compact ? 316 : 700, compact ? 400 : 430)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxis("Workload batches").WithYAxis("Time (minutes)")
             .WithXAxisBounds(0, 5).WithYAxisBounds(0, 50).WithDataLabels(false)
             .AddBubble("Standard", new[] { new ChartBubble(.8, 18, 9), new ChartBubble(1.8, 30, 36), new ChartBubble(2.8, 24, 81) })

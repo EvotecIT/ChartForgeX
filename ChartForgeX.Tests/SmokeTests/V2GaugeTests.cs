@@ -63,14 +63,16 @@ public sealed class V2GaugeTests {
     }
 
     [Fact]
-    public void OverlappingBandsAndInvalidMutableRangesFailBeforePainting() {
+    public void OverlappingBandsAndInvalidTypedRangesFailBeforePainting() {
         var chart = Chart.Create().AddGauge("Load", 40).ConfigureGauge(options => {
             options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Success));
             options.Bands.Add(new ChartGaugeBand(50, 100, ChartSeriesState.Warning));
         });
         Assert.Contains("overlap", Assert.Throws<InvalidOperationException>(() => Compile(chart)).Message);
-        chart.Options.Gauge.Bands.Clear(); chart.Series[0].Points[1] = new ChartPoint(0, 40);
-        Assert.Contains("range", Assert.Throws<InvalidOperationException>(() => Compile(chart)).Message);
+        chart.Options.Gauge.Bands.Clear();
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].UpdateGaugeValue(0, default));
+        Assert.Equal(40, chart.Series[0].GaugeValues[0].Value);
+        Assert.NotEmpty(Compile(chart).Nodes);
     }
 
     [Fact]

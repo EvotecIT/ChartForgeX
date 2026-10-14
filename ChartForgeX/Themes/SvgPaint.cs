@@ -27,7 +27,7 @@ internal readonly partial struct SvgPaint {
     private const char End = '\uFDD1';
     // Only well-formed tokens match; anything else between the noncharacters is left as it is.
     private static readonly Regex Token = new(
-        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>[PR])(?<body>[0-7][0-9A-F]{8})|(?<kind>S)(?<body>[0-9A-F]{16}[01])|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>V)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>N)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
+        "\uFDD0(?:(?<kind>L)(?<body>[0-9A-F]{8})|(?<kind>[PR])(?<body>[0-7][0-9A-F]{8})|(?<kind>T)(?<body>[0-9A-F]{8}[0-7][0-9A-F]{8})|(?<kind>S)(?<body>[0-9A-F]{16}[01])|(?<kind>I)(?<body>[0-7][0-9A-F]{16})|(?<kind>C)(?<body>[0-9A-F]{16}[A-Za-z0-9+/=]{1,1024})|(?<kind>V)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024})|(?<kind>M)(?<body>[0-9A-F]{8}[0-7L][0-9A-F]{8}[0-7L][0-9A-F]{8}[0-9.Ee+-]{1,32})|(?<kind>N)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32})|(?<kind>O)(?<body>[0-9A-F]{8}[A-Za-z0-9+/=]{1,1024}:[0-9.Ee+-]{1,32}))\uFDD1",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private SvgPaint(string? value, bool raw) {
@@ -59,6 +59,10 @@ internal readonly partial struct SvgPaint {
 
     /// <summary>A token colour written for <paramref name="role"/>.</summary>
     public static SvgPaint Of(ChartColor color, SvgColorRole role) => new(Start + "P" + Digit(role) + Hex(color) + End, raw: true);
+
+    /// <summary>Retains canonical theme identity until scoped SVG export, with an ordinary role mapping as fallback.</summary>
+    internal static SvgPaint ThemeToken(ChartColor color, VisualThemeColorToken token, SvgColorRole role) =>
+        new(Start + "T" + ((int)token).ToString("X8", CultureInfo.InvariantCulture) + Digit(role) + Hex(color) + End, raw: true);
 
     /// <summary>Black or white ink paired to this fill; an explicitly configured ink property follows theme changes.</summary>
     public static SvgPaint Contrast(ChartColor fill, SvgColorRole role) =>
@@ -134,6 +138,8 @@ internal readonly partial struct SvgPaint {
             case 'P':
             case 'R':
                 return RoleDigit(text, ref i, false) && Hex(text, ref i, 8) && Close(text, i) ? i + 1 - index : 0;
+            case 'T':
+                return Hex(text, ref i, 8) && RoleDigit(text, ref i, false) && Hex(text, ref i, 8) && Close(text, i) ? i + 1 - index : 0;
             case 'S':
                 return Hex(text, ref i, 16) && i < text.Length && (text[i++] is '0' or '1') && Close(text, i) ? i + 1 - index : 0;
             case 'I':
@@ -204,6 +210,12 @@ internal readonly partial struct SvgPaint {
                 var color = Color(body, 1);
                 var role = Role(body[0]);
                 return variables != null && role.HasValue && variables.TryPaint(color, role.Value, out var paint) ? paint : color.ToCss();
+            }
+            case 'T': {
+                var color = Color(body, 9);
+                var themeToken = (VisualThemeColorToken)int.Parse(body.Substring(0, 8), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                if (variables != null && variables.TryThemeTokenPaint(themeToken, color, out var themed)) return themed;
+                return variables != null && variables.TryPaint(color, Role(body[8])!.Value, out var paint) ? paint : color.ToCss();
             }
             case 'R': {
                 var color = Color(body, 1);

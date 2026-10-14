@@ -4,8 +4,8 @@ using ChartForgeX.Rendering;
 namespace ChartForgeX.Themes;
 
 public sealed partial class VisualDesignTokens {
-    /// <summary>Gets or sets whether charts use the flat Graphite look when these tokens are applied.</summary>
-    public bool UseGraphiteLayout { get; set; }
+    /// <summary>Gets or sets the independent plot border; null uses the shared border.</summary>
+    public ChartColor? PlotBorder { get; set; }
     /// <summary>Gets or sets muted annotation text; null retains the secondary foreground mapping.</summary>
     public ChartColor? Muted { get; set; }
     /// <summary>Gets or sets horizontal plot guides; null retains the border-derived mapping.</summary>
@@ -32,10 +32,6 @@ public sealed partial class VisualDesignTokens {
 
     private static VisualDesignTokens Graphite(bool dark) {
         var tokens = VisualTheme.Graphite().Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light).ToTokens();
-        tokens.UseGraphiteLayout = true;
-        tokens.FontFamily = VisualTheme.Graphite().Typography.Family;
-        tokens.CornerRadius = VisualTheme.Graphite().CardRadius;
-        tokens.StrokeWidth = VisualTheme.Graphite().SeriesStrokeWidth;
         return tokens;
     }
 }

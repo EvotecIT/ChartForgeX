@@ -28,7 +28,7 @@ internal static class ReportHostExamples {
         var chart = Chart.Create()
             .WithTitle("Checks per site")
             .WithSubtitle("Counts take the card or text colour by role, not a fixed contrast colour")
-            .WithDesignTokens(tokens)
+            .WithTheme(new VisualTheme(tokens, tokens))
             .WithSize(760, 360)
             .WithPngOutputScale(pngOutputScale)
             .WithMarkBackdrop(ChartMarkBackdrop.Card)
@@ -60,7 +60,7 @@ internal static class ReportHostExamples {
         var chart = Chart.Create()
             .WithTitle("Changes per day")
             .WithSubtitle("SVG colours are the custom properties of the design tokens")
-            .WithDesignTokens(tokens)
+            .WithTheme(new VisualTheme(tokens, tokens))
             .WithSize(760, 300)
             .WithPngOutputScale(pngOutputScale)
             .WithSvgColorVariables(tokens.ToSvgColorVariables())
@@ -77,7 +77,7 @@ internal static class ReportHostExamples {
         var chart = Chart.Create()
             .WithTitle("LDAP bind latency")
             .WithSubtitle("Flat bars: one colour per bar")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(760, 360)
             .WithPngOutputScale(pngOutputScale)
             .WithBarStyle(ChartBarStyle.Flat)
@@ -100,18 +100,22 @@ internal static class ReportHostExamples {
         var chart = Chart.Create()
             .WithTitle("Changements par jour")
             .WithHeader(false)
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(760, 230)
             .WithPngOutputScale(pngOutputScale)
-            .WithCalendarHeatmapCells(maximumSize: 18)
+            .ConfigureCalendar(options => {
+                options.MaximumCellSize = 18;
+                options.FirstDayOfWeek = french.DateTimeFormat.FirstDayOfWeek;
+                options.DayNames = french.DateTimeFormat.AbbreviatedDayNames;
+                options.MonthNames = french.DateTimeFormat.AbbreviatedMonthNames.Take(12).ToArray();
+            })
             .ConfigureLabels(labels => {
                 labels.Less = "Moins";
                 labels.More = "Plus";
                 labels.NoData = "Aucune donnée";
                 labels.DateFormatter = day => day.ToString("D", french);
             })
-            .AddCalendarHeatmap("Changements", items, ChartColor.FromHex("#2a78d6"), french.DateTimeFormat.FirstDayOfWeek,
-                french.DateTimeFormat.AbbreviatedDayNames, french.DateTimeFormat.AbbreviatedMonthNames.Take(12).ToArray());
+            .AddCalendarHeatmap("Changements", items, ChartColor.FromHex("#2a78d6"));
 
         chart.SaveSvg(Path.Combine(output, "report-host-short-calendar.svg"));
         chart.SaveHtml(Path.Combine(output, "report-host-short-calendar.html"));
@@ -127,7 +131,7 @@ internal static class ReportHostExamples {
         var chart = Chart.Create()
             .WithTitle("Checks by domain controller")
             .WithSubtitle("Column labels follow the x-axis label angle")
-            .WithTheme(ChartTheme.ReportLight())
+            .WithTheme(VisualTheme.Report())
             .WithSize(620, 440)
             .WithPngOutputScale(pngOutputScale)
             .WithXAxisLabelAngle(-45)

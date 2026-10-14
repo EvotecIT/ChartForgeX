@@ -115,6 +115,7 @@ public sealed class MermaidPacketGeometryTests {
         Assert.NotEmpty(block.ToPng());
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 320, 3)]
     [InlineData(false, 960, 3)]

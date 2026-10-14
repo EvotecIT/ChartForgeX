@@ -9,10 +9,11 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgFactBlockRenderer {
     private static void RenderVisualBadge(SvgMarkupWriter writer, ChartTable table, ChartTableCell cell, double x, double y, double width, double height) {
-        var theme = table.Options.Theme;
+        var theme = table.Options.ResolvedTheme;
         var color = cell.BadgeColor ?? VisualBlockRendering.StatusColor(theme, cell.BadgeStatus);
         var fontSize = Math.Max(9, table.Dense ? 10.5 : 11.5);
-        var badgeWidth = Math.Min(width, Math.Max(28, VisualBlockRendering.EstimateTextWidth(cell.BadgeText, fontSize) + 18));
+        var caption = VisualBlockRendering.SingleLineText(cell.BadgeText);
+        var badgeWidth = Math.Min(width, Math.Max(28, VisualBlockRendering.MeasureTextWidth(caption, fontSize, theme.FontFamily, 700) + 18));
         var badgeHeight = Math.Min(22, Math.Max(18, height));
         var badgeX = BadgeX(x, width, badgeWidth, cell.Alignment ?? TextAlignment.Left);
         var badgeY = y + Math.Max(0, (height - badgeHeight) / 2);
@@ -28,7 +29,7 @@ public sealed partial class SvgFactBlockRenderer {
             .Attribute("fill", fill.ToCss())
             .Attribute("stroke", stroke.ToCss())
             .EndEmptyElement().Line();
-        WriteText(writer, cell.BadgeText, badgeX + 7, badgeY + badgeHeight * 0.66, badgeWidth - 14, TextAlignment.Center, text, theme.FontFamily, fontSize, "750");
+        WriteText(writer, caption, badgeX + 7, badgeY + badgeHeight * 0.66, badgeWidth - 14, TextAlignment.Center, text, theme.FontFamily, fontSize, "700");
     }
 
     private static double BadgeX(double x, double width, double badgeWidth, TextAlignment alignment) {
@@ -37,7 +38,7 @@ public sealed partial class SvgFactBlockRenderer {
         return x;
     }
 
-    private static void BadgeColors(ChartForgeX.Themes.ChartTheme theme, ChartColor color, VisualBadgeStyle style, out ChartColor fill, out ChartColor stroke, out ChartColor text) {
+    private static void BadgeColors(ChartForgeX.Themes.ResolvedVisualTheme theme, ChartColor color, VisualBadgeStyle style, out ChartColor fill, out ChartColor stroke, out ChartColor text) {
         if (style == VisualBadgeStyle.Solid) {
             fill = color;
             stroke = color;

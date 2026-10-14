@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
@@ -47,5 +48,41 @@ public sealed class ChartXProjection {
         var result = ChartMath.InterpolateOrExtrapolateRange(Minimum, Maximum, Reversed ? 1 - ratio : ratio);
         ChartPrimitiveGuards.Finite(result, nameof(logicalX));
         return result;
+    }
+
+    /// <summary>Converts a logical gesture into an increasing X window contained in the captured full domain.</summary>
+    /// <param name="firstLogicalX">The first logical X position, including positions outside the plot.</param>
+    /// <param name="secondLogicalX">The second logical X position, including positions outside the plot.</param>
+    /// <returns>The confined window, or null when the requested span covers the full domain and preparation should reset.</returns>
+    /// <remarks>The captured axis reversal is honored. A narrower span that crosses an edge is shifted intact into
+    /// the full domain rather than shortened. Explicit authored windows passed to Chart.Prepare remain strictly validated.</remarks>
+    /// <exception cref="ArgumentOutOfRangeException">A position or mapped bound is not finite, or the requested span
+    /// is empty or cannot be represented at the confined bounds.</exception>
+    public ChartXViewport? ConstrainViewport(double firstLogicalX, double secondLogicalX) {
+        var first = Unproject(firstLogicalX);
+        var second = Unproject(secondLogicalX);
+        var minimum = Math.Min(first, second);
+        var maximum = Math.Max(first, second);
+        if (maximum <= minimum)
+            throw new ArgumentOutOfRangeException(nameof(secondLogicalX), secondLogicalX, "The gesture requires a nonempty X span.");
+        var span = maximum - minimum;
+        var fullSpan = FullMaximum - FullMinimum;
+        // Halving opposite-sign extremes avoids overflowing either span during the comparison.
+        var spanIsFinite = ChartMath.IsFinite(span);
+        var fullSpanIsFinite = ChartMath.IsFinite(fullSpan);
+        var halfSpan = maximum / 2 - minimum / 2;
+        var fullHalfSpan = FullMaximum / 2 - FullMinimum / 2;
+        if (spanIsFinite && fullSpanIsFinite ? span >= fullSpan
+            : halfSpan >= fullHalfSpan) return null;
+        if (minimum < FullMinimum) {
+            minimum = FullMinimum;
+            maximum = spanIsFinite ? Math.Min(FullMaximum, minimum + span)
+                : ChartMath.InterpolateRange(FullMinimum, FullMaximum, halfSpan / fullHalfSpan);
+        } else if (maximum > FullMaximum) {
+            maximum = FullMaximum;
+            minimum = spanIsFinite ? Math.Max(FullMinimum, maximum - span)
+                : ChartMath.InterpolateRange(FullMinimum, FullMaximum, 1 - halfSpan / fullHalfSpan);
+        }
+        return new ChartXViewport(minimum, maximum);
     }
 }

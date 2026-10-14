@@ -14,7 +14,7 @@ public sealed class GraphiteAxisTitleLayoutTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void RequestedYAxisTitleSurvivesHeaderAndTopLegendInSvgAndPng(bool dark, bool legend) {
-        var chart = Chart.Create().WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(900, 520).WithTitle("Mermaid XY chart").WithSubtitle("xychart")
             .WithYAxis("Revenue").WithYAxisBounds(0, 50).WithXLabels("Jan", "Feb", "Mar")
             .AddLine("Revenue", new[] { new ChartPoint(1, 10), new ChartPoint(2, 25), new ChartPoint(3, 40) });
@@ -29,8 +29,8 @@ public sealed class GraphiteAxisTitleLayoutTests {
         for (var y = Math.Max(0, (int)Math.Floor(bounds.Top)); y < Math.Min(image.Height, (int)Math.Ceiling(bounds.Bottom)); y++)
             for (var x = Math.Max(0, (int)Math.Floor(bounds.Left)); x < Math.Min(image.Width, (int)Math.Ceiling(bounds.Right)); x++) {
                 var offset = (y * image.Width + x) * 4;
-                if (image.Pixels[offset + 3] > 0 && (image.Pixels[offset] != chart.Options.Theme.PlotBackground.R
-                    || image.Pixels[offset + 1] != chart.Options.Theme.PlotBackground.G || image.Pixels[offset + 2] != chart.Options.Theme.PlotBackground.B)) ink++;
+                if (image.Pixels[offset + 3] > 0 && (image.Pixels[offset] != chart.Options.Theme.Resolve(chart.Options.ThemeMode).Surface.R
+                    || image.Pixels[offset + 1] != chart.Options.Theme.Resolve(chart.Options.ThemeMode).Surface.G || image.Pixels[offset + 2] != chart.Options.Theme.Resolve(chart.Options.ThemeMode).Surface.B)) ink++;
             }
         Assert.True(ink > 5, "The requested axis-title area should contain native text pixels.");
         Assert.Contains("Revenue", chart.ToSvg());

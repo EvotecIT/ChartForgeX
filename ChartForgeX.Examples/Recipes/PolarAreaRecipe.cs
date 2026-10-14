@@ -1,0 +1,21 @@
+/// <summary>Service revenue encoded by radial area, with an optional reversed category example.</summary>
+public static class PolarAreaRecipe {
+    /// <summary>Creates radial revenue segments; the reversal variant retains a zero-valued category and point paint.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "angular-reversal" or "compact-angular-reversal"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is "angular-reversal" or "compact-angular-reversal") {
+            var reversedRevenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.PolarArea,
+                new[] { new ChartPoint(1, 92), new ChartPoint(2, 0), new ChartPoint(3, 58), new ChartPoint(4, 74) })
+                .WithPointColor(0, ChartColor.FromHex("#2563EB")).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
+            return Chart.Create().WithXLabels("North", "East", "South", "West").WithDataLabels().AddSeries(reversedRevenue)
+                .ConfigureXAxis(axis => axis.WithReversal())
+                .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        }
+        var points = (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
+            .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
+        var revenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.PolarArea, points);
+        return Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other").AddSeries(revenue)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+}

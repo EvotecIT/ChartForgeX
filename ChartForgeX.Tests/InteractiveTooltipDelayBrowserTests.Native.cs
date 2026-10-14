@@ -9,16 +9,14 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExactNativeSummaryDelayKeepsGuideEventsAndSemanticPeerImmediate(bool tooltips) {
         if (!Enabled) return;
         var points = new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) };
         var source = NativeLine("Source", points);
-        source.Series[0].WithInteractionKey("readings");
         var peer = NativeLine("Peer", points);
-        peer.Series[0].WithInteractionKey("readings");
         var html = new[] { source, peer }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1; options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.DelayMilliseconds = Delay; options.Tooltip.Range = HtmlChartTooltipRange.Exact;
@@ -73,7 +71,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task NativeTextAndLegendMovementKeepOneDelayedSemanticTarget(bool legend) {
@@ -111,5 +109,5 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
     }
 
     private static Chart NativeLine(string name, ChartPoint[] points) => Chart.Create().WithSize(800, 540)
-        .WithLineMarkers(ChartLineMarkerMode.None).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddLine(name, points);
+        .WithLineMarkers(ChartLineMarkerMode.None).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("readings"), name, points));
 }

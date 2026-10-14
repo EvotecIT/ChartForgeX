@@ -23,7 +23,7 @@ internal sealed class ChartStateCategoryLegend {
     public ChartStateCategoryLegend(Chart chart, ChartColor? fallback = null) {
         _chart = chart;
         foreach (var category in chart.Options.StateCategories) _categories[category.Key] = category;
-        _fallback = fallback ?? chart.Options.Theme.MutedText;
+        _fallback = fallback ?? chart.Options.ResolvedTheme.MutedText;
         Categories = new List<ChartStateCategory>(chart.Options.StateCategories);
     }
 

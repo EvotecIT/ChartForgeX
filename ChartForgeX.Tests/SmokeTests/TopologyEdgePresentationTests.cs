@@ -19,7 +19,7 @@ internal static partial class SmokeTests {
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
             .WithMonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
-        Assert(svg.Contains("stroke=\"#CBD5E1\"", StringComparison.Ordinal), "Monitoring style should use a lighter hierarchy edge color.");
+        Assert(TopologyEdgeLine(svg, "hierarchy").RenderedColor("stroke").WithAlpha(255).ToHex() == "#CBD5E1", "Monitoring style should use a lighter hierarchy edge color.");
         Assert(svg.Contains("stroke-width=\"1.05\"", StringComparison.Ordinal), "Monitoring style should render muted hierarchy edges thinner than primary paths.");
         Assert(chart.ToPng(options).Length > 64, "Compact monitoring hierarchy edges should render as PNG.");
     }
@@ -39,7 +39,7 @@ internal static partial class SmokeTests {
             .WithMonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-edge-emphasis=\"Subtle\"", StringComparison.Ordinal), "Subtle edges should expose reusable emphasis metadata.");
-        Assert(svg.Contains("stroke=\"#16A34A\"", StringComparison.Ordinal), "Subtle edges should preserve health status color instead of becoming structural gray.");
+        Assert(TopologyEdgeLine(svg, "fan").RenderedColor("stroke").WithAlpha(255).Equals(chart.Theme.Resolve(chart.ThemeMode).Status.Pass.Fill.WithAlpha(255)), "Subtle edges should preserve the selected theme's health status color.");
         Assert(svg.Contains("stroke-width=\"1.05\"", StringComparison.Ordinal), "Subtle monitoring edges should render with a lower visual weight.");
         Assert(TopologyEdgeLine(svg, "fan").RenderedColor("stroke").A == (byte)Math.Round(255 * .48), "Subtle monitoring edges should render below normal opacity.");
         Assert(chart.ToPng(options).Length > 64, "Subtle status-preserving edges should render as PNG.");
@@ -66,7 +66,7 @@ internal static partial class SmokeTests {
 
         chart.Edges[0].IsMuted = true;
         var mutedSvg = chart.ToSvg(options);
-        Assert(TopologyEdgeLine(mutedSvg, "dependency").RenderedColor("stroke").ToHex() == "#CBD5E1", "Muted monitoring edges should render neutral even when the caller supplied an explicit edge color.");
+        Assert(TopologyEdgeLine(mutedSvg, "dependency").RenderedColor("stroke").WithAlpha(255).ToHex() == "#CBD5E1", "Muted monitoring edges should render neutral even when the caller supplied an explicit edge color.");
         Assert(TopologyEntity(mutedSvg, "edge", "dependency").Attribute("data-edge-color")!.Value == "#64748B", "Authored color metadata should remain available when the visual muted state overrides its paint.");
     }
 

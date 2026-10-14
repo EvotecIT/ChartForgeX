@@ -11,14 +11,14 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualSpecialtyCompiler {
     private static void Pictorial(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var options = chart.Options; var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
-        var maximum = options.PictorialMaximum ?? series.Points.Max(point => point.Y);
+        var maximum = options.PictorialMaximum ?? series.RenderPoints.Max(point => point.Y);
         var columns = options.PictorialColumns; var unit = options.PictorialValuePerSymbol;
         var showValues = options.ShowPictorialValues;
-        var rows = new int[series.Points.Count]; var requestedRows = new double[rows.Length];
+        var rows = new int[series.RenderPoints.Count]; var requestedRows = new double[rows.Length];
         // A viewport cannot display arbitrarily many unit symbols. Keep full values and report omitted rows.
         var rowBudget = Math.Max(1, (int)Math.Min(256, Math.Floor(plot.Height / rows.Length / 4)));
         for (var index = 0; index < rows.Length; index++) {
-            requestedRows[index] = unit.HasValue ? Math.Max(1, Math.Ceiling(series.Points[index].Y / unit.Value / columns)) : 1;
+            requestedRows[index] = unit.HasValue ? Math.Max(1, Math.Ceiling(series.RenderPoints[index].Y / unit.Value / columns)) : 1;
             rows[index] = (int)Math.Min(rowBudget, requestedRows[index]);
         }
         if (rows.Where((row, index) => row < requestedRows[index]).Any()) builder.AddDiagnostic(new VisualDiagnostic(
@@ -46,7 +46,7 @@ internal static partial class VisualSpecialtyCompiler {
             var top = plot.Top + rowOffset * rowHeight + index * itemGap;
             var itemHeight = rows[index] * rowHeight;
             var bounds = new ChartRect(plot.Left, top, plot.Width, itemHeight);
-            var raw = series.Points[index].Y;
+            var raw = series.RenderPoints[index].Y;
             var filled = unit.HasValue ? raw / unit.Value : maximum <= 0 ? 0 : raw / maximum * columns;
             var color = Color(series, index, colors);
             using (Point(chart, builder, index, "pictorial-item", bounds, extra: new Dictionary<string, string> {

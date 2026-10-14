@@ -8,16 +8,16 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Checks compact static fragments without the complete document's stylesheet.</summary>
 public sealed class StaticFragmentBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ChartAndGridFragmentsScaleInsideCompactHostsWithoutPageCss(bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(640, 360).WithTitle("Capacity")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddLine("Used", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 3) });
         var grid = ChartGrid.Create().WithColumns(2).WithPanelSize(320, 200).Add(chart).Add(chart);
-        var html = "<!doctype html><html><body style=\"margin:0;background:" + chart.Options.Theme.Background.ToCss() + "\">"
+        var html = "<!doctype html><html><body style=\"margin:0;background:" + chart.Options.Theme.Resolve(chart.Options.ThemeMode).Background.ToCss() + "\">"
             + "<div id=\"chart-host\" style=\"width:280px\">" + chart.ToHtmlFragment("compact-chart") + "</div>"
             + "<div id=\"grid-host\" style=\"width:280px\">" + grid.ToHtmlFragment("compact-grid") + "</div></body></html>";
         await using var session = await OpenAsync(html, 320, 700);

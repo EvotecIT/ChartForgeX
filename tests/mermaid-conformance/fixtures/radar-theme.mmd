@@ -1,0 +1,25 @@
+---
+config:
+  themeVariables:
+    titleColor: '#7C3AED'
+    cScale0: '#2563EB'
+    cScale1: '#EA580C'
+    radar:
+      axisColor: '#16A34A'
+      axisStrokeWidth: 3
+      axisLabelFontSize: 15
+      graticuleColor: '#64748B'
+      graticuleOpacity: 0.12
+      graticuleStrokeWidth: 1.5
+      curveOpacity: 0.25
+      curveStrokeWidth: 4
+      legendFontSize: 16
+---
+radar-beta
+title Authored radar paint
+axis a["Coverage"], b["Policy"], c["Response"], d["Recovery"]
+curve current["Current"]{90,45,80,60}
+curve target["Target"]{95,85,90,80}
+min 0
+max 100
+graticule circle

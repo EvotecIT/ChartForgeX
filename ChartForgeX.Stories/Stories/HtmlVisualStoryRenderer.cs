@@ -28,20 +28,20 @@ public sealed class HtmlVisualStoryRenderer {
     }
 
     internal string RenderPage(VisualStory story, string animatedSvg) {
-        var light = ChartColorMath.RelativeLuminance(story.Theme.Background) > 0.5;
+        var light = story.ThemeMode == ChartForgeX.Themes.VisualThemeMode.Light;
         var html = new StringBuilder();
         html.Append("<!doctype html><html><head><meta charset=\"utf-8\">")
             .Append("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">")
             .Append("<title>").Append(Escape(story.Title)).Append("</title>")
             .Append("<style>html{color-scheme:").Append(light ? "light" : "dark")
             .Append("}body{margin:0;min-height:100vh;display:grid;place-items:center;background:")
-            .Append(story.Theme.Background.ToCss())
+            .Append(story.ResolvedStyle.Background.ToCss())
             .Append(";background-image:linear-gradient(180deg,")
-            .Append(story.Theme.Background.ToCss())
+            .Append(story.ResolvedStyle.Background.ToCss())
             .Append(",")
-            .Append(story.Theme.Panel.ToCss())
+            .Append(story.ResolvedStyle.Panel.ToCss())
             .Append(");color:")
-            .Append(story.Theme.Text.ToCss())
+            .Append(story.ResolvedStyle.Text.ToCss())
             .Append(";padding:24px;box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}")
             .Append(".chartforgex-visual-story{width:min(")
             .Append(story.Width.ToString(CultureInfo.InvariantCulture))

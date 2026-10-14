@@ -9,18 +9,18 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class FishboneTypographyBaselineTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(10.5)]
     [InlineData(21)]
     public async Task ClassicRasterChildLabelsShareTheSvgBaselineAtDifferentBodySizes(double size) {
-        var theme = ChartTheme.Light();
-        theme.UseGraphiteLayout = false;
-        theme.FontFamily = "Arial";
-        theme.DataLabelFontSize = size;
-        theme.Background = theme.CardBackground = theme.PlotBackground = ChartColor.Transparent;
-        theme.Text = theme.Axis = theme.Grid = theme.PlotBorder = ChartColor.Transparent;
-        theme.MutedText = ChartColor.FromHex("#FF0000");
-        theme.Palette = new[] { ChartColor.Transparent };
+        var theme = VisualTheme.Report();
+        theme = theme.WithFontFamily("Arial");
+        theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; });
+        theme = theme.Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartColor.Transparent; builder.Light.Axis = builder.Dark.Axis = builder.Light.Grid = builder.Dark.Grid = builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.Transparent; });
+        theme = theme.Configure(builder => { builder.Light.Muted = builder.Dark.Muted = ChartColor.FromHex("#FF0000"); });
+        theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.Transparent }; });
         var block = FishboneDiagramBlock.Create("Effect").WithSize(800, 400).WithTheme(theme).WithCard(false).WithTransparentBackground();
         block.AddCause("Cause").AddChild("MMMM");
         var native = block.RenderRgba();

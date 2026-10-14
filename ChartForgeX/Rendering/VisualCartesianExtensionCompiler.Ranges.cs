@@ -10,13 +10,13 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawRangeEnvelope(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
-        var series = chart.Series[index]; var count = series.Points.Count / 2;
+        var series = chart.Series[index]; var count = series.RenderPoints.Count / 2;
         var paired = new ChartPairedBoundaryGeometry(series, map);
         var lower = paired.First; var upper = paired.Second; var middle = new List<ChartPoint>();
         var area = series.Kind == ChartSeriesKind.RangeArea; var color = Color(series, index, colors);
         var sourcePaint = VisualChartPaint.Series(series, color);
         for (var item = 0; item < count; item++) {
-            var low = series.Points[item * 2]; var high = series.Points[item * 2 + 1]; var x = map.X(low.X);
+            var low = series.RenderPoints[item * 2]; var high = series.RenderPoints[item * 2 + 1]; var x = map.X(low.X);
             var breakBefore = low.BreakBefore || high.BreakBefore;
             middle.Add(new ChartPoint(x, map.Y((low.Y + high.Y) / 2), breakBefore));
         }
@@ -47,7 +47,7 @@ internal static partial class VisualCartesianCompiler {
             offset += segment.Count;
         }
         for (var item = 0; item < count; item++) {
-            var low = series.Points[item * 2]; var high = series.Points[item * 2 + 1];
+            var low = series.RenderPoints[item * 2]; var high = series.RenderPoints[item * 2 + 1];
             var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
             var showMarkers = VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue);
             var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;

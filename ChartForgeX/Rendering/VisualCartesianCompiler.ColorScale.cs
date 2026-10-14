@@ -35,7 +35,7 @@ internal static partial class VisualCartesianCompiler {
         if (requested > budget) {
             compact = true; gap /= 2;
             keyStyle = style.Clone(); keyStyle.FontSize = style.EffectiveFontSize; keyStyle.Baseline = TextBaseline.Normal;
-            var minimum = Math.Min(8, style.EffectiveFontSize);
+            var minimum = Math.Min(VisualTextFitting.MinimumOrdinaryFontSize, style.EffectiveFontSize);
             heights = Measure(); requested = heights.Sum() + gap * keys.Length;
             while (requested > budget && keyStyle.FontSize > minimum) {
                 keyStyle.FontSize = Math.Max(minimum, keyStyle.FontSize - .25);

@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class NumericRadialEncodedGeometryBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task SharedCollapsedFillRequiresItsActualSeparatorStrokeForPointerAndKeyboardReadout(bool donut) {

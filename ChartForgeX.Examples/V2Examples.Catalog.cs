@@ -28,7 +28,7 @@ public static partial class V2Examples {
                 primary = primaryIds.Contains(artifact.Id), seriesKinds = ArtifactKinds(artifact),
                 theme = artifact.Theme, width = artifact.Width, height = artifact.Height,
                 naturalAspect = (double)artifact.Width / artifact.Height,
-                compact = artifact.Compact, source = artifact.Id + ".csharp.txt",
+                compact = artifact.Compact, source = artifact.Id + ".csharp.txt", gallerySource = artifact.Id + ".gallery.csharp.txt",
                 svg = artifact.Id + ".svg", png = artifact.Id + ".png", html = artifact.Id + ".html",
                 thumbnail = artifact.Id + ".thumbnail.svg", thumbnailPng = artifact.Id + ".thumbnail.png",
                 thumbnailWidth = ThumbnailWidth, thumbnailHeight = ThumbnailHeight,
@@ -66,7 +66,7 @@ public static partial class V2Examples {
 
     private static string[] CatalogAssets(IReadOnlyList<ProofArtifact> artifacts) =>
         new[] { "catalog.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt" }
-            .Concat(artifacts.SelectMany(artifact => new[] { ".html", ".svg", ".png", ".csharp.txt", ".thumbnail.svg", ".thumbnail.png" }.Select(extension => artifact.Id + extension)))
+            .Concat(artifacts.SelectMany(artifact => new[] { ".html", ".svg", ".png", ".csharp.txt", ".gallery.csharp.txt", ".thumbnail.svg", ".thumbnail.png" }.Select(extension => artifact.Id + extension)))
             .Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray();
 
     private static IEnumerable<ProofArtifact> PairedArtifacts(IReadOnlyList<ProofArtifact> artifacts, ProofArtifact selected) =>

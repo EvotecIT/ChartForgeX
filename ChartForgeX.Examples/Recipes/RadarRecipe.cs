@@ -1,0 +1,43 @@
+/// <summary>Observed service levels compared with expected values or a marked target line.</summary>
+public static class RadarRecipe {
+    /// <summary>Creates shared radar categories with marker options or reversed angular order.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "angular-reversal" or "compact-angular-reversal"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is "angular-reversal" or "compact-angular-reversal") return Reversed();
+        if (variant is "options" or "compact-options") return Markers();
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Radar, Observations(variant));
+        var expected = new ChartSeries(new ChartSeriesId("expected"), "Expected", ChartSeriesKind.Radar, Observations(variant, 12));
+        return Chart.Create().WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
+            .AddSeries(observed).AddSeries(expected)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    private static Chart Markers() {
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Radar, Points(58, 76, 69, 84, 62, 73))
+            .ConfigureRadar(options => options.FillOpacity = .2)
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+        var target = new ChartSeries(new ChartSeriesId("target"), "Target", ChartSeriesKind.Radar, Points(75, 85, 80, 90, 75, 85))
+            .ConfigureRadar(options => options.Form = ChartLineAreaForm.Line)
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
+        return Chart.Create().WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
+            .WithYAxisBounds(0, 100).AddSeries(observed).AddSeries(target)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    private static Chart Reversed() {
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Radar, Points(58, 76, 69, 84))
+            .ConfigureRadar(options => options.FillOpacity = .2)
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 5; });
+        var target = new ChartSeries(new ChartSeriesId("target"), "Target", ChartSeriesKind.Radar, Points(75, 85, 80, 90))
+            .ConfigureRadar(options => options.Form = ChartLineAreaForm.Line)
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Radius = 4; });
+        return Chart.Create().WithXLabels("North", "East", "South", "West").WithYAxisBounds(0, 100).WithDataLabels(false)
+            .AddSeries(observed).AddSeries(target).ConfigureXAxis(axis => axis.WithReversal())
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+    private static ChartPoint[] Observations(string variant, double offset = 0) => (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
+        .Select(index => new ChartPoint(index, 20 + offset + index * 7 % 29)).ToArray();
+}

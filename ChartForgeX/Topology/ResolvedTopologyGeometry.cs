@@ -21,13 +21,13 @@ internal sealed class ResolvedTopologyGeometry {
             .ToDictionary(node => node.Id,
                 node => Transform(new ChartPoint(node.X + node.Width / 2, node.Y + node.Height / 2)), StringComparer.Ordinal);
         return new ResolvedTopologyGeometry(chart, options, context, routes, centers, clip, scale, background,
-            chart.Theme ?? TopologyTheme.Light());
+            chart.ResolvedTheme);
     }
 
     internal ResolvedTopologyGeometry(TopologyChart chart, TopologyRenderOptions options, VisualRenderContext context,
         IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>> routes,
         IReadOnlyDictionary<string, ChartPoint> nodeCenters, ChartRect clip, double scale,
-        ChartColor background, TopologyTheme theme) {
+        ChartColor background, TopologyPaint theme) {
         Chart = chart; Options = options; Context = context; Routes = routes; NodeCenters = nodeCenters;
         Clip = clip; Scale = scale; Background = background; Theme = theme;
     }
@@ -40,7 +40,7 @@ internal sealed class ResolvedTopologyGeometry {
     internal ChartRect Clip { get; }
     internal double Scale { get; }
     internal ChartColor Background { get; }
-    internal TopologyTheme Theme { get; }
+    internal TopologyPaint Theme { get; }
 
     internal ChartColor ResolveColor(string? authored, TopologyHealthStatus status) {
         var fallback = ChartColor.Parse(Theme.StatusColor(status));

@@ -25,6 +25,7 @@ public sealed class MermaidFontSizeTests {
         Assert.Equal("18", rendered.Artifact!.Metadata["mermaid.config.fontSize"]);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("participant A\nparticipant B\nparticipant C\nparticipant D\nD->>D: WWW")]
     [InlineData("participant A as i\nparticipant B as i\nparticipant C as i\nparticipant D as i\nparticipant E as i\nparticipant F as i\nparticipant G as i\nparticipant H as i\nautonumber\nA->>B: i")]
@@ -47,6 +48,7 @@ public sealed class MermaidFontSizeTests {
         File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), artifact.ToPng());
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(1)]
     [InlineData(256)]
@@ -169,7 +171,7 @@ public sealed class MermaidFontSizeTests {
     [Fact]
     public void ExplicitNativeContextOverridesAuthoredTypographyWithoutMutatingIt() {
         var topology = Assert.IsType<TopologyChart>(MermaidRenderer.Render(Source("flowchart LR\nA[API] --> B[Store]")).Artifact!.Model);
-        topology.Theme!.FontFamily = "Arial";
+        topology.WithTheme(topology.Theme.WithFontFamily("Arial"));
         Assert.Equal(18.5, topology.Theme.Typography.DataLabelSize);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 360)),
             VisualTheme.Graphite().WithTypography(new VisualTypography("Georgia", dataLabelSize: 14)), frame: new VisualFrame(showLegend: false));
@@ -183,7 +185,7 @@ public sealed class MermaidFontSizeTests {
         Assert.Contains(native.Descendants(), element => (string?)element.Parent?.Attribute("data-cfx-role") == "topology-node-label" && (string?)element.Attribute("font-size") == "18.5");
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task ExplicitFontSizeIsVisibleInBrowserAndNativeOutput(bool dark, int width) {
@@ -205,8 +207,8 @@ public sealed class MermaidFontSizeTests {
     private static double FontSize(object model) => model switch {
         TopologyChart topology => topology.Theme!.Typography.DataLabelSize,
         SequenceArtifact sequence => sequence.Theme.Typography.DataLabelSize,
-        Chart chart => chart.Options.Theme.DataLabelFontSize,
-        IVisualBlock block => block.Options.Theme.DataLabelFontSize,
+        Chart chart => chart.Options.Theme.Typography.DataLabelSize,
+        IVisualBlock block => block.Options.Theme.Typography.DataLabelSize,
         _ => throw new InvalidOperationException("Unexpected native family.")
     };
 }

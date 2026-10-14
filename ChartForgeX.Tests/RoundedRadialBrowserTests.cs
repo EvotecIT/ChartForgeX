@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class RoundedRadialBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.RadialBar, false, false, false)]
     [InlineData(ChartSeriesKind.RadialBar, false, true, false)]
     [InlineData(ChartSeriesKind.RadialBar, true, false, false)]
@@ -33,7 +33,7 @@ public sealed class RoundedRadialBrowserTests {
         var width = compact ? 360 : 800; var height = compact ? 360 : 440;
         var chart = V2GalleryModels.Create(kind, compact ? "compact-options" : "options", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithSize(width, height).WithTitle(V2GalleryModels.Title(kind)).WithSubtitle("Rounded sectors retain source values")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         if (relativeLabels) {
             chart.Options.XAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
             chart.Options.YAxis.LabelOrientation = chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular;

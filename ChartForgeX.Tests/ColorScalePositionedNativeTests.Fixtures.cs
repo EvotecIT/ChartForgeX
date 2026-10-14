@@ -21,8 +21,8 @@ public sealed partial class ColorScalePositionedNativeTests {
     private static Chart Create(string family, ChartColorScale scale, int width = 800, bool dark = false) {
         const string font = "CFX Positioned Native Carlito";
         FontRegistry.Register(font, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
-        var chart = Chart.Create().WithSize(width, 480).WithDataLabels(false).WithPngSupersampling(1).WithFontFamily(font)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+        var chart = Chart.Create().WithSize(width, 480).WithDataLabels(false).WithPngSupersampling(1)
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(font), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         chart.Options.TransparentBackground = false; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.ShowGrid = false;
         var values = new double?[] { 0, 2.5, 5, 100, null };
         if (family is "scatter" or "bubble") {

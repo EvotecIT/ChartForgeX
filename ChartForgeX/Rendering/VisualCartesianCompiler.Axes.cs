@@ -44,7 +44,7 @@ internal static partial class VisualCartesianCompiler {
         ChartRange range, ChartRange? secondaryRange, VisualThemeColors colors, AxisLabelCache labels) {
         if (!chart.Options.ShowAxes) return viewport;
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
-        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground });
+        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
         var spacing = context.Theme.Spacing;
         var left = chart.Options.YAxis.Visible ? TickMetrics(builder, chart.Options.YAxis, range.MinY, range.MaxY, style, chart.Options.ValueFormatter, labels).Width + spacing : 0;
         var right = secondaryRange != null && chart.Options.SecondaryYAxis.Visible
@@ -112,7 +112,7 @@ internal static partial class VisualCartesianCompiler {
             var tickHeight = TickMetrics(builder, chart.Options.XAxis, range.MinX, range.MaxX, style, null, labels).Height;
             var title = XAxisTitle(chart);
             var titleHeight = string.IsNullOrEmpty(title) ? 0 : builder.MeasureText(title,
-                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground })).Height + spacing;
+                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground })).Height + spacing;
             titleHeight = FitAxisTitleReservation(tickHeight, titleHeight, Math.Max(0, viewport.Bottom - plot.Bottom - spacing));
             var bounds = new ChartRect(plot.Left, plot.Bottom + spacing, plot.Width,
                 Math.Max(0, Math.Min(tickHeight, viewport.Bottom - plot.Bottom - spacing - titleHeight)));
@@ -194,7 +194,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawAxisTitle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
         VisualThemeColors colors, TextAlignment alignment, string role) {
-        var style = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.Foreground, Alignment = alignment });
+        var style = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground, Alignment = alignment });
         style.Alignment = alignment;
         style = VisualAxisText.FitOversized(builder, style, bounds, new[] { text });
         VisualAxisText.Title(builder, text, bounds, style, role, null,

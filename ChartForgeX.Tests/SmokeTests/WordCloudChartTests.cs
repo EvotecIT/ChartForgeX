@@ -10,7 +10,7 @@ internal static partial class SmokeTests {
     private static void WordCloudTermsRenderWeightedLayout() {
         var chart = Chart.Create()
             .WithSize(760, 430)
-            .WithTheme(ChartTheme.Editorial())
+            .WithTheme(VisualTheme.Editorial())
             .AddWordCloud("Topics", new[] {
                 new ChartWordCloudItem("Security", 100),
                 new ChartWordCloudItem("Automation", 82),

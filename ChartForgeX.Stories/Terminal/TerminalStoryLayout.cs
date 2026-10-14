@@ -223,7 +223,7 @@ internal sealed class TerminalStoryLayout {
         foreach (var renderedTab in Tabs) {
             var opacity = TabOpacity(renderedTab.Tab.Id, elapsedSeconds);
             if (opacity <= 0) continue;
-            var color = renderedTab.Tab.Theme.Background;
+            var color = renderedTab.Tab.ResolvedStyle.Background;
             red += color.R * opacity;
             green += color.G * opacity;
             blue += color.B * opacity;
@@ -231,7 +231,7 @@ internal sealed class TerminalStoryLayout {
             weight += opacity;
         }
 
-        if (weight <= 0) return Tabs[0].Tab.Theme.Background;
+        if (weight <= 0) return Tabs[0].Tab.ResolvedStyle.Background;
         return new ChartColor(
             (byte)Math.Round(red / weight),
             (byte)Math.Round(green / weight),
@@ -329,7 +329,7 @@ internal sealed class TerminalStoryLayout {
     }
 
     private static double MeasureColumnWidth(TerminalTab tab, double fontSize, TrueTypeFont? outlineFont) {
-        var factor = TrueTypeFont.IsMonospaceFamily(tab.Theme.FontFamily) ? 0.61 : 1.0;
+        var factor = TrueTypeFont.IsMonospaceFamily(tab.ResolvedStyle.FontFamily) ? 0.61 : 1.0;
         if (outlineFont != null) {
             factor = Math.Max(factor, outlineFont.Measure("W", 1));
             factor = Math.Max(factor, outlineFont.Measure("M", 1));

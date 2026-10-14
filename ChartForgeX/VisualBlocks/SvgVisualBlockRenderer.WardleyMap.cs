@@ -9,7 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 public sealed partial class SvgVisualBlockRenderer {
     private static void RenderWardleyMap(SvgMarkupWriter writer, WardleyMapBlock map) {
         var options = map.Options;
-        var theme = options.Theme;
+        var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, map, ref y, content.X, content.Width);
@@ -24,7 +24,7 @@ public sealed partial class SvgVisualBlockRenderer {
         foreach (var annotation in map.Annotations) WriteWardleyAnnotation(writer, annotation, layout, theme);
     }
 
-    private static void WriteWardleyAxes(SvgMarkupWriter writer, WardleyMapBlock map, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteWardleyAxes(SvgMarkupWriter writer, WardleyMapBlock map, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var plot = layout.Plot;
         writer.StartElement("rect").Attribute("data-cfx-role", "wardley-plot").Attribute("x", F(plot.X)).Attribute("y", F(plot.Y)).Attribute("width", F(plot.Width)).Attribute("height", F(plot.Height)).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
         for (var index = 1; index < 4; index++) {
@@ -44,7 +44,7 @@ public sealed partial class SvgVisualBlockRenderer {
         }
     }
 
-    private static void WriteWardleyLink(SvgMarkupWriter writer, WardleyMapLink link, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteWardleyLink(SvgMarkupWriter writer, WardleyMapLink link, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         if (!layout.NodeLookup.TryGetValue(link.FromId, out var from) || !layout.NodeLookup.TryGetValue(link.ToId, out var to)) return;
         var color = ChartColorMath.WithOpacity(theme.Axis, VisualBlockRendering.WardleyAccentOpacity);
         writer.StartElement("line").Attribute("data-cfx-role", "wardley-link").Attribute("x1", F(from.X)).Attribute("y1", F(from.Y)).Attribute("x2", F(to.X)).Attribute("y2", F(to.Y)).Attribute("stroke", color.ToCss()).Attribute("stroke-width", 1.2);
@@ -81,14 +81,14 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.StartElement("path").Attribute("data-cfx-role", role).Attribute("d", path).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
     }
 
-    private static void WriteWardleyEvolution(SvgMarkupWriter writer, WardleyMapEvolution evolution, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteWardleyEvolution(SvgMarkupWriter writer, WardleyMapEvolution evolution, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         if (!layout.NodeLookup.TryGetValue(evolution.NodeId, out var from)) return;
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, evolution.TargetEvolution);
         writer.StartElement("line").Attribute("data-cfx-role", "wardley-evolve").Attribute("x1", F(from.X)).Attribute("y1", F(from.Y)).Attribute("x2", F(x)).Attribute("y2", F(from.Y)).Attribute("stroke", VisualBlockRendering.PaletteAt(theme, 2).ToCss()).Attribute("stroke-width", 1.8).Attribute("stroke-dasharray", "4 4").EndEmptyElement().Line();
         writer.StartElement("path").Attribute("data-cfx-role", "wardley-evolve-arrow").Attribute("d", VisualBlockRendering.WardleyEvolutionArrowPath(x, from.Y)).Attribute("fill", VisualBlockRendering.PaletteAt(theme, 2).ToCss()).EndEmptyElement().Line();
     }
 
-    private static void WriteWardleyPipeline(SvgMarkupWriter writer, WardleyMapPipeline pipeline, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteWardleyPipeline(SvgMarkupWriter writer, WardleyMapPipeline pipeline, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         if (!layout.NodeLookup.TryGetValue(pipeline.ParentId, out var parent) || pipeline.Components.Count == 0) return;
         var minX = parent.X;
         var maxX = parent.X;
@@ -103,7 +103,7 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.StartElement("rect").Attribute("data-cfx-role", "wardley-pipeline").Attribute("x", F(minX - 14)).Attribute("y", F(parent.Y - 22)).Attribute("width", F(maxX - minX + 28)).Attribute("height", 44).Attribute("rx", 7).Attribute("fill", "none").Attribute("stroke", ChartColorMath.WithOpacity(theme.Axis, VisualBlockRendering.WardleyPipelineOpacity).ToCss()).Attribute("stroke-width", 1).Attribute("stroke-dasharray", "4 4").EndEmptyElement().Line();
     }
 
-    private static void WriteWardleyNode(SvgMarkupWriter writer, VisualBlockRendering.WardleyNodePlacement placement, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteWardleyNode(SvgMarkupWriter writer, VisualBlockRendering.WardleyNodePlacement placement, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var node = placement.Node;
         var color = node.Kind == WardleyMapNodeKind.Anchor ? theme.Text : VisualBlockRendering.PaletteAt(theme, placement.Index);
         var radius = node.Kind == WardleyMapNodeKind.Anchor ? 7.5 : 6;
@@ -115,10 +115,10 @@ public sealed partial class SvgVisualBlockRenderer {
         WriteFittedBodyText(writer, node.Label, labelX, labelY, 120, 20, node.Kind == WardleyMapNodeKind.Anchor ? TextAlignment.Center : TextAlignment.Left, theme.Text, theme, 10.5, node.Kind == WardleyMapNodeKind.Anchor ? 800 : 600);
     }
 
-    private static void WriteWardleyNote(SvgMarkupWriter writer, WardleyMapNote note, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) =>
+    private static void WriteWardleyNote(SvgMarkupWriter writer, WardleyMapNote note, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ResolvedVisualTheme theme) =>
         WriteFittedBodyText(writer, note.Text, VisualBlockRendering.ProjectWardleyX(layout.Plot, note.Evolution), VisualBlockRendering.ProjectWardleyY(layout.Plot, note.Visibility), 150, 24, TextAlignment.Left, theme.MutedText, theme, 10.5, 700);
 
-    private static void WriteWardleyAnnotation(SvgMarkupWriter writer, WardleyMapAnnotation annotation, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteWardleyAnnotation(SvgMarkupWriter writer, WardleyMapAnnotation annotation, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, annotation.Evolution);
         var y = VisualBlockRendering.ProjectWardleyY(layout.Plot, annotation.Visibility);
         var radius = VisualBlockRendering.WardleyAnnotationRadius(theme);
@@ -129,7 +129,7 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.EndElement().Line();
     }
 
-    private static void WriteWardleyMarker(SvgMarkupWriter writer, WardleyMapMarker marker, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ChartTheme theme) {
+    private static void WriteWardleyMarker(SvgMarkupWriter writer, WardleyMapMarker marker, VisualBlockRendering.WardleyMapLayout layout, ChartForgeX.Themes.ResolvedVisualTheme theme) {
         var x = VisualBlockRendering.ProjectWardleyX(layout.Plot, marker.Evolution);
         var y = VisualBlockRendering.ProjectWardleyY(layout.Plot, marker.Visibility);
         var color = marker.Kind == WardleyMapMarkerKind.Accelerator ? VisualBlockRendering.PaletteAt(theme, 1) : VisualBlockRendering.PaletteAt(theme, 3);

@@ -15,16 +15,16 @@ internal static partial class NativeVisualStoryRenderer {
         var options = surface.Options ?? new VisualStorySourceOptions(lineNumbers: false);
         var state = surface.Timeline?.At(elapsed) ?? new SourceEditorState(surface.Source, surface.Source.Text.Length, 0, 0, false);
         var source = state.Source;
-        var font = FontSpec.FromFamily(story.Theme.MonospaceFontFamily);
+        var font = FontSpec.FromFamily(story.ResolvedStyle.MonospaceFontFamily);
         var builder = new VisualSceneBuilder(new VisualSize(story.Width, story.Height), font);
         var size = options.FontSize; var lineHeight = size * 1.5;
-        var style = story.Theme.WindowStyle;
+        var style = story.ResolvedStyle.WindowStyle;
         var chrome = style == TerminalWindowStyle.Minimal ? (options.FileName.Length == 0 ? 0 : 35) : TerminalWindowChrome.HeaderHeight(style);
         if (style != TerminalWindowStyle.Minimal && chrome > 0) {
-            DrawStoryWindowHeader(builder, bounds, style, story.Theme.TerminalPalette(), options.FileName.Length == 0 ? "Source" : options.FileName);
+            DrawStoryWindowHeader(builder, bounds, style, story.ResolvedStyle.TerminalPalette(), options.FileName.Length == 0 ? "Source" : options.FileName);
         } else if (chrome > 0) {
-            FitText(builder, options.FileName, bounds.X + 2, bounds.Y + 18, bounds.Width - 4, 14, story.Theme.Muted);
-            builder.Line(bounds.X, bounds.Y + 27, bounds.X + bounds.Width, bounds.Y + 27, story.Theme.Border);
+            FitText(builder, options.FileName, bounds.X + 2, bounds.Y + 18, bounds.Width - 4, 14, story.ResolvedStyle.Muted);
+            builder.Line(bounds.X, bounds.Y + 27, bounds.X + bounds.Width, bounds.Y + 27, story.ResolvedStyle.Border);
         }
         var content = new ChartRect(bounds.X, bounds.Y + chrome, bounds.Width, Math.Max(1, bounds.Height - chrome));
         var digitWidth = builder.MeasureText("0", size * 0.78).Width;
@@ -56,31 +56,31 @@ internal static partial class NativeVisualStoryRenderer {
             for (var i = first; i < Math.Min(rows.Count, first + capacity); i++) {
                 var row = rows[i]; var top = content.Y + (i - first) * lineHeight;
                 var highlighted = options.HighlightedLine == 0 ? state.ShowCaret && i == caretRow : row.Line == options.HighlightedLine;
-                if (highlighted) builder.Rect(new ChartRect(content.X, top, content.Width, lineHeight), story.Theme.Accent.WithOpacity(0.08), radius: 4, role: "source-active-line");
+                if (highlighted) builder.Rect(new ChartRect(content.X, top, content.Width, lineHeight), story.ResolvedStyle.Accent.WithOpacity(0.08), radius: 4, role: "source-active-line");
                 if (options.LineNumbers && row.FirstInLine) builder.Text(row.Line.ToString(CultureInfo.InvariantCulture), content.X + gutter - 13, top + builder.TextAscent(size * 0.78),
-                    size * 0.78, story.Theme.Muted, alignment: TextAlignment.Right, role: "source-line-number");
+                    size * 0.78, story.ResolvedStyle.Muted, alignment: TextAlignment.Right, role: "source-line-number");
                 var x = content.X + gutter;
                 var run = new StringBuilder(); var runX = x; var runKind = StorySyntaxKind.Plain;
                 foreach (var glyph in row.Glyphs) {
-                    if (glyph.Offset >= state.SelectionStart && glyph.Offset < state.SelectionStart + state.SelectionLength) builder.Rect(new ChartRect(x, top, glyph.Width, lineHeight), story.Theme.Accent.WithOpacity(0.23), role: "source-selection");
-                    if (state.ShowCaret && state.Caret == glyph.Offset) builder.Rect(new ChartRect(x, top + 2, 2, size + 3), story.Theme.Accent, role: "source-caret");
+                    if (glyph.Offset >= state.SelectionStart && glyph.Offset < state.SelectionStart + state.SelectionLength) builder.Rect(new ChartRect(x, top, glyph.Width, lineHeight), story.ResolvedStyle.Accent.WithOpacity(0.23), role: "source-selection");
+                    if (state.ShowCaret && state.Caret == glyph.Offset) builder.Rect(new ChartRect(x, top + 2, 2, size + 3), story.ResolvedStyle.Accent, role: "source-caret");
                     var kind = source.KindAt(glyph.Offset);
                     if (run.Length > 0 && kind != runKind) {
-                        builder.Text(run.ToString(), runX, top + builder.TextAscent(size), size, story.Theme.Syntax.Resolve(runKind), role: "source-text");
+                        builder.Text(run.ToString(), runX, top + builder.TextAscent(size), size, story.ResolvedStyle.Syntax.Resolve(runKind), role: "source-text");
                         run.Clear();
                     }
                     if (run.Length == 0) { runX = x; runKind = kind; }
                     run.Append(glyph.Text);
                     x += glyph.Width;
                 }
-                if (run.Length > 0) builder.Text(run.ToString(), runX, top + builder.TextAscent(size), size, story.Theme.Syntax.Resolve(runKind), role: "source-text");
-                if (state.ShowCaret && i == caretRow && state.Caret >= row.End) builder.Rect(new ChartRect(x, top + 2, 2, size + 3), story.Theme.Accent, role: "source-caret");
+                if (run.Length > 0) builder.Text(run.ToString(), runX, top + builder.TextAscent(size), size, story.ResolvedStyle.Syntax.Resolve(runKind), role: "source-text");
+                if (state.ShowCaret && i == caretRow && state.Caret >= row.End) builder.Rect(new ChartRect(x, top + 2, 2, size + 3), story.ResolvedStyle.Accent, role: "source-caret");
             }
         }
         if (discarded > 0 || first > 0 || continues || first + capacity < rows.Count) {
             var label = "Lines " + rows[first].Line.ToString(CultureInfo.InvariantCulture) + "–" + rows[Math.Min(rows.Count - 1, first + capacity - 1)].Line.ToString(CultureInfo.InvariantCulture) + (continues ? " · continues" : "");
             var labelSize = Math.Min(11, size * 0.7);
-            builder.Text(label, content.X + content.Width - 2, bounds.Y + bounds.Height - 2, labelSize, story.Theme.Muted, alignment: TextAlignment.Right, role: "source-scroll-position");
+            builder.Text(label, content.X + content.Width - 2, bounds.Y + bounds.Height - 2, labelSize, story.ResolvedStyle.Muted, alignment: TextAlignment.Right, role: "source-scroll-position");
         }
         parent.Append(builder.Build());
     }

@@ -95,9 +95,10 @@ public sealed partial class MermaidParser {
         Regex.IsMatch(key, @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.CultureInvariant) ? key : "[" + key + "]";
 
     private static bool IsConfigurationScalarPath(string path) {
+        if (MermaidRadarThemeSettings.IsScalarPath(path) || MermaidChartColorSettings.IsScalarPath(path)) return true;
         if (MermaidPacketSettings.IsPath(path)) return true;
         var key = path.Substring(path.LastIndexOf('.') + 1);
-        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path) || MermaidSankeySettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path);
+        return key == "theme" || key == "fontFamily" || key == "fontSize" || key == "layout" || key == "look" || MermaidRadarSettings.IsScalarPath(path) || MermaidSankeySettings.IsScalarPath(path) || MermaidTreemapSettings.IsScalarPath(path) || MermaidMindMapSettings.IsScalarPath(path);
     }
 
     private static void ResolveConfiguration(MermaidSourceConfiguration configuration, MermaidDiagramKind kind,
@@ -132,16 +133,23 @@ public sealed partial class MermaidParser {
         configuration.FontSize = ReadConfigurationFontSize(fontSize, result, out var invalidFontSize);
         if (kind == MermaidDiagramKind.Packet) configuration.Packet = MermaidPacketSettings.Read(configuration,
             (setting, reason) => ConfigurationError(result, setting.Span, "Mermaid configuration '" + setting.Path + "' " + reason + "."));
-        if (kind == MermaidDiagramKind.Radar)
+        if (kind == MermaidDiagramKind.Radar) {
             configuration.Radar = MermaidRadarSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+            configuration.RadarTheme = MermaidRadarThemeSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+            configuration.ChartColors = MermaidChartColorSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        }
         if (kind == MermaidDiagramKind.Sankey)
             configuration.Sankey = MermaidSankeySettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Treemap)
             configuration.Treemap = MermaidTreemapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
+        if (kind == MermaidDiagramKind.MindMap)
+            configuration.MindMap = MermaidMindMapSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         foreach (var setting in configuration.Settings) {
+            if (configuration.RadarTheme?.Handles(setting.Path) == true || configuration.ChartColors?.Handles(setting.Path) == true) continue;
             if (kind == MermaidDiagramKind.Packet && MermaidPacketSettings.IsHandledPath(setting.Path)) continue;
             if (configuration.Radar?.Handles(setting.Path) == true) continue;
             if (configuration.Sankey?.Handles(setting.Path) == true || configuration.Treemap?.Handles(setting.Path) == true) continue;
+            if (configuration.MindMap?.Handles(setting.Path) == true) continue;
             var theme = Selected("theme");
             var font = Selected("fontFamily");
             if (setting.Path == "themeVariables.fontSize" && !ReferenceEquals(setting, fontSize)) continue;

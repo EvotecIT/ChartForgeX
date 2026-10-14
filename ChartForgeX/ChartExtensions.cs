@@ -18,15 +18,15 @@ namespace ChartForgeX;
 /// </summary>
 public static partial class ChartExtensions {
     /// <summary>
-    /// Configures the current chart theme in place.
+    /// Replaces the chart theme with an independently configured immutable snapshot.
     /// </summary>
     /// <param name="chart">The chart to configure.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current chart.</returns>
-    public static Chart ConfigureTheme(this Chart chart, Action<ChartTheme> configure) {
+    public static Chart ConfigureTheme(this Chart chart, Action<VisualThemeBuilder> configure) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(chart.Options.Theme);
+        chart.Options.Theme = chart.Options.Theme.Configure(configure);
         return chart;
     }
 
@@ -38,7 +38,7 @@ public static partial class ChartExtensions {
     /// <returns>The current chart.</returns>
     public static Chart WithPalette(this Chart chart, params ChartColor[] colors) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Options.Theme.Palette = colors;
+        chart.Options.Theme = chart.Options.Theme.WithPalette(chart.Options.ThemeMode, colors);
         return chart;
     }
 
@@ -50,50 +50,20 @@ public static partial class ChartExtensions {
     /// <returns>The current chart.</returns>
     public static Chart WithPalette(this Chart chart, params string[] colors) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Options.Theme.Palette = ChartPalettes.FromHex(colors);
+        chart.Options.Theme = chart.Options.Theme.WithPalette(chart.Options.ThemeMode, ChartPalettes.FromHex(colors));
         return chart;
     }
 
     /// <summary>
-    /// Applies a reusable brand kit to the current chart theme.
-    /// </summary>
-    /// <param name="chart">The chart to configure.</param>
-    /// <param name="brandKit">The brand kit to apply.</param>
-    /// <returns>The current chart.</returns>
-    public static Chart WithBrandKit(this Chart chart, ChartBrandKit brandKit) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        if (brandKit == null) throw new ArgumentNullException(nameof(brandKit));
-        brandKit.ApplyTo(chart.Options.Theme);
-        return chart;
-    }
-
-    /// <summary>
-    /// Configures the current chart grid theme in place, creating a light grid theme when the grid is currently automatic.
+    /// Replaces the grid theme with an independently configured immutable snapshot.
     /// </summary>
     /// <param name="grid">The chart grid to configure.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current chart grid.</returns>
-    public static ChartGrid ConfigureTheme(this ChartGrid grid, Action<ChartTheme> configure) {
+    public static ChartGrid ConfigureTheme(this ChartGrid grid, Action<VisualThemeBuilder> configure) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        var theme = grid.Theme ?? ChartTheme.Light();
-        configure(theme);
-        grid.Theme = theme;
-        return grid;
-    }
-
-    /// <summary>
-    /// Applies a reusable brand kit to the current chart grid theme, creating a light grid theme when the grid is currently automatic.
-    /// </summary>
-    /// <param name="grid">The chart grid to configure.</param>
-    /// <param name="brandKit">The brand kit to apply.</param>
-    /// <returns>The current chart grid.</returns>
-    public static ChartGrid WithBrandKit(this ChartGrid grid, ChartBrandKit brandKit) {
-        if (grid == null) throw new ArgumentNullException(nameof(grid));
-        if (brandKit == null) throw new ArgumentNullException(nameof(brandKit));
-        var theme = grid.Theme ?? ChartTheme.Light();
-        brandKit.ApplyTo(theme);
-        grid.Theme = theme;
+        grid.Theme = grid.Theme.Configure(configure);
         return grid;
     }
 
@@ -243,7 +213,7 @@ public static partial class ChartExtensions {
     /// <returns>The current visual block.</returns>
     public static TBlock WithPalette<TBlock>(this TBlock block, params ChartColor[] colors) where TBlock : IVisualBlock {
         if (block == null) throw new ArgumentNullException(nameof(block));
-        block.Options.Theme.Palette = colors;
+        block.Options.Theme = block.Options.Theme.WithPalette(block.Options.ThemeMode, colors);
         return block;
     }
 
@@ -256,21 +226,7 @@ public static partial class ChartExtensions {
     /// <returns>The current visual block.</returns>
     public static TBlock WithPalette<TBlock>(this TBlock block, params string[] colors) where TBlock : IVisualBlock {
         if (block == null) throw new ArgumentNullException(nameof(block));
-        block.Options.Theme.Palette = ChartPalettes.FromHex(colors);
-        return block;
-    }
-
-    /// <summary>
-    /// Applies a reusable brand kit to the current visual block theme.
-    /// </summary>
-    /// <typeparam name="TBlock">The visual block type.</typeparam>
-    /// <param name="block">The visual block to configure.</param>
-    /// <param name="brandKit">The brand kit to apply.</param>
-    /// <returns>The current visual block.</returns>
-    public static TBlock WithBrandKit<TBlock>(this TBlock block, ChartBrandKit brandKit) where TBlock : IVisualBlock {
-        if (block == null) throw new ArgumentNullException(nameof(block));
-        if (brandKit == null) throw new ArgumentNullException(nameof(brandKit));
-        brandKit.ApplyTo(block.Options.Theme);
+        block.Options.Theme = block.Options.Theme.WithPalette(block.Options.ThemeMode, ChartPalettes.FromHex(colors));
         return block;
     }
 

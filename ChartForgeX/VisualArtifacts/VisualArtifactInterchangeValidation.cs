@@ -381,6 +381,7 @@ internal static class VisualArtifactInterchangeValidation {
         }
         if (node.Topology != null) {
             Defined(node.Topology.Kind, "topology node kind", envelope);
+            if (node.Topology.PaletteIndex is < 0) throw new ArgumentOutOfRangeException(nameof(envelope), node.Topology.PaletteIndex, "Topology node palette index must not be negative.");
             Defined(node.Topology.Status, "topology node status", envelope);
             Defined(node.Topology.DisplayMode, "topology node display mode", envelope);
             if (node.Topology.Shape.HasValue) Defined(node.Topology.Shape.Value, "topology node shape", envelope);
@@ -428,6 +429,7 @@ internal static class VisualArtifactInterchangeValidation {
         }
         if (edge.Topology != null) {
             Defined(edge.Topology.Kind, "topology edge kind", envelope);
+            if (edge.Topology.PaletteIndex is < 0) throw new ArgumentOutOfRangeException(nameof(envelope), edge.Topology.PaletteIndex, "Topology edge palette index must not be negative.");
             Defined(edge.Topology.Status, "topology edge status", envelope);
             Defined(edge.Topology.Direction, "topology edge direction", envelope);
             Defined(edge.Topology.SourcePort, "topology edge source port", envelope);

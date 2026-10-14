@@ -16,7 +16,7 @@ public static partial class V2Examples {
     // truthful overview of the same notation; their complete model stays on the example page.
     private static void WriteThumbnail(string output, IVisualRenderable model, string id, string title, string family, VisualThemeMode mode, bool? legend) {
         IVisualRenderable previewModel = family switch {
-            "sequence" => CreateSequence(),
+            "sequence" => SimpleSequenceRecipe.Create(),
             "topology" => ThumbnailTopology(),
             "flow" => ThumbnailFlow(),
             "chart-grid" => ChartGrid.Create().WithColumns(2).WithGap(12).WithPanelSize(184, 248)
@@ -24,11 +24,13 @@ public static partial class V2Examples {
                 .Add(Chart.Create().WithXLabels("Mon", "Tue", "Wed").AddBar("Capacity", new[] { new ChartPoint(1, 52), new ChartPoint(2, 64), new ChartPoint(3, 58) })),
             _ => model
         };
-        // The full horizontal interval model needs the thumbnail's legend space for its painted category slots.
+        // Interval categories and map codes need the thumbnail's legend space. Full examples retain their keys.
         var horizontalIntervals = family == "range-bar" && model is Chart chart
             && chart.Options.RangeBar.Orientation == ChartOrientation.Horizontal;
-        var prepared = previewModel.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(ThumbnailWidth, ThumbnailHeight), 16),
-            ThumbnailTheme, mode, new VisualFrame("", "", showLegend: horizontalIntervals || family is "topology" or "sequence" or "flow" or "chart-grid" ? false : legend),
+        // The twelve-column state map needs this content width for complete 13.5 px codes and their hexagon clearance.
+        var padding = family == "tile-map" ? 14 : 16;
+        var prepared = previewModel.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(ThumbnailWidth, ThumbnailHeight), padding),
+            ThumbnailTheme, mode, new VisualFrame("", "", showLegend: horizontalIntervals || family is "topology" or "sequence" or "flow" or "chart-grid" or "tile-map" ? false : legend),
             FontSpec.FromFamily(ProofFont)));
         var kind = family switch {
             "topology" => VisualArtifactKind.Topology, "flow" => VisualArtifactKind.Flow,

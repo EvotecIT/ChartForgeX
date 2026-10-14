@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Topology;
@@ -22,7 +23,7 @@ public sealed class TopologyCaptionPlacementTests {
         }
         FontRegistry.Register(family, font, weight: 700);
         try {
-            var theme = TopologyTheme.Light(); theme.FontFamily = family;
+            var theme = VisualTheme.Graphite().WithFontFamily(family);
             var chart = TopologyChart.Create().WithTheme(theme).AddNode("a", "HO\nOH", 100, 100, width: 64, height: 40);
             var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions {
                 NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeLegend = false

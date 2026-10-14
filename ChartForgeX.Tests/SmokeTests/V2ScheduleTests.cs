@@ -18,7 +18,7 @@ public sealed class V2ScheduleTests {
         Assert.Contains(prepared.Regions, region => region.Role == role && region.Bounds.Width > 0);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.DoesNotContain("NaN", svg); Assert.DoesNotContain("Infinity", svg);
-        chart.Options.GanttToday = 90; chart.Options.Labels.Now = "Changed"; chart.Series.Clear();
+        chart.Options.GanttToday = 90; chart.Options.Labels.Now = "Changed"; chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(640, prepared.Size.Width); Assert.Equal(400, prepared.Size.Height);
     }
@@ -55,7 +55,8 @@ public sealed class V2ScheduleTests {
 
     [Fact]
     public void ClassicGanttPreservesMilestoneDependencyProgressAndExplicitWindow() {
-        var chart = Fixture(ChartSeriesKind.Gantt).AddGanttMilestone("Ship", 4, dependsOn: 1).WithGanttToday(2.5);
+        var chart = Fixture(ChartSeriesKind.Gantt);
+        chart.AddGanttMilestone("Ship", 4, dependsOn: chart.Series[1]).WithGanttToday(2.5);
         chart.Options.XAxis.WithBounds(1.5, 4.5);
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         Assert.Single(ByRole(document, "gantt-milestone")); Assert.Equal(2, ByRole(document, "gantt-dependency").Length);
@@ -108,10 +109,14 @@ public sealed class V2ScheduleTests {
 
     private static Chart Fixture(ChartSeriesKind kind) => kind switch {
         ChartSeriesKind.Timeline => Chart.Create().AddTimelineRange("Plan", 1, 3).AddTimelineRange("Build", 2, 4),
-        ChartSeriesKind.Gantt => Chart.Create().AddGanttTask("Plan", 1, 3, .5).AddGanttTask("Build", 2, 4, .25, 0),
+        ChartSeriesKind.Gantt => GanttFixture(),
         ChartSeriesKind.StateTimeline => Chart.Create().AddStateTimelineLane("API", new[] { new ChartStateTimelineSegment(1, 3, "up") }),
         _ => Chart.Create().AddGanttLane("API", new[] { new ChartGanttLaneItem(1, 3, "high") })
     };
+    private static Chart GanttFixture() {
+        var chart = Chart.Create().AddGanttTask("Plan", 1, 3, .5);
+        return chart.AddGanttTask("Build", 2, 4, .25, chart.Series[0]);
+    }
     private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(640, 400)), themeMode: VisualThemeMode.Dark,
         frame: new VisualFrame("Schedule", "Native scene", showLegend: false));
     private static XElement[] ByRole(XDocument document, string role) => document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();

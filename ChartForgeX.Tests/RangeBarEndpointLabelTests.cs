@@ -49,11 +49,10 @@ public sealed class RangeBarEndpointLabelTests {
         Assert.Equal("Promised <&> delivery", points[0].Metadata["data-cfx-label"]);
         Assert.Equal("Start <&> 30,0", points[0].Metadata["data-cfx-start-label"]);
         Assert.Equal("End <&> -10,0", points[0].Metadata["data-cfx-end-label"]);
-        Assert.Equal("30", points[0].Metadata["data-cfx-source-0-y"]);
-        Assert.Equal("-10", points[0].Metadata["data-cfx-source-1-y"]);
-        Assert.Equal("0", points[0].Metadata["data-cfx-source-0-index"]);
-        Assert.Equal("1", points[0].Metadata["data-cfx-source-1-index"]);
-        Assert.Equal("2", points[0].Metadata["data-cfx-source-count"]);
+        Assert.Equal("30", points[0].Metadata["data-cfx-start"]);
+        Assert.Equal("-10", points[0].Metadata["data-cfx-end"]);
+        Assert.Equal("0", points[0].Metadata["data-cfx-source-point"]);
+        Assert.Equal("1", points[0].Metadata["data-cfx-source-count"]);
         if (!visible) Assert.Empty(Labels(prepared));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.DoesNotContain("Start <&>", svg); Assert.Contains("Start &lt;&amp;&gt;", svg);
@@ -62,7 +61,7 @@ public sealed class RangeBarEndpointLabelTests {
             options.LabelContent = ChartRangeBarLabelContent.Combined;
         });
         chart.WithValueFormatter(_ => throw new InvalidOperationException("Detached numeric text"));
-        chart.Series.Clear();
+        chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(6, calls.Count); Assert.Equal(6, numericCalls);
     }
@@ -72,7 +71,7 @@ public sealed class RangeBarEndpointLabelTests {
     [InlineData("")]
     [InlineData(" \r\n\t")]
     public void EmptyEndpointOutputSuppressesOnlyThatCaptionWithoutReplacingTheHeading(string? output) {
-        var chart = Fixture(); chart.Series.RemoveAt(1); chart.Series[0].WithPointLabel(0, "Source heading");
+        var chart = Fixture(); chart.RemoveSeries(chart.Series[1]); chart.Series[0].WithPointLabel(0, "Source heading");
         var calls = 0;
         chart.Options.RangeBar.EndpointLabelFormatter = context => { calls++; return context.Endpoint == ChartRangeBarEndpoint.Start ? output : "Finished"; };
         var prepared = Prepare(chart); var point = Assert.Single(Points(prepared)); var label = Assert.Single(Labels(prepared));
@@ -104,7 +103,7 @@ public sealed class RangeBarEndpointLabelTests {
     public void AuthoredEndpointCaptionsFollowMappedEndpointsAndKeepOneSourceAssociation(bool horizontal, bool reversed, bool logarithmic) {
         var chart = Fixture(horizontal);
         if (logarithmic) foreach (var series in chart.Series) {
-            series.Points[0] = new ChartPoint(1, 90); series.Points[1] = new ChartPoint(1, 10);
+            series.UpdateInterval(0, new ChartInterval(1, 90, 10));
         }
         var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
         valueAxis.WithBounds(logarithmic ? 1 : -20, logarithmic ? 1000 : 40).WithReversal(reversed);
@@ -130,8 +129,8 @@ public sealed class RangeBarEndpointLabelTests {
     [InlineData(false)]
     [InlineData(true)]
     public void CategoryReversalMovesBothCaptionsWithoutChangingEndpointValuesOrSourceAssociations(bool horizontal) {
-        var chart = Fixture(horizontal); chart.Series.RemoveAt(1);
-        chart.Series[0].Points.Add(new ChartPoint(3, 30)); chart.Series[0].Points.Add(new ChartPoint(3, -10));
+        var chart = Fixture(horizontal); chart.RemoveSeries(chart.Series[1]);
+        chart.Series[0].ReplaceIntervals(new[] { chart.Series[0].Intervals[0], new ChartInterval(3, 30, -10) });
         chart.Series[0].WithDataLabelPlacement(ChartDataLabelPlacement.Center);
         chart.Options.RangeBar.EndpointLabelFormatter = context => context.Endpoint == ChartRangeBarEndpoint.Start ? "S" : "E";
         var categoryAxis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
@@ -158,7 +157,7 @@ public sealed class RangeBarEndpointLabelTests {
     [InlineData(true, ChartDataLabelPlacement.Inside)]
     [InlineData(true, ChartDataLabelPlacement.Center)]
     public void InsideCaptionsUseSeparateIntervalHalvesAndSharedPointTypography(bool horizontal, ChartDataLabelPlacement placement) {
-        var chart = Fixture(horizontal); chart.Series.RemoveAt(1);
+        var chart = Fixture(horizontal); chart.RemoveSeries(chart.Series[1]);
         chart.Series[0].WithDataLabelPlacement(placement).ConfigurePointDataLabelStyle(0, style => style.WithColor("#a033aa").WithFontSize(11));
         var prepared = Prepare(chart); var labels = Labels(prepared); var body = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), mark => mark.Role == "range-bar").Bounds;
         Assert.Equal(2, labels.Length);
@@ -173,7 +172,7 @@ public sealed class RangeBarEndpointLabelTests {
     [Fact]
     public void VerticalSecondaryIntervalsAndScalarMixturesKeepTheirExistingLabelOwners() {
         var chart = Fixture(); chart.Series[1].YAxis = ChartAxisSide.Secondary;
-        chart.Series[1].Points[0] = new ChartPoint(1, 900); chart.Series[1].Points[1] = new ChartPoint(1, 100);
+        chart.Series[1].UpdateInterval(0, new ChartInterval(1, 900, 100));
         chart.Options.SecondaryYAxis.WithBounds(0, 1000).WithLabelFormatter(_ => "Axis-only");
         chart.AddLine("Scalar", new[] { new ChartPoint(.25, 5), new ChartPoint(1.75, 5) });
         chart.Series[2].WithPointLabel(0, "Scalar label").WithPointLabel(1, "Scalar label");
@@ -188,7 +187,7 @@ public sealed class RangeBarEndpointLabelTests {
 
     [Fact]
     public void ExplicitClippingAndCrowdedLabelsRetainCompleteEndpointCaptionsAndRawPairs() {
-        var chart = Fixture(true).WithSize(300, 160); chart.Series.RemoveAt(1);
+        var chart = Fixture(true).WithSize(300, 160); chart.RemoveSeries(chart.Series[1]);
         chart.Options.XAxis.WithBounds(0, 20);
         chart.Options.RangeBar.EndpointLabelFormatter = context => "Complete authored " + context.Endpoint + " caption that cannot fit the clipped endpoint";
         var prepared = Prepare(chart); var point = Assert.Single(Points(prepared));
@@ -204,8 +203,8 @@ public sealed class RangeBarEndpointLabelTests {
     internal static Chart Fixture(bool horizontal = false) {
         var chart = Chart.Create().WithSize(800, 440).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels()
             .WithXLabels("Express").WithBarStyle(ChartBarStyle.Flat)
-            .AddRangeBar("Expected", new[] { new ChartInterval(1, 30, -10) })
-            .AddRangeBar("Observed", new[] { new ChartInterval(1, 20, 0) })
+            .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("expected"), "Expected", new[] { new ChartInterval(1, 30, -10) }))
+            .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("observed"), "Observed", new[] { new ChartInterval(1, 20, 0) }))
             .ConfigureRangeBar(options => {
                 options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;

@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 public sealed class ArtifactHtmlSizingTests {
     private const string Source = "%%{init: {'theme':'dark','fontFamily':'Georgia, serif'}}%%\nsequenceDiagram\nparticipant API\nparticipant Store\nAPI->>Store: Save request\nNote right of Store: Stored record\nStore-->>API: Complete";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("source", 320)]
     [InlineData("native", 320)]
     [InlineData("prepared", 320)]
@@ -52,7 +52,7 @@ public sealed class ArtifactHtmlSizingTests {
         Assert.True(await session.Page.Locator("svg").EvaluateAsync<bool>("element => element.getBoundingClientRect().width <= innerWidth"));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData("chart", false)]
     [InlineData("chart", true)]
     [InlineData("topology", false)]
@@ -82,7 +82,7 @@ public sealed class ArtifactHtmlSizingTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(VisualArtifactHtmlSizing.PreserveSize)]
     [InlineData(VisualArtifactHtmlSizing.FitToWidth)]
     public async Task HostSizingLeavesNestedSvgConstraintsIntact(VisualArtifactHtmlSizing sizing) {
@@ -101,6 +101,7 @@ public sealed class ArtifactHtmlSizingTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

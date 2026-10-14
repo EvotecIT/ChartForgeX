@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.VisualBlocks;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -176,10 +177,13 @@ public sealed partial class FlowArtifact {
         return this;
     }
 
-    /// <summary>Configures one existing step.</summary>
+    /// <summary>Replaces an existing step with an independently configured copy.</summary>
+    /// <remarks>Callback exceptions preserve the owner. Previous values and retained callback values remain independent of the installed result.</remarks>
     public FlowArtifact ConfigureStep(string id, Action<FlowArtifactStep> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        configure(FindStep(id));
+        var source = FindStep(id);
+        var index = _steps.IndexOf(source);
+        _steps[index] = ChartOptionConfiguration.Configure(source, configure, step => step.Clone());
         return this;
     }
 
@@ -192,11 +196,12 @@ public sealed partial class FlowArtifact {
         return this;
     }
 
-    /// <summary>Configures one existing connector.</summary>
+    /// <summary>Replaces an existing connector with an independently configured copy.</summary>
+    /// <remarks>Callback exceptions preserve the owner. Previous values and retained callback values remain independent of the installed result.</remarks>
     public FlowArtifact ConfigureConnector(int connectorIndex, Action<FlowArtifactConnector> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (connectorIndex < 0 || connectorIndex >= _connectors.Count) throw new ArgumentOutOfRangeException(nameof(connectorIndex), connectorIndex, "Connector index must reference an existing flow connector.");
-        configure(_connectors[connectorIndex]);
+        _connectors[connectorIndex] = ChartOptionConfiguration.Configure(_connectors[connectorIndex], configure, connector => connector.Clone());
         return this;
     }
 
@@ -315,6 +320,15 @@ public sealed class FlowArtifactStep {
     /// <summary>Gets or sets the static preview height.</summary>
     public double Height { get; set; } = 68;
 
+    internal FlowArtifactStep Clone() {
+        var copy = new FlowArtifactStep(Id, Label, Kind) {
+            LaneId = LaneId, Status = Status, Subtitle = Subtitle, Icon = Icon, Symbol = Symbol,
+            Color = Color, Badge = Badge, Width = Width, Height = Height
+        };
+        foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
+        return copy;
+    }
+
     /// <summary>Gets step metadata for host adapters and exporters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
 }
@@ -358,6 +372,14 @@ public sealed class FlowArtifactConnector {
 
     /// <summary>Gets or sets an optional accent color.</summary>
     public string? Color { get; set; }
+
+    internal FlowArtifactConnector Clone() {
+        var copy = new FlowArtifactConnector(Id, SourceId, TargetId) {
+            Label = Label, Kind = Kind, Direction = Direction, Status = Status, Color = Color
+        };
+        foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
+        return copy;
+    }
 
     /// <summary>Gets connector metadata for host adapters and exporters.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);

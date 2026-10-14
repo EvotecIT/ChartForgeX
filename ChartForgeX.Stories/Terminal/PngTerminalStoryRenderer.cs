@@ -73,7 +73,7 @@ public sealed class PngTerminalStoryRenderer {
         if (story == null) throw new ArgumentNullException(nameof(story));
         if (layout == null) throw new ArgumentNullException(nameof(layout));
         if (fonts == null) throw new ArgumentNullException(nameof(fonts));
-        var theme = story.Theme;
+        var theme = story.ResolvedStyle;
         var canvas = new RgbaCanvas(layout.Width, layout.Height, 2, fonts.InitialOutline(story), outputScale, useDefaultOutlineFont: false);
         canvas.Clear(theme.PageBackground);
         PngTerminalStoryChromeRenderer.Draw(canvas, story, layout, fonts, elapsedSeconds);
@@ -95,10 +95,10 @@ public sealed class PngTerminalStoryRenderer {
                     var prompt = visibleText.Substring(0, promptLength);
                     var command = visibleText.Substring(promptLength);
                     var promptWidth = TerminalPngTextPreserver.MeasureEmphasized(prompt, canvas, story.FontSize, outlineFont);
-                    TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, WithOpacity(tab.Theme.Accent, tabOpacity), story.FontSize, outlineFont);
-                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, WithOpacity(tab.Theme.Text, tabOpacity), story.FontSize, outlineFont);
+                    TerminalPngTextPreserver.DrawEmphasized(canvas, layout.ContentX, y, prompt, WithOpacity(tab.ResolvedStyle.Accent, tabOpacity), story.FontSize, outlineFont);
+                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX + promptWidth, y, command, WithOpacity(tab.ResolvedStyle.Text, tabOpacity), story.FontSize, outlineFont);
                 } else {
-                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(TerminalLinePlayback.ToneColor(tab.Theme, line.Tone), state.Opacity * tabOpacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
+                    TerminalPngTextPreserver.Draw(canvas, layout.ContentX, y, visibleText, WithOpacity(TerminalLinePlayback.ToneColor(tab.ResolvedStyle, line.Tone), state.Opacity * tabOpacity), story.FontSize, line.IsTable ? tableFont : outlineFont);
                 }
 
                 if (line.IsFinalPrompt && CursorVisible(layout, line, elapsedSeconds)) {
@@ -106,7 +106,7 @@ public sealed class PngTerminalStoryRenderer {
                         ? TerminalPngTextPreserver.MeasureEmphasized(visibleText, canvas, story.FontSize, outlineFont)
                         : TerminalPngTextPreserver.Measure(visibleText, canvas, story.FontSize, outlineFont);
                     var cursorX = layout.ContentX + visibleWidth + 2;
-                    canvas.FillRoundedRect(cursorX, y + 2, Math.Max(7, story.FontSize * 0.55), story.FontSize + 2, 1, WithOpacity(tab.Theme.Cursor, tabOpacity));
+                    canvas.FillRoundedRect(cursorX, y + 2, Math.Max(7, story.FontSize * 0.55), story.FontSize + 2, 1, WithOpacity(tab.ResolvedStyle.Cursor, tabOpacity));
                 }
             }
         }
@@ -114,7 +114,7 @@ public sealed class PngTerminalStoryRenderer {
         return canvas.ToImage();
     }
 
-    internal static TrueTypeFont? ResolveTableFont(TerminalTheme theme, TrueTypeFont? outlineFont) {
+    internal static TrueTypeFont? ResolveTableFont(ResolvedTerminalStyle theme, TrueTypeFont? outlineFont) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
         if (outlineFont == null || TrueTypeFont.IsMonospaceFamily(theme.FontFamily)) return outlineFont;
         return TrueTypeFont.TryLoadForFamily(ChartFontStacks.Mono, out _);

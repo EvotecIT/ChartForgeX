@@ -22,7 +22,7 @@ public sealed class HeatmapColumnLabelTests {
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg());
         var labels = ByRole(svg, "heatmap-column-label");
-        var tickSize = chart.Options.Theme.TickLabelFontSize;
+        var tickSize = chart.Options.Theme.Typography.AxisSize;
 
         Assert.Equal(Checks, labels.Select(label => label.Value).ToArray());
         Assert.All(labels, label => {
@@ -78,7 +78,7 @@ public sealed class HeatmapColumnLabelTests {
         }
         var legendTop = ByRole(svg, "state-legend-swatch").Min(swatch => Number(swatch, "y"));
         Assert.All(geometry, label => {
-            Assert.Equal(chart.Options.Theme.TickLabelFontSize, label.Text.Text.Size);
+            Assert.Equal(chart.Options.Theme.Typography.AxisSize, label.Text.Text.Size);
             Assert.All(label.Corners, corner => {
                 Assert.InRange(corner.X, chart.Options.Padding.Left - .001, prepared.Size.Width - chart.Options.Padding.Right + .001);
                 Assert.True(corner.Y <= legendTop + 1, "Measured column labels must not overlap the legend.");

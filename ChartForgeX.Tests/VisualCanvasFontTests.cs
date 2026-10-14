@@ -1,4 +1,5 @@
 using ChartForgeX.Composition;
+using ChartForgeX.Themes;
 using ChartForgeX.Raster;
 using ChartForgeX.SvgRaster;
 using System.Xml.Linq;
@@ -17,12 +18,12 @@ public sealed class VisualCanvasFontTests {
     [InlineData("Segoe UI, sans-serif")]
     [InlineData("No Such Family")]
     public void DefaultCanvasFittingKeepsPortableTextAcrossHostFamilies(string family) {
-        var theme = new VisualCanvasTheme { FontFamily = family };
+        var theme = VisualTheme.Graphite().WithFontFamily(family);
         var canvas = VisualCanvas.Create(120, 80).WithTheme(theme)
             .AddText(10, 10, 80, "iiiiiiiiiiiiiiii", 20, ChartColors.White);
         var text = XDocument.Parse(canvas.ToSvg()).Descendants()
             .Single(element => (string?)element.Attribute("data-cfx-role") == "visual-canvas-text");
-        Assert.Equal(TextMeasurementMode.PortableEstimate, theme.TextMeasurementMode);
+        Assert.Equal(TextMeasurementMode.PortableEstimate, canvas.Style.TextMeasurementMode);
         // Seven portable advances fit the box: four source characters and the ellipsis.
         Assert.Equal("iiii...", text.Value);
         Assert.Equal(10, (double)text.Attribute("x")!);
@@ -72,7 +73,7 @@ public sealed class VisualCanvasFontTests {
         }
 
         var block = (VisualCanvasKeyValueBlockLayer)canvas.Layers[1];
-        Assert.Equal(block.MeasureHeight(canvas.Theme), block.Height);
+        Assert.Equal(block.MeasureHeight(canvas), block.Height);
     }
 
     [Fact]
@@ -88,7 +89,7 @@ public sealed class VisualCanvasFontTests {
     public void HeroTitlesShrinkToTheirWidthInBothOutputs() {
         const double left = 100, width = 300;
         var canvas = VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
-            .WithTheme(new VisualCanvasTheme { TextMeasurementMode = TextMeasurementMode.InstalledFonts })
+            .ConfigureStyle(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts)
             .AddHeroTitle(left, 10, width, 82, new[] { new VisualCanvasTextRun("Power", ChartColors.White), new VisualCanvasTextRun("BGInfo", ChartColors.White) });
         foreach (var image in new[] { Png(canvas), SvgRasterizer.ToImage(canvas.ToSvg()) }) {
             var bounds = InkBounds(image, 0, image.Height);
@@ -113,7 +114,7 @@ public sealed class VisualCanvasFontTests {
     }
 
     private static VisualCanvas Canvas(string family) =>
-        VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent).WithTheme(new VisualCanvasTheme { FontFamily = family, TextMeasurementMode = TextMeasurementMode.InstalledFonts });
+        VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent).WithTheme(VisualTheme.Graphite().WithFontFamily(family)).ConfigureStyle(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts);
 
     private static RgbaImage Png(VisualCanvas canvas) => new PngVisualCanvasRenderer().RenderImage(canvas);
 

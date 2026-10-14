@@ -70,7 +70,7 @@ internal static class ChartHeatmapSurface {
     /// <summary>Returns the colour of a matrix or hexbin heatmap cell as a blend, for SVG colour variables (see <see cref="CellColor(Chart, ChartColor?, double, double, double)"/>).</summary>
     public static ChartColorBlend CellBlend(Chart chart, ChartColor? highColor, double value, double min, double max) =>
         chart.Options.HeatmapColorScale?.BlendFor(value, min, max)
-            ?? ((chart.Options.HeatmapRelativeScale || chart.Options.Theme.UseGraphiteLayout) && value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max));
+            ?? (value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max));
 
     /// <summary>
     /// Returns whether a matrix or hexbin heatmap cell is strong, so the text on it takes the surface colour
@@ -84,7 +84,7 @@ internal static class ChartHeatmapSurface {
         if (chart.Options.HeatmapRelativeScale && value == 0 && min >= 0) return false;
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return true;
         var ratio = Ratio(chart, value, min, max);
-        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue != null) return ratio >= StrongRampRatio;
+        if (!highColor.HasValue && chart.Options.ResolvedTheme.SequentialRampValue != null) return ratio >= StrongRampRatio;
         return 0.18 + ratio * 0.82 >= StrongTintAmount;
     }
 
@@ -100,8 +100,8 @@ internal static class ChartHeatmapSurface {
     public static ChartColorBlend ColorBlend(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(chart, value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticBlend(chart, ratio);
-        if (!highColor.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return chart.Options.Theme.UseGraphiteLayout ? ChartColorBlend.Solid(ramp[Math.Max(1, Math.Min(ramp.Length - 1, (int)Math.Ceiling(ratio * (ramp.Length - 1))))], SvgColorRole.Ramp) : RampBlend(ramp, ratio);
-        return new ChartColorBlend(chart.Options.Theme.PlotBackground, SvgColorRole.Surface, highColor ?? chart.Options.Theme.Palette[0], SvgColorRole.Series, 0.18 + ratio * 0.82);
+        if (!highColor.HasValue && chart.Options.ResolvedTheme.SequentialRampValue is { } ramp) return ChartColorBlend.Solid(ramp[Math.Max(1, Math.Min(ramp.Length - 1, (int)Math.Ceiling(ratio * (ramp.Length - 1))))], SvgColorRole.Ramp);
+        return new ChartColorBlend(chart.Options.ResolvedTheme.PlotBackground, SvgColorRole.Surface, highColor ?? chart.Options.ResolvedTheme.Palette[0], SvgColorRole.Series, 0.18 + ratio * 0.82);
     }
 
     public static ChartColor MapColor(Chart chart, ChartColor? pointColor, ChartColor highColor, double value, double min, double max) {
@@ -174,7 +174,7 @@ internal static class ChartHeatmapSurface {
     public static ChartColor SemanticColor(Chart chart, double ratio) => SemanticBlend(chart, ratio).Color;
 
     private static ChartColorBlend SemanticBlend(Chart chart, double ratio) {
-        var t = chart.Options.Theme;
+        var t = chart.Options.ResolvedTheme;
         return SemanticBlend(t.Negative, t.Warning, t.Positive, ratio);
     }
 
@@ -234,10 +234,10 @@ internal static class ChartHeatmapSurface {
         if (chart.Options.HeatmapColorScale is ChartColorScale scale)
             return pointColor.HasValue ? ChartColorBlend.Solid(pointColor.Value, SvgColorRole.Series) : scale.BlendFor(value, min, max);
         var ratio = CalendarRatio(value, min, max);
-        if (!pointColor.HasValue && !series.Color.HasValue && chart.Options.Theme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
+        if (!pointColor.HasValue && !series.Color.HasValue && chart.Options.ResolvedTheme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
         // Counts use a neutral single-hue ramp from the first categorical colour; status colours stay reserved for status.
-        var high = pointColor ?? series.Color ?? chart.Options.Theme.Palette[0];
-        return new ChartColorBlend(chart.Options.Theme.PlotBackground, SvgColorRole.Surface, high, SvgColorRole.Series, 0.30 + ratio * 0.70);
+        var high = pointColor ?? series.Color ?? chart.Options.ResolvedTheme.Palette[0];
+        return new ChartColorBlend(chart.Options.ResolvedTheme.PlotBackground, SvgColorRole.Surface, high, SvgColorRole.Series, 0.30 + ratio * 0.70);
     }
 
     /// <summary>
@@ -248,7 +248,7 @@ internal static class ChartHeatmapSurface {
     public static ChartColor ZeroColor(Chart chart) => ZeroBlend(chart).Color;
 
     /// <summary>Returns <see cref="ZeroColor(Chart)"/> as a blend of the backdrop and the muted text colour.</summary>
-    public static ChartColorBlend ZeroBlend(Chart chart) => chart.Options.Theme.UseGraphiteLayout ? ChartColorBlend.Solid(chart.Options.Theme.Neutral3, SvgColorRole.Surface) : TowardsMutedText(chart, 0.14);
+    public static ChartColorBlend ZeroBlend(Chart chart) => ChartColorBlend.Solid(chart.Options.ResolvedTheme.Neutral3, SvgColorRole.Surface);
 
     /// <summary>
     /// Returns the colour of a calendar day without data: the surface behind the cells shifted further towards the muted
@@ -261,7 +261,7 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>Blends the backdrop towards the muted text colour, by <paramref name="share"/> of its opacity, into an opaque colour.</summary>
     private static ChartColorBlend TowardsMutedText(Chart chart, double share) {
-        var ink = chart.Options.Theme.MutedText;
+        var ink = chart.Options.ResolvedTheme.MutedText;
         var backdrop = ChartStateMark.Backdrop(chart);
         var amount = share * ink.A / 255.0;
         var result = ChartColor.FromRgb(
@@ -283,7 +283,7 @@ internal static class ChartHeatmapSurface {
     }
 
     public static ChartColor MapNoDataColor(Chart chart) =>
-        chart.Options.MapColorScale?.NoDataColor ?? ChartColorMath.Blend(chart.Options.Theme.PlotBackground, chart.Options.Theme.Grid, 0.46);
+        chart.Options.MapColorScale?.NoDataColor ?? ChartColorMath.Blend(chart.Options.ResolvedTheme.PlotBackground, chart.Options.ResolvedTheme.Grid, 0.46);
 
     private static double Clamp(double value, double min, double max) {
         if (double.IsNaN(value)) return min;

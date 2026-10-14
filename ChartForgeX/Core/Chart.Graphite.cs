@@ -4,7 +4,6 @@ namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
     internal Chart PanelView() {
-        if (!Options.Theme.UseGraphiteLayout) return this;
         var view = (Chart)MemberwiseClone();
         view.Options = Options.PanelView();
         return view;
@@ -15,13 +14,5 @@ public sealed partial class Chart {
     public Chart WithLineMarkers(ChartLineMarkerMode mode) {
         if (!Enum.IsDefined(typeof(ChartLineMarkerMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         Options.LineMarkerMode = mode; return this;
-    }
-    /// <summary>Declares a series state independently of its display name and the categorical palette.</summary>
-    public Chart WithSeriesState(string name, ChartSeriesState role) {
-        if (!Enum.IsDefined(typeof(ChartSeriesState), role)) throw new ArgumentOutOfRangeException(nameof(role));
-        var found = false;
-        foreach (var series in Series) if (series.Name == name) { series.StateRole = role; found = true; }
-        if (!found) throw new ArgumentException("The chart has no series with this name.", nameof(name));
-        return this;
     }
 }

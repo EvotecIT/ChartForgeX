@@ -14,12 +14,11 @@ public sealed class V2CartesianMigrationTests {
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]
     public void StatePaintAndDrawingPriority_PreserveExplicitOverridesAndSeriesIdentity(VisualThemeMode mode) {
-        var chart = Chart.Create().AddScatter("Danger", Points(3)).AddScatter("Quiet", Points(4)).AddScatter("Warning", Points(5));
+        var chart = Chart.Create().AddScatter("Danger", Points(3)).AddScatter("Quiet", Points(4)).AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("forecast-data"), "Warning", Points(5)));
         chart.Series[0].StateRole = ChartSeriesState.Danger;
         chart.Series[1].StateRole = ChartSeriesState.Quiet;
         chart.Series[2].StateRole = ChartSeriesState.Warning;
         chart.Series[2].SemanticRole = "forecast";
-        chart.Series[2].WithInteractionKey("forecast-data");
         var context = new VisualRenderContext(themeMode: mode);
         var colors = context.Theme.Resolve(mode);
         var scene = Compile(chart, context);
@@ -78,9 +77,9 @@ public sealed class V2CartesianMigrationTests {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void ExplicitLineLayers_UseOnePathAndRetainAlphaAcrossLegacyThemes(bool graphite) {
+    public void ExplicitLineLayers_UseOnePathAndRetainAlphaAcrossThemeChanges(bool graphite) {
         var chart = Chart.Create().AddLine("Observed", Points(3, 8, 4), ChartColor.FromRgba(50, 100, 150, 128));
-        chart.WithTheme(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Light());
+        chart.WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report());
         chart.Options.LineVisualStyle = ChartLineVisualStyle.Luminous();
         chart.Series[0].StrokeWidth = 4;
         var scene = Compile(chart);
@@ -88,18 +87,29 @@ public sealed class V2CartesianMigrationTests {
         Assert.Equal(new[] { "line-ambient-halo", "line-halo", "line", "line-highlight" }, paths.Select(path => path.Role));
         Assert.Equal(4, paths[2].StrokeWidth);
         Assert.All(paths, path => { Assert.Equal(paths[0].Commands.Count, path.Commands.Count); Assert.InRange(path.Stroke!.Value.A, (byte)1, (byte)128); });
-        chart.WithTheme(graphite ? ChartTheme.Light() : ChartTheme.GraphiteLight());
-        Assert.Equal(VisualSceneSvgRenderer.Render(scene), VisualSceneSvgRenderer.Render(Compile(chart)));
+        chart.WithTheme(graphite ? VisualTheme.Report() : VisualTheme.Graphite());
+        var updatedPaths = Compile(chart).Nodes.OfType<VisualScenePath>().Where(path => path.Role?.StartsWith("line", StringComparison.Ordinal) == true).ToArray();
+        Assert.Equal(paths.Select(path => (path.Role, path.StrokeWidth, path.Stroke)), updatedPaths.Select(path => (path.Role, path.StrokeWidth, path.Stroke)));
+        Assert.All(updatedPaths, path => Assert.Equal(paths[0].Commands.Count, path.Commands.Count));
     }
 
     [Fact]
-    public void DirectLineStyleMutation_PreservesCoupledHaloDefaultsAcrossLegacyThemeSwitches() {
-        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(ChartTheme.Light());
+    public void DirectLineStyleMutation_PreservesAuthoredHaloAcrossThemeChanges() {
+        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(VisualTheme.Report());
         chart.Options.LineVisualStyle.HaloOpacity = .4;
+        chart.Options.LineVisualStyle.HaloStrokeExtra = 5;
         var scene = Compile(chart);
-        Assert.Contains(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "line-halo" && path.StrokeWidth > 2);
-        chart.WithTheme(ChartTheme.GraphiteLight());
-        Assert.Equal(VisualSceneSvgRenderer.Render(scene), VisualSceneSvgRenderer.Render(Compile(chart)));
+        var halo = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "line-halo");
+        var line = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "line");
+        Assert.Equal(line.StrokeWidth + 5, halo.StrokeWidth);
+        Assert.Equal((byte)102, halo.Stroke!.Value.A);
+        chart.WithTheme(VisualTheme.Graphite());
+        var updated = Compile(chart);
+        var updatedHalo = Assert.Single(updated.Nodes.OfType<VisualScenePath>(), path => path.Role == "line-halo");
+        Assert.Equal(halo.StrokeWidth, updatedHalo.StrokeWidth);
+        Assert.Equal((byte)102, updatedHalo.Stroke!.Value.A);
+        Assert.Equal(.4, chart.Options.LineVisualStyle.HaloOpacity);
+        Assert.Equal(5, chart.Options.LineVisualStyle.HaloStrokeExtra);
     }
 
     [Fact]
@@ -191,10 +201,13 @@ public sealed class V2CartesianMigrationTests {
     [InlineData(ChartSeriesKind.Bar)]
     [InlineData(ChartSeriesKind.Scatter)]
     public void PointLegends_RetainSourceIdsLabelsStylesAndExplicitColors(ChartSeriesKind kind) {
-        var chart = kind == ChartSeriesKind.Bar ? Chart.Create().AddBar("Observed", Points(3, 5)) : Chart.Create().AddScatter("Observed", Points(3, 5));
+        var series = kind == ChartSeriesKind.Bar
+            ? ChartSeries.CreateBar(new ChartSeriesId("observed-data"), "Observed", Points(3, 5))
+            : ChartSeries.CreateScatter(new ChartSeriesId("observed-data"), "Observed", Points(3, 5));
+        var chart = Chart.Create().AddSeries(series);
         chart.Options.ShowPointLegend = true;
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(1, "First observation"));
-        chart.Series[0].WithInteractionKey("observed-data").WithPointColor(0, ChartColor.FromHex("#AD376A")).WithPointFillPattern(0, ChartFillPattern.Crosshatch);
+        chart.Series[0].WithPointColor(0, ChartColor.FromHex("#AD376A")).WithPointFillPattern(0, ChartFillPattern.Crosshatch);
         chart.Series[0].StateRole = ChartSeriesState.Info;
         var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
         var entries = VisualCartesianCompiler.LegendEntries(chart, colors);

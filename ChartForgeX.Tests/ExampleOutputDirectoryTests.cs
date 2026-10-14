@@ -29,9 +29,8 @@ public sealed class ExampleOutputDirectoryTests {
         }
     }
 
-    [Fact]
+    [UnixFact]
     public void ResetUsesPhysicalTemporaryRootWhenUnixTmpdirHasALinkedAncestor() {
-        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS()) return;
         var scratch = CreateScratchPath("CFX-example-tmpdir-");
         var real = Path.Combine(scratch, "real");
         var link = Path.Combine(scratch, "linked");
@@ -81,12 +80,11 @@ public sealed class ExampleOutputDirectoryTests {
         }
     }
 
-    [Theory]
+    [UnixTheory]
     [InlineData(false)]
     [InlineData(true)]
     public void ResetRejectsUnixSymbolicLinksBeforeDeletingArtifacts(bool linkIsAncestor) {
         // Windows link creation may require privileges; this fixture exercises ordinary Unix links only.
-        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS()) return;
         var scratch = CreateScratchPath("CFX-example-link-");
         var real = Path.Combine(scratch, "real");
         var link = Path.Combine(scratch, "linked");

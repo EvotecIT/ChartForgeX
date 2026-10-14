@@ -8,7 +8,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPaintBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("line", false)]
     [InlineData("line", true)]
     [InlineData("area", false)]
@@ -44,7 +44,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, true)]
     [InlineData(true, false)]
     public async Task NativeMarkerFreeLineCanAcquireARealObservationUnderNearestAndBoundedPolicies(bool bounded, bool guide) {
@@ -66,7 +66,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task AuthoredPlotClipsKeepCroppedFactsOutOfPointerLookupWhileInPlotObservationsRemainUsable(bool hasVisibleSibling) {
@@ -96,10 +96,12 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task NativeSvgRoundingKeepsAPaintedBoundaryObservationAvailableAtItsScreenScale() {
         if (!Enabled) return;
-        await using var session = await OpenAsync(StatusLines(false).ToInteractiveHtmlPage(options => {
+        // Control the clip's fractional origin without a font-dependent Y-axis label reserve.
+        var chart = StatusLines(false).WithPadding(24.0006, 24, 24, 24).WithYAxisVisible(false);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             ExactFeatures(options);
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
         }), 340, 720);

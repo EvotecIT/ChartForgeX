@@ -56,8 +56,7 @@ public sealed class PreparedHierarchySankeyTests {
 
     [Fact]
     public void SunburstRetainsPositiveCollapsedValuesWithoutInventingSliceGeometry() {
-        var chart = Chart.Create().WithDataLabels(false).AddSunburst("Allocation", new[] { new ChartHierarchyItem("root", "All work"), new ChartHierarchyItem("tiny", "Small allocation", "root", 1e-20), new ChartHierarchyItem("visible", "Main allocation", "root", 1) });
-        chart.Series[0].WithInteractionKey("allocation-source");
+        var chart = Chart.Create().WithDataLabels(false).AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocation", new[] { new ChartHierarchyItem("root", "All work"), new ChartHierarchyItem("tiny", "Small allocation", "root", 1e-20), new ChartHierarchyItem("visible", "Main allocation", "root", 1) }));
         chart.Series[0].WithDataLabels(false);
         var prepared = chart.Prepare(Context());
         var nodes = Role(XDocument.Parse(prepared.ToSvg()), "sunburst-segment").ToArray();
@@ -117,20 +116,23 @@ public sealed class PreparedHierarchySankeyTests {
             chart.Options.ValueFormatter = value => "value " + value.ToString("0.0", CultureInfo.InvariantCulture);
             chart.Series[0].FillPattern = ChartFillPattern.DiagonalForward;
             var prepared = chart.Prepare(Context()); string svg = prepared.ToSvg(); byte[] png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
-            chart.Series[0].Points.Clear(); chart.Series[0].Color = ChartColor.Black; if (chart.Series[0].Nodes.Count > 0) chart.Series[0].WithNodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
+            Assert.Throws<NotSupportedException>(() => chart.Series[0].Points.Clear());
+            chart.Series[0].Color = ChartColor.Black; if (chart.Series[0].Nodes.Count > 0) chart.Series[0].WithNodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
             chart.Options.ValueFormatter = _ => "changed"; chart.Series[0].DataLabelStyle.FontSize = 30;
             Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         }
     }
 
     [Fact]
-    public void IncompatibleRawPointsAreRejectedBeforeRelationshipLayout() {
-        var tree = Hierarchy(ChartSeriesKind.Tree); tree.Series[0].Points.Add(new ChartPoint(1, 0));
-        Assert.Throws<InvalidOperationException>(() => tree.Prepare(Context()));
+    public void TypedRelationshipsRejectRawPointMutationAndRetainTheirPreparedData() {
+        var tree = Hierarchy(ChartSeriesKind.Tree);
+        Assert.Throws<NotSupportedException>(() => tree.Series[0].Points.Add(new ChartPoint(1, 0)));
+        Assert.NotEmpty(tree.Prepare(Context()).Scene.Nodes);
         var sankey = Chart.Create().AddSankey("Flows", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C") }, new[] { new ChartFlowLink("flow-4", "A", "B", 1), new ChartFlowLink("flow-5", "B", "C", 1) });
-        sankey.Series[0].Points.Add(new ChartPoint(1, 0));
-        Assert.Throws<InvalidOperationException>(() => sankey.Prepare(Context()));
-        var treemap = Hierarchy(ChartSeriesKind.Treemap); treemap.Series[0].Points.Add(new ChartPoint(1, -1));
-        Assert.Throws<InvalidOperationException>(() => treemap.Prepare(Context()));
+        Assert.Throws<NotSupportedException>(() => sankey.Series[0].Points.Add(new ChartPoint(1, 0)));
+        Assert.NotEmpty(sankey.Prepare(Context()).Scene.Nodes);
+        var treemap = Hierarchy(ChartSeriesKind.Treemap);
+        Assert.Throws<NotSupportedException>(() => treemap.Series[0].Points.Add(new ChartPoint(1, -1)));
+        Assert.NotEmpty(treemap.Prepare(Context()).Scene.Nodes);
     }
 }

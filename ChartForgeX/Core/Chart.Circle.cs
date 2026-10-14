@@ -14,11 +14,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional circle accent color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddCircle(string name, double value, double min = 0, double max = 100, ChartColor? color = null) {
-        ChartGuards.Finite(value, nameof(value));
-        ChartGuards.Finite(min, nameof(min));
-        ChartGuards.Finite(max, nameof(max));
-        if (max <= min) throw new ArgumentOutOfRangeException(nameof(max), max, "Circle maximum must be greater than minimum.");
-        AppendSeries(new ChartSeries(name, ChartSeriesKind.Circle, new[] { new ChartPoint(min, value), new ChartPoint(max, value) }) { Color = color });
+        AppendSeries(ChartSeries.CreateCircle(name, new ChartGaugeValue(value, min, max), color));
         return this;
     }
 }

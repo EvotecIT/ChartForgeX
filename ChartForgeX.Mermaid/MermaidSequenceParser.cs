@@ -14,7 +14,7 @@ internal static class MermaidSequenceParser {
         if (result == null) throw new ArgumentNullException(nameof(result));
 
         var participants = new Dictionary<string, MermaidSequenceParticipant>(StringComparer.Ordinal);
-        var blockStack = new Stack<MermaidSequenceBlockKind>();
+        var blockStack = new Stack<MermaidSequenceBlock>();
         for (var index = firstBodyLine - 1; index < lines.Length; index++) {
             var raw = lines[index];
             var fragments = SplitStatements(raw);
@@ -22,7 +22,7 @@ internal static class MermaidSequenceParser {
                 var trimmed = fragment.Text.Trim();
                 if (trimmed.Length == 0 || IsComment(trimmed)) continue;
 
-                var span = new MermaidSourceSpan(index + 1, LeadingWhitespace(raw) + fragment.Column, trimmed.Length);
+                var span = new MermaidSourceSpan(index + 1, LeadingWhitespace(fragment.Text) + fragment.Column, trimmed.Length);
                 document.Statements.Add(new MermaidRawStatement(trimmed, span));
 
                 if (TryParseAutonumber(document, trimmed, span)) continue;
@@ -30,10 +30,15 @@ internal static class MermaidSequenceParser {
                 if (TryParseActivation(document, participants, trimmed, span)) continue;
                 if (TryParseNote(document, participants, trimmed, span)) continue;
                 if (TryParseLink(document, participants, trimmed, span)) continue;
-                if (TryParseBlock(document, blockStack, trimmed, span)) continue;
+                if (TryParseBlock(document, blockStack, trimmed, span, result)) continue;
                 if (TryParseMessage(document, participants, trimmed, span)) continue;
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Unrecognized sequence diagram statement was not rendered: " + trimmed);
             }
+        }
+
+        foreach (var block in blockStack) {
+            MermaidParserUtilities.Add(result, block.Span, MermaidDiagnosticSeverity.Error,
+                "Sequence " + block.Kind.ToString().ToLowerInvariant() + " block must close with 'end'.", MermaidDiagnosticCodes.InvalidStatement);
         }
     }
 
@@ -157,10 +162,15 @@ internal static class MermaidSequenceParser {
         return true;
     }
 
-    private static bool TryParseBlock(MermaidSequenceDocument document, Stack<MermaidSequenceBlockKind> blockStack, string text, MermaidSourceSpan span) {
+    private static bool TryParseBlock(MermaidSequenceDocument document, Stack<MermaidSequenceBlock> blockStack, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (string.Equals(text, "end", StringComparison.OrdinalIgnoreCase)) {
-            var depth = Math.Max(0, blockStack.Count - 1);
-            if (blockStack.Count > 0) blockStack.Pop();
+            if (blockStack.Count == 0) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                    "Sequence closing statement has no open block.", MermaidDiagnosticCodes.InvalidStatement);
+                return true;
+            }
+            var depth = blockStack.Count - 1;
+            blockStack.Pop();
             document.Blocks.Add(new MermaidSequenceBlock(MermaidSequenceBlockKind.End, span) { Depth = depth });
             return true;
         }
@@ -170,13 +180,22 @@ internal static class MermaidSequenceParser {
 
         var body = text.Length == command.Length ? string.Empty : text.Substring(command.Length).Trim();
         var branch = kind == MermaidSequenceBlockKind.Else || kind == MermaidSequenceBlockKind.And || kind == MermaidSequenceBlockKind.Option;
+        if (branch) {
+            var owner = kind == MermaidSequenceBlockKind.Else ? MermaidSequenceBlockKind.Alt
+                : kind == MermaidSequenceBlockKind.And ? MermaidSequenceBlockKind.Par : MermaidSequenceBlockKind.Critical;
+            if (blockStack.Count == 0 || blockStack.Peek().Kind != owner) {
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                    "Sequence '" + command + "' branch requires an open " + owner.ToString().ToLowerInvariant() + " block.", MermaidDiagnosticCodes.InvalidStatement);
+                return true;
+            }
+        }
         var block = new MermaidSequenceBlock(kind.Value, span) {
             Text = body.Length == 0 ? null : body,
-            Depth = branch ? Math.Max(0, blockStack.Count - 1) : blockStack.Count
+            Depth = branch ? blockStack.Count - 1 : blockStack.Count
         };
 
         document.Blocks.Add(block);
-        if (!branch) blockStack.Push(kind.Value);
+        if (!branch) blockStack.Push(block);
         return true;
     }
 

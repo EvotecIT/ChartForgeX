@@ -63,7 +63,7 @@ public sealed class SankeyVisualDefaultsTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The existing Carlito example fixture must be available.");
         var chart = Chart.Create().WithSize(360, 360).WithPngFont(font)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Request routing").WithSubtitle("Observed weighted flows")
             .AddSankey("Requests", new[] { new ChartNode("Received", "Received"), new ChartNode("Automatic", "Automatic"), new ChartNode("Manual", "Manual"), new ChartNode("Completed", "Completed"), new ChartNode("Review", "Review") }, new[] {
                 new ChartFlowLink("flow-1", "Received", "Automatic", 72), new ChartFlowLink("flow-2", "Received", "Manual", 28),

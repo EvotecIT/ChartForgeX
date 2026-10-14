@@ -13,6 +13,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidAllocatedTypographyClosureTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(TopologyNodeDisplayMode.Card, false, TopologyEdgeRouting.Orthogonal)]
     [InlineData(TopologyNodeDisplayMode.Card, true, TopologyEdgeRouting.Orthogonal)]
@@ -51,13 +52,14 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         await Capture(svg, chart.ToPng(options), "actor-auto-" + mode + "-" + incoming + "-" + routing, 320, 280);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(360, 32, 0, false)]
     [InlineData(360, 32, 90, false)]
     [InlineData(760, 256, 45, true)]
     public async Task AxisCaptionsRetainACompleteMonth(int width, int size, double angle, bool dark) {
         var chart = Chart.Create().WithSize(width, 420).WithLegend(false).WithHeader(false)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight())
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXLabels("September", "October", "November")
             .ConfigureTickLabelStyle(style => style.WithFontFamily("Arial").WithFontSize(size))
             .AddLine("Readings", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 15) });
@@ -68,6 +70,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         await Capture(prepared.ToSvg(), prepared.ToPng(), "axis-" + size + "-" + angle, width, 420);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(TopologyNodeDisplayMode.Tile)]
     [InlineData(TopologyNodeDisplayMode.Icon)]
@@ -102,10 +105,12 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     public void OversizedAxisFittingUsesTheCompleteFootprint(double angle) {
         var builder = new VisualSceneBuilder(new VisualSize(200, 100), FontSpec.FromFamily("Arial"));
         var style = new TextStyle { Font = FontSpec.FromFamily("Arial"), FontSize = 32 };
-        var bounds = new ChartRect(0, 0, 100, 50);
+        // September needs more than 50 pixels when rotated at the readable 10-pixel floor on Linux.
+        var bounds = new ChartRect(0, 0, 100, 60);
         var fitted = VisualAxisText.FitOversized(builder, style, bounds, new[] { "September" }, angle);
         var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText("September", fitted), angle);
         Assert.True(metrics.Width <= bounds.Width && metrics.Height <= bounds.Height);
+        Assert.InRange(fitted.EffectiveFontSize, 10, 32);
         Assert.Equal(32, style.FontSize);
     }
 
@@ -118,6 +123,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         Assert.Equal(18, fitted.FontSize);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(18)]
     [InlineData(18.0001)]
@@ -142,6 +148,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         await Capture(svg, png, "group-header-" + size, 960, 720, fontPath);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(32)]
     [InlineData(256)]
@@ -155,6 +162,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
         await Capture(svg, png, "packet-narrow-" + size, 480, 280);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

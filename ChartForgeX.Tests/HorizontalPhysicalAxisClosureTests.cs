@@ -38,6 +38,7 @@ public sealed class HorizontalPhysicalAxisClosureTests {
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(ChartSeriesKind.Line)]
     [InlineData(ChartSeriesKind.StepLine)]

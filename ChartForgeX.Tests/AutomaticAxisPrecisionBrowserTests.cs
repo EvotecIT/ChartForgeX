@@ -4,16 +4,13 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class AutomaticAxisPrecisionBrowserTests {
-    [Theory]
+    [BrowserTheory(RequiresGallery = true)]
     [InlineData("precision", "light", 800, 440)]
     [InlineData("precision", "dark", 800, 440)]
     [InlineData("compact-precision", "light", 360, 360)]
     [InlineData("compact-precision", "dark", 360, 360)]
     public async Task GeneratedAxesKeepDistinctSmallCaptionsInNativeSvgAndPairedPng(string variant, string theme, int width, int height) {
-        var url = Environment.GetEnvironmentVariable("CFX_V2_GALLERY_URL");
-        if (!Enabled || string.IsNullOrWhiteSpace(url)) return;
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !uri.IsLoopback || uri.Scheme != Uri.UriSchemeHttp)
-            throw new InvalidOperationException("CFX_V2_GALLERY_URL must be a task-owned loopback HTTP URL.");
+        var url = BrowserTestPrerequisites.RequireGalleryUrl();
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>", width + 48, height * 2 + 110);
         await session.Page.GotoAsync(url);
         await session.Page.EvaluateAsync("async () => { await document.fonts.ready; }");

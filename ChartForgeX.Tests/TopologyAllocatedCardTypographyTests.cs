@@ -10,11 +10,12 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class TopologyAllocatedCardTypographyTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData("Arial")]
     [InlineData("Inter, Segoe UI, system-ui, sans-serif")]
     public async Task CompactPillSubtitleRetainsReadableOrdinaryTypography(string font) {
-        var theme = TopologyTheme.Light(); theme.Typography = new VisualTypography(font, dataLabelSize: 12);
+        var theme = VisualTheme.Graphite(); theme = theme.WithTypography(new VisualTypography(font, dataLabelSize: 12));
         var chart = TopologyChart.Create().WithTheme(theme).WithViewport(240, 160, 16)
             .AddNode("region", "AMER", 50, 60, kind: TopologyNodeKind.Hub, width: 104, height: 34, subtitle: "47 sites")
             .WithNodeDisplay("region", TopologyNodeDisplayMode.Pill);
@@ -26,11 +27,12 @@ public sealed class TopologyAllocatedCardTypographyTests {
         await Capture(svg, chart.ToPng(options), "ordinary-pill-subtitle-" + (font == "Arial" ? "arial" : "system"));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(32)]
     [InlineData(256)]
     public async Task GeographicCalloutsRetainTheirFixedHeightText(int size) {
-        var theme = TopologyTheme.Light(); theme.Typography = new VisualTypography("Arial", dataLabelSize: size);
+        var theme = VisualTheme.Graphite(); theme = theme.WithTypography(new VisualTypography("Arial", dataLabelSize: size));
         var chart = TopologyChart.Create().WithTheme(theme).WithViewport(720, 420, 24)
             .WithLayout(TopologyLayoutMode.Geographic).WithMapViewport(ChartMapViewport.World())
             .AddGroup("region", "Europe", 0, 0, 100, 80, subtitle: "One site")
@@ -44,6 +46,7 @@ public sealed class TopologyAllocatedCardTypographyTests {
         await Capture(svg, chart.ToPng(options), "geographic-callout-" + size);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, 32)]
     [InlineData(false, 256)]
@@ -63,6 +66,7 @@ public sealed class TopologyAllocatedCardTypographyTests {
         await Capture(svg, chart.ToPng(), "subtitle-card-" + requirement + "-" + size);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(TopologyNodeDisplayMode.Card, 11)]
     [InlineData(TopologyNodeDisplayMode.Card, 32)]
@@ -70,8 +74,8 @@ public sealed class TopologyAllocatedCardTypographyTests {
     [InlineData(TopologyNodeDisplayMode.Icon, 256)]
     [InlineData(TopologyNodeDisplayMode.Dot, 256)]
     public async Task ThemeDrivenExportsFitTheCompleteBadgeAndNodeSymbol(TopologyNodeDisplayMode mode, int size) {
-        var theme = TopologyTheme.Light();
-        theme.Typography = new VisualTypography("Arial", dataLabelSize: size);
+        var theme = VisualTheme.Graphite();
+        theme = theme.WithTypography(new VisualTypography("Arial", dataLabelSize: size));
         var chart = TopologyChart.Create().WithTheme(theme).WithViewport(360, 240, 16)
             .AddNode("api", "API", 80, 60, width: 120, height: 64, symbol: "A").WithNodeDisplay("api", mode);
         chart.Nodes[0].Badge = "42";

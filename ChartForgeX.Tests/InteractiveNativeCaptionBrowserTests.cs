@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects native caption acquisition without promoting decorations or bypassing mark availability.</summary>
 public sealed class InteractiveNativeCaptionBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData("region", "exact", 0)]
     [InlineData("region", "distance", 0)]
     [InlineData("region", "nearest", 0)]
@@ -27,9 +27,9 @@ public sealed class InteractiveNativeCaptionBrowserTests {
         if (!Enabled) return;
         var tile = family == "tile"; var gauge = family == "gauge";
         var chart = Chart.Create().WithSize(800, 440).WithHeader(false).WithLegend(false)
-            .WithMapLabels().WithTheme(ChartTheme.GraphiteDark());
+            .WithMapLabels().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
         if (!gauge) chart.ConfigureMapColorDimension(options => options.ShowLegend = false);
-        if (gauge) chart.AddGauge("Coverage", 55);
+        if (gauge) chart.AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("coverage"), "Coverage", 55));
         else if (tile) chart.AddTileMap("Coverage", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CO", 55) });
         else chart.AddRegionMap("Coverage", new ChartMapDefinition("regions", "Regions", 100, 100, new[] {
             new ChartMapRegion("CO", "Colorado", "M10 10H90V90H10Z")
@@ -50,7 +50,7 @@ public sealed class InteractiveNativeCaptionBrowserTests {
         await WaitForValueAsync();
         var hover = await page.EvaluateAsync<JsonElement>("() => window.nativeCaptionHover");
         Assert.Equal(gauge ? "point" : "region", hover.GetProperty("targetKind").GetString());
-        Assert.Equal(gauge ? "Coverage:0" : "CO", hover.GetProperty("targetId").GetString());
+        Assert.Equal(gauge ? "coverage:0" : "CO", hover.GetProperty("targetId").GetString());
         await page.Locator(caption).ClickAsync();
         Assert.Equal("true", await region.GetAttributeAsync("aria-selected"));
         Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));

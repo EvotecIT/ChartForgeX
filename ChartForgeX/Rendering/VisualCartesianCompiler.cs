@@ -16,7 +16,7 @@ internal static partial class VisualCartesianCompiler {
         colorScales ??= new ChartColorPresentationSet(chart);
         var entries = new List<VisualLegendEntry>();
         if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
-            && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].RenderedPointCount > 1) {
+            && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].AuthoredObservationCount > 0) {
             var series = chart.Series[0];
             if (series.Kind == ChartSeriesKind.Waterfall) return WaterfallLegendEntries(chart, series, colors, axisLabels ?? new ChartAxisValueFormatter.Cache());
             if (series.Kind == ChartSeriesKind.RangeBar) return RangeBarLegendEntries(chart, series, colors, axisLabels ?? new ChartAxisValueFormatter.Cache());
@@ -25,14 +25,14 @@ internal static partial class VisualCartesianCompiler {
             var numericRadial = series.Kind is ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn;
             if (numericRadial) axisLabels ??= new ChartAxisValueFormatter.Cache();
             var categoryFormatter = numericRadial ? ChartAxisValueFormatter.Create(chart.Options.XAxis,
-                series.Points.Select(point => point.X).Distinct().OrderBy(value => value).ToArray()) : null;
+                series.RenderPoints.Select(point => point.X).Distinct().OrderBy(value => value).ToArray()) : null;
             for (var point = 0; point < series.AuthoredObservationCount; point++) {
-                var label = numericRadial ? axisLabels!.Format(chart.Options.XAxis, series.Points[point].X, categoryFormatter!)
-                    : ChartAxisValueFormatter.FindExplicitLabel(ChartCartesianOrientation.CategoryLabels(chart), series.Points[point * stride].X) ?? "Item " + Number(point + 1);
+                var label = numericRadial ? axisLabels!.Format(chart.Options.XAxis, series.RenderPoints[point].X, categoryFormatter!)
+                    : ChartAxisValueFormatter.FindExplicitLabel(ChartCartesianOrientation.CategoryLabels(chart), series.RenderPoints[point * stride].X) ?? "Item " + Number(point + 1);
                 var pattern = point < series.PointFillPatterns.Count && series.PointFillPatterns[point].HasValue ? series.PointFillPatterns[point]!.Value : series.FillPattern;
                 var color = PointColor(series, 0, point, colors);
                 if (series.Kind == ChartSeriesKind.Candlestick || series.Kind == ChartSeriesKind.Ohlc)
-                    color = FinancialColor(series, 0, point, series.Points[point * stride + 3].Y >= series.Points[point * stride].Y, colors);
+                    color = FinancialColor(series, 0, point, series.RenderPoints[point * stride + 3].Y >= series.RenderPoints[point * stride].Y, colors);
                 var paint = VisualChartPaint.Series(series, color, point);
                 if (colorScales[0] is ChartSeriesColorSurface surface) (color, paint) = surface.Paint(series, 0, point, colors);
                 entries.Add(new VisualLegendEntry(label, color, PointId(0, point), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
@@ -117,7 +117,7 @@ internal static partial class VisualCartesianCompiler {
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
-        if (xViewport != null && chart.Series.Any(series => series.Points.Any(point => !ChartMath.IsFinite(map.X(point.X)))))
+        if (xViewport != null && chart.Series.Any(series => series.RenderPoints.Any(point => !ChartMath.IsFinite(map.X(point.X)))))
             throw new ArgumentOutOfRangeException("viewport", "The X viewport cannot project the source coordinates into finite logical units.");
         var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);
         DrawPlotRegionFills(builder, plotRegions, colors);
@@ -191,14 +191,14 @@ internal static partial class VisualCartesianCompiler {
             throw new NotSupportedException("Horizontal line charts require a linear or time category axis.");
         foreach (var series in chart.Series) {
             if (!Supports(series.Kind)) throw Unsupported("series kind " + series.Kind);
-            if (series.Points.Count % ObservationStride(series.Kind) != 0)
+            if (series.RenderPoints.Count % ObservationStride(series.Kind) != 0)
                 throw new InvalidOperationException(series.Kind + " requires complete observation tuples.");
-            if ((series.Kind == ChartSeriesKind.Slope || series.Kind == ChartSeriesKind.TrendLine) && series.Points.Count != 2)
+            if ((series.Kind == ChartSeriesKind.Slope || series.Kind == ChartSeriesKind.TrendLine) && series.RenderPoints.Count != 2)
                 throw new InvalidOperationException(series.Kind + " requires exactly two endpoints.");
             if (series.Kind == ChartSeriesKind.Waterfall && chart.Series.Count != 1)
                 throw new NotSupportedException("A waterfall requires a single cumulative series.");
             var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-            if (series.Kind == ChartSeriesKind.StackedArea && axis.Scale == ChartScaleKind.Logarithmic && series.Points.Any(point => point.Y <= 0))
+            if (series.Kind == ChartSeriesKind.StackedArea && axis.Scale == ChartScaleKind.Logarithmic && series.RenderPoints.Any(point => point.Y <= 0))
                 throw new InvalidOperationException("Logarithmic stacked areas require positive values.");
         }
     }
@@ -218,8 +218,8 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-fill-point-start"] = Number(start), ["data-cfx-fill-point-count"] = Number(count)
         });
 
-    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null) {
-        var point = series.Points[pointIndex];
+    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null, bool visible = true) {
+        var point = series.RenderPoints[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
         var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + ChartNumericFormatter.FormatCoordinate(point.X) + ", " + ChartNumericFormatter.FormatCoordinate(point.Y) + ")";
         if (series.HistogramBinLayout != null) label = HistogramPointDescription(series, pointIndex, resolvedLabel.DisplayedText);
@@ -234,6 +234,8 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         };
+        // Retained off-window facts must not acquire browser hit areas. Marker-free in-window points remain targets.
+        if (!visible) metadata["data-cfx-visible"] = "false";
         if (colorSurface != null) label = colorSurface.AddFacts(metadata, pointIndex, label);
         metadata["aria-label"] = label;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));

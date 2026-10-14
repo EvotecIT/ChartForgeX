@@ -13,6 +13,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidCaptionOwnerClosureTests {
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(80, 40, false)]
     [InlineData(40, 108, false)]
@@ -71,13 +72,14 @@ public sealed class MermaidCaptionOwnerClosureTests {
         Assert.Equal(MermaidDiagnosticCodes.InvalidConfiguration, Assert.Single(rendered.Diagnostics).Code);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, 320)]
     [InlineData(false, true, 960)]
     [InlineData(true, false, 320)]
     [InlineData(true, true, 960)]
     public async Task MaximumFontKeepsLabelFreeEndpointMarkersInsideContent(bool graphite, bool branches, int width) {
-        var theme = ChartTheme.Light(); theme.FontFamily = "Arial"; theme.DataLabelFontSize = 256; theme.UseGraphiteLayout = graphite;
+        var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var block = GitGraphBlock.Create().WithSize(width, 460).WithTheme(theme).WithCard(false).WithCommitLabels(false)
             .AddBranch("main").AddCommit("base", "main")
             .AddCommit("pick", "main", new[] { "base" }, GitGraphCommitType.CherryPick, sourceCommitId: "base");
@@ -94,6 +96,7 @@ public sealed class MermaidCaptionOwnerClosureTests {
         await Observe(svg, png, width, 460, "git-label-free-" + graphite + "-" + branches + "-" + width, false);
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false, false, 320)]
     [InlineData(false, true, 320)]

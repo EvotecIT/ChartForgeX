@@ -99,7 +99,7 @@ public sealed class ChartMarkStyleParityTests {
         var slice = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "pie-slice");
         var cx = slice.Cx;
         var cy = slice.Cy;
-        var color = chart.Options.Theme.Palette[0];
+        var color = chart.Options.Theme.Resolve(chart.Options.ThemeMode).Palette[0];
         Assert.Equal(color, slice.Fill);
         var image = chart.ToRgbaImage();
         var reference = SvgRasterizer.Rasterize(chart.ToSvg(), image.Width, image.Height).Image;

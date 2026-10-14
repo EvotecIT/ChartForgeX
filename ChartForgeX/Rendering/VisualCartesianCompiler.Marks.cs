@@ -14,10 +14,10 @@ internal static partial class VisualCartesianCompiler {
         ChartXViewport? xViewport = null) {
         var series = chart.Series[index];
         var horizontal = ChartCartesianOrientation.IsHorizontalLine(chart, series);
-        var points = new List<ChartPoint>(series.Points.Count);
-        var lower = new List<ChartPoint>(series.Points.Count);
-        for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
-            var point = series.Points[pointIndex];
+        var points = new List<ChartPoint>(series.RenderPoints.Count);
+        var lower = new List<ChartPoint>(series.RenderPoints.Count);
+        for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
+            var point = series.RenderPoints[pointIndex];
             var stack = stacks.Point(index, pointIndex);
             points.Add(horizontal ? new ChartPoint(map.X(point.Y), map.Y(point.X), point.BreakBefore)
                 : new ChartPoint(map.X(point.X), map.Y(stack.End), point.BreakBefore));
@@ -65,10 +65,11 @@ internal static partial class VisualCartesianCompiler {
             }
         }
         var radius = ResolveMarkerRadius(series, context);
+        var quantitativeOutline = VisualMarkerScene.QuantitativeOutline(series, colors);
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
-            var sourceX = series.Points[pointIndex].X;
+            var sourceX = series.RenderPoints[pointIndex].X;
             var insideSourceX = xViewport == null || sourceX >= xViewport.Minimum && sourceX <= xViewport.Maximum;
             var bounds = VisualMarkerScene.Bounds(point.X, point.Y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
@@ -78,14 +79,15 @@ internal static partial class VisualCartesianCompiler {
             var pointColor = PointColor(series, index, pointIndex, colors);
             var pointPaint = VisualChartPaint.Series(series, pointColor, pointIndex);
             if (colorSurface != null) (pointColor, pointPaint) = colorSurface.Paint(series, index, pointIndex, colors);
-            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null, colorSurface)) {
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null, colorSurface, visible: insideSourceX)) {
                 if (visible) {
                     var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                         ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
                     VisualMarkerScene.Draw(builder, series, pointIndex, point.X, point.Y, radius, pointColor,
                         pointPaint,
                         series.Kind == ChartSeriesKind.Scatter && !string.IsNullOrWhiteSpace(series.SemanticRole) ? series.SemanticRole! : "marker",
-                        pattern: pattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "marker-pattern");
+                        pattern: pattern, backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "marker-pattern",
+                        quantitativeOutline: quantitativeOutline);
                 }
             }
             if (visible && radius > 0) obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
@@ -94,7 +96,7 @@ internal static partial class VisualCartesianCompiler {
             var fill = colorSurface?.Scale != null ? VisualMarkerScene.ResolveFill(series, pointIndex, pointColor, pointPaint) : ((ChartColor Color, SvgPaint Paint)?)null;
             AddLabel(chart, context, series, index, pointIndex, point, bounds, resolvedLabel, labels,
                 calloutMetrics: series.SemanticRole == "point-callout" ? builder.MeasureText(resolvedLabel.DisplayedText, DisplayedStyle(resolvedLabel.Style)) : null,
-                barDirection: horizontal ? BarValueDirection(chart.Options.XAxis, series.Points[pointIndex].Y) : (double?)null,
+                barDirection: horizontal ? BarValueDirection(chart.Options.XAxis, series.RenderPoints[pointIndex].Y) : (double?)null,
                 horizontal: horizontal, markFill: fill?.Color, markFillPaint: fill?.Paint);
         }
     }
@@ -106,8 +108,8 @@ internal static partial class VisualCartesianCompiler {
         var width = layout.Width;
         var offset = layout.Offset;
         var labelStyle = SeriesLabelStyle(chart, context, series, colors);
-        for (var pointIndex = 0; pointIndex < series.Points.Count; pointIndex++) {
-            var point = series.Points[pointIndex];
+        for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) {
+            var point = series.RenderPoints[pointIndex];
             var stack = stacks.Point(index, pointIndex);
             var y = map.Y(stack.End);
             var baseY = stacks.IsStacked(index) || series.IsHistogramDensity ? map.YOrBaseline(stack.Base) : map.YBaseline();
@@ -136,7 +138,7 @@ internal static partial class VisualCartesianCompiler {
             && (chart.Series[i].HistogramBinLayout == null || chart.Series[i].HistogramBinLayout!.Minimum == chart.Series[i].HistogramBinLayout!.Maximum)).ToArray();
         var slot = stacks.Slot(barIndices, index);
         var sampleSlots = chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0;
-        var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].Points.Select((point, pointIndex) => map.X(coordinates.Resolve(i, pointIndex).Value))),
+        var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].RenderPoints.Select((point, pointIndex) => map.X(coordinates.Resolve(i, pointIndex).Value))),
             plot.Width, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false, minimumThickness: sampleSlots > 0 ? 0 : .1, sampleSlots: sampleSlots);
         return (layout.Thickness, layout.Offset);
     }
@@ -148,7 +150,7 @@ internal static partial class VisualCartesianCompiler {
         var mode = chart.Options.LineMarkerMode ?? ChartLineMarkerMode.Last;
         if (mode == ChartLineMarkerMode.None) return false;
         if (mode == ChartLineMarkerMode.All) return true;
-        if (mode == ChartLineMarkerMode.Last) return pointIndex == series.Points.Count - 1;
+        if (mode == ChartLineMarkerMode.Last) return pointIndex == series.RenderPoints.Count - 1;
         return false;
     }
 
@@ -158,7 +160,7 @@ internal static partial class VisualCartesianCompiler {
         }));
 
     private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle) {
-        var value = series.Points[pointIndex].Y;
+        var value = series.RenderPoints[pointIndex].Y;
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
             ? series.PointLabels[pointIndex]! : series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
                 ? chart.Options.Labels.NoData : ChartNumericFormatter.FormatValue(chart.Options, value);
@@ -182,7 +184,7 @@ internal static partial class VisualCartesianCompiler {
         if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
         if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue &&
             (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) return;
-        var value = observationValue ?? series.Points[pointIndex].Y;
+        var value = observationValue ?? series.RenderPoints[pointIndex].Y;
         var spacing = context.Theme.Spacing;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         var bar = series.Kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar or ChartSeriesKind.Waterfall;

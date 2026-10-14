@@ -6,7 +6,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(HtmlChartResponsiveLayout.Fit)]
     [InlineData(HtmlChartResponsiveLayout.Readable)]
     public async Task AVisibleGuideCannotExpandTheScrollExtentWhenItsHostShrinks(HtmlChartResponsiveLayout layout) {

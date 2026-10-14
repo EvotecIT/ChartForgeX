@@ -14,7 +14,7 @@ namespace ChartForgeX.Tests;
 public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     private const string Root = ".cfx-interactive-chart";
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Fit, 650, 0.8, false)]
     [InlineData(true, HtmlChartResponsiveLayout.Fit, 650, 0.8, true)]
     [InlineData(false, HtmlChartResponsiveLayout.Readable, 340, 1, false)]
@@ -50,7 +50,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Fit, 650, 0.8, false)]
     [InlineData(true, HtmlChartResponsiveLayout.Readable, 340, 0.8, true)]
     [InlineData(false, HtmlChartResponsiveLayout.Readable, 340, 1, false)]
@@ -88,7 +88,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, HtmlChartResponsiveLayout.Fit, 650, 0.8, false)]
     [InlineData(true, HtmlChartResponsiveLayout.Readable, 340, 0.8, true)]
     public async Task PanMovesNativeGeometryByTheScreenPointerDelta(bool graphite, HtmlChartResponsiveLayout layout, int width, double scale, bool pageScroll) {
@@ -132,10 +132,9 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
 
     private static Chart CoordinateChart(bool graphite) {
         var chart = Chart.Create().WithSize(596, 338).WithTitle("Native overlay coordinates")
-            .WithTheme(graphite ? ChartTheme.GraphiteLight() : ChartTheme.Light())
+            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report())
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
-            .AddScatter("Reading", new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) });
-        chart.Series[0].WithInteractionKey("reading-source");
+            .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), "Reading", new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) }));
         return chart;
     }
 

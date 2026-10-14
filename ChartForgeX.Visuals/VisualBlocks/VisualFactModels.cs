@@ -142,11 +142,12 @@ public sealed class ChartTable : FactualVisualBlock<ChartTable> {
         return this;
     }
 
-    /// <summary>Configures one existing row.</summary>
+    /// <summary>Installs an independent row snapshot after successful configuration.</summary>
+    /// <remarks>Callback exceptions preserve the row. Previous rows and retained callback values remain independent of the installed cells and microvisuals.</remarks>
     public ChartTable ConfigureRow(int rowIndex, Action<ChartTableRow> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (rowIndex < 0 || rowIndex >= _rows.Count) throw new ArgumentOutOfRangeException(nameof(rowIndex), rowIndex, "Row index must reference an existing table row.");
-        configure(_rows[rowIndex]);
+        _rows[rowIndex] = ChartOptionConfiguration.Configure(_rows[rowIndex], configure, row => row.Clone());
         return this;
     }
 
@@ -215,6 +216,12 @@ public sealed class ChartTableRow {
 
     /// <summary>Gets or sets an optional row foreground.</summary>
     public ChartColor? Foreground { get; set; }
+
+    internal ChartTableRow Clone() {
+        var copy = new ChartTableRow { Background = Background, Foreground = Foreground };
+        foreach (var cell in Cells) copy.Cells.Add(cell.Clone());
+        return copy;
+    }
 }
 
 /// <summary>
@@ -485,8 +492,16 @@ public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
     /// <summary>Gets or sets whether rows without a fixed panel size use their natural item heights.</summary>
     public bool AdaptiveRowHeights { get => _adaptiveRowHeights; set => _adaptiveRowHeights = value; }
 
-    /// <summary>Gets or sets the optional grid theme.</summary>
-    public ChartTheme? Theme { get; set; }
+    private VisualTheme _theme = VisualTheme.Graphite();
+    private VisualThemeMode _themeMode;
+
+    /// <summary>Gets or sets the immutable theme shared by the grid's frame and headings.</summary>
+    public VisualTheme Theme { get => _theme; set => _theme = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets or sets the explicit light or dark appearance.</summary>
+    public VisualThemeMode ThemeMode { get => _themeMode; set { VisualBlockGuards.EnumDefined(value, nameof(value)); _themeMode = value; } }
+
+    internal ResolvedVisualTheme ResolvedTheme => Theme.ResolvePresentation(ThemeMode);
 
 
     /// <summary>Gets grid items.</summary>
@@ -532,7 +547,10 @@ public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
     public VisualGrid WithPadding(int padding) { Padding = padding; return this; }
 
     /// <summary>Sets the grid theme.</summary>
-    public VisualGrid WithTheme(ChartTheme theme) { Theme = theme ?? throw new ArgumentNullException(nameof(theme)); return this; }
+    public VisualGrid WithTheme(VisualTheme theme, VisualThemeMode? mode = null) { Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this; }
+
+    /// <summary>Chooses the light or dark appearance without replacing the shared theme.</summary>
+    public VisualGrid WithThemeMode(VisualThemeMode mode) { ThemeMode = mode; return this; }
 
     /// <summary>Sets a fixed panel size.</summary>
     public VisualGrid WithPanelSize(int width, int height) { PanelSize = new ChartSize(width, height); return this; }

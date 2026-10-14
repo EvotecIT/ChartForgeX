@@ -29,7 +29,7 @@ public sealed class LabelPlacementGalleryTests {
         Assert.NotEmpty(grid.ToPng());
         var topology = LabelPlacementExamples.Topology(dark);
         var options = new TopologyRenderOptions { IncludeLegend = false };
-        var report = ChartLabelScene.Inspect(topology.ToSvg(options), new FontSpec { Family = topology.Theme!.FontFamily });
+        var report = ChartLabelScene.Inspect(topology.ToSvg(options), new FontSpec { Family = topology.Theme.Typography.Family });
         Assert.True(report.Visible > 2);
         Assert.Equal(0, report.LabelLabel); Assert.Equal(0, report.LabelMark);
         Assert.True(report.Contained >= topology.Nodes.Count * 2);

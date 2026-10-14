@@ -20,7 +20,7 @@ public sealed class RangeBarLayoutTests {
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.Options.RangeBar.Orientation = ChartOrientation.Vertical;
         chart.ConfigureLabels(labels => { labels.Category = "Changed category"; labels.Start = "Changed start"; labels.End = "Changed end"; });
-        chart.Series.Clear();
+        chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point"), group => {
             Assert.Equal("Kategoria", group.Metadata["data-cfx-label-category"]);
@@ -61,8 +61,8 @@ public sealed class RangeBarLayoutTests {
             Assert.Equal(starts[item].ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-start"]);
             Assert.Equal(ends[item].ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-end"]);
             Assert.Equal(coordinates[item].ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-x"]);
-            Assert.Equal("2", groups[item].Metadata["data-cfx-source-count"]);
-            Assert.Equal((item < 3 ? item * 2 : (item - 3) * 2).ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-source-0-index"]);
+            Assert.Equal("1", groups[item].Metadata["data-cfx-source-count"]);
+            Assert.Equal((item < 3 ? item : item - 3).ToString(CultureInfo.InvariantCulture), groups[item].Metadata["data-cfx-source-point"]);
             Assert.False(groups[item].Metadata.ContainsKey("data-cfx-base"));
         }
         Assert.Equal(Category(3), (Center(marks[0].Bounds) + Center(marks[3].Bounds)) / 2, 8);
@@ -88,7 +88,7 @@ public sealed class RangeBarLayoutTests {
         range = ChartRange.FromChart(chart);
         Assert.Equal(10, range.MinX); Assert.Equal(100, range.MaxX);
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
-        chart.Series[0].Points[0] = new ChartPoint(2, 0);
+        chart.Series[0].UpdateInterval(0, new ChartInterval(2, 0, chart.Series[0].Intervals[0].End));
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(new VisualRenderContext()));
     }
 
@@ -101,7 +101,7 @@ public sealed class RangeBarLayoutTests {
         chart.Series[1].YAxis = ChartAxisSide.Primary;
         chart.AddHorizontalBar("Scalar", new[] { new ChartPoint(1, 3) });
         Assert.Contains("only range-bar", Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext())).Message);
-        chart.Series.RemoveAt(2);
+        chart.RemoveSeries(chart.Series[2]);
         chart.ConfigureRangeBar(options => options.Orientation = ChartOrientation.Vertical);
         chart.AddLine("Target", new[] { new ChartPoint(1, 5), new ChartPoint(3, 6) });
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);

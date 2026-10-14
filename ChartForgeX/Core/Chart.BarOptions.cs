@@ -31,9 +31,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart ConfigureBarVisualStyle(Action<ChartBarVisualStyle> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
-        var style = Options.BarVisualStyle.Clone();
-        configure(style);
-        Options.BarVisualStyle = style;
+        Options.ConfigureBarVisualStyle(configure);
         return this;
     }
 

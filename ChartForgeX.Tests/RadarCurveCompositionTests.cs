@@ -58,14 +58,14 @@ public sealed class RadarCurveCompositionTests {
         }
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(320, false)]
     [InlineData(960, true)]
     public async Task MixedCurvesRemainVisibleInCompactAndWideStaticHosts(int width, bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = V2GalleryModels.CreateMixedRadial(curveTension: 1).WithSize(width < 400 ? 360 : 800, width < 400 ? 360 : 440)
             .WithHeader(true).WithTitle("Regional counts and targets")
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight());
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync(chart.ToHtmlPage(), width, 620);
         Assert.Equal(4, await session.Page.Locator("[data-cfx-role=radial-column]").CountAsync());
         var outlines = await session.Page.Locator("[data-cfx-role=radar-outline]").EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.getAttribute('d'))");

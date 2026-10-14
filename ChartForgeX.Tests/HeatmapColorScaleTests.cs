@@ -80,7 +80,8 @@ public sealed class HeatmapColorScaleTests {
         Assert.NotEqual(originalSvg, chart.ToSvg());
         chart.WithHeatmapColorScale(null);
         Assert.Equal(originalSvg, chart.ToSvg()); Assert.Equal(originalPng, chart.ToPng());
-        chart.Series[0].Points[0] = new ChartPoint(chart.Series[0].Points[0].X, 99);
+        if (kind == ChartSeriesKind.CalendarHeatmap) chart.Series[0].UpdateCalendarItem(0, new ChartCalendarHeatmapItem(chart.Series[0].CalendarItems[0].Date, 99));
+        else chart.Series[0].Points[0] = new ChartPoint(chart.Series[0].Points[0].X, 99);
         chart.Series[0].WithPointColor(0, ChartColor.Black);
         chart.ConfigureLabels(labels => labels.NoData = "Changed");
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
@@ -117,8 +118,9 @@ public sealed class HeatmapColorScaleTests {
         var line = Chart.Create().AddLine("Unrelated", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }).WithHeatmapColorScale(scale);
         Assert.Throws<InvalidOperationException>(() => line.Prepare(VisualExportRequest.ForChart(line).Context));
         var calendar = Create(ChartSeriesKind.CalendarHeatmap, 1, 2).WithHeatmapColorScale(scale);
-        calendar.Series[0].Points[0] = new ChartPoint(calendar.Series[0].Points[0].X, -1);
-        Assert.Throws<InvalidOperationException>(() => calendar.ToSvg());
+        var calendarBefore = calendar.ToSvg();
+        Assert.Throws<ArgumentOutOfRangeException>(() => calendar.Series[0].UpdateCalendarItem(0, new ChartCalendarHeatmapItem(calendar.Series[0].CalendarItems[0].Date, -1)));
+        Assert.Equal(calendarBefore, calendar.ToSvg());
     }
 
     internal static Chart Create(ChartSeriesKind kind, params double[] values) {

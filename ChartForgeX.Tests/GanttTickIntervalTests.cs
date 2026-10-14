@@ -31,6 +31,7 @@ public sealed class GanttTickIntervalTests {
 
     private static string Fixture(string extension) => Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "gantt-tick-interval." + extension);
 
+    [Trait("Category", "Browser")]
     [Fact]
     public async Task MermaidMillisecondTicksReachSvgPngAndStaticBrowserLabels() {
         var document = new MermaidParser().ParseGantt("gantt\ntickInterval 100millisecond\nTask :2026-01-01, 300ms").Document!;
@@ -142,6 +143,7 @@ public sealed class GanttTickIntervalTests {
             ChartTimeScale.GenerateFixed(new ChartAxis { TimeZone = offsetZone }, start, start + .000001, interval));
     }
 
+    [Trait("Category", "Browser")]
     [Fact]
     public async Task NativeMillisecondLabelsPreservePrecisionAndExplicitFormattingWins() {
         var start = new DateTime(2026, 1, 1);
@@ -195,7 +197,7 @@ public sealed class GanttTickIntervalTests {
         Assert.Equal(Enumerable.Range(hour, 5), ticks.Select(value => DateTime.FromOADate(value).Hour));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 960)]
     [InlineData(true, 320)]
     public async Task WeeklyTicksStayReadableInNativeAndStaticBrowserOutput(bool dark, int width) {
@@ -203,7 +205,7 @@ public sealed class GanttTickIntervalTests {
         var document = new MermaidParser().ParseGantt(File.ReadAllText(Fixture("mmd"))).Document!;
         document.AxisFormat = "%m/%d";
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithLegend(false);
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(false);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);
         Assert.Equal(new[] { "01/13", "01/27", "02/10", "02/24" }, await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync());
         Assert.Equal(0, await session.Page.Locator("script").CountAsync());

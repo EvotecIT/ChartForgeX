@@ -9,7 +9,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(360, false, 0)]
     [InlineData(360, true, 0)]
     [InlineData(800, false, 0)]
@@ -23,7 +23,6 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
         var chart = SunburstSecondaryLabelTests.Gallery(width, dark, radius).WithHeader(true)
             .WithTitle("Allocation by team").WithSubtitle("Primary captions and authored secondary text");
         chart.ConfigureLabels(labels => { labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
-        chart.Series[0].WithInteractionKey("allocation-source");
         var descriptions = new Dictionary<string, string> {
             ["all"] = "Allocation", ["engineering"] = "Delivery <b>& teams", ["operations-support"] = "Shared service", ["reserve"] = "No allocation <&>"
         };
@@ -86,7 +85,7 @@ public sealed class InteractiveSunburstSecondaryLabelBrowserTests {
         await Capture(page, prepared, html, width, dark, radius, "zero", errors, session.ConsoleLog.Select(entry => entry.Type + ": " + entry.Text));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task LongSecondaryTextWrapsWithinCompactPointerAndKeyboardReadouts(bool combiningCharacters) {

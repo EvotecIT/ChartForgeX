@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 
 namespace ChartForgeX.Terminal;
@@ -32,14 +33,15 @@ public sealed class TerminalTab {
         TerminalDialect dialect,
         string workingDirectory,
         string customPrompt,
-        TerminalTheme theme,
-        TerminalTabIcon icon) {
+        VisualTheme theme,
+        TerminalTabIcon icon, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
         Id = id;
         Title = title;
         Dialect = dialect;
         WorkingDirectory = workingDirectory;
         CustomPrompt = customPrompt;
-        Theme = theme;
+        Theme = theme ?? throw new System.ArgumentNullException(nameof(theme));
+        ThemeMode = themeMode; Style = style?.Clone() ?? new TerminalStyleOptions();
         Icon = icon;
     }
 
@@ -59,7 +61,13 @@ public sealed class TerminalTab {
     public string CustomPrompt { get; internal set; }
 
     /// <summary>Gets the independent color palette used by this tab.</summary>
-    public TerminalTheme Theme { get; internal set; }
+    public VisualTheme Theme { get; internal set; }
+    private VisualThemeMode _themeMode;
+    /// <summary>Gets the explicit appearance of this tab.</summary>
+    public VisualThemeMode ThemeMode { get => _themeMode; internal set { if (!System.Enum.IsDefined(typeof(VisualThemeMode), value)) throw new System.ArgumentOutOfRangeException(nameof(value)); _themeMode = value; } }
+    /// <summary>Gets local title-bar and cursor treatments.</summary>
+    public TerminalStyleOptions Style { get; internal set; }
+    internal ResolvedTerminalStyle ResolvedStyle => TerminalThemeProjection.Resolve(Theme, ThemeMode, Style);
 
     /// <summary>Gets the semantic icon shown in tab-aware window chrome.</summary>
     public TerminalTabIcon Icon { get; internal set; }

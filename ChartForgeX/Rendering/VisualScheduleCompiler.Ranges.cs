@@ -14,18 +14,22 @@ internal static partial class VisualScheduleCompiler {
         var row = 0;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
-            if (series.Points.Count < (gantt ? 3 : 1)) throw new InvalidOperationException("Schedule series is missing its range or task metadata.");
-            var start = series.Points[0].X; var end = series.Points[0].Y;
+            if (gantt && series.GanttItems.Count == 0) continue;
+            if (!gantt && series.RenderPoints.Count == 0) throw new InvalidOperationException("Schedule series is missing its range.");
+            var task = gantt ? series.GanttItems[0] : default;
+            var start = gantt ? task.Start : series.RenderPoints[0].X;
+            var end = gantt ? task.End : series.RenderPoints[0].Y;
             if (!ChartMath.IsFinite(start) || !ChartMath.IsFinite(end) || end < start) throw new InvalidOperationException("Schedule endpoints must be finite and ordered.");
-            var progress = gantt ? series.Points[1].X : 0;
-            var dependency = gantt ? series.Points[1].Y : -1;
-            if (!ChartMath.IsFinite(progress) || progress < 0 || progress > 1 || !ChartMath.IsFinite(dependency) || dependency < -1 || dependency >= index || dependency != Math.Truncate(dependency))
-                throw new InvalidOperationException("Gantt progress must be between zero and one, and dependencies must reference an earlier task.");
+            var progress = gantt ? task.Progress : 0;
+            if (!ChartMath.IsFinite(progress) || progress < 0 || progress > 1)
+                throw new InvalidOperationException("Gantt progress must be between zero and one.");
             var marker = IsMarker(series);
-            items.Add(new RangeItem(index, marker ? -1 : row++, start, end, progress, gantt && series.Points[2].X >= .5, marker));
+            items.Add(new RangeItem(index, marker ? -1 : row++, start, end, progress, gantt && task.IsMilestone, marker));
         }
-        var links = gantt ? chart.ResolveGanttDependencies() : new List<ChartGanttDependency>();
-        var renderedLinks = links.Where(link => !items[link.PredecessorIndex].Marker && !items[link.SuccessorIndex].Marker).ToArray();
+        var bySeries = items.ToDictionary(item => item.Index);
+        var links = gantt ? chart.ResolveGanttDependencies() : new List<ChartGanttOrdinalDependency>();
+        var renderedLinks = links.Where(link => bySeries.TryGetValue(link.PredecessorIndex, out var predecessor)
+            && bySeries.TryGetValue(link.SuccessorIndex, out var successor) && !predecessor.Marker && !successor.Marker).ToArray();
         var predecessors = links.GroupBy(link => link.SuccessorIndex).ToDictionary(group => group.Key, group => group.Select(link => link.PredecessorIndex).ToArray());
         var axis = chart.Options.XAxis; var now = gantt ? chart.Options.GanttToday : null;
         var min = items.Min(item => item.Start); var max = items.Max(item => item.End);
@@ -58,7 +62,7 @@ internal static partial class VisualScheduleCompiler {
         var instantExtent = items.Any(item => !item.Milestone && item.Start == item.End) ? 1 : 0;
         var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), markerAtMax ? context.Theme.AxisStrokeWidth / 2 : 0);
         if (renderedLinks.Length > 0) maximumExtent = Math.Max(maximumExtent,
-            (renderedLinks.Any(link => items[link.SuccessorIndex].Milestone) ? milestoneExtent : 0) + Math.Min(5, height / 3) + context.Theme.AxisStrokeWidth / 2);
+            (renderedLinks.Any(link => bySeries[link.SuccessorIndex].Milestone) ? milestoneExtent : 0) + Math.Min(5, height / 3) + context.Theme.AxisStrokeWidth / 2);
         var projection = GuideProjection(chart, context, plot, min, max, minimumExtent, maximumExtent, now);
         double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
@@ -82,7 +86,8 @@ internal static partial class VisualScheduleCompiler {
                 var completion = (item.Progress * 100).ToString("0.#", chart.Options.ValueFormat.Culture) + "%";
                 var summary = series.Name + ": " + Format(item.Start) + " – " + Format(item.End) + ", " + (gantt ? completion : duration);
                 var metadata = new Dictionary<string, string> {
-                    ["data-cfx-series"] = item.Index.ToString(), ["data-cfx-point"] = "0", ["data-cfx-start"] = VisualStateSceneTools.Number(item.Start),
+                    ["data-cfx-series"] = item.Index.ToString(), ["data-cfx-point"] = "0", ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
+                    ["data-cfx-start"] = VisualStateSceneTools.Number(item.Start),
                     ["data-cfx-end"] = VisualStateSceneTools.Number(item.End), ["data-cfx-duration"] = duration,
                     ["data-cfx-progress"] = VisualStateSceneTools.Number(item.Progress), ["data-cfx-milestone"] = item.Milestone ? "true" : "false",
                     ["data-cfx-series-key"] = series.InteractionIdentityKey
@@ -128,7 +133,7 @@ internal static partial class VisualScheduleCompiler {
             Markers(chart, context, builder, plot, items, Project, Format, min, max, colors, obstacles, predecessors);
             if (gantt && now.HasValue && now.Value >= min && now.Value <= max) Now(chart, context, builder, layout, Project(now.Value), now.Value);
             // Links are foreground annotations: successor fills must not cover their arrowheads.
-            if (gantt) Dependencies(chart, context, builder, plot, items, renderedLinks, Project, slot, height, min, max);
+            if (gantt) Dependencies(chart, context, builder, plot, bySeries, renderedLinks, Project, slot, height, min, max);
         }
     }
 

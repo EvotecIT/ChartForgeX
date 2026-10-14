@@ -1,3 +1,4 @@
+using System;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Mermaid;
@@ -79,6 +80,21 @@ internal static class MermaidFlowchartOperators {
         var target = Marker(edgeOperator, false) != TopologyMarkerKind.None;
         return source && target ? VisualLinkDirection.Bidirectional : source ? VisualLinkDirection.Backward
             : target ? VisualLinkDirection.Forward : VisualLinkDirection.None;
+    }
+
+    /// <summary>Maps extra link strokes to native rank spacing, excluding inline caption punctuation.</summary>
+    public static int MinimumRankSpan(string edgeOperator) {
+        var token = edgeOperator.Trim();
+        if (TryReadInlineLabel(token, 0, out _, out var labelEnd, out var edgeEnd) && edgeEnd == token.Length)
+            token = token.Substring(labelEnd);
+        else if (ReadEnd(token, 0) != token.Length) return 1;
+
+        var dots = 0;
+        foreach (var character in token) if (character == '.') dots++;
+        if (dots > 0) return dots;
+        var pairedMarkers = token.Length > 1 && ((token[0] == '<' && token[token.Length - 1] == '>')
+            || ((token[0] == 'o' || token[0] == 'x') && token[0] == token[token.Length - 1]));
+        return Math.Max(1, token.Length - 2 - (pairedMarkers ? 1 : 0));
     }
 
     public static TopologyMarkerKind Marker(string edgeOperator, bool source) {

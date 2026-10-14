@@ -1,0 +1,44 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = SimpleSequenceRecipe.Create("feasibility", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(640, 400)), theme, mode,
+    new VisualFrame("Client and server exchange", "Product-neutral diagram semantics", showLegend: false, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Sequence).ToHtmlPage());
+
+/// <summary>Creates a two-participant exchange with a multiline request and dashed return.</summary>
+public static class SimpleSequenceRecipe {
+    /// <summary>Creates the simple client and server sequence model.</summary>
+    /// <param name="variant">Use wide or feasibility for the simple sequence.</param>
+    /// <param name="mode">The rendering mode; diagram colors are resolved when the model is prepared.</param>
+    public static SequenceArtifact Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "feasibility"))
+            throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or feasibility.");
+
+        return SequenceArtifact.Create("session").WithSize(640, 400)
+            .AddParticipant("client", "Client")
+            .AddParticipant("server", "Server")
+            .AddMessage("client", "server", "Request\npayload")
+            .AddMessage("server", "client", "Response", SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return);
+    }
+}

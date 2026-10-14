@@ -11,7 +11,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class InteractiveChordBrowserTests {
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 360)]
     [InlineData(false, 800)]
@@ -19,9 +19,8 @@ public sealed class InteractiveChordBrowserTests {
     public async Task DirectedRepeatedParallelAndSelfFlowsKeepNativePointerAndKeyboardIdentity(bool dark, int width) {
         if (!Enabled) return;
         var chart = V2GalleryModels.Create(ChartSeriesKind.Chord, "options").WithSize(width, width < 500 ? 320 : 460)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithTitle("Directed transfers").WithLegend(true);
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("Directed transfers").WithLegend(true);
         chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
-        chart.Series[0].WithInteractionKey("transfer-source");
         var name = "chord-styled-" + width + "-" + (dark ? "dark" : "light");
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 460 : 600);
@@ -129,12 +128,12 @@ public sealed class InteractiveChordBrowserTests {
         if (!string.IsNullOrWhiteSpace(directory)) await File.WriteAllTextAsync(Path.Combine(directory, name + "-console.json"), JsonSerializer.Serialize(session.ConsoleLog));
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task AllZeroChordRetainsKeyboardFactsWithoutFilledGeometry(bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(360, 320).WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithTitle("No positive transfers")
+        var chart = Chart.Create().WithSize(360, 320).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("No positive transfers")
             .AddChord("Transfers", new[] { new ChartNode("first", "Support"), new ChartNode("second", "Support") }, new[] { new ChartFlowLink("none", "first", "second", 0) });
         var html = chart.ToInteractiveHtmlPage().Replace("<main ", "<button id=\"before-chart\">Before chart</button><main ", StringComparison.Ordinal);
         await using var session = await OpenAsync(html, 384, 460);
@@ -158,7 +157,7 @@ public sealed class InteractiveChordBrowserTests {
         await CaptureAsync(chart, page, "chord-zero-" + (dark ? "dark" : "light"), html); AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(0, "zero")]
     [InlineData(double.Epsilon, "precision-collapse")]
     public async Task SemanticOnlyChordFactsRespectHiddenLayoutAndMutedSeries(double value, string geometryStatus) {
@@ -215,7 +214,7 @@ public sealed class InteractiveChordBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false, 360)]
     [InlineData(true, 360)]
     [InlineData(false, 800)]
@@ -223,7 +222,7 @@ public sealed class InteractiveChordBrowserTests {
     public async Task HiddenNodeCaptionsPreserveVisibleRadiusAndKeyboardZeroFacts(bool dark, int width) {
         if (!Enabled) return;
         Chart Frame(Chart chart) => chart.WithSize(width, width < 500 ? 320 : 460)
-            .WithTheme(dark ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight()).WithTitle("Directed transfers");
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("Directed transfers");
         var baseline = Frame(PreparedChordLabelReservationTests.ZeroCaptionChart(false, false));
         var chart = Frame(PreparedChordLabelReservationTests.ZeroCaptionChart(true, true));
         chart.Series[0].WithPointLabel(2, new string('W', 180));

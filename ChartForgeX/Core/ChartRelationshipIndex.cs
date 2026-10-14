@@ -69,10 +69,10 @@ internal sealed partial class ChartRelationshipIndex {
     internal static ChartRelationshipIndex Chord(IEnumerable<ChartNode> nodes, IEnumerable<ChartFlowLink> links) => Flow(nodes, links, chord: true);
 
     private static ChartRelationshipIndex Flow(IEnumerable<ChartNode> nodes, IEnumerable<ChartFlowLink> links, bool chord) {
-        var snapshot = SnapshotNodes(nodes, out var indexes, allowEmpty: chord);
+        var snapshot = SnapshotNodes(nodes, out var indexes, allowEmpty: true);
         if (links == null) throw new ArgumentNullException(nameof(links));
         var flows = links.ToArray();
-        if (!chord && flows.Length == 0) throw new ArgumentException("Sankey charts require at least one link.", nameof(links));
+        if (!chord && snapshot.Length > 0 && flows.Length == 0) throw new ArgumentException("Sankey charts require at least one link.", nameof(links));
         var sources = new int[flows.Length];
         var targets = new int[flows.Length];
         var incoming = new double[snapshot.Length];
@@ -108,10 +108,10 @@ internal sealed partial class ChartRelationshipIndex {
     }
 
     internal static ChartRelationshipIndex Hierarchy(IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links) {
-        var snapshot = SnapshotNodes(nodes, out var indexes);
+        var snapshot = SnapshotNodes(nodes, out var indexes, allowEmpty: true);
         if (links == null) throw new ArgumentNullException(nameof(links));
         var branches = links.ToArray();
-        if (branches.Length == 0) throw new ArgumentException("Hierarchy charts require at least one link.", nameof(links));
+        if (snapshot.Length > 0 && branches.Length == 0) throw new ArgumentException("Hierarchy charts require at least one link.", nameof(links));
         var sources = new int[branches.Length];
         var targets = new int[branches.Length];
         var children = new HashSet<string>(StringComparer.Ordinal);
@@ -151,6 +151,7 @@ internal sealed partial class ChartRelationshipIndex {
     }
 
     private static int[] TopologicalOrder(int count, int[] sources, int[] targets, bool hierarchy, out int root, out int[] depths, bool allowForest = false, string parameter = "links") {
+        if (count == 0) { root = -1; depths = Array.Empty<int>(); return Array.Empty<int>(); }
         var outgoing = ChildrenFor(count, sources, targets);
         var incoming = new int[count];
         for (var i = 0; i < targets.Length; i++) incoming[targets[i]]++;

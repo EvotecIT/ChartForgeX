@@ -147,7 +147,7 @@ public static class TopologyGraphExplorerExtensions {
             graphNode.Y = node.Y + node.Height / 2;
         }
 
-        var theme = chart.Theme ?? TopologyTheme.Light();
+        var theme = chart.ResolvedTheme;
         var accentColor = FirstText(node.Color, icon?.Color, theme.StatusColor(node.Status))!;
         var card = shape == GraphNodeShape.Box && display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill;
         graphNode.Style.BackgroundColor = card && string.IsNullOrWhiteSpace(node.BackgroundColor)
@@ -209,7 +209,7 @@ public static class TopologyGraphExplorerExtensions {
         };
         graphEdge.SourceArrow = sourceArrow;
         graphEdge.TargetArrow = targetArrow;
-        graphEdge.Style.Color = TopologyRenderPrimitives.EdgeColor(edge, chart.Theme ?? TopologyTheme.Light(), new TopologyRenderOptions());
+        graphEdge.Style.Color = TopologyRenderPrimitives.EdgeColor(edge, chart.ResolvedTheme, new TopologyRenderOptions());
         graphEdge.Style.Width = EdgeStyleWidth(edge);
         if (graphEdge.Dashed) graphEdge.Style.DashPattern = dashPattern;
         AddRoutePoints(graphEdge, chart, edge, topologyNodes, options, seededLayout);

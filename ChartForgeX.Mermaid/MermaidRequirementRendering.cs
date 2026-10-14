@@ -19,8 +19,8 @@ public static class MermaidRequirementRendering {
         var direction = ToLayoutDirection(document.Direction);
         var chart = TopologyChart.Create()
             .WithId(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-requirement" : options.Id!.Trim())
-            .WithTitle(string.IsNullOrWhiteSpace(options.Title) ? "Mermaid requirement diagram" : options.Title!)
-            .WithSubtitle(string.IsNullOrWhiteSpace(options.Subtitle) ? document.Header : options.Subtitle!)
+            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid requirement diagram"))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(TopologyLayoutMode.Layered, direction);
 

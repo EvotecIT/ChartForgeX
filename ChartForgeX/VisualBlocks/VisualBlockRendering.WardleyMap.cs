@@ -65,7 +65,7 @@ internal static partial class VisualBlockRendering {
 
     public static WardleyMapLayout BuildWardleyMapLayout(WardleyMapBlock map, ChartRect content, double y, double bottomPadding, double totalHeight) {
         var body = new ChartRect(content.X, y, content.Width, Math.Max(1, totalHeight - bottomPadding - y));
-        var annotationInset = map.Annotations.Count == 0 ? 16 : Math.Max(16, WardleyAnnotationRadius(map.Options.Theme) + 1);
+        var annotationInset = map.Annotations.Count == 0 ? 16 : Math.Max(16, WardleyAnnotationRadius(map.Options.ResolvedTheme) + 1);
         var stageLabelOffset = WardleyStageLabelOffset(map);
         var plot = new ChartRect(body.X + 56, body.Y + annotationInset, Math.Max(1, body.Width - 56 - annotationInset), Math.Max(1, body.Height - 36 - stageLabelOffset - annotationInset));
         var nodes = new List<WardleyNodePlacement>(map.Nodes.Count);
@@ -84,10 +84,10 @@ internal static partial class VisualBlockRendering {
 
     public static double ProjectWardleyY(ChartRect plot, double visibility) => plot.Y + (1 - Math.Max(0, Math.Min(1, visibility))) * plot.Height;
 
-    internal static double WardleyAnnotationRadius(ChartForgeX.Themes.ChartTheme theme) => Math.Min(24, BodyFontSize(theme, 10));
+    internal static double WardleyAnnotationRadius(ChartForgeX.Themes.ResolvedVisualTheme theme) => Math.Min(24, BodyFontSize(theme, 10));
 
     internal static double WardleyStageLabelOffset(WardleyMapBlock map) {
-        var radius = map.Annotations.Count == 0 ? 0 : WardleyAnnotationRadius(map.Options.Theme);
+        var radius = map.Annotations.Count == 0 ? 0 : WardleyAnnotationRadius(map.Options.ResolvedTheme);
         // Reserve the complete fitted stage line below the circle and its stroke at
         // every radius, including the boundary of the ordinary plot inset.
         return Math.Max(18, radius + WardleyStageLabelHeight + 1);

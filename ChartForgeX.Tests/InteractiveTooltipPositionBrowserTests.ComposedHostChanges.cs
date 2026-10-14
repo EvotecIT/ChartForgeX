@@ -19,7 +19,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             _ => "<script>" + File.ReadAllText(baseline) + "</script>", RegexOptions.Singleline);
     }
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task NestedAbsoluteWrapperPreservesFixedChartContainingBlock(bool contains) {
@@ -48,7 +48,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task NamedSlotReassignmentRebindsContainingBlockAndAncestorLifetime() {
         if (!Enabled) return;
         await using var session = await OpenAsync(ComposedHostRuntime(CssClipChart(true, true)), 950, 760);
@@ -80,7 +80,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [Fact]
+    [BrowserFact]
     public async Task SlottedAncestorOpacityControlsPinnedAndKeyboardAvailability() {
         if (!Enabled) return;
         await using var session = await OpenAsync(ComposedHostRuntime(CssClipChart(true, true)), 950, 760);
@@ -131,15 +131,14 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             containedOpacity:getComputedStyle(clipShadow.getElementById('slot-contained')).opacity,slotListeners:slotChangeListeners.size}}
         """);
 
-    [Theory]
+    [BrowserTheory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task NarrowOuterClipPreservesVisibleWideIntervalAndRevealsOffscreenInterval(bool partial) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(650, 338).WithHeader(false).WithLegend(false).WithTheme(ChartTheme.GraphiteDark())
+        var chart = Chart.Create().WithSize(650, 338).WithHeader(false).WithLegend(false).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 3).ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal)
-            .AddRangeBar("Window", new[] { new ChartInterval(1, 2, 5.5), new ChartInterval(2, 7, 9) });
-        chart.Series[0].WithInteractionKey("css-interval");
+            .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("css-interval"), "Window", new[] { new ChartInterval(1, 2, 5.5), new ChartInterval(2, 7, 9) }));
         var html = chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.Features = ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection;
@@ -192,7 +191,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         }
         """);
 
-    [Fact]
+    [BrowserFact]
     public async Task NativeVisualViewportResizeRepositionsAlreadyPinnedReadout() {
         if (!Enabled) return;
         await using var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
@@ -209,7 +208,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         var before = await CssClipFactsAsync(page);
         Assert.True(before.GetProperty("pinned").GetBoolean());
         await page.EvaluateAsync("()=>window.activeVisualResizes=0");
-        await cdp.SendAsync("Input.synthesizePinchGesture", new Dictionary<string, object> { ["x"] = 100, ["y"] = 100, ["scaleFactor"] = 2, ["relativeSpeed"] = 800, ["gestureSourceType"] = "touch" });
+        // Native page-scale emulation dispatches visualViewport events without depending on pinch recognition.
+        await cdp.SendAsync("Emulation.setPageScaleFactor", new Dictionary<string, object> { ["pageScaleFactor"] = 2 });
         await SettleObservedPositionAsync(page);
         var after = await CssClipFactsAsync(page);
         var native = await page.EvaluateAsync<JsonElement>("()=>({left:visualViewport.offsetLeft,top:visualViewport.offsetTop,width:visualViewport.width,height:visualViewport.height,scale:visualViewport.scale,resizes:activeVisualResizes})");
@@ -218,6 +218,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         Assert.True(native.GetProperty("resizes").GetInt32() > 0);
         Assert.True(after.GetProperty("pinned").GetBoolean());
         Assert.False(after.GetProperty("hidden").GetBoolean());
+        Assert.Equal(before.GetProperty("selected").GetString(), after.GetProperty("selected").GetString());
         var card = after.GetProperty("card");
         Assert.True(card.GetProperty("left").GetDouble() >= native.GetProperty("left").GetDouble());
         Assert.True(card.GetProperty("right").GetDouble() <= native.GetProperty("left").GetDouble() + native.GetProperty("width").GetDouble());

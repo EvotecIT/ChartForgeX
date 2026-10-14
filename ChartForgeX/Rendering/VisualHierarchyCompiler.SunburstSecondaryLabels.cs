@@ -12,7 +12,8 @@ internal static partial class VisualHierarchyCompiler {
         ChartColor fill, SvgPaint fillPaint, TextStyle primaryStyle, string primary, TextMetrics primaryMetrics,
         string secondary, double x, double y, double[] orientations, Func<TextMetrics, double, bool> fits) {
         var options = chart.Options.Sunburst;
-        var inherited = primaryStyle.Clone(); inherited.FontSize = primaryStyle.EffectiveFontSize * .8;
+        var inherited = primaryStyle.Clone();
+        inherited.FontSize = Math.Max(Math.Min(VisualTextFitting.MinimumOrdinaryFontSize, primaryStyle.EffectiveFontSize), primaryStyle.EffectiveFontSize * .8);
         var style = options.SecondaryLabelStyle.Resolve(inherited);
         style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
         var metrics = builder.MeasureText(secondary, style);

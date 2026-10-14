@@ -1,3 +1,4 @@
+using ChartForgeX.Themes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,7 +120,7 @@ public sealed class VisualStoryOutcome {
 /// <summary>
 /// Models a resolved, deterministic visual story. Execution and tokenization belong to optional adapters.
 /// </summary>
-public sealed class VisualStory {
+public sealed partial class VisualStory {
     private readonly List<VisualStoryScene> _scenes = new();
     private readonly List<VisualStoryOutcome> _outcomes = new();
 
@@ -155,8 +156,9 @@ public sealed class VisualStory {
     /// <summary>Enables portrait stacking for split scenes without changing explicit stacked layouts.</summary>
     public VisualStory WithPanelReflow(bool enabled = true) { ReflowPanels = enabled; return this; }
 
-    /// <summary>Gets the output theme.</summary>
-    public VisualStoryTheme Theme { get; private set; } = VisualStoryTheme.PremiumDark();
+    private VisualTheme _theme = VisualStoryThemes.Premium();
+    /// <summary>Gets or sets the immutable theme shared by story surfaces and text.</summary>
+    public VisualTheme Theme { get => _theme; set => _theme = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets the ordered scenes.</summary>
     public IReadOnlyList<VisualStoryScene> Scenes => _scenes;
@@ -186,8 +188,9 @@ public sealed class VisualStory {
     }
 
     /// <summary>Sets the visual-story theme.</summary>
-    public VisualStory WithTheme(VisualStoryTheme theme) {
+    public VisualStory WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
         Theme = theme ?? throw new ArgumentNullException(nameof(theme));
+        if (mode.HasValue) ThemeMode = mode.Value;
         return this;
     }
 
@@ -216,9 +219,8 @@ public sealed class VisualStory {
         if (_scenes.Count == 0) throw new InvalidOperationException("Visual stories require at least one scene.");
         if (DurationSeconds > 1800) throw new InvalidOperationException("Visual stories support at most 30 minutes of authored content. Trim or compress longer recordings.");
         if (_outcomes.Count == 0) throw new InvalidOperationException("Visual stories must declare at least one completed outcome.");
-        if (string.IsNullOrWhiteSpace(Theme.FontFamily) || string.IsNullOrWhiteSpace(Theme.MonospaceFontFamily)) throw new InvalidOperationException("Visual-story themes require font families.");
-        if (Theme.Syntax == null) throw new InvalidOperationException("Visual-story themes require a syntax palette.");
-        TerminalWindowChrome.Validate(Theme.WindowStyle);
+        if (string.IsNullOrWhiteSpace(Theme.Typography.Family) || string.IsNullOrWhiteSpace(Theme.Typography.MonospaceFamily)) throw new InvalidOperationException("Visual-story themes require font families.");
+        TerminalWindowChrome.Validate(Style.WindowStyle);
         foreach (var scene in _scenes) {
             scene.Validate();
             var bounds = VisualStoryLayout.Panels(this, scene);

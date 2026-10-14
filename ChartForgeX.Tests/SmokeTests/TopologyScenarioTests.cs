@@ -224,8 +224,10 @@ internal static partial class SmokeTests {
         var explicitEdgeSvg = chart.WithMotion(explicitEdgeMotion, explicitEdgeOptions).ToSvg();
         Assert(explicitEdgeSvg.Contains("data-cfx-motion-source=\"explicit-edges\"", StringComparison.Ordinal), "Topology motion should animate explicit edge ids without requiring a scenario.");
         Assert(explicitEdgeSvg.Contains("data-cfx-role=\"topology-motion-node\"", StringComparison.Ordinal), "Explicit edge motion should expose endpoint node pulses through the same reusable motion layer.");
-        Assert(ExtractElement(explicitEdgeSvg, "data-cfx-role=\"topology-motion-route\"").Contains("stroke=\"#16A34A\"", StringComparison.Ordinal), "Explicit edge motion routes should use edge/status colors instead of unrelated scenario colors.");
-        Assert(ExtractElement(explicitEdgeSvg, "data-cfx-role=\"topology-motion-marker\"").Contains("fill=\"#16A34A\"", StringComparison.Ordinal), "Explicit edge motion markers should use edge/status colors instead of unrelated scenario colors.");
+        var explicitMotion = System.Xml.Linq.XDocument.Parse(explicitEdgeSvg);
+        var healthColor = chart.Theme.Resolve(chart.ThemeMode).Status.Pass.Fill;
+        Assert(explicitMotion.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-route").RenderedColor("stroke").Equals(healthColor), "Explicit edge motion routes should use the selected theme's health status color independently of scenario colors.");
+        Assert(explicitMotion.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-motion-marker").RenderedColor("fill").Equals(healthColor), "Explicit edge motion markers should use the selected theme's health status color independently of scenario colors.");
 
         var noScenarioChart = TopologyChart.Create()
             .WithId("motion-explicit-edge")

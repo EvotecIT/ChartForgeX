@@ -12,7 +12,7 @@ internal static partial class VisualScheduleCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         if (chart.Series.Any(series => series.Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane))
             return chart.Options.StateCategories.Select((state, index) => new VisualLegendEntry(state.Label, state.Color, "state-" + index, state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToArray();
-        return chart.Series.Select((series, index) => new { Series = series, Index = index }).Where(item => item.Series.ShowInLegend)
+        return chart.Series.Select((series, index) => new { Series = series, Index = index }).Where(item => item.Series.ShowInLegend && item.Series.HasSourceData)
             .Select(item => RangeLegendEntry(item.Series, item.Index, colors)).ToArray();
     }
 
@@ -29,6 +29,9 @@ internal static partial class VisualScheduleCompiler {
             throw new NotSupportedException("Schedule layouts do not support reversed axes.");
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("Schedule families cannot mix different layout kinds.");
+        if (kind == ChartSeriesKind.Gantt && chart.Series.All(series => !series.HasSourceData)) {
+            builder.AddDiagnostic(new VisualDiagnostic("schedule.no-data", "Gantt charts need a schedule item.")); return;
+        }
         if (kind == ChartSeriesKind.StateTimeline) StateLanes(chart, context, builder, viewport);
         else if (kind == ChartSeriesKind.GanttLane) GanttLanes(chart, context, builder, viewport);
         else Ranges(chart, context, builder, viewport, kind == ChartSeriesKind.Gantt);
@@ -63,9 +66,7 @@ internal static partial class VisualScheduleCompiler {
                     metadata["data-cfx-meta-start"] = model.FormatInstant(segment.Start); metadata["data-cfx-meta-end"] = model.FormatInstant(segment.End);
                     metadata["data-cfx-meta-duration"] = ChartStateTimelineModel.FormatDuration(segment.End - segment.Start);
                     if (!string.IsNullOrWhiteSpace(segment.Detail)) metadata["data-cfx-meta-detail"] = segment.Detail!;
-                    var sources = Enumerable.Range(0, series.Points.Count).Where(index => series.Points[index].X >= segment.Start && series.Points[index].Y <= segment.End &&
-                        series.PointLabels[index] == segment.State.Key).ToArray();
-                    metadata["data-cfx-source-points"] = string.Join(",", sources);
+                    metadata["data-cfx-source-points"] = string.Join(",", segment.SourceIndices);
                     metadata["data-cfx-derived"] = "timeline-run";
                     var id = VisualStateSceneTools.SourceId(lane.SeriesIndex, segment.PointIndex);
                     using (VisualStateSceneTools.Mark(builder, id, "state-timeline-segment", bounds, model.SegmentSummary(lane, segment), metadata)) {

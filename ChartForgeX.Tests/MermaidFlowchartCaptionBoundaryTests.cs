@@ -82,6 +82,7 @@ public sealed class MermaidFlowchartCaptionBoundaryTests {
             parsed.Document.Edges.Select(edge => (edge.SourceId, edge.TargetId, edge.Label ?? "")));
     }
 
+    [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

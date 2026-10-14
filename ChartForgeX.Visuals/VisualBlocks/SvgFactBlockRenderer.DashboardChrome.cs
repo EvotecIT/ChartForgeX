@@ -14,7 +14,7 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static void RenderSegmentedMetricHeader(SvgMarkupWriter writer, SegmentedMetricBlock card, ref double y, double x, double width) {
-        var theme = card.Options.Theme;
+        var theme = card.Options.ResolvedTheme;
         var layout = VisualFactBlockRendering.SegmentedHeaderLayout(card, x, y, width);
         if (layout.BadgeSize > 0) {
             writer.StartElement("rect").Attribute("data-cfx-role", "segmented-metric-header-badge").Attribute("x", x).Attribute("y", y).Attribute("width", layout.BadgeSize).Attribute("height", layout.BadgeSize).Attribute("rx", 14).Attribute("fill", ChartColor.White.ToCss()).Attribute("stroke", theme.CardBorder.ToCss()).EndEmptyElement().Line();
