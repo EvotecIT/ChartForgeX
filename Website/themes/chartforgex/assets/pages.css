@@ -147,7 +147,7 @@
 }
 .cfx-family--pending .cfx-family__plate code { padding: 6px 10px; border: 1px dashed var(--cfx-line-strong); border-radius: 6px; background: var(--cfx-page); color: var(--cfx-ink-2); font-size: .875rem; }
 .cfx-family__reason { padding-bottom: 14px; color: var(--cfx-ink-3) !important; font-family: var(--cfx-mono); font-size: .75rem !important; }
-.cfx-family__reason span { display: block; margin-bottom: 2px; color: var(--cfx-signal); font-family: var(--cfx-font); font-size: .75rem; font-weight: 680; }
+.cfx-family__reason span { display: block; margin-bottom: 2px; color: var(--cfx-focus); font-family: var(--cfx-font); font-size: .75rem; font-weight: 680; }
 .cfx-atlas__reference { max-width: 80ch; margin-top: 20px; color: var(--cfx-ink-3); font-size: .875rem; }
 
 /* Guide band and annotated steps: prose on the left, the code it explains on the right. */
