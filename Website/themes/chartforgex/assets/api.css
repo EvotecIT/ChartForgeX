@@ -47,6 +47,7 @@ body.pf-api-docs .sidebar-toggle {
   font-weight: 600;
 }
 body.pf-api-docs .ev-eyebrow { display: none; }
+body.pf-api-docs :is(.member-group-header, .type-toc-title, .usage-kind, .related-content-kind, .overview-stat-label) { letter-spacing: 0; text-transform: none; }
 body.pf-api-docs code { font-family: var(--cfx-mono); }
 
 /* Sidebar */

@@ -284,17 +284,16 @@ code, pre, kbd, samp { font-family: var(--cfx-mono); }
   letter-spacing: -.03em;
   line-height: 1.02;
 }
-.cfx-masthead .cfx-key--hollow { background: transparent; box-shadow: inset 0 0 0 2px var(--key, var(--cfx-accent)); }
-
-.cfx-lede { margin-top: 16px; }
+.cfx-masthead .cfx-lede { margin-top: 16px; }
 .cfx-key {
-  /* A legend swatch. */
+  /* A legend swatch. Past six keys the marker turns hollow instead of taking a new hue. */
   flex: none;
   width: 10px;
   height: 10px;
   border-radius: 2px;
   background: var(--key, var(--cfx-accent));
 }
+.cfx-key--hollow { background: transparent; box-shadow: inset 0 0 0 2px var(--key, var(--cfx-accent)); }
 
 .cfx-lede { color: var(--cfx-ink-2); font-size: var(--cfx-t-lede); line-height: 1.55; max-width: 62ch; }
 
