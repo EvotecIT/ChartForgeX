@@ -13,6 +13,38 @@ internal static class TypographyCss {
         if (style.ColorPaletteIndex.HasValue) result += (result.Length == 0 ? "" : ";") + "font-palette:" + TypographyPaletteCss.Name(style.ColorPaletteIndex.Value);
         return result;
     }
+    /// <summary>
+    /// Ends a CSS font-family stack with a generic family, so text whose named faces are missing on the
+    /// viewing host (a registered proof font, a licensed face) degrades to a matching browser default
+    /// instead of the user agent's serif. Stacks that already name a generic family, CSS-wide keywords and
+    /// custom-property references are returned unchanged.
+    /// </summary>
+    internal static string FamilyWithGenericFallback(string family) {
+        if (family == null) throw new ArgumentNullException(nameof(family));
+        var trimmed = family.Trim();
+        if (trimmed.Length == 0 || trimmed.IndexOf("var(", StringComparison.OrdinalIgnoreCase) >= 0) return family;
+        switch (trimmed.ToLowerInvariant()) {
+            case "inherit": case "initial": case "unset": case "revert": case "revert-layer": return family;
+        }
+
+        foreach (var name in FamilyNames(trimmed)) if (TypographyFontResolver.IsGenericFamily(name)) return family;
+        var generic = Raster.TrueTypeFont.IsMonospaceFamily(trimmed) ? "monospace" : Raster.TrueTypeFont.IsSerifFamily(trimmed) ? "serif" : "sans-serif";
+        return trimmed.TrimEnd(',', ' ') + ", " + generic;
+    }
+
+    private static IEnumerable<string> FamilyNames(string stack) {
+        var name = new System.Text.StringBuilder();
+        var quote = '\0';
+        foreach (var ch in stack) {
+            if (quote != '\0') { if (ch == quote) quote = '\0'; else name.Append(ch); }
+            else if (ch == '\'' || ch == '"') quote = ch;
+            else if (ch == ',') { yield return name.ToString().Trim(); name.Clear(); }
+            else name.Append(ch);
+        }
+
+        yield return name.ToString().Trim();
+    }
+
     internal static bool TryVariations(string value, out FontVariationSettings? settings) {
         settings = null;
         if (value.Trim().Equals("normal", StringComparison.OrdinalIgnoreCase)) { settings = FontVariationSettings.Default; return true; }
