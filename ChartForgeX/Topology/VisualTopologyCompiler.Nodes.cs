@@ -65,7 +65,8 @@ internal sealed partial class VisualTopologyCompiler {
                     if (mode == TopologyNodeDisplayMode.Tile) BuildTileCaption(node, accent, active);
                     else if (mode == TopologyNodeDisplayMode.Icon) BuildIconCaption(node, accent, active);
                     else if (node.Shape == TopologyNodeShape.Actor) BuildDiagramCaption(node, active);
-                    else if (node.Shape.HasValue && !hasGlyph && !caption && string.IsNullOrEmpty(node.Subtitle) && node.Details.Count == 0)
+                    else if (mode != TopologyNodeDisplayMode.Dot && node.Shape.HasValue && !hasGlyph && !caption
+                        && string.IsNullOrEmpty(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge))
                         BuildShapeCaption(node, active);
                     else if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
                 }
@@ -192,31 +193,7 @@ internal sealed partial class VisualTopologyCompiler {
             _builder.AddDiagnostic(new VisualDiagnostic("topology.label-height", "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."));
             return null;
         }
-        var source = value.Replace("\r\n", "\n").Replace('\r', '\n');
-        if (!_options.AllowMultilineNodeLabels) source = source.Replace('\n', ' ');
-        var queue = new Queue<string>(source.Split('\n'));
-        var lines = new List<string>();
-        while (queue.Count > 0 && lines.Count < maxLines) {
-            var text = queue.Dequeue();
-            if (_builder.MeasureText(text, size, weight).Width <= bounds.Width) { lines.Add(text); continue; }
-            if (fitSingleLine) {
-                // Broad faces and irreducible bitmap advances can exceed a tiny dot at its
-                // readable size. Retain a fitting text-element prefix and disclose the loss;
-                // appending an ellipsis must not erase the only glyph that could fit.
-                lines.Add(ChartTextFitting.FitEnd(text, bounds.Width, probe => _builder.MeasureText(probe, size, weight).Width, string.Empty));
-                _builder.AddDiagnostic(new VisualDiagnostic("topology.label-truncated", "A topology label exceeds its measured bounds; complete source text remains in semantic interchange."));
-                continue;
-            }
-            var elements = StringInfo.ParseCombiningCharacters(text); var count = elements.Length;
-            while (count > 0 && _builder.MeasureText(text.Substring(0, count == elements.Length ? text.Length : elements[count]) + "…", size, weight).Width > bounds.Width) count--;
-            var length = count == 0 ? 0 : count == elements.Length ? text.Length : elements[count];
-            if (_options.WrapNodeLabels && lines.Count + 1 < maxLines && length > 0) {
-                var separator = text.LastIndexOf(' ', length - 1, length); if (separator > 0) length = separator;
-                lines.Add(text.Substring(0, length));
-                queue = new Queue<string>(new[] { text.Substring(length).TrimStart() }.Concat(queue));
-            } else { lines.Add(length == 0 ? string.Empty : text.Substring(0, length) + "…"); _builder.AddDiagnostic(new VisualDiagnostic("topology.label-truncated", "A topology label was shortened; complete source text remains in semantic interchange.")); }
-        }
-        if (queue.Count > 0) _builder.AddDiagnostic(new VisualDiagnostic("topology.label-lines", "A topology label exceeds its configured line count; complete source text remains in semantic interchange."));
+        var lines = FitTextLines(value, bounds.Width, size, weight, maxLines, fitSingleLine, true, out _);
         var textTop = bounds.Y + (verticallyCentered ? Math.Max(0, bounds.Height - lineHeight * lines.Count) / 2 : 0);
         var baseline = textTop + _builder.TextAscent(size, weight);
         var halo = role == "topology-endpoint-label" || role == "topology-edge-label-text" && IsMonitoringDashboardStyle(_options) && !_options.IncludeEdgeLabelBackplates;
@@ -233,6 +210,41 @@ internal sealed partial class VisualTopologyCompiler {
         if (lines.Count == 0) return null;
         var width = lines.Max(line => _builder.MeasureText(line, size, weight).Width);
         return new ChartRect(centered ? bounds.X + (bounds.Width - width) / 2 : bounds.X, textTop, width, lineHeight * lines.Count);
+    }
+
+    private List<string> FitTextLines(string value, double width, double size, int weight, int maxLines, bool fitSingleLine, bool report, out bool overflow) {
+        overflow = false;
+        void Report(string code, string message) { if (report) _builder.AddDiagnostic(new VisualDiagnostic(code, message)); }
+        var source = value.Replace("\r\n", "\n").Replace('\r', '\n');
+        if (!_options.AllowMultilineNodeLabels) source = source.Replace('\n', ' ');
+        var queue = new Queue<string>(source.Split('\n'));
+        var lines = new List<string>();
+        while (queue.Count > 0 && lines.Count < maxLines) {
+            var text = queue.Dequeue();
+            if (_builder.MeasureText(text, size, weight).Width <= width) { lines.Add(text); continue; }
+            if (fitSingleLine) {
+                // Broad faces and irreducible bitmap advances can exceed a tiny dot at its
+                // readable size. Retain a fitting text-element prefix and disclose the loss;
+                // appending an ellipsis must not erase the only glyph that could fit.
+                lines.Add(ChartTextFitting.FitEnd(text, width, probe => _builder.MeasureText(probe, size, weight).Width, string.Empty));
+                overflow = true;
+                Report("topology.label-truncated", "A topology label exceeds its measured bounds; complete source text remains in semantic interchange.");
+                continue;
+            }
+            var elements = StringInfo.ParseCombiningCharacters(text); var count = elements.Length;
+            while (count > 0 && _builder.MeasureText(text.Substring(0, count == elements.Length ? text.Length : elements[count]) + "…", size, weight).Width > width) count--;
+            var length = count == 0 ? 0 : count == elements.Length ? text.Length : elements[count];
+            if (_options.WrapNodeLabels && lines.Count + 1 < maxLines && length > 0) {
+                var separator = text.LastIndexOf(' ', length - 1, length); if (separator > 0) length = separator;
+                lines.Add(text.Substring(0, length));
+                queue = new Queue<string>(new[] { text.Substring(length).TrimStart() }.Concat(queue));
+            } else { lines.Add(length == 0 ? string.Empty : text.Substring(0, length) + "…"); overflow = true; Report("topology.label-truncated", "A topology label was shortened; complete source text remains in semantic interchange."); }
+        }
+        if (queue.Count > 0) {
+            overflow = true;
+            Report("topology.label-lines", "A topology label exceeds its configured line count; complete source text remains in semantic interchange.");
+        }
+        return lines;
     }
 
     private ChartPath Transform(ChartPath path, Func<ChartPoint, ChartPoint>? projection = null) => new(path.Commands.Select(command => {

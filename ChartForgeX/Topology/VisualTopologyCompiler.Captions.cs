@@ -11,19 +11,36 @@ namespace ChartForgeX.Topology;
 internal sealed partial class VisualTopologyCompiler {
     private void BuildShapeCaption(TopologyNode node, bool active) {
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
-        var lines = _options.WrapNodeLabels ? Math.Max(1, _options.MaxNodeLabelLines)
-            : Math.Min(Math.Max(1, _options.MaxNodeLabelLines), _options.AllowMultilineNodeLabels ? label.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Length : 1);
         var size = _context.Theme.Typography.DataLabelSize;
-        ChartRect CaptionBounds(double candidate) => TopologyNodeShapeGeometry.CaptionBounds(node,
-            _builder.MeasureText("Ag", candidate * _scale, 600).LineHeight / _scale * lines);
         if (size > VisualTextFitting.MaximumOrdinaryFontSize) size = ChartTextFitting.FitFontSize(Math.Min(11, size), size, candidate => {
-            var bounds = CaptionBounds(candidate);
-            var measured = _builder.MeasureText(label, candidate * _scale, 600);
-            return measured.Width <= bounds.Width * _scale && measured.LineHeight * lines <= bounds.Height * _scale;
+            var bounds = ShapeCaptionBounds(node, label, candidate);
+            var lineHeight = _builder.MeasureText("Ag", candidate * _scale, 600).LineHeight;
+            if (bounds.Width <= 0 || bounds.Height * _scale + 1e-8 < lineHeight) return false;
+            FitTextLines(label, bounds.Width * _scale, candidate * _scale, 600, Math.Max(1, (int)Math.Floor(bounds.Height * _scale / lineHeight)), false, false, out var overflow);
+            return !overflow;
         });
-        var content = CaptionBounds(size);
+        var content = ShapeCaptionBounds(node, label, size);
         Text(label, Bounds(content.X, content.Y, content.Width, content.Height), size, Highlight(_colors.Foreground, active), 600,
             "topology-node-label", _options.MaxNodeLabelLines, centered: true, id: node.Id + "-label", opacity: HighlightFactor(active), verticallyCentered: true);
+    }
+
+    private ChartRect ShapeCaptionBounds(TopologyNode node, string label, double size) {
+        var lineHeight = _builder.MeasureText("Ag", size * _scale, 600).LineHeight / _scale;
+        var maximum = (int)Math.Min(Math.Max(1, _options.MaxNodeLabelLines), Math.Min(Math.Max(1, label.Length), Math.Max(1, Math.Floor(node.Height / lineHeight))));
+        var best = TopologyNodeShapeGeometry.CaptionBounds(node, lineHeight);
+        var retained = -1;
+        // A row limit is a ceiling, not a requested allocation. Use the same measured
+        // wrapping as the painter, and keep the most source text if no complete layout fits.
+        for (var rows = 1; rows <= maximum; rows++) {
+            var bounds = TopologyNodeShapeGeometry.CaptionBounds(node, rows * lineHeight + 1e-8);
+            if (bounds.Width <= 0 || bounds.Height + 1e-8 < rows * lineHeight) break;
+            var lines = FitTextLines(label, bounds.Width * _scale, size * _scale, 600, rows, false, false, out var overflow);
+            if (!overflow) return bounds;
+            var characters = 0;
+            foreach (var line in lines) characters += line.Length;
+            if (characters > retained) { retained = characters; best = bounds; }
+        }
+        return best;
     }
 
     private void BuildIconCaption(TopologyNode node, ChartColor accent, bool active) {

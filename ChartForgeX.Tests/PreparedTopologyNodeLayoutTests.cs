@@ -1,10 +1,59 @@
 using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
+using Microsoft.Playwright;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 public sealed class PreparedTopologyNodeLayoutTests {
+    [BrowserFact]
+    public async Task WrappingLimitsDoNotReserveUnusedRowsForShortShapeCaptions() {
+        foreach (var maximum in new[] { 2, 10 }) foreach (var caption in new[] { "Ready", "Review access and approve" }) {
+            var chart = NodeChart(TopologyNodeDisplayMode.Card, TopologyNodeKind.Generic);
+            var node = chart.Nodes[0]; node.Shape = TopologyNodeShape.Diamond; node.Label = caption; node.Width = 160; node.Height = 100;
+            var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(300, 240), 20), frame: new VisualFrame(showLegend: false)),
+                new TopologyRenderOptions { IncludeLegend = false, IncludeStatusBadges = false, WrapNodeLabels = true, MaxNodeLabelLines = maximum });
+            await Capture(prepared, "review-wrap-" + maximum + (caption == "Ready" ? "" : "-wrapped"));
+            var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "topology-node-label").SelectMany(text => text.Text.Lines).ToArray();
+            Assert.Equal(caption, string.Join(" ", labels.Select(line => line.Text)));
+            Assert.Equal(caption == "Ready" ? 1 : 2, labels.Length);
+            Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code.StartsWith("topology.label-", StringComparison.Ordinal));
+        }
+    }
+
+    [BrowserTheory]
+    [InlineData(TopologyNodeDisplayMode.Card)]
+    [InlineData(TopologyNodeDisplayMode.CompactCard)]
+    public async Task ExplicitBadgesKeepTheirCaptionClearOfTheBadgeSurface(TopologyNodeDisplayMode mode) {
+        var chart = NodeChart(mode, TopologyNodeKind.Generic);
+        var node = chart.Nodes[0]; node.X = 60; node.Shape = TopologyNodeShape.Rectangle;
+        node.PreserveDisplayModeSize = true; node.Label = "Ready now"; node.Badge = "Assigned"; node.Width = 104; node.Height = 52;
+        var prepared = Prepare(chart);
+        await Capture(prepared, "review-badge-" + mode);
+        var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "topology-node-label");
+        var line = Assert.Single(label.Text.Lines);
+        var badge = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), mark => mark.Role == "topology-node-badge-surface").Bounds;
+        var left = label.LineLeft(line); var right = left + line.Width;
+        var top = label.Baseline - label.Text.Ascent; var bottom = top + label.Text.Metrics.Height;
+        Assert.True(right <= badge.Left || left >= badge.Right || bottom <= badge.Top || top >= badge.Bottom,
+            "The authored badge must not paint over the node caption.");
+    }
+
+    [BrowserFact]
+    public async Task DotModeOmitsOrdinaryTitlesAndKeepsItsAuthoredSymbol() {
+        foreach (var symbol in new[] { false, true }) {
+            var chart = NodeChart(TopologyNodeDisplayMode.Dot, TopologyNodeKind.Generic);
+            var node = chart.Nodes[0]; node.Shape = TopologyNodeShape.Rectangle; node.Label = "Ready";
+            node.Width = 104; node.Height = 80; node.PreserveDisplayModeSize = true;
+            if (symbol) node.Symbol = "OK";
+            var prepared = Prepare(chart);
+            await Capture(prepared, "review-dot-" + symbol);
+            Assert.DoesNotContain(prepared.Scene.Nodes, mark => mark.Role == "topology-node-label");
+            Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code.StartsWith("topology.label-", StringComparison.Ordinal));
+            if (symbol) Assert.Equal("OK", Assert.Single(Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), mark => mark.Role == "topology-node-symbol").Text.Lines).Text);
+        }
+    }
+
     [Theory]
     [InlineData(TopologyNodeShape.Rectangle)]
     [InlineData(TopologyNodeShape.Diamond)]
@@ -143,4 +192,15 @@ public sealed class PreparedTopologyNodeLayoutTests {
     private static PreparedVisual Prepare(TopologyChart chart) => chart.Prepare(
         new VisualRenderContext(new VisualLayoutOptions(new VisualSize(300, 240), 20), frame: new VisualFrame(showLegend: false)),
         new TopologyRenderOptions { IncludeLegend = false, IncludeStatusBadges = false });
+
+    private static async Task Capture(PreparedVisual prepared, string name) {
+        var svg = prepared.ToSvg(); var png = prepared.ToPng();
+        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", 300, 240);
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+        var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (string.IsNullOrWhiteSpace(output)) return;
+        Directory.CreateDirectory(output);
+        File.WriteAllText(Path.Combine(output, name + ".svg"), svg); File.WriteAllBytes(Path.Combine(output, name + ".native.png"), png);
+        await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(output, name + ".browser.png"), FullPage = true });
+    }
 }
