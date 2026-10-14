@@ -125,7 +125,6 @@ public sealed class WaterfallCheckpointTests {
     [Fact]
     public void ExplicitZeroCheckpointsAreDataAndInvalidInputsRejectWithoutAddingASeries() {
         var chart = Chart.Create();
-        Assert.Throws<ArgumentException>(() => chart.AddWaterfall("Empty", Array.Empty<ChartWaterfallItem>()));
         Assert.Throws<ArgumentException>(() => chart.AddWaterfall("Duplicate", new[] { ChartWaterfallItem.Delta(1, 2), ChartWaterfallItem.Total(1) }));
         Assert.Throws<ArgumentException>(() => chart.AddWaterfall("Null", new ChartWaterfallItem[] { null! }));
         Assert.Throws<ArgumentOutOfRangeException>(() => ChartWaterfallItem.Delta(1, double.NaN));

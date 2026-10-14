@@ -14,7 +14,7 @@ public sealed partial class ChartSeries {
         Waterfall(new ChartSeries(name, ChartSeriesKind.Waterfall, Array.Empty<ChartPoint>()) { Color = color }, items);
 
     private static ChartSeries Waterfall(ChartSeries series, IEnumerable<ChartWaterfallItem> items) {
-        series.SetWaterfallItems(items);
+        series.ReplaceWaterfallItems(items);
         return series;
     }
 

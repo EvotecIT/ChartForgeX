@@ -276,6 +276,18 @@ waterfall.Series[0].WithPointColor(2, "#A5358A");
 
 Typed input lives in the immutable `ChartSeries.WaterfallItems` snapshot; `Points` is empty and cannot be mixed into that series. `Value` holds an authored opening balance or delta and is null on calculated checkpoints. `SourcePointCount` counts the opening balance and deltas, while point colors, labels, fill patterns, data-label styles and point legends index all authored items. Invalid item order is rejected before the series is added. Existing axis labels and formatters own category captions; `ChartOptions.Labels.OpeningBalance`, `.Change`, `.Subtotal` and `.Total` localize the default readout and captions. Opening balances and checkpoints use neutral paint unless series or point paint overrides it. Bar paint and stroke use the shared series controls.
 
+Retain a series handle to update a complete item without losing its ID or presentation. Both lifecycle operations validate the whole resulting collection before changing it, including distinct coordinates and opening-balance placement:
+
+```csharp
+var movement = ChartSeries.CreateWaterfall(new ChartSeriesId("movement"), "Movement", new[] {
+    ChartWaterfallItem.Delta(1, 10), ChartWaterfallItem.Subtotal(2), ChartWaterfallItem.Delta(3, 20)
+}).WithObservationId(2, new ChartObservationId("late-change"));
+var chart = Chart.Create().AddSeries(movement);
+movement.UpdateWaterfallItem(2, ChartWaterfallItem.Delta(3, 25));
+```
+
+`ReplaceWaterfallItems(items)` installs a fresh snapshot and clears per-item IDs and presentation overrides while retaining series configuration. An empty factory or replacement represents no data, keeps `Points` read-only and appends no total; refill it with another replacement. Replacing a numeric waterfall through this operation switches it to typed authoring. `WithObservationId` indexes every authored item, including checkpoints. Native `data-cfx-observation-index` records that ordinal separately from compact numeric contributor ordinals in `data-cfx-source-point` and `data-cfx-source-points`. An explicit checkpoint ID identifies the authored checkpoint; its derived value and contributors remain available for readouts.
+
 `ChartOptions.Waterfall.Orientation` defaults to `ChartOrientation.Vertical`. Configure a horizontal waterfall before or after adding either input form:
 
 ```csharp

@@ -214,9 +214,13 @@ public sealed partial class ChartSeries {
         if (values == null) throw new ArgumentNullException(nameof(values));
         var snapshot = values.Select(validate).ToArray();
         target = Array.AsReadOnly(snapshot);
+        ClearObservationMetadata();
+        ObservationDataChanged(snapshot.Length);
+    }
+
+    private void ClearObservationMetadata() {
         PointColors.Clear(); PointFillPatterns.Clear(); PointValues.Clear(); PointLabels.Clear();
         PointDataLabelStyles.Clear(); PointSliceOffsets.Clear(); ClearObservationKeys();
-        ObservationDataChanged(snapshot.Length);
     }
 
     private void UpdateObservation<T>(ref IReadOnlyList<T> target, int index, T value, Func<T, T> validate) {

@@ -60,7 +60,10 @@ internal static partial class VisualMatrixCompiler {
                         metadata["data-cfx-label-value"] = presentation.Name;
                     }
                     if (scale == null) metadata["data-cfx-level"] = model.Level(day.Value).ToString();
-                    metadata["data-cfx-source-points"] = string.Join(",", sourceIndices[date]);
+                    var sources = sourceIndices[date];
+                    metadata["data-cfx-source-points"] = string.Join(",", sources);
+                    // Ingestion normalizes dates to one authored observation. Later numeric edits can still create aggregates.
+                    if (sources.Length == 1) metadata["data-cfx-observation-index"] = sources[0].ToString(CultureInfo.InvariantCulture);
                 }
                 using (VisualStateSceneTools.Mark(builder, id, "calendar-cell", bounds, label, metadata))
                 using (builder.PushClip(area)) builder.Rect(bounds, blend.Color, radius: Math.Min(grid.Radius, context.Theme.BarRadius), role: "calendar-cell-shape", paint: VisualChartPaint.Fill(blend.Paint));

@@ -13,7 +13,7 @@ public sealed partial class ChartSeries {
         get {
             if (IsRelationshipKind(Kind)) return Nodes.Count;
             if (IsCategoricalHeatmapRow) return HeatmapCells.Count;
-            if (WaterfallItems.Count > 0) return WaterfallItems.Count;
+            if (IsTypedWaterfall) return WaterfallItems.Count;
             return Kind switch {
                 ChartSeriesKind.Bubble => Bubbles.Count,
                 ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc => FinancialValues.Count,

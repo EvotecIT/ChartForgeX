@@ -10,7 +10,7 @@ public sealed partial class ChartSeries {
         or ChartSeriesKind.BoxPlot or ChartSeriesKind.Dumbbell or ChartSeriesKind.DifferenceArea
         or ChartSeriesKind.Gantt or ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane
         or ChartSeriesKind.Gauge or ChartSeriesKind.Circle or ChartSeriesKind.Bullet or ChartSeriesKind.LayeredRadial
-        || IsCategoricalHeatmapRow;
+        || IsCategoricalHeatmapRow || IsTypedWaterfall;
 
     private IReadOnlyList<ChartPoint>? _renderPoints;
 

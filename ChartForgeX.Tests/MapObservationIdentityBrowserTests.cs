@@ -1,0 +1,70 @@
+using ChartForgeX.Core;
+using ChartForgeX.Interactivity.Html;
+using Microsoft.Playwright;
+using Xunit;
+using static ChartForgeX.Tests.InteractiveChartBrowser;
+
+namespace ChartForgeX.Tests;
+
+public sealed class MapObservationIdentityBrowserTests {
+    [BrowserTheory]
+    [InlineData(ChartSeriesKind.CalendarHeatmap)]
+    [InlineData(ChartSeriesKind.DottedMap)]
+    [InlineData(ChartSeriesKind.RegionMap)]
+    [InlineData(ChartSeriesKind.TileMap)]
+    public async Task SelectionAndReadoutsRetainNormalizedObservationIds(ChartSeriesKind kind) {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(640, 360).WithTitle("Observed activity");
+        switch (kind) {
+            case ChartSeriesKind.CalendarHeatmap:
+                chart.AddCalendarHeatmap("Days", new[] {
+                    new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 3),
+                    new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 4)
+                }, id: new ChartSeriesId("activity"));
+                break;
+            case ChartSeriesKind.DottedMap:
+                chart.AddDottedMap("Locations", new[] { new ChartMapPoint("Warsaw", 21, 52, 7) });
+                break;
+            case ChartSeriesKind.RegionMap:
+                chart.AddRegionMap("Regions", new ChartMapDefinition("regions", "Regions", 100, 50, new[] {
+                    new ChartMapRegion("A", "Alpha", "M0 0H50V50H0Z"), new ChartMapRegion("B", "Beta", "M50 0H100V50H50Z")
+                }), new[] { new ChartRegionMapItem("A", 7) }, id: new ChartSeriesId("activity"));
+                break;
+            default:
+                chart.AddTileMap("Tiles", new ChartTileMapDefinition("tiles", "Tiles", new[] {
+                    new ChartTileMapRegion("A", "Alpha", 0, 0), new ChartTileMapRegion("B", "Beta", 1, 0)
+                }), new[] { new ChartRegionMapItem("A", 7) }, id: new ChartSeriesId("activity"));
+                break;
+        }
+        chart.Series[0].WithObservationId(0, new ChartObservationId("observed-a"));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 540);
+        var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
+        var target = page.Locator("[data-cfx-observation-id='observed-a']");
+        Assert.Equal(1, await target.CountAsync());
+        Assert.Equal(chart.Series[0].Id.Value, await target.GetAttributeAsync("data-cfx-series-key"));
+        Assert.Equal("7", await target.GetAttributeAsync("data-cfx-value"));
+        await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.mapIdentitySelection = event.detail.target)");
+        await MoveToAsync(page, "[data-cfx-observation-id='observed-a']");
+        Assert.Contains("7", await TooltipTextAsync(page));
+        await target.FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
+        Assert.Equal("observed-a", await page.EvaluateAsync<string>("() => window.mapIdentitySelection.observationId"));
+        Assert.Equal(chart.Series[0].Id.Value, await page.EvaluateAsync<string>("() => window.mapIdentitySelection.seriesKey"));
+        Assert.Equal("7", await page.EvaluateAsync<string>("() => window.mapIdentitySelection.value"));
+        if (kind == ChartSeriesKind.CalendarHeatmap) {
+            Assert.Equal("2026-01-05", await page.EvaluateAsync<string>("() => window.mapIdentitySelection.targetId"));
+            Assert.Equal(new[] { 0 }, await page.EvaluateAsync<int[]>("() => window.mapIdentitySelection.sourcePoints"));
+        } else Assert.Equal("0", await page.EvaluateAsync<string>("() => window.mapIdentitySelection.sourcePoint"));
+        var missing = page.Locator("[data-cfx-empty='true']");
+        if (await missing.CountAsync() > 0)
+            Assert.Equal(0, await page.Locator("[data-cfx-empty='true'][data-cfx-observation-id]").CountAsync());
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture);
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(capture, "map-authored-identity-" + kind + ".png"), FullPage = false });
+            await File.WriteAllTextAsync(Path.Combine(capture, "map-authored-identity-" + kind + ".json"),
+                await page.EvaluateAsync<string>("() => JSON.stringify({ selection: window.mapIdentitySelection, tooltip: document.querySelector('.cfx-tooltip').innerText }, null, 2)"));
+        }
+        Assert.Empty(errors); AssertNoConsoleErrors(session);
+    }
+}

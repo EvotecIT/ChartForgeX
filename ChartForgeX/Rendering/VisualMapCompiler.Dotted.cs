@@ -50,7 +50,7 @@ internal static partial class VisualMapCompiler {
                 var bounds = visible ? new ChartRect(point.X - radius, point.Y - radius, radius * 2, radius * 2) : map;
                 builder.AddRegion(new VisualSemanticRegion(id, "dotted-map-point", bounds, full));
                 using (builder.PushGroup(id, "dotted-map-point-source", new Dictionary<string, string> {
-                    ["data-cfx-point"] = N(index), ["data-cfx-label"] = category, ["data-cfx-longitude"] = N(source.X), ["data-cfx-latitude"] = N(source.Y),
+                    ["data-cfx-series"] = "0", ["data-cfx-point"] = N(index), ["data-cfx-label"] = category, ["data-cfx-longitude"] = N(source.X), ["data-cfx-latitude"] = N(source.Y),
                     ["data-cfx-value"] = weights[index].HasValue ? N(weights[index]!.Value) : "", ["data-cfx-formatted-value"] = formatted,
                     ["data-cfx-visible"] = visible ? "true" : "false", ["aria-label"] = full
                 })) {

@@ -29,6 +29,9 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-derived-total"] = step.Kind == ChartWaterfallItemKind.Total ? "true" : "false",
             ["data-cfx-source-count"] = Number(step.SourceIndices.Count)
         };
+        // Numeric contributors use a compact index that omits checkpoints. Typed identity uses every authored item.
+        if (chart.Series[seriesIndex].IsTypedWaterfall && !step.IsAppendedTotal)
+            metadata["data-cfx-observation-index"] = Number(step.ItemIndex);
         if (step.IsCheckpoint) {
             var sources = string.Join(",", step.SourceIndices.Select(Number));
             metadata["data-cfx-derived"] = "waterfall-" + WaterfallKind(step);

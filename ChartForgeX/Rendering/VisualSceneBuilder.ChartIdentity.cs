@@ -27,6 +27,9 @@ internal sealed partial class VisualSceneBuilder {
 
     private static bool TryAuthoredObservationIndex(IReadOnlyDictionary<string, string> metadata, out int sourceIndex) {
         sourceIndex = -1;
+        // Some authored items calculate their displayed value from other inputs, while still owning their own identity.
+        if (metadata.TryGetValue("data-cfx-observation-index", out var observation))
+            return int.TryParse(observation, NumberStyles.None, CultureInfo.InvariantCulture, out sourceIndex);
         if (metadata.ContainsKey("data-cfx-derived") || metadata.ContainsKey("data-cfx-source-points")) {
             // A direct slice or one-interval run still represents exactly one authored observation.
             // Aggregates retain their derived identity rather than borrowing a contributor's ID.

@@ -77,7 +77,7 @@ internal static partial class VisualMapCompiler {
     }
     private static Dictionary<string, string> Source(Chart chart, string code, string name, int? source, double? value, string full, double min, double max, ChartColorPresentation presentation) {
         var metadata = new Dictionary<string, string> {
-            ["data-cfx-region"] = code, ["data-cfx-region-name"] = name, ["data-cfx-label"] = name, ["data-cfx-point"] = source.HasValue ? N(source.Value) : "-1",
+            ["data-cfx-series"] = "0", ["data-cfx-region"] = code, ["data-cfx-region-name"] = name, ["data-cfx-label"] = name, ["data-cfx-point"] = source.HasValue ? N(source.Value) : "-1",
             ["data-cfx-empty"] = source.HasValue ? "false" : "true", ["data-cfx-value"] = value.HasValue ? N(value.Value) : "",
             ["data-cfx-formatted-value"] = full, ["aria-label"] = name + " (" + code + "): " + full
         };

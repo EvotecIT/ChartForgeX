@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 internal static class ChartWaterfallSteps {
     internal static IReadOnlyList<ChartWaterfallStep> Create(ChartSeries series) {
         series.ValidateWaterfall();
-        var typed = series.WaterfallItems.Count > 0;
+        var typed = series.IsTypedWaterfall;
         var items = typed ? series.WaterfallItems : series.RenderPoints.Select(point => ChartWaterfallItem.Delta(point.X, point.Y)).ToArray();
         var steps = new List<ChartWaterfallStep>(items.Count + (typed ? 0 : 1));
         var cumulative = 0d; var checkpointBalance = 0d; var subtotal = 0d; var sourceIndex = 0; var checkpointSource = 0;

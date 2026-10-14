@@ -29,7 +29,7 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets mutable numeric X/Y observations. Typed observation families expose an empty read-only view here.
     /// </summary>
-    public IList<ChartPoint> Points => UsesTypedObservations || IsRelationshipKind(Kind) || WaterfallItems.Count > 0 ? Array.Empty<ChartPoint>() : _points;
+    public IList<ChartPoint> Points => UsesTypedObservations || IsRelationshipKind(Kind) ? Array.Empty<ChartPoint>() : _points;
     private readonly List<ChartPoint> _points = new();
 
     /// <summary>Gets the authored source count, or the retained original-input count for explicit derivation APIs such as histogram, regression, raw-sample box plot and decimation.</summary>
