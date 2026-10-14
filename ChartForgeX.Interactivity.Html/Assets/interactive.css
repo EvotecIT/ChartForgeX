@@ -830,6 +830,10 @@ body {
     transition: none !important;
     will-change: auto;
   }
+
+  .cfx-interactive-chart .cfx-stage > svg :focus {
+    outline: none !important;
+  }
 }
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered) { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column) { opacity: 0 !important; }
