@@ -8,7 +8,7 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-public sealed class TopologyPaletteSelectionTests {
+public sealed partial class TopologyPaletteSelectionTests {
     [Theory]
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]

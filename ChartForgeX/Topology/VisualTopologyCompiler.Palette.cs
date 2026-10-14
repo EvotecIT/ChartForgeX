@@ -11,6 +11,9 @@ internal sealed partial class VisualTopologyCompiler {
         return opacity == 1 ? paint : paint.WithOpacity(result, opacity);
     }
 
-    private ChartColor NodeAccent(TopologyNode node) => Color(node.Color ?? TopologyRenderPrimitives.ResolveNodeIcon(node, _options)?.Color,
-        node.PaletteIndex.HasValue ? PaletteColor(node.PaletteIndex.Value) : Status(node.Status));
+    private ChartColor NodeAccent(TopologyNode node) {
+        var authored = node.Color ?? TopologyRenderPrimitives.ResolveNodeIcon(node, _options)?.Color;
+        if (!string.IsNullOrWhiteSpace(authored)) return Color(authored, Status(node.Status));
+        return node.PaletteIndex.HasValue ? PaletteColor(node.PaletteIndex.Value) : Status(node.Status);
+    }
 }
