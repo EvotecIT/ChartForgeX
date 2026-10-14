@@ -13,6 +13,9 @@ internal static class GraphiteExamples {
         foreach (var dark in new[] { false, true }) {
             var suffix = dark ? "dark" : "light";
             gallery.Append("<section class='").Append(suffix).Append("'><h2>").Append(suffix).Append("</h2>");
+            var lifecycleName = "graphite-" + suffix + "-chart-lifecycle.html";
+            File.WriteAllText(Path.Combine(output, lifecycleName), HtmlChartLifecycleExamples.CreatePage(dark));
+            gallery.Append("<p><a href='").Append(lifecycleName).Append("'>Update measurements and retain chart identity</a></p>");
             foreach (var anchor in Enum.GetValues<HtmlChartTooltipAnchor>()) {
                 var name = "graphite-" + suffix + "-tooltip-" + anchor.ToString().ToLowerInvariant();
                 File.WriteAllText(Path.Combine(output, name + ".html"), HtmlTooltipPositionExamples.CreatePage(anchor, dark));

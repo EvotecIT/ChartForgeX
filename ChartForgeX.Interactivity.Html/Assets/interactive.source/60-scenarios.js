@@ -278,6 +278,7 @@
     if (!Number.isFinite(index) || index < 0) index = 0;
     if (index >= route.steps.length && route.loopPlayback) index = 0;
     const advance = () => {
+      if (!root.isConnected || chartLifetimes.get(root)?.disposed !== false) { stopScenarioPlayback(root, 'paused', false); return; }
       if (index >= route.steps.length) {
         if (route.loopPlayback) index = 0;
         else {
@@ -298,6 +299,5 @@
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).catch(() => {});
     emitHostEvent(root, 'cfxscenariolink', { url });
   };
-  document.querySelectorAll('.cfx-interactive-chart').forEach((root) => {
-    if (root.dataset.cfxRuntimeBound === 'true') return;
+  const bindChart = (root) => {
     root.dataset.cfxRuntimeBound = 'true';

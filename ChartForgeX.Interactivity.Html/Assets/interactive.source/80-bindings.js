@@ -6,7 +6,7 @@
     if (!tip) return;
     applyRenderedTargetContract(root);
     prepareRootBranchHighlights(root);
-    if (root._cfxBranchHighlights) root.addEventListener('keydown', event => {
+    if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
       event.stopPropagation();
@@ -16,13 +16,13 @@
     });
     applyViewport(root, getState(root));
     renderCompare(root);
-    if (compareTray) compareTray.addEventListener('pointerdown', (event) => event.stopPropagation());
+    if (compareTray) listenChart(root, compareTray, 'pointerdown', (event) => event.stopPropagation());
     if (hasFeature(root, 'StateBookmarks')) {
-      root.addEventListener('cfx-capture-state', (event) => {
+      listenChart(root, root, 'cfx-capture-state', (event) => {
         const detail = event.detail || {};
         publishInteractionState(root, detail.source || 'host', detail.sync);
       });
-      root.addEventListener('cfx-apply-state', (event) => {
+      listenChart(root, root, 'cfx-apply-state', (event) => {
         const detail = event.detail || {};
         applyInteractionState(root, detail.snapshot || detail.state || detail, true, detail.sync);
       });
@@ -34,16 +34,16 @@
       const focusNode = targetFocusNode(node);
       const labels = pointLabelSurfaces(root, node);
       [node, ...labels].forEach(surface => {
-        surface.addEventListener('pointerenter', (event) => {
+        listenChart(root, surface, 'pointerenter', (event) => {
           if (!pointerTargetPaint(node)) return;
           if (!ownsTooltipPointer(root, event)) hideCrosshair(root, crosshair);
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
-        surface.addEventListener('pointermove', (event) => {
+        listenChart(root, surface, 'pointermove', (event) => {
           if (ownsTooltipPointer(root, event)) moveTip(tip, event, node);
         });
-        surface.addEventListener('pointerleave', (event) => {
+        listenChart(root, surface, 'pointerleave', (event) => {
           if (!ownsTooltipPointer(root, event)) return;
           clearHover(root, true, true);
           if (!retainPointerTip(root, event)) hideTip(root, tip, false);
@@ -53,9 +53,9 @@
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
         let pointerFocus = false;
         // Touch compatibility mouse events can focus the mark after pointerup has already cleared the press.
-        ['pointerdown', 'mousedown'].forEach(type => focusNode.addEventListener(type, (event) => { pointerFocus = event.button === 0; }));
-        ['pointerup', 'pointercancel', 'pointerleave', 'mouseup'].forEach(type => focusNode.addEventListener(type, () => { pointerFocus = false; }));
-        focusNode.addEventListener('focus', (event) => {
+        ['pointerdown', 'mousedown'].forEach(type => listenChart(root, focusNode, type, (event) => { pointerFocus = event.button === 0; }));
+        ['pointerup', 'pointercancel', 'pointerleave', 'mouseup'].forEach(type => listenChart(root, focusNode, type, () => { pointerFocus = false; }));
+        listenChart(root, focusNode, 'focus', (event) => {
           refreshKeyboardNavigation(root, node);
           // Revealing a partly visible mark between pointer down and up retargets its native click.
           if (hasFeature(root, 'KeyboardNavigation') && !pointerFocus) scrollKeyboardTargetIntoView(root, focusNode);
@@ -64,7 +64,7 @@
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
-        focusNode.addEventListener('blur', () => {
+        listenChart(root, focusNode, 'blur', () => {
           pointerFocus = false;
           clearHover(root, true, true);
           hideTip(root, tip, false);
@@ -82,9 +82,9 @@
           pinTip(root, tip, node, event);
         }
       };
-      focusNode.addEventListener('click', activateTarget);
-      labels.forEach(label => label.addEventListener('click', activateTarget));
-      if (hasFeature(root, 'KeyboardNavigation')) focusNode.addEventListener('keydown', (event) => {
+      listenChart(root, focusNode, 'click', activateTarget);
+      labels.forEach(label => listenChart(root, label, 'click', activateTarget));
+      if (hasFeature(root, 'KeyboardNavigation')) listenChart(root, focusNode, 'keydown', (event) => {
         if (!hasFeature(root, 'KeyboardNavigation') || event.defaultPrevented || event.target !== focusNode) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();
@@ -107,30 +107,30 @@
       });
     });
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
-      button.addEventListener('click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
+      listenChart(root, button, 'click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
     });
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
-      button.addEventListener('click', () => setMode(root, button.dataset.cfxModeButton || ''));
+      listenChart(root, button, 'click', () => setMode(root, button.dataset.cfxModeButton || ''));
     });
     root.querySelectorAll('[data-cfx-export]').forEach((button) => {
-      button.addEventListener('click', () => {
+      listenChart(root, button, 'click', () => {
         if (button.dataset.cfxExport === 'png') exportPng(root);
         else exportSvg(root);
       });
     });
     root.querySelectorAll('[data-cfx-scenario]').forEach((button) => {
-      button.addEventListener('click', () => setScenario(root, button.dataset.cfxScenario || '', true));
+      listenChart(root, button, 'click', () => setScenario(root, button.dataset.cfxScenario || '', true));
     });
     if (hasFeature(root, 'Scenarios')) {
-      root.addEventListener('cfx-set-scenario', (event) => {
+      listenChart(root, root, 'cfx-set-scenario', (event) => {
         const detail = event.detail || {};
         setScenario(root, detail.scenarioId || '', true, true);
       });
-      root.addEventListener('cfx-clear-scenario', () => setScenario(root, '', true, true));
+      listenChart(root, root, 'cfx-clear-scenario', () => setScenario(root, '', true, true));
     }
     if (hasFeature(root, 'StepPlayback')) {
       root.querySelectorAll('[data-cfx-scenario-step-control]').forEach((button) => {
-        button.addEventListener('click', () => {
+        listenChart(root, button, 'click', () => {
           const action = button.dataset.cfxScenarioStepControl || '';
           if (action === 'previous') stepScenario(root, -1);
           else if (action === 'next') stepScenario(root, 1);
@@ -139,25 +139,25 @@
           else if (action === 'link') copyScenarioLink(root);
         });
       });
-      root.addEventListener('cfx-set-scenario-step', (event) => {
+      listenChart(root, root, 'cfx-set-scenario-step', (event) => {
         const detail = event.detail || {};
         if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, true, true);
         const index = detail.index !== undefined ? detail.index : detail.stepIndex;
         setScenarioStep(root, index, true, true);
       });
-      root.addEventListener('cfx-clear-scenario-step', () => {
+      listenChart(root, root, 'cfx-clear-scenario-step', () => {
         stopScenarioPlayback(root, 'paused');
         clearScenarioStep(root);
         clearReveals(root);
       });
-      root.addEventListener('cfx-play-scenario', (event) => {
+      listenChart(root, root, 'cfx-play-scenario', (event) => {
         const detail = event.detail || {};
         if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, true, true);
         playScenario(root);
       });
-      root.addEventListener('cfx-pause-scenario', () => stopScenarioPlayback(root, 'paused'));
+      listenChart(root, root, 'cfx-pause-scenario', () => stopScenarioPlayback(root, 'paused'));
       const scrubber = root.querySelector('[data-cfx-scenario-scrubber]');
-      if (scrubber) scrubber.addEventListener('input', () => {
+      if (scrubber) listenChart(root, scrubber, 'input', () => {
         stopScenarioPlayback(root, 'paused');
         setScenarioStep(root, Number(scrubber.value) - 1, true, true);
       });
@@ -167,8 +167,8 @@
           const item = target instanceof Element ? target.closest('[data-cfx-scenario-step-index]') : null;
           if (item && stepsList.contains(item)) setScenarioStep(root, Number(item.getAttribute('data-cfx-scenario-step-index')) - 1, true, true);
         };
-        stepsList.addEventListener('click', (event) => focusStep(event.target));
-        stepsList.addEventListener('keydown', (event) => {
+        listenChart(root, stepsList, 'click', (event) => focusStep(event.target));
+        listenChart(root, stepsList, 'keydown', (event) => {
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
           focusStep(event.target);
@@ -185,17 +185,21 @@
       if (hasFeature(root, 'StepPlayback') && initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) startScenarioPlayback(root, initialRoute, 0, false, true);
     }
     if (stage) {
-      stage.addEventListener('pointerenter', (event) => {
+      listenChart(root, stage, 'pointerenter', (event) => {
         // A new contact can acquire sparse plot space before any native mark receives its own entry.
         if (!ownsTooltipPointer(root, event)) updateNearestPoint(root, crosshair, tip, event);
       });
-      stage.addEventListener('wheel', (event) => {
+      listenChart(root, stage, 'wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
         event.preventDefault();
         zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92);
       }, { passive: false });
       let drag = null;
-      stage.addEventListener('pointerdown', (event) => {
+      ownChartWork(root, () => {
+        if (drag && stage.hasPointerCapture(drag.id)) stage.releasePointerCapture(drag.id);
+        drag = null;
+      });
+      listenChart(root, stage, 'pointerdown', (event) => {
         if (event.button !== 0) return;
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           const state = getState(root);
@@ -215,7 +219,7 @@
           stage.setPointerCapture(event.pointerId);
         }
       });
-      stage.addEventListener('pointermove', (event) => {
+      listenChart(root, stage, 'pointermove', (event) => {
         if (!drag || drag.id !== event.pointerId) {
           if (!ownsTooltipPointer(root, event)) return;
           updateNearestPoint(root, crosshair, tip, event);
@@ -234,7 +238,7 @@
           brush.style.height = Math.abs(y - drag.top) + 'px';
         }
       });
-      stage.addEventListener('pointerup', (event) => {
+      listenChart(root, stage, 'pointerup', (event) => {
         if (!drag || drag.id !== event.pointerId) return;
         if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
@@ -253,13 +257,13 @@
         stage.releasePointerCapture(event.pointerId);
         drag = null;
       });
-      stage.addEventListener('pointerleave', (event) => {
+      listenChart(root, stage, 'pointerleave', (event) => {
         if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
-      stage.addEventListener('pointercancel', (event) => {
+      listenChart(root, stage, 'pointercancel', (event) => {
         if (drag && drag.id === event.pointerId) drag = null;
         if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
@@ -268,8 +272,8 @@
       });
     }
     const reset = root.querySelector('[data-cfx-reset]');
-    if (reset) window.addEventListener('resize', () => syncResetControl(root));
-    if (reset) reset.addEventListener('click', () => {
+    if (reset) listenChart(root, window, 'resize', () => syncResetControl(root));
+    if (reset) listenChart(root, reset, 'click', () => {
       resetViewport(root);
       emitHostEvent(root, 'cfxreset', {});
       emitHostEvent(root, 'cfxviewport', { state: getState(root) });
@@ -288,5 +292,4 @@
       publishCompare(root, true);
       syncResetControl(root);
     });
-  });
-})();
+  };

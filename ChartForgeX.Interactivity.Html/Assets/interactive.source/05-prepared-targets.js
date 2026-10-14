@@ -31,7 +31,7 @@
         { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived, identity: derivedPointIdentity(node) }]));
     const observationIds = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-observation-id]'))
       .map(node => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxObservationId]));
-    svg.querySelectorAll('[data-cfx-role="legend-entry"]').forEach((node) => {
+    svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
       const match = source.match(/^legend-series-(\d+)(?:-point-(\d+|other))?$/);

@@ -68,7 +68,7 @@
     const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
     root.dispatchEvent(new CustomEvent('cfxsync', { detail }));
     document.querySelectorAll('.cfx-interactive-chart').forEach((peer) => {
-      if (sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
+      if (chartLifetimes.get(peer)?.disposed === false && sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
     });
   };
   const applyMode = (root, mode) => {
@@ -187,7 +187,12 @@
     const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
     const sourceUrl = URL.createObjectURL(source);
     const image = new Image();
+    let canceled = false;
+    const release = ownChartWork(root, () => {
+      canceled = true; image.onload = null; image.onerror = null; image.src = ''; URL.revokeObjectURL(sourceUrl);
+    });
     image.onload = () => {
+      if (canceled) return;
       const size = svgSize(serialized.svg);
       const scale = Math.max(1, Math.ceil(window.devicePixelRatio || 1));
       const canvas = document.createElement('canvas');
@@ -195,17 +200,18 @@
       canvas.height = size.height * scale;
       const context = canvas.getContext('2d');
       if (!context) {
-        URL.revokeObjectURL(sourceUrl);
+        release();
         return;
       }
       context.setTransform(scale, 0, 0, scale, 0, 0);
       context.clearRect(0, 0, size.width, size.height);
       context.drawImage(image, 0, 0, size.width, size.height);
       canvas.toBlob((blob) => {
-        URL.revokeObjectURL(sourceUrl);
-        if (blob) downloadBlob(root, blob, 'png', 'png');
+        if (canceled) return;
+        release();
+        if (blob && root.isConnected) downloadBlob(root, blob, 'png', 'png');
       }, 'image/png');
     };
-    image.onerror = () => URL.revokeObjectURL(sourceUrl);
+    image.onerror = release;
     image.src = sourceUrl;
   };

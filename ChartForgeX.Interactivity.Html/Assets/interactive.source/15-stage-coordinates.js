@@ -47,6 +47,7 @@
       if (event.target === stage.querySelector('svg') && event.propertyName === 'transform') hideGuide();
     };
     const queueRefresh = () => {
+      if (chartLifetimes.get(root)?.disposed !== false) return;
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         frame = 0;
@@ -64,12 +65,13 @@
         refreshKeyboardNavigation(root);
       });
     };
-    stage.addEventListener('scroll', hideGuide, { passive: true });
-    stage.addEventListener('transitionend', finishViewport);
-    stage.addEventListener('transitioncancel', finishViewport);
-    window.addEventListener('resize', queueRefresh);
+    listenChart(root, stage, 'scroll', hideGuide, { passive: true });
+    listenChart(root, stage, 'transitionend', finishViewport);
+    listenChart(root, stage, 'transitioncancel', finishViewport);
+    listenChart(root, window, 'resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
       observer = new ResizeObserver(queueRefresh);
       observer.observe(stage);
     }
+    ownChartWork(root, () => { if (frame) cancelAnimationFrame(frame); observer?.disconnect(); });
   };

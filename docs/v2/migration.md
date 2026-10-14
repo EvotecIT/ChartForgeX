@@ -32,6 +32,8 @@ Option callbacks now clone, configure and install an independent result. Callbac
 
 The [API conventions](api-conventions.md#one-theme-and-an-explicit-mode) contain current examples and ownership details. Migrate and qualify real consumers against candidate packages before delivering the break; source compilation does not establish public availability or installed-host readiness.
 
+For embedded ordinary charts, replace runtime re-execution and manual SVG replacement with `ChartForgeXCharts.mount(section)` and its retained controller. Pass fresh `ToInteractiveHtmlFragmentWithoutAssets` output to `controller.update(...)`; retain the generated section's prepared metadata with its SVG. Explicit series and observation IDs preserve appropriate selection through reordered data, while anonymous point ordinals clear on full replacement. Call `controller.dispose()` when removing a view, and mount it again after reconnecting. `controller.resize()` refreshes browser geometry; native design-size changes require another C# preparation and update. See [updating embedded charts](../interactivity.md#updating-embedded-charts).
+
 ## Maps and calendar observations
 
 Use `ChartSeries.CreateDottedMap`, `CreateCalendarHeatmap`, `CreateRegionMap` or `CreateTileMap` with an explicit ID when retaining a configurable series. Attach it through `chart.AddSeries(series)`. Their `Points` view is empty and read-only; use complete `MapPoints`, `CalendarItems` or `RegionValues` instead of editing encoded numeric points and parallel labels, values or colors. `PointValues` is removed. An observation's optional color belongs to the typed item; `WithPointColor` remains a presentation override.

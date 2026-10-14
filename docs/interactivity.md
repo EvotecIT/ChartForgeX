@@ -201,6 +201,34 @@ chart.SaveInteractiveHtml(Path.Combine(bundle, "latency.html"), options => optio
 
 `HtmlInteractiveDashboardOptions.ExternalAssets` and `HtmlGraphExplorerOptions.ExternalAssets` work the same way, and `HtmlInteractiveTopologyRenderer.RenderPage(chart, options, assets)` links the topology runtime from `HtmlInteractiveAssetFiles.TopologyScript(options)` (topology page styles stay inline because they depend on the render options). File names carry a content hash (`cfx-interactive.<hash>.js`), so every page of a bundle points at the same file and an upgraded runtime never collides with a cached copy. `WriteTo` leaves identical files untouched. Set `IncludeIntegrity = true` to add `sha384` Subresource Integrity attributes for hosted bundles; it is off by default because browsers refuse integrity-checked assets on `file://` pages, and integrity-checked assets are requested with `crossorigin="anonymous"`, so assets on another origin need CORS headers. Script nonces are kept on external script tags.
 
+## Updating embedded charts
+
+Use `ChartForgeXCharts.mount` when a host inserts a chart after registering the shared runtime. Pages and fragments that include their runtime mount automatically. Mounting the same connected section again returns its existing controller:
+
+```js
+const root = document.querySelector('.cfx-interactive-chart');
+const controller = ChartForgeXCharts.mount(root);
+
+// replacementHtml is a fresh ToInteractiveHtmlFragmentWithoutAssets result.
+controller.update(replacementHtml);
+controller.resize();
+
+// Release browser work when the host no longer needs the chart.
+controller.dispose();
+```
+
+Prepare replacement content through the same C# chart API used for the original view. Update typed observations or replace their collection, assign the intended observation IDs, and call `chart.ToInteractiveHtmlFragmentWithoutAssets(...)` again. `update` accepts that HTML string or its unmounted section element. It validates the section, SVG and prepared metadata before changing the current chart. Keep the adapter's matching SVG and metadata together; an SVG alone is insufficient. Chart data, axes, ticks and text layout remain owned by native preparation.
+
+The [light lifecycle example](../Website/static/examples/generated/graphite-light-chart-lifecycle.html) and [dark lifecycle example](../Website/static/examples/generated/graphite-dark-chart-lifecycle.html) let you select measurements, update their values and order, dispose the chart, and mount it again. Generate both through the existing `--graphite-only` examples command.
+
+The controller retains the original section element, host attributes such as `id` and `slot`, and host CSS properties outside the `--cfx-` namespace. Existing host event listeners remain attached. The replacement supplies the chart's generated attributes, theme variables, controls, SVG and readout. `cfxupdated` fires on the section after its replacement is ready.
+
+Selection and legend mute/isolation follow surviving explicitly identified series. Point selection also requires an authored observation ID; full replacement clears selection of anonymous ordinal points. Named nodes, links and regions retain their identity within their explicit series. Removed targets lose their state. Hover, pinned or delayed tooltips and focus trails clear; keyboard focus follows a surviving identified target or returns to the chart section. The geometric viewport remains in place.
+
+`resize()` refreshes browser hit geometry, navigation and active readout placement after host layout changes. The adapter also observes ordinary container resizing and hidden-host reveal. To change the native design size, prepare another chart at that size and pass its generated section to `update`; scaling a fixed SVG does not regenerate its ticks or typography.
+
+`dispose()` releases chart listeners, observers, scheduled frames, pending readouts, exports and scenario playback immediately. It is safe to call more than once. Removing a chart also releases its work when the browser delivers the removal. Reinserted sections require a fresh `mount`; a disposed controller cannot update or resize them. Register shared assets once, and mount newly inserted sections explicitly instead of executing another copy of the runtime.
+
 ## Topology motion with HTML controls
 
 Use `ChartForgeX.Stories` and `ChartForgeX.Interactivity.Html` together when a topology needs script-free SVG motion and browser controls:

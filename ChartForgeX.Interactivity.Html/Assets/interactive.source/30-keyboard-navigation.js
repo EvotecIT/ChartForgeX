@@ -119,6 +119,7 @@
       ancestry.trees.forEach(tree => tree.addEventListener('slotchange', queueRefresh, true));
     };
     const queueRefresh = () => {
+      if (chartLifetimes.get(root)?.disposed !== false) return;
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         frame = 0;
@@ -132,7 +133,7 @@
         watchAncestry(); refreshKeyboardNavigation(root);
       });
     };
-    window.addEventListener('resize', queueRefresh);
+    listenChart(root, window, 'resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
       // Tabs and other initially hidden hosts acquire layout without a window resize.
       resizeObserver = new ResizeObserver(queueRefresh);
@@ -140,6 +141,7 @@
     }
     // Native paint and host styles can change without a resize. Tab and arrow availability share this owner.
     paintObserver = new MutationObserver(records => {
+      if (chartLifetimes.get(root)?.disposed !== false) return;
       if (!root.isConnected) { queueRefresh(); return; }
       if (!records.some(record => root.contains(record.target) || record.type === 'attributes' && ancestry.nodes.includes(record.target)
         || record.type === 'childList' && Array.from(record.removedNodes).some(node => ancestry.nodes.some(boundary => node.contains(boundary))))) return;
@@ -147,6 +149,10 @@
       refreshKeyboardNavigation(root);
     });
     watchAncestry();
+    ownChartWork(root, () => {
+      if (frame) cancelAnimationFrame(frame);
+      resizeObserver?.disconnect(); paintObserver?.disconnect(); unwatchSlots();
+    });
   };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) {
