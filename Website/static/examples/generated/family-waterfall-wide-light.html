@@ -118,7 +118,9 @@ public static class WaterfallRecipe {
                 ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
                 ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
                 ChartWaterfallItem.Total(7)
-            }).WithPointColor(4, &quot;#A5358A&quot;);
+            }).WithObservationId(3, new ChartObservationId(&quot;cost-change&quot;))
+                .WithObservationId(4, new ChartObservationId(&quot;cost-checkpoint&quot;))
+                .WithPointColor(4, &quot;#A5358A&quot;);
             chart.WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;).AddSeries(movement)
                 .ConfigureWaterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
             if (horizontal) chart.WithXAxis(&quot;Running balance&quot;).WithYAxis(&quot;Stage&quot;).WithBarStyle(ChartBarStyle.SegmentedCapsule);
@@ -174,7 +176,9 @@ public static class WaterfallRecipe {
                 ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
                 ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
                 ChartWaterfallItem.Total(7)
-            }).WithPointColor(4, &quot;#A5358A&quot;);
+            }).WithObservationId(3, new ChartObservationId(&quot;cost-change&quot;))
+                .WithObservationId(4, new ChartObservationId(&quot;cost-checkpoint&quot;))
+                .WithPointColor(4, &quot;#A5358A&quot;);
             chart.WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;).AddSeries(movement)
                 .ConfigureWaterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
             if (horizontal) chart.WithXAxis(&quot;Running balance&quot;).WithYAxis(&quot;Stage&quot;).WithBarStyle(ChartBarStyle.SegmentedCapsule);

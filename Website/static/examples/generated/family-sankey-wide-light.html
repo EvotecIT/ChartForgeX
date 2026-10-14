@@ -116,6 +116,12 @@ public static class SankeyRecipe {
             new ChartFlowLink(&quot;automatic-completed&quot;, &quot;automatic&quot;, &quot;completed&quot;, 65), new ChartFlowLink(&quot;automatic-review&quot;, &quot;automatic&quot;, &quot;review&quot;, 7),
             new ChartFlowLink(&quot;manual-completed&quot;, &quot;manual&quot;, &quot;completed&quot;, 20), new ChartFlowLink(&quot;manual-review&quot;, &quot;manual&quot;, &quot;review&quot;, 8)
         });
+        if (variant == &quot;sparse&quot;) requests.ReplaceFlowData(new[] {
+            new ChartNode(&quot;received&quot;, &quot;Received&quot;), new ChartNode(&quot;completed&quot;, &quot;Completed&quot;), new ChartNode(&quot;review&quot;, &quot;Review&quot;)
+        }, new[] {
+            new ChartFlowLink(&quot;received-completed&quot;, &quot;received&quot;, &quot;completed&quot;, 85),
+            new ChartFlowLink(&quot;received-review&quot;, &quot;received&quot;, &quot;review&quot;, 15)
+        });
         return Chart.Create().AddSeries(requests).WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
     }
 }
@@ -154,6 +160,12 @@ public static class SankeyRecipe {
             new ChartFlowLink(&quot;received-automatic&quot;, &quot;received&quot;, &quot;automatic&quot;, 72), new ChartFlowLink(&quot;received-manual&quot;, &quot;received&quot;, &quot;manual&quot;, 28),
             new ChartFlowLink(&quot;automatic-completed&quot;, &quot;automatic&quot;, &quot;completed&quot;, 65), new ChartFlowLink(&quot;automatic-review&quot;, &quot;automatic&quot;, &quot;review&quot;, 7),
             new ChartFlowLink(&quot;manual-completed&quot;, &quot;manual&quot;, &quot;completed&quot;, 20), new ChartFlowLink(&quot;manual-review&quot;, &quot;manual&quot;, &quot;review&quot;, 8)
+        });
+        if (variant == &quot;sparse&quot;) requests.ReplaceFlowData(new[] {
+            new ChartNode(&quot;received&quot;, &quot;Received&quot;), new ChartNode(&quot;completed&quot;, &quot;Completed&quot;), new ChartNode(&quot;review&quot;, &quot;Review&quot;)
+        }, new[] {
+            new ChartFlowLink(&quot;received-completed&quot;, &quot;received&quot;, &quot;completed&quot;, 85),
+            new ChartFlowLink(&quot;received-review&quot;, &quot;received&quot;, &quot;review&quot;, 15)
         });
         return Chart.Create().AddSeries(requests).WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
     }
