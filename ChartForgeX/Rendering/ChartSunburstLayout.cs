@@ -47,7 +47,7 @@ internal sealed class ChartSunburstModel {
 internal static class ChartSunburstLayout {
     public static ChartSunburstModel Compute(Chart chart, ChartRect plot) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Sunburst);
-        if (series?.Relationships == null) return ChartSunburstModel.Empty;
+        if (series?.Relationships == null || series.Nodes.Count == 0) return ChartSunburstModel.Empty;
         var facts = series.Relationships;
         var values = facts.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
         var nodes = new List<ChartSunburstNode>();

@@ -117,6 +117,22 @@ Categorical `HeatmapCells` includes null masked cells in column order. Observati
 
 `ObservationCount` counts authored observations, including masked categorical columns. `SourcePointCount` retains original-input counts for explicit decimation, histograms, regressions and raw-sample box plots; ordinary typed inputs count typed items. Editing a raw box-plot summary clears its raw-sample provenance because the new summary is no longer derived from those samples.
 
+Relationship series retain immutable `Nodes` and `FlowLinks`, `TreeLinks` or `HierarchyItems`. Keep the series handle when replacing a complete graph:
+
+```csharp
+var requests = ChartSeries.CreateSankey(new ChartSeriesId("requests"), "Requests",
+    new[] { new ChartNode("received", "Received"), new ChartNode("completed", "Completed") },
+    new[] { new ChartFlowLink("processed", "received", "completed", 40) });
+chart.AddSeries(requests);
+requests.ReplaceFlowData(
+    new[] { new ChartNode("completed", "Completed"), new ChartNode("received", "Received") },
+    new[] { new ChartFlowLink("processed", "received", "completed", 55) });
+```
+
+`ReplaceFlowData` serves Sankey and Chord, `ReplaceTreeData` serves Tree, and `ReplaceHierarchyItems` serves Sunburst and Treemap. Each operation copies and validates the complete graph before installation. A failure leaves facts and metadata intact. A successful replacement clears ordinal observation IDs, point presentation, node states and flow overrides while retaining series identity and configuration. Authored node and flow IDs in the replacement identify the new targets even after reordering or renaming. Already prepared visuals retain the earlier graph; export the chart again to render its replacement.
+
+Empty node/link pairs or empty hierarchy items create the same no-data state through factories and replacements. Partial empty graphs still undergo family validation. Relationship `ObservationCount` counts nodes; `SourcePointCount` is zero because these families have no numeric XY source observations, and `Points` stays empty and read-only.
+
 ## Configuration callback ownership
 
 Public option callbacks use one transaction: clone current options, invoke the callback, then install an independent clone after success. A thrown callback leaves the previous owner and collections unchanged. References obtained before the callback, and references retained inside it, do not mutate the newly installed options. Read the current option property after a successful callback when another edit is needed.

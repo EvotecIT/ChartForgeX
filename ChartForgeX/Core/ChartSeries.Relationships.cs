@@ -17,6 +17,33 @@ public sealed partial class ChartSeries {
     /// <summary>Gets the immutable authored groups and leaves of a Sunburst or Treemap series, in input order.</summary>
     public IReadOnlyList<ChartHierarchyItem> HierarchyItems => Relationships?.HierarchyItems ?? Array.Empty<ChartHierarchyItem>();
 
+    /// <summary>Replaces all Sankey or Chord nodes and flows after snapshotting and validating the complete graph.</summary>
+    /// <remarks>Empty nodes and flows clear the data. Successful replacement clears observation, node and flow overrides;
+    /// series identity and configuration remain. An invalid or interrupted input leaves the previous data and overrides intact.</remarks>
+    public ChartSeries ReplaceFlowData(IEnumerable<ChartNode> nodes, IEnumerable<ChartFlowLink> links) {
+        RequireObservationKind(ChartSeriesKind.Sankey, ChartSeriesKind.Chord);
+        SetRelationships(Kind == ChartSeriesKind.Sankey ? ChartRelationshipIndex.Sankey(nodes, links) : ChartRelationshipIndex.Chord(nodes, links));
+        return this;
+    }
+
+    /// <summary>Replaces all Tree nodes and branches after snapshotting and validating the complete hierarchy.</summary>
+    /// <remarks>Empty nodes and branches clear the data. Successful replacement clears observation and node overrides;
+    /// series identity and configuration remain. Nonempty trees retain their connected, single-root validation.</remarks>
+    public ChartSeries ReplaceTreeData(IEnumerable<ChartNode> nodes, IEnumerable<ChartTreeLink> links) {
+        RequireObservationKind(ChartSeriesKind.Tree);
+        SetRelationships(ChartRelationshipIndex.Hierarchy(nodes, links));
+        return this;
+    }
+
+    /// <summary>Replaces all Sunburst or Treemap items after snapshotting and validating their complete parent relationships.</summary>
+    /// <remarks>Empty items clear the data. Successful replacement clears observation and node overrides while retaining
+    /// series identity and configuration. Sunburst parent-size policy is validated during chart preparation.</remarks>
+    public ChartSeries ReplaceHierarchyItems(IEnumerable<ChartHierarchyItem> items) {
+        RequireObservationKind(ChartSeriesKind.Sunburst, ChartSeriesKind.Treemap);
+        SetRelationships(ChartRelationshipIndex.AreaHierarchy(items, allowForest: Kind == ChartSeriesKind.Treemap, requireNullGroups: Kind == ChartSeriesKind.Treemap));
+        return this;
+    }
+
     private readonly Dictionary<string, ChartSeriesState> _nodeStates = new(StringComparer.Ordinal);
     private IReadOnlyDictionary<string, ChartSeriesState>? _nodeStatesView;
 
@@ -34,7 +61,12 @@ public sealed partial class ChartSeries {
 
     internal ChartRelationshipIndex? Relationships { get; private set; }
     internal static bool IsRelationshipKind(ChartSeriesKind kind) => kind == ChartSeriesKind.Sankey || kind == ChartSeriesKind.Chord || kind == ChartSeriesKind.Tree || kind == ChartSeriesKind.Sunburst || kind == ChartSeriesKind.Treemap;
-    internal void SetRelationships(ChartRelationshipIndex relationships) => Relationships = relationships;
+    private void SetRelationships(ChartRelationshipIndex relationships) {
+        Relationships = relationships;
+        ClearObservationMetadata();
+        _nodeStates.Clear(); _flowStyles.Clear(); _flowStates.Clear();
+        ObservationDataChanged(0);
+    }
 
     internal void ValidateRelationships(bool preparing) {
         if (_points.Count > 0) throw new InvalidOperationException("Relationship series use typed nodes, links or hierarchy items; raw relationship points are not supported.");

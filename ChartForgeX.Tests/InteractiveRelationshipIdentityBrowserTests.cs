@@ -98,6 +98,35 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
     }
 
     [BrowserTheory]
+    [InlineData(ChartSeriesKind.Sankey, true, 360)]
+    [InlineData(ChartSeriesKind.Chord, false, 800)]
+    public async Task FreshExportAfterGraphReplacementSelectsTheNewFactsThroughTheirAuthoredIds(ChartSeriesKind kind, bool dark, int width) {
+        if (!Enabled) return;
+        var series = RelationshipDataLifecycleTests.Create(kind).WithNodeState("input", ChartSeriesState.Danger)
+            .WithFlowState("received", ChartSeriesState.Danger);
+        var chart = Chart.Create().WithSize(width, width < 500 ? 320 : 460).AddSeries(series)
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("Updated requests");
+        series.ReplaceFlowData(RelationshipDataLifecycleTests.Nodes(reversed: true), RelationshipDataLifecycleTests.Flows(9));
+        var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
+        await using var session = await OpenAsync(html, width + 24, width < 500 ? 430 : 570);
+        var page = session.Page;
+        await page.EvaluateAsync("() => { window.selections = []; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.selections.push(event.detail)); }");
+        var link = page.Locator("[data-cfx-target-kind=link][data-cfx-target-id=received]");
+        await link.FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal("received", await page.EvaluateAsync<string>("() => window.selections.at(-1).target.targetId"));
+        Assert.Equal("9", await page.EvaluateAsync<string>("() => window.selections.at(-1).target.value"));
+        Assert.Equal("traffic", await link.GetAttributeAsync("data-cfx-series-key"));
+        Assert.Equal("None", await link.GetAttributeAsync("data-cfx-state"));
+        var output = page.Locator("[data-cfx-target-kind=node][data-cfx-target-id=output]");
+        await output.FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal("output", await page.EvaluateAsync<string>("() => window.selections.at(-1).target.targetId"));
+        Assert.Equal("Resolved", await page.EvaluateAsync<string>("() => window.selections.at(-1).target.label"));
+        Assert.Equal("9", await page.EvaluateAsync<string>("() => window.selections.at(-1).target.value"));
+        var name = "replaced-" + kind.ToString().ToLowerInvariant() + "-" + width;
+        await Capture(page, name, html); await CaptureNative(chart, name); AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
     [InlineData(ChartSeriesKind.Tree, false, 800)]
     [InlineData(ChartSeriesKind.Tree, true, 360)]
     [InlineData(ChartSeriesKind.Sunburst, false, 800)]

@@ -9,6 +9,12 @@ public static class SankeyRecipe {
             new ChartFlowLink("automatic-completed", "automatic", "completed", 65), new ChartFlowLink("automatic-review", "automatic", "review", 7),
             new ChartFlowLink("manual-completed", "manual", "completed", 20), new ChartFlowLink("manual-review", "manual", "review", 8)
         });
+        if (variant == "sparse") requests.ReplaceFlowData(new[] {
+            new ChartNode("received", "Received"), new ChartNode("completed", "Completed"), new ChartNode("review", "Review")
+        }, new[] {
+            new ChartFlowLink("received-completed", "received", "completed", 85),
+            new ChartFlowLink("received-review", "received", "review", 15)
+        });
         return Chart.Create().AddSeries(requests).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
     }
 }

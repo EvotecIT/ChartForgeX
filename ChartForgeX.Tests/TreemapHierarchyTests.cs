@@ -132,7 +132,7 @@ public sealed class TreemapHierarchyTests {
     public void InvalidItemsReferencesCyclesAndAggregatesAreAtomic() {
         var chart = Chart.Create().AddLine("Existing", new[] { new ChartPoint(1, 2) }); var existing = chart.Series[0];
         var invalid = new[] {
-            Array.Empty<ChartHierarchyItem>(), new[] { default(ChartHierarchyItem) },
+            new[] { default(ChartHierarchyItem) },
             new[] { new ChartHierarchyItem("same", "First", value: 1), new ChartHierarchyItem("same", "Second", value: 2) },
             new[] { new ChartHierarchyItem("leaf", "Leaf") },
             new[] { new ChartHierarchyItem("leaf", "Leaf", "missing", 1) },
