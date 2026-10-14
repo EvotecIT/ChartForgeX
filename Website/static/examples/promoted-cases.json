@@ -311,6 +311,38 @@
       }
     },
     {
+      "id": "mermaid-flowchart-shape-captions",
+      "title": "Flowchart shapes and captions",
+      "category": "topology",
+      "summary": "Mermaid source shapes render as rectangles, diamonds, circles, storage cylinders and parallelograms with centered, measured captions.",
+      "alt": "Two rows of connected Mermaid flowchart shapes show a request, approval decision, circular completion steps, an audit-log cylinder and a two-line manual review caption.",
+      "useCase": "Turn process documentation into SVG, PNG and static HTML while preserving the authored shapes and labels.",
+      "capabilities": [
+        "Mermaid input",
+        "source shapes",
+        "measured captions",
+        "SVG and PNG"
+      ],
+      "featured": false,
+      "source": {
+        "path": "ChartForgeX.Examples/MermaidExamples.cs",
+        "entry": "MermaidExamples.Write(output)",
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/MermaidExamples.cs"
+      },
+      "build": {
+        "command": "dotnet run --project ./ChartForgeX.Examples -c Release -- --mermaid-only",
+        "outputPath": "ChartForgeX.Examples/bin/Release/net8.0/output/mermaid-flowchart-shape-captions.html"
+      },
+      "artifacts": {
+        "preview": "/examples/generated/mermaid-flowchart-shape-captions.png",
+        "html": "/examples/generated/mermaid-flowchart-shape-captions.html",
+        "svg": "/examples/generated/mermaid-flowchart-shape-captions.svg",
+        "png": "/examples/generated/mermaid-flowchart-shape-captions.png",
+        "width": 640,
+        "height": 326
+      }
+    },
+    {
       "id": "graphite-light-chart-lifecycle",
       "title": "Update measurements in a retained chart",
       "category": "charts",
