@@ -20,7 +20,8 @@ internal static class PageVisuals {
             ["examples"] = examples,
             ["docs"] = docs,
             ["nav"] = NavVisuals.Write(output, docs),
-            ["gallery"] = GalleryVisuals.Write(output)
+            ["gallery"] = GalleryVisuals.Write(output),
+            ["notFound"] = NotFoundVisuals.Write(output)
         };
 
         var json = JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true });
@@ -31,7 +32,7 @@ internal static class PageVisuals {
 
 /// <summary>Writes generated files under static/site and measures what it wrote.</summary>
 internal sealed class VisualOutput {
-    private static readonly string[] OwnedFolders = { "atlas", "nav", "docs", "examples", "gallery" };
+    private static readonly string[] OwnedFolders = { "atlas", "nav", "docs", "examples", "gallery", "pages" };
     private static readonly Regex RootSize = new(@"<svg\b[^>]*?\bwidth=""(?<w>[\d.]+)""[^>]*?\bheight=""(?<h>[\d.]+)""", RegexOptions.Compiled);
     private static readonly Regex ViewBox = new(@"<svg\b[^>]*?\bviewBox=""[\d.\-]+ [\d.\-]+ (?<w>[\d.]+) (?<h>[\d.]+)""", RegexOptions.Compiled);
 

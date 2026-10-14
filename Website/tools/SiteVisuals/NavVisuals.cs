@@ -119,13 +119,14 @@ internal static class NavVisuals {
         var lines = File.ReadAllLines(Path.Combine(website, "powershell", "latency-trend.ps1"))
             .Select(line => line.Trim())
             .Where(line => line.StartsWith("New-ImageChart", StringComparison.Ordinal))
-            .Take(3)
+            .Take(2)
             .ToArray();
         var story = TerminalStory.Create()
             .WithDialect(TerminalDialect.PowerShell)
             .WithTheme(dark ? TerminalTheme.GraphiteDark() : TerminalTheme.GraphiteLight())
             .WithWorkingDirectory(@"C:\Reports")
-            .WithWidth(Width * 4)
+            .WithWidth(Width * 3)
+            .WithPngOutputScale(1)
             .WithFinalPrompt(false);
         foreach (var line in lines) story.Command(line);
         return story;

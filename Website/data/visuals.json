@@ -518,10 +518,17 @@
       "powershell": {
         "base": "/site/nav/powershell",
         "ext": "png",
-        "w": 1920,
-        "h": 360,
-        "kb": 62.8
+        "w": 720,
+        "h": 180,
+        "kb": 21.4
       }
     }
+  },
+  "notFound": {
+    "base": "/site/pages/not-found",
+    "ext": "svg",
+    "w": 560,
+    "h": 300,
+    "kb": 7.5
   }
 }
