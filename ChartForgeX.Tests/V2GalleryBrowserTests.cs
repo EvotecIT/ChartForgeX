@@ -135,7 +135,7 @@ public sealed class V2GalleryBrowserTests {
         await page.EvaluateAsync("() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__cfxCopiedSource = text; } } })");
         await page.Locator("[data-copy-source]").ClickAsync();
         Assert.Equal(sourceText, await page.EvaluateAsync<string>("() => window.__cfxCopiedSource"));
-        await page.Locator(".source-heading").ScrollIntoViewIfNeededAsync();
+        await page.Locator(".source-heading").EvaluateAsync("node => node.scrollIntoView({ block: 'start' })");
         if (!string.IsNullOrWhiteSpace(captures))
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "example-source-" + width + ".png") });
         await page.Locator(".back-link").ClickAsync();
