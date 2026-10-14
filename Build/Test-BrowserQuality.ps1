@@ -66,7 +66,12 @@ try {
         'InteractiveChartLifecycleBrowserTests.DefaultResetAndLoopingPlaybackReleaseResourcesAfterUpdateAndDisposalOrRemoval',
         'InteractiveChartLifecycleBrowserTests.PointLegendMuteAndIsolationFollowAuthoredIdentityAcrossNativeReordering',
         'InteractiveChartLifecycleBrowserTests.DisposalClearsComparisonBrushAndResetPresentationBeforeFreshMount',
-        'InteractiveChartLifecycleBrowserTests.NativeWheelZoomsAndCanceledTouchBrushReleasesUncommittedPresentation'
+        'InteractiveChartLifecycleBrowserTests.NativeWheelZoomsAndCanceledTouchBrushReleasesUncommittedPresentation',
+        'DottedMapPointLegendBrowserTests.PointKeysKeepWeightedFactsAndPointOnlyLegendStateAcrossNativeReplacement',
+        'DottedMapPointLegendBrowserTests.UnweightedLocationAndZeroWeightHaveDistinctLegendReadouts',
+        'MermaidMindMapColorModeTests.StaticMindmapHostsDisplaySvgAndNativePng',
+        'TopologyPaletteTrunkTests.EqualRgbIncomingSlotsKeepIndependentHostColorsAndMarkers',
+        'InteractiveHtmlPagePolishBrowserTests.StandalonePagesPrintTheCompleteNativeChartAndRestoreTheScreenView'
     )
     foreach ($contract in $requiredContracts) {
         $observed = @($report.TestRun.Results.UnitTestResult | Where-Object { $_.testName.Contains($contract) })

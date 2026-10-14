@@ -190,6 +190,9 @@ for (const { folder, file, hasExpected } of files) {
         assert.deepEqual(nodes.map(node => [node.name, node.value ?? null, parents.get(node) ?? null]), expected.treemap.nodes);
         assert.equal(indexes.size, nodes.length, 'Treemap source nodes retain distinct identities.');
       }
+      if (expected.mindmap) {
+        assert.deepEqual(mindmapFacts(diagram.db, Object.hasOwn(expected.mindmap, 'sections')), expected.mindmap);
+      }
       if (expected.radar) {
         assert.deepEqual(diagram.db.getAxes().map(axis => [axis.name, axis.label]), expected.radar.axes);
         assert.deepEqual(diagram.db.getCurves().map(curve => [curve.name, curve.label, curve.entries]), expected.radar.curves);
@@ -259,3 +262,21 @@ if (failures.length > 0) {
 }
 
 console.log(`Mermaid.js ${reference.version}: ${accepted} accepted, ${rejected} documented syntax rejections, ${semanticVariants} explicit semantic variant(s).`);
+
+// The parsed hierarchy is available in every pinned engine. Color sections become
+// model facts in 11/12; the 10 expectations omit those renderer-only facts.
+function mindmapFacts(db, includeSections) {
+  const facts = { nodes: [] };
+  const sections = includeSections
+    ? new Map(db.getData().nodes.map(node => [String(node.id), node.section ?? null])) : null;
+  if (sections) facts.sections = [];
+  function visit(node, parent) {
+    const index = facts.nodes.length;
+    facts.nodes.push([node.descr, parent]);
+    if (sections) facts.sections.push(sections.get(String(node.id)));
+    for (const child of node.children ?? []) visit(child, index);
+  }
+  const root = db.getMindmap();
+  if (root) visit(root, null);
+  return facts;
+}

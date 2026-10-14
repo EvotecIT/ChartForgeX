@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Topology;
@@ -17,23 +18,30 @@ public sealed partial class MermaidMindMapColorModeTests {
     [InlineData(MermaidMindMapColorMode.Depth, false)]
     [InlineData(MermaidMindMapColorMode.Depth, true)]
     public void SourceConfigurationColorsDirectAndFencedMindmaps(MermaidMindMapColorMode mode, bool directive) {
-        var source = Configuration(mode, directive) + Uneven;
+        var path = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures",
+            "mindmap-" + mode.ToString().ToLowerInvariant() + "-uneven.mmd");
+        var source = directive ? Configuration(mode, true) + string.Join("\n", File.ReadAllLines(path).SkipWhile(line => line.Trim() != "mindmap"))
+            : File.ReadAllText(path);
+        using var expected = JsonDocument.Parse(File.ReadAllText(Path.ChangeExtension(path, ".expected.json")));
+        var facts = expected.RootElement.GetProperty("mindmap");
+        var sections = facts.GetProperty("sections").EnumerateArray().Select(section => section.ValueKind == JsonValueKind.Null ? -1 : section.GetInt32()).ToArray();
         var parsed = new MermaidParser().ParseMindMap(source);
         Assert.Empty(parsed.Diagnostics);
         var document = Assert.IsType<MermaidMindMapDocument>(parsed.Document);
         Assert.Equal(mode, document.ColorBy);
         Assert.Equal(new[] { 0, 1, 2, 3, 3, 1, 2, 3 }, document.Nodes.Select(node => node.Level));
-        Assert.Equal(new[] { "Root", "Owner A", "Repo A", "Leaf A", "Leaf B", "Owner B", "Repo B", "Leaf C" }, document.Nodes.Select(node => node.Text));
-        Assert.Equal(new string?[] { null, "Root", "Owner A", "Repo A", "Repo A", "Root", "Owner B", "Repo B" },
-            document.Nodes.Select(node => node.ParentId == null ? null : document.Nodes.Single(parent => parent.Id == node.ParentId).Text));
+        var indexes = document.Nodes.Select((node, index) => (node.Id, index)).ToDictionary(item => item.Id, item => item.index);
+        Assert.Equal(facts.GetProperty("nodes").EnumerateArray().Select(node =>
+                (node[0].GetString(), node[1].ValueKind == JsonValueKind.Null ? (int?)null : node[1].GetInt32())),
+            document.Nodes.Select(node => ((string?)node.Text, node.ParentId == null ? (int?)null : indexes[node.ParentId])));
         var topology = document.ToTopologyChart();
-        AssertSections(topology, mode == MermaidMindMapColorMode.Branch ? BranchSections : DepthSections);
+        AssertSections(topology, sections);
 
         var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
         Assert.Empty(fenced.Diagnostics);
         var artifact = Assert.Single(fenced.Artifacts);
         var fencedTopology = Assert.IsType<TopologyChart>(artifact.Model);
-        AssertSections(fencedTopology, mode == MermaidMindMapColorMode.Branch ? BranchSections : DepthSections);
+        AssertSections(fencedTopology, sections);
         Assert.Equal(topology.Nodes.Select(node => (node.Label, node.PaletteIndex)), fencedTopology.Nodes.Select(node => (node.Label, node.PaletteIndex)));
     }
 

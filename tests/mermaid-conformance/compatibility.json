@@ -468,6 +468,26 @@
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
+    "fixtures/mindmap-branch-uneven.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "expectedByReference": { "10": "mindmap-branch-uneven.expected.10.json" },
+      "notes": {
+        "10": "Mermaid 10 exposes the parsed hierarchy but assigns color sections only while rendering; this parser/model fixture checks labels and parents without claiming section rendering."
+      },
+      "provenance": "Authored uneven-indentation branch-color fixture based on the documented mindmap hierarchy contract and upstream regression https://github.com/mermaid-js/mermaid/pull/8394; selected model facts verified with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "fixtures/mindmap-depth-uneven.mmd": {
+      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "expectedByReference": {
+        "10": "mindmap-depth-uneven.expected.10.json",
+        "11": "mindmap-depth-uneven.expected.11.json"
+      },
+      "notes": {
+        "10": "Mermaid 10 accepts the source configuration without depth-color semantics. Its parsed hierarchy exposes labels and parents; color sections are assigned only while rendering and are not asserted by this fixture.",
+        "11": "Mermaid 11 accepts but ignores mindmap.colorBy: depth; its model retains branch sections. Mermaid 12.2 assigns sections by structural parent depth."
+      },
+      "provenance": "Authored structural-depth color fixture based on https://mermaid.js.org/syntax/mindmap.html#coloring-by-depth-v12-2-0 and upstream regression https://github.com/mermaid-js/mermaid/pull/8394; selected model facts verified with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
     "fixtures/packet-basic.mmd": {
       "syntax": {
         "10": "rejected",
