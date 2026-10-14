@@ -40,18 +40,23 @@ internal static class MermaidPresentation {
         } else if (model is Chart chart) {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;
-            if (document.Theme != null) chart.WithTheme(string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light());
+            if (document.Theme != null) chart.WithTheme(SourceTheme(document.Theme));
             if (document.Configuration.FontFamily != null) chart.WithFontFamily(document.Configuration.FontFamily);
             ScaleChartTypography(chart.Options.Theme, document.Configuration.FontSize);
         } else if (model is IVisualBlock block) {
             block.Options.Accessibility.Name = document.Accessibility.Name;
             block.Options.Accessibility.Description = document.Accessibility.Description;
-            if (document.Theme != null) block.Options.Theme = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.Dark() : ChartTheme.Light();
+            if (document.Theme != null) block.Options.Theme = SourceTheme(document.Theme);
             if (document.Configuration.FontFamily != null) block.Options.Theme.FontFamily = document.Configuration.FontFamily;
             ScaleChartTypography(block.Options.Theme, document.Configuration.FontSize);
         }
         return model;
     }
+
+    // Charts and blocks start from the Graphite theme, so the source's light or dark choice must swap only the
+    // Graphite colours; the legacy report presets would also change typography, corners and spacing.
+    private static ChartTheme SourceTheme(string theme) =>
+        string.Equals(theme, "dark", StringComparison.OrdinalIgnoreCase) ? ChartTheme.GraphiteDark() : ChartTheme.GraphiteLight();
 
     private static VisualTypography Typography(VisualTypography source, MermaidSourceConfiguration configuration) {
         var scale = configuration.FontSize.HasValue ? configuration.FontSize.Value / source.DataLabelSize : 1;
