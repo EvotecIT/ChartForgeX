@@ -8,12 +8,13 @@ internal static class HtmlInteractivePage {
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        if (assets == null) {
-            HtmlChartRenderer.WriteDocumentHead(writer, title, HtmlInteractiveAssets.Style);
-        } else {
-            HtmlChartRenderer.WriteDocumentHead(writer, title, null);
+        var pageStyle = "body{" + HtmlSurfacePolish.BrowserTextPolishCss + "}"
+            + HtmlSurfacePolish.PrintBodyCss("0", ".cfx-shell{min-height:auto;padding:0;background:transparent!important}");
+        HtmlChartRenderer.WriteDocumentHead(writer, title, assets == null ? HtmlInteractiveAssets.Style : null);
+        if (assets != null) {
             HtmlInteractiveAssetFiles.WriteStylesheet(writer, assets, HtmlInteractiveAssetFiles.ChartStyle);
         }
+        writer.StartElement("style").EndStartElement().RawTrusted(pageStyle).EndElement().Line();
 
         writer.EndElement().Line()
             .StartElement("body").EndStartElement().Line();

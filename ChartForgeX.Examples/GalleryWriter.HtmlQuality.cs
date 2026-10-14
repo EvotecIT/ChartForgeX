@@ -15,7 +15,7 @@ public static partial class GalleryWriter {
         var hasExpectedOverflow = hasWatermark
             ? html.Contains("overflow:hidden", StringComparison.Ordinal)
             : html.Contains("overflow:visible", StringComparison.Ordinal) || HasUnclippedNativeGrid(html, css)
-                || HasClippedStaticArtifact(html, css);
+                || HasClippedStaticArtifact(html, css) || HasBoundedInteractiveChart(html, css);
         var hasFlatBody = Regex.Matches(css, "(?:^|})\\s*body\\s*\\{(?<body>[^{}]*)}", RegexOptions.IgnoreCase)
             .Select(match => Regex.Match(match.Groups["body"].Value, "(?:^|;)\\s*background(?:-color)?\\s*:\\s*(?<color>[^;]+)", RegexOptions.IgnoreCase))
             .Where(match => match.Success).Take(1)
@@ -65,5 +65,37 @@ public static partial class GalleryWriter {
         return viewBox.Success && bounds.Length == 4 && bounds.All(value =>
             double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) && double.IsFinite(number))
             && double.Parse(bounds[2], CultureInfo.InvariantCulture) > 0 && double.Parse(bounds[3], CultureInfo.InvariantCulture) > 0;
+    }
+
+    private static bool HasBoundedInteractiveChart(string html, string css) {
+        // Pan/zoom is bounded by the stage; readable mode scrolls only that stage.
+        // Accept the generated native responsive contract, never page or host clipping.
+        var host = Regex.Match(html, "<section\\s[^>]*class=\"cfx-interactive-chart\"[^>]*>", RegexOptions.IgnoreCase);
+        var layout = Regex.Match(host.Value, "data-cfx-responsive-layout=\"(?<layout>fit|readable)\"");
+        var nativeWidth = Regex.Match(host.Value, "--cfx-native-width:(?<size>[0-9.]+)px(?:;|\")");
+        var nativeHeight = Regex.Match(host.Value, "--cfx-native-height:(?<size>[0-9.]+)px(?:;|\")");
+        if (!host.Success || !layout.Success || !nativeWidth.Success || !nativeHeight.Success) return false;
+        var stage = Regex.Match(html, "<div\\s[^>]*class=\"cfx-stage\"[^>]*>\\s*(?<svg><svg\\s[^>]*>)", RegexOptions.IgnoreCase);
+        if (!stage.Success || !stage.Groups["svg"].Value.Contains("xmlns=\"http://www.w3.org/2000/svg\"", StringComparison.Ordinal)) return false;
+        var viewBox = Regex.Match(stage.Groups["svg"].Value, "(?:^|\\s)viewBox=\"(?<bounds>[^\"]+)\"");
+        var bounds = Regex.Split(viewBox.Groups["bounds"].Value.Trim(), "[\\s,]+");
+        if (!viewBox.Success || bounds.Length != 4 || bounds.Any(value =>
+            !double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) || !double.IsFinite(number))) return false;
+        if (!double.TryParse(nativeWidth.Groups["size"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var width)
+            || !double.TryParse(nativeHeight.Groups["size"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var height)
+            || !double.IsFinite(width) || !double.IsFinite(height) || width <= 0 || height <= 0
+            || width != double.Parse(bounds[2], CultureInfo.InvariantCulture) || height != double.Parse(bounds[3], CultureInfo.InvariantCulture)) return false;
+        var stageRule = Regex.Match(css, "\\.cfx-stage\\s*\\{(?<body>[^{}]*)}");
+        if (!stageRule.Success || !Regex.IsMatch(stageRule.Groups["body"].Value, "(?:^|;)\\s*overflow\\s*:\\s*hidden\\s*(?:;|$)")) return false;
+        var selector = ".cfx-interactive-chart[data-cfx-responsive-layout=\"" + layout.Groups["layout"].Value + "\"] .cfx-stage svg";
+        var sizing = Regex.Match(css, Regex.Escape(selector) + "\\s*\\{(?<body>[^{}]*)}");
+        if (!sizing.Success || !Regex.IsMatch(sizing.Groups["body"].Value, "(?:^|;)\\s*width\\s*:\\s*100%\\s*(?:;|$)")) return false;
+        if (layout.Groups["layout"].Value == "fit"
+            && !Regex.IsMatch(sizing.Groups["body"].Value, "(?:^|;)\\s*height\\s*:\\s*auto\\s*(?:;|$)")) return false;
+        if (layout.Groups["layout"].Value == "readable"
+            && !sizing.Groups["body"].Value.Contains("min-width: min(var(--cfx-native-width, 640px), 38rem)", StringComparison.Ordinal)) return false;
+        var hostRules = Regex.Matches(css, "(?:^|})\\s*(?:html|html,body|body|\\.cfx-shell|\\.cfx-interactive-chart|\\.cfx-frame)\\s*\\{(?<body>[^{}]*)}");
+        return !Regex.IsMatch(host.Value, "overflow(?:-[xy])?\\s*:", RegexOptions.IgnoreCase)
+            && !hostRules.Any(rule => Regex.IsMatch(rule.Groups["body"].Value, "overflow(?:-[xy])?\\s*:", RegexOptions.IgnoreCase));
     }
 }

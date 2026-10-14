@@ -5,7 +5,7 @@ namespace ChartForgeX.Html;
 
 internal static class HtmlSurfacePolish {
     private const string BaseBodyCss = "body{margin:0;min-height:100vh;min-height:100svh;";
-    private const string BrowserTextPolishCss = "-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision";
+    internal const string BrowserTextPolishCss = "-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision";
 
     internal static ChartColor PageBackground(ChartColor background, ChartColor elevatedSurface) =>
         background.A == 0 ? elevatedSurface : background;
