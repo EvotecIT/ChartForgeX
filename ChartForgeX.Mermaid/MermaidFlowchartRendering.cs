@@ -107,6 +107,8 @@ public static class MermaidFlowchartRendering {
             target.SourceMarker = MermaidFlowchartOperators.Marker(edge.Operator, true);
             target.TargetMarker = MermaidFlowchartOperators.Marker(edge.Operator, false);
             target.LineStyle = ToLineStyle(edge.Operator);
+            if (document.Kind == MermaidDiagramKind.Flowchart || document.Kind == MermaidDiagramKind.Swimlane)
+                target.MinimumRankSpan = MermaidFlowchartOperators.MinimumRankSpan(edge.Operator);
             if (document.Kind == MermaidDiagramKind.UseCase) target.Routing = TopologyEdgeRouting.Straight;
             var edgeColor = StyleValue(edge.Styles, "stroke");
             if (!string.IsNullOrWhiteSpace(edgeColor)) target.Color = edgeColor;

@@ -172,6 +172,7 @@ for (const { folder, file, hasExpected } of files) {
         assert.deepEqual(diagram.db.getEdges().map(edge => [edge.start, edge.end]), expected.edges);
         if (expected.referenceEdgeTypes) assert.deepEqual(diagram.db.getEdges().map(edge => edge.type), expected.referenceEdgeTypes);
         if (expected.edgeLabels) assert.deepEqual(diagram.db.getEdges().map(edge => edge.text), expected.edgeLabels);
+        if (expected.minimumRankSpans) assert.deepEqual(diagram.db.getEdges().map(edge => edge.length), expected.minimumRankSpans);
       }
       if (expected.sankey) {
         const graph = diagram.db.getGraph();

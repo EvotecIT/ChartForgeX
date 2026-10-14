@@ -238,6 +238,14 @@
       },
       "provenance": "Authored flowchart node metadata scalar examples; modern node metadata is supported by the pinned Mermaid 11 and 12 parsers."
     },
+    "fixtures/flowchart-link-lengths.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored ChartForgeX conformance example for documented link-length syntax; verified with the pinned official Mermaid parsers."
+    },
     "fixtures/flowchart-modern.mmd": {
       "syntax": {
         "10": "rejected",
