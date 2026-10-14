@@ -59,6 +59,8 @@ if (!result.HasErrors && result.Artifact != null) {
 
 Inspect `Diagnostics` even when rendering succeeds: warnings identify syntax or configuration retained without exact visual interpretation. `accTitle` and single-line or multiline `accDescr` provide accessible names and descriptions. The `dark` and `default` source themes select static palettes. Source font stacks reach chart, topology, sequence and visual-block owners; native font resolution uses the existing fallback rules and does not fetch remote fonts. Other themes and settings produce approximation warnings.
 
+The artifact title comes from the family render option `Title`, then the diagram's own `title` statement, then the frontmatter `title`, then a family name such as `Mermaid flowchart`. Like Mermaid, rendered diagrams have no subtitle by default; set the family option `Subtitle` (for example `options.Flowchart.Subtitle`) to add one. The header keyword line stays available as `mermaid.header` artifact metadata.
+
 `MermaidRenderOptions` lives in `ChartForgeX.Mermaid` and supplies family defaults to both the source renderer and `MermaidVisualMarkupParser`. Replace the former `ChartForgeX.Markup.Mermaid.MermaidVisualMarkupRenderOptions` type with this shared type when migrating source code.
 
 Topology diagram dimensions set the minimum canvas. The renderer expands the canvas when node content or relationship notation needs more space; the artifact's natural size reports those rendered dimensions.
@@ -708,7 +710,7 @@ Supported pie parsing includes:
 
 - `pie` headers.
 - Optional `showData` on the header line or as a body statement.
-- Optional `title` statements.
+- Optional titles on the header line (`pie title Output by surface`, `pie showData title ...`) or as `title` statements.
 - Quoted slice labels with positive numeric values.
 - Source spans for every slice.
 

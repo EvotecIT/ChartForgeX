@@ -302,13 +302,23 @@ internal static partial class TopologyLayoutEngine {
         var totalHeight = prepared.Sum(layer => layer.BlockSize);
         var layerGap = prepared.Count <= 1 ? 0 : Math.Max(rankSpacing, (availableH - totalHeight) / (prepared.Count - 1));
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var lanes = LongEdgeLanePlan.Create(chart, prepared, false, availableW, nodeSpacing + 18);
         var y = top;
 
         for (var layerIndex = 0; layerIndex < prepared.Count; layerIndex++) {
             var layer = prepared[layerIndex];
             var gapAfter = LayerGapAfter(prepared, layerIndex, layerGap, rankSpacing);
             if (TryPlaceHierarchyBucketsTopToBottom(layer, nodesById, pad, availableW, y, out var hierarchyHeight)) {
+                lanes.Reject(layerIndex);
+                lanes.RecordRank(layerIndex, y, y + Math.Max(layer.BlockSize, hierarchyHeight));
                 y += Math.Max(layer.BlockSize, hierarchyHeight) + gapAfter;
+                continue;
+            }
+
+            lanes.RecordRank(layerIndex, y, y + layer.BlockSize);
+            if (lanes.HasLanes(layerIndex)) {
+                lanes.Place(chart, layer, layerIndex, false, pad, availableW, y, nodeSpacing + 18, nodesById);
+                y += layer.BlockSize + gapAfter;
                 continue;
             }
 
@@ -328,6 +338,7 @@ internal static partial class TopologyLayoutEngine {
             y += layer.BlockSize + gapAfter;
         }
 
+        lanes.ApplyRoutes(nodesById, false);
         ApplyHierarchyEdgeRoutesTopToBottom(chart);
     }
 
@@ -347,13 +358,23 @@ internal static partial class TopologyLayoutEngine {
         var totalWidth = prepared.Sum(layer => layer.BlockSize);
         var layerGap = prepared.Count <= 1 ? 0 : Math.Max(rankSpacing + 14, (availableW - totalWidth) / (prepared.Count - 1));
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var lanes = LongEdgeLanePlan.Create(chart, prepared, true, availableH, nodeSpacing + 6);
         var x = pad;
 
         for (var layerIndex = 0; layerIndex < prepared.Count; layerIndex++) {
             var layer = prepared[layerIndex];
             var gapAfter = LayerGapAfter(prepared, layerIndex, layerGap, rankSpacing);
             if (TryPlaceHierarchyBucketsLeftToRight(layer, nodesById, x, top, availableH, out var hierarchyWidth)) {
+                lanes.Reject(layerIndex);
+                lanes.RecordRank(layerIndex, x, x + Math.Max(layer.BlockSize, hierarchyWidth));
                 x += Math.Max(layer.BlockSize, hierarchyWidth) + gapAfter;
+                continue;
+            }
+
+            lanes.RecordRank(layerIndex, x, x + layer.BlockSize);
+            if (lanes.HasLanes(layerIndex)) {
+                lanes.Place(chart, layer, layerIndex, true, top, availableH, x, nodeSpacing + 6, nodesById);
+                x += layer.BlockSize + gapAfter;
                 continue;
             }
 
@@ -373,6 +394,7 @@ internal static partial class TopologyLayoutEngine {
             x += layer.BlockSize + gapAfter;
         }
 
+        lanes.ApplyRoutes(nodesById, true);
         ApplyHierarchyEdgeRoutesLeftToRight(chart);
     }
 

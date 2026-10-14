@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ChartForgeX.Topology;
@@ -24,7 +25,7 @@ public static class MermaidFlowchartRendering {
         var chart = TopologyChart.Create()
             .WithId(artifactId)
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(document.Kind == MermaidDiagramKind.Swimlane || (document.Kind == MermaidDiagramKind.UseCase && document.Subgraphs.Count > 0) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered, ToVisualLinkDirection(document.Direction));
         var inferredLayers = MermaidFlowchartLayering.Infer(document);
@@ -50,6 +51,7 @@ public static class MermaidFlowchartRendering {
             var sourceLabel = string.IsNullOrWhiteSpace(node.Text) ? node.Id : node.Text!;
             var label = MermaidFlowchartText.DisplayCaption(sourceLabel);
             var nodeWidth = ToNodeWidth(node.Shape, label, options.FitContent);
+            // Mermaid shapes carry the node meaning; an implicit kind would add a glyph Mermaid never draws.
             chart.AddAutoNode(
                 node.Id,
                 label,
@@ -179,30 +181,8 @@ public static class MermaidFlowchartRendering {
     private static TopologyRenderOptions ToTopologyRenderOptions(MermaidFlowchartRenderOptions options) =>
         new TopologyRenderOptions { FitContentToViewport = options.HasExplicitViewportSize };
 
-    private static string ResolveTitle(MermaidFlowchartDocument document, MermaidFlowchartRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        var frontMatterTitle = FindFrontMatterValue(document.FrontMatter, "title");
-        return string.IsNullOrWhiteSpace(frontMatterTitle) ? document.Kind == MermaidDiagramKind.Swimlane ? "Mermaid swimlane" : document.Kind == MermaidDiagramKind.UseCase ? "Mermaid use case" : "Mermaid flowchart" : frontMatterTitle!;
-    }
-
-    private static string ResolveSubtitle(MermaidFlowchartDocument document, MermaidFlowchartRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
-    }
-
-    private static string? FindFrontMatterValue(string? frontMatter, string key) {
-        if (string.IsNullOrWhiteSpace(frontMatter)) return null;
-        var lines = frontMatter!.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
-        var prefix = key + ":";
-        foreach (var line in lines) {
-            var trimmed = line.Trim();
-            if (!trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
-            var value = trimmed.Substring(prefix.Length).Trim();
-            return value.Trim('"', '\'');
-        }
-
-        return null;
-    }
+    private static string ResolveTitle(MermaidFlowchartDocument document, MermaidFlowchartRenderOptions options) =>
+        MermaidHeading.Title(document, options.Title, null, document.Kind == MermaidDiagramKind.Swimlane ? "Mermaid swimlane" : document.Kind == MermaidDiagramKind.UseCase ? "Mermaid use case" : "Mermaid flowchart");
 
     private static TopologyLayoutDirection ToVisualLinkDirection(MermaidFlowchartDirection direction) {
         switch (direction) {
@@ -274,6 +254,7 @@ public static class MermaidFlowchartRendering {
             .OrderBy(group => group.Key)
             .ToArray();
         var horizontal = direction is MermaidFlowchartDirection.LeftToRight or MermaidFlowchartDirection.RightToLeft;
+        var corridors = RankSkippingCorridors(chart, layers);
         double requiredWidth;
         double requiredHeight;
         if (horizontal) {
@@ -281,10 +262,10 @@ public static class MermaidFlowchartRendering {
                 + layers.Sum(layer => layer.Max(node => node.Width))
                 + Math.Max(0, layers.Length - 1) * 72;
             requiredHeight = padding * 2 + headerHeight
-                + layers.Max(layer => layer.Sum(node => node.Height) + Math.Max(0, layer.Count() - 1) * 34);
+                + layers.Select((layer, rank) => layer.Sum(node => node.Height) + Math.Max(0, layer.Count() - 1) * 34 + corridors[rank] * CorridorExtent).Max();
         } else {
             requiredWidth = padding * 2
-                + layers.Max(layer => layer.Sum(node => node.Width) + Math.Max(0, layer.Count() - 1) * 34);
+                + layers.Select((layer, rank) => layer.Sum(node => node.Width) + Math.Max(0, layer.Count() - 1) * 34 + corridors[rank] * CorridorExtent).Max();
             requiredHeight = padding * 2 + headerHeight
                 + layers.Sum(layer => layer.Max(node => node.Height))
                 + Math.Max(0, layers.Length - 1) * 58;
@@ -299,6 +280,24 @@ public static class MermaidFlowchartRendering {
             Clamp(requiredWidth, Math.Min(options.MinimumFittedWidth, options.MaximumFittedWidth), Math.Max(options.MinimumFittedWidth, options.MaximumFittedWidth)),
             Clamp(requiredHeight, Math.Min(options.MinimumFittedHeight, options.MaximumFittedHeight), Math.Max(options.MinimumFittedHeight, options.MaximumFittedHeight)),
             padding);
+    }
+
+    // Layered topology layout routes an edge that skips ranks through a reserved corridor beside each intermediate rank.
+    private const double CorridorExtent = 84;
+
+    private static int[] RankSkippingCorridors(TopologyChart chart, IReadOnlyList<IGrouping<int, TopologyNode>> layers) {
+        var rankByNode = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (var rank = 0; rank < layers.Count; rank++) {
+            foreach (var node in layers[rank]) rankByNode[node.Id] = rank;
+        }
+
+        var corridors = new int[layers.Count];
+        foreach (var edge in chart.Edges) {
+            if (!rankByNode.TryGetValue(edge.SourceNodeId, out var source) || !rankByNode.TryGetValue(edge.TargetNodeId, out var target)) continue;
+            for (var rank = Math.Min(source, target) + 1; rank < Math.Max(source, target); rank++) corridors[rank]++;
+        }
+
+        return corridors;
     }
 
     private static double Clamp(double value, double minimum, double maximum) =>

@@ -40,6 +40,12 @@ Plain Mermaid flowchart nodes use `TopologyNodeKind.Generic` with an explicit `S
 
 Captions without card details use measured, centered placement inside the shape. The converter preserves complete source captions instead of imposing a fixed 28-character limit; supported `<br>`, `<br/>` and `<br />` spellings display as line breaks while the AST and `mermaid.label` metadata retain the original text. Authored badges, subtitles, details, icons, artwork and symbols retain their existing display layouts, including dedicated dot presentation.
 
+## Mermaid headings and state notation
+
+Mermaid renderers show a caller-supplied title first, then a supported diagram title statement, the top-level frontmatter `title`, or the family name. Pie titles may appear on the `pie [showData] title ...` header. The source keyword line no longer becomes a subtitle automatically. Set the family's render-option `Subtitle` explicitly when a subtitle is useful; the original header remains in `mermaid.header` metadata.
+
+State nodes use plain native shapes with solid transitions. Start and end states use filled and ringed dots, and choices use diamonds. Code that inspects converted state nodes should use `Shape` and `DisplayMode` instead of the former inferred infrastructure `Kind` or `S`/`E` symbols. Fork/join bars, concurrent regions and complete composite layout remain recorded in the support matrix.
+
 ## Maps and calendar observations
 
 Use `ChartSeries.CreateDottedMap`, `CreateCalendarHeatmap`, `CreateRegionMap` or `CreateTileMap` with an explicit ID when retaining a configurable series. Attach it through `chart.AddSeries(series)`. Their `Points` view is empty and read-only; use complete `MapPoints`, `CalendarItems` or `RegionValues` instead of editing encoded numeric points and parallel labels, values or colors. `PointValues` is removed. An observation's optional color belongs to the typed item; `WithPointColor` remains a presentation override.

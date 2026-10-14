@@ -17,7 +17,7 @@ public static class MermaidTimelineRendering {
         options ??= new MermaidTimelineRenderOptions();
         var chart = Chart.Create()
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithXAxis("Timeline")
             .WithYAxis("Events")
@@ -73,14 +73,7 @@ public static class MermaidTimelineRendering {
         document.ToChart(options).ToPng();
 
     private static string ResolveTitle(MermaidTimelineDocument document, MermaidTimelineRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        if (!string.IsNullOrWhiteSpace(document.Title)) return document.Title!;
-        return "Mermaid timeline";
-    }
-
-    private static string ResolveSubtitle(MermaidTimelineDocument document, MermaidTimelineRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid timeline");
     }
 
     private static string[] GetPeriodLabels(MermaidTimelineDocument document) {

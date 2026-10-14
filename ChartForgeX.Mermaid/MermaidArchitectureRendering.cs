@@ -19,8 +19,8 @@ public static class MermaidArchitectureRendering {
         options ??= new MermaidTopologyRenderOptions();
         var chart = TopologyChart.Create()
             .WithId(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-architecture" : options.Id!.Trim())
-            .WithTitle(string.IsNullOrWhiteSpace(options.Title) ? "Mermaid architecture" : options.Title!)
-            .WithSubtitle(string.IsNullOrWhiteSpace(options.Subtitle) ? document.Header : options.Subtitle!)
+            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid architecture"))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
 

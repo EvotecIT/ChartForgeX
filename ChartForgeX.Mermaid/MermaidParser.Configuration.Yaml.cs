@@ -13,10 +13,7 @@ public sealed partial class MermaidParser {
         var opaqueIndent = -1;
         var opaqueScalarIndent = -1;
         var lines = text.Split('\n');
-        var rootIndent = int.MaxValue;
-        foreach (var line in lines) {
-            if (TrimConfigurationYaml(line).Length > 0 && !line.TrimStart(' ', '\t').StartsWith("#", StringComparison.Ordinal)) rootIndent = Math.Min(rootIndent, ConfigurationYamlIndent(line));
-        }
+        var rootIndent = ConfigurationYamlRootIndent(lines);
         for (var index = 0; index < lines.Length; index++) {
             var raw = lines[index];
             var trimmed = TrimConfigurationYaml(raw);

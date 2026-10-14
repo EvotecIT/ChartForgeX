@@ -37,7 +37,7 @@ public sealed class GanttVerticalMarkerTests {
         Assert.True(marker.Bounds.Height > 0);
         Assert.Single(prepared.Regions, region => region.Role == "gantt-dependency");
         var tasks = prepared.Regions.Where(region => region.Role == "gantt-task").ToArray();
-        var control = Chart.Create().WithTitle("Mermaid Gantt").WithSubtitle("gantt").WithSize(960, 560).WithLegend(false)
+        var control = Chart.Create().WithTitle("Mermaid Gantt").WithSize(960, 560).WithLegend(false)
             .AddGanttTask("Work / Design", Start, Start.AddDays(3)).AddGanttTask("Work / Delivery", Start.AddDays(3), Start.AddDays(5));
         control.AddGanttDependency(control.Series[0], control.Series[1]);
         var controlTasks = control.Prepare(VisualExportRequest.ForChart(control).Context).Regions.Where(region => region.Role == "gantt-task").ToArray();

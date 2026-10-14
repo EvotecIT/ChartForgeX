@@ -13,7 +13,7 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidClassDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var chart = CreateTopology(options, "mermaid-class", ResolveTitle(options, "Mermaid class diagram"), document.Header, document.Classes.Exists(item => item.Namespace != null) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
+        var chart = CreateTopology(options, "mermaid-class", ResolveTitle(document, options, "Mermaid class diagram"), document.Classes.Exists(item => item.Namespace != null) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
         var namespaces = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
         foreach (var item in document.Classes) if (item.Namespace != null && namespaces.Add(item.Namespace)) chart.AddAutoGroup(item.Namespace, item.Namespace);
         foreach (var item in document.Classes) {
@@ -52,7 +52,7 @@ public static partial class MermaidTopologyRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
         var direction = DiagramDirection(document.Direction, TopologyLayoutDirection.TopToBottom);
-        var chart = CreateTopology(options, "mermaid-state", ResolveTitle(options, "Mermaid state diagram"), document.Header, TopologyLayoutMode.Layered, direction);
+        var chart = CreateTopology(options, "mermaid-state", ResolveTitle(document, options, "Mermaid state diagram"), TopologyLayoutMode.Layered, direction);
         foreach (var composite in document.States) {
             if (document.States.Exists(state => state.ParentId == composite.Id)) {
                 chart.AddGroup(composite.Id, composite.Label ?? composite.Id, 0, 0, 220, 150, TopologyHealthStatus.Unknown, cssClass: "cfx-mermaid-state-composite");
@@ -60,8 +60,15 @@ public static partial class MermaidTopologyRendering {
         }
 
         foreach (var item in document.States) {
-            chart.AddAutoNode(item.Id, item.Label ?? item.Id, ToStateNodeKind(item), TopologyHealthStatus.Unknown, groupId: item.ParentId, subtitle: item.Kind, width: ToStateWidth(item), height: ToStateHeight(item), symbol: ToStateSymbol(item), cssClass: "cfx-mermaid-state");
+            // Mermaid draws states as plain surfaces: pseudo-states are markers and no node carries a kind glyph or status.
+            var pseudo = IsPseudoState(item);
+            chart.AddAutoNode(item.Id, pseudo ? item.Kind == "start" ? "Start" : "End" : item.Label ?? item.Id, TopologyNodeKind.Generic, TopologyHealthStatus.Unknown,
+                groupId: item.ParentId, width: ToStateWidth(item), height: ToStateHeight(item), cssClass: "cfx-mermaid-state");
             var node = chart.Nodes[chart.Nodes.Count - 1];
+            node.ShowStatusBadge = false;
+            node.DisplayMode = pseudo ? TopologyNodeDisplayMode.Dot : TopologyNodeDisplayMode.Card;
+            node.PreserveDisplayModeSize = true;
+            node.Shape = ToStateShape(item);
             node.Metadata["mermaid.id"] = item.Id;
             node.Metadata["mermaid.kind"] = item.Kind ?? "state";
             if (item.ParentId != null) node.Metadata["mermaid.parent"] = item.ParentId;
@@ -70,7 +77,9 @@ public static partial class MermaidTopologyRendering {
         for (var index = 0; index < document.Transitions.Count; index++) {
             var item = document.Transitions[index];
             chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
-            chart.Edges[chart.Edges.Count - 1].MinimumRankSpan = 2;
+            var edge = chart.Edges[chart.Edges.Count - 1];
+            edge.MinimumRankSpan = 2;
+            edge.LineStyle = TopologyEdgeLineStyle.Solid;
         }
 
         return MermaidPresentation.Apply(chart, document);
@@ -80,7 +89,7 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidEntityRelationshipDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var chart = CreateTopology(options, "mermaid-er", ResolveTitle(options, "Mermaid ER diagram"), document.Header, TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
+        var chart = CreateTopology(options, "mermaid-er", ResolveTitle(document, options, "Mermaid ER diagram"), TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
         foreach (var item in document.Entities) {
             chart.AddAutoNode(item.Id, item.Id, TopologyNodeKind.Database, TopologyHealthStatus.Unknown, width: EntityWidth(item), height: 82 + item.Attributes.Count * 18, symbol: "ER", cssClass: "cfx-mermaid-er-entity");
             var node = chart.Nodes[chart.Nodes.Count - 1];
@@ -111,8 +120,8 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidTreeViewDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var title = document.Roots.Count == 1 ? ResolveTitle(options, document.Roots[0].Label) : ResolveTitle(options, "Mermaid tree view");
-        var chart = CreateTopology(options, "mermaid-treeview", title, document.Header, TopologyLayoutMode.MindMap, TopologyLayoutDirection.LeftToRight);
+        var title = document.Roots.Count == 1 ? ResolveTitle(document, options, document.Roots[0].Label) : ResolveTitle(document, options, "Mermaid tree view");
+        var chart = CreateTopology(options, "mermaid-treeview", title, TopologyLayoutMode.MindMap, TopologyLayoutDirection.LeftToRight);
         foreach (var item in document.Nodes) {
             var kind = item.Parent == null ? TopologyNodeKind.Hub : item.IsBranch ? TopologyNodeKind.Branch : TopologyNodeKind.Process;
             chart.AddAutoNode(item.Id, item.Label, kind, TopologyHealthStatus.Unknown, width: item.Parent == null ? 150 : 126, height: 54, symbol: item.Parent == null ? "T" : item.IsBranch ? "D" : null, cssClass: "cfx-mermaid-treeview-node");
@@ -130,7 +139,7 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidKanbanDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var chart = CreateTopology(options, "mermaid-kanban", ResolveTitle(options, "Mermaid kanban"), document.Header, TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
+        var chart = CreateTopology(options, "mermaid-kanban", ResolveTitle(document, options, "Mermaid kanban"), TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
         foreach (var column in document.Columns) {
             chart.AddAutoGroup(column.Id, column.Title, TopologyHealthStatus.Unknown, subtitle: column.Tasks.Count.ToString(CultureInfo.InvariantCulture) + " tasks", cssClass: "cfx-mermaid-kanban-column", symbol: "K");
             chart.Groups[chart.Groups.Count - 1].LayoutPolicy = TopologyGroupLayoutPolicy.Grid;
@@ -204,12 +213,12 @@ public static partial class MermaidTopologyRendering {
         "TB" => TopologyLayoutDirection.TopToBottom, "BT" => TopologyLayoutDirection.BottomToTop, _ => fallback
     };
 
-    private static TopologyChart CreateTopology(MermaidTopologyRenderOptions options, string defaultId, string title, string subtitle, TopologyLayoutMode layout, TopologyLayoutDirection direction) {
+    private static TopologyChart CreateTopology(MermaidTopologyRenderOptions options, string defaultId, string title, TopologyLayoutMode layout, TopologyLayoutDirection direction) {
         var id = string.IsNullOrWhiteSpace(options.Id) ? defaultId : options.Id!.Trim();
         return TopologyChart.Create()
             .WithId(id)
             .WithTitle(title)
-            .WithSubtitle(string.IsNullOrWhiteSpace(options.Subtitle) ? subtitle : options.Subtitle!)
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(layout, direction);
     }
@@ -226,7 +235,7 @@ public static partial class MermaidTopologyRendering {
         return MermaidPresentation.Apply(artifact, document);
     }
 
-    private static string ResolveTitle(MermaidTopologyRenderOptions options, string fallback) => string.IsNullOrWhiteSpace(options.Title) ? fallback : options.Title!;
+    private static string ResolveTitle(MermaidDocument document, MermaidTopologyRenderOptions options, string fallback) => MermaidHeading.Title(document, options.Title, null, fallback);
 
     private static string EdgeId(int index) => "mermaid-edge-" + index.ToString(CultureInfo.InvariantCulture);
 
@@ -248,18 +257,17 @@ public static partial class MermaidTopologyRendering {
         return TopologyEdgeKind.Link;
     }
 
-    private static TopologyNodeKind ToStateNodeKind(MermaidStateNode node) {
-        if (node.Kind == "start" || node.Kind == "end") return TopologyNodeKind.Hub;
-        if (string.Equals(node.Kind, "choice", StringComparison.OrdinalIgnoreCase)) return TopologyNodeKind.Gateway;
-        if (string.Equals(node.Kind, "fork", StringComparison.OrdinalIgnoreCase) || string.Equals(node.Kind, "join", StringComparison.OrdinalIgnoreCase)) return TopologyNodeKind.Process;
-        return TopologyNodeKind.Process;
-    }
+    private static bool IsPseudoState(MermaidStateNode node) => node.Kind == "start" || node.Kind == "end";
 
-    private static double ToStateWidth(MermaidStateNode node) => node.Kind == "start" || node.Kind == "end" ? 58 : 132;
+    // Start is a filled dot and end a ringed dot, as in Mermaid; a choice is a decision diamond.
+    private static TopologyNodeShape ToStateShape(MermaidStateNode node) =>
+        node.Kind == "end" ? TopologyNodeShape.DoubleCircle :
+        node.Kind == "start" ? TopologyNodeShape.Circle :
+        string.Equals(node.Kind, "choice", StringComparison.OrdinalIgnoreCase) ? TopologyNodeShape.Diamond : TopologyNodeShape.Rounded;
 
-    private static double ToStateHeight(MermaidStateNode node) => node.Kind == "start" || node.Kind == "end" ? 44 : 58;
+    private static double ToStateWidth(MermaidStateNode node) => IsPseudoState(node) ? 22 : 132;
 
-    private static string? ToStateSymbol(MermaidStateNode node) => node.Kind == "start" ? "S" : node.Kind == "end" ? "E" : null;
+    private static double ToStateHeight(MermaidStateNode node) => IsPseudoState(node) ? 22 : 58;
 
     private static string EntitySubtitle(MermaidEntityNode entity) => entity.Attributes.Count == 0 ? null! : entity.Attributes.Count.ToString(CultureInfo.InvariantCulture) + " attributes";
 

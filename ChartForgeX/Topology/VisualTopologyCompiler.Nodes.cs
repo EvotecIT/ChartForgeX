@@ -37,7 +37,11 @@ internal sealed partial class VisualTopologyCompiler {
             var image = mode == TopologyNodeDisplayMode.Artwork && BuildArtwork(node, bounds);
             if (!image) {
                 if (mode == TopologyNodeDisplayMode.Dot) {
-                    using (PinnedState()) _builder.Ellipse(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2, bounds.Width / 2, bounds.Height / 2, accent, role: "topology-node-surface", paint: new VisualScenePaintBinding(accentPaint));
+                    var ring = node.Shape == TopologyNodeShape.DoubleCircle ? Math.Min(bounds.Width, bounds.Height) * .25 : 0;
+                    using (PinnedState()) {
+                        if (ring > 0) _builder.Ellipse(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2, Math.Max(0, bounds.Width / 2 - strokeWidth / 2), Math.Max(0, bounds.Height / 2 - strokeWidth / 2), null, accent, strokeWidth, role: "topology-node-surface", paint: new VisualScenePaintBinding(stroke: accentPaint));
+                        _builder.Ellipse(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2, bounds.Width / 2 - ring, bounds.Height / 2 - ring, accent, role: "topology-node-surface", paint: new VisualScenePaintBinding(accentPaint));
+                    }
                     if (!string.IsNullOrWhiteSpace(node.Symbol)) {
                         // The canonical compact symbol is 8px on the default 11px typography
                         // scale. Preserve that ratio for custom themes and smaller dot budgets;

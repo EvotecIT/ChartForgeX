@@ -165,13 +165,7 @@ public sealed partial class MermaidParser {
             FrontMatter = frontMatter.Text
         };
 
-        foreach (var token in Tokenize(header.Text)) {
-            if (string.Equals(token, "showData", StringComparison.OrdinalIgnoreCase)) {
-                document.ShowData = true;
-                break;
-            }
-        }
-
+        MermaidPieParser.ParseHeader(document, header.Text);
         MermaidPieParser.ParseStatements(document, lines, header.Line + 1, result);
         return document;
     }

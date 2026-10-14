@@ -18,7 +18,7 @@ public static class MermaidIshikawaRendering {
         options ??= new MermaidIshikawaRenderOptions();
         var block = FishboneDiagramBlock.Create(document.Root.Text)
             .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(ResolveSubtitle(document, options))
+            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithSize(options.Width, options.Height)
             .WithPadding(options.Padding);
 
@@ -69,13 +69,7 @@ public static class MermaidIshikawaRendering {
     }
 
     private static string ResolveTitle(MermaidIshikawaDocument document, MermaidIshikawaRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Title)) return options.Title!;
-        return "Mermaid Ishikawa";
-    }
-
-    private static string ResolveSubtitle(MermaidIshikawaDocument document, MermaidIshikawaRenderOptions options) {
-        if (!string.IsNullOrWhiteSpace(options.Subtitle)) return options.Subtitle!;
-        return document.Header;
+        return MermaidHeading.Title(document, options.Title, null, "Mermaid Ishikawa");
     }
 }
 
