@@ -2524,6 +2524,7 @@ body {
     clearSelections(root); setSeriesIsolation(root, null, false); resetViewport(root);
     root.querySelectorAll('.cfx-series-muted').forEach(node => node.classList.remove('cfx-series-muted'));
     root.querySelectorAll('[data-cfx-muted]').forEach(node => node.removeAttribute('data-cfx-muted'));
+    syncResetControl(root);
     root.querySelectorAll('.cfx-prepared-point-marker,[data-cfx-browser-hit-area],[data-cfx-highlight-outline]').forEach(node => node.remove());
     root.querySelectorAll('[data-cfx-highlight-paint]').forEach(paint => paint.replaceWith(...paint.childNodes));
     root.querySelectorAll('[data-cfx-highlight-managed]').forEach(node => {
@@ -2799,6 +2800,8 @@ body {
   const resetViewport = (root) => {
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
     root.dataset.cfxBrush = '';
+    const brush = root.querySelector('.cfx-brush-box');
+    if (brush) brush.hidden = true;
     root.dataset.cfxMode = '';
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
     syncResetControl(root);
@@ -3181,7 +3184,8 @@ body {
     const data = node.dataset || {};
     const reference = legendTarget(node) || (['node', 'link', 'region'].includes(data.cfxTargetKind)
       ? { targetKind: data.cfxTargetKind, targetId: data.cfxTargetId } : null);
-    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), seriesScope: data.cfxSeriesScope, label: data.cfxLabel || seriesLabel(node),
+    return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), seriesScope: data.cfxSeriesScope,
+      observationId: data.cfxObservationId, label: data.cfxLabel || seriesLabel(node),
       targetKind: data.cfxPoint === undefined ? 'series' : 'point',
       targetId: data.cfxPoint === undefined ? seriesKey(node) : pointTargetId(node), ...reference };
   };
@@ -3419,6 +3423,122 @@ body {
     if (emit !== false) emitHostEvent(root, 'cfxtrail', { target, trail, count: trail.length });
     if (sync !== false) emitSync(root, { action: 'trail', target, trail, count: trail.length });
     return trail;
+  };
+  const applySelectionByLabel = (root, label, selected) => {
+    if (!label) return;
+    interactiveTargets(root).forEach((node) => {
+      if (text(node) === label) setNodeSelected(node, selected);
+    });
+    syncResetControl(root);
+  };
+  const matchesTargetIdentity = (node, target) => {
+    if (!target) return false;
+    const data = node.dataset || {};
+    if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
+    if (target.id) return node.id === target.id || data.cfxId === target.id;
+    if (target.seriesKey) {
+      if (seriesKey(node) !== target.seriesKey) return false;
+      if (target.point !== undefined) return data.cfxPoint === String(target.point);
+      return !target.role || data.cfxRole === target.role;
+    }
+    if (target.series !== undefined && target.point !== undefined && data.cfxSeries === String(target.series) && data.cfxPoint === String(target.point)) return true;
+    if (target.series !== undefined && target.point === undefined && data.cfxSeries === String(target.series) && target.role && data.cfxRole === target.role) return true;
+    if (target.role && data.cfxRole === target.role && target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
+    if (target.role && data.cfxRole === target.role && target.value && (data.cfxValue === target.value || data.cfxY === target.value || data.cfxEnd === target.value)) return true;
+    return false;
+  };
+  const applySelectionByTarget = (root, target, selected) => {
+    if (!target) return false;
+    let matched = false;
+    interactiveTargets(root).forEach((node) => {
+      if (!matchesTargetIdentity(node, target)) return;
+      matched = true;
+      setNodeSelected(node, selected);
+    });
+    syncResetControl(root);
+    return matched;
+  };
+  const clearSelections = (root) => {
+    root.querySelectorAll('.cfx-selected').forEach((node) => {
+      node.classList.remove('cfx-selected');
+      node.removeAttribute('aria-selected');
+    });
+    renderCompare(root);
+    syncResetControl(root);
+  };
+  const applySelectionSetByTargets = (root, targets, replace) => {
+    if (replace !== false) clearSelections(root);
+    let count = 0;
+    (targets || []).forEach((target) => {
+      if (applySelectionByTarget(root, target, true)) count++;
+    });
+    return count;
+  };
+  const nodeCenterInRect = (node, rect) => {
+    const box = node.getBoundingClientRect();
+    if (!box.width && !box.height) return null;
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
+    return { x, y };
+  };
+  const selectTargetsInBox = (root, rect, append) => {
+    if (!hasFeature(root, 'Selection')) return [];
+    if (!append) clearSelections(root);
+    const targets = [];
+    interactiveTargets(root, lassoSelector).forEach((node) => {
+      if (node.closest('[data-cfx-role="legend-item"]')) return;
+      if (!nodeCenterInRect(node, rect)) return;
+      setNodeSelected(node, true);
+      targets.push(targetIdentity(node));
+    });
+    syncResetControl(root);
+    return targets;
+  };
+  const applySync = (root, detail) => {
+    if (!detail || detail.chartId === root.dataset.cfxChartId) return;
+    if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
+    else if (detail.action === 'brush') {
+      root.dataset.cfxBrush = detail.bounds || '';
+      syncResetControl(root);
+    }
+    else if (detail.action === 'selection') {
+      if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
+      renderCompare(root);
+    } else if (detail.action === 'lasso') {
+      applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
+      renderCompare(root);
+    } else if (detail.action === 'compare') {
+      applySelectionSetByTargets(root, detail.targets || [], true);
+      renderCompare(root);
+    }
+    else if (detail.action === 'hover') {
+      clearHover(root, false, false);
+      applyHoverByTarget(root, detail.target);
+      revealTargets(root, [detail.target], false, false, detail.source || 'hover');
+    } else if (detail.action === 'hover-clear') clearHover(root, false, false);
+    else if (detail.action === 'crosshair' || detail.action === 'navigate') {
+      clearHover(root, false, false);
+      applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series');
+      revealTargets(root, [detail.target], false, false, detail.action);
+    }
+    else if (detail.action === 'trail') applyFocusTrail(root, detail.trail || []);
+    else if (detail.action === 'reveal') revealTargets(root, detail.targets || [], false, false, detail.source || '');
+    else if (detail.action === 'reveal-clear') clearReveals(root, detail.source || '');
+    else if (detail.action === 'state') applyInteractionState(root, detail.state, false, false);
+    else if (detail.action === 'series') {
+      const target = resolveSeriesTarget(root, detail.target);
+      if (target) setSeriesMuted(root, target, detail.muted === true);
+    }
+    else if (detail.action === 'series-focus') {
+      const target = resolveSeriesTarget(root, detail.target);
+      if (target) setSeriesIsolation(root, target, detail.isolated === true);
+    }
+    else if (detail.action === 'scenario') setScenario(root, detail.scenarioId || '', false, false);
+    else if (detail.action === 'scenario-step') {
+      if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, false, false);
+      setScenarioStep(root, detail.index, false, false);
+    }
   };
   const revealLayer = (root) => {
     let layer = root.querySelector('[data-cfx-reveal-layer]');
@@ -3671,121 +3791,6 @@ body {
     // Recheck paint on each event: host CSS may change while the semantic target remains the same.
     if (tooltipPoint) showTip(root, tip, tooltipPoint.node, event);
     else hideTip(root, tip, false);
-  };
-  const applySelectionByLabel = (root, label, selected) => {
-    if (!label) return;
-    interactiveTargets(root).forEach((node) => {
-      if (text(node) === label) setNodeSelected(node, selected);
-    });
-    syncResetControl(root);
-  };
-  const matchesTargetIdentity = (node, target) => {
-    if (!target) return false;
-    const data = node.dataset || {};
-    if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
-    if (target.id) return node.id === target.id || data.cfxId === target.id;
-    if (target.seriesKey) {
-      if (seriesKey(node) !== target.seriesKey) return false;
-      if (target.point !== undefined) return data.cfxPoint === String(target.point);
-      return !target.role || data.cfxRole === target.role;
-    }
-    if (target.series !== undefined && target.point !== undefined && data.cfxSeries === String(target.series) && data.cfxPoint === String(target.point)) return true;
-    if (target.series !== undefined && target.point === undefined && data.cfxSeries === String(target.series) && target.role && data.cfxRole === target.role) return true;
-    if (target.role && data.cfxRole === target.role && target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
-    if (target.role && data.cfxRole === target.role && target.value && (data.cfxValue === target.value || data.cfxY === target.value || data.cfxEnd === target.value)) return true;
-    return false;
-  };
-  const applySelectionByTarget = (root, target, selected) => {
-    if (!target) return false;
-    let matched = false;
-    interactiveTargets(root).forEach((node) => {
-      if (!matchesTargetIdentity(node, target)) return;
-      matched = true;
-      setNodeSelected(node, selected);
-    });
-    syncResetControl(root);
-    return matched;
-  };
-  const clearSelections = (root) => {
-    root.querySelectorAll('.cfx-selected').forEach((node) => {
-      node.classList.remove('cfx-selected');
-      node.removeAttribute('aria-selected');
-    });
-    syncResetControl(root);
-  };
-  const applySelectionSetByTargets = (root, targets, replace) => {
-    if (replace !== false) clearSelections(root);
-    let count = 0;
-    (targets || []).forEach((target) => {
-      if (applySelectionByTarget(root, target, true)) count++;
-    });
-    return count;
-  };
-  const nodeCenterInRect = (node, rect) => {
-    const box = node.getBoundingClientRect();
-    if (!box.width && !box.height) return null;
-    const x = box.left + box.width / 2;
-    const y = box.top + box.height / 2;
-    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
-    return { x, y };
-  };
-  const selectTargetsInBox = (root, rect, append) => {
-    if (!hasFeature(root, 'Selection')) return [];
-    if (!append) clearSelections(root);
-    const targets = [];
-    interactiveTargets(root, lassoSelector).forEach((node) => {
-      if (node.closest('[data-cfx-role="legend-item"]')) return;
-      if (!nodeCenterInRect(node, rect)) return;
-      setNodeSelected(node, true);
-      targets.push(targetIdentity(node));
-    });
-    syncResetControl(root);
-    return targets;
-  };
-  const applySync = (root, detail) => {
-    if (!detail || detail.chartId === root.dataset.cfxChartId) return;
-    if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
-    else if (detail.action === 'brush') {
-      root.dataset.cfxBrush = detail.bounds || '';
-      syncResetControl(root);
-    }
-    else if (detail.action === 'selection') {
-      if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
-      renderCompare(root);
-    } else if (detail.action === 'lasso') {
-      applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
-      renderCompare(root);
-    } else if (detail.action === 'compare') {
-      applySelectionSetByTargets(root, detail.targets || [], true);
-      renderCompare(root);
-    }
-    else if (detail.action === 'hover') {
-      clearHover(root, false, false);
-      applyHoverByTarget(root, detail.target);
-      revealTargets(root, [detail.target], false, false, detail.source || 'hover');
-    } else if (detail.action === 'hover-clear') clearHover(root, false, false);
-    else if (detail.action === 'crosshair' || detail.action === 'navigate') {
-      clearHover(root, false, false);
-      applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series');
-      revealTargets(root, [detail.target], false, false, detail.action);
-    }
-    else if (detail.action === 'trail') applyFocusTrail(root, detail.trail || []);
-    else if (detail.action === 'reveal') revealTargets(root, detail.targets || [], false, false, detail.source || '');
-    else if (detail.action === 'reveal-clear') clearReveals(root, detail.source || '');
-    else if (detail.action === 'state') applyInteractionState(root, detail.state, false, false);
-    else if (detail.action === 'series') {
-      const target = resolveSeriesTarget(root, detail.target);
-      if (target) setSeriesMuted(root, target, detail.muted === true);
-    }
-    else if (detail.action === 'series-focus') {
-      const target = resolveSeriesTarget(root, detail.target);
-      if (target) setSeriesIsolation(root, target, detail.isolated === true);
-    }
-    else if (detail.action === 'scenario') setScenario(root, detail.scenarioId || '', false, false);
-    else if (detail.action === 'scenario-step') {
-      if (detail.scenarioId && root.dataset.cfxActiveScenario !== detail.scenarioId) setScenario(root, detail.scenarioId, false, false);
-      setScenarioStep(root, detail.index, false, false);
-    }
   };
   const readJson = (value, fallback) => {
     try {
@@ -4301,7 +4306,9 @@ body {
           stage.setPointerCapture(event.pointerId);
         } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
           const point = stagePointer(stage, event, true);
-          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y };
+          const previousBrush = { hidden: brush.hidden, left: brush.style.left, top: brush.style.top,
+            width: brush.style.width, height: brush.style.height };
+          drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y, previousBrush };
           brush.hidden = false;
           brush.style.left = drag.left + 'px';
           brush.style.top = drag.top + 'px';
@@ -4356,7 +4363,14 @@ body {
         hideTip(root, tip, false);
       });
       listenChart(root, stage, 'pointercancel', (event) => {
-        if (drag && drag.id === event.pointerId) drag = null;
+        if (drag && drag.id === event.pointerId) {
+          // Cancel only the provisional gesture; a previously committed selection and box remain current.
+          if (drag.mode === 'brush' && brush) {
+            brush.hidden = drag.previousBrush.hidden;
+            for (const name of ['left', 'top', 'width', 'height']) brush.style[name] = drag.previousBrush[name];
+          }
+          drag = null;
+        }
         if (!ownsTooltipPointer(root, event)) return;
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
@@ -4377,7 +4391,6 @@ body {
       refreshKeyboardNavigation(root);
       clearFocusTrail(root);
       clearReveals(root);
-      if (brush) brush.hidden = true;
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
       if (root._cfxBranchHighlights) clearHover(root, true, true);
