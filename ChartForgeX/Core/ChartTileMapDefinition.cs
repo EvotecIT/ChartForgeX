@@ -54,6 +54,8 @@ public sealed class ChartTileMapDefinition {
         _aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var occupied = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var region in materialized) {
+            if (string.IsNullOrWhiteSpace(region.Code) || string.IsNullOrWhiteSpace(region.Name))
+                throw new ArgumentException("Tile-map definitions must contain initialized regions with a code and name.", nameof(regions));
             if (_aliases.ContainsKey(region.Code)) throw new ArgumentException("Duplicate tile-map region code: " + region.Code + ".", nameof(regions));
             var tileKey = region.Column.ToString(System.Globalization.CultureInfo.InvariantCulture) + "," + region.Row.ToString(System.Globalization.CultureInfo.InvariantCulture);
             if (!occupied.Add(tileKey)) throw new ArgumentException("Duplicate tile-map cell: " + tileKey + ".", nameof(regions));

@@ -12,6 +12,21 @@ public sealed class MapCalendarObservationLifecycleTests {
     private static readonly DateTime First = new(2026, 1, 5);
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DefinitionsRejectUninitializedRegionSlotsAtConstruction(bool tileMap) {
+        var error = Assert.Throws<ArgumentException>(() => {
+            if (tileMap) _ = new ChartTileMapDefinition("custom", "Custom", new[] {
+                new ChartTileMapRegion("A", "Alpha", 1, 0), default(ChartTileMapRegion)
+            });
+            else _ = new ChartMapDefinition("custom", "Custom", 100, 50, new[] {
+                new ChartMapRegion("A", "Alpha", "M0 0H100V50H0Z"), default(ChartMapRegion)
+            });
+        });
+        Assert.Equal("regions", error.ParamName);
+    }
+
+    [Theory]
     [InlineData(ChartSeriesKind.DottedMap)]
     [InlineData(ChartSeriesKind.CalendarHeatmap)]
     [InlineData(ChartSeriesKind.RegionMap)]
