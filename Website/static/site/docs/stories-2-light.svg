@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="From source to chart — Run it" aria-labelledby="cfx-v2-5fb127fc3ce92c36da36c53382941118474db2b528307917e6936faf20786935-title" aria-describedby="cfx-v2-5fb127fc3ce92c36da36c53382941118474db2b528307917e6936faf20786935-description"><title id="cfx-v2-5fb127fc3ce92c36da36c53382941118474db2b528307917e6936faf20786935-title">From source to chart — Run it</title><desc id="cfx-v2-5fb127fc3ce92c36da36c53382941118474db2b528307917e6936faf20786935-description">From source to chart
+
+1. Write the chart
+   Language: csharp
+   var chart = Chart.Create()
+       .WithTitle("Sign-ins by method")
+       .AddStackedArea("Passkey", passkey)
+       .AddStackedArea("Password", password);
+   chart.SaveSvg("sign-ins.svg");
+
+2. Run it
+   [PowerShell] PS C:\Reports&gt; dotnet run
+   [PowerShell] Wrote sign-ins.svg
+   [PowerShell] PS C:\Reports&gt; 
+
+3. Read the result
+   Language: csharp
+   var chart = Chart.Create()
+       .WithTitle("Sign-ins by method")
+       .AddStackedArea("Passkey", passkey)
+       .AddStackedArea("Password", password);
+   chart.SaveSvg("sign-ins.svg");
+   Sign-ins by method, passkey sign-ins rising
+
+Outcomes:
+- Sign-ins chart</desc><defs><clipPath id="cfx-v2-5fb127fc3ce92c36da36c53382941118474db2b528307917e6936faf20786935-clip-7" clipPathUnits="userSpaceOnUse"><rect x="54" y="122" width="1172" height="544"/></clipPath><clipPath id="cfx-v2-5fb127fc3ce92c36da36c53382941118474db2b528307917e6936faf20786935-clip-12" clipPathUnits="userSpaceOnUse"><rect x="66" y="170" width="1148" height="466"/></clipPath></defs><rect x="0" y="0" width="1280" height="720" rx="0" fill="#F2F3F4" stroke="none" stroke-width="1"/><ellipse cx="192" cy="0" rx="486.4" ry="201.6" fill="rgba(17,119,111,0.039)" stroke="none" stroke-width="1"/><g><text x="34" y="45" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="25" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">From source to chart</text></g><g><text x="34" y="74" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="15" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Run it</text></g><g id="cfx-v2-5fb127fc3ce92c36da36c53382941118474db2b528307917e6936faf20786935-node-4" data-cfx-source-id="terminal" data-cfx-role="story-panel" data-cfx-panel="terminal"><rect x="37" y="109" width="1212" height="584" rx="18" fill="rgba(0,0,0,0.161)" stroke="none" stroke-width="1"/><rect x="34" y="102" width="1212" height="584" rx="18" fill="#FFFFFF" stroke="#E2E4E7" stroke-width="1"/><g clip-path="url(#cfx-v2-5fb127fc3ce92c36da36c53382941118474db2b528307917e6936faf20786935-clip-7)"><rect x="54" y="122" width="1172" height="544" rx="10" data-cfx-role="terminal-viewport" fill="#FFFFFF" stroke="#E2E4E7" stroke-width="1"/><rect x="54" y="122" width="1172" height="35" rx="10" fill="#F8F9FA" stroke="none" stroke-width="1"/><line x1="54" y1="157" x2="1226" y2="157" fill="none" stroke="#E2E4E7" stroke-width="1"/><g><text x="68" y="145" font-family="Cascadia Mono, Consolas, monospace" font-size="13" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">PowerShell</text></g><g clip-path="url(#cfx-v2-5fb127fc3ce92c36da36c53382941118474db2b528307917e6936faf20786935-clip-12)"><g data-cfx-role="terminal-viewport-text"><text x="66" y="197.832" font-family="Cascadia Mono, Consolas, monospace" font-size="30" font-weight="400" font-style="normal" fill="#11776F" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">PS C:\Reports&gt; dotnet run</text></g><g data-cfx-role="terminal-viewport-text"><text x="66" y="242.832" font-family="Cascadia Mono, Consolas, monospace" font-size="30" font-weight="400" font-style="normal" fill="#177345" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Wrote sign-ins.svg</text></g><g data-cfx-role="terminal-viewport-text"><text x="66" y="287.832" font-family="Cascadia Mono, Consolas, monospace" font-size="30" font-weight="400" font-style="normal" fill="#11776F" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">PS C:\Reports&gt; </text></g></g><g><text x="66" y="656" font-family="Cascadia Mono, Consolas, monospace" font-size="11" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">C:\Reports</text></g></g></g><g><text x="34" y="707" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="11" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">2 / 3</text></g></svg>

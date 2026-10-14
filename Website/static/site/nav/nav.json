@@ -1,0 +1,123 @@
+{
+  "groups": [
+    {
+      "title": "Product",
+      "id": "product",
+      "description": "What ChartForgeX renders, and where you can try it.",
+      "items": [
+        {
+          "id": "gallery",
+          "title": "Gallery",
+          "url": "/gallery/",
+          "description": "Sixty charts and diagrams with their C# source.",
+          "key": 2,
+          "hollow": false,
+          "thumb": {
+            "base": "/site/nav/gallery",
+            "ext": "svg",
+            "w": 240,
+            "h": 150,
+            "kb": 25.3
+          }
+        },
+        {
+          "id": "mermaid",
+          "title": "Mermaid",
+          "url": "/mermaid/",
+          "description": "Thirty Mermaid families, rendered without a browser.",
+          "key": 4,
+          "hollow": false,
+          "thumb": {
+            "base": "/site/nav/mermaid",
+            "ext": "svg",
+            "w": 640,
+            "h": 320,
+            "kb": 15.9
+          }
+        },
+        {
+          "id": "playground",
+          "title": "Playground",
+          "url": "/playground/",
+          "description": "Edit Mermaid or markup and render it in your browser.",
+          "key": 5,
+          "hollow": false,
+          "thumb": {
+            "base": "/site/nav/playground",
+            "ext": "svg",
+            "w": 820,
+            "h": 460,
+            "kb": 10.4
+          }
+        },
+        {
+          "id": "powershell",
+          "title": "PowerShell",
+          "url": "/powershell/",
+          "description": "ImagePlayground scripts beside the files they produced.",
+          "key": 1,
+          "hollow": false,
+          "thumb": {
+            "base": "/site/nav/powershell",
+            "ext": "png",
+            "w": 1920,
+            "h": 360,
+            "kb": 62.8
+          }
+        }
+      ]
+    },
+    {
+      "title": "Developers",
+      "id": "developers",
+      "description": "Build with the .NET packages.",
+      "items": [
+        {
+          "id": "docs",
+          "title": "Docs",
+          "url": "/docs/",
+          "description": "Install, choose a surface, topology, interactivity and stories.",
+          "key": 6,
+          "hollow": false,
+          "thumb": {
+            "base": "/site/docs/topology",
+            "ext": "svg",
+            "w": 1224,
+            "h": 700,
+            "kb": 28.9
+          }
+        },
+        {
+          "id": "api",
+          "title": "API",
+          "url": "/api/",
+          "description": "Every public .NET type, member and namespace.",
+          "key": 3,
+          "hollow": false,
+          "thumb": {
+            "base": "/site/nav/api",
+            "ext": "svg",
+            "w": 1044,
+            "h": 560,
+            "kb": 13
+          }
+        },
+        {
+          "id": "examples",
+          "title": "Examples",
+          "url": "/examples/",
+          "description": "Four complete programs and the output they render.",
+          "key": 3,
+          "hollow": true,
+          "thumb": {
+            "base": "/site/nav/examples",
+            "ext": "svg",
+            "w": 240,
+            "h": 150,
+            "kb": 14.7
+          }
+        }
+      ]
+    }
+  ]
+}

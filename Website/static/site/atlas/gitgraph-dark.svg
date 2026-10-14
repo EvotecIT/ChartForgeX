@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-b2543b14" width="980" height="460" viewBox="0 0 980 460" role="img" aria-labelledby="cfx-visual-b2543b14-title cfx-visual-b2543b14-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-b2543b14-title">Mermaid git graph</title>
+<desc id="cfx-visual-b2543b14-desc">Static ChartForgeX visual block.</desc>
+<defs>
+<style>#cfx-visual-b2543b14 .cfx-guide-stroke,#cfx-visual-b2543b14 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-b2543b14 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-b2543b14-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-b2543b14-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-b2543b14-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1C202A" stop-opacity="1"/><stop offset="100%" stop-color="#070B14" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-b2543b14-visualCardClip"><rect x="0" y="0" width="980" height="460" rx="12"/></clipPath>
+</defs>
+<rect width="100%" height="100%" fill="url(#cfx-visual-b2543b14-visualBackground)"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="979" height="459" rx="11.5" fill="url(#cfx-visual-b2543b14-visualCard)" stroke="rgba(148,163,184,0.133)"/>
+<rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="977" height="457" rx="10.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
+<text data-cfx-role="visual-title" x="30" y="56.978" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="800">Mermaid git graph</text>
+<text data-cfx-role="visual-subtitle" x="30" y="83.741" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">gitGraph</text>
+<line data-cfx-role="git-branch-line" data-branch="main" x1="160" y1="230.939" x2="902" y2="230.939" stroke="rgba(96,165,250,0.451)" stroke-width="2" stroke-linecap="round"/>
+<text data-cfx-role="visual-text" x="150" y="234.939" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">main</text>
+<line data-cfx-role="git-branch-line" data-branch="feature" x1="160" y1="298.939" x2="902" y2="298.939" stroke="rgba(34,211,238,0.451)" stroke-width="2" stroke-linecap="round"/>
+<text data-cfx-role="visual-text" x="150" y="302.939" text-anchor="end" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="700">feature</text>
+<line data-cfx-role="git-commit-edge" data-parent-id="init" data-commit-id="renderer" x1="160" y1="230.939" x2="345.5" y2="298.939" stroke="rgba(203,213,225,0.627)" stroke-width="1.8" stroke-linecap="round"/>
+<line data-cfx-role="git-commit-edge" data-parent-id="renderer" data-commit-id="tests" x1="345.5" y1="298.939" x2="531" y2="298.939" stroke="rgba(203,213,225,0.627)" stroke-width="1.8" stroke-linecap="round"/>
+<line data-cfx-role="git-commit-edge" data-parent-id="init" data-commit-id="docs" x1="160" y1="230.939" x2="716.5" y2="230.939" stroke="rgba(203,213,225,0.627)" stroke-width="1.8" stroke-linecap="round"/>
+<line data-cfx-role="git-commit-edge" data-parent-id="docs" data-commit-id="merge" x1="716.5" y1="230.939" x2="902" y2="230.939" stroke="rgba(203,213,225,0.627)" stroke-width="1.8" stroke-linecap="round"/>
+<line data-cfx-role="git-commit-edge" data-parent-id="tests" data-commit-id="merge" x1="531" y1="298.939" x2="902" y2="230.939" stroke="rgba(203,213,225,0.471)" stroke-width="1.4" stroke-linecap="round"/>
+<circle data-cfx-role="git-commit" data-commit-id="init" data-branch="main" cx="160" cy="230.939" r="6.5" fill="#60A5FA" stroke="#60A5FA" stroke-width="1.5"/>
+<text data-cfx-role="visual-text" x="160" y="251.439" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="650">init</text>
+<circle data-cfx-role="git-commit" data-commit-id="renderer" data-branch="feature" cx="345.5" cy="298.939" r="6.5" fill="#22D3EE" stroke="#22D3EE" stroke-width="1.5"/>
+<text data-cfx-role="visual-text" x="345.5" y="319.439" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="650">renderer</text>
+<circle data-cfx-role="git-commit" data-commit-id="tests" data-branch="feature" cx="531" cy="298.939" r="6.5" fill="#22D3EE" stroke="#22D3EE" stroke-width="1.5"/>
+<text data-cfx-role="visual-text" x="531" y="319.439" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="650">tests</text>
+<circle data-cfx-role="git-commit" data-commit-id="docs" data-branch="main" cx="716.5" cy="230.939" r="6.5" fill="#60A5FA" stroke="#60A5FA" stroke-width="1.5"/>
+<text data-cfx-role="visual-text" x="716.5" y="251.439" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="650">docs</text>
+<circle data-cfx-role="git-commit" data-commit-id="merge" data-branch="main" cx="902" cy="230.939" r="7.5" fill="#60A5FA" stroke="#60A5FA" stroke-width="1.5"/>
+<circle data-cfx-role="git-merge-ring" cx="902" cy="230.939" r="11.5" fill="none" stroke="#60A5FA" stroke-width="1.3"/>
+<text data-cfx-role="visual-text" x="902" y="252.439" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="650">merge</text>
+<rect data-cfx-role="git-tag" x="883" y="199.439" width="38" height="18" rx="7" fill="#080D18" stroke="rgba(148,163,184,0.11)"/>
+<text data-cfx-role="git-tag-label" x="902" y="211.939" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700">v2.0</text>
+</svg>

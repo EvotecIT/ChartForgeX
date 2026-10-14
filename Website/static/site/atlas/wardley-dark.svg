@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-195cf285" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="cfx-visual-195cf285-title cfx-visual-195cf285-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-195cf285-title">Platform map</title>
+<desc id="cfx-visual-195cf285-desc">Static ChartForgeX visual block.</desc>
+<defs>
+<style>#cfx-visual-195cf285 .cfx-guide-stroke,#cfx-visual-195cf285 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-195cf285 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<linearGradient id="cfx-visual-195cf285-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-195cf285-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
+<linearGradient id="cfx-visual-195cf285-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1C202A" stop-opacity="1"/><stop offset="100%" stop-color="#070B14" stop-opacity="1"/></linearGradient>
+<clipPath id="cfx-visual-195cf285-visualCardClip"><rect x="0" y="0" width="900" height="600" rx="12"/></clipPath>
+</defs>
+<rect width="100%" height="100%" fill="url(#cfx-visual-195cf285-visualBackground)"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="899" height="599" rx="11.5" fill="url(#cfx-visual-195cf285-visualCard)" stroke="rgba(148,163,184,0.133)"/>
+<rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="897" height="597" rx="10.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
+<text data-cfx-role="visual-title" x="30" y="56.978" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="800">Platform map</text>
+<text data-cfx-role="visual-subtitle" x="30" y="83.741" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">wardley-beta</text>
+<rect data-cfx-role="wardley-plot" x="86" y="115.878" width="768" height="391.122" fill="#080D18" stroke="rgba(148,163,184,0.11)"/>
+<line data-cfx-role="wardley-stage-boundary" x1="278" y1="115.878" x2="278" y2="507" stroke="rgba(148,163,184,0.176)" stroke-width="1"/>
+<line data-cfx-role="wardley-stage-boundary" x1="470" y1="115.878" x2="470" y2="507" stroke="rgba(148,163,184,0.176)" stroke-width="1"/>
+<line data-cfx-role="wardley-stage-boundary" x1="662" y1="115.878" x2="662" y2="507" stroke="rgba(148,163,184,0.176)" stroke-width="1"/>
+<line data-cfx-role="wardley-axis-x" x1="86" y1="507" x2="854" y2="507" stroke="rgba(203,213,225,0.412)" stroke-width="1.4"/>
+<line data-cfx-role="wardley-axis-y" x1="86" y1="115.878" x2="86" y2="507" stroke="rgba(203,213,225,0.412)" stroke-width="1.4"/>
+<text data-cfx-role="visual-text" x="56" y="311.439" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700">Visibility</text>
+<text data-cfx-role="visual-text" x="470" y="554" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700">Evolution</text>
+<text data-cfx-role="visual-text" x="182" y="534" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Genesis</text>
+<text data-cfx-role="visual-text" x="374" y="534" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Custom Built</text>
+<text data-cfx-role="visual-text" x="566" y="534" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Product</text>
+<text data-cfx-role="visual-text" x="758" y="534" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Commodity</text>
+<circle data-cfx-role="wardley-pipeline-component" cx="316.4" cy="233.215" r="4.5" fill="#080D18" stroke="rgba(203,213,225,0.412)"/>
+<text data-cfx-role="visual-text" x="322.4" y="247.215" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">Build</text>
+<circle data-cfx-role="wardley-pipeline-component" cx="508.4" cy="233.215" r="4.5" fill="#080D18" stroke="rgba(203,213,225,0.412)"/>
+<text data-cfx-role="visual-text" x="514.4" y="247.215" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">Buy</text>
+<circle data-cfx-role="wardley-pipeline-component" cx="700.4" cy="233.215" r="4.5" fill="#080D18" stroke="rgba(203,213,225,0.412)"/>
+<text data-cfx-role="visual-text" x="706.4" y="247.215" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">Commodity</text>
+<rect data-cfx-role="wardley-pipeline" x="302.4" y="211.215" width="412" height="44" rx="7" fill="none" stroke="rgba(203,213,225,0.235)" stroke-width="1" stroke-dasharray="4 4"/>
+<line data-cfx-role="wardley-link" x1="124.4" y1="135.434" x2="354.8" y2="194.102" stroke="rgba(203,213,225,0.251)" stroke-width="1.2"/>
+<line data-cfx-role="wardley-link" x1="354.8" y1="194.102" x2="431.6" y2="233.215" stroke="rgba(203,213,225,0.251)" stroke-width="1.2"/>
+<path data-cfx-role="wardley-flow-forward" d="M 407.458 220.919 L 394.949 219.038 L 398.58 211.909 Z" fill="rgba(203,213,225,0.251)"/>
+<text data-cfx-role="visual-text" x="393.2" y="208.658" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">uses</text>
+<line data-cfx-role="wardley-link" x1="431.6" y1="233.215" x2="585.2" y2="291.883" stroke="rgba(203,213,225,0.251)" stroke-width="1.2" stroke-dasharray="5 5"/>
+<text data-cfx-role="visual-text" x="508.4" y="257.549" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">optional</text>
+<line data-cfx-role="wardley-evolve" x1="431.6" y1="233.215" x2="662" y2="233.215" stroke="#34D399" stroke-width="1.8" stroke-dasharray="4 4"/>
+<path data-cfx-role="wardley-evolve-arrow" d="M 662 233.215 l -7 -4 v 8 z" fill="#34D399"/>
+<text data-cfx-role="visual-text" x="662" y="370.107" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">Operational pressure</text>
+<path data-cfx-role="wardley-accelerator" d="M 562.16 332.729 h 32 v -7 l 17 17 l -17 17 v -7 h -32 z" fill="#080D18" stroke="#22D3EE"/>
+<text data-cfx-role="visual-text" x="587.16" y="367.729" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="700">Faster</text>
+<path data-cfx-role="wardley-deaccelerator" d="M 657.24 309.261 h -32 v -7 l -17 17 l 17 17 v -7 h 32 z" fill="#080D18" stroke="#FBBF24"/>
+<text data-cfx-role="visual-text" x="633.24" y="344.261" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="700">Risk</text>
+<circle data-cfx-role="wardley-anchor" cx="124.4" cy="135.434" r="7.5" fill="#080D18" stroke="#F8FAFC" stroke-width="2"/>
+<text data-cfx-role="visual-text" x="139.4" y="125.434" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="800">User</text>
+<circle data-cfx-role="wardley-node" cx="354.8" cy="194.102" r="6" fill="#080D18" stroke="#22D3EE" stroke-width="2"/>
+<line data-cfx-role="wardley-inertia" x1="370.8" y1="185.102" x2="370.8" y2="203.102" stroke="#F8FAFC" stroke-width="4"/>
+<text data-cfx-role="visual-text" x="364.8" y="184.102" text-anchor="start" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Portal</text>
+<circle data-cfx-role="wardley-strategy" cx="431.6" cy="233.215" r="13" fill="#080D18" stroke="rgba(52,211,153,0.608)" stroke-width="1"/>
+<circle data-cfx-role="wardley-node" cx="431.6" cy="233.215" r="6" fill="#080D18" stroke="#34D399" stroke-width="2"/>
+<text data-cfx-role="visual-text" x="441.6" y="223.215" text-anchor="start" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">API</text>
+<circle data-cfx-role="wardley-node" cx="585.2" cy="291.883" r="6" fill="#080D18" stroke="#FBBF24" stroke-width="2"/>
+<text data-cfx-role="visual-text" x="573.2" y="309.883" text-anchor="start" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Identity</text>
+<g data-cfx-role="wardley-annotation-callout">
+<circle data-cfx-role="wardley-annotation" cx="470" cy="272.327" r="10" fill="#080D18" stroke="rgba(203,213,225,0.412)"/>
+<text data-cfx-role="wardley-annotation-number" x="470" y="276.327" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="800">1</text>
+<text data-cfx-role="visual-text" x="483" y="268.327" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="600">Improve automation</text>
+</g>
+</svg>

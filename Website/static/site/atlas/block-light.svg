@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-a8ccad0c" width="900" height="420" viewBox="0 0 900 420" role="img" aria-labelledby="cfx-visual-a8ccad0c-title cfx-visual-a8ccad0c-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" data-cfx-label-layout="measured" data-cfx-label-count="7" data-cfx-label-dropped="0">
+<title id="cfx-visual-a8ccad0c-title">Mermaid block</title>
+<desc id="cfx-visual-a8ccad0c-desc">Static ChartForgeX visual block.</desc>
+<defs>
+<style>#cfx-visual-a8ccad0c .cfx-guide-stroke,#cfx-visual-a8ccad0c .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-a8ccad0c text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-a8ccad0c-visualCardClip"><rect x="0" y="0" width="900" height="420" rx="3"/></clipPath>
+</defs>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="899" height="419" rx="2.5" fill="#FFFFFF" stroke="#E2E4E7"/>
+<text data-cfx-role="visual-title" x="30" y="42.75" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="17" font-weight="700" data-cfx-label-original="Mermaid block" data-cfx-label-status="placed" data-cfx-label-x="30" data-cfx-label-y="30" data-cfx-label-width="106.532" data-cfx-label-height="17">Mermaid block</text>
+<text data-cfx-role="visual-subtitle" x="30" y="64.125" fill="#4D525B" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13.5" data-cfx-label-original="block-beta" data-cfx-label-status="placed" data-cfx-label-x="30" data-cfx-label-y="54" data-cfx-label-width="57.342" data-cfx-label-height="13.5">block-beta</text>
+<line data-cfx-role="block-layout-edge" data-source-id="collect" data-target-id="model" x1="299.92" y1="119.5" x2="315.04" y2="119.5" stroke="rgba(77,82,91,0.749)" stroke-width="1.6" stroke-linecap="round"/>
+<path data-cfx-role="block-layout-edge-arrow" d="M 315.04 119.5 L 308.03 123.354 L 308.03 115.646 Z" fill="rgba(77,82,91,0.749)"/>
+<line data-cfx-role="block-layout-edge" data-source-id="model" data-target-id="render" x1="584.96" y1="119.5" x2="600.08" y2="119.5" stroke="rgba(77,82,91,0.749)" stroke-width="1.6" stroke-linecap="round"/>
+<path data-cfx-role="block-layout-edge-arrow" d="M 600.08 119.5 L 593.07 123.354 L 593.07 115.646 Z" fill="rgba(77,82,91,0.749)"/>
+<line data-cfx-role="block-layout-edge" data-source-id="render" data-target-id="svg" x1="735.04" y1="158.5" x2="735.04" y2="171.1" stroke="rgba(77,82,91,0.749)" stroke-width="1.6" stroke-linecap="round"/>
+<path data-cfx-role="block-layout-edge-arrow" d="M 735.04 171.1 L 731.186 164.09 L 738.894 164.09 Z" fill="rgba(77,82,91,0.749)"/>
+<line data-cfx-role="block-layout-edge" data-source-id="render" data-target-id="png" x1="735.04" y1="158.5" x2="735.04" y2="261.7" stroke="rgba(77,82,91,0.749)" stroke-width="1.6" stroke-linecap="round"/>
+<path data-cfx-role="block-layout-edge-arrow" d="M 735.04 261.7 L 731.186 254.69 L 738.894 254.69 Z" fill="rgba(77,82,91,0.749)"/>
+<rect data-cfx-role="block-layout-node" data-block-id="collect" x="30" y="80.5" width="269.92" height="78" rx="7" fill="rgba(42,120,214,0.165)" stroke="#2A78D6"/>
+<text data-cfx-role="block-layout-node-label" x="164.96" y="123.5" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="16" font-weight="700" data-cfx-label-original="Collect" data-cfx-label-status="placed" data-cfx-label-x="142.347" data-cfx-label-y="111.5" data-cfx-label-width="45.227" data-cfx-label-height="16">Collect</text>
+<rect data-cfx-role="block-layout-node" data-block-id="model" x="315.04" y="80.5" width="269.92" height="78" rx="7" fill="rgba(15,159,140,0.165)" stroke="#0F9F8C"/>
+<text data-cfx-role="block-layout-node-label" x="450" y="123.5" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="16" font-weight="700" data-cfx-label-original="Typed model" data-cfx-label-status="placed" data-cfx-label-x="406.984" data-cfx-label-y="111.5" data-cfx-label-width="86.031" data-cfx-label-height="16">Typed model</text>
+<rect data-cfx-role="block-layout-node" data-block-id="render" x="600.08" y="80.5" width="269.92" height="78" rx="7" fill="rgba(123,97,232,0.165)" stroke="#7B61E8"/>
+<text data-cfx-role="block-layout-node-label" x="735.04" y="123.5" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="16" font-weight="700" data-cfx-label-original="Render" data-cfx-label-status="placed" data-cfx-label-x="711.169" data-cfx-label-y="111.5" data-cfx-label-width="47.742" data-cfx-label-height="16">Render</text>
+<rect data-cfx-role="block-layout-node" data-block-id="svg" x="600.08" y="171.1" width="269.92" height="78" rx="7" fill="rgba(91,127,0,0.165)" stroke="#5B7F00"/>
+<text data-cfx-role="block-layout-node-label" x="735.04" y="214.1" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="16" font-weight="700" data-cfx-label-original="SVG" data-cfx-label-status="placed" data-cfx-label-x="721.649" data-cfx-label-y="202.1" data-cfx-label-width="26.781" data-cfx-label-height="16">SVG</text>
+<rect data-cfx-role="block-layout-node" data-block-id="png" x="600.08" y="261.7" width="269.92" height="78" rx="7" fill="rgba(42,120,214,0.165)" stroke="#2A78D6"/>
+<text data-cfx-role="block-layout-node-label" x="735.04" y="304.7" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="16" font-weight="700" data-cfx-label-original="PNG" data-cfx-label-status="placed" data-cfx-label-x="720.415" data-cfx-label-y="292.7" data-cfx-label-width="29.25" data-cfx-label-height="16">PNG</text>
+</svg>

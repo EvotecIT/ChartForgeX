@@ -1,0 +1,11 @@
+eventmodeling
+tf 01 ui CartUI
+tf 02 cmd AddItem
+tf 03 evt Cart.ItemAdded [[ItemAdded01]]
+tf 04 rmo Cart.CartView ->> 03
+rf 05 pcr InventoryProcessor
+timeframe 06 event Inventory.Reserved
+data ItemAdded01 `json`{
+  "sku": "ABC",
+  "quantity": 1
+}

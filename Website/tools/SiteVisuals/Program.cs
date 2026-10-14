@@ -202,6 +202,9 @@ foreach (var (name, source) in mermaid) {
     }
 }
 
+// Inner pages: navigation thumbnails, the Mermaid atlas, docs figures, example outputs and the gallery chart.
+SiteVisuals.PageVisuals.Write(website);
+
 Console.WriteLine($"Site visuals written to {output}");
 
 void Write(string name, string content) => File.WriteAllText(Path.Combine(output, name), content, new UTF8Encoding(false));
