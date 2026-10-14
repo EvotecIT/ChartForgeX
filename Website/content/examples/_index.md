@@ -2,7 +2,7 @@
 title: "ChartForgeX examples"
 order: 0
 description: "Build static charts, organization hierarchies, interactive topology, and report compositions."
-layout: docs
+layout: examples
 ---
 
 Use these focused examples as entry points. Browse the [gallery](/gallery/) for every chart family with its source and downloadable formats, or try a diagram in the [playground](/playground/).

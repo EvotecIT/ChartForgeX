@@ -17,6 +17,13 @@
   --cfx-accent-soft: #d6f0ec;
   --cfx-signal: #c78404;
   --cfx-focus: #9a6500;
+  --cfx-glow: #37c9b8;
+
+  /* Stage: the title band of landing pages, dark in both themes like the home hero. */
+  --cfx-stage-bg: #07090c;
+  --cfx-stage-ink: #f3f5f7;
+  --cfx-stage-ink-2: #b4bcc6;
+  --cfx-stage-line: rgba(255, 255, 255, .1);
 
   /* Instrument structure: the plot grid, axis rules and tick marks pages are built on. */
   --cfx-grid: rgba(22, 24, 28, .055);

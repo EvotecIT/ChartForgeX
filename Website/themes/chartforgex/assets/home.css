@@ -5,16 +5,16 @@
   --cfx-hero-ink: #f3f5f7;
   --cfx-hero-ink-2: #b4bcc6;
   --cfx-hero-line: rgba(255, 255, 255, .1);
-  --cfx-glow: #37c9b8;
 }
 
 /* Header floats over the dark hero on the home page. */
 .cfx-body--home .cfx-header { background: rgba(7, 9, 12, .72); border-bottom-color: var(--cfx-hero-line); }
-.cfx-body--home .cfx-brand,
-.cfx-body--home .cfx-nav__links a[aria-current="page"],
-.cfx-body--home .cfx-nav__links a.active { color: var(--cfx-hero-ink); }
-.cfx-body--home .cfx-nav__links a { color: var(--cfx-hero-ink-2); }
-.cfx-body--home .cfx-nav__links a:hover { color: #fff; background: rgba(255, 255, 255, .06); }
+.cfx-body--home .cfx-brand { color: var(--cfx-hero-ink); }
+@media (min-width: 961px) {
+  .cfx-body--home .cfx-navgroup__trigger { color: var(--cfx-hero-ink-2); }
+  .cfx-body--home .cfx-navgroup__trigger:hover,
+  .cfx-body--home .cfx-navgroup__trigger[aria-expanded="true"] { color: #fff; background: rgba(255, 255, 255, .06); border-color: var(--cfx-hero-line); }
+}
 .cfx-body--home .cfx-icon-link,
 .cfx-body--home .cfx-theme-toggle { color: var(--cfx-hero-ink-2); }
 .cfx-body--home .cfx-icon-link:hover,
@@ -100,15 +100,6 @@
 
 .cfx-hero__lede { color: var(--cfx-hero-ink-2); font-size: clamp(1.0625rem, 1rem + .3vw, 1.1875rem); line-height: 1.6; max-width: 46ch; }
 .cfx-hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
-.cfx-btn--glow {
-  background: var(--cfx-glow);
-  border-color: var(--cfx-glow);
-  color: #04201d;
-  box-shadow: 0 0 0 1px rgba(55, 201, 184, .35), 0 12px 40px -12px rgba(55, 201, 184, .7);
-}
-.cfx-btn--glow:hover { background: #5fdccd; }
-.cfx-btn--ghost { background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .22); color: #fff; }
-.cfx-btn--ghost:hover { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .4); }
 .cfx-hero__badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 0; padding: 0; list-style: none; }
 .cfx-hero__badges li {
   display: inline-flex;

@@ -509,9 +509,9 @@ function start(root) {
   async function readLinkedSource() {
     const shared = await readShareLink();
     if (shared) return shared;
-    // Site pages link their own samples, for example /playground/?src=/site/mermaid-gantt.mmd.
+    // Site pages link their own samples, for example /playground/?src=/site/atlas/gantt.mmd.
     const src = new URLSearchParams(location.search).get('src');
-    if (!src || !/^\/site\/[\w.-]+\.(mmd|md)$/.test(src)) return null;
+    if (!src || src.includes('..') || !/^\/site\/(?:[\w-]+\/)?[\w.-]+\.(mmd|md)$/.test(src)) return null;
     try {
       const response = await fetch(src);
       if (!response.ok) return null;

@@ -18,9 +18,9 @@
 <main id="main" class="cfx-pg" data-cfx-playground>
   <div class="cfx-pg__bar">
     <h1 class="cfx-pg__title">{{ page.title }}</h1>
-    <div class="cfx-pg__langs" role="tablist" aria-label="Source language">
+    <div class="cfx-pg__langs cfx-seg" role="tablist" aria-label="Source language">
       {{~ for l in pg.languages ~}}
-      <button type="button" role="tab" class="cfx-pg__lang" data-language="{{ l.id }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}">{{ l.label }}</button>
+      <button type="button" role="tab" class="cfx-pg__lang" data-language="{{ l.id }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}" style="--key: var(--cfx-s{{ if l.id == "mermaid" }}4{{ else }}2{{ end }})"><span class="cfx-key" aria-hidden="true"></span>{{ l.label }}</button>
       {{~ end ~}}
     </div>
     <label class="cfx-pg__samples">
@@ -30,9 +30,9 @@
       </select>
     </label>
     <div class="cfx-pg__actions">
-      <div class="cfx-pg__seg" role="group" aria-label="Preview theme">
-        <button type="button" data-pg-theme="light" aria-pressed="false">Light</button>
-        <button type="button" data-pg-theme="dark" aria-pressed="false">Dark</button>
+      <div class="cfx-pg__seg cfx-seg" role="group" aria-label="Preview theme">
+        <button type="button" data-pg-theme="light" aria-pressed="false"><span class="cfx-key cfx-key--light" aria-hidden="true"></span>Light</button>
+        <button type="button" data-pg-theme="dark" aria-pressed="false"><span class="cfx-key cfx-key--dark" aria-hidden="true"></span>Dark</button>
       </div>
       <button type="button" class="cfx-pg__btn" data-pg-share>Copy link</button>
       <button type="button" class="cfx-pg__btn" data-pg-download="svg" disabled>SVG</button>

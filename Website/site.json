@@ -143,7 +143,8 @@
         "Name": "global",
         "Css": [
           "/themes/chartforgex/assets/tokens.css",
-          "/themes/chartforgex/assets/base.css"
+          "/themes/chartforgex/assets/base.css",
+          "/themes/chartforgex/assets/nav.css"
         ],
         "Js": [
           "/themes/chartforgex/assets/site.js"
@@ -166,6 +167,12 @@
         "Name": "docs",
         "Css": [
           "/themes/chartforgex/assets/docs.css"
+        ]
+      },
+      {
+        "Name": "pages",
+        "Css": [
+          "/themes/chartforgex/assets/pages.css"
         ]
       },
       {
@@ -199,19 +206,21 @@
         "Match": "/mermaid/**",
         "Bundles": [
           "docs",
-          "home"
+          "pages"
         ]
       },
       {
         "Match": "/docs/**",
         "Bundles": [
-          "docs"
+          "docs",
+          "pages"
         ]
       },
       {
         "Match": "/examples/**",
         "Bundles": [
-          "docs"
+          "docs",
+          "pages"
         ]
       },
       {
@@ -257,6 +266,7 @@
     "AddExternalIcon": false
   },
   "Navigation": {
+    "HomeLinkInBrand": true,
     "Auto": [
       {
         "Collection": "docs",
@@ -303,36 +313,67 @@
         "Name": "main",
         "Items": [
           {
-            "Title": "Home",
-            "Url": "/"
+            "Id": "product",
+            "Title": "Product",
+            "Description": "What ChartForgeX renders, and where you can try it.",
+            "Items": [
+              {
+                "Id": "gallery",
+                "Title": "Gallery",
+                "Url": "/gallery/",
+                "Meta": { "key": 2 },
+                "Description": "Sixty charts and diagrams with their C# source."
+              },
+              {
+                "Id": "mermaid",
+                "Title": "Mermaid",
+                "Url": "/mermaid/",
+                "Meta": { "key": 4 },
+                "Description": "Thirty Mermaid families, rendered without a browser."
+              },
+              {
+                "Id": "playground",
+                "Title": "Playground",
+                "Url": "/playground/",
+                "Meta": { "key": 5 },
+                "Description": "Edit Mermaid or markup and render it in your browser."
+              },
+              {
+                "Id": "powershell",
+                "Title": "PowerShell",
+                "Url": "/powershell/",
+                "Meta": { "key": 1 },
+                "Description": "ImagePlayground scripts beside the files they produced."
+              }
+            ]
           },
           {
-            "Title": "Gallery",
-            "Url": "/gallery/"
-          },
-          {
-            "Title": "Mermaid",
-            "Url": "/mermaid/"
-          },
-          {
-            "Title": "Playground",
-            "Url": "/playground/"
-          },
-          {
-            "Title": "PowerShell",
-            "Url": "/powershell/"
-          },
-          {
-            "Title": "Docs",
-            "Url": "/docs/"
-          },
-          {
-            "Title": "API",
-            "Url": "/api/"
-          },
-          {
-            "Title": "Examples",
-            "Url": "/examples/"
+            "Id": "developers",
+            "Title": "Developers",
+            "Description": "Build with the .NET packages.",
+            "Items": [
+              {
+                "Id": "docs",
+                "Title": "Docs",
+                "Url": "/docs/",
+                "Meta": { "key": 6 },
+                "Description": "Install, choose a surface, topology, interactivity and stories."
+              },
+              {
+                "Id": "api",
+                "Title": "API",
+                "Url": "/api/",
+                "Meta": { "key": 3 },
+                "Description": "Every public .NET type, member and namespace."
+              },
+              {
+                "Id": "examples",
+                "Title": "Examples",
+                "Url": "/examples/",
+                "Meta": { "key": 3, "hollow": true },
+                "Description": "Four complete programs and the output they render."
+              }
+            ]
           }
         ]
       },
@@ -356,7 +397,7 @@
             "Url": "/docs/"
           },
           {
-            "Title": "API reference",
+            "Title": ".NET API reference",
             "Url": "/api/"
           },
           {

@@ -16,6 +16,121 @@
     });
   });
 
+  // Header navigation. Each group button discloses its panel; one panel is open at a time on wide screens, and
+  // Escape, a click outside or tabbing out of the group closes it. The phone sheet lists every group open.
+  var header = document.querySelector('[data-cfx-header]');
+  var compactNav = window.matchMedia('(max-width: 960px)');
+  var navToggle = document.getElementById('cfx-nav-toggle');
+
+  function wireNav() {
+    var groups = Array.prototype.slice.call(header.querySelectorAll('[data-cfx-navgroup]'));
+    var triggerOf = function (group) { return group.querySelector('.cfx-navgroup__trigger'); };
+    var setOpen = function (group, open) { triggerOf(group).setAttribute('aria-expanded', open ? 'true' : 'false'); };
+    var closeAll = function (except) { groups.forEach(function (group) { if (group !== except) setOpen(group, false); }); };
+
+    groups.forEach(function (group) {
+      var trigger = triggerOf(group);
+      var items = Array.prototype.slice.call(group.querySelectorAll('.cfx-navitem__link'));
+      trigger.addEventListener('click', function () {
+        var open = trigger.getAttribute('aria-expanded') !== 'true';
+        if (!compactNav.matches) closeAll(group);
+        setOpen(group, open);
+      });
+      trigger.addEventListener('keydown', function (event) {
+        if (event.key !== 'ArrowDown' || compactNav.matches || !items.length) return;
+        event.preventDefault();
+        event.stopPropagation();
+        closeAll(group);
+        setOpen(group, true);
+        items[0].focus();
+      });
+      group.addEventListener('keydown', function (event) {
+        var index = items.indexOf(document.activeElement);
+        if (event.key === 'Escape' && !compactNav.matches && trigger.getAttribute('aria-expanded') === 'true') {
+          setOpen(group, false);
+          trigger.focus();
+        } else if (index >= 0 && !compactNav.matches && /^Arrow(Left|Right|Up|Down)$/.test(event.key)) {
+          event.preventDefault();
+          var step = event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1;
+          items[(index + step + items.length) % items.length].focus();
+        }
+      });
+      group.addEventListener('focusout', function (event) {
+        if (!compactNav.matches && event.relatedTarget && !group.contains(event.relatedTarget)) setOpen(group, false);
+      });
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!compactNav.matches && !header.contains(event.target)) closeAll(null);
+    });
+    var reset = function () { if (compactNav.matches) groups.forEach(function (group) { setOpen(group, true); }); else closeAll(null); };
+    if (compactNav.addEventListener) compactNav.addEventListener('change', reset);
+    reset();
+  }
+
+  if (navToggle) {
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && navToggle.checked && compactNav.matches) { navToggle.checked = false; navToggle.focus(); }
+    });
+  }
+
+  // The API reference header is generated with plain dropdowns. Rebuild it into the same panels from the index the
+  // site generator writes beside the thumbnails (static/site/nav/nav.json, read from the site.json main menu).
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function navMarkup(nav) {
+    var path = location.pathname;
+    var key = function (item) { return '--key: var(--cfx-s' + item.key + ')'; };
+    var keyClass = function (item) { return 'cfx-key' + (item.hollow ? ' cfx-key--hollow' : ''); };
+    return nav.groups.map(function (group) {
+      var current = null;
+      group.items.forEach(function (item) { if (path.indexOf(item.url) === 0) current = item; });
+      var id = 'cfx-nav-' + escapeHtml(group.id);
+      var items = group.items.map(function (item) {
+        var t = item.thumb;
+        var img = function (mode) {
+          return '<img class="cfx-only-' + mode + '" src="' + escapeHtml(t.base + '-' + mode + '.' + t.ext) + '" width="' + t.w +
+            '" height="' + t.h + '" loading="lazy" decoding="async" alt="" />';
+        };
+        var here = item === current;
+return '<li class="cfx-navitem' + (here ? ' is-current' : '') + '" style="' + key(item) + '">' +
+          '<span class="cfx-navitem__thumb" aria-hidden="true">' + img('light') + img('dark') + '</span>' +
+          '<a class="cfx-navitem__link" href="' + escapeHtml(item.url) + '" aria-describedby="cfx-nav-' + escapeHtml(item.id) + '-desc"' +
+          (here ? ' aria-current="true"' : '') + '><span class="' + keyClass(item) + '" aria-hidden="true"></span>' + escapeHtml(item.title) + '</a>' +
+          '<span class="cfx-navitem__desc" id="cfx-nav-' + escapeHtml(item.id) + '-desc">' + escapeHtml(item.description) + '</span></li>';
+      }).join('');
+      return '<li class="cfx-navgroup' + (current ? ' is-current' : '') + '" data-cfx-navgroup>' +
+        '<button type="button" class="cfx-navgroup__trigger" id="' + id + '-trigger" aria-expanded="false" aria-controls="' + id + '">' +
+        '<span class="cfx-navgroup__label">' + escapeHtml(group.title) + '</span>' +
+        (current ? '<span class="cfx-navgroup__current" style="' + key(current) + '"><span class="' + keyClass(current) +
+          '" aria-hidden="true"></span><span class="cfx-visually-hidden">, current section: </span>' + escapeHtml(current.title) + '</span>' : '') +
+        '<svg class="cfx-navgroup__chevron" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3" fill="none" ' +
+        'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+        '<div class="cfx-navpanel" id="' + id + '" data-count="' + group.items.length + '"><p class="cfx-navpanel__lede">' +
+        escapeHtml(group.description) + '</p><ul class="cfx-navpanel__items">' + items + '</ul></div></li>';
+    }).join('');
+  }
+
+  if (header) {
+    var generatedNav = header.querySelector('.cfx-nav__links');
+    if (generatedNav && window.fetch) {
+      fetch('/site/nav/nav.json').then(function (response) { return response.ok ? response.json() : Promise.reject(); })
+        .then(function (nav) {
+          var list = document.createElement('ul');
+          list.className = 'cfx-nav__groups';
+          list.innerHTML = navMarkup(nav);
+          generatedNav.parentNode.replaceChild(list, generatedNav);
+          wireNav();
+        }, function () { /* the generated dropdowns keep working */ });
+    } else if (header.querySelector('[data-cfx-navgroup]')) {
+      wireNav();
+    }
+  }
+
   function copyText(text, button) {
     var label = button.getAttribute('data-label') || button.textContent;
     button.setAttribute('data-label', label);

@@ -9,6 +9,8 @@ layout: docs
 
 Preparation captures the story, themes, source edits, terminal tables and media pixels. Later changes to those inputs do not change the prepared result. The same observation supplies timestamp frames, static posters, script-free SVG animation, GIF and APNG.
 
+{{< cfx-figure ids="stories-1,stories-2,stories-3" caption="Three timestamp frames from one prepared story: typing the source, running it in an authored terminal, and the chart it describes." >}}
+
 ```csharp
 using System;
 using System.IO;

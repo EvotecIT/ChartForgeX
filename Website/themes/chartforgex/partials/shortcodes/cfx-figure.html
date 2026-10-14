@@ -1,0 +1,17 @@
+{{~ ## Docs figure shortcode (cfx-figure with id and caption) shows the light and dark render of a docs figure in
+     data/visuals.json. ids="a,b,c" sets several frames as a strip; frame="/site/..." embeds a live HTML output. ## ~}}
+{{~ a = shortcode.attrs; figs = data.visuals.docs.figures; ids = []
+    if !a.frame; ids = (a.ids ?? a.id) | string.split ","; end ~}}
+<figure class="cfx-figure{{ if ids.size > 1 }} cfx-figure--strip{{ end }}{{ if a.frame }} cfx-figure--frame{{ end }}">
+<div class="cfx-figure__plate">
+{{~ if a.frame ~}}
+<iframe src="{{ a.frame }}" title="{{ a.title }}" loading="lazy"></iframe>
+{{~ else ~}}
+{{~ for id in ids; f = figs[id | string.strip] ~}}
+<img class="cfx-only-light" src="{{ f.base }}-light.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="{{ a.alt ?? a.caption }}" />
+<img class="cfx-only-dark" src="{{ f.base }}-dark.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="{{ a.alt ?? a.caption }}" />
+{{~ end ~}}
+{{~ end ~}}
+</div>
+<figcaption>{{ a.caption }}</figcaption>
+</figure>

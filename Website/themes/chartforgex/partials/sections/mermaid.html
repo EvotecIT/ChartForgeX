@@ -14,7 +14,7 @@
   <div class="cfx-mermaid__demo" data-cfx-tabs>
     <div class="cfx-segment" role="tablist" aria-label="Mermaid sample">
       {{~ for s in m.samples ~}}
-      <button type="button" role="tab" id="cfx-mm-tab-{{ s.id }}" aria-controls="cfx-mm-{{ s.id }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}" tabindex="{{ if for.first }}0{{ else }}-1{{ end }}">{{ s.label }}</button>
+      <button type="button" role="tab" id="cfx-mm-tab-{{ s.id }}" aria-controls="cfx-mm-{{ s.id }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}" tabindex="{{ if for.first }}0{{ else }}-1{{ end }}" style="--key: var(--cfx-s{{ for.index + 1 }})"><span class="cfx-key" aria-hidden="true"></span>{{ s.label }}</button>
       {{~ end ~}}
     </div>
     {{~ for s in m.samples ~}}

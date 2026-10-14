@@ -11,6 +11,8 @@ Install the core renderer from NuGet:
 dotnet add package ChartForgeX
 ```
 
+{{< cfx-figure id="install" caption="The packages and what each adds, drawn as a ChartForgeX table. Visual blocks set exact facts like these beside charts." >}}
+
 Add an optional package only for the capability the host needs:
 
 ```powershell

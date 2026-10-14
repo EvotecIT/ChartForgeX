@@ -12,30 +12,103 @@
   {{ head_html }}</head>
 <body class="cfx-body cfx-body--mermaid{{ if body_class != "" }} {{ body_class }}{{ end }}">
 {{ include "site-header" }}
+{{~ m = data.mermaid; atlas = data.visuals.mermaid; renders = atlas.families; hero = renders[m.hero]
+    rendered = 0; for g in m.groups; rendered = rendered + g.families.size; end ~}}
 <main id="main" class="cfx-main">
-  {{~ masthead_title = page.title; masthead_lede = data.mermaid.summary; masthead_extra = "" ~}}
-  {{ include "masthead" }}
-  <section class="cfx-section cfx-support" aria-labelledby="cfx-support-title">
-    <div class="cfx-support__head">
-      <h2 id="cfx-support-title">Supported diagram families</h2>
-      <p>Each family below parses and renders natively. Families that are recognised but not drawn yet report a diagnostic instead of output.</p>
+  {{~ capture stage_side ~}}
+  <dl class="cfx-stage__stats">
+    <div><dt>Families rendered</dt><dd>{{ rendered }}</dd></div>
+    <div><dt>Recognised only</dt><dd>{{ m.recognised.size }}</dd></div>
+    <div><dt>Browsers needed</dt><dd>0</dd></div>
+  </dl>
+  <div class="cfx-stage__actions">
+    <a class="cfx-btn cfx-btn--glow" href="#atlas">See every family</a>
+    <a class="cfx-btn cfx-btn--ghost" href="/playground/?src=/site/atlas/{{ m.hero }}.mmd">Edit this diagram</a>
+  </div>
+  {{~ end ~}}
+  {{~ capture stage_art ~}}
+  <div class="cfx-mmhero">
+    <figure class="cfx-output cfx-mmhero__render">
+      <figcaption><span class="cfx-output__file">{{ m.hero }}.svg</span><span>{{ hero.kb }} KB, rendered by ChartForgeX</span></figcaption>
+      <img src="{{ hero.base }}-dark.svg" width="{{ hero.w }}" height="{{ hero.h }}" fetchpriority="high" decoding="async" alt="A sequence diagram rendered by ChartForgeX from the Mermaid source beside it: a user, an app, an identity provider and an API exchanging tokens." />
+    </figure>
+    <figure class="cfx-codeblock cfx-mmhero__source" data-lang="mermaid">
+      <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">Mermaid</span><span class="cfx-codeblock__file">{{ m.hero }}.mmd</span><span class="cfx-codeblock__actions"></span></figcaption>
+      <pre><code class="language-mermaid">{{ hero.source | html.escape }}</code></pre>
+    </figure>
+  </div>
+  {{~ end ~}}
+  {{~ stage_title = page.title; stage_lede = m.summary ~}}
+  {{ include "stage" }}
+
+  <section class="cfx-atlas" id="atlas" aria-labelledby="cfx-atlas-title">
+    <div class="cfx-atlas__head">
+      <h2 id="cfx-atlas-title">Family atlas</h2>
+      <p>Every diagram below is drawn by ChartForgeX from the source shown with it. {{ m.note }}</p>
+      <nav class="cfx-atlas__index" aria-label="Diagram family groups">
+        {{~ for g in m.groups ~}}
+        <a href="#{{ g.id }}" style="--key: var(--cfx-s{{ for.index + 1 }})"><span class="cfx-key" aria-hidden="true"></span>{{ g.name }} <span class="cfx-count">{{ g.families.size }}</span></a>
+        {{~ end ~}}
+        <a href="#recognised" style="--key: var(--cfx-ink-3)"><span class="cfx-key cfx-key--hollow" aria-hidden="true"></span>Recognised <span class="cfx-count">{{ m.recognised.size }}</span></a>
+      </nav>
     </div>
-    <div class="cfx-families">
-      {{~ for g in data.mermaid.groups ~}}
-      <section class="cfx-families__group" aria-label="{{ g.name }}">
-        <h3>{{ g.name }} <span>{{ g.families.size }}</span></h3>
-        <ul>{{ for f in g.families }}<li>{{ f }}</li>{{ end }}</ul>
-      </section>
-      {{~ end ~}}
-    </div>
-    <p class="cfx-families__note">Recognised with a diagnostic and no output yet: {{ data.mermaid.recognised | array.join ", " }}. {{ data.mermaid.reference }}</p>
+
+    {{~ for g in m.groups ~}}
+    <section class="cfx-atlas__group" id="{{ g.id }}" aria-labelledby="cfx-atlas-{{ g.id }}" style="--key: var(--cfx-s{{ for.index + 1 }})">
+      <h3 class="cfx-atlas__group-title" id="cfx-atlas-{{ g.id }}"><span class="cfx-key" aria-hidden="true"></span>{{ g.name }} <span class="cfx-count">{{ g.families.size }}</span></h3>
+      <ul class="cfx-atlas__grid">
+        {{~ for f in g.families ~}}
+        {{~ r = renders[f.id] ~}}
+        <li class="cfx-family">
+          <figure class="cfx-family__plate">
+            <img class="cfx-only-light" src="{{ r.base }}-light.svg" width="{{ r.w }}" height="{{ r.h }}" loading="lazy" decoding="async" alt="{{ f.name }} diagram rendered by ChartForgeX from its Mermaid source." />
+            <img class="cfx-only-dark" src="{{ r.base }}-dark.svg" width="{{ r.w }}" height="{{ r.h }}" loading="lazy" decoding="async" alt="{{ f.name }} diagram rendered by ChartForgeX from its Mermaid source, dark theme." />
+          </figure>
+          <div class="cfx-family__text">
+            <h4>{{ f.name }}</h4>
+            <p>{{ f.purpose }}</p>
+          </div>
+          <div class="cfx-family__actions">
+            <details class="cfx-family__source">
+              <summary><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M6 4 2 8l4 4M10 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Source <span class="cfx-count">{{ r.lines }} lines</span></summary>
+              <figure class="cfx-codeblock" data-lang="mermaid">
+                <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">Mermaid</span><span class="cfx-codeblock__file">{{ f.id }}.mmd</span><span class="cfx-codeblock__actions"></span></figcaption>
+                <pre><code class="language-mermaid">{{ r.source | html.escape }}</code></pre>
+              </figure>
+            </details>
+            <a class="cfx-family__edit" href="/playground/?src=/site/atlas/{{ f.id }}.mmd">Edit in playground</a>
+          </div>
+        </li>
+        {{~ end ~}}
+      </ul>
+    </section>
+    {{~ end ~}}
+
+    <section class="cfx-atlas__group cfx-atlas__group--recognised" id="recognised" aria-labelledby="cfx-atlas-recognised" style="--key: var(--cfx-ink-3)">
+      <h3 class="cfx-atlas__group-title" id="cfx-atlas-recognised"><span class="cfx-key cfx-key--hollow" aria-hidden="true"></span>Recognised, not drawn yet <span class="cfx-count">{{ m.recognised.size }}</span></h3>
+      <ul class="cfx-atlas__grid">
+        {{~ for f in m.recognised ~}}
+        <li class="cfx-family cfx-family--pending">
+          <div class="cfx-family__plate" aria-hidden="true"><code>{{ f.header }}</code></div>
+          <div class="cfx-family__text">
+            <h4>{{ f.name }}</h4>
+            <p>{{ f.purpose }}</p>
+            <p class="cfx-family__reason"><span>Diagnostic</span> {{ atlas.recognised[f.id] }}</p>
+          </div>
+        </li>
+        {{~ end ~}}
+      </ul>
+      <p class="cfx-atlas__reference">{{ m.reference }} The <a href="https://github.com/EvotecIT/ChartForgeX/blob/main/docs/mermaid-support-matrix.md">support matrix</a> lists every family and option.</p>
+    </section>
   </section>
-  {{~ mermaid_page = true ~}}
-  {{ include "sections/mermaid" }}
-  <section class="cfx-section cfx-mermaid-guide" aria-label="Using Mermaid from .NET">
-    <div class="cfx-prose">
-{{ content }}
+
+  <section class="cfx-guide" aria-labelledby="cfx-guide-title">
+    <div class="cfx-guide__head">
+      <h2 id="cfx-guide-title">Use it from .NET</h2>
+      <p>The atlas renders come from these calls. Install <code>ChartForgeX.Mermaid</code> for diagrams, and the Markdown bridge when documents hold <code>mermaid</code> fences.</p>
     </div>
+    {{~ steps_html = content ~}}
+    {{ include "steps" }}
   </section>
 </main>
 {{ include "site-footer" }}

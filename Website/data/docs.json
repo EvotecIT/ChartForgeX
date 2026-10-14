@@ -1,0 +1,20 @@
+{
+  "intro": "Each topic below is shown with the kind of output it covers, rendered by ChartForgeX for this page.",
+  "topics": [
+    { "url": "/docs/overview/", "title": "Overview", "summary": "Where ChartForgeX fits and what its deterministic rendering model provides.", "figures": ["overview"], "key": 1 },
+    { "url": "/docs/install/", "title": "Install", "summary": "The core package, and the optional adapters a host adds when it needs them.", "figures": ["install"], "key": 2 },
+    { "url": "/docs/choosing-a-surface/", "title": "Choose a surface", "summary": "Charts, grids, visual blocks, canvases, topology and explorers, matched to the job.", "surfaces": ["chart", "blocks", "canvas", "topology"], "key": 3 },
+    { "url": "/docs/topology-and-hierarchy/", "title": "Topology and hierarchy", "summary": "Service maps, ownership trees, routes and dense hierarchies from your own records.", "figures": ["topology"], "key": 4 },
+    { "url": "/docs/interactivity/", "title": "Interactive HTML", "summary": "Self-contained pages with search, selection, zoom and drill-down, without changing static output.", "figures": ["interactivity"], "key": 5 },
+    { "url": "/docs/stories/", "title": "Stories and replays", "summary": "Source edits, terminal sessions and results on one playback clock, exported as SVG, GIF or APNG.", "figures": ["stories-1", "stories-3"], "key": 6 }
+  ],
+  "surfaceRows": [
+    { "need": "Trends, comparisons, distributions, and statistical views", "key": "chart" },
+    { "need": "Repeated chart panels and small multiples", "key": "grid" },
+    { "need": "Exact facts, KPI cards, tables, lists, and timelines", "key": "blocks" },
+    { "need": "Fixed-size layered artwork such as wallpapers or social cards", "key": "canvas" },
+    { "need": "Services, ownership, routes, maps, and compact hierarchies", "key": "topology" },
+    { "need": "Large editable or navigable relationship scenes", "key": "graph" },
+    { "need": "Markdown or Mermaid-authored visuals", "key": "markup" }
+  ]
+}

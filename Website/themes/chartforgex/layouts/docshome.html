@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--docs cfx-body--docshome{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ docs = data.docs; figs = data.visuals.docs.figures; surfaces = data.visuals.docs.surfaces; overview = figs.overview ~}}
+<main id="main" class="cfx-main">
+  {{~ capture stage_side ~}}
+  <div class="cfx-install cfx-stage__install">
+    <code><span class="cfx-install__prompt" aria-hidden="true">&gt;</span> dotnet add package ChartForgeX</code>
+    <button type="button" class="cfx-copy" data-cfx-copy="dotnet add package ChartForgeX">Copy</button>
+  </div>
+  <div class="cfx-stage__actions">
+    <a class="cfx-btn cfx-btn--glow" href="/docs/install/">Install</a>
+    <a class="cfx-btn cfx-btn--ghost" href="/examples/static-chart/">Your first chart</a>
+  </div>
+  {{~ end ~}}
+  {{~ capture stage_art ~}}
+  <figure class="cfx-output">
+    <figcaption><span class="cfx-output__file">overview.svg</span><span>ChartGrid, {{ overview.kb }} KB</span></figcaption>
+    <img src="{{ overview.base }}-dark.svg" width="{{ overview.w }}" height="{{ overview.h }}" fetchpriority="high" decoding="async" alt="A report grid rendered by ChartForgeX: deployment health as an area chart, results as a donut, MFA coverage as a gauge and open findings by team as bars." />
+  </figure>
+  {{~ end ~}}
+  {{~ stage_title = page.title; stage_lede = page.description ~}}
+  {{ include "stage" }}
+
+  <section class="cfx-wide cfx-docmap" aria-labelledby="cfx-docmap-title">
+    <div class="cfx-docmap__head">
+      <h2 id="cfx-docmap-title">Topics</h2>
+      <p>{{ docs.intro }}</p>
+    </div>
+    <ol class="cfx-docmap__grid">
+      {{~ for t in docs.topics ~}}
+      <li style="--key: var(--cfx-s{{ t.key }})">
+        <a class="cfx-docmap__card" href="{{ t.url }}">
+          {{~ if t.surfaces; list = t.surfaces; source = surfaces; else; list = t.figures; source = figs; end ~}}
+          <span class="cfx-docmap__plate cfx-docmap__plate--{{ list.size }}" aria-hidden="true">
+            {{~ for id in list; f = source[id] ~}}
+            <span class="cfx-docmap__cell">
+              <img class="cfx-only-light" src="{{ f.base }}-light.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="" />
+              <img class="cfx-only-dark" src="{{ f.base }}-dark.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="" />
+            </span>
+            {{~ end ~}}
+          </span>
+          <span class="cfx-docmap__body">
+            <span class="cfx-docmap__num">{{ for.index + 1 | math.format "00" }}</span>
+            <span class="cfx-docmap__title"><span class="cfx-key" aria-hidden="true"></span>{{ t.title }}</span>
+            <span class="cfx-docmap__summary">{{ t.summary }}</span>
+          </span>
+        </a>
+      </li>
+      {{~ end ~}}
+    </ol>
+  </section>
+
+  <section class="cfx-wide cfx-docmap__more" aria-label="Introduction">
+    <div class="cfx-prose">
+{{ content }}
+    </div>
+    {{~ thumbs = data.visuals.nav.thumbs ~}}
+    <ul class="cfx-docmap__refs">
+      {{~ for r in [["api", "/api/", "API reference", "Every public type and member."], ["examples", "/examples/", "Examples", "Four programs and their output."], ["gallery", "/gallery/", "Gallery", "Sixty charts with C# source."], ["mermaid", "/mermaid/", "Mermaid", "Thirty diagram families."]] ~}}
+      {{~ th = thumbs[r[0]] ~}}
+      <li><a href="{{ r[1] }}">
+        <span class="cfx-docmap__refthumb" aria-hidden="true">
+          <img class="cfx-only-light" src="{{ th.base }}-light.{{ th.ext }}" width="{{ th.w }}" height="{{ th.h }}" loading="lazy" decoding="async" alt="" />
+          <img class="cfx-only-dark" src="{{ th.base }}-dark.{{ th.ext }}" width="{{ th.w }}" height="{{ th.h }}" loading="lazy" decoding="async" alt="" />
+        </span>
+        <span><strong>{{ r[2] }}</strong><span>{{ r[3] }}</span></span>
+      </a></li>
+      {{~ end ~}}
+    </ul>
+  </section>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

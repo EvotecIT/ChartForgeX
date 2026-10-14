@@ -20,10 +20,10 @@
   pointer-events: none;
 }
 .cfx-pg__title { margin-right: 4px; font-size: 1.5rem; font-weight: 780; font-stretch: 116%; letter-spacing: -.025em; }
-.cfx-pg__langs, .cfx-pg__seg, .cfx-pg__zoom { display: inline-flex; padding: 3px; border: 1px solid var(--pg-line); border-radius: 10px; background: var(--cfx-card); }
-.cfx-pg__langs button, .cfx-pg__seg button, .cfx-pg__zoom button { min-height: 32px; padding: 0 12px; border: 0; border-radius: 7px; background: none; color: var(--cfx-ink-2); font: inherit; font-size: .875rem; font-weight: 600; cursor: pointer; }
-.cfx-pg__langs [aria-selected="true"], .cfx-pg__seg [aria-pressed="true"], .cfx-pg__zoom [aria-pressed="true"] { background: var(--cfx-ink); color: var(--cfx-page); }
-.cfx-pg__langs button:hover:not([aria-selected="true"]), .cfx-pg__seg button:hover:not([aria-pressed="true"]), .cfx-pg__zoom button:hover:not([aria-pressed="true"]) { background: var(--cfx-card-alt); color: var(--cfx-ink); }
+.cfx-pg__zoom { display: inline-flex; padding: 3px; border: 1px solid var(--pg-line); border-radius: 10px; background: var(--cfx-card); }
+.cfx-pg__zoom button { min-height: 32px; padding: 0 12px; border: 0; border-radius: 7px; background: none; color: var(--cfx-ink-2); font: inherit; font-size: .875rem; font-weight: 600; cursor: pointer; }
+.cfx-pg__zoom [aria-pressed="true"] { background: var(--cfx-ink); color: var(--cfx-page); }
+.cfx-pg__zoom button:hover:not([aria-pressed="true"]) { background: var(--cfx-card-alt); color: var(--cfx-ink); }
 .cfx-pg__samples select { min-height: 40px; max-width: 280px; padding: 0 34px 0 12px; border: 1px solid var(--pg-line); border-radius: 10px; background: var(--cfx-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23808690' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 12px center; color: var(--cfx-ink); font: inherit; font-size: .875rem; appearance: none; cursor: pointer; }
 .cfx-pg__samples select:disabled { cursor: progress; opacity: .7; }
 .cfx-pg__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }

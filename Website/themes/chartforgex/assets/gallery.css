@@ -3,36 +3,11 @@
 .cfx-gallery-page {
   width: min(100% - 2 * var(--cfx-gutter), var(--cfx-max));
   margin-inline: auto;
-  padding-top: clamp(32px, 4vw, 48px);
+  padding-top: clamp(40px, 5vw, 64px);
 }
 
-/* Category filter, set like a chart legend: a key, a label and a tabular count. */
-.cfx-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 6px;
-  margin-bottom: clamp(24px, 3vw, 36px);
-}
-.cfx-filters button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 0 12px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--cfx-ink-2);
-  font: inherit;
-  font-size: .875rem;
-  font-weight: 600;
-  font-stretch: 94%;
-  cursor: pointer;
-}
-.cfx-filters .cfx-key { width: 10px; height: 10px; }
-.cfx-filters__count { color: var(--cfx-ink-3); font-family: var(--cfx-mono); font-size: var(--cfx-t-micro); font-weight: 500; font-variant-numeric: tabular-nums; }
-.cfx-filters button:hover { border-color: var(--cfx-line); background: var(--cfx-card); color: var(--cfx-ink); }
-.cfx-filters button[aria-pressed="true"] { border-color: var(--cfx-ink); background: var(--cfx-card); color: var(--cfx-ink); }
+/* Category filter: the shared legend tabs (base.css), wrapping above the grid. */
+.cfx-filters { display: flex; margin-bottom: clamp(24px, 3vw, 36px); }
 
 /* Example grid */
 .cfx-grid {
@@ -172,3 +147,6 @@
   .cfx-viewer { width: calc(100vw - 16px); max-height: calc(100vh - 16px); }
   .cfx-viewer__source { margin: 10px; }
 }
+
+/* Masthead chart: the category counts, rendered by ChartForgeX from data/gallery.json. */
+.cfx-gallery-chart { max-width: 620px; margin-left: auto; }

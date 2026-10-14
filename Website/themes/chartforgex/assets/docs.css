@@ -33,34 +33,48 @@
 }
 .cfx-docs__nav h2:first-of-type { margin-top: 0; }
 .cfx-docs__nav ul { margin: 0; padding: 0; list-style: none; }
+.cfx-docs__nav > details > ul,
+.cfx-docs__nav > details > .pf-menu-tree > ul,
+.cfx-docs__nav details ul:not(ul ul) { border-left: 1px solid var(--cfx-axis); }
 .cfx-docs__nav ul ul { padding-left: 12px; }
 .cfx-docs__nav a {
   position: relative;
   display: block;
-  padding: 5px 0 5px 14px;
+  margin-left: -1px;
+  padding: 6px 8px 6px 16px;
+  border-radius: 0 7px 7px 0;
   color: var(--cfx-ink-2);
   line-height: 1.4;
   text-decoration: none;
 }
 .cfx-docs__nav a::before {
-  /* Every entry sits on the contents axis; the current one carries the accent tick. */
+  /* Every entry is a tick on the contents axis; the current page is its legend key. */
   content: "";
   position: absolute;
   left: 0;
-  top: 50%;
+  top: calc(6px + .7em);
   width: 6px;
   height: 1px;
-  background: var(--cfx-axis);
+  background: var(--cfx-tick);
 }
-.cfx-docs__nav a:hover { color: var(--cfx-ink); }
-.cfx-docs__nav a:hover::before { background: var(--cfx-ink-3); }
+.cfx-docs__nav a:hover { color: var(--cfx-ink); background: var(--cfx-card-alt); }
 .cfx-docs__nav a[aria-current="page"],
 .cfx-docs__nav .is-active > a,
-.cfx-docs__nav a.is-active { color: var(--cfx-ink); font-weight: 640; }
+.cfx-docs__nav a.is-active {
+  background: color-mix(in srgb, var(--cfx-accent) 10%, transparent);
+  color: var(--cfx-ink);
+  font-weight: 650;
+}
 .cfx-docs__nav a[aria-current="page"]::before,
 .cfx-docs__nav .is-active > a::before,
-.cfx-docs__nav a.is-active::before { top: 6px; bottom: 6px; width: 2px; height: auto; background: var(--cfx-accent); }
-
+.cfx-docs__nav a.is-active::before {
+  left: -4px;
+  top: calc(6px + .7em - 4px);
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--cfx-accent);
+}
 /* Article */
 .cfx-docs__article { min-width: 0; }
 .cfx-docs__article :is(.cfx-prose, .cfx-prose > article) > h2:first-child { margin-top: 0; }
@@ -117,46 +131,9 @@
 /* Docs-specific prose: the article column keeps the shared measure. */
 .cfx-docs .cfx-prose { max-width: 72ch; }
 
-/* Mermaid support: the family matrix reads as a spec sheet. */
-.cfx-support { padding-block: clamp(40px, 5vw, 64px) clamp(48px, 6vw, 80px); }
-.cfx-support__head { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 12px clamp(24px, 4vw, 56px); align-items: end; margin-bottom: 24px; }
-.cfx-support__head h2, .cfx-mermaid--page .cfx-mermaid__intro h2 { font-size: var(--cfx-t-h2); letter-spacing: -.02em; }
-.cfx-support__head p { max-width: 62ch; color: var(--cfx-ink-2); }
-.cfx-mermaid-guide :is(.cfx-prose, .cfx-prose > article) > h2:first-child { margin-top: 0; }
-.cfx-families {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0 clamp(20px, 3vw, 40px);
-  margin: 0;
-  border-top: 2px solid var(--cfx-ink);
-  border-bottom: 2px solid var(--cfx-ink);
-}
-.cfx-families__group { padding: 14px 0 18px; }
-.cfx-families__group h3 {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--cfx-ink-3);
-  font-size: .9375rem;
-  font-weight: 700;
-  font-stretch: 104%;
-}
-.cfx-families__group h3 span { color: var(--cfx-ink-3); font-family: var(--cfx-mono); font-size: var(--cfx-t-micro); font-weight: 500; font-variant-numeric: tabular-nums; }
-.cfx-families__group ul { margin: 0; padding: 0; list-style: none; }
-.cfx-families__group li { padding: 6px 0; border-bottom: 1px solid var(--cfx-line); color: var(--cfx-ink); font-size: .9375rem; }
-.cfx-families__group li:last-child { border-bottom: 0; }
-.cfx-families__note { max-width: 80ch; margin-top: 16px; color: var(--cfx-ink-3); font-size: .875rem; }
-
 @media (max-width: 1180px) {
   .cfx-docs { grid-template-columns: 210px minmax(0, 1fr); }
   .cfx-docs__toc { display: none; }
-}
-
-@media (max-width: 1000px) {
-  .cfx-families { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .cfx-support__head { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 820px) {
@@ -181,6 +158,3 @@
   .cfx-docs__menu > h2:first-of-type { margin-top: 4px; }
 }
 
-@media (max-width: 560px) {
-  .cfx-families { grid-template-columns: minmax(0, 1fr); }
-}
