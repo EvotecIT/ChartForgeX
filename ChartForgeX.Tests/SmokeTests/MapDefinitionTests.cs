@@ -386,12 +386,18 @@ internal static partial class SmokeTests {
             .AddRegionMap("Revenue", ChartMapCatalog.Get("us-states"), regions)
             .ToSvg();
 
-        Assert(tileSvg.Contains("data-cfx-region=\"CA\" data-cfx-region-name=\"California\" data-cfx-value=\"100\"", StringComparison.Ordinal), "Tile maps should normalize aliases to canonical codes and aggregate duplicates.");
-        Assert(tileSvg.Contains("data-cfx-region=\"NY\" data-cfx-region-name=\"New York\" data-cfx-value=\"82\"", StringComparison.Ordinal), "Tile maps should accept full region names.");
-        Assert(tileSvg.Contains("data-cfx-region=\"DC\" data-cfx-region-name=\"District of Columbia\" data-cfx-value=\"12\"", StringComparison.Ordinal), "Tile maps should accept common District of Columbia aliases.");
-        Assert(regionSvg.Contains("data-cfx-region=\"CA\" data-cfx-region-name=\"California\" data-cfx-value=\"100\"", StringComparison.Ordinal), "Region maps should normalize aliases to canonical codes and aggregate duplicates.");
-        Assert(regionSvg.Contains("data-cfx-region=\"NY\" data-cfx-region-name=\"New York\" data-cfx-value=\"82\"", StringComparison.Ordinal), "Region maps should accept full region names.");
-        Assert(regionSvg.Contains("data-cfx-region=\"DC\" data-cfx-region-name=\"District of Columbia\" data-cfx-value=\"12\"", StringComparison.Ordinal), "Region maps should accept common District of Columbia aliases.");
+        foreach (var svg in new[] { tileSvg, regionSvg }) {
+            var regionsByCode = System.Xml.Linq.XDocument.Parse(svg).Descendants()
+                .Where(element => element.Attribute("data-cfx-region") != null && element.Attribute("data-cfx-value") != null)
+                .ToDictionary(element => (string)element.Attribute("data-cfx-region")!, StringComparer.Ordinal);
+            foreach (var expected in new[] { (Code: "CA", Name: "California", Value: "100"),
+                (Code: "NY", Name: "New York", Value: "82"), (Code: "DC", Name: "District of Columbia", Value: "12") }) {
+                Assert(regionsByCode.TryGetValue(expected.Code, out var region)
+                    && (string?)region.Attribute("data-cfx-region-name") == expected.Name
+                    && (string?)region.Attribute("data-cfx-value") == expected.Value,
+                    "Maps should normalize names and aliases to unique canonical regions with their aggregated values.");
+            }
+        }
     }
 
     private static void CustomMapDefinitionsPreserveRegionIdentifierCasing() {
