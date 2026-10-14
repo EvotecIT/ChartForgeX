@@ -1,63 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-14eeb84c" width="760" height="570" viewBox="0 0 760 570" role="img" aria-labelledby="cfx-visual-14eeb84c-title cfx-visual-14eeb84c-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-14eeb84c-title">Platform map</title>
-<desc id="cfx-visual-14eeb84c-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-d6faefd0" width="724" height="543" viewBox="10 6 724 543" role="img" aria-labelledby="cfx-visual-d6faefd0-title cfx-visual-d6faefd0-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" data-cfx-label-layout="measured" data-cfx-label-count="21" data-cfx-label-dropped="0">
+<title id="cfx-visual-d6faefd0-title">Platform map</title>
+<desc id="cfx-visual-d6faefd0-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-14eeb84c .cfx-guide-stroke,#cfx-visual-14eeb84c .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-14eeb84c text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<linearGradient id="cfx-visual-14eeb84c-visualBackground" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-14eeb84c-visualCard" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#232A38" stop-opacity="1"/><stop offset="100%" stop-color="#0D1421" stop-opacity="1"/></linearGradient>
-<linearGradient id="cfx-visual-14eeb84c-visualPlot" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1C202A" stop-opacity="1"/><stop offset="100%" stop-color="#070B14" stop-opacity="1"/></linearGradient>
-<clipPath id="cfx-visual-14eeb84c-visualCardClip"><rect x="0" y="0" width="760" height="570" rx="12"/></clipPath>
+<style>#cfx-visual-d6faefd0 .cfx-guide-stroke,#cfx-visual-d6faefd0 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-d6faefd0 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-d6faefd0-visualCardClip"><rect x="0" y="0" width="760" height="570" rx="3"/></clipPath>
 </defs>
-<rect width="100%" height="100%" fill="url(#cfx-visual-14eeb84c-visualBackground)"/>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="569" rx="11.5" fill="url(#cfx-visual-14eeb84c-visualCard)" stroke="rgba(148,163,184,0.133)"/>
-<rect data-cfx-role="visual-card-highlight" class="cfx-guide-stroke" x="1.5" y="1.5" width="757" height="567" rx="10.5" fill="none" stroke="#fff" stroke-opacity="0.42"/>
-<text data-cfx-role="visual-title" x="30" y="56.978" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="800">Platform map</text>
-<text data-cfx-role="visual-subtitle" x="30" y="83.741" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">Wardley</text>
-<rect data-cfx-role="wardley-plot" x="86" y="115.878" width="628" height="361.122" fill="#080D18" stroke="rgba(148,163,184,0.11)"/>
-<line data-cfx-role="wardley-stage-boundary" x1="243" y1="115.878" x2="243" y2="477" stroke="rgba(148,163,184,0.176)" stroke-width="1"/>
-<line data-cfx-role="wardley-stage-boundary" x1="400" y1="115.878" x2="400" y2="477" stroke="rgba(148,163,184,0.176)" stroke-width="1"/>
-<line data-cfx-role="wardley-stage-boundary" x1="557" y1="115.878" x2="557" y2="477" stroke="rgba(148,163,184,0.176)" stroke-width="1"/>
-<line data-cfx-role="wardley-axis-x" x1="86" y1="477" x2="714" y2="477" stroke="rgba(203,213,225,0.412)" stroke-width="1.4"/>
-<line data-cfx-role="wardley-axis-y" x1="86" y1="115.878" x2="86" y2="477" stroke="rgba(203,213,225,0.412)" stroke-width="1.4"/>
-<text data-cfx-role="visual-text" x="56" y="296.439" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700">Visibility</text>
-<text data-cfx-role="visual-text" x="400" y="524" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700">Evolution</text>
-<text data-cfx-role="visual-text" x="164.5" y="504" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Genesis</text>
-<text data-cfx-role="visual-text" x="321.5" y="504" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Custom Built</text>
-<text data-cfx-role="visual-text" x="478.5" y="504" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Product</text>
-<text data-cfx-role="visual-text" x="635.5" y="504" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Commodity</text>
-<circle data-cfx-role="wardley-pipeline-component" cx="274.4" cy="224.215" r="4.5" fill="#080D18" stroke="rgba(203,213,225,0.412)"/>
-<text data-cfx-role="visual-text" x="280.4" y="238.215" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">Build</text>
-<circle data-cfx-role="wardley-pipeline-component" cx="431.4" cy="224.215" r="4.5" fill="#080D18" stroke="rgba(203,213,225,0.412)"/>
-<text data-cfx-role="visual-text" x="437.4" y="238.215" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">Buy</text>
-<circle data-cfx-role="wardley-pipeline-component" cx="588.4" cy="224.215" r="4.5" fill="#080D18" stroke="rgba(203,213,225,0.412)"/>
-<text data-cfx-role="visual-text" x="594.4" y="238.215" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">Commodity</text>
-<rect data-cfx-role="wardley-pipeline" x="260.4" y="202.215" width="342" height="44" rx="7" fill="none" stroke="rgba(203,213,225,0.235)" stroke-width="1" stroke-dasharray="4 4"/>
-<line data-cfx-role="wardley-link" x1="117.4" y1="133.934" x2="305.8" y2="188.102" stroke="rgba(203,213,225,0.251)" stroke-width="1.2"/>
-<line data-cfx-role="wardley-link" x1="305.8" y1="188.102" x2="368.6" y2="224.215" stroke="rgba(203,213,225,0.251)" stroke-width="1.2"/>
-<path data-cfx-role="wardley-flow-forward" d="M 351.07 214.134 L 338.674 211.62 L 342.662 204.685 Z" fill="rgba(203,213,225,0.251)"/>
-<text data-cfx-role="visual-text" x="337.2" y="201.158" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">uses</text>
-<line data-cfx-role="wardley-link" x1="368.6" y1="224.215" x2="494.2" y2="278.383" stroke="rgba(203,213,225,0.251)" stroke-width="1.2" stroke-dasharray="5 5"/>
-<text data-cfx-role="visual-text" x="431.4" y="246.299" text-anchor="middle" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600">optional</text>
-<line data-cfx-role="wardley-evolve" x1="368.6" y1="224.215" x2="557" y2="224.215" stroke="#34D399" stroke-width="1.8" stroke-dasharray="4 4"/>
-<path data-cfx-role="wardley-evolve-arrow" d="M 557 224.215 l -7 -4 v 8 z" fill="#34D399"/>
-<text data-cfx-role="visual-text" x="557" y="350.607" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700">Operational pressure</text>
-<path data-cfx-role="wardley-accelerator" d="M 475.36 315.329 h 32 v -7 l 17 17 l -17 17 v -7 h -32 z" fill="#080D18" stroke="#22D3EE"/>
-<text data-cfx-role="visual-text" x="500.36" y="350.329" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="700">Faster</text>
-<path data-cfx-role="wardley-deaccelerator" d="M 562.04 293.661 h -32 v -7 l -17 17 l 17 17 v -7 h 32 z" fill="#080D18" stroke="#FBBF24"/>
-<text data-cfx-role="visual-text" x="538.04" y="328.661" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="700">Risk</text>
-<circle data-cfx-role="wardley-anchor" cx="117.4" cy="133.934" r="7.5" fill="#080D18" stroke="#F8FAFC" stroke-width="2"/>
-<text data-cfx-role="visual-text" x="132.4" y="123.934" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="800">User</text>
-<circle data-cfx-role="wardley-node" cx="305.8" cy="188.102" r="6" fill="#080D18" stroke="#22D3EE" stroke-width="2"/>
-<line data-cfx-role="wardley-inertia" x1="321.8" y1="179.102" x2="321.8" y2="197.102" stroke="#F8FAFC" stroke-width="4"/>
-<text data-cfx-role="visual-text" x="315.8" y="178.102" text-anchor="start" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Portal</text>
-<circle data-cfx-role="wardley-strategy" cx="368.6" cy="224.215" r="13" fill="#080D18" stroke="rgba(52,211,153,0.608)" stroke-width="1"/>
-<circle data-cfx-role="wardley-node" cx="368.6" cy="224.215" r="6" fill="#080D18" stroke="#34D399" stroke-width="2"/>
-<text data-cfx-role="visual-text" x="378.6" y="214.215" text-anchor="start" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">API</text>
-<circle data-cfx-role="wardley-node" cx="494.2" cy="278.383" r="6" fill="#080D18" stroke="#FBBF24" stroke-width="2"/>
-<text data-cfx-role="visual-text" x="482.2" y="296.383" text-anchor="start" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600">Identity</text>
-<g data-cfx-role="wardley-annotation-callout">
-<circle data-cfx-role="wardley-annotation" cx="400" cy="260.327" r="10" fill="#080D18" stroke="rgba(203,213,225,0.412)"/>
-<text data-cfx-role="wardley-annotation-number" x="400" y="264.327" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="800">1</text>
-<text data-cfx-role="visual-text" x="413" y="256.327" text-anchor="start" fill="#BAC6D6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="600">Improve automation</text>
+<rect data-cfx-role="visual-background" width="100%" height="100%" fill="#0C0D10"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="569" rx="2.5" fill="#16181C" stroke="#272A30"/>
+<text data-cfx-role="visual-title" x="30" y="42.75" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="17" font-weight="700" data-cfx-label-original="Platform map" data-cfx-label-status="placed" data-cfx-label-x="30" data-cfx-label-y="30" data-cfx-label-width="96.156" data-cfx-label-height="17">Platform map</text>
+<text data-cfx-role="visual-subtitle" x="30" y="64.125" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13.5" data-cfx-label-original="Wardley" data-cfx-label-status="placed" data-cfx-label-x="30" data-cfx-label-y="54" data-cfx-label-width="45.464" data-cfx-label-height="13.5">Wardley</text>
+<rect data-cfx-role="wardley-plot" x="86" y="96.5" width="628" height="379.071" fill="#111317" stroke="#272A30"/>
+<line data-cfx-role="wardley-stage-boundary" x1="243" y1="96.5" x2="243" y2="475.571" stroke="#272A30" stroke-width="1"/>
+<line data-cfx-role="wardley-stage-boundary" x1="400" y1="96.5" x2="400" y2="475.571" stroke="#272A30" stroke-width="1"/>
+<line data-cfx-role="wardley-stage-boundary" x1="557" y1="96.5" x2="557" y2="475.571" stroke="#272A30" stroke-width="1"/>
+<line data-cfx-role="wardley-axis-x" x1="86" y1="475.571" x2="714" y2="475.571" stroke="#272A30" stroke-width="1.4"/>
+<line data-cfx-role="wardley-axis-y" x1="86" y1="96.5" x2="86" y2="475.571" stroke="#272A30" stroke-width="1.4"/>
+<text data-cfx-role="visual-text" x="56" y="286.036" text-anchor="middle" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13.143" font-weight="700" data-cfx-label-original="Visibility" data-cfx-label-status="placed" data-cfx-label-x="32.506" data-cfx-label-y="276.179" data-cfx-label-width="46.989" data-cfx-label-height="13.143">Visibility</text>
+<text data-cfx-role="visual-text" x="400" y="524" text-anchor="middle" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13.143" font-weight="700" data-cfx-label-original="Evolution" data-cfx-label-status="placed" data-cfx-label-x="374.336" data-cfx-label-y="514.143" data-cfx-label-width="51.327" data-cfx-label-height="13.143">Evolution</text>
+<text data-cfx-role="visual-text" x="164.5" y="504" text-anchor="middle" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600" data-cfx-label-original="Genesis" data-cfx-label-status="placed" data-cfx-label-x="145.155" data-cfx-label-y="495" data-cfx-label-width="38.689" data-cfx-label-height="12">Genesis</text>
+<text data-cfx-role="visual-text" x="321.5" y="504" text-anchor="middle" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600" data-cfx-label-original="Custom Built" data-cfx-label-status="placed" data-cfx-label-x="289.684" data-cfx-label-y="495" data-cfx-label-width="63.633" data-cfx-label-height="12">Custom Built</text>
+<text data-cfx-role="visual-text" x="478.5" y="504" text-anchor="middle" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600" data-cfx-label-original="Product" data-cfx-label-status="placed" data-cfx-label-x="458.991" data-cfx-label-y="495" data-cfx-label-width="39.018" data-cfx-label-height="12">Product</text>
+<text data-cfx-role="visual-text" x="635.5" y="504" text-anchor="middle" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600" data-cfx-label-original="Commodity" data-cfx-label-status="placed" data-cfx-label-x="606.496" data-cfx-label-y="495" data-cfx-label-width="58.008" data-cfx-label-height="12">Commodity</text>
+<circle data-cfx-role="wardley-pipeline-component" cx="274.4" cy="210.221" r="4.5" fill="#111317" stroke="#272A30"/>
+<text data-cfx-role="visual-text" x="280.4" y="224.221" text-anchor="start" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="10.857" font-weight="600" data-cfx-label-original="Build" data-cfx-label-status="placed" data-cfx-label-x="280.4" data-cfx-label-y="216.078" data-cfx-label-width="23.071" data-cfx-label-height="10.857">Build</text>
+<circle data-cfx-role="wardley-pipeline-component" cx="431.4" cy="210.221" r="4.5" fill="#111317" stroke="#272A30"/>
+<text data-cfx-role="visual-text" x="437.4" y="224.221" text-anchor="start" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="10.857" font-weight="600" data-cfx-label-original="Buy" data-cfx-label-status="placed" data-cfx-label-x="437.4" data-cfx-label-y="216.078" data-cfx-label-width="17.054" data-cfx-label-height="10.857">Buy</text>
+<circle data-cfx-role="wardley-pipeline-component" cx="588.4" cy="210.221" r="4.5" fill="#111317" stroke="#272A30"/>
+<text data-cfx-role="visual-text" x="594.4" y="224.221" text-anchor="start" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="10.857" font-weight="600" data-cfx-label-original="Commodity" data-cfx-label-status="placed" data-cfx-label-x="594.4" data-cfx-label-y="216.078" data-cfx-label-width="52.483" data-cfx-label-height="10.857">Commodity</text>
+<rect data-cfx-role="wardley-pipeline" x="260.4" y="188.221" width="342" height="44" rx="7" fill="none" stroke="rgba(39,42,48,0.569)" stroke-width="1" stroke-dasharray="4 4"/>
+<line data-cfx-role="wardley-link" x1="117.4" y1="115.454" x2="305.8" y2="172.314" stroke="rgba(39,42,48,0.608)" stroke-width="1.2"/>
+<line data-cfx-role="wardley-link" x1="305.8" y1="172.314" x2="368.6" y2="210.221" stroke="rgba(39,42,48,0.608)" stroke-width="1.2"/>
+<path data-cfx-role="wardley-flow-forward" d="M 350.898 199.536 L 338.557 196.759 L 342.692 189.91 Z" fill="rgba(39,42,48,0.608)"/>
+<text data-cfx-role="visual-text" x="337.2" y="186.268" text-anchor="middle" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="10.857" font-weight="600" data-cfx-label-original="uses" data-cfx-label-status="placed" data-cfx-label-x="327.223" data-cfx-label-y="178.125" data-cfx-label-width="19.954" data-cfx-label-height="10.857">uses</text>
+<line data-cfx-role="wardley-link" x1="368.6" y1="210.221" x2="494.2" y2="267.082" stroke="rgba(39,42,48,0.608)" stroke-width="1.2" stroke-dasharray="5 5"/>
+<line data-cfx-role="label-leader" data-cfx-label-decoration="true" x1="431.4" y1="230.938" x2="412.567" y2="206.652" stroke="#B0B4BC" stroke-width="1" stroke-opacity="0.65"/><text data-cfx-role="visual-text" x="431.4" y="233.652" text-anchor="middle" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="10.857" font-weight="600" data-cfx-label-original="optional" data-cfx-label-status="placed" data-cfx-label-x="412.567" data-cfx-label-y="195.795" data-cfx-label-width="37.666" data-cfx-label-height="10.857" transform="translate(0 -29.714) ">optional</text>
+<line data-cfx-role="wardley-evolve" x1="368.6" y1="210.221" x2="557" y2="210.221" stroke="#8A74EE" stroke-width="1.8" stroke-dasharray="4 4"/>
+<path data-cfx-role="wardley-evolve-arrow" d="M 557 210.221 l -7 -4 v 8 z" fill="#8A74EE"/>
+<text data-cfx-role="visual-text" x="557" y="342.896" text-anchor="start" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="700" data-cfx-label-original="Operational pressure" data-cfx-label-status="placed" data-cfx-label-x="557" data-cfx-label-y="333.896" data-cfx-label-width="104.707" data-cfx-label-height="12">Operational pressure</text>
+<path data-cfx-role="wardley-accelerator" d="M 475.36 306.361 h 32 v -7 l 17 17 l -17 17 v -7 h -32 z" fill="#111317" stroke="#179C89"/>
+<text data-cfx-role="visual-text" x="500.36" y="341.361" text-anchor="middle" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="10.286" font-weight="700" data-cfx-label-original="Faster" data-cfx-label-status="placed" data-cfx-label-x="487.47" data-cfx-label-y="333.647" data-cfx-label-width="25.78" data-cfx-label-height="10.286">Faster</text>
+<path data-cfx-role="wardley-deaccelerator" d="M 562.04 283.617 h -32 v -7 l -17 17 l 17 17 v -7 h 32 z" fill="#111317" stroke="#C9579F"/>
+<text data-cfx-role="visual-text" x="538.04" y="318.617" text-anchor="middle" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="10.286" font-weight="700" data-cfx-label-original="Risk" data-cfx-label-status="placed" data-cfx-label-x="529.361" data-cfx-label-y="310.903" data-cfx-label-width="17.358" data-cfx-label-height="10.286">Risk</text>
+<circle data-cfx-role="wardley-anchor" cx="117.4" cy="115.454" r="7.5" fill="#111317" stroke="#F2F3F5" stroke-width="2"/>
+<text data-cfx-role="visual-text" x="132.4" y="105.454" text-anchor="middle" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="700" data-cfx-label-original="User" data-cfx-label-status="placed" data-cfx-label-x="120.936" data-cfx-label-y="96.454" data-cfx-label-width="22.928" data-cfx-label-height="12">User</text>
+<circle data-cfx-role="wardley-node" cx="305.8" cy="172.314" r="6" fill="#111317" stroke="#179C89" stroke-width="2"/>
+<line data-cfx-role="wardley-inertia" x1="321.8" y1="163.314" x2="321.8" y2="181.314" stroke="#F2F3F5" stroke-width="4"/>
+<text data-cfx-role="visual-text" x="315.8" y="162.314" text-anchor="start" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600" data-cfx-label-original="Portal" data-cfx-label-status="placed" data-cfx-label-x="315.8" data-cfx-label-y="153.314" data-cfx-label-width="29.824" data-cfx-label-height="12">Portal</text>
+<circle data-cfx-role="wardley-strategy" cx="368.6" cy="210.221" r="13" fill="#111317" stroke="rgba(138,116,238,0.608)" stroke-width="1"/>
+<circle data-cfx-role="wardley-node" cx="368.6" cy="210.221" r="6" fill="#111317" stroke="#8A74EE" stroke-width="2"/>
+<text data-cfx-role="visual-text" x="378.6" y="200.221" text-anchor="start" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600" data-cfx-label-original="API" data-cfx-label-status="placed" data-cfx-label-x="378.6" data-cfx-label-y="191.221" data-cfx-label-width="16.857" data-cfx-label-height="12">API</text>
+<circle data-cfx-role="wardley-node" cx="494.2" cy="267.082" r="6" fill="#111317" stroke="#C9579F" stroke-width="2"/>
+<text data-cfx-role="visual-text" x="482.2" y="285.082" text-anchor="start" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600" data-cfx-label-original="Identity" data-cfx-label-status="placed" data-cfx-label-x="482.2" data-cfx-label-y="276.082" data-cfx-label-width="38.877" data-cfx-label-height="12">Identity</text>
+<g data-cfx-role="wardley-annotation-callout" data-cfx-label-original="1 Improve automation" data-cfx-label-status="placed" data-cfx-label-x="388.571" data-cfx-label-y="236.415" data-cfx-label-width="113.806" data-cfx-label-height="23.144">
+<circle data-cfx-role="wardley-annotation" cx="400" cy="248.129" r="11.429" fill="#111317" stroke="#272A30" data-cfx-label-decoration="true"/>
+<text data-cfx-role="wardley-annotation-number" x="400" y="252.7" text-anchor="middle" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="10.286" font-weight="700">1</text>
+<text data-cfx-role="visual-text" x="414.429" y="244.129" text-anchor="start" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="10.286" font-weight="600">Improve automation</text>
 </g>
 </svg>

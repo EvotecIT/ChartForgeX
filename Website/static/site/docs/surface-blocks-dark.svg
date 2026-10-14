@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-062478d1" width="584" height="274" viewBox="0 0 584 274" role="img" aria-labelledby="cfx-visual-grid-062478d1-title cfx-visual-grid-062478d1-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-grid-062478d1-title">Endpoint snapshot</title>
-<desc id="cfx-visual-grid-062478d1-desc">Static visual grid containing charts and visual blocks.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-5fe2c04c" width="584" height="274" viewBox="0 0 584 274" role="img" aria-labelledby="cfx-visual-grid-5fe2c04c-title cfx-visual-grid-5fe2c04c-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-grid-5fe2c04c-title">Endpoint snapshot</title>
+<desc id="cfx-visual-grid-5fe2c04c-desc">Static visual grid containing charts and visual blocks.</desc>
 <defs>
-<style>#cfx-visual-grid-062478d1 .cfx-guide-stroke,#cfx-visual-grid-062478d1 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-062478d1 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<style>#cfx-visual-grid-5fe2c04c .cfx-guide-stroke,#cfx-visual-grid-5fe2c04c .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-5fe2c04c text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
 </defs>
-<rect width="100%" height="100%" fill="#0C0D10"/>
-<text data-cfx-role="visual-grid-title" data-cfx-target="title" x="24" y="36.75" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="17" font-weight="700">Endpoint snapshot</text>
+<rect width="100%" height="100%" fill="#F2F3F4"/>
+<text data-cfx-role="visual-grid-title" data-cfx-target="title" x="24" y="36.75" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="17" font-weight="700">Endpoint snapshot</text>
 <svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-db22897d" width="260" height="150" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-db22897d-title cfx-visual-db22897d-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" data-cfx-label-layout="measured" data-cfx-label-count="2" data-cfx-label-dropped="0" x="24" y="100" data-cfx-role="visual-grid-panel">
 <title id="cfx-visual-db22897d-title">CPU load</title>
 <desc id="cfx-visual-db22897d-desc">Static ChartForgeX visual block.</desc>

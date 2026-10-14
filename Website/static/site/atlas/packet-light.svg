@@ -1,10 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-79f34bb7" width="740" height="555" viewBox="9 0 740 555" role="img" aria-labelledby="cfx-visual-79f34bb7-title cfx-visual-79f34bb7-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" data-cfx-label-layout="measured" data-cfx-label-count="14" data-cfx-label-dropped="0">
-<title id="cfx-visual-79f34bb7-title">TCP header</title>
-<desc id="cfx-visual-79f34bb7-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-4f6383c5" width="740" height="555" viewBox="9 0 740 555" role="img" aria-labelledby="cfx-visual-4f6383c5-title cfx-visual-4f6383c5-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" data-cfx-label-layout="measured" data-cfx-label-count="14" data-cfx-label-dropped="0">
+<title id="cfx-visual-4f6383c5-title">TCP header</title>
+<desc id="cfx-visual-4f6383c5-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-79f34bb7 .cfx-guide-stroke,#cfx-visual-79f34bb7 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-79f34bb7 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-79f34bb7-visualCardClip"><rect x="0" y="0" width="760" height="570" rx="3"/></clipPath>
+<style>#cfx-visual-4f6383c5 .cfx-guide-stroke,#cfx-visual-4f6383c5 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-4f6383c5 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-4f6383c5-visualCardClip"><rect x="0" y="0" width="760" height="570" rx="3"/></clipPath>
 </defs>
+<rect data-cfx-role="visual-background" width="100%" height="100%" fill="#F2F3F4"/>
 <rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="759" height="569" rx="2.5" fill="#FFFFFF" stroke="#E2E4E7"/>
 <text data-cfx-role="visual-title" x="30" y="42.75" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="17" font-weight="700" data-cfx-label-original="TCP header" data-cfx-label-status="placed" data-cfx-label-x="30" data-cfx-label-y="30" data-cfx-label-width="79.729" data-cfx-label-height="17">TCP header</text>
 <text data-cfx-role="visual-subtitle" x="30" y="64.125" fill="#4D525B" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13.5" data-cfx-label-original="Packet" data-cfx-label-status="placed" data-cfx-label-x="30" data-cfx-label-y="54" data-cfx-label-width="35.728" data-cfx-label-height="13.5">Packet</text>
