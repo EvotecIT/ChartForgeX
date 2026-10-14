@@ -208,6 +208,8 @@ Set `legendTitle` in the `VisualFrame` constructor to give categorical legend en
 
 ## Prepare once, export several ways
 
+Visuals-owned mixed grids expose `grid.ToVisualArtifact(id)` through the same artifact vocabulary as chart grids, canvases and factual blocks. Natural size comes from the grid's logical layout and remains independent of `PngOutputScale`. Artifact creation does not render children. The envelope borrows the grid model; recreate it after changing layout or headings, then use the shared SVG, PNG, HTML or Office handoff.
+
 ```csharp
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;

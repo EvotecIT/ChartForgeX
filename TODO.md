@@ -194,9 +194,13 @@ These are later lanes selected by real consumers; they do not block making the c
 
 ## Consumer and release qualification
 
-The core prepared scene, Visuals/Stories extraction, and public 2.0.0 owner packages are complete. Earlier local consumer qualification is useful historical evidence, not proof that today's public packages or installed hosts execute every current contract. The current read-only consumer inventory identifies legacy theme and authoring calls that still need migration; the owner API changes do not update those repositories.
+The core prepared scene, Visuals/Stories extraction, and public 2.0.0 owner packages are complete. The unified authoring migration targets the coordinated 3.0.0 package family. Consumer implementation and isolated candidate-package qualification are in progress; public delivery and installed-host qualification remain separate gates.
 
 - [ ] Recheck and complete each outstanding consumer migration against its current repository, dependencies, CI/review, and installed delivery path. Preserve the inspected wallpaper, report, image-composition, story and document workflows. Validate through ordinary public packages or explicitly isolated candidate packages, with source/feed/install state recorded separately. Do not infer downstream readiness from owner availability.
+- [ ] Deliver PowerBGInfo's migrated chart, topology and factual-canvas workflows. Isolated candidate packages pass its PowerShell 5.1/7 commands and ultrawide/4K file exports, including independent text colors and percent-ring semantics; public-package CI and module delivery remain.
+- [ ] Qualify ImagePlayground's moved authoring types, typed series, grid artifacts and story/terminal exports through the packaged module, preserving image and code-generation commands.
+- [ ] Deliver OfficeIMO's paired-theme and Mermaid migration. Candidate-package proof covers saved Word, Excel, PowerPoint, PDF and editable Visio output, plus native PowerPoint export; public-package CI and adapter delivery remain.
+- [ ] Deliver the migrated private HTML bridge with explicit host-versus-authored theme ownership, stable identities and localization. Candidate packages pass compact/wide light/dark browser and native export checks; public dependency delivery and domain-consumer migrations remain.
 - [ ] For stable implementation candidates, run focused contracts, the full quality loop, required browser evidence, and the packed-consumer matrix. Qualify Windows/Linux/macOS and Native AOT at the applicable gate.
 - [ ] Keep package identities/dependencies/framework assets/XML docs/symbols/licenses coordinated. Use the existing shared release entrypoint and three-part public versions; GitHub Releases is the release-note source of truth.
 - [ ] Publish and verify a new owner release and affected host releases only with release authority. Read public artifacts back before claiming availability, and retain installed-runtime proof separately.
