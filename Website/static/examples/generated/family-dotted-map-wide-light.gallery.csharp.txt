@@ -33,7 +33,7 @@ public static class DottedMapRecipe {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
 
-        return Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe())
+        var chart = Chart.Create().WithDataLabels().WithMapViewport(ChartMapViewport.Europe())
             .AddDottedMap("Locations", new[] {
                 new ChartMapPoint("Madrid", -3.7, 40.4, 18),
                 new ChartMapPoint("Warsaw", 21, 52.2, 74),
@@ -46,5 +46,7 @@ public static class DottedMapRecipe {
                 new ChartMapPoint("Oslo", 10.8, 59.9)
             })
             .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        if (variant is "options" or "compact-options") chart.WithPointLegend();
+        return chart;
     }
 }

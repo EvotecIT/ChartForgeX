@@ -794,6 +794,53 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-point-interaction-target) { opacity: .3; }
 .cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hovered,
 .cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hover-column { r: 4px; opacity: 1 !important; stroke: var(--cfx-tooltip-surface); stroke-width: 2px !important; }
+
+/* Print the complete native scene independently of the reader's screen viewport. */
+@media print {
+  .cfx-toolbar,
+  .cfx-scenarios,
+  .cfx-scenario-panel,
+  .cfx-reset,
+  .cfx-tooltip,
+  .cfx-compare-tray,
+  .cfx-brush-box,
+  .cfx-crosshair,
+  .cfx-reveal-layer {
+    display: none !important;
+  }
+
+  .cfx-interactive-chart,
+  .cfx-interactive-chart .cfx-frame {
+    width: 100% !important;
+    max-width: 100%;
+    break-inside: avoid;
+  }
+
+  .cfx-interactive-chart .cfx-stage {
+    height: auto !important;
+    max-height: none !important;
+    padding: 0;
+    border: 0;
+    overflow: hidden !important;
+    scrollbar-gutter: auto !important;
+    background: transparent;
+  }
+
+  .cfx-interactive-chart .cfx-stage > svg {
+    display: block;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto;
+  }
+
+  .cfx-interactive-chart .cfx-stage > svg :focus {
+    outline: none !important;
+  }
+}
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered) { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column) { opacity: 0 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
@@ -835,6 +882,7 @@ body {
 }
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed]:not(.cfx-selected) > [data-cfx-highlight-paint] { filter: none; }
 </style>
+<style>body{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}@media print{body{min-height:auto;padding:0;background:transparent}.cfx-shell{min-height:auto;padding:0;background:transparent!important}}</style>
 </head>
 <body>
 <main class="cfx-shell" style="background:#F2F3F4;color:#16181C;font-family:Calibri, Carlito, Segoe UI, system-ui, sans-serif">
@@ -2341,7 +2389,7 @@ body {
       // Marker-free lines still expose their observations to pointer, keyboard, lasso and crosshair tools.
       // Empty or zero-sized native marks get a minimum eight-unit transparent browser target.
       // Retained numeric facts have keyboard semantics without a pointer surface.
-      if (retainedGeometryFact(node)) return;
+      if (retainedGeometryFact(node) || data.cfxVisible === 'false') return;
       // A hollow candle's unpainted interior still belongs to its observation's browser target.
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
@@ -2558,7 +2606,9 @@ body {
     svg.querySelectorAll('[data-cfx-series][data-cfx-point]').forEach((mark) => {
       const markData = mark.dataset || {};
       if (markData.cfxEmpty === 'true' || markData.cfxSeries !== data.cfxSeries || values.has(markData.cfxPoint) || mark.closest('[data-cfx-role="legend-item"]')) return;
-      const value = Number(markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue);
+      const rawValue = markData.cfxY !== undefined ? markData.cfxY : markData.cfxValue;
+      if (rawValue === undefined || rawValue === '') return;
+      const value = Number(rawValue);
       if (!Number.isFinite(value)) return;
       values.set(markData.cfxPoint, { point: Number(markData.cfxPoint), value, label: markData.cfxXLabel || markData.cfxCategory || '',
         formatted: markData.cfxFormattedValue, valueLabel: rowName(mark, 'value', 'Value') });
@@ -3355,7 +3405,8 @@ body {
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
-    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node));
+    if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node)
+      || pointUnits && data.cfxPoint === String(target.point));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
   };
   const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
@@ -3372,7 +3423,8 @@ body {
     const hoverMode = hoverModeForTarget(root, localNode, mode);
     if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
-    const itemUnit = hoverMode === 'series' && legendItemUnit(root, localTarget);
+    const itemUnit = hoverMode === 'series' && (legendItemUnit(root, localTarget)
+      || pointUnits && referencedTargetNode(root, { ...localTarget, targetKind: 'point' }));
     let matched = false;
     nodes.forEach((node) => {
       const hovered = matchesTargetIdentity(node, localTarget);

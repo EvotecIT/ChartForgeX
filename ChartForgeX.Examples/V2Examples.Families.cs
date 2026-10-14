@@ -17,7 +17,7 @@ public static partial class V2Examples {
     private static readonly ChartSeriesKind[] GeometryOptionFamilies = {
         ChartSeriesKind.Line, ChartSeriesKind.Bar, ChartSeriesKind.HorizontalBar, ChartSeriesKind.StackedArea, ChartSeriesKind.RangeArea, ChartSeriesKind.RangeBar, ChartSeriesKind.BoxPlot, ChartSeriesKind.Funnel, ChartSeriesKind.Waterfall,
         ChartSeriesKind.Scatter, ChartSeriesKind.Bubble, ChartSeriesKind.Radar, ChartSeriesKind.Pyramid,
-        ChartSeriesKind.RadialBar, ChartSeriesKind.RadialColumn, ChartSeriesKind.Candlestick, ChartSeriesKind.Ohlc
+        ChartSeriesKind.RadialBar, ChartSeriesKind.RadialColumn, ChartSeriesKind.Candlestick, ChartSeriesKind.Ohlc, ChartSeriesKind.DottedMap
     };
 
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
@@ -169,6 +169,7 @@ public static partial class V2Examples {
         ChartSeriesKind.Waterfall => "An opening balance, changes and checkpoints retain the running balance on reversed axes",
         ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
         ChartSeriesKind.Bubble => "Equal request volumes share a radius; values above 100 retain their facts",
+        ChartSeriesKind.DottedMap => "Location keys retain coordinates and optional weights",
         ChartSeriesKind.Candlestick => "Hollow rising bodies, filled falling bodies and independent wick strokes",
         ChartSeriesKind.Ohlc => "Rising and falling stroke colors, alpha and width retain source prices",
         ChartSeriesKind.Radar => "A filled area and an unfilled target line share one radial scale",

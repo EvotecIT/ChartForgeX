@@ -1,0 +1,42 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = AreaRecipe.Create("sparse", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Capacity used during the week", "Missing observations remain visible as gaps", showLegend: null, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Builds a filled area showing weekly capacity use.</summary>
+public static class AreaRecipe {
+    /// <summary>Creates the selected area example, including the warning-pattern option.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var points = Enumerable.Range(1, 6).Where(index => variant != "sparse" || index is 1 or 3 or 6)
+            .Select(index => new ChartPoint(index, 20 + index * 7 % 29, variant == "sparse" && index == 6));
+        var capacity = ChartSeries.CreateArea(new ChartSeriesId("used-capacity"), "Used capacity", points);
+        var chart = Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(capacity);
+        if (variant == "options") {
+            capacity.WithFillPattern(ChartFillPattern.Crosshatch).WithState(ChartSeriesState.Warning);
+            chart.WithDataLabels();
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    }
+}
