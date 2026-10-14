@@ -5,10 +5,11 @@ using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 
-// The gallery includes these licensed font fixtures beside the outputs.
+#region Setup: licensed font fixtures shipped beside the gallery outputs
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
-var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels();
+#endregion
+var chart =Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels();
 chart.AddStepLine("Observed", new ChartPoint[] { new ChartPoint(0, 88), new ChartPoint(1.99, 44), new ChartPoint(2, 34), new ChartPoint(3, 56), new ChartPoint(4, 46), new ChartPoint(5, 64), new ChartPoint(6, 42, true), new ChartPoint(7, 58), new ChartPoint(8, 50), new ChartPoint(8.01, 38), new ChartPoint(10, 82) });
 chart.Series[0].WithMarkerRadius(3);
 chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);

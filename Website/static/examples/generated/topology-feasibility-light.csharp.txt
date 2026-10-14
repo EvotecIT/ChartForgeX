@@ -5,8 +5,10 @@ using ChartForgeX.Topology;
 using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 
+#region Setup: licensed font fixtures shipped beside the gallery outputs
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+#endregion
 var model = CreateTopology();
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), VisualTheme.Graphite(), VisualThemeMode.Light,
     new VisualFrame("Service request route", "Product-neutral diagram semantics", showLegend: false), FontSpec.FromFamily("CFX Proof Carlito"));

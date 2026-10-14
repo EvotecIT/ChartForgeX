@@ -10,9 +10,10 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-// The licensed font fixtures are included beside the gallery outputs.
+#region Setup: licensed font fixtures shipped beside the gallery outputs
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+#endregion
 var model = V2GalleryModels.Create(ChartSeriesKind.Funnel, "cone-vertical", VisualThemeMode.Light);
 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), VisualTheme.Graphite(), VisualThemeMode.Light,
     new VisualFrame("Requests from receipt to completion", "Vertical cone; stage lines encode source values", showLegend: null), FontSpec.FromFamily("CFX Proof Carlito"));
@@ -494,7 +495,7 @@ public static partial class V2GalleryModels {
 
 public static partial class V2GalleryModels {
     /// <summary>Compares observed counts with an area reference and an unfilled target on shared radial categories.</summary>
-    public static Chart CreateMixedRadial() {
+    public static Chart CreateMixedRadial(double? curveTension = null) {
         ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
         var chart = Chart.Create().WithXLabels("North", "East", "South", "West")
             .WithYAxisBounds(0, 1600).WithDataLabels(false)
@@ -503,6 +504,8 @@ public static partial class V2GalleryModels {
             .AddRadialColumn("Observed", Points(1200, 700, 1050, 950))
             .AddRadarLine("Target", Points(1400, 1200, 1300, 1250));
         chart.Series[0].Radar.FillOpacity = .15;
+        chart.Series[0].Radar.CurveTension = curveTension;
+        chart.Series[2].Radar.CurveTension = curveTension;
         chart.Series[0].Markers.Enabled = false;
         chart.Series[2].ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 4; });
         return chart;

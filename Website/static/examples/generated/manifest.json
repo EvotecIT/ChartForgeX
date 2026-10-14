@@ -1876,6 +1876,18 @@
     "family-radial-column-compact-mixed-angular-reversal-light.svg",
     "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.png",
     "family-radial-column-compact-mixed-angular-reversal-light.thumbnail.svg",
+    "family-radial-column-compact-mixed-curves-dark.csharp.txt",
+    "family-radial-column-compact-mixed-curves-dark.html",
+    "family-radial-column-compact-mixed-curves-dark.png",
+    "family-radial-column-compact-mixed-curves-dark.svg",
+    "family-radial-column-compact-mixed-curves-dark.thumbnail.png",
+    "family-radial-column-compact-mixed-curves-dark.thumbnail.svg",
+    "family-radial-column-compact-mixed-curves-light.csharp.txt",
+    "family-radial-column-compact-mixed-curves-light.html",
+    "family-radial-column-compact-mixed-curves-light.png",
+    "family-radial-column-compact-mixed-curves-light.svg",
+    "family-radial-column-compact-mixed-curves-light.thumbnail.png",
+    "family-radial-column-compact-mixed-curves-light.thumbnail.svg",
     "family-radial-column-compact-mixed-dark.csharp.txt",
     "family-radial-column-compact-mixed-dark.html",
     "family-radial-column-compact-mixed-dark.png",
@@ -1912,6 +1924,18 @@
     "family-radial-column-mixed-angular-reversal-light.svg",
     "family-radial-column-mixed-angular-reversal-light.thumbnail.png",
     "family-radial-column-mixed-angular-reversal-light.thumbnail.svg",
+    "family-radial-column-mixed-curves-dark.csharp.txt",
+    "family-radial-column-mixed-curves-dark.html",
+    "family-radial-column-mixed-curves-dark.png",
+    "family-radial-column-mixed-curves-dark.svg",
+    "family-radial-column-mixed-curves-dark.thumbnail.png",
+    "family-radial-column-mixed-curves-dark.thumbnail.svg",
+    "family-radial-column-mixed-curves-light.csharp.txt",
+    "family-radial-column-mixed-curves-light.html",
+    "family-radial-column-mixed-curves-light.png",
+    "family-radial-column-mixed-curves-light.svg",
+    "family-radial-column-mixed-curves-light.thumbnail.png",
+    "family-radial-column-mixed-curves-light.thumbnail.svg",
     "family-radial-column-mixed-dark.csharp.txt",
     "family-radial-column-mixed-dark.html",
     "family-radial-column-mixed-dark.png",
@@ -8207,12 +8231,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.data-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 22
     },
     {
@@ -8555,12 +8575,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.data-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 22
     },
     {
@@ -13945,11 +13961,9 @@
         "html"
       ],
       "diagnostics": [
-        "cartesian.axis-label-overflow",
         "cartesian.axis-label-overflow"
       ],
       "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
       "semanticRegions": 23
@@ -14017,11 +14031,9 @@
         "html"
       ],
       "diagnostics": [
-        "cartesian.axis-label-overflow",
         "cartesian.data-label-overflow"
       ],
       "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
       "semanticRegions": 23
@@ -14155,11 +14167,9 @@
         "html"
       ],
       "diagnostics": [
-        "cartesian.axis-label-overflow",
         "cartesian.axis-label-overflow"
       ],
       "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
         "Axis labels were shortened or omitted to remain within the available frame."
       ],
       "semanticRegions": 23
@@ -14227,11 +14237,9 @@
         "html"
       ],
       "diagnostics": [
-        "cartesian.axis-label-overflow",
         "cartesian.data-label-overflow"
       ],
       "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
       "semanticRegions": 23
@@ -17056,7 +17064,7 @@
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
       ],
@@ -17251,7 +17259,7 @@
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.",
+        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
         "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
       ],
@@ -18775,11 +18783,9 @@
         "html"
       ],
       "diagnostics": [
-        "polar.label-overflow",
         "polar.label-overflow"
       ],
       "diagnosticMessages": [
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 17
@@ -18917,11 +18923,9 @@
         "html"
       ],
       "diagnostics": [
-        "polar.label-overflow",
         "polar.label-overflow"
       ],
       "diagnosticMessages": [
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
         "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
       ],
       "semanticRegions": 17
@@ -22139,6 +22143,56 @@
       "semanticRegions": 26
     },
     {
+      "id": "family-radial-column-mixed-curves-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "mixed-curves",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-mixed-curves-light.csharp.txt",
+      "svg": "family-radial-column-mixed-curves-light.svg",
+      "png": "family-radial-column-mixed-curves-light.png",
+      "html": "family-radial-column-mixed-curves-light.html",
+      "thumbnail": "family-radial-column-mixed-curves-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-mixed-curves-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
       "id": "family-radial-column-mixed-angular-reversal-light",
       "family": "radial-column",
       "familyLabel": "Radial Column",
@@ -22225,6 +22279,56 @@
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
+      "id": "family-radial-column-compact-mixed-curves-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "compact-mixed-curves",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-mixed-curves-light.csharp.txt",
+      "svg": "family-radial-column-compact-mixed-curves-light.svg",
+      "png": "family-radial-column-compact-mixed-curves-light.png",
+      "html": "family-radial-column-compact-mixed-curves-light.html",
+      "thumbnail": "family-radial-column-compact-mixed-curves-light.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-mixed-curves-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -22331,6 +22435,56 @@
       "semanticRegions": 26
     },
     {
+      "id": "family-radial-column-mixed-curves-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "mixed-curves",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-radial-column-mixed-curves-dark.csharp.txt",
+      "svg": "family-radial-column-mixed-curves-dark.svg",
+      "png": "family-radial-column-mixed-curves-dark.png",
+      "html": "family-radial-column-mixed-curves-dark.html",
+      "thumbnail": "family-radial-column-mixed-curves-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-mixed-curves-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
       "id": "family-radial-column-mixed-angular-reversal-dark",
       "family": "radial-column",
       "familyLabel": "Radial Column",
@@ -22417,6 +22571,56 @@
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 26
+    },
+    {
+      "id": "family-radial-column-compact-mixed-curves-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Regional counts and targets",
+      "variant": "compact-mixed-curves",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-radial-column-compact-mixed-curves-dark.csharp.txt",
+      "svg": "family-radial-column-compact-mixed-curves-dark.svg",
+      "png": "family-radial-column-compact-mixed-curves-dark.png",
+      "html": "family-radial-column-compact-mixed-curves-dark.html",
+      "thumbnail": "family-radial-column-compact-mixed-curves-dark.thumbnail.svg",
+      "thumbnailPng": "family-radial-column-compact-mixed-curves-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
@@ -22872,12 +23076,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 20
     },
     {
@@ -23146,12 +23346,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 20
     },
     {
