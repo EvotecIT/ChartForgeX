@@ -23,8 +23,9 @@
         <code><span class="cfx-install__prompt" aria-hidden="true">PS&gt;</span> {{ ip.module.install }}</code>
         <button type="button" class="cfx-copy" data-cfx-copy="{{ ip.module.install }}">Copy</button>
       </div>
-      <p class="cfx-muted">ImagePlayground {{ ip.module.version }} exports {{ ip.module.commandCount }} commands for {{ ip.module.powerShell }}. {{ ip.module.chartForgeXCommandCount }} of them are powered by ChartForgeX.</p>
+      <p class="cfx-muted">ImagePlayground exports {{ ip.module.commandCount }} commands for {{ ip.module.powerShell }}. {{ ip.module.chartForgeXCommandCount }} of them are powered by ChartForgeX.</p>
     </header>
+    {{ include "imageplayground-about" }}
     <ul class="cfx-psp__families">
       {{~ for f in ip.families ~}}
       <li><strong>{{ f.commandCount }}</strong><span>{{ f.title }}</span><p>{{ f.description }}</p></li>

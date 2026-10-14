@@ -1,6 +1,45 @@
 {
   "intro": "ImagePlayground is the Evotec PowerShell module for visual automation. It wraps ChartForgeX, ChartForgeX.Visuals and ChartForgeX.Stories, so a script can turn objects into charts, service maps, dashboards, social cards and animated terminal stories.",
   "note": "Each example below is taken from the Examples folder of the ImagePlayground repository and shown next to the file it produced.",
+  "about": {
+    "title": "One module, three libraries",
+    "body": "A single Install-Module gives scripts the same .NET libraries that applications reference directly, so charts, QR codes and photo edits come from one toolset.",
+    "libraries": [
+      {
+        "name": "ChartForgeX",
+        "role": "Charts, topology, dashboards, canvases and animated stories",
+        "url": "https://chartforgex.com/"
+      },
+      {
+        "name": "CodeGlyphX",
+        "role": "QR codes, barcodes and decoding",
+        "url": "https://codeglyphx.com/"
+      },
+      {
+        "name": "OfficeIMO",
+        "role": "Image processing, metadata and pixel comparison",
+        "url": "https://officeimo.com/"
+      }
+    ],
+    "links": [
+      {
+        "title": "PowerShell Gallery",
+        "url": "https://www.powershellgallery.com/packages/ImagePlayground"
+      },
+      {
+        "title": "Source and examples",
+        "url": "https://github.com/EvotecIT/ImagePlayground"
+      },
+      {
+        "title": "Command reference",
+        "url": "https://evotec.xyz/projects/imageplayground/api/"
+      },
+      {
+        "title": "Project overview",
+        "url": "https://evotec.xyz/projects/imageplayground/"
+      }
+    ]
+  },
   "showcases": [
     {
       "id": "canvas",

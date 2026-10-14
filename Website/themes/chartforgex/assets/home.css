@@ -650,3 +650,22 @@
 .cfx-psp__install { max-width: 660px; margin-top: 20px; }
 .cfx-psp__families + .cfx-muted { margin-bottom: 32px; }
 
+
+/* ImagePlayground: what the module is and which libraries it bundles. Used on the home band and the PowerShell page. */
+.cfx-ipg { --ipg-ink: var(--cfx-ink); --ipg-ink-2: var(--cfx-ink-2); --ipg-line: var(--cfx-line); --ipg-card: var(--cfx-card); --ipg-accent: var(--cfx-accent);
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(20px, 3vw, 40px); align-items: start; margin: 0 0 40px; padding: clamp(20px, 3vw, 32px); border: 1px solid var(--ipg-line); border-radius: 16px; background: var(--ipg-card); }
+.cfx-ipg h3 { color: var(--ipg-ink); font-size: 1.25rem; font-weight: 800; font-stretch: 112%; letter-spacing: -.01em; }
+.cfx-ipg__intro p { margin-top: 8px; color: var(--ipg-ink-2); }
+.cfx-ipg__links { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.cfx-ipg .cfx-ipg__links { margin-top: 16px; }
+.cfx-ipg__links a { color: var(--ipg-accent); font-weight: 650; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.cfx-ipg__libs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.cfx-ipg__libs li > a, .cfx-ipg__libs li > div { display: grid; align-content: start; gap: 4px; height: 100%; padding: 14px 16px; border: 1px solid var(--ipg-line); border-radius: 12px; color: inherit; text-decoration: none; }
+.cfx-ipg__libs strong { color: var(--ipg-ink); font-weight: 750; }
+.cfx-ipg__libs span { color: var(--ipg-ink-2); font-size: .875rem; line-height: 1.45; }
+.cfx-ipg__libs em { margin-top: 4px; color: var(--ipg-accent); font-size: .75rem; font-style: normal; font-weight: 650; }
+.cfx-ipg__libs li > a:hover, .cfx-ipg__libs li > a:focus-visible { border-color: var(--ipg-accent); }
+.cfx-ipg__libs .is-current > div { border-color: var(--ipg-accent); background: color-mix(in srgb, var(--ipg-accent) 9%, transparent); }
+.cfx-ps .cfx-ipg { --ipg-ink: #fff; --ipg-ink-2: var(--cfx-hero-ink-2); --ipg-line: var(--cfx-hero-line); --ipg-card: rgba(255, 255, 255, .03); --ipg-accent: #8fd8ff; grid-column: 1 / -1; margin: clamp(16px, 3vw, 32px) 0 0; }
+@media (max-width: 900px) { .cfx-ipg { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .cfx-ipg__libs { grid-template-columns: minmax(0, 1fr); } }
