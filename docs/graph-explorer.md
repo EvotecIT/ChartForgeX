@@ -229,7 +229,7 @@ var files = graph.SaveGraphStageImages("report-assets", "estate", options => {
 
 Files use stable names such as `estate-01-overview.png`, `estate-02-depth-1.png`, and `estate-05-full.png`. A frontier node receives a `+N` badge and `N hidden` secondary label, so a static overview still communicates what was collapsed. The deepest requested level is clamped to the scene depth and the complete view is included by default.
 
-For one image, use `graph.ToGraphSvg(stage)` or `graph.ToGraphPng(stage)`. These paths do not open a browser and do not add scripts. PNG export preserves self-contained PNG, JPEG, or SVG data-URI node images. Static output limits labels deterministically at large scale—frontier summaries, roots, and high-degree nodes win—because rendering 2,000 labels into one non-interactive frame would not be readable. Set `MaximumNodeLabels` explicitly for the target medium.
+For one image, use `graph.ToGraphSvg(stage)` or `graph.ToGraphPng(stage)`. These paths do not open a browser and do not add scripts. PNG export preserves self-contained PNG, JPEG, or SVG data-URI node images. Static output limits labels deterministically at large scale—frontier summaries, roots, and high-degree nodes win—because rendering 2,000 labels into one non-interactive frame would not be readable. Set `MaximumNodeLabels` explicitly for the target medium. Static output is light by default; set `Theme` to `HtmlGraphExplorerTheme.Dark` for a dark SVG and PNG, or to `System` so SVG follows the viewer's color preference (PNG has no viewer and renders light).
 
 For a high-degree node, `CreateNeighborhood` bounds the selected objects and relationships before rendering:
 
