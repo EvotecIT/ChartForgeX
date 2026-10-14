@@ -197,12 +197,6 @@
 .cfx-float--code { left: -36px; top: 60%; }
 .cfx-float--ps { right: -36px; bottom: -64px; }
 
-@media (prefers-reduced-motion: no-preference) {
-  .cfx-window { animation: cfx-rise .9s cubic-bezier(.22, 1, .36, 1) both .1s; }
-  .cfx-float--code { animation: cfx-rise .9s cubic-bezier(.22, 1, .36, 1) both .45s; }
-  .cfx-float--ps { animation: cfx-rise .9s cubic-bezier(.22, 1, .36, 1) both .7s; }
-}
-@keyframes cfx-rise { from { transform: translateY(28px); } to { transform: none; } }
 
 /* Surfaces strip */
 .cfx-surfaces {
