@@ -23,6 +23,31 @@
       "minifyHtml": true,
       "minifyCss": true,
       "minifyJs": true
+    },
+    {
+      "task": "exec",
+      "id": "playground-samples-check",
+      "command": "dotnet",
+      "argsList": ["run", "--project", "./tools/PlaygroundCheck/PlaygroundCheck.csproj", "-c", "Release"],
+      "workingDirectory": ".",
+      "timeoutSeconds": 900
+    },
+    {
+      "task": "dotnet-publish",
+      "id": "playground-engine-publish",
+      "project": "./tools/Playground/ChartForgeX.Playground.Engine.csproj",
+      "out": "./_temp/playground-engine",
+      "configuration": "Release",
+      "clean": true,
+      "blazorFixes": false
+    },
+    {
+      "task": "overlay",
+      "id": "playground-engine-overlay",
+      "source": "./_temp/playground-engine/wwwroot",
+      "destination": "./_site/playground/engine",
+      "include": "_framework/**",
+      "clean": true
     }
   ]
 }

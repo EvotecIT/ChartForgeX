@@ -2,7 +2,6 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Themes;
 
-/// <inheritdoc />
 public sealed partial class ChartTheme {
     /// <summary>
     /// Creates a bright operational dashboard theme for compact KPI cards, progress rows, and utilization heatmaps.

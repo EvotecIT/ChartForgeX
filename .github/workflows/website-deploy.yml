@@ -5,6 +5,14 @@ on:
     branches: [main]
     paths:
       - "Website/**"
+      - "ChartForgeX/**"
+      - "ChartForgeX.Visuals/**"
+      - "ChartForgeX.Stories/**"
+      - "ChartForgeX.Interactivity/**"
+      - "ChartForgeX.Interactivity.Html/**"
+      - "ChartForgeX.Markup/**"
+      - "ChartForgeX.Mermaid/**"
+      - "ChartForgeX.Markup.Mermaid/**"
       - ".github/workflows/website-deploy.yml"
   workflow_dispatch:
 

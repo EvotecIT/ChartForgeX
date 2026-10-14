@@ -111,7 +111,7 @@
     "Robots": true,
     "SecurityHeaders": {
       "Enabled": true,
-      "ContentSecurityPolicyValue": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+      "ContentSecurityPolicyValue": "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
     },
     "ContentSignals": {
       "Enabled": true,
@@ -166,6 +166,12 @@
         "Css": [
           "/themes/chartforgex/assets/docs.css"
         ]
+      },
+      {
+        "Name": "playground",
+        "Css": [
+          "/themes/chartforgex/assets/playground.css"
+        ]
       }
     ],
     "RouteBundles": [
@@ -212,6 +218,13 @@
         "Bundles": [
           "home",
           "docs"
+        ]
+      },
+      {
+        "Match": "/playground/**",
+        "Bundles": [
+          "docs",
+          "playground"
         ]
       }
     ],
@@ -273,6 +286,12 @@
         "PrimaryMenu": "main"
       },
       {
+        "Name": "apidocs",
+        "Path": "/api/",
+        "Layout": "apiDocs",
+        "PrimaryMenu": "main"
+      },
+      {
         "Name": "notFound",
         "Path": "/404/",
         "PrimaryMenu": "main"
@@ -295,12 +314,20 @@
             "Url": "/mermaid/"
           },
           {
+            "Title": "Playground",
+            "Url": "/playground/"
+          },
+          {
             "Title": "PowerShell",
             "Url": "/powershell/"
           },
           {
             "Title": "Docs",
             "Url": "/docs/"
+          },
+          {
+            "Title": "API",
+            "Url": "/api/"
           },
           {
             "Title": "Examples",
@@ -320,8 +347,16 @@
             "Url": "/mermaid/"
           },
           {
+            "Title": "Playground",
+            "Url": "/playground/"
+          },
+          {
             "Title": "Documentation",
             "Url": "/docs/"
+          },
+          {
+            "Title": "API reference",
+            "Url": "/api/"
           },
           {
             "Title": "Examples",

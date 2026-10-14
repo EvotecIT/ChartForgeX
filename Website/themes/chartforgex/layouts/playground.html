@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}
+  <link rel="modulepreload" href="/themes/chartforgex/assets/playground-engine.js" />
+</head>
+<body class="cfx-body cfx-body--playground{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ pg = data.playground ~}}
+<main id="main" class="cfx-pg" data-cfx-playground>
+  <div class="cfx-pg__bar">
+    <h1 class="cfx-pg__title">{{ page.title }}</h1>
+    <div class="cfx-pg__langs" role="tablist" aria-label="Source language">
+      {{~ for l in pg.languages ~}}
+      <button type="button" role="tab" class="cfx-pg__lang" data-language="{{ l.id }}" aria-selected="{{ if for.first }}true{{ else }}false{{ end }}">{{ l.label }}</button>
+      {{~ end ~}}
+    </div>
+    <label class="cfx-pg__samples">
+      <span class="cfx-visually-hidden">Sample</span>
+      <select data-pg-samples disabled>
+        <option value="">Samples load with the engine</option>
+      </select>
+    </label>
+    <div class="cfx-pg__actions">
+      <div class="cfx-pg__seg" role="group" aria-label="Preview theme">
+        <button type="button" data-pg-theme="light" aria-pressed="false">Light</button>
+        <button type="button" data-pg-theme="dark" aria-pressed="false">Dark</button>
+      </div>
+      <button type="button" class="cfx-pg__btn" data-pg-share>Copy link</button>
+      <button type="button" class="cfx-pg__btn" data-pg-download="svg" disabled>SVG</button>
+      <button type="button" class="cfx-pg__btn cfx-pg__btn--primary" data-pg-download="png" disabled>PNG</button>
+    </div>
+  </div>
+
+  <div class="cfx-pg__split">
+    <section class="cfx-pg__editor" aria-label="Source">
+      <div class="cfx-pg__code">
+        <div class="cfx-pg__gutter" aria-hidden="true" data-pg-gutter></div>
+        <div class="cfx-pg__field">
+          <div class="cfx-pg__mark" aria-hidden="true" data-pg-mark hidden></div>
+          <textarea data-pg-source spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" aria-label="Diagram source" aria-describedby="cfx-pg-keys">{{ pg.initial }}</textarea>
+        </div>
+      </div>
+      <div class="cfx-pg__foot">
+        <span data-pg-cursor>Line 1, column 1</span>
+        <span data-pg-length></span>
+        <span id="cfx-pg-keys">Tab indents. Press Esc, then Tab, to leave the editor.</span>
+      </div>
+    </section>
+
+    <section class="cfx-pg__preview" aria-label="Preview" data-pg-preview-theme="light">
+      <div class="cfx-pg__zoom" role="group" aria-label="Zoom">
+        <button type="button" data-pg-zoom="fit" aria-pressed="true">Fit</button>
+        <button type="button" data-pg-zoom="1" aria-pressed="false">100%</button>
+        <button type="button" data-pg-zoom="out" aria-label="Zoom out">&minus;</button>
+        <button type="button" data-pg-zoom="in" aria-label="Zoom in">+</button>
+      </div>
+      <div class="cfx-pg__stage" data-pg-stage tabindex="0" aria-label="Rendered output">
+        <div class="cfx-pg__boot" data-pg-boot>
+          <p class="cfx-pg__boot-title">Starting the ChartForgeX engine</p>
+          <p data-pg-boot-text>{{ pg.bootNote }}</p>
+          <div class="cfx-pg__meter" role="progressbar" aria-label="Engine download" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span data-pg-meter></span></div>
+        </div>
+        <div class="cfx-pg__canvas" data-pg-canvas hidden></div>
+      </div>
+      <div class="cfx-pg__status" role="status" aria-live="polite" data-pg-status></div>
+    </section>
+  </div>
+
+  <div class="cfx-pg__below">
+    <section class="cfx-pg__dotnet" aria-labelledby="cfx-pg-dotnet">
+      <h2 id="cfx-pg-dotnet">Render the same source in .NET</h2>
+      <p data-pg-snippet-intro></p>
+      <div class="cfx-install">
+        <code><span class="cfx-install__prompt" aria-hidden="true">&gt;</span> <span data-pg-package></span></code>
+        <button type="button" class="cfx-copy" data-pg-copy-package>Copy</button>
+      </div>
+      <pre class="cfx-pg__snippet"><code class="language-csharp" data-pg-snippet></code></pre>
+    </section>
+    <section class="cfx-pg__notes" aria-labelledby="cfx-pg-notes">
+      <h2 id="cfx-pg-notes">What runs here</h2>
+      {{~ for n in pg.notes ~}}
+      <p>{{ n }}</p>
+      {{~ end ~}}
+      <p><a class="cfx-link" href="/mermaid/">Supported Mermaid diagram families</a></p>
+      <p><a class="cfx-link" href="/docs/">ChartForgeX documentation</a></p>
+    </section>
+  </div>
+  <noscript><p class="cfx-pg__noscript">The playground runs ChartForgeX in your browser and needs JavaScript and WebAssembly.</p></noscript>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+<script type="module" src="/themes/chartforgex/assets/playground.js"></script>
+</body>
+</html>

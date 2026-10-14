@@ -26,6 +26,78 @@
       "clean": true
     },
     {
+      "task": "dotnet-build",
+      "id": "api-build-chartforgex-visuals",
+      "project": "../ChartForgeX.Visuals/ChartForgeX.Visuals.csproj",
+      "configuration": "Release",
+      "framework": "net10.0"
+    },
+    {
+      "task": "dotnet-build",
+      "id": "api-build-chartforgex-stories",
+      "project": "../ChartForgeX.Stories/ChartForgeX.Stories.csproj",
+      "configuration": "Release",
+      "framework": "net10.0"
+    },
+    {
+      "task": "dotnet-build",
+      "id": "api-build-chartforgex-interactivity-html",
+      "project": "../ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj",
+      "configuration": "Release",
+      "framework": "net10.0"
+    },
+    {
+      "task": "dotnet-build",
+      "id": "api-build-chartforgex-markup-mermaid",
+      "project": "../ChartForgeX.Markup.Mermaid/ChartForgeX.Markup.Mermaid.csproj",
+      "configuration": "Release",
+      "framework": "net10.0"
+    },
+    {
+      "task": "apidocs",
+      "id": "build-apidocs",
+      "dependsOn": "build-site",
+      "config": "./site.json",
+      "assemblies": [
+        "../ChartForgeX/bin/Release/net10.0/ChartForgeX.dll",
+        "../ChartForgeX.Visuals/bin/Release/net10.0/ChartForgeX.Visuals.dll",
+        "../ChartForgeX.Stories/bin/Release/net10.0/ChartForgeX.Stories.dll",
+        "../ChartForgeX.Interactivity/bin/Release/net10.0/ChartForgeX.Interactivity.dll",
+        "../ChartForgeX.Interactivity.Html/bin/Release/net10.0/ChartForgeX.Interactivity.Html.dll",
+        "../ChartForgeX.Markup/bin/Release/net10.0/ChartForgeX.Markup.dll",
+        "../ChartForgeX.Mermaid/bin/Release/net10.0/ChartForgeX.Mermaid.dll",
+        "../ChartForgeX.Markup.Mermaid/bin/Release/net10.0/ChartForgeX.Markup.Mermaid.dll"
+      ],
+      "xmls": [
+        "../ChartForgeX/bin/Release/net10.0/ChartForgeX.xml",
+        "../ChartForgeX.Visuals/bin/Release/net10.0/ChartForgeX.Visuals.xml",
+        "../ChartForgeX.Stories/bin/Release/net10.0/ChartForgeX.Stories.xml",
+        "../ChartForgeX.Interactivity/bin/Release/net10.0/ChartForgeX.Interactivity.xml",
+        "../ChartForgeX.Interactivity.Html/bin/Release/net10.0/ChartForgeX.Interactivity.Html.xml",
+        "../ChartForgeX.Markup/bin/Release/net10.0/ChartForgeX.Markup.xml",
+        "../ChartForgeX.Mermaid/bin/Release/net10.0/ChartForgeX.Mermaid.xml",
+        "../ChartForgeX.Markup.Mermaid/bin/Release/net10.0/ChartForgeX.Markup.Mermaid.xml"
+      ],
+      "out": "./_site/api",
+      "title": "ChartForgeX API reference",
+      "baseUrl": "/api",
+      "format": "both",
+      "template": "docs",
+      "css": "/themes/chartforgex/assets/base.css,/themes/chartforgex/assets/api-base.css,/themes/chartforgex/assets/api.css",
+      "nav": "./site.json",
+      "navContextPath": "/",
+      "sourceRoot": "..",
+      "sourceUrl": "https://github.com/EvotecIT/ChartForgeX/blob/main/{root}/{pathNoRoot}#L{line}",
+      "includeNamespace": "ChartForgeX",
+      "coverageReport": "./_reports/apidocs-coverage.json",
+      "injectCriticalCss": true,
+      "criticalCssPath": "./themes/chartforgex/critical.css",
+      "templateDocsIndex": "./themes/chartforgex/apidocs/docs-index.html",
+      "templateDocsType": "./themes/chartforgex/apidocs/docs-type.html",
+      "headerHtml": "./themes/chartforgex/apidocs/header.html",
+      "footerHtml": "./themes/chartforgex/apidocs/footer.html"
+    },
+    {
       "task": "seo-doctor",
       "id": "seo-doctor-ci",
       "dependsOn": "build-site",
@@ -41,7 +113,7 @@
       "requireHreflangXDefault": false,
       "reportPath": "./_reports/seo-doctor.json",
       "summaryPath": "./_reports/seo-doctor.md",
-      "exclude": "examples/generated/**,site/**"
+      "exclude": "examples/generated/**,site/**,playground/engine/**,powershell/examples/**"
     },
     {
       "task": "sitemap",
@@ -54,7 +126,9 @@
       "jsonOut": "./_site/sitemap/index.json",
       "excludePatterns": [
         "examples/generated/**",
-        "site/**"
+        "site/**",
+        "playground/engine/**",
+        "powershell/examples/**"
       ]
     },
     {
@@ -136,7 +210,7 @@
       "renderedMaxPages": 2,
       "renderedEnsureInstalled": true,
       "renderedInclude": "index.html,404.html",
-      "exclude": "examples/generated/**,site/**"
+      "exclude": "examples/generated/**,site/**,playground/engine/**,powershell/examples/**"
     }
   ]
 }

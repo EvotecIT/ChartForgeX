@@ -4,11 +4,27 @@ on:
   pull_request:
     paths:
       - "Website/**"
+      - "ChartForgeX/**"
+      - "ChartForgeX.Visuals/**"
+      - "ChartForgeX.Stories/**"
+      - "ChartForgeX.Interactivity/**"
+      - "ChartForgeX.Interactivity.Html/**"
+      - "ChartForgeX.Markup/**"
+      - "ChartForgeX.Mermaid/**"
+      - "ChartForgeX.Markup.Mermaid/**"
       - ".github/workflows/website-ci.yml"
   push:
     branches: [main]
     paths:
       - "Website/**"
+      - "ChartForgeX/**"
+      - "ChartForgeX.Visuals/**"
+      - "ChartForgeX.Stories/**"
+      - "ChartForgeX.Interactivity/**"
+      - "ChartForgeX.Interactivity.Html/**"
+      - "ChartForgeX.Markup/**"
+      - "ChartForgeX.Mermaid/**"
+      - "ChartForgeX.Markup.Mermaid/**"
       - ".github/workflows/website-ci.yml"
   workflow_dispatch:
 

@@ -17,8 +17,8 @@ public readonly struct ChartGanttDependency : IEquatable<ChartGanttDependency> {
     public int SuccessorIndex { get; }
     /// <summary>Compares both task indices.</summary>
     public bool Equals(ChartGanttDependency other) => PredecessorIndex == other.PredecessorIndex && SuccessorIndex == other.SuccessorIndex;
-    /// <inheritdoc />
+    /// <summary>Compares both task indices when <paramref name="obj"/> is a <see cref="ChartGanttDependency"/>.</summary>
     public override bool Equals(object? obj) => obj is ChartGanttDependency other && Equals(other);
-    /// <inheritdoc />
+    /// <summary>Returns a hash code built from both task indices.</summary>
     public override int GetHashCode() => unchecked(PredecessorIndex * 397 ^ SuccessorIndex);
 }

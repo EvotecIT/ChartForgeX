@@ -306,8 +306,8 @@
       "name": "Markdown",
       "color": "series-2",
       "description": "Charts, timelines, topology and tables as fenced blocks in your docs.",
-      "action": "Read the markup guide",
-      "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/markup.md"
+      "action": "Try markup in the playground",
+      "url": "/playground/?lang=chartforgex"
     },
     {
       "id": "mermaid",
