@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--notfound{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-main">
+  {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = "" ~}}
+  {{ include "masthead" }}
+  <div class="cfx-page cfx-empty">
+    <figure class="cfx-empty__chart">
+      <svg viewBox="0 0 560 300" role="img" aria-labelledby="cfx-empty-title">
+        <title id="cfx-empty-title">An empty chart: no observations at this route</title>
+        <g class="cfx-empty__grid">
+          <path d="M56 40H544M56 90H544M56 140H544M56 190H544"/>
+        </g>
+        <g class="cfx-empty__axis">
+          <path d="M56 240H544"/>
+          <path d="M56 240v7M178 240v7M300 240v7M422 240v7M544 240v7"/>
+        </g>
+        <g class="cfx-empty__labels">
+          <text x="44" y="244" text-anchor="end">0</text>
+          <text x="44" y="194" text-anchor="end">25</text>
+          <text x="44" y="144" text-anchor="end">50</text>
+          <text x="44" y="94" text-anchor="end">75</text>
+          <text x="44" y="44" text-anchor="end">100</text>
+          <text x="117" y="270" text-anchor="middle">/docs/</text>
+          <text x="239" y="270" text-anchor="middle">/gallery/</text>
+          <text x="361" y="270" text-anchor="middle">/api/</text>
+          <text x="483" y="270" text-anchor="middle">this page</text>
+        </g>
+        <path class="cfx-empty__origin" d="M56 240v9"/>
+        <text class="cfx-empty__note" x="300" y="146" text-anchor="middle">No observations at this route</text>
+      </svg>
+    </figure>
+    <div class="cfx-prose">
+{{ content }}
+    </div>
+  </div>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

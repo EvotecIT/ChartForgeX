@@ -1,4 +1,4 @@
-<li class="cfx-card" data-category="{{ item.category }}">
+<li class="cfx-card{{ if hollow && hollow[item.category] }} cfx-card--hollow{{ end }}" data-category="{{ item.category }}"{{ if keys && keys[item.category] }} style="{{ keys[item.category] }}"{{ end }}>
   <button type="button" class="cfx-card__open" data-cfx-gallery-open
     data-title="{{ item.title | html.escape }}" data-family="{{ item.familyLabel | html.escape }}"
     data-image="{{ item.image }}" data-dark-image="{{ item.darkImage }}"
@@ -8,7 +8,9 @@
       <img class="cfx-only-light" src="{{ item.thumbnail }}" width="400" height="280" loading="lazy" decoding="async" alt="" />
       <img class="cfx-only-dark" src="{{ item.darkThumbnail }}" width="400" height="280" loading="lazy" decoding="async" alt="" />
     </span>
-    <span class="cfx-card__family">{{ item.familyLabel }}</span>
-    <span class="cfx-card__title">{{ item.title }}</span>
+    <span class="cfx-card__text">
+      <span class="cfx-card__title">{{ item.title }}</span>
+      <span class="cfx-card__family">{{ item.familyLabel }}</span>
+    </span>
   </button>
 </li>

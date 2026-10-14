@@ -142,6 +142,7 @@
       {
         "Name": "global",
         "Css": [
+          "/themes/chartforgex/assets/tokens.css",
           "/themes/chartforgex/assets/base.css"
         ],
         "Js": [

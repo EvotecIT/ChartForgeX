@@ -13,25 +13,30 @@
 <body class="cfx-body cfx-body--mermaid{{ if body_class != "" }} {{ body_class }}{{ end }}">
 {{ include "site-header" }}
 <main id="main" class="cfx-main">
-  <article class="cfx-page cfx-page--wide">
-    <header class="cfx-page__head">
-      <h1>{{ page.title }}</h1>
-      <p class="cfx-lede">{{ data.mermaid.summary }}</p>
-    </header>
+  {{~ masthead_title = page.title; masthead_lede = data.mermaid.summary; masthead_extra = "" ~}}
+  {{ include "masthead" }}
+  <section class="cfx-section cfx-support" aria-labelledby="cfx-support-title">
+    <div class="cfx-support__head">
+      <h2 id="cfx-support-title">Supported diagram families</h2>
+      <p>Each family below parses and renders natively. Families that are recognised but not drawn yet report a diagnostic instead of output.</p>
+    </div>
     <div class="cfx-families">
       {{~ for g in data.mermaid.groups ~}}
-      <section class="cfx-families__group">
-        <h2>{{ g.name }}</h2>
+      <section class="cfx-families__group" aria-label="{{ g.name }}">
+        <h3>{{ g.name }} <span>{{ g.families.size }}</span></h3>
         <ul>{{ for f in g.families }}<li>{{ f }}</li>{{ end }}</ul>
       </section>
       {{~ end ~}}
     </div>
-    <p class="cfx-muted">Recognised with a diagnostic and no output yet: {{ data.mermaid.recognised | array.join ", " }}. {{ data.mermaid.reference }}</p>
+    <p class="cfx-families__note">Recognised with a diagnostic and no output yet: {{ data.mermaid.recognised | array.join ", " }}. {{ data.mermaid.reference }}</p>
+  </section>
+  {{~ mermaid_page = true ~}}
+  {{ include "sections/mermaid" }}
+  <section class="cfx-section cfx-mermaid-guide" aria-label="Using Mermaid from .NET">
     <div class="cfx-prose">
 {{ content }}
     </div>
-  </article>
-  {{ include "sections/mermaid" }}
+  </section>
 </main>
 {{ include "site-footer" }}
 {{ assets.js_html }}

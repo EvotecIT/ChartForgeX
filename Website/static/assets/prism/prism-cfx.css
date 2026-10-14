@@ -1,9 +1,3 @@
-/* Prism tokens mapped to the ChartForgeX code palette. Code blocks keep a dark surface in both themes. */
-pre[class*="language-"], code[class*="language-"] { color: var(--cfx-code-ink); background: none; text-shadow: none; font-family: var(--cfx-mono); }
-.token.comment, .token.prolog, .token.doctype, .token.cdata { color: var(--cfx-code-muted); font-style: normal; }
-.token.punctuation, .token.operator { color: var(--cfx-code-ink); }
-.token.keyword, .token.boolean, .token.important, .token.atrule, .token.selector { color: var(--cfx-code-key); }
-.token.string, .token.char, .token.attr-value, .token.regex, .token.url { color: var(--cfx-code-str); }
-.token.number, .token.constant, .token.symbol { color: var(--cfx-code-num); }
-.token.class-name, .token.function, .token.builtin, .token.tag, .token.property, .token.attr-name, .token.namespace { color: var(--cfx-code-type); }
-.token.namespace { opacity: .85; }
+/* Prism on chartforgex.com. Token colours and the code block surface live in the theme (base.css), so code
+   highlighted by PowerForge, the gallery viewer and the playground shares one palette that follows the page theme. */
+code[class*="language-"] { background: none; text-shadow: none; font-family: var(--cfx-mono); }

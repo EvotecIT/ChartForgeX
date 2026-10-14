@@ -1,0 +1,130 @@
+/* ChartForgeX design tokens. One source for the site, the generated API reference and the playground.
+   Colours mirror ChartForgeX/Themes/Tokens/evotec.chartforgex.tokens.json so the page and its charts share one palette. */
+
+:root {
+  /* Surfaces and ink */
+  --cfx-page: #f2f3f4;
+  --cfx-card: #ffffff;
+  --cfx-card-alt: #f8f9fa;
+  --cfx-sunken: #eceef0;
+  --cfx-line: #e2e4e7;
+  --cfx-line-strong: #cdd0d5;
+  --cfx-ink: #16181c;
+  --cfx-ink-2: #4d525b;
+  --cfx-ink-3: #626770;
+  --cfx-accent: #11776f;
+  --cfx-accent-ink: #ffffff;
+  --cfx-accent-soft: #d6f0ec;
+  --cfx-signal: #c78404;
+  --cfx-focus: #9a6500;
+
+  /* Instrument structure: the plot grid, axis rules and tick marks pages are built on. */
+  --cfx-grid: rgba(22, 24, 28, .055);
+  --cfx-grid-strong: rgba(22, 24, 28, .09);
+  --cfx-tick: #9ca1a9;
+  --cfx-axis: #b9bdc3;
+  --cfx-band: #eceef0;
+
+  /* Graphite series palette, in chart order. Past six keys, legends switch to hollow markers rather than new hues. */
+  --cfx-s1: #2a78d6;
+  --cfx-s2: #0f9f8c;
+  --cfx-s3: #7b61e8;
+  --cfx-s4: #c24fa8;
+  --cfx-s5: #5b7f00;
+  --cfx-s6: #1d4f9e;
+
+  /* Code: follows the page theme. Dark bands reassign these locally. */
+  --cfx-code-bg: #f7f8f9;
+  --cfx-code-bar: #eef0f2;
+  --cfx-code-line: #dfe2e6;
+  --cfx-code-ink: #1c1f24;
+  --cfx-code-muted: #677079;
+  --cfx-code-key: #0b6e66;
+  --cfx-code-str: #8f5600;
+  --cfx-code-num: #b4450b;
+  --cfx-code-type: #2f5fb3;
+  --cfx-code-var: #7a3fb8;
+  --cfx-code-label: #4d525b;
+  --cfx-scroll-thumb: rgba(22, 24, 28, .26);
+  --cfx-scroll-thumb-hover: rgba(22, 24, 28, .46);
+
+  /* Shape and depth: hairlines first, one restrained shadow for floating layers only. */
+  --cfx-r-sm: 6px;
+  --cfx-r: 10px;
+  --cfx-r-lg: 14px;
+  --cfx-shadow: 0 1px 0 rgba(22, 24, 28, .04), 0 18px 40px -24px rgba(22, 24, 28, .28);
+  --cfx-shadow-float: 0 40px 80px -30px rgba(12, 13, 16, .45);
+
+  /* Type */
+  --cfx-max: 1240px;
+  --cfx-gutter: clamp(16px, 4vw, 40px);
+  --cfx-font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cfx-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --cfx-t-display: clamp(2.25rem, 1.45rem + 2.6vw, 3.5rem);
+  --cfx-t-h2: clamp(1.5rem, 1.25rem + .8vw, 1.875rem);
+  --cfx-t-h3: 1.1875rem;
+  --cfx-t-lede: clamp(1.0625rem, 1rem + .3vw, 1.1875rem);
+  --cfx-t-body: 1.0625rem;
+  --cfx-t-small: .875rem;
+  --cfx-t-micro: .75rem;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --cfx-page: #0c0d10;
+  --cfx-card: #16181c;
+  --cfx-card-alt: #111317;
+  --cfx-sunken: #0a0b0d;
+  --cfx-line: #272a30;
+  --cfx-line-strong: #363a42;
+  --cfx-ink: #f2f3f5;
+  --cfx-ink-2: #b0b4bc;
+  --cfx-ink-3: #8a8f98;
+  --cfx-accent: #37c9b8;
+  --cfx-accent-ink: #07211e;
+  --cfx-accent-soft: #10302d;
+  --cfx-signal: #eeb640;
+  --cfx-focus: #eeb640;
+  --cfx-grid: rgba(242, 243, 245, .045);
+  --cfx-grid-strong: rgba(242, 243, 245, .08);
+  --cfx-tick: #5d636c;
+  --cfx-axis: #3a3f47;
+  --cfx-band: #111317;
+  --cfx-s1: #3987e5;
+  --cfx-s2: #179c89;
+  --cfx-s3: #8a74ee;
+  --cfx-s4: #c9579f;
+  --cfx-s5: #6f9120;
+  --cfx-s6: #5a7fd8;
+  --cfx-shadow: 0 1px 0 rgba(0, 0, 0, .4), 0 22px 48px -26px rgba(0, 0, 0, .8);
+  --cfx-shadow-float: 0 40px 80px -30px rgba(0, 0, 0, .85);
+  --cfx-scroll-thumb: rgba(242, 243, 245, .24);
+  --cfx-scroll-thumb-hover: rgba(242, 243, 245, .44);
+  color-scheme: dark;
+}
+
+/* Dark code values: the dark theme, plus the bands that stay dark in both themes. */
+:root[data-theme="dark"],
+.cfx-tone-dark {
+  --cfx-code-bg: #101216;
+  --cfx-code-bar: #15181d;
+  --cfx-code-line: #252930;
+  --cfx-code-ink: #e6e8eb;
+  --cfx-code-muted: #8a8f98;
+  --cfx-code-key: #37c9b8;
+  --cfx-code-str: #eeb640;
+  --cfx-code-num: #f7924f;
+  --cfx-code-type: #7fa9f7;
+  --cfx-code-var: #c4b5fd;
+  --cfx-code-label: #a3a9b2;
+}
+.cfx-tone-dark {
+  --cfx-s1: #3987e5;
+  --cfx-s2: #179c89;
+  --cfx-s3: #8a74ee;
+  --cfx-s4: #c9579f;
+  --cfx-s5: #6f9120;
+  --cfx-s6: #5a7fd8;
+  --cfx-scroll-thumb: rgba(242, 243, 245, .24);
+  --cfx-scroll-thumb-hover: rgba(242, 243, 245, .44);
+}

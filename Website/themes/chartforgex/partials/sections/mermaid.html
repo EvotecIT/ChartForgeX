@@ -1,10 +1,15 @@
 {{~ m = data.mermaid ~}}
-<section class="cfx-section cfx-mermaid" aria-labelledby="cfx-mermaid-title">
+<section class="cfx-section cfx-mermaid{{ if mermaid_page }} cfx-mermaid--page{{ end }}" aria-labelledby="cfx-mermaid-title">
   <div class="cfx-mermaid__intro">
+    {{~ if mermaid_page ~}}
+    <h2 id="cfx-mermaid-title">Mermaid source, ChartForgeX output</h2>
+    <p>Each sample pairs the Mermaid text with the SVG ChartForgeX rendered from it, in the page theme. Open one in the playground to edit the source and render it in your browser.</p>
+    {{~ else ~}}
     <h2 id="cfx-mermaid-title">Mermaid diagrams without a browser</h2>
     <p>{{ m.summary }}</p>
     <p class="cfx-muted">{{ m.note }}</p>
     <p><a class="cfx-link" href="/mermaid/">See all supported Mermaid diagrams</a></p>
+    {{~ end ~}}
   </div>
   <div class="cfx-mermaid__demo" data-cfx-tabs>
     <div class="cfx-segment" role="tablist" aria-label="Mermaid sample">
@@ -14,12 +19,15 @@
     </div>
     {{~ for s in m.samples ~}}
     <div class="cfx-mermaid__pair" role="tabpanel" id="cfx-mm-{{ s.id }}" aria-labelledby="cfx-mm-tab-{{ s.id }}"{{ if !for.first }} hidden{{ end }}>
-      <pre class="cfx-code cfx-code--mermaid"><code>{{ include ("generated/mermaid-" + s.id) }}</code></pre>
+      <figure class="cfx-codeblock" data-lang="mermaid">
+        <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">Mermaid</span><span class="cfx-codeblock__file">{{ s.id }}.mmd</span><span class="cfx-codeblock__actions"></span></figcaption>
+        <pre><code class="language-mermaid">{{ include ("generated/mermaid-" + s.id) }}</code></pre>
+      </figure>
       <div class="cfx-mermaid__render">
         <img class="cfx-only-light" src="/site/mermaid-{{ s.id }}-light.svg" loading="lazy" decoding="async" alt="{{ s.label }} diagram rendered by ChartForgeX from the Mermaid source." />
         <img class="cfx-only-dark" src="/site/mermaid-{{ s.id }}-dark.svg" loading="lazy" decoding="async" alt="{{ s.label }} diagram rendered by ChartForgeX from the Mermaid source, dark theme." />
+        <p class="cfx-mermaid__edit"><a class="cfx-link" href="/playground/?src=/site/mermaid-{{ s.id }}.mmd">Edit this diagram in the playground</a></p>
       </div>
-      <p class="cfx-mermaid__edit"><a class="cfx-link" href="/playground/?src=/site/mermaid-{{ s.id }}.mmd">Edit this diagram in the playground</a></p>
     </div>
     {{~ end ~}}
   </div>

@@ -13,17 +13,16 @@
 <body class="cfx-body cfx-body--gallery{{ if body_class != "" }} {{ body_class }}{{ end }}">
 {{ include "site-header" }}
 <main id="main" class="cfx-main">
-  <section class="cfx-section cfx-gallery-page" aria-labelledby="cfx-gallery-page-title">
-    <div class="cfx-section__head">
-      <h1 id="cfx-gallery-page-title">{{ page.title }}</h1>
-      <p>{{ page.description }}</p>
-    </div>
+  {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = "" ~}}
+  {{ include "masthead" }}
+  {{~ keys = {}; hollow = {}; for cat in data.gallery.categories; keys[cat.id] = "--key: var(--cfx-s" + ((for.index % 6) + 1) + ")"; hollow[cat.id] = for.index >= 6; end ~}}
+  <section class="cfx-gallery-page" aria-label="Examples">
     <div class="cfx-filters" role="group" aria-label="Filter by category" data-cfx-filters>
-      <button type="button" aria-pressed="true" data-filter="all">All <span>{{ data.gallery.items.size }}</span></button>
+      <button type="button" aria-pressed="true" data-filter="all" style="--key: var(--cfx-ink)"><span class="cfx-key" aria-hidden="true"></span>All <span class="cfx-filters__count">{{ data.gallery.items.size }}</span></button>
       {{~ for cat in data.gallery.categories ~}}
       {{~ count = 0 ~}}
       {{~ for item in data.gallery.items ~}}{{~ if item.category == cat.id ~}}{{~ count = count + 1 ~}}{{~ end ~}}{{~ end ~}}
-      <button type="button" aria-pressed="false" data-filter="{{ cat.id }}">{{ cat.label }} <span>{{ count }}</span></button>
+      <button type="button" aria-pressed="false" data-filter="{{ cat.id }}" style="{{ keys[cat.id] }}"><span class="cfx-key{{ if hollow[cat.id] }} cfx-key--hollow{{ end }}" aria-hidden="true"></span>{{ cat.label }} <span class="cfx-filters__count">{{ count }}</span></button>
       {{~ end ~}}
     </div>
     <ul class="cfx-grid" data-cfx-gallery>
