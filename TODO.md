@@ -141,14 +141,14 @@ Completion: the corresponding matrix rows have grammar, semantic and visible-not
 
 ### 4. Chart and calendar fidelity
 
-- [ ] Complete Mermaid treemap classes, styles and value formatting through the shared hierarchy owner merged in PR #273.
-- [ ] Reuse the stable Sankey identity work in PR #261 and qualify Mermaid labels, CSV and configuration against the settled owner API.
+- [ ] Complete Mermaid treemap classes, styles and value formatting through the shared hierarchy options and retained `HierarchyItems` owner.
+- [ ] Qualify Mermaid Sankey labels, CSV identities and configuration through the retained nodes, links and `ReplaceFlowData` owner.
 - [ ] Map radar theme variables through the existing native theme and series-style owners.
 - [ ] Complete quadrant point/class styling, theme variables, source dimensions and separate axis endpoint labels. Native region captions use the shared bounded placement policy.
 - [ ] Render journey sections, actors and score paths as a reusable journey scene and timeline sections/events in both directions. Keep the current score-bar/ordered-time mappings explicit until replaced.
 - [ ] Broaden pie/show-data, XY named-series legend rules, per-point line labels, numeric/category axes and source configuration, Sankey CSV/configuration/colors, and remaining packet row/label cases.
 
-Completion: values, dates, hierarchy, direction and requested encodings survive conversion and are visibly represented. Existing owner PRs supply shared capability; they do not by themselves complete Mermaid configuration or compatibility proof.
+Completion: values, dates, hierarchy, direction and requested encodings survive conversion and are visibly represented. Shared native APIs are implemented; each language mapping still needs its own configuration, semantic and compatibility proof.
 
 ### 5. Existing specialized diagram depth
 

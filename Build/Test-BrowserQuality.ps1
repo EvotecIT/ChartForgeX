@@ -62,7 +62,11 @@ try {
         'GaugeScalePrecisionBrowserTests.NeedleAtScaleEdgesClearsMeasuredSummaryInRenderedSvg',
         'GaugeScalePrecisionBrowserTests.CloseGaugeBoundsRemainDistinctAndContainedInNativeSvgAndPairedPng',
         'InteractiveTopologyPresentationTests.PointerReleaseOutsideViewportDoesNotResumePanningOnReentry',
-        'BrowserColorComparisonTests.EquivalentPaintKeepsExactRgbaAndDifferentOrInvalidPaintStillFails'
+        'BrowserColorComparisonTests.EquivalentPaintKeepsExactRgbaAndDifferentOrInvalidPaintStillFails',
+        'InteractiveChartLifecycleBrowserTests.DefaultResetAndLoopingPlaybackReleaseResourcesAfterUpdateAndDisposalOrRemoval',
+        'InteractiveChartLifecycleBrowserTests.PointLegendMuteAndIsolationFollowAuthoredIdentityAcrossNativeReordering',
+        'InteractiveChartLifecycleBrowserTests.DisposalClearsComparisonBrushAndResetPresentationBeforeFreshMount',
+        'InteractiveChartLifecycleBrowserTests.NativeWheelZoomsAndCanceledTouchBrushReleasesUncommittedPresentation'
     )
     foreach ($contract in $requiredContracts) {
         $observed = @($report.TestRun.Results.UnitTestResult | Where-Object { $_.testName.Contains($contract) })
