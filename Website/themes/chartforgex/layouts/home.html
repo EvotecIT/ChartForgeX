@@ -9,13 +9,17 @@
   {{ assets.css_html }}
   {{ opengraph_html }}
   {{ structured_data_html }}
-  {{ head_html }}</head>
+  {{ head_html }}
+</head>
 <body class="cfx-body cfx-body--home{{ if body_class != "" }} {{ body_class }}{{ end }}">
 {{ include "site-header" }}
 <main id="main" class="cfx-main">
 {{ include "sections/hero" }}
-{{ include "sections/gallery-preview" }}
-{{ include "sections/beyond" }}
+{{ include "sections/surfaces" }}
+{{ include "sections/wall" }}
+{{ include "sections/stage" }}
+{{ include "sections/showcase" }}
+{{ include "sections/powershell" }}
 {{ include "sections/mermaid" }}
 {{ include "sections/fit" }}
 </main>

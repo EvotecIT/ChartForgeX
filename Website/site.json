@@ -206,6 +206,13 @@
         "Bundles": [
           "docs"
         ]
+      },
+      {
+        "Match": "/powershell/**",
+        "Bundles": [
+          "home",
+          "docs"
+        ]
       }
     ],
     "CriticalCss": [
@@ -288,6 +295,10 @@
             "Url": "/mermaid/"
           },
           {
+            "Title": "PowerShell",
+            "Url": "/powershell/"
+          },
+          {
             "Title": "Docs",
             "Url": "/docs/"
           },
@@ -315,6 +326,10 @@
           {
             "Title": "Examples",
             "Url": "/examples/"
+          },
+          {
+            "Title": "PowerShell",
+            "Url": "/powershell/"
           }
         ]
       },

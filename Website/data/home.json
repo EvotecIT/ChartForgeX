@@ -1,8 +1,8 @@
 {
   "hero": {
-    "title_line_1": "Render charts in .NET.",
-    "title_line_2": "Ship them anywhere.",
-    "lede": "ChartForgeX turns application data into charts, diagrams and report visuals. One model writes SVG, PNG, HTML and Markdown-authored output without a browser, a JavaScript runtime or package dependencies.",
+    "title_line_1": "Charts rendered in .NET.",
+    "title_line_2": "Shipped to every surface.",
+    "lede": "Dashboards, charts, topology, maps and Mermaid diagrams from your data, written straight to SVG, PNG, HTML, email or Markdown. No browser, no JavaScript runtime and no package dependencies, from .NET or PowerShell.",
     "install": "dotnet add package ChartForgeX",
     "primary": {
       "label": "Browse the gallery",
@@ -11,7 +11,13 @@
     "secondary": {
       "label": "Read the docs",
       "url": "/docs/"
-    }
+    },
+    "badges": [
+      "MIT licensed",
+      "No runtime dependencies",
+      ".NET Framework 4.7.2 to .NET 10",
+      "Native AOT ready"
+    ]
   },
   "surfaces": [
     {
@@ -214,6 +220,110 @@
       "name": "ImagePlayground",
       "url": "https://evotec.xyz/projects/imageplayground/",
       "body": "PowerShell commands for charts, QR codes and image processing, built on ChartForgeX and CodeGlyphX."
+    }
+  ],
+  "showcases": [
+    {
+      "id": "dashboard-saas-mrr-grid",
+      "title": "SaaS revenue and retention dashboard",
+      "summary": "Monthly recurring revenue, movement drivers, churn context, and supporting KPI cards composed into one deterministic dashboard.",
+      "alt": "SaaS dashboard showing monthly recurring revenue, MRR drivers, customer movement, churn, and supporting KPI cards in a dark grid.",
+      "png": "/examples/generated/dashboard-saas-mrr-grid.png",
+      "svg": "/examples/generated/dashboard-saas-mrr-grid.svg",
+      "html": "/examples/generated/dashboard-saas-mrr-grid.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/DashboardPortfolioExamples.cs",
+      "width": 2728,
+      "height": 2342
+    },
+    {
+      "id": "security-posture-radar-dark",
+      "title": "Security posture radar",
+      "summary": "A dark-theme radar chart for comparing posture across identity, endpoint, data, network, application, and operational dimensions.",
+      "alt": "Dark radar chart comparing security posture scores across six security dimensions with a filled polygon and labeled axes.",
+      "png": "/examples/generated/security-posture-radar-dark.png",
+      "svg": "/examples/generated/security-posture-radar-dark.svg",
+      "html": "/examples/generated/security-posture-radar-dark.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Program.cs",
+      "width": 1840,
+      "height": 1120
+    },
+    {
+      "id": "visual-geographic-topology-map",
+      "title": "Geographic infrastructure topology",
+      "summary": "A topology-native geographic layout with projected site markers, curved WAN routes, regional callouts, selection state, and metadata hooks.",
+      "alt": "World topology map with regional infrastructure sites, curved WAN connections, status labels, and an APAC site selected for detail.",
+      "png": "/examples/generated/visual-geographic-topology-map.png",
+      "svg": "/examples/generated/visual-geographic-topology-map.svg",
+      "html": "/examples/generated/visual-geographic-topology-map.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/TopologyVisualExamples.Geographic.cs",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "id": "control-coverage-heatmap-dark",
+      "title": "Control coverage matrix",
+      "summary": "A heatmap that compares security domains across controls with semantic colors, readable labels, and an explicit value scale.",
+      "alt": "Dark security control coverage heatmap with domain rows, control columns, colored cells, percentage labels, and a semantic value scale.",
+      "png": "/examples/generated/control-coverage-heatmap-dark.png",
+      "svg": "/examples/generated/control-coverage-heatmap-dark.svg",
+      "html": "/examples/generated/control-coverage-heatmap-dark.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Program.cs",
+      "width": 1960,
+      "height": 1120
+    },
+    {
+      "id": "revenue-europe-country-map-light",
+      "title": "Europe revenue map",
+      "summary": "A dotted geographic map that encodes regional revenue with value-colored points, labels, and a report-oriented viewport.",
+      "alt": "Light map of Europe with country and city labels, colored revenue markers, and a legend explaining the value scale.",
+      "png": "/examples/generated/revenue-europe-country-map-light.png",
+      "svg": "/examples/generated/revenue-europe-country-map-light.svg",
+      "html": "/examples/generated/revenue-europe-country-map-light.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/MapExamples.cs",
+      "width": 1960,
+      "height": 1120
+    }
+  ],
+  "surfaces2": [
+    {
+      "id": "dotnet",
+      "name": ".NET",
+      "color": "series-1",
+      "description": "A typed C# API on NuGet for .NET Framework 4.7.2 through .NET 10.",
+      "action": "Install the package",
+      "url": "/docs/install/"
+    },
+    {
+      "id": "powershell",
+      "name": "PowerShell",
+      "color": "series-4",
+      "description": "ImagePlayground brings ChartForgeX to PowerShell 5.1 and 7.",
+      "action": "Start with PowerShell",
+      "url": "/powershell/"
+    },
+    {
+      "id": "markdown",
+      "name": "Markdown",
+      "color": "series-2",
+      "description": "Charts, timelines, topology and tables as fenced blocks in your docs.",
+      "action": "Read the markup guide",
+      "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/markup.md"
+    },
+    {
+      "id": "mermaid",
+      "name": "Mermaid",
+      "color": "series-3",
+      "description": "Thirty Mermaid diagram families rendered without a browser.",
+      "action": "See Mermaid support",
+      "url": "/mermaid/"
+    },
+    {
+      "id": "browser",
+      "name": "Browser",
+      "color": "signal",
+      "description": "Optional interactive pages: tooltips, zoom, topology and graph explorers.",
+      "action": "Add interactivity",
+      "url": "/docs/interactivity/"
     }
   ]
 }

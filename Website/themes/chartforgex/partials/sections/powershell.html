@@ -1,0 +1,29 @@
+{{~ ip = data.imageplayground; console = data.powershell.showcases[2]; topo = data.powershell.showcases[3] ~}}
+<section class="cfx-ps" aria-labelledby="cfx-ps-title">
+  <div class="cfx-ps__inner">
+    <div class="cfx-ps__copy">
+      <h2 id="cfx-ps-title">ChartForgeX in PowerShell</h2>
+      <p>{{ data.powershell.intro }}</p>
+      <ul class="cfx-ps__families">
+        {{~ for f in ip.families ~}}
+        <li><strong>{{ f.commandCount }}</strong><span>{{ f.title }}</span></li>
+        {{~ end ~}}
+      </ul>
+      <div class="cfx-install cfx-install--dark">
+        <code><span class="cfx-install__prompt" aria-hidden="true">PS&gt;</span> {{ ip.module.install }}</code>
+        <button type="button" class="cfx-copy" data-cfx-copy="{{ ip.module.install }}">Copy</button>
+      </div>
+      <p class="cfx-ps__more"><a class="cfx-link" href="/powershell/">See the PowerShell examples</a></p>
+    </div>
+    <div class="cfx-ps__art">
+      <figure class="cfx-ps__terminal">
+        <img src="{{ console.image }}" width="{{ console.width }}" height="{{ console.height }}" loading="lazy" decoding="async" alt="Animated PowerShell session rendered by ImagePlayground: a table of projects, then a build that passes." />
+        <figcaption>{{ console.script }}</figcaption>
+      </figure>
+      <figure class="cfx-ps__map">
+        <img src="{{ topo.image }}" width="{{ topo.width }}" height="{{ topo.height }}" loading="lazy" decoding="async" alt="Service topology rendered from PowerShell: gateway, application API and a database with latency above target." />
+        <figcaption>{{ topo.script }}</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>

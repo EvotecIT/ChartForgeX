@@ -1,0 +1,25 @@
+{{~ half = (data.gallery.items.size / 2) | math.floor ~}}
+<section class="cfx-wall" aria-labelledby="cfx-wall-title">
+  <div class="cfx-wall__head">
+    <h2 id="cfx-wall-title">{{ data.gallery.items.size }} chart examples. One renderer.</h2>
+    <p>Bars to Sankey, calendars to word clouds, maps to org charts. Every tile is ChartForgeX output with matching light and dark themes and the C# that drew it.</p>
+    <a class="cfx-btn cfx-btn--ghost" href="/gallery/">Open the gallery</a>
+  </div>
+  {{~ for row in 0..1 ~}}
+  <div class="cfx-wall__row{{ if row == 1 }} cfx-wall__row--reverse{{ end }}" aria-hidden="true">
+    <div class="cfx-wall__track">
+      {{~ for pass in 0..1 ~}}
+      {{~ for item in data.gallery.items ~}}
+      {{~ if (row == 0 && for.index < half) || (row == 1 && for.index >= half) ~}}
+      <a class="cfx-wall__tile" href="/gallery/" tabindex="-1">
+        <img class="cfx-only-light" src="{{ item.thumbnail }}" width="400" height="280" loading="lazy" decoding="async" alt="" />
+        <img class="cfx-only-dark" src="{{ item.darkThumbnail }}" width="400" height="280" loading="lazy" decoding="async" alt="" />
+        <span>{{ item.familyLabel }}</span>
+      </a>
+      {{~ end ~}}
+      {{~ end ~}}
+      {{~ end ~}}
+    </div>
+  </div>
+  {{~ end ~}}
+</section>

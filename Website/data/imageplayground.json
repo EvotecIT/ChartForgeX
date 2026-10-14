@@ -1,0 +1,123 @@
+{
+  "generatedBy": "Website/build/Sync-ImagePlayground.ps1",
+  "module": {
+    "name": "ImagePlayground",
+    "version": "3.2.8",
+    "commit": "3c6fac0",
+    "commandCount": 132,
+    "chartForgeXCommandCount": 77,
+    "install": "Install-Module -Name ImagePlayground -Scope CurrentUser",
+    "powerShell": "Windows PowerShell 5.1 and PowerShell 7+"
+  },
+  "families": [
+    {
+      "id": "charts",
+      "title": "Charts",
+      "description": "Line, area, bar, donut, radar, heatmap, treemap, waterfall, word cloud and more, as PNG, SVG or HTML.",
+      "commandCount": 34,
+      "commands": [
+        "New-ImageChart",
+        "New-ImageChartAnnotation",
+        "New-ImageChartArea",
+        "New-ImageChartBar",
+        "New-ImageChartBarOptions",
+        "New-ImageChartBoxPlot",
+        "New-ImageChartBubble",
+        "New-ImageChartBullet",
+        "New-ImageChartCircle",
+        "New-ImageChartDonut",
+        "New-ImageChartFunnel",
+        "New-ImageChartGauge",
+        "New-ImageChartHeatmap",
+        "New-ImageChartHistogram",
+        "New-ImageChartHorizontalBar",
+        "New-ImageChartLine",
+        "New-ImageChartLollipop",
+        "New-ImageChartOptions",
+        "New-ImageChartPictorial",
+        "New-ImageChartPie",
+        "New-ImageChartPolar",
+        "New-ImageChartProgress",
+        "New-ImageChartRadar",
+        "New-ImageChartRadial",
+        "New-ImageChartRangeBand",
+        "New-ImageChartRangeBar",
+        "New-ImageChartScatter",
+        "New-ImageChartSlope",
+        "New-ImageChartStackedArea",
+        "New-ImageChartStepArea",
+        "New-ImageChartStepLine",
+        "New-ImageChartTreemap",
+        "New-ImageChartWaterfall",
+        "New-ImageChartWordCloud"
+      ]
+    },
+    {
+      "id": "topology",
+      "title": "Topology and org charts",
+      "description": "Service maps, dependencies, ports, scenarios, route motion and organization charts.",
+      "commandCount": 12,
+      "commands": [
+        "Get-ImageTopologyDiagnostics",
+        "New-ImageOrganizationChart",
+        "New-ImageOrganizationMember",
+        "New-ImageTopology",
+        "New-ImageTopologyEdge",
+        "New-ImageTopologyGroup",
+        "New-ImageTopologyMotion",
+        "New-ImageTopologyNode",
+        "New-ImageTopologyNodeDetail",
+        "New-ImageTopologyNodePort",
+        "New-ImageTopologyScenario",
+        "New-ImageTopologyScenarioStep"
+      ]
+    },
+    {
+      "id": "dashboards",
+      "title": "Dashboards and canvases",
+      "description": "Metric cards, tables, lists, timelines and fixed-size social cards or wallpapers.",
+      "commandCount": 10,
+      "commands": [
+        "New-ImageCanvas",
+        "New-ImageCanvasInfoTile",
+        "New-ImageCanvasText",
+        "New-ImageListBlock",
+        "New-ImageMetricCard",
+        "New-ImageTableBlock",
+        "New-ImageTimelineBlock",
+        "New-ImageTimelineItem",
+        "New-ImageVisualGrid",
+        "New-ImageVisualGridItem"
+      ]
+    },
+    {
+      "id": "stories",
+      "title": "Stories and animation",
+      "description": "Animated terminal sessions and source-to-result stories as SVG, HTML, GIF or APNG.",
+      "commandCount": 21,
+      "commands": [
+        "ConvertTo-ImageStorySource",
+        "ConvertTo-ImageVisualArtifact",
+        "Export-ImageConsoleStory",
+        "Export-ImageVisualArtifact",
+        "New-ImageConsoleStory",
+        "New-ImageConsoleStoryBlankLine",
+        "New-ImageConsoleStoryCommand",
+        "New-ImageConsoleStoryOutput",
+        "New-ImageConsoleStoryPalette",
+        "New-ImageConsoleStoryPause",
+        "New-ImageConsoleStoryTab",
+        "New-ImageConsoleStoryTable",
+        "New-ImageStory",
+        "New-ImageStoryOutcome",
+        "New-ImageStoryPanel",
+        "New-ImageStoryReplay",
+        "New-ImageStoryScene",
+        "New-ImageVisualMotionCue",
+        "New-ImageVisualStory",
+        "New-ImageVisualWatermark",
+        "Select-ImageConsoleStoryTab"
+      ]
+    }
+  ]
+}

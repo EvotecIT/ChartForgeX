@@ -10,6 +10,7 @@ using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Markup;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.SvgRaster;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
@@ -63,6 +64,39 @@ foreach (var (mode, tokens) in new[] { ("light", light), ("dark", dark) }) {
     File.WriteAllBytes(Path.Combine(output, $"hero-{mode}.png"), chart.ToPng());
     Write($"hero-{mode}.html", chart.ToHtmlPage());
     Write($"hero-{mode}.interactive.html", chart.ToInteractiveHtmlPage());
+}
+
+// Hero dashboard: one ChartGrid of several families, rendered in both themes.
+ChartGrid HeroDashboard(VisualDesignTokens tokens) {
+    ChartPoint[] Values(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+    var trend = HeroChart(tokens).WithTitle("Sign-ins by method").WithSubtitle("Last 12 weeks").WithSize(1056, 320);
+    var methods = Chart.Create().WithDesignTokens(tokens).WithTitle("This week").WithSubtitle("Share of sign-ins")
+        .WithXLabels(HeroSeries).AddDonut("Sign-ins", Values(HeroData.Select(series => series[^1]).ToArray()));
+    var posture = Chart.Create().WithDesignTokens(tokens).WithTitle("Security posture").WithSubtitle("Current against target")
+        .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring").WithYAxisBounds(0, 100).WithDataLabels(false)
+        .AddRadarArea("Current", Values(91, 72, 88, 95, 79, 84)).AddRadarLine("Target", Values(95, 90, 95, 95, 90, 92));
+    var hours = new[] { "0", "2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22" };
+    var days = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+    var activity = days.Select((day, d) => hours.Select((hour, h) => {
+        var working = d < 5 && h >= 4 && h <= 9;
+        return Math.Round((working ? 60 + 30 * Math.Sin(h * .9) : 8 + 6 * Math.Cos(h)) * (d < 5 ? 1 : .35));
+    }));
+    var heat = Chart.Create().WithDesignTokens(tokens).WithTitle("Sign-ins by hour").WithSubtitle("Weekday working hours stand out")
+        .WithXLabels(hours).AddHeatmapRows(days, activity);
+    var coverage = Chart.Create().WithDesignTokens(tokens).WithTitle("MFA coverage").WithSubtitle("Accounts with a strong method")
+        .AddGauge("Coverage", 87).ConfigureGauge(options => options.Target = 95);
+    foreach (var panel in new[] { methods, posture, heat, coverage }) {
+        panel.WithSize(520, 320);
+    }
+
+    return ChartGrid.Create().WithColumns(3).WithGap(16).WithPanelSize(520, 320).WithPanelFit(VisualPanelFit.Stretch)
+        .Add(trend, 2).Add(methods).Add(posture).Add(heat).Add(coverage);
+}
+
+foreach (var (mode, tokens) in new[] { ("light", light), ("dark", dark) }) {
+    var grid = HeroDashboard(tokens);
+    Write($"dashboard-{mode}.svg", grid.ToSvg());
+    File.WriteAllBytes(Path.Combine(output, $"dashboard-{mode}.png"), grid.WithPngOutputScale(2).ToPng());
 }
 
 // Touch icon and social card, rasterized by ChartForgeX from SVG.

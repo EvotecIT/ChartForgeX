@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}
+</head>
+<body class="cfx-body cfx-body--powershell{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-main">
+  {{~ ip = data.imageplayground ~}}
+  <article class="cfx-page cfx-page--wide">
+    <header class="cfx-page__head">
+      <h1>{{ page.title }}</h1>
+      <p class="cfx-lede">{{ data.powershell.intro }}</p>
+      <div class="cfx-install cfx-psp__install">
+        <code><span class="cfx-install__prompt" aria-hidden="true">PS&gt;</span> {{ ip.module.install }}</code>
+        <button type="button" class="cfx-copy" data-cfx-copy="{{ ip.module.install }}">Copy</button>
+      </div>
+      <p class="cfx-muted">ImagePlayground {{ ip.module.version }} exports {{ ip.module.commandCount }} commands for {{ ip.module.powerShell }}. {{ ip.module.chartForgeXCommandCount }} of them are powered by ChartForgeX.</p>
+    </header>
+    <ul class="cfx-psp__families">
+      {{~ for f in ip.families ~}}
+      <li><strong>{{ f.commandCount }}</strong><span>{{ f.title }}</span><p>{{ f.description }}</p></li>
+      {{~ end ~}}
+    </ul>
+    <p class="cfx-muted">{{ data.powershell.note }}</p>
+    <div class="cfx-psp__list">
+      {{~ for s in data.powershell.showcases ~}}
+      <section class="cfx-psp__item" aria-labelledby="cfx-psp-{{ s.id }}">
+        <div class="cfx-psp__code">
+          <h3 id="cfx-psp-{{ s.id }}">{{ s.title }}</h3>
+          <p>{{ s.body }}</p>
+          <pre><code class="language-powershell">{{ s.code | html.escape }}</code></pre>
+          <p class="cfx-psp__source"><a class="cfx-link" href="https://github.com/EvotecIT/ImagePlayground/blob/master/{{ s.script }}">{{ s.script }} on GitHub</a></p>
+        </div>
+        <figure class="cfx-psp__media">
+          <img src="{{ s.image }}" width="{{ s.width }}" height="{{ s.height }}" loading="lazy" decoding="async" alt="Output of {{ s.script }}: {{ s.title | string.downcase }}." />
+        </figure>
+      </section>
+      {{~ end ~}}
+    </div>
+    <div class="cfx-prose">
+{{ content }}
+    </div>
+  </article>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>
