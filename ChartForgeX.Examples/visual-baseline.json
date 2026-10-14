@@ -150,14 +150,14 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|400|normal|12.5|\n-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|700|normal|25|",
-        "frameFontFingerprint": "6463EE6F0CE3F0D34535225E0347079AE23F8296CD516C16E8CAE8200604CCE6"
+        "frameFontFingerprint": "9081FEDC0B51D9C83F55DD5D2DFB8313119A843D7097FA57062D57390F535584"
       },
       "width": 912,
       "height": 654,
       "logicalWidth": 912.0,
       "logicalHeight": 653.878,
       "svg": {
-        "minVisualNodes": 47,
+        "minVisualNodes": 61,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -165,7 +165,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1192793,
         "minTransparentPixels": 103,
-        "minDistinctColors": 1274,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -222,7 +222,7 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|400|normal|12.5|\n-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|700|normal|25|",
-        "frameFontFingerprint": "6463EE6F0CE3F0D34535225E0347079AE23F8296CD516C16E8CAE8200604CCE6"
+        "frameFontFingerprint": "9081FEDC0B51D9C83F55DD5D2DFB8313119A843D7097FA57062D57390F535584"
       },
       "width": 944,
       "height": 982,
@@ -237,7 +237,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1788116,
         "minTransparentPixels": 65900,
-        "minDistinctColors": 1566,
+        "minDistinctColors": 1466,
         "maxEdgeInkPixels": 0
       }
     },
@@ -1374,7 +1374,7 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif|400|normal|12.5|\nAvenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif|700|normal|25|",
-        "frameFontFingerprint": "D4A84AE1BDF8C4242D3FFE72569BD7D59C3628071B7691736EA4E7DD47952D9D"
+        "frameFontFingerprint": "A5968B7AFF95B4D77A91838C6B7D4F9BA3E4201D9A165CF1CA35E2814CB8B408"
       },
       "width": 668,
       "height": 766,
@@ -2382,7 +2382,7 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|400|normal|12.5|\n-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|700|normal|25|",
-        "frameFontFingerprint": "6463EE6F0CE3F0D34535225E0347079AE23F8296CD516C16E8CAE8200604CCE6"
+        "frameFontFingerprint": "9081FEDC0B51D9C83F55DD5D2DFB8313119A843D7097FA57062D57390F535584"
       },
       "width": 1160,
       "height": 390,
@@ -2686,6 +2686,30 @@
         "minVisiblePixels": 326916,
         "minTransparentPixels": 12,
         "minDistinctColors": 698,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-dark-chart-lifecycle",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 800,
+      "height": 440,
+      "logicalWidth": 800.0,
+      "logicalHeight": 440.0,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 175998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 576,
         "maxEdgeInkPixels": 0
       }
     },
@@ -3286,6 +3310,30 @@
         "minVisiblePixels": 326916,
         "minTransparentPixels": 12,
         "minDistinctColors": 749,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-chart-lifecycle",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 800,
+      "height": 440,
+      "logicalWidth": 800.0,
+      "logicalHeight": 440.0,
+      "svg": {
+        "minVisualNodes": 17,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 175998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 621,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4542,7 +4590,7 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|400|normal|12.5|\n-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|700|normal|25|",
-        "frameFontFingerprint": "6463EE6F0CE3F0D34535225E0347079AE23F8296CD516C16E8CAE8200604CCE6"
+        "frameFontFingerprint": "9081FEDC0B51D9C83F55DD5D2DFB8313119A843D7097FA57062D57390F535584"
       },
       "width": 1118,
       "height": 1536,
@@ -5254,6 +5302,102 @@
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
         "minDistinctColors": 513,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-mindmap-branch-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1366,
+      "height": 560,
+      "logicalWidth": 1366.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 382480,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 743,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-mindmap-branch-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1366,
+      "height": 560,
+      "logicalWidth": 1366.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 382480,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 768,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-mindmap-depth-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1366,
+      "height": 560,
+      "logicalWidth": 1366.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 382480,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 809,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-mindmap-depth-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1366,
+      "height": 560,
+      "logicalWidth": 1366.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 382480,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 826,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6822,14 +6966,14 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|400|normal|12.5|\n-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|700|normal|25|",
-        "frameFontFingerprint": "6463EE6F0CE3F0D34535225E0347079AE23F8296CD516C16E8CAE8200604CCE6"
+        "frameFontFingerprint": "9081FEDC0B51D9C83F55DD5D2DFB8313119A843D7097FA57062D57390F535584"
       },
       "width": 912,
       "height": 930,
       "logicalWidth": 912.0,
       "logicalHeight": 929.878,
       "svg": {
-        "minVisualNodes": 40,
+        "minVisualNodes": 77,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -6837,7 +6981,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1696217,
         "minTransparentPixels": 103,
-        "minDistinctColors": 1138,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6846,7 +6990,7 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "Avenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif|400|normal|12|\nAvenir Next, Avenir, Montserrat, 'Segoe UI', Arial, sans-serif|900|normal|24|",
-        "frameFontFingerprint": "4D9AA03B00E426E67936998955FEF50999DA4D3AE772B6518813D17AB9635E2F"
+        "frameFontFingerprint": "0E88D054BE507C2D08A8C96275837DD179B90282F236E3E2AE931E40479AF5F5"
       },
       "width": 1352,
       "height": 1450,
@@ -6918,7 +7062,7 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|400|normal|12.5|\n-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|700|normal|25|",
-        "frameFontFingerprint": "6463EE6F0CE3F0D34535225E0347079AE23F8296CD516C16E8CAE8200604CCE6"
+        "frameFontFingerprint": "9081FEDC0B51D9C83F55DD5D2DFB8313119A843D7097FA57062D57390F535584"
       },
       "width": 932,
       "height": 990,
@@ -8070,7 +8214,7 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|400|normal|12.5|\n-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif|700|normal|25|",
-        "frameFontFingerprint": "6463EE6F0CE3F0D34535225E0347079AE23F8296CD516C16E8CAE8200604CCE6"
+        "frameFontFingerprint": "9081FEDC0B51D9C83F55DD5D2DFB8313119A843D7097FA57062D57390F535584"
       },
       "width": 1080,
       "height": 426,
@@ -8365,7 +8509,7 @@
       "logicalWidth": 912.0,
       "logicalHeight": 643.65,
       "svg": {
-        "minVisualNodes": 50,
+        "minVisualNodes": 76,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
@@ -8373,7 +8517,7 @@
         "outputScale": 2,
         "minVisiblePixels": 1174656,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1028,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
@@ -9477,7 +9621,7 @@
         "outputScale": 2,
         "minVisiblePixels": 694699,
         "minTransparentPixels": 45309,
-        "minDistinctColors": 1830,
+        "minDistinctColors": 2048,
         "maxEdgeInkPixels": 0
       }
     },
