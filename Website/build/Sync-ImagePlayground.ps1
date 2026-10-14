@@ -62,3 +62,18 @@ $catalog = [ordered]@{
 $catalogPath = Join-Path $website 'data/imageplayground.json'
 $catalog | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $catalogPath -Encoding utf8NoBOM
 Write-Host "ImagePlayground $($manifest.ModuleVersion): $($cmdlets.Count) commands, $($catalog.module.chartForgeXCommandCount) powered by ChartForgeX -> $catalogPath"
+
+# Command help for the on-site reference (/powershell/commands/), filtered to the commands above.
+$helpSource = Join-Path (Split-Path -Parent $ModulePath) 'en-US/ImagePlayground-help.xml'
+if (Test-Path -LiteralPath $helpSource) {
+    $keep = @($familyResults | ForEach-Object { $_.commands })
+    [xml] $maml = Get-Content -LiteralPath $helpSource -Raw
+    foreach ($node in @($maml.helpItems.command)) {
+        if ($node.details.name.Trim() -notin $keep) { $null = $maml.helpItems.RemoveChild($node) }
+    }
+    $helpPath = Join-Path $website 'powershell/imageplayground-help.xml'
+    $maml.Save($helpPath)
+    Write-Host "Kept help for $(@($maml.helpItems.command).Count) commands -> $helpPath"
+} else {
+    Write-Warning "No command help at $helpSource; the on-site command reference keeps its current snapshot."
+}

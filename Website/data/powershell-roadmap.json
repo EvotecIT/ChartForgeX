@@ -1,5 +1,5 @@
 {
-  "intro": "ChartForgeX ships features first; ImagePlayground exposes them as commands. Each row was checked against ImagePlayground 3.2.7, so scripts can rely on what is marked available today. Partial rows work with the limits noted, often through -ChartScript, which hands a script the ChartForgeX chart and its full .NET API.",
+  "intro": "ChartForgeX ships features first; ImagePlayground exposes them as commands. This table describes ImagePlayground 3.3.0: rows marked available work from commands alone, and partial rows work with the limits noted, often through -ChartScript, which hands a script the ChartForgeX chart and its .NET API.",
   "tracking": {
     "title": "Request a command or vote on the roadmap",
     "url": "https://github.com/EvotecIT/ImagePlayground/issues"
@@ -35,12 +35,11 @@
           ]
         },
         {
-          "capability": "Chart titles and category labels",
-          "status": "partial",
+          "capability": "Chart titles, subtitles and category labels",
+          "status": "available",
           "commands": [
             "New-ImageChart"
-          ],
-          "note": "3.2.7 has no -Title or category-label parameter. Set them on the chart from -ChartScript or -PassThru, as two examples above do. -Title and -Subtitle are already in the ImagePlayground source for the next release."
+          ]
         },
         {
           "capability": "Sankey, sunburst, chord, Gantt, timeline, candlestick and calendar heatmap",
@@ -59,9 +58,14 @@
           "note": "Reachable from -ChartScript with AddDottedMap, AddRegionMap and AddTileMap; no map commands yet."
         },
         {
-          "capability": "Bar and line combinations in one chart",
-          "status": "planned",
-          "note": "New-ImageChart rejects definitions of different kinds, and all lines must share one marker setting. ChartForgeX has AddBarLineCombo and related combos."
+          "capability": "Bar, line, area, scatter and range series combined in one chart, with per-series markers and a secondary axis",
+          "status": "available",
+          "commands": [
+            "New-ImageChart",
+            "New-ImageChartBar",
+            "New-ImageChartLine",
+            "New-ImageChartOptions"
+          ]
         },
         {
           "capability": "Graphite design tokens and brand kits",
@@ -96,12 +100,12 @@
           ]
         },
         {
-          "capability": "Automatic layered layout for branching graphs",
-          "status": "partial",
+          "capability": "Automatic layered layout for branching graphs, with -Layer to pin a column",
+          "status": "available",
           "commands": [
-            "New-ImageTopology"
-          ],
-          "note": "In 3.2.7, -Layout Layered packs graphs deeper than two levels into two columns. Use -Layout Manual with positions from data, as the service map above does."
+            "New-ImageTopology",
+            "New-ImageTopologyNode"
+          ]
         },
         {
           "capability": "Organization charts from manager links",
@@ -161,12 +165,11 @@
           ]
         },
         {
-          "capability": "Table blocks from pipeline objects",
-          "status": "partial",
+          "capability": "Table blocks from pipeline objects, with calculated columns, formats and alignment",
+          "status": "available",
           "commands": [
             "New-ImageTableBlock"
-          ],
-          "note": "3.2.7 rejects [pscustomobject] rows with 'Row value count must match table column count'. Pass hashtables or arrays of values, as the dashboard above does."
+          ]
         },
         {
           "capability": "Social preview cards and desktop wallpapers",
@@ -185,13 +188,12 @@
           ]
         },
         {
-          "capability": "Visual artifacts with accessible names and descriptions",
-          "status": "partial",
+          "capability": "Visual artifacts with accessible names and descriptions, including whole dashboards",
+          "status": "available",
           "commands": [
             "ConvertTo-ImageVisualArtifact",
             "Export-ImageVisualArtifact"
-          ],
-          "note": "Charts and topology convert; a visual grid is rejected in 3.2.7. Export grids with New-ImageVisualStory."
+          ]
         }
       ]
     },
@@ -228,18 +230,28 @@
           ]
         },
         {
-          "capability": "PNG, SVG, JPEG and static HTML, chosen by file extension",
+          "capability": "PNG, SVG, JPEG, GIF, BMP, TIFF and static HTML, chosen by file extension",
           "status": "available",
           "commands": [
             "New-ImageChart",
             "New-ImageTopology",
+            "New-ImageVisualGrid",
             "New-ImageVisualStory"
           ]
         },
         {
+          "capability": "WebP output",
+          "status": "partial",
+          "commands": [
+            "New-ImageChart",
+            "New-ImageVisualGrid"
+          ],
+          "note": "Files are written, but the current WebP encoder barely compresses them; prefer PNG until it is fixed."
+        },
+        {
           "capability": "Interactive chart HTML: tooltips, selection, zoom and brushing",
           "status": "planned",
-          "note": "Chart HTML from 3.2.7 is static and script-free. Only topology has -InteractiveHtml."
+          "note": "Chart HTML is static and script-free. Only topology has -InteractiveHtml."
         }
       ]
     },

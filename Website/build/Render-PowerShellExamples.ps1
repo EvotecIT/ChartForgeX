@@ -21,7 +21,9 @@
 [CmdletBinding()]
 param(
     [string] $ModulePath,
-    [string[]] $Id
+    [string[]] $Id,
+    # Version to show on the pages when rendering a pre-release build, for example 3.3.0.
+    [string] $ModuleVersion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -39,7 +41,8 @@ if (-not $ModulePath) {
     $ModulePath = $installed.Path
 }
 $ModulePath = (Resolve-Path -LiteralPath $ModulePath).Path
-$moduleVersion = (Import-PowerShellDataFile -LiteralPath $ModulePath).ModuleVersion
+if (-not $ModuleVersion) { $ModuleVersion = (Import-PowerShellDataFile -LiteralPath $ModulePath).ModuleVersion }
+$moduleVersion = $ModuleVersion
 
 function Get-ImageSize([string] $path) {
     if ($path.EndsWith('.svg', [StringComparison]::OrdinalIgnoreCase)) {

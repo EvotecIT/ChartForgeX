@@ -13,42 +13,49 @@ $total = ($services | Measure-Object Requests -Sum).Sum
 $slowest = $services | Sort-Object { [int] $_.P95 } | Select-Object -Last 1
 $healthy = @($services | Where-Object Status -eq 'Healthy').Count
 
-# -PassThru returns the ChartForgeX chart, so the dashboard can embed it.
-$latency = New-ImageChart {
-    New-ImageChartLine -Name "$($slowest.Name) p95 (ms)" -Value $week
+# -PassThru returns the chart so the dashboard can embed it.
+$latency = New-ImageChart -Title "$($slowest.Name) latency" -Subtitle 'Last seven days' `
+    -XLabel Wed, Thu, Fri, Sat, Sun, Mon, Tue -FilePath latency.png `
+    -Width 932 -Height 320 -Theme $theme -ShowGrid -PassThru `
+    -Options (New-ImageChartOptions -ShowLegend -LegendPosition Bottom -TickCount 4) {
+    New-ImageChartLine -Name "$($slowest.Name) p95 (ms)" -Value $week -Marker Circle
     New-ImageChartLine -Name 'Target' -Value (@(250) * $week.Count) -Color '#eeb640'
-} -FilePath latency.png -Width 932 -Height 320 -Theme $theme -ShowGrid -PassThru `
-    -Options (New-ImageChartOptions -ShowLegend -LegendPosition Bottom -TickCount 4)
-# It is a ChartForgeX object, so its .NET API is one dot away.
-[void] $latency.WithTitle("$($slowest.Name) latency").WithSubtitle('Last seven days')
-[void] $latency.WithXLabels('Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue')
+}
 
-$table = New-ImageTableBlock -Title Services -Column Name, Status, Requests, P95 `
-    -StatusColumn Status -Theme $theme -Row ($services | ForEach-Object {
-        , @($_.Name, $_.Status, ([int] $_.Requests).ToString('N0'), "$($_.P95) ms")
-    })
-$checks = New-ImageListBlock -Title Checks -Theme $theme `
-    -Item 'TLS expiry', 'Backups', 'Queue depth' -Value '41 days', 'OK', '1,204' `
-    -Status Positive, Positive, Warning
-[void] $table.WithSize(616, 270)
-[void] $checks.WithSize(300, 270)
+# Pipe the rows in and pick columns the way Format-Table does.
+$table = $services | New-ImageTableBlock -Title Services -StatusColumn Status `
+    -Theme $theme -Width 616 -Height 270 -Property Name, Status,
+    @{ Name = 'Requests'; Expression = { [int] $_.Requests }; FormatString = 'N0'; Alignment = 'Right' },
+    @{ Name = 'P95'; Expression = { "$($_.P95) ms" }; Alignment = 'Right' }
+
+$checks = @{
+    Title  = 'Checks'
+    Item   = 'TLS expiry', 'Backups', 'Queue depth'
+    Value  = '41 days', 'OK', '1,204'
+    Status = 'Positive', 'Positive', 'Warning'
+    Theme  = $theme; Width = 300; Height = 270
+}
 
 $card = @{ Width = 300; Height = 170; Theme = $theme }
-$items = @(
+$grid = @{
+    Title = 'Service health'; Subtitle = 'Week 41'; Columns = 3
+    Gap = 16; Padding = 24; AdaptiveRowHeights = $true; Theme = $theme
+}
+$dashboard = New-ImageVisualGrid @grid -ContentDefinition {
     New-ImageMetricCard -Label Requests -Value $total -Format N0 -Status Positive `
         -Trend '+8% vs last week' -MiniValues 98, 101, 104, 110, 116 @card
     New-ImageMetricCard -Label 'Slowest p95' -Value ([int] $slowest.P95) -Unit ms `
         -Caption $slowest.Name -Status Warning -MiniValues $week @card
     New-ImageMetricCard -Label Healthy -Value "$healthy of $($services.Count)" `
         -Caption services -Status Positive @card
-) | ForEach-Object { New-ImageVisualGridItem -Block $_ }
-$items += New-ImageVisualGridItem -Block $table -ColumnSpan 2
-$items += New-ImageVisualGridItem -Block $checks
-$items += New-ImageVisualGridItem -Chart $latency -ColumnSpan 3
+    New-ImageVisualGridItem -Block $table -ColumnSpan 2
+    New-ImageListBlock @checks
+    New-ImageVisualGridItem -Chart $latency -ColumnSpan 3
+}
 
-$grid = New-ImageVisualGrid -Title 'Service health' -Subtitle 'Week 41' -Columns 3 `
-    -Gap 16 -Padding 24 -AdaptiveRowHeights -Theme $theme -Content $items
-$grid | New-ImageVisualStory -FilePath service-health.png
-$grid | New-ImageVisualStory -FilePath service-health.html
+# One dashboard, two outputs: PNG for chat and email, HTML for a browser.
+foreach ($file in 'service-health.png', 'service-health.html') {
+    $dashboard | New-ImageVisualStory -FilePath $file
+}
 
 $services | Sort-Object { [int] $_.P95 } -Descending | Format-Table -AutoSize

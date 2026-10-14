@@ -10,18 +10,10 @@ events,Events,Queue,2,Healthy,orders search,
 '@ | ConvertFrom-Csv
 
 $map = {
-    # Tier sets the column; position in the tier sets the row.
-    foreach ($tier in $services | Group-Object Tier) {
-        $row = 0
-        foreach ($s in $tier.Group) {
-            $node = @{
-                Id = $s.Id; Label = $s.Name; Kind = $s.Kind
-                Status = $s.Status; Width = 180; Height = 64
-                X = 300 * [int] $tier.Name
-                Y = 100 * ($row++ - ($tier.Count - 1) / 2)
-            }
-            New-ImageTopologyNode @node
-        }
+    # -Layer puts each tier in its own column; the layout does the rest.
+    foreach ($s in $services) {
+        New-ImageTopologyNode -Id $s.Id -Label $s.Name -Kind $s.Kind `
+            -Status $s.Status -Layer $s.Tier -Width 180 -Height 64
     }
     foreach ($s in $services) {
         foreach ($caller in (-split $s.Callers) -ne '') {
@@ -35,7 +27,8 @@ $view = @{
     TopologyDefinition   = $map
     Title                = 'Orders platform'
     Subtitle             = 'Database latency above target'
-    Layout               = 'Manual'
+    Layout               = 'Layered'
+    Direction            = 'LeftToRight'
     Width                = 900
     Height               = 420
     FitContentToViewport = $true

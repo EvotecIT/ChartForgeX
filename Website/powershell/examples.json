@@ -37,10 +37,10 @@
       "body": "A waterfall from an ordered hashtable: the keys become labels, the values become steps."
     },
     {
-      "id": "chart-script",
+      "id": "stacked-builds",
       "family": "charts",
-      "title": "The whole ChartForgeX API with -ChartScript",
-      "body": "When a cmdlet has no parameter for it, the script block receives the ChartForgeX chart: titles, category labels and stacked bars here."
+      "title": "Stacked bars from a CSV",
+      "body": "Titles, category labels and the bar layout are parameters, so a CSV export becomes a stacked chart in one command."
     },
     {
       "id": "service-map",

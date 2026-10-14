@@ -21,7 +21,7 @@
             <i class="cfx-status cfx-status--{{ r.status }}">{{ r.status | string.capitalize }}</i>
             <div>
               <p>{{ r.capability }}</p>
-              {{~ if r.commands && r.commands.size > 0 ~}}<p class="cfx-psroad__cmds">{{~ for c in r.commands ~}}<a href="https://evotec.xyz/projects/imageplayground/api/{{ c | string.downcase }}/">{{ c }}</a>{{~ end ~}}</p>{{~ end ~}}
+              {{~ if r.commands && r.commands.size > 0 ~}}<p class="cfx-psroad__cmds">{{~ for c in r.commands ~}}<a href="/powershell/commands/{{ c | string.downcase }}/">{{ c }}</a>{{~ end ~}}</p>{{~ end ~}}
               {{~ if r.note ~}}<p class="cfx-psroad__note">{{ r.note }}</p>{{~ end ~}}
             </div>
           </li>

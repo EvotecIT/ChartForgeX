@@ -64,14 +64,14 @@ pwsh ./Website/build/Sync-GeneratedExamples.ps1
 Run both scripts against the same published ImagePlayground release, not a source build:
 
 ```powershell
-Save-Module ImagePlayground -Path D:\Dev\Scratch\ip-module -RequiredVersion 3.2.7
-$module = 'D:\Dev\Scratch\ip-module\ImagePlayground\3.2.7\ImagePlayground.psd1'
+Save-Module ImagePlayground -Path D:\Dev\Scratch\ip-module -RequiredVersion 3.3.0
+$module = 'D:\Dev\Scratch\ip-module\ImagePlayground\3.3.0\ImagePlayground.psd1'
 pwsh ./Website/build/Sync-ImagePlayground.ps1 -ModulePath $module
 pwsh ./Website/build/Render-PowerShellExamples.ps1 -ModulePath $module
 pwsh ./Website/build/Render-PowerShellExamples.ps1 -ModulePath $module -Id service-map, org-chart
 ```
 
-Without `-ModulePath` both scripts use the newest installed ImagePlayground. The renderer runs each script in a fresh `pwsh -NoProfile` with the en-US culture and pins both `Set-Location` and the process directory to the example's output folder, because ImagePlayground resolves relative `-FilePath` values against the process directory. A failing script stops the run. Check the generated images and the total size of `static/powershell/examples/` before committing; prefer SVG over GIF for animation.
+Without `-ModulePath` both scripts use the newest installed ImagePlayground. To preview a release before it reaches the PowerShell Gallery, point `-ModulePath` at an ImagePlayground checkout with `IMAGEPLAYGROUND_DEVELOPMENT=1` and pass `-ModuleVersion` with the version it will ship as; do not publish pages rendered that way until that version is on the Gallery. The renderer runs each script in a fresh `pwsh -NoProfile` with the en-US culture and pins both `Set-Location` and the process directory to the example's output folder, because ImagePlayground resolves relative `-FilePath` values against the process directory. A failing script stops the run. Check the generated images and the total size of `static/powershell/examples/` before committing; prefer SVG over GIF for animation.
 
 ## evotec.xyz
 

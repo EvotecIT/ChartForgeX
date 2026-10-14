@@ -2,7 +2,7 @@
   "generatedBy": "Website/build/Render-PowerShellExamples.ps1",
   "module": {
     "name": "ImagePlayground",
-    "version": "3.2.7"
+    "version": "3.3.0"
   },
   "examples": [
     {
@@ -13,14 +13,14 @@
       "show": [
         "service-health.png"
       ],
-      "script": "# Service data from a monitoring API, a CSV export or Get-Counter.\n$services = @'\nName,Status,Requests,P95\nGateway,Healthy,48210,84\nIdentity,Healthy,21980,112\nOrders,Warning,15402,318\nSearch,Healthy,30117,146\n'@ | ConvertFrom-Csv\n$week = 182, 190, 201, 262, 310, 298, 214   # Orders p95, last seven days\n$theme = 'Dark'\n\n$total = ($services | Measure-Object Requests -Sum).Sum\n$slowest = $services | Sort-Object { [int] $_.P95 } | Select-Object -Last 1\n$healthy = @($services | Where-Object Status -eq 'Healthy').Count\n\n# -PassThru returns the ChartForgeX chart, so the dashboard can embed it.\n$latency = New-ImageChart {\n    New-ImageChartLine -Name \"$($slowest.Name) p95 (ms)\" -Value $week\n    New-ImageChartLine -Name 'Target' -Value (@(250) * $week.Count) -Color '#eeb640'\n} -FilePath latency.png -Width 932 -Height 320 -Theme $theme -ShowGrid -PassThru `\n    -Options (New-ImageChartOptions -ShowLegend -LegendPosition Bottom -TickCount 4)\n# It is a ChartForgeX object, so its .NET API is one dot away.\n[void] $latency.WithTitle(\"$($slowest.Name) latency\").WithSubtitle('Last seven days')\n[void] $latency.WithXLabels('Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue')\n\n$table = New-ImageTableBlock -Title Services -Column Name, Status, Requests, P95 `\n    -StatusColumn Status -Theme $theme -Row ($services | ForEach-Object {\n        , @($_.Name, $_.Status, ([int] $_.Requests).ToString('N0'), \"$($_.P95) ms\")\n    })\n$checks = New-ImageListBlock -Title Checks -Theme $theme `\n    -Item 'TLS expiry', 'Backups', 'Queue depth' -Value '41 days', 'OK', '1,204' `\n    -Status Positive, Positive, Warning\n[void] $table.WithSize(616, 270)\n[void] $checks.WithSize(300, 270)\n\n$card = @{ Width = 300; Height = 170; Theme = $theme }\n$items = @(\n    New-ImageMetricCard -Label Requests -Value $total -Format N0 -Status Positive `\n        -Trend '+8% vs last week' -MiniValues 98, 101, 104, 110, 116 @card\n    New-ImageMetricCard -Label 'Slowest p95' -Value ([int] $slowest.P95) -Unit ms `\n        -Caption $slowest.Name -Status Warning -MiniValues $week @card\n    New-ImageMetricCard -Label Healthy -Value \"$healthy of $($services.Count)\" `\n        -Caption services -Status Positive @card\n) | ForEach-Object { New-ImageVisualGridItem -Block $_ }\n$items += New-ImageVisualGridItem -Block $table -ColumnSpan 2\n$items += New-ImageVisualGridItem -Block $checks\n$items += New-ImageVisualGridItem -Chart $latency -ColumnSpan 3\n\n$grid = New-ImageVisualGrid -Title 'Service health' -Subtitle 'Week 41' -Columns 3 `\n    -Gap 16 -Padding 24 -AdaptiveRowHeights -Theme $theme -Content $items\n$grid | New-ImageVisualStory -FilePath service-health.png\n$grid | New-ImageVisualStory -FilePath service-health.html\n\n$services | Sort-Object { [int] $_.P95 } -Descending | Format-Table -AutoSize",
+      "script": "# Service data from a monitoring API, a CSV export or Get-Counter.\n$services = @'\nName,Status,Requests,P95\nGateway,Healthy,48210,84\nIdentity,Healthy,21980,112\nOrders,Warning,15402,318\nSearch,Healthy,30117,146\n'@ | ConvertFrom-Csv\n$week = 182, 190, 201, 262, 310, 298, 214   # Orders p95, last seven days\n$theme = 'Dark'\n\n$total = ($services | Measure-Object Requests -Sum).Sum\n$slowest = $services | Sort-Object { [int] $_.P95 } | Select-Object -Last 1\n$healthy = @($services | Where-Object Status -eq 'Healthy').Count\n\n# -PassThru returns the chart so the dashboard can embed it.\n$latency = New-ImageChart -Title \"$($slowest.Name) latency\" -Subtitle 'Last seven days' `\n    -XLabel Wed, Thu, Fri, Sat, Sun, Mon, Tue -FilePath latency.png `\n    -Width 932 -Height 320 -Theme $theme -ShowGrid -PassThru `\n    -Options (New-ImageChartOptions -ShowLegend -LegendPosition Bottom -TickCount 4) {\n    New-ImageChartLine -Name \"$($slowest.Name) p95 (ms)\" -Value $week -Marker Circle\n    New-ImageChartLine -Name 'Target' -Value (@(250) * $week.Count) -Color '#eeb640'\n}\n\n# Pipe the rows in and pick columns the way Format-Table does.\n$table = $services | New-ImageTableBlock -Title Services -StatusColumn Status `\n    -Theme $theme -Width 616 -Height 270 -Property Name, Status,\n    @{ Name = 'Requests'; Expression = { [int] $_.Requests }; FormatString = 'N0'; Alignment = 'Right' },\n    @{ Name = 'P95'; Expression = { \"$($_.P95) ms\" }; Alignment = 'Right' }\n\n$checks = @{\n    Title  = 'Checks'\n    Item   = 'TLS expiry', 'Backups', 'Queue depth'\n    Value  = '41 days', 'OK', '1,204'\n    Status = 'Positive', 'Positive', 'Warning'\n    Theme  = $theme; Width = 300; Height = 270\n}\n\n$card = @{ Width = 300; Height = 170; Theme = $theme }\n$grid = @{\n    Title = 'Service health'; Subtitle = 'Week 41'; Columns = 3\n    Gap = 16; Padding = 24; AdaptiveRowHeights = $true; Theme = $theme\n}\n$dashboard = New-ImageVisualGrid @grid -ContentDefinition {\n    New-ImageMetricCard -Label Requests -Value $total -Format N0 -Status Positive `\n        -Trend '+8% vs last week' -MiniValues 98, 101, 104, 110, 116 @card\n    New-ImageMetricCard -Label 'Slowest p95' -Value ([int] $slowest.P95) -Unit ms `\n        -Caption $slowest.Name -Status Warning -MiniValues $week @card\n    New-ImageMetricCard -Label Healthy -Value \"$healthy of $($services.Count)\" `\n        -Caption services -Status Positive @card\n    New-ImageVisualGridItem -Block $table -ColumnSpan 2\n    New-ImageListBlock @checks\n    New-ImageVisualGridItem -Chart $latency -ColumnSpan 3\n}\n\n# One dashboard, two outputs: PNG for chat and email, HTML for a browser.\nforeach ($file in 'service-health.png', 'service-health.html') {\n    $dashboard | New-ImageVisualStory -FilePath $file\n}\n\n$services | Sort-Object { [int] $_.P95 } -Descending | Format-Table -AutoSize",
       "console": "Name     Status  Requests P95\n----     ------  -------- ---\nOrders   Warning 15402    318\nSearch   Healthy 30117    146\nIdentity Healthy 21980    112\nGateway  Healthy 48210    84",
       "outputs": [
         {
           "file": "latency.png",
           "url": "/powershell/examples/service-health/latency.png",
           "kind": "png",
-          "bytes": 25568,
+          "bytes": 21704,
           "width": 932,
           "height": 320
         },
@@ -28,7 +28,7 @@
           "file": "service-health.html",
           "url": "/powershell/examples/service-health/service-health.html",
           "kind": "html",
-          "bytes": 38681,
+          "bytes": 40593,
           "width": null,
           "height": null
         },
@@ -36,7 +36,7 @@
           "file": "service-health.png",
           "url": "/powershell/examples/service-health/service-health.png",
           "kind": "png",
-          "bytes": 89777,
+          "bytes": 71050,
           "width": 980,
           "height": 916
         }
@@ -50,14 +50,14 @@
       "show": [
         "latency-trend.png"
       ],
-      "script": "# Fourteen days of p95 latency, oldest first.\n$p95 = 182, 175, 190, 188, 201, 240, 262, 310, 298, 214, 205, 198,\n    190, 186\n$target = 250\n\n$series = @(\n    New-ImageChartLine -Name 'Orders API' -Value $p95 -Smooth\n    New-ImageChartLine -Name 'Target' -Color '#c78404' `\n        -Value (@($target) * $p95.Count)\n)\n$events = {\n    New-ImageChartAnnotation -X 6 -Y 0 -Text 'Release 4.2'\n    New-ImageChartAnnotation -X 10 -Y 0 -Text 'Index fix'\n}\n$chart = @{\n    Width    = 760\n    Height   = 380\n    XTitle   = 'Day'\n    YTitle   = 'p95 latency (ms)'\n    ShowGrid = $true\n    Options  = New-ImageChartOptions -ShowLegend -TickCount 5\n}\n\n# One definition, two formats: the extension picks the renderer.\nforeach ($file in 'latency-trend.png', 'latency-trend.svg') {\n    New-ImageChart -Definition $series -FilePath $file @chart `\n        -AnnotationsDefinition $events\n}\n\n$above = 1..$p95.Count | Where-Object { $p95[$_ - 1] -gt $target }\n\"Days above target: $($above -join ', ')\"\n\"Peak: $(($p95 | Measure-Object -Maximum).Maximum) ms\"",
+      "script": "# Fourteen days of p95 latency, oldest first.\n$p95 = 182, 175, 190, 188, 201, 240, 262, 310, 298, 214, 205, 198,\n    190, 186\n$target = 250\n\n$chart = @{\n    Title    = 'Orders API latency'\n    Subtitle = 'p95 against the 250 ms target'\n    XLabel   = 1..$p95.Count | ForEach-Object { \"D$_\" }\n    YTitle   = 'p95 latency (ms)'\n    Width    = 760\n    Height   = 380\n    ShowGrid = $true\n    Options  = New-ImageChartOptions -ShowLegend -TickCount 5\n}\n$series = {\n    New-ImageChartLine -Name 'Orders API' -Value $p95 -Smooth -Marker Circle\n    New-ImageChartLine -Name 'Target' -Value (@($target) * $p95.Count) -Color '#c78404'\n}\n$events = {\n    New-ImageChartAnnotation -X 6 -Y 0 -Text 'Release 4.2'\n    New-ImageChartAnnotation -X 10 -Y 0 -Text 'Index fix'\n}\n\n# One definition, two formats: the extension picks the renderer.\nforeach ($file in 'latency-trend.png', 'latency-trend.svg') {\n    New-ImageChart $series -FilePath $file @chart -AnnotationsDefinition $events\n}\n\n$above = 1..$p95.Count | Where-Object { $p95[$_ - 1] -gt $target }\n\"Days above target: $($above -join ', ')\"\n\"Peak: $(($p95 | Measure-Object -Maximum).Maximum) ms\"",
       "console": "Days above target: 7, 8, 9\nPeak: 310 ms",
       "outputs": [
         {
           "file": "latency-trend.png",
           "url": "/powershell/examples/latency-trend/latency-trend.png",
           "kind": "png",
-          "bytes": 27183,
+          "bytes": 25057,
           "width": 760,
           "height": 380
         },
@@ -65,7 +65,7 @@
           "file": "latency-trend.svg",
           "url": "/powershell/examples/latency-trend/latency-trend.svg",
           "kind": "svg",
-          "bytes": 17552,
+          "bytes": 28591,
           "width": 760,
           "height": 380
         }
@@ -77,16 +77,16 @@
       "title": "Compliance by ring",
       "body": "Group-Object turns machine rows into percentages; progress bars show them.",
       "show": null,
-      "script": "# One row per deployment ring, as a WSUS or Intune export gives it.\n$rings = @'\nRing,Machines,UpToDate\nServers,48,46\nWorkstations,412,367\nLaptops,236,175\n'@ | ConvertFrom-Csv | Select-Object Ring, Machines, UpToDate,\n    @{ Name = 'Compliant'; Expression = {\n        [int] (100 * $_.UpToDate / $_.Machines) } }\n\n$options = New-ImageChartOptions -ProgressMaximum 100 `\n    -ShowDataLabels -NoProgressHandles -NoLegend -NoPlotBackground\nNew-ImageChart {\n    foreach ($ring in $rings) {\n        New-ImageChartProgress $ring.Ring $ring.Compliant\n    }\n} -Options $options -FilePath patch-compliance.png `\n    -Width 560 -Height 240\n\n$rings | Format-Table -AutoSize",
+      "script": "# One row per deployment ring, as a WSUS or Intune export gives it.\n$rings = @'\nRing,Machines,UpToDate\nServers,48,46\nWorkstations,412,367\nLaptops,236,175\n'@ | ConvertFrom-Csv | Select-Object Ring, Machines, UpToDate,\n    @{ Name = 'Compliant'; Expression = {\n        [int] (100 * $_.UpToDate / $_.Machines) } }\n\n$options = New-ImageChartOptions -ProgressMaximum 100 `\n    -ShowDataLabels -NoProgressHandles -NoLegend\nNew-ImageChart -Title 'Patch compliance' -Options $options `\n    -FilePath patch-compliance.png -Width 560 -Height 260 {\n    foreach ($ring in $rings) {\n        New-ImageChartProgress $ring.Ring $ring.Compliant\n    }\n}\n\n$rings | Format-Table -AutoSize",
       "console": "Ring         Machines UpToDate Compliant\n----         -------- -------- ---------\nServers      48       46              96\nWorkstations 412      367             89\nLaptops      236      175             74",
       "outputs": [
         {
           "file": "patch-compliance.png",
           "url": "/powershell/examples/patch-compliance/patch-compliance.png",
           "kind": "png",
-          "bytes": 8683,
+          "bytes": 9132,
           "width": 560,
-          "height": 240
+          "height": 260
         }
       ]
     },
@@ -103,7 +103,7 @@
           "file": "storage-treemap.png",
           "url": "/powershell/examples/storage-treemap/storage-treemap.png",
           "kind": "png",
-          "bytes": 19245,
+          "bytes": 11779,
           "width": 640,
           "height": 320
         }
@@ -122,26 +122,26 @@
           "file": "cost-bridge.png",
           "url": "/powershell/examples/cost-bridge/cost-bridge.png",
           "kind": "png",
-          "bytes": 18208,
+          "bytes": 13114,
           "width": 640,
           "height": 340
         }
       ]
     },
     {
-      "id": "chart-script",
+      "id": "stacked-builds",
       "family": "charts",
-      "title": "The whole ChartForgeX API with -ChartScript",
-      "body": "When a cmdlet has no parameter for it, the script block receives the ChartForgeX chart: titles, category labels and stacked bars here.",
+      "title": "Stacked bars from a CSV",
+      "body": "Titles, category labels and the bar layout are parameters, so a CSV export becomes a stacked chart in one command.",
       "show": null,
-      "script": "$builds = @'\nDay,Passed,Failed\nMon,41,3\nTue,38,6\nWed,45,2\nThu,52,4\nFri,47,1\n'@ | ConvertFrom-Csv\n\n# -ChartScript hands you the ChartForgeX chart itself, so every\n# method in the .NET API is available, not only the cmdlets.\nNew-ImageChart -ChartScript {\n    param($chart)\n    # ChartForgeX loads in the module's own context: ask the chart\n    # for its types instead of writing [ChartForgeX.Primitives...].\n    $point = $chart.GetType().Assembly.GetType(\n        'ChartForgeX.Primitives.ChartPoint')\n    function ConvertTo-Point([double[]] $values) {\n        $points = [Array]::CreateInstance($point, $values.Count)\n        for ($i = 0; $i -lt $values.Count; $i++) {\n            $points[$i] = $point::new($i + 1, $values[$i])\n        }\n        , $points\n    }\n    [void] $chart.WithTitle('Builds by result')\n    [void] $chart.WithSubtitle('Week 41, main branch')\n    [void] $chart.WithXLabels([string[]] $builds.Day)\n    [void] $chart.AddBar('Passed', (ConvertTo-Point $builds.Passed))\n    [void] $chart.AddBar('Failed', (ConvertTo-Point $builds.Failed))\n    [void] $chart.WithStackedBars()\n} -ShowGrid -FilePath chart-script.png -Width 640 -Height 360 `\n    -Options (New-ImageChartOptions -ShowLegend `\n        -LegendPosition Bottom -Palette '#11776f', '#d64545')\n\n$builds | Format-Table -AutoSize",
+      "script": "$builds = @'\nDay,Passed,Failed\nMon,41,3\nTue,38,6\nWed,45,2\nThu,52,4\nFri,47,1\n'@ | ConvertFrom-Csv\n\n# Titles, category labels and the bar layout are all parameters.\n$chart = @{\n    Title    = 'Builds by result'\n    Subtitle = 'Week 41, main branch'\n    XLabel   = $builds.Day\n    Width    = 640\n    Height   = 360\n    ShowGrid = $true\n    FilePath = 'builds.png'\n    Options  = New-ImageChartOptions -BarLayout Stacked -ShowLegend `\n        -LegendPosition Bottom -Palette '#11776f', '#d64545'\n}\nNew-ImageChart @chart {\n    New-ImageChartBar -Name Passed -Value $builds.Passed\n    New-ImageChartBar -Name Failed -Value $builds.Failed\n}\n\n$builds | Format-Table -AutoSize",
       "console": "Day Passed Failed\n--- ------ ------\nMon 41     3\nTue 38     6\nWed 45     2\nThu 52     4\nFri 47     1",
       "outputs": [
         {
-          "file": "chart-script.png",
-          "url": "/powershell/examples/chart-script/chart-script.png",
+          "file": "builds.png",
+          "url": "/powershell/examples/stacked-builds/builds.png",
           "kind": "png",
-          "bytes": 22091,
+          "bytes": 14511,
           "width": 640,
           "height": 360
         }
@@ -155,14 +155,14 @@
       "show": [
         "service-map.png"
       ],
-      "script": "# Who calls whom, from a CMDB export or a config file.\n$services = @'\nId,Name,Kind,Tier,Status,Callers,Latency\ngateway,API gateway,Gateway,0,Healthy,,\nidentity,Identity,Service,1,Healthy,gateway,\norders,Orders,Service,1,Warning,gateway,\nsearch,Search,Service,1,Healthy,gateway,\nsql,Orders DB,Database,2,Warning,orders,41 ms\nevents,Events,Queue,2,Healthy,orders search,\n'@ | ConvertFrom-Csv\n\n$map = {\n    # Tier sets the column; position in the tier sets the row.\n    foreach ($tier in $services | Group-Object Tier) {\n        $row = 0\n        foreach ($s in $tier.Group) {\n            $node = @{\n                Id = $s.Id; Label = $s.Name; Kind = $s.Kind\n                Status = $s.Status; Width = 180; Height = 64\n                X = 300 * [int] $tier.Name\n                Y = 100 * ($row++ - ($tier.Count - 1) / 2)\n            }\n            New-ImageTopologyNode @node\n        }\n    }\n    foreach ($s in $services) {\n        foreach ($caller in (-split $s.Callers) -ne '') {\n            New-ImageTopologyEdge $caller $s.Id $s.Latency `\n                -Direction Forward -Status $s.Status\n        }\n    }\n}\n\n$view = @{\n    TopologyDefinition   = $map\n    Title                = 'Orders platform'\n    Subtitle             = 'Database latency above target'\n    Layout               = 'Manual'\n    Width                = 900\n    Height               = 420\n    FitContentToViewport = $true\n}\nNew-ImageTopology @view -FilePath service-map.png\nNew-ImageTopology @view -FilePath service-map.html -InteractiveHtml\n\n$services | Format-Table Name, Kind, Status, Callers -AutoSize",
+      "script": "# Who calls whom, from a CMDB export or a config file.\n$services = @'\nId,Name,Kind,Tier,Status,Callers,Latency\ngateway,API gateway,Gateway,0,Healthy,,\nidentity,Identity,Service,1,Healthy,gateway,\norders,Orders,Service,1,Warning,gateway,\nsearch,Search,Service,1,Healthy,gateway,\nsql,Orders DB,Database,2,Warning,orders,41 ms\nevents,Events,Queue,2,Healthy,orders search,\n'@ | ConvertFrom-Csv\n\n$map = {\n    # -Layer puts each tier in its own column; the layout does the rest.\n    foreach ($s in $services) {\n        New-ImageTopologyNode -Id $s.Id -Label $s.Name -Kind $s.Kind `\n            -Status $s.Status -Layer $s.Tier -Width 180 -Height 64\n    }\n    foreach ($s in $services) {\n        foreach ($caller in (-split $s.Callers) -ne '') {\n            New-ImageTopologyEdge $caller $s.Id $s.Latency `\n                -Direction Forward -Status $s.Status\n        }\n    }\n}\n\n$view = @{\n    TopologyDefinition   = $map\n    Title                = 'Orders platform'\n    Subtitle             = 'Database latency above target'\n    Layout               = 'Layered'\n    Direction            = 'LeftToRight'\n    Width                = 900\n    Height               = 420\n    FitContentToViewport = $true\n}\nNew-ImageTopology @view -FilePath service-map.png\nNew-ImageTopology @view -FilePath service-map.html -InteractiveHtml\n\n$services | Format-Table Name, Kind, Status, Callers -AutoSize",
       "console": "Name        Kind     Status  Callers\n----        ----     ------  -------\nAPI gateway Gateway  Healthy\nIdentity    Service  Healthy gateway\nOrders      Service  Warning gateway\nSearch      Service  Healthy gateway\nOrders DB   Database Warning orders\nEvents      Queue    Healthy orders search",
       "outputs": [
         {
           "file": "service-map.html",
           "url": "/powershell/examples/service-map/service-map.html",
           "kind": "html",
-          "bytes": 138909,
+          "bytes": 147679,
           "width": null,
           "height": null
         },
@@ -170,7 +170,7 @@
           "file": "service-map.png",
           "url": "/powershell/examples/service-map/service-map.png",
           "kind": "png",
-          "bytes": 27412,
+          "bytes": 28398,
           "width": 900,
           "height": 420
         }
@@ -189,7 +189,7 @@
           "file": "org-chart.png",
           "url": "/powershell/examples/org-chart/org-chart.png",
           "kind": "png",
-          "bytes": 28922,
+          "bytes": 25022,
           "width": 960,
           "height": 420
         }
@@ -210,7 +210,7 @@
           "file": "request-flow.svg",
           "url": "/powershell/examples/request-flow/request-flow.svg",
           "kind": "svg",
-          "bytes": 15140,
+          "bytes": 18439,
           "width": 720,
           "height": 160
         }
@@ -225,13 +225,13 @@
         "console-story.svg"
       ],
       "script": "# Rows from your own command. The story replays them; it never\n# runs the commands it shows.\n$health = @'\nName,Status,P95\nGateway,Running,84 ms\nOrders,Degraded,318 ms\nSearch,Running,146 ms\n'@ | ConvertFrom-Csv\n\n$terminal = @{\n    Title = 'pwsh'; WorkingDirectory = 'C:\\Ops'; Theme = 'Dark'\n    WindowStyle = 'WindowsTerminal'; Width = 640\n}\n$story = New-ImageConsoleStory @terminal -PassThru -Content {\n    New-ImageConsoleStoryCommand 'Get-ServiceHealth -Env Prod'\n    $health | New-ImageConsoleStoryTable -Property Name, Status, P95\n    New-ImageConsoleStoryBlankLine\n    New-ImageConsoleStoryCommand 'Restart-OrdersPool -WhatIf'\n    New-ImageConsoleStoryOutput 'What if: restart 3 Orders nodes' `\n        -Style Warning\n    New-ImageConsoleStoryOutput 'Health check passed' -Style Success\n}\n\n# SVG and HTML replay in a browser; PNG keeps the final frame.\n# .gif and .apng write the same animation for chat tools.\nforeach ($ext in 'svg', 'html', 'png') {\n    $story | Export-ImageConsoleStory -Path \"console-story.$ext\"\n}\n\nGet-Item console-story.* | Format-Table Name,\n    @{ Name = 'KB'; Expression = { [int] ($_.Length / 1KB) } }",
-      "console": "Name               KB\n----               --\nconsole-story.html 17\nconsole-story.png  60\nconsole-story.svg  17",
+      "console": "Name               KB\n----               --\nconsole-story.html 17\nconsole-story.png  69\nconsole-story.svg  16",
       "outputs": [
         {
           "file": "console-story.html",
           "url": "/powershell/examples/console-story/console-story.html",
           "kind": "html",
-          "bytes": 17770,
+          "bytes": 17412,
           "width": null,
           "height": null
         },
@@ -239,7 +239,7 @@
           "file": "console-story.png",
           "url": "/powershell/examples/console-story/console-story.png",
           "kind": "png",
-          "bytes": 61879,
+          "bytes": 70548,
           "width": 1280,
           "height": 680
         },
@@ -247,7 +247,7 @@
           "file": "console-story.svg",
           "url": "/powershell/examples/console-story/console-story.svg",
           "kind": "svg",
-          "bytes": 17070,
+          "bytes": 16722,
           "width": 640,
           "height": 340
         }
@@ -266,7 +266,7 @@
           "file": "social-card.png",
           "url": "/powershell/examples/social-card/social-card.png",
           "kind": "png",
-          "bytes": 49146,
+          "bytes": 47117,
           "width": 1200,
           "height": 630
         }

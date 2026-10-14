@@ -2,9 +2,9 @@
   "generatedBy": "Website/build/Sync-ImagePlayground.ps1",
   "module": {
     "name": "ImagePlayground",
-    "version": "3.2.7",
-    "commandCount": 131,
-    "chartForgeXCommandCount": 76,
+    "version": "3.3.0",
+    "commandCount": 132,
+    "chartForgeXCommandCount": 77,
     "install": "Install-Module -Name ImagePlayground -Scope CurrentUser",
     "powerShell": "Windows PowerShell 5.1 and PowerShell 7+"
   },
@@ -93,7 +93,7 @@
       "id": "stories",
       "title": "Stories, motion and export",
       "description": "Animated terminal sessions, source-to-result stories, motion cues, watermarks and visual artifacts.",
-      "commandCount": 20,
+      "commandCount": 21,
       "commands": [
         "ConvertTo-ImageStorySource",
         "ConvertTo-ImageVisualArtifact",
@@ -110,6 +110,7 @@
         "New-ImageStory",
         "New-ImageStoryOutcome",
         "New-ImageStoryPanel",
+        "New-ImageStoryReplay",
         "New-ImageStoryScene",
         "New-ImageVisualMotionCue",
         "New-ImageVisualStory",

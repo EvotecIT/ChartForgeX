@@ -18,7 +18,7 @@
       </div>
       <p class="cfx-ps__label">Runnable scripts, shown with what they wrote</p>
       <ul class="cfx-ps__featured">
-        {{~ for id in ["service-health", "service-map", "chart-script", "console-story"] ~}}
+        {{~ for id in ["service-health", "service-map", "stacked-builds", "console-story"] ~}}
         <li><a href="/powershell/#{{ id }}"><span>{{ ex[id].title }}</span><code>{{ id }}.ps1</code></a></li>
         {{~ end ~}}
       </ul>

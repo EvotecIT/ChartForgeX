@@ -98,6 +98,28 @@
       "footerHtml": "./themes/chartforgex/apidocs/footer.html"
     },
     {
+      "task": "apidocs",
+      "id": "build-powershell-commands",
+      "dependsOn": "build-site",
+      "type": "PowerShell",
+      "config": "./site.json",
+      "help": "./powershell/imageplayground-help.xml",
+      "out": "./_site/powershell/commands",
+      "baseUrl": "/powershell/commands",
+      "title": "ImagePlayground commands for ChartForgeX",
+      "format": "both",
+      "template": "docs",
+      "css": "/themes/chartforgex/assets/tokens.css,/themes/chartforgex/assets/base.css,/themes/chartforgex/assets/api-base.css,/themes/chartforgex/assets/api.css",
+      "injectCriticalCss": true,
+      "criticalCssPath": "./themes/chartforgex/critical.css",
+      "templateDocsIndex": "./themes/chartforgex/apidocs/docs-index.html",
+      "templateDocsType": "./themes/chartforgex/apidocs/docs-type.html",
+      "headerHtml": "./themes/chartforgex/apidocs/header.html",
+      "footerHtml": "./themes/chartforgex/apidocs/footer.html",
+      "nav": "./site.json",
+      "navContextPath": "/"
+    },
+    {
       "task": "seo-doctor",
       "id": "seo-doctor-ci",
       "dependsOn": "build-site",

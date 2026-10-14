@@ -9,12 +9,12 @@ Laptops,236,175
         [int] (100 * $_.UpToDate / $_.Machines) } }
 
 $options = New-ImageChartOptions -ProgressMaximum 100 `
-    -ShowDataLabels -NoProgressHandles -NoLegend -NoPlotBackground
-New-ImageChart {
+    -ShowDataLabels -NoProgressHandles -NoLegend
+New-ImageChart -Title 'Patch compliance' -Options $options `
+    -FilePath patch-compliance.png -Width 560 -Height 260 {
     foreach ($ring in $rings) {
         New-ImageChartProgress $ring.Ring $ring.Compliant
     }
-} -Options $options -FilePath patch-compliance.png `
-    -Width 560 -Height 240
+}
 
 $rings | Format-Table -AutoSize
