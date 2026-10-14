@@ -51,7 +51,7 @@ public static partial class V2Examples {
     private static string DiagramSnippet(string family, string title, VisualThemeMode mode) {
         var factory = ReadFactorySource("ChartForgeX.Examples.V2DiagramSource", family);
         return "using ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\nusing ChartForgeX.Typography;\nusing ChartForgeX.VisualArtifacts;\n\n" +
-            "FontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Bold.ttf\", 700);\n" +
+            ProofFontSetup +
             "var model = " + (family == "topology" ? "CreateTopology" : "CreateSequence") + "();\n" +
             "var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), VisualTheme.Graphite(), VisualThemeMode." + mode + ",\n" +
             "    new VisualFrame(" + Literal(title) + ", \"Product-neutral diagram semantics\", showLegend: false), FontSpec.FromFamily(\"" + ProofFont + "\"));\n" +

@@ -71,10 +71,8 @@ public static partial class V2Examples {
 
     private static string ViewportSnippet(Chart chart, string id, string title, string subtitle, VisualThemeMode mode, int width, int height, bool legend) {
         var source = new StringBuilder("using ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Typography;\nusing ChartForgeX.VisualArtifacts;\n\n");
-        source.Append("// The gallery includes these licensed font fixtures beside the outputs.\nFontRegistry.Register(")
-            .Append(Literal(ProofFont)).Append(", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(")
-            .Append(Literal(ProofFont)).Append(", \"fonts/Carlito-Bold.ttf\", 700);\n")
-            .Append("var chart = Chart.Create().WithXAxis(\"Sample\").WithYAxis(\"Requests\").WithXAxisBounds(0, 10).WithDataLabels();\n");
+        source.Append(ProofFontSetup)
+            .Append("var chart =Chart.Create().WithXAxis(\"Sample\").WithYAxis(\"Requests\").WithXAxisBounds(0, 10).WithDataLabels();\n");
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             var points = string.Join(", ", series.Points.Select(point => "new ChartPoint(" + point.X.ToString(CultureInfo.InvariantCulture) + ", "

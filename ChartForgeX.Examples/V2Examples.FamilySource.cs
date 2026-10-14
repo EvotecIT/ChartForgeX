@@ -4,8 +4,7 @@ using ChartForgeX.Themes;
 public static partial class V2Examples {
     private static string ModelSnippet(string expression, string title, string subtitle, VisualThemeMode mode, int width, int height, bool? legend, string artifactKind) {
         var source = new StringBuilder("using System;\nusing System.Linq;\nusing System.Globalization;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\nusing ChartForgeX.Typography;\nusing ChartForgeX.VisualArtifacts;\nusing ChartForgeX.VisualBlocks;\n\n");
-        source.Append("// The licensed font fixtures are included beside the gallery outputs.\nFontRegistry.Register(\"").Append(ProofFont)
-            .Append("\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"").Append(ProofFont).Append("\", \"fonts/Carlito-Bold.ttf\", 700);\n");
+        source.Append(ProofFontSetup);
         source.Append("var model = ").Append(expression).Append(";\nvar context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(").Append(width).Append(", ").Append(height)
             .Append(")), VisualTheme.Graphite(), VisualThemeMode.").Append(mode).Append(",\n    new VisualFrame(").Append(Literal(title)).Append(", ").Append(Literal(subtitle))
             .Append(", showLegend: ").Append(legend.HasValue ? (legend.Value ? "true" : "false") : "null").Append("), FontSpec.FromFamily(\"").Append(ProofFont).Append("\"));\n")

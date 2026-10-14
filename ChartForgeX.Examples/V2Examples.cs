@@ -7,6 +7,14 @@ using ChartForgeX.Typography;
 /// <summary>Deterministic chart and diagram models with shared-context static exports.</summary>
 public static partial class V2Examples {
     private const string ProofFont = "CFX Proof Carlito";
+
+    // Gallery-only setup sits in a "Setup" region: the downloadable program keeps it so its output matches the
+    // published files, and chartforgex.com hides the region from the displayed source.
+    private const string ProofFontSetup =
+        "#region Setup: licensed font fixtures shipped beside the gallery outputs\n" +
+        "FontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Regular.ttf\", 400);\n" +
+        "FontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Bold.ttf\", 700);\n" +
+        "#endregion\n";
     private static readonly string[] Variants = { "wide", "compact", "long-title", "wrapped-legend", "surface", "empty", "zero", "missing", "dense", "explicit-status", "explicit-series" };
 
     /// <summary>Writes the complete review matrix or the selected fixtures for the public catalog.</summary>
@@ -103,7 +111,9 @@ public static partial class V2Examples {
 
     private static string Snippet(string family, string variant, VisualThemeMode mode, int width, int height) {
         var chart = Create(family, variant, mode);
-        var lines = new List<string> { "using ChartForgeX.Core;", "using ChartForgeX.Primitives;", "using ChartForgeX.Rendering;", "using ChartForgeX.Themes;", "using ChartForgeX.Typography;", "", "// The generated gallery includes these licensed font fixtures beside the outputs.", "FontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Regular.ttf\", 400);", "FontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Bold.ttf\", 700);", "var chart = Chart.Create();" };
+        var lines = new List<string> { "using ChartForgeX.Core;", "using ChartForgeX.Primitives;", "using ChartForgeX.Rendering;", "using ChartForgeX.Themes;", "using ChartForgeX.Typography;", "" };
+        lines.AddRange(ProofFontSetup.TrimEnd('\n').Split('\n'));
+        lines.Add("var chart = Chart.Create();");
         if (chart.Options.XAxisLabels.Count > 0)
             lines.Add("chart.WithXLabels(" + string.Join(", ", chart.Options.XAxisLabels.Select(label => Literal(label.Text))) + ");");
         foreach (var series in chart.Series) {

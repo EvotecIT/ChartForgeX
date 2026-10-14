@@ -48,7 +48,7 @@ public static partial class V2Examples {
 
     private static string RadialLabelSnippet(ChartSeriesKind kind, ChartDataLabelPlacement placement, VisualThemeMode mode) =>
         "using System.Linq;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Rendering;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Typography;\n\n" +
-        "FontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"" + ProofFont + "\", \"fonts/Carlito-Bold.ttf\", 700);\n" +
+        ProofFontSetup +
         "var chart = CreateRadialLabels(ChartSeriesKind." + kind + ", ChartDataLabelPlacement." + placement + ");\n" +
         "var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), VisualTheme.Graphite(), VisualThemeMode." + mode + ",\n" +
         "    new VisualFrame(\"Four equal shares\", \"Labels " + placement.ToString().ToLowerInvariant() + "\", showLegend: false), FontSpec.FromFamily(\"" + ProofFont + "\"));\n" +
