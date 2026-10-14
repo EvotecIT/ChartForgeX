@@ -247,13 +247,13 @@
 .cfx-mermaid__demo .cfx-segment { justify-self: start; }
 .cfx-mermaid__pair {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid var(--cfx-line);
   border-radius: 14px;
   background: var(--cfx-card);
 }
-.cfx-code--mermaid { border-radius: 0; font-size: .78125rem; }
+.cfx-code--mermaid { border-radius: 0; font-size: .75rem; }
 .cfx-mermaid__render { display: grid; place-items: center; padding: 16px; }
 .cfx-mermaid__render img { width: 100%; }
 
