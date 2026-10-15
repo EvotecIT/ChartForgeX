@@ -18,34 +18,38 @@ public sealed class TopologyHeaderMeasurementPolicyTests : IDisposable {
     [InlineData(TextMeasurementMode.PortableEstimate)]
     [InlineData(TextMeasurementMode.InstalledFonts)]
     public void HeaderLayoutHonorsTheSelectedMeasurementPolicyBeforePaintCapture(TextMeasurementMode mode) {
+        // An unresolved family can select a narrow installed fallback on some hosts. Use two
+        // controlled faces so the layout-policy distinction does not depend on system fonts.
+        FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed(extraGlyphs:
+            new Dictionary<int, int> { ['i'] = OpenTypeTestFonts.H }));
         var chart = Fixture();
         var options = Options(mode);
-        var unresolved = chart.Prepare(options);
-        Capture(unresolved, "missing", mode);
-        var missingGeometry = Geometry(unresolved);
-        var missingHeader = Assert.Single(unresolved.Analyze().Groups).HeaderBounds;
-        var missingSvg = unresolved.ToSvg();
-        var missingPng = unresolved.ToPng();
-        var missingReport = JsonSerializer.Serialize(unresolved.Analyze());
+        var wide = chart.Prepare(options);
+        Capture(wide, "wide", mode);
+        var wideGeometry = Geometry(wide);
+        var wideHeader = Assert.Single(wide.Analyze().Groups).HeaderBounds;
+        var wideSvg = wide.ToSvg();
+        var widePng = wide.ToPng();
+        var wideReport = JsonSerializer.Serialize(wide.Analyze());
 
         Register();
         var registered = chart.Prepare(options);
         Capture(registered, "registered", mode);
         var registeredGeometry = Geometry(registered);
         if (mode == TextMeasurementMode.PortableEstimate) {
-            Assert.Equal(missingGeometry, registeredGeometry);
+            Assert.Equal(wideGeometry, registeredGeometry);
             Assert.Equal(106, registered.Analyze().Nodes.Single(node => node.Id == "member").Bounds.Y, 6);
         } else {
-            Assert.NotEqual(missingGeometry, registeredGeometry);
+            Assert.NotEqual(wideGeometry, registeredGeometry);
             Assert.Equal(49, registered.Analyze().Nodes.Single(node => node.Id == "member").Bounds.Y, 6);
         }
         // Painted geometry still follows the actual prepared face, independently of portable reservations.
-        Assert.NotEqual(missingHeader, Assert.Single(registered.Analyze().Groups).HeaderBounds);
-        Assert.NotEqual(missingPng, registered.ToPng());
-        Assert.Equal(missingSvg, unresolved.ToSvg());
-        Assert.Equal(missingPng, unresolved.ToPng());
-        Assert.Equal(missingReport, JsonSerializer.Serialize(unresolved.Analyze()));
-        AssertPaintMatchesBothExports(unresolved);
+        Assert.NotEqual(wideHeader, Assert.Single(registered.Analyze().Groups).HeaderBounds);
+        Assert.NotEqual(widePng, registered.ToPng());
+        Assert.Equal(wideSvg, wide.ToSvg());
+        Assert.Equal(widePng, wide.ToPng());
+        Assert.Equal(wideReport, JsonSerializer.Serialize(wide.Analyze()));
+        AssertPaintMatchesBothExports(wide);
         AssertPaintMatchesBothExports(registered);
         Assert.Equal(49, chart.Nodes.Single(node => node.Id == "member").Y);
     }
