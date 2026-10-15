@@ -295,7 +295,22 @@ body.pf-api-docs .param-meta-chip {
 }
 body.pf-api-docs .param-meta-chip.required { border-color: color-mix(in srgb, var(--cfx-accent) 45%, transparent); color: var(--cfx-accent); }
 body.pf-api-docs .param-meta-chip.optional { border-color: color-mix(in srgb, var(--cfx-signal) 50%, transparent); color: var(--cfx-ink-2); }
-body.pf-api-docs pre { border: 1px solid var(--cfx-code-line); border-radius: var(--cfx-r); background: var(--cfx-code-bg); color: var(--cfx-code-ink); }
+body.pf-api-docs pre { max-width: 100%; overflow: auto; border: 1px solid var(--cfx-code-line); border-radius: var(--cfx-r); background: var(--cfx-code-bg); color: var(--cfx-code-ink); }
+
+/* Remarks and common parameters are sections like every other, ruled by their heading rather than boxed. */
+body.pf-api-docs .type-detail-main :is(.remarks, .type-common-parameters) { margin: 0; padding: 0; border: 0; border-radius: 0; background: none; }
+body.pf-api-docs :is(.remarks, .type-common-parameters) > p { max-width: 72ch; color: var(--cfx-ink-2); }
+
+/* Examples: site.js sets each one in the shared code block. Where an example came from is for help authors. */
+body.pf-api-docs .example-origin { display: none; }
+body.pf-api-docs .type-examples .example-title { margin: 28px 0 10px; color: var(--cfx-ink); font-size: 1.0625rem; font-weight: 700; font-stretch: 104%; }
+body.pf-api-docs .type-examples .example-title:first-of-type { margin-top: 8px; }
+body.pf-api-docs .type-examples .cfx-codeblock { margin: 0; }
+body.pf-api-docs .type-examples .cfx-codeblock > pre { border: 0; border-radius: 0 0 calc(var(--cfx-r) - 1px) calc(var(--cfx-r) - 1px); background: none; }
+body.pf-api-docs .type-examples .cfx-codeblock + p { max-width: 72ch; margin-top: 10px; color: var(--cfx-ink-2); }
+
+/* Sidebar entries: long type and command names wrap at a readable size instead of running under the rule. */
+body.pf-api-docs .api-sidebar :is(.type-item, .type-link) { font-size: .875rem; line-height: 1.4; overflow-wrap: anywhere; }
 
 
 @media (max-width: 900px) {

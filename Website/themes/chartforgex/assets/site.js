@@ -188,8 +188,31 @@
     wireCodeBlock(block);
   }
 
+  // Help text indents example code to its own margin and keeps only the first line flush, so the common indent of
+  // the remaining lines is removed (or of every line when the first is indented too).
+  function dedent(text) {
+    var lines = text.replace(/\s+$/, '').replace(/^\s*\n/, '').split('\n');
+    var indent = function (line) { return /^[ \t]*/.exec(line)[0].length; };
+    var from = lines.length > 1 && indent(lines[0]) === 0 ? 1 : 0;
+    var min = Infinity;
+    lines.slice(from).forEach(function (line) { if (line.trim()) min = Math.min(min, indent(line)); });
+    if (!isFinite(min) || min === 0) return lines.join('\n');
+    return lines.map(function (line, index) { return index < from ? line : line.slice(Math.min(min, indent(line))); }).join('\n');
+  }
+
   document.querySelectorAll('.cfx-codeblock').forEach(wireCodeBlock);
   document.querySelectorAll('.cfx-prose pre').forEach(enhancePre);
+
+  // API and command reference examples join the same code block. The bare "PS>" line before each one is dropped;
+  // the block's language label says what it is.
+  document.querySelectorAll('.pf-api-docs .type-examples pre').forEach(function (pre) {
+    var code = pre.querySelector('code');
+    if (!code) return;
+    code.textContent = dedent(code.textContent);
+    var prompt = pre.previousElementSibling;
+    if (prompt && prompt.tagName === 'P' && /^PS>$/.test(prompt.textContent.trim())) prompt.remove();
+    enhancePre(pre);
+  });
 
   // Wide tables scroll inside their own frame instead of widening the page.
   document.querySelectorAll('.cfx-prose table').forEach(function (table) {

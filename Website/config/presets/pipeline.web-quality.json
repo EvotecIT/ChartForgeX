@@ -96,6 +96,8 @@
       "sourceRoot": "..",
       "sourceUrl": "https://github.com/EvotecIT/ChartForgeX/blob/main/{root}/{pathNoRoot}#L{line}",
       "includeNamespace": "ChartForgeX",
+      "quickStartTypes": "Chart,ChartGrid,ChartTable,TopologyChart,MermaidRenderer,VisualStory",
+      "relatedContentManifest": "./config/api-related-content.json",
       "coverageReport": "./_reports/apidocs-coverage.json",
       "injectCriticalCss": true,
       "criticalCssPath": "./themes/chartforgex/critical.css",
