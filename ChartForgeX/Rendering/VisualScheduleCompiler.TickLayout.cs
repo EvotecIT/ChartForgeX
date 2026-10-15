@@ -16,9 +16,15 @@ internal static partial class VisualScheduleCompiler {
         var policy = axis.Clone();
         // Lane models use calendar ticks even when their source axis retains the default linear scale.
         if (chart.Series[0].Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane) policy.Scale = ChartScaleKind.Time;
+        // A rejected dense fixed interval uses the native calendar-date fallback.
+        // Keep that identity on day-scale windows; authored clock formatting and
+        // successfully generated fixed intervals remain authoritative.
+        var minimumStepDays = chart.Series[0].Kind == ChartSeriesKind.Gantt && chart.Options.GanttTickInterval != null
+            && axis.ValueFormat == null && ticks[ticks.Count - 1] - ticks[0] >= 1 ? 1 : 0;
         if (policy.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(policy, ticks[0], ticks[ticks.Count - 1],
             candidates => ScheduleCaptionsFit(chart, context, builder, candidates, project, format,
-                GeneratedScheduleTickStyle(chart, context, builder, candidates, project, format, style)), allowCompactDates: false) is { } calendarTicks)
+                GeneratedScheduleTickStyle(chart, context, builder, candidates, project, format, style)), allowCompactDates: false,
+            minimumStepDays: minimumStepDays) is { } calendarTicks)
             return calendarTicks;
         var selected = ticks;
         for (var count = axis.TickCount; count >= 2; count--) {

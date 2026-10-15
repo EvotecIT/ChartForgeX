@@ -178,6 +178,7 @@ public sealed class GanttTickIntervalTests {
         var chart = Chart.Create().WithLegend(false).WithSize(960, 360).AddGanttTask("Window", start, start.AddDays(7))
             .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, count));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-date-identity-{count}-{fixedInterval}");
         var document = XDocument.Parse(prepared.ToSvg());
         var labels = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").Select(element => element.Value).ToArray();
         Assert.Contains(labels, label => label.StartsWith("2026-01-01", StringComparison.Ordinal));
@@ -194,6 +195,26 @@ public sealed class GanttTickIntervalTests {
         }
         Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
         Assert.Equal(fixedInterval, labels.Any(label => label.Contains("00:00:00.000", StringComparison.Ordinal)));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DenseAutomaticFallbackPreservesAuthoredClockFormats(bool mermaid) {
+        var start = new DateTime(2026, 1, 1);
+        var chart = mermaid ? new MermaidParser().ParseGantt("gantt\ntickInterval 100millisecond\naxisFormat %H:%M\nTask :2026-01-01, 7d")
+            .Document!.ToChart(new MermaidGanttRenderOptions { Width = 960, Height = 360 }).WithLegend(false)
+            : Chart.Create().WithLegend(false).WithSize(960, 360).AddGanttTask("Window", start, start.AddDays(7))
+                .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100))
+                .WithXAxisValueFormatter(value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-dense-authored-clock-{mermaid}");
+        var labels = XDocument.Parse(prepared.ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").Select(element => element.Value).ToArray();
+        Assert.Contains("12:00", labels);
+        Assert.All(labels, label => Assert.True(DateTime.TryParseExact(label, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out _),
+            "An authored clock formatter must remain authoritative after an interval falls back: " + label));
         Assert.NotEmpty(prepared.ToPng());
     }
 

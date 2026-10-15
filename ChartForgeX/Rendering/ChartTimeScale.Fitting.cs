@@ -8,12 +8,12 @@ namespace ChartForgeX.Rendering;
 internal static partial class ChartTimeScale {
     /// <summary>Walks actual calendar intervals, measuring complete captions before choosing a coarser scale.</summary>
     internal static IReadOnlyList<double>? GenerateFitting(ChartAxis axis, double min, double max,
-        Func<IReadOnlyList<double>, bool> fits, bool allowCompactDates, IReadOnlyList<double>? regularObservations = null) {
+        Func<IReadOnlyList<double>, bool> fits, bool allowCompactDates, IReadOnlyList<double>? regularObservations = null, double minimumStepDays = 0) {
         if (min < 0 || !IsRepresentable(max) || max - min < DaysPerSecond) return null;
         var limit = axis.HasExplicitTickCount ? axis.TickCount : 100;
         // Alignment can leave room for another nominal interval at both ends.
         // Begin one density level finer, then enforce the actual authored count.
-        var interval = ChooseInterval((max - min) / (limit * 2));
+        var interval = ChooseInterval(Math.Max(minimumStepDays, (max - min) / (limit * 2)));
         IReadOnlyList<double>? sparse = null;
         try {
             for (var attempt = 0; attempt < 64; attempt++) {
@@ -36,7 +36,7 @@ internal static partial class ChartTimeScale {
             }
             if (regularObservations != null)
                 return FitObservationCadence(regularObservations, axis, min, max, limit, fits, allowCompactDates)
-                    ?? GenerateFitting(axis, min, max, fits, allowCompactDates);
+                    ?? GenerateFitting(axis, min, max, fits, allowCompactDates, minimumStepDays: minimumStepDays);
             return sparse ?? GenerateInterval(axis, min, max, true, ChooseInterval(max - min));
         } catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { return null; }
     }
