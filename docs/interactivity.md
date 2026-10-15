@@ -227,9 +227,181 @@ The controller retains the original section element, host attributes such as `id
 
 Selection and legend mute/isolation follow surviving explicitly identified series. Point selection and point-legend mute/isolation also require an authored observation ID; full replacement clears state for anonymous ordinal points. Named nodes, links and regions retain their identity within their explicit series. Removed targets lose their state. Hover, pinned or delayed tooltips and focus trails clear; keyboard focus follows a surviving identified target or returns to the chart section. The geometric viewport remains in place.
 
-`resize()` refreshes browser hit geometry, navigation and active readout placement after host layout changes. The adapter also observes ordinary container resizing and hidden-host reveal. To change the native design size, prepare another chart at that size and pass its generated section to `update`; scaling a fixed SVG does not regenerate its ticks or typography.
+Linked highlights follow the same replacement boundary. Category and unscoped range filters retain their value-based intent. Explicit series keys, authored observation IDs, and named targets within an explicitly identified series remain usable as the source changes. Positional `sourcePoints`, anonymous ordinal targets and chart-local series keys clear on full replacement, so an unrelated observation cannot inherit a previous highlight. Adaptive switches between two prepared drawings of the same source retain every match form.
+
+`resize()` refreshes browser hit geometry, navigation and active readout placement after host layout changes. The adapter also observes ordinary container resizing and hidden-host reveal. `Adaptive` layout switches between two native prepared drawings as described below. Other changes to the native design size use a fresh generated section passed to `update`; scaling a fixed SVG does not regenerate its ticks or typography.
 
 `dispose()` releases chart listeners, observers, scheduled frames, pending readouts, exports and scenario playback immediately. It also clears the compare tray, brush rectangle, selection readouts and mute/isolation presentation while the section remains connected. It is safe to call more than once. Removing a chart also releases its work when the browser delivers the removal. Reinserted sections require a fresh `mount`; a disposed controller cannot update or resize them. Register shared assets once, and mount newly inserted sections explicitly instead of executing another copy of the runtime.
+
+## Linking charts to other views
+
+Listen on the chart root or a containing element. Chart host events bubble from
+their root, including `cfxselect`, `cfxselectionchange`, `cfxhover`, `cfxcompare`,
+`cfxbrush`, `cfxlasso`, `cfxtooltip`, `cfxreset` and state notifications. A host can
+map their facts into another chart, a table, a tree or its own application state.
+ChartForgeX does not require another view library.
+
+`cfxselectionchange` reports the complete selected mark set, independently of
+`CompareMarkers`. Its detail contains `chartId`, `targets` and `reason`: `click`,
+`keyboard`, `lasso`, `reset`, `clear` or `command`. Series wrapper groups are not
+selected marks. Escape clears the selection. `cfxselect` remains the individual
+mark notification; `cfxcompare` remains the optional compare-tray notification.
+
+Target identities retain their `targetKind`, `targetId`, `seriesKey`,
+`observationId`, `sourcePoint`, `sourcePoints`, `value` and `kind`. Additional facts
+are present when the source supports them:
+
+| Field | Meaning |
+| --- | --- |
+| `category` | The authored category or x-axis label. |
+| `x` | The numeric x value, or an ISO date with a time zone. |
+| `numericValue` | The numeric value, separately from its formatted text. |
+| `observationIds` | Authored contributor IDs of an aggregate, in source-point order. |
+| `range` | The inclusive numeric or ISO date interval represented by a bin, bucket or duration mark. |
+
+Point marks do not acquire a fabricated interval. Histogram bins, timeline runs
+and Gantt bars carry their renderer-owned bounds. For a histogram's half-open
+bin, the inclusive range ends at the representable number immediately below its
+upper edge; the last bin includes that edge. This lets an inclusive range filter
+select the same observations as the bin. State-timeline runs also have an
+exclusive end: their inclusive numeric range stops immediately before it, and
+their ISO range ends at the last browser-representable millisecond before it.
+Adjacent runs therefore keep their boundary observations separate. A time-axis bar can declare its
+bucket interval through `ChartSeries.WithTimeBuckets(...)`; its declared end is
+inclusive, including an observation exactly on that boundary. Assign matching row
+and observation IDs with `WithObservationIds(...)` when another view shares those
+identities. The bulk method validates the complete candidate before replacing
+the series' IDs.
+
+```csharp
+var readings = ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", points)
+    .WithObservationIds(ids.Select(id => new ChartObservationId(id)));
+```
+
+`ChartForgeXCharts.get(root)` returns an already mounted controller, or `null`.
+`mount(root)` remains the explicit late-insertion entry point. Selection and
+highlight commands require selection support, without requiring state bookmarks.
+Host commands default to `emit: false` and `sync: false`, so applying a linked
+state does not send it back to the originating view.
+
+```js
+const controller = ChartForgeXCharts.get(chartRoot);
+
+controller.select({ observationIds: ['reading-42'] }, { mode: 'replace' });
+controller.clearSelection();
+controller.highlight({ categories: ['API'] }, { dim: true, source: 'service-list' });
+controller.clearHighlight();
+const selectedMarks = controller.getSelection();
+controller.unpinTooltip();
+```
+
+The equivalent commands are ordinary `CustomEvent`s dispatched on the root:
+
+```js
+chartRoot.dispatchEvent(new CustomEvent('cfx-select', {
+  detail: { match: { observationIds: ['reading-42'] }, mode: 'add' }
+}));
+chartRoot.dispatchEvent(new CustomEvent('cfx-clear-selection'));
+chartRoot.dispatchEvent(new CustomEvent('cfx-highlight', {
+  detail: { match: { categories: ['API'] }, dim: true, source: 'service-list' }
+}));
+chartRoot.dispatchEvent(new CustomEvent('cfx-clear-highlight'));
+chartRoot.dispatchEvent(new CustomEvent('cfx-unpin-tooltip'));
+```
+
+`select` accepts `replace`, `add` and `remove`. A matcher can use `targets`
+(`{ targetKind, targetId }`), `observationIds` with an optional `seriesKey`,
+`categories`, `seriesKeys`, `sourcePoints` (`{ seriesKey, index }`) or `ranges`
+(`[[from, to]]`). Aggregates match an authored contributor; interval marks match
+overlapping ranges. Highlighting is separate from selection. Matching marks
+expose `cfx-highlighted` and `data-cfx-highlighted="true"`; `dim: true` dims the
+other marks, and the live region announces the highlighted count. Clearing
+highlight restores the ordinary presentation.
+
+Set `emit: true` when a host deliberately wants a selection notification, or
+`sync: true` to opt into synchronized chart events. Normal user interaction still
+emits its notifications. `ChartInteractionOptions.SelectionMode` controls pointer
+and keyboard activation: `Toggle` retains the current behavior, `Replace` replaces
+on a plain activation while Ctrl/Meta toggles and Shift extends, and `Single`
+retains one selected mark.
+
+`cfxbrush` and `cfxlasso` keep their CSS-pixel `bounds` and add `range.x` and
+`range.y` where the prepared drawing provides that projection. Time bounds are ISO dates with a time zone. Category axes
+also report `categories`. These facts come from the prepared plot projection,
+including the active viewport, rather than guessing from label text. Set
+`ChartInteractionOptions.BrushAxis = ChartBrushAxis.X` for a horizontal time-range
+brush; the default `XY` retains a rectangular brush. Timeline, Gantt, Gantt-lane
+and state-timeline drawings report their horizontal data interval; their rows
+do not acquire a numeric Y range. This projection contract
+does not expand the separate connected native X-window capabilities.
+
+The [two-chart example](../ChartForgeX.Examples/LinkedChartViewsExamples.cs) uses
+these public contracts to update prepared service totals from a date brush and
+highlight time-series readings from a selected service. It includes both themes
+and an adaptive native drawing for narrow containers.
+
+## Responsive interactive presentation
+
+Use `HtmlChartResponsiveLayout.Adaptive` when a narrow container needs its own
+native ticks, text layout and legend. The adapter prepares a second drawing from
+the same chart, keeps one mounted root and switches at a container breakpoint.
+Selection, legend mute/isolation and linked highlight survive the switch.
+
+```csharp
+chart.ToInteractiveHtmlPage(options => {
+    options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive;
+    options.Adaptive.NarrowWidth = 360;
+    options.Adaptive.NarrowHeight = 360;
+    options.Adaptive.Breakpoint = 640;
+    options.Toolbar = HtmlChartToolbarLayout.Compact;
+    options.Tooltip.PinOnSelect = false;
+    options.Highlight.DimOthersWhileSelected = true;
+});
+```
+
+`Readable` remains the default contained viewport, and `Fit` scales one drawing.
+`Toolbar = Band` retains the framed toolbar; `Compact` uses small right-aligned
+buttons. Both respond to their containing chart's width. `PinOnSelect` defaults
+to `true`; disabling it keeps click selection without pinning a readout.
+Keyboard focus retains its readout and accent focus ring. Pointer focus does not
+hold a readout after the pointer leaves or draw the browser's rectangular focus
+outline. Tooltip titles and compare chips use readable categories and names;
+numeric values remain in the detail rows.
+
+## Linking topology and graph explorers
+
+`ChartForgeXTopology.mount(root)` binds a topology inserted after the shared
+runtime. Topology commands default to silent updates as well:
+
+```js
+topologyRoot.dispatchEvent(new CustomEvent('cfx-topology-set-selection', {
+  detail: { kind: 'node', ids: ['api', 'worker'], emit: false }
+}));
+topologyRoot.dispatchEvent(new CustomEvent('cfx-topology-clear-selection'));
+topologyRoot.dispatchEvent(new CustomEvent('cfx-topology-highlight', {
+  detail: { nodeIds: ['api'], edgeIds: ['api-worker'], dim: true }
+}));
+topologyRoot.dispatchEvent(new CustomEvent('cfx-topology-clear-highlight'));
+```
+
+`cfx-topology-select.selected` reports interactive selection;
+`authoredSelected` retains the authored state. Enable viewport controls and set
+`TopologyRenderOptions.HtmlNarrowMinimumHeight` to retain a readable viewport on
+phones. Fit can zoom below the manual zoom floor when showing the whole diagram
+requires it.
+
+```js
+ChartForgeXGraphExplorer.select(graphId, [{ role: 'node', id: 'api' }], {
+  mode: 'replace', emit: false
+});
+ChartForgeXGraphExplorer.clearSelection(graphId, { emit: false });
+ChartForgeXGraphExplorer.highlight(graphId, [{ role: 'node', id: 'worker' }], { dim: true });
+ChartForgeXGraphExplorer.clearHighlight(graphId);
+```
+
+Graph selection edge details include `sourceNodeId` and `targetNodeId`.
+`cfxgraphhover` and `cfxgraphhoverclear` report `graphId`, `id`, `role`, `label` and
+`metadata`, so a host can coordinate hover without inspecting the graph's paint.
 
 ## Topology motion with HTML controls
 
@@ -364,6 +536,16 @@ controller.connectXViewport(async (request, signal) => {
 ```
 
 The application owns transport, chart data and retention of its native sections. Discard rejected or aborted candidates and retire old basis tokens when the application no longer needs them. After an ordinary `controller.update`, seed the new `controller.sceneRevision` with that replacement's native token before accepting another gesture.
+
+Adaptive sections capture both `PreparedVisual` and `NarrowPreparedVisual` under one immutable native token. Their viewport requests also carry `drawing: "wide" | "narrow"`; constrain the logical coordinates through that drawing's `XProjection`. A container transition emits `cfxlayoutchange` with `previousSceneRevision`, the new `sceneRevision` and `drawing`. Carry the existing native token to that new revision so a later gesture retains the correct basis:
+
+```javascript
+root.addEventListener('cfxlayoutchange', ({ detail }) => {
+  bases.set(detail.sceneRevision, bases.get(detail.previousSceneRevision));
+});
+```
+
+The native callback chooses `basis.NarrowPreparedVisual` for a narrow request and `basis.PreparedVisual` otherwise. Non-adaptive requests retain their existing shape and omit `drawing`. Changing the container cancels pending native replies for the replaced scene.
 
 Only the latest request for the current scene and connection can commit. A newer request, ordinary update, reconnect, disconnect, disposal, removal, or Escape aborts pending work. A rejected, invalid or stale reply leaves the committed SVG and export intact. `cfxviewportchange` carries the accepted `requestId`, new `sceneRevision` and `kind`. A failed current reply emits `cfxviewporterror` with its request identity and message. Pass null to `connectXViewport` to disconnect.
 

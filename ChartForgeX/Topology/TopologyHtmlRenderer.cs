@@ -96,6 +96,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-layout-mode", chart.LayoutMode.ToString())
             .Attribute("data-cfx-interactive", options.EnableHtmlInteractions)
             .Attribute("data-cfx-viewport-controls", enableViewportControls)
+            .Attribute("data-cfx-narrow-minimum-height", enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) : null)
             .Attribute("data-cfx-export-controls", enableExportControls)
             .Attribute("data-cfx-fullscreen-control", enableFullscreenControl)
             .Attribute("data-cfx-scenario-controls", enableScenarioInteractions)
@@ -108,7 +109,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
             .Attribute("data-cfx-sync-enabled", enableSync)
             .Attribute("data-cfx-sync-group", syncGroup)
-            .Attribute("style", "width:100%;max-width:" + (preparedWidth ?? chart.Viewport.Width).ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible")
+            .Attribute("style", "width:100%;max-width:" + (preparedWidth ?? chart.Viewport.Width).ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible" + (enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? ";--cfx-topology-narrow-minimum-height:" + options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) + "px" : string.Empty))
             .EndStartElement();
         if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode);
         if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState);

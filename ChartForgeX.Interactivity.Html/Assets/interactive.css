@@ -28,6 +28,7 @@ body {
 }
 
 .cfx-interactive-chart {
+  container: cfx-chart / inline-size;
   position: relative;
   width: min(100%, 1200px);
   min-width: 0;
@@ -56,7 +57,8 @@ body {
   will-change: transform;
 }
 
-.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-stage svg {
+.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-stage svg,
+.cfx-interactive-chart[data-cfx-responsive-layout="adaptive"] .cfx-stage svg {
   width: 100%;
   max-width: 100%;
   height: auto;
@@ -91,6 +93,28 @@ body {
   border: 1px solid rgba(51, 65, 85, .72);
   border-radius: 10px;
   background: rgba(15, 23, 42, .58);
+}
+
+.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar {
+  padding: 0;
+  border: 0;
+  background: none;
+  gap: 4px;
+}
+
+.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar .cfx-tool {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 4px 7px;
+  border-color: transparent;
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-muted);
+}
+
+.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar .cfx-tool:hover,
+.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar .cfx-tool[aria-pressed="true"] {
+  color: var(--cfx-tooltip-text);
+  background: var(--cfx-tooltip-line);
 }
 
 .cfx-frame {
@@ -698,17 +722,6 @@ body {
     padding: 8px;
   }
 
-  .cfx-toolbar,
-  .cfx-scenario-panel__controls {
-    justify-content: stretch;
-  }
-
-  .cfx-toolbar .cfx-tool,
-  .cfx-scenario-panel__controls .cfx-tool {
-    flex: 1 1 auto;
-    min-height: 36px;
-  }
-
   .cfx-scenario-panel__steps {
     display: grid;
     grid-template-columns: 1fr;
@@ -717,6 +730,13 @@ body {
   .cfx-scenario-panel__steps li {
     min-height: 34px;
   }
+}
+
+@container cfx-chart (max-width: 900px) {
+  .cfx-interactive-chart:not([data-cfx-toolbar="compact"]) .cfx-toolbar,
+  .cfx-scenario-panel__controls { justify-content: stretch; }
+  .cfx-interactive-chart:not([data-cfx-toolbar="compact"]) .cfx-toolbar .cfx-tool,
+  .cfx-scenario-panel__controls .cfx-tool { flex: 1 1 auto; min-height: 36px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -730,9 +750,32 @@ body {
 }
 
 /* Graphite keeps host controls separate from the chart's single frame. */
+.cfx-interactive-chart[data-cfx-look="graphite"] {
+  background: var(--cfx-host-background, transparent); color: var(--cfx-tooltip-text);
+  font-family: var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+}
+.cfx-interactive-chart .cfx-toolbar {
+  background: var(--cfx-tooltip-surface); border-color: var(--cfx-tooltip-line);
+}
+.cfx-interactive-chart:not([data-cfx-responsive-layout="fit"]) .cfx-toolbar {
+  width: 100%; max-width: var(--cfx-native-width); margin-inline: auto;
+}
+.cfx-interactive-chart .cfx-tool,
+.cfx-interactive-chart .cfx-scenario {
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); border-color: var(--cfx-tooltip-line);
+}
+.cfx-interactive-chart .cfx-tool:hover,
+.cfx-interactive-chart .cfx-tool:focus-visible,
+.cfx-interactive-chart .cfx-tool[aria-pressed="true"],
+.cfx-interactive-chart .cfx-scenario:hover,
+.cfx-interactive-chart .cfx-scenario:focus-visible,
+.cfx-interactive-chart .cfx-scenario[aria-pressed="true"] {
+  border-color: var(--cfx-host-accent); color: var(--cfx-host-accent);
+}
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-stage { background: transparent; border: 0; padding: 0; }
 /* The frame hugs the chart card and aligns its contextual control with the card edge. */
 .cfx-interactive-chart[data-cfx-look="graphite"]:not([data-cfx-responsive-layout="fit"]) .cfx-frame { width: fit-content; max-width: 100%; margin-inline: auto; }
+.cfx-interactive-chart[data-cfx-responsive-layout="adaptive"] .cfx-frame { width: 100%; max-width: var(--cfx-native-width); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-muted);
   font: 400 13px/1 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
@@ -844,7 +887,8 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"] { text-decoration: line-through; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
-.cfx-interactive-chart[data-cfx-look="graphite"] :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }
+.cfx-interactive-chart :focus:not(:focus-visible) { outline: none; }
+.cfx-interactive-chart :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }
 /* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
 .cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series]:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series]:not(:where([data-cfx-highlight-managed])) { opacity: 1 !important; }
@@ -868,6 +912,22 @@ body {
 }
 .cfx-interactive-chart[data-cfx-highlight-probe] [data-cfx-highlight-outline] { display: none; }
 .cfx-interactive-chart [data-cfx-highlight-unavailable] [data-cfx-highlight-outline] { display: none; }
+
+/* Host highlights and selection dim data marks once, without changing authored ink or nested series opacity. */
+.cfx-interactive-chart .cfx-linked-dim:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart .cfx-selection-dim:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-linked-dim[data-cfx-highlight-managed] > [data-cfx-highlight-paint],
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-selection-dim[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .3 !important;
+}
+.cfx-interactive-chart .cfx-highlighted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-highlighted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  filter: drop-shadow(0 0 3px var(--cfx-host-accent));
+}
+.cfx-interactive-chart [data-cfx-live] {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
 .cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed].cfx-hovered:not(.cfx-selected) > [data-cfx-highlight-paint] {
   filter: drop-shadow(0 0 10px rgba(125, 211, 252, .72));
 }

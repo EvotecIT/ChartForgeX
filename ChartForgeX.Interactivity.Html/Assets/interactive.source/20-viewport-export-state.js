@@ -41,7 +41,7 @@
   };
   const sameGroup = (root, peer) => root !== peer && root.dataset.cfxInteractionGroup && root.dataset.cfxInteractionGroup === peer.dataset.cfxInteractionGroup;
   const emitHostEvent = (root, name, detail) => {
-    root.dispatchEvent(new CustomEvent(name, { detail: Object.assign({ chartId: root.dataset.cfxChartId || '' }, detail || {}) }));
+    root.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: Object.assign({ chartId: root.dataset.cfxChartId || '' }, detail || {}) }));
   };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
@@ -67,7 +67,7 @@
       delete root._cfxSharedHover;
     } else if (['hover', 'crosshair', 'navigate'].includes(payload.action)) root._cfxSharedHover = true;
     const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
-    root.dispatchEvent(new CustomEvent('cfxsync', { detail }));
+    root.dispatchEvent(new CustomEvent('cfxsync', { bubbles: true, detail }));
     document.querySelectorAll('.cfx-interactive-chart').forEach((peer) => {
       if (chartLifetimes.get(peer)?.disposed === false && sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
     });
@@ -124,6 +124,7 @@
   };
   const applyInteractionState = (root, snapshot, emit, sync) => {
     if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
+    const previousSelection = selectedTargets(root).map(targetKey).join('\n');
     if (snapshot.viewport) applyViewport(root, Object.assign({}, snapshot.viewport));
     if (snapshot.mode !== undefined) applyMode(root, snapshot.mode || '');
     if (snapshot.brush !== undefined) root.dataset.cfxBrush = snapshot.brush || '';
@@ -144,7 +145,11 @@
     renderCompare(root);
     syncResetControl(root);
     storeInteractionState(root, snapshot);
-    if (emit !== false) emitHostEvent(root, 'cfxstateapplied', { snapshot });
+    syncSelectionAppearance(root);
+    if (emit !== false) {
+      if (previousSelection !== selectedTargets(root).map(targetKey).join('\n')) publishSelectionChange(root, 'command');
+      emitHostEvent(root, 'cfxstateapplied', { snapshot });
+    }
     if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
   };
   const zoomBy = (root, factor) => {

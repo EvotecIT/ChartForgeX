@@ -127,12 +127,18 @@
         });
       }
     };
+    const setTopologyMuted = (element, owner, muted) => {
+      const name = 'data-cfx-' + owner + '-muted';
+      if (muted) element.setAttribute(name, 'true'); else element.removeAttribute(name);
+      element.classList.toggle('cfx-topology-html-muted', element.hasAttribute('data-cfx-selection-muted') || element.hasAttribute('data-cfx-highlight-muted'));
+    };
     const clear = () => {
       wrapper.removeAttribute('data-cfx-selection-kind');
       wrapper.removeAttribute('data-cfx-selection-id');
       wrapper.removeAttribute('data-cfx-selection-status');
       wrapper.querySelectorAll('.cfx-topology-html-selected,.cfx-topology-html-muted,.cfx-topology-html-related').forEach(item => {
-        item.classList.remove('cfx-topology-html-selected', 'cfx-topology-html-muted', 'cfx-topology-html-related');
+        item.classList.remove('cfx-topology-html-selected', 'cfx-topology-html-related');
+        setTopologyMuted(item, 'selection', false);
         item.removeAttribute('aria-selected');
       });
       clearForceFocusLabels();
@@ -152,7 +158,8 @@
         role,
         elementId: attr(element, 'id'),
         status: attr(element, 'data-cfx-status'),
-        selected: attr(element, 'data-cfx-selected') === 'true',
+        selected: element.classList.contains('cfx-topology-html-selected') || element.getAttribute('aria-selected') === 'true',
+        authoredSelected: attr(element, 'data-cfx-selected') === 'true',
         metadata: collectPrefixed(element, 'data-cfx-meta-'),
         metrics: collectPrefixed(element, 'data-cfx-metric-'),
         element
@@ -309,19 +316,22 @@
         const isSelf = detail.kind === 'edge' && attr(edge, 'data-edge-id') === detail.id;
         const isRelated = isSelf || relatedEdges.has(attr(edge, 'data-edge-id'));
         edge.classList.toggle(relatedClass, isRelated);
-        edge.classList.toggle(mutedClass, !isRelated);
+        if (classPrefix === 'cfx-topology-html-') setTopologyMuted(edge, 'selection', !isRelated);
+        else edge.classList.toggle(mutedClass, !isRelated);
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
         const isSelf = detail.kind === 'edge' && attr(label, 'data-edge-id') === detail.id;
         const isRelated = isSelf || relatedEdges.has(attr(label, 'data-edge-id'));
         label.classList.toggle(relatedClass, isRelated);
-        label.classList.toggle(mutedClass, !isRelated);
+        if (classPrefix === 'cfx-topology-html-') setTopologyMuted(label, 'selection', !isRelated);
+        else label.classList.toggle(mutedClass, !isRelated);
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-node"]').forEach(node => {
         const isSelf = detail.kind === 'node' && attr(node, 'data-node-id') === detail.id;
         const isRelated = isSelf || relatedNodes.has(attr(node, 'data-node-id'));
         node.classList.toggle(relatedClass, isRelated);
-        node.classList.toggle(mutedClass, !isRelated && detail.kind !== 'group');
+        if (classPrefix === 'cfx-topology-html-') setTopologyMuted(node, 'selection', !isRelated && detail.kind !== 'group');
+        else node.classList.toggle(mutedClass, !isRelated && detail.kind !== 'group');
       });
       wrapper.querySelectorAll('[data-cfx-role="topology-group"]').forEach(group => {
         const isSelf = detail.kind === 'group' && attr(group, 'data-group-id') === detail.id;
@@ -353,9 +363,49 @@
       applyRelatedClasses({ ...detail, element }, 'cfx-topology-html-', '');
       applyForceFocusLabels(detail);
       renderSelectionPanel({ ...detail, element });
+      detail.selected = true;
       delete detail.element;
       if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-select', { bubbles: true, detail }));
       if (sync) emitSync('selection', { selection: { kind: detail.kind, id: detail.id, status: detail.status } });
+    };
+    const setSelection = request => {
+      const detail = request || {};
+      const ids = Array.isArray(detail.ids) ? new Set(detail.ids.map(String)) : new Set(detail.id ? [String(detail.id)] : []);
+      const matches = Array.from(wrapper.querySelectorAll(selectables)).filter(element => {
+        const item = identity(element);
+        return item.kind === detail.kind && ids.has(item.id);
+      });
+      clear();
+      if (!matches.length) return [];
+      select(matches[0], false, false);
+      const relatedSets = { nodeIds: new Set(), edgeIds: new Set(), groupIds: new Set() };
+      matches.forEach(element => {
+        const item = identity(element); item.related = related(item);
+        relatedSets[item.kind + 'Ids'].add(item.id);
+        Object.keys(relatedSets).forEach(key => (item.related[key] || []).forEach(id => relatedSets[key].add(id)));
+      });
+      wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"]').forEach(element => {
+        const role = attr(element, 'data-cfx-role'); const key = role === 'topology-node' ? 'nodeIds' : 'edgeIds';
+        const id = attr(element, role === 'topology-node' ? 'data-node-id' : 'data-edge-id');
+        setTopologyMuted(element, 'selection', !relatedSets[key].has(id));
+      });
+      matches.forEach(element => { element.classList.add('cfx-topology-html-selected'); element.setAttribute('aria-selected', 'true'); });
+      const selections = matches.map(publicDetail);
+      if (detail.emit === true) wrapper.dispatchEvent(new CustomEvent('cfx-topology-select', { bubbles: true, detail: { ...selections[0], ids: selections.map(item => item.id), selections } }));
+      if (detail.sync === true) emitSync('selection', { selection: { kind: detail.kind, ids: selections.map(item => item.id) } });
+      return selections;
+    };
+    const highlight = request => {
+      const detail = request || {};
+      const nodeIds = new Set((detail.nodeIds || []).map(String)), edgeIds = new Set((detail.edgeIds || []).map(String));
+      const active = nodeIds.size + edgeIds.size > 0;
+      wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"]').forEach(element => {
+        const node = attr(element, 'data-cfx-role') === 'topology-node';
+        const matching = (node ? nodeIds : edgeIds).has(attr(element, node ? 'data-node-id' : 'data-edge-id'));
+        element.classList.toggle('cfx-topology-html-highlighted', matching);
+        if (matching) element.setAttribute('data-cfx-highlighted', 'true'); else element.removeAttribute('data-cfx-highlighted');
+        setTopologyMuted(element, 'highlight', active && detail.dim === true && !matching);
+      });
     };
     const hydrateSelected = element => {
       const detail = identity(element);

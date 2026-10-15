@@ -333,22 +333,22 @@
       select(element);
     });
     wrapper.addEventListener('cfx-topology-set-selection', event => {
-      const element = findSelection(event.detail);
-      if (element) select(element);
+      setSelection(event.detail);
     });
-    wrapper.addEventListener('cfx-topology-clear-selection', () => {
+    wrapper.addEventListener('cfx-topology-clear-selection', event => {
       clear();
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true }));
-      emitSync('clear-selection', {});
+      if (event.detail?.emit === true) wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true }));
+      if (event.detail?.sync === true) emitSync('clear-selection', {});
     });
+    wrapper.addEventListener('cfx-topology-highlight', event => highlight(event.detail));
+    wrapper.addEventListener('cfx-topology-clear-highlight', () => highlight({}));
     wrapper.addEventListener('cfx-topology-apply-sync', event => {
       const detail = event.detail || {};
       if (!syncEnabled || !syncGroup || detail.group !== syncGroup) return;
       applyingSync = true;
       try {
         if (detail.action === 'selection' && detail.selection) {
-          const element = findSelection(detail.selection);
-          if (element) select(element);
+          setSelection({ ...detail.selection, emit: true });
         } else if (detail.action === 'clear-selection') {
           clear();
           wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true }));
@@ -367,5 +367,9 @@
         applyingSync = false;
       }
     });
-  }
+    }
+    return wrappers;
+  };
+  window.ChartForgeXTopology = Object.freeze({ mount });
+  mount(document);
 })();

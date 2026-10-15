@@ -106,10 +106,18 @@ Specialized observations remain in their typed collections: `Bubbles`, `Financia
 ```csharp
 var samples = ChartSeries.CreateBubble(new ChartSeriesId("batch-samples"), "Batches",
     new[] { new ChartBubble(10, 24, 8), new ChartBubble(20, 31, 12) });
-samples.WithObservationId(0, new ChartObservationId("batch-a"));
+samples.WithObservationIds(new[] {
+    new ChartObservationId("batch-a"), new ChartObservationId("batch-b")
+});
 chart.AddSeries(samples);
 samples.UpdateBubble(0, new ChartBubble(10, 26, 8));
 ```
+
+`WithObservationIds(...)` assigns one unique ID per authored source observation
+in a single validated replacement. Decimated and derived numeric series use
+their complete original input order. Invalid counts, duplicate IDs or a failing
+enumeration leave the installed identities intact. Use `WithObservationId(...)`
+to assign or replace one ID independently.
 
 `Update*` replaces one complete item and preserves its ordinal, explicit observation ID and point styling. `Replace*` validates and snapshots the complete sequence before installation, then clears per-observation IDs, labels and paint overrides; series configuration remains. An invalid replacement leaves existing data and metadata intact. Empty replacement creates a no-data series. Row selectors run once during ingestion and do not retain application records or delegates.
 

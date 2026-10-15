@@ -73,6 +73,7 @@ internal static partial class VisualScheduleCompiler {
             maximumExtent = Math.Max(maximumExtent, milestoneExtent + clearance + DependencyStubLength(context, arrow) + context.Theme.AxisStrokeWidth / 2);
         }
         var projection = GuideProjection(chart, context, plot, min, max, minimumExtent, maximumExtent, now);
+        if (projection.Width > 0 && projection.Height > 0) builder.DataProjection = new ChartDataProjection(projection, min, max, axis);
         double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
             var obstacles = new List<LabelObstacle>();

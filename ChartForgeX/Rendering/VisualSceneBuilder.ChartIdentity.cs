@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
@@ -17,12 +18,47 @@ internal sealed partial class VisualSceneBuilder {
             foreach (var entry in group.Metadata) metadata.Add(entry.Key, entry.Value);
             metadata["data-cfx-series-key"] = series.Id.Value;
             metadata["data-cfx-series-scope"] = series.Id.IsAutomatic ? "local" : "shared";
+            if (metadata.TryGetValue("data-cfx-point", out var markIndex) && int.TryParse(markIndex, NumberStyles.None, CultureInfo.InvariantCulture, out var pointIndex)
+                && pointIndex >= 0 && pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null)
+                metadata["data-cfx-authored-label"] = series.PointLabels[pointIndex]!;
+            CaptureChartInterval(chart, series, metadata);
             if (TryAuthoredObservationIndex(metadata, out var sourceIndex)
                 && series.ObservationIds.TryGetValue(sourceIndex, out var observationId))
                 metadata["data-cfx-observation-id"] = observationId.Value;
             _nodes[index] = new VisualSceneGroup(group.Role, group.Id, group.Clip, metadata,
                 group.PathClip, group.Rotation, group.Href, group.Tooltip, group.Translation, group.ImageResource, group.ColorScope);
         }
+    }
+
+    private static void CaptureChartInterval(Chart chart, ChartSeries series, IDictionary<string, string> metadata) {
+        if (ChartCartesianOrientation.CategoryAxis(chart).Scale == ChartScaleKind.Time && metadata.ContainsKey("data-cfx-x")) metadata["data-cfx-x-scale"] = "time";
+        if (series.Kind is ChartSeriesKind.Timeline or ChartSeriesKind.Gantt or ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane
+            && metadata.TryGetValue("data-cfx-start", out var start) && metadata.TryGetValue("data-cfx-end", out var end)) {
+            metadata["data-cfx-range-start"] = start; metadata["data-cfx-range-end"] = end;
+            if (chart.Options.XAxis.Scale == ChartScaleKind.Time) metadata["data-cfx-range-scale"] = "time";
+        }
+        if (series.TimeBucketInterval != null && metadata.TryGetValue("data-cfx-point", out _)
+            && metadata.TryGetValue("data-cfx-x", out var x) && double.TryParse(x, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)) {
+            metadata["data-cfx-range-start"] = x;
+            metadata["data-cfx-range-end"] = ChartTimeScale.BucketEnd(chart.Options.XAxis, value, series.TimeBucketInterval).ToString("R", CultureInfo.InvariantCulture);
+            metadata["data-cfx-range-scale"] = "time";
+        }
+        if (metadata.TryGetValue("data-cfx-x-scale", out var xScale) && xScale == "time") CaptureTimeInstant(metadata, "data-cfx-x", "data-cfx-x-instant");
+        if (metadata.TryGetValue("data-cfx-range-scale", out var rangeScale) && rangeScale == "time") {
+            CaptureTimeInstant(metadata, "data-cfx-range-start", "data-cfx-range-start-instant");
+            CaptureTimeInstant(metadata, "data-cfx-range-end", "data-cfx-range-end-instant");
+        }
+        if (series.Kind == ChartSeriesKind.StateTimeline && metadata.TryGetValue("data-cfx-range-end", out var stateEnd)) {
+            if (chart.Options.XAxis.Scale == ChartScaleKind.Time) metadata["data-cfx-range-end-exclusive"] = "true";
+            else if (double.TryParse(stateEnd, NumberStyles.Float, CultureInfo.InvariantCulture, out var endpoint))
+                metadata["data-cfx-range-end"] = ChartMath.PreviousRepresentable(endpoint).ToString("R", CultureInfo.InvariantCulture);
+        }
+    }
+
+    private static void CaptureTimeInstant(IDictionary<string, string> metadata, string valueKey, string instantKey) {
+        if (!metadata.TryGetValue(valueKey, out var text) || !double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)) return;
+        try { metadata[instantKey] = ChartDateTime.FromOrderedOaDate(value).ToString("O", CultureInfo.InvariantCulture); }
+        catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { }
     }
 
     private static bool TryAuthoredObservationIndex(IReadOnlyDictionary<string, string> metadata, out int sourceIndex) {

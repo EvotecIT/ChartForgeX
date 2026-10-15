@@ -117,6 +117,7 @@ internal static partial class VisualCartesianCompiler {
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
+        builder.DataProjection = new ChartDataProjection(plot, range, chart.Options.XAxis, chart.Options.YAxis, horizontal);
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         if (xViewport != null && chart.Series.Any(series => series.RenderPoints.Any(point => !ChartMath.IsFinite(map.X(point.X)))))
             throw new ArgumentOutOfRangeException("viewport", "The X viewport cannot project the source coordinates into finite logical units.");
@@ -190,6 +191,8 @@ internal static partial class VisualCartesianCompiler {
             && chart.Options.YAxis.Scale != ChartScaleKind.Linear && chart.Options.YAxis.Scale != ChartScaleKind.Time)
             throw new NotSupportedException("Horizontal line charts require a linear or time category axis.");
         foreach (var series in chart.Series) {
+            if (series.TimeBucketInterval != null && chart.Options.XAxis.Scale != ChartScaleKind.Time)
+                throw new InvalidOperationException("Time buckets require a time X axis.");
             if (!Supports(series.Kind)) throw Unsupported("series kind " + series.Kind);
             if (series.RenderPoints.Count % ObservationStride(series.Kind) != 0)
                 throw new InvalidOperationException(series.Kind + " requires complete observation tuples.");

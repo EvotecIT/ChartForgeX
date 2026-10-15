@@ -192,6 +192,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("event.key === 'ArrowRight'", StringComparison.Ordinal) && html.Contains("focusRelated(element", StringComparison.Ordinal), "Topology HTML pages should support arrow-key navigation across related topology elements.");
         Assert(html.Contains("cfx-topology-set-selection", StringComparison.Ordinal), "Topology HTML pages should allow hosts to drive selection state.");
         Assert(html.Contains("cfx-topology-clear-selection", StringComparison.Ordinal), "Topology HTML pages should allow hosts to clear selection state.");
+        Assert(html.Contains("cfx-topology-highlight", StringComparison.Ordinal) && html.Contains("cfx-topology-clear-highlight", StringComparison.Ordinal), "Topology HTML should expose independent highlight commands.");
+        Assert(html.Contains("window.ChartForgeXTopology", StringComparison.Ordinal), "Topology assets should expose mounting for late inserted fragments.");
         Assert(html.Contains("cfx-topology-set-filter", StringComparison.Ordinal), "Topology HTML pages should allow hosts to drive query, status, group, and kind filters.");
         Assert(html.Contains("cfx-topology-clear-filter", StringComparison.Ordinal), "Topology HTML pages should allow hosts to clear topology filters.");
         Assert(html.Contains("cfx-topology-filter", StringComparison.Ordinal), "Topology HTML pages should dispatch host-friendly filter result events.");

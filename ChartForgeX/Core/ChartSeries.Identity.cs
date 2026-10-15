@@ -44,7 +44,7 @@ public sealed partial class ChartSeries {
     /// <remarks>IDs are unique within the series. Updating a value preserves its ID; replacing the entire source clears IDs.</remarks>
     public ChartSeries WithObservationId(int sourceIndex, ChartObservationId id) {
         _ = id.Value;
-        var count = IsDecimated ? SourcePointCount : AuthoredObservationCount;
+        var count = IdentityObservationCount;
         if (sourceIndex < 0 || sourceIndex >= count) throw new ArgumentOutOfRangeException(nameof(sourceIndex), "Source index must refer to an existing observation.");
         foreach (var entry in _observationIds)
             if (entry.Key != sourceIndex && entry.Value == id) throw new ArgumentException("Observation IDs must be unique within a series.", nameof(id));
@@ -52,7 +52,30 @@ public sealed partial class ChartSeries {
         return this;
     }
 
+    /// <summary>Replaces source observation identities in source order with one identity per authored observation.</summary>
+    /// <remarks>The sequence is captured and validated before any existing identity changes. Decimated series accept the complete source sequence.</remarks>
+    /// <param name="ids">Unique identities in source observation order.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries WithObservationIds(IEnumerable<ChartObservationId> ids) {
+        if (ids == null) throw new ArgumentNullException(nameof(ids));
+        var count = IdentityObservationCount;
+        var candidate = new List<ChartObservationId>();
+        var unique = new HashSet<ChartObservationId>();
+        foreach (var id in ids) {
+            _ = id.Value;
+            if (candidate.Count >= count) throw new ArgumentException("Supply exactly one identity per source observation.", nameof(ids));
+            if (!unique.Add(id)) throw new ArgumentException("Observation IDs must be unique within a series.", nameof(ids));
+            candidate.Add(id);
+        }
+        if (candidate.Count != count) throw new ArgumentException("Supply exactly one identity per source observation.", nameof(ids));
+        _observationIds.Clear();
+        for (var index = 0; index < candidate.Count; index++) _observationIds.Add(index, candidate[index]);
+        return this;
+    }
+
     internal string InteractionIdentityKey => Id.Value;
+    private int IdentityObservationCount => IsDecimated || HistogramBinLayout != null || TrendLineSourcePoints.Count > 0 || BoxPlotSourceSamples.Count > 0
+        ? SourcePointCount : AuthoredObservationCount;
     internal bool HasIdentity => _hasId;
     internal Chart? Owner => _owner;
     internal Chart? AutomaticIdentityOwner => _automaticIdentityOwner;

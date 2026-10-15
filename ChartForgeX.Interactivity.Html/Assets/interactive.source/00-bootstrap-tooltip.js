@@ -6,7 +6,8 @@
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
-      return [seriesLabel(node), data.cfxLabel].filter(Boolean).join(': ');
+      return [seriesLabel(node), data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxLabel].filter(Boolean).join(': ');
+    if (isDataTarget(node)) return data.cfxAuthoredLabel ?? targetCategory(node) ?? (data.cfxLabel || data.cfxText || seriesLabel(node) || data.cfxRole || '');
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
     const label = data.cfxLabel || data.cfxText || '';
@@ -32,6 +33,11 @@
       seriesKey: seriesKey(node),
       seriesScope: data.cfxSeriesScope,
       observationId: data.cfxObservationId,
+      observationIds: contributorObservationIds(node),
+      category: targetCategory(node),
+      x: targetRawX(node),
+      numericValue: tooltipNumber(data.cfxValue || data.cfxY || data.cfxEnd) ? Number(data.cfxValue || data.cfxY || data.cfxEnd) : undefined,
+      range: targetDataRange(node),
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
       sourcePoints: sourcePointCollection(node),
@@ -220,7 +226,7 @@
   const compareItems = (root) => {
     const items = [];
     const seen = new Set();
-    interactiveTargets(root, '.cfx-selected').forEach((node) => {
+    dataTargets(root).filter(node => node.classList.contains('cfx-selected')).forEach((node) => {
       const target = targetIdentity(node);
       const key = targetKey(target);
       if (!key || seen.has(key)) return;
@@ -278,6 +284,7 @@
     root._cfxCompareCleanup.push(listenChart(root, clear, 'click', () => {
       const returnFocus = tray.contains(document.activeElement);
       clearSelections(root);
+      publishSelectionChange(root, 'clear');
       publishCompare(root, true);
       if (returnFocus) {
         if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
@@ -301,7 +308,7 @@
     // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
     const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
     const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
-    if (focused && tooltipReadoutAvailable(focused)) {
+    if (focused && active.matches(':focus-visible') && tooltipReadoutAvailable(focused)) {
       if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(focused))) setHover(root, focused, true, true);
       showTip(root, tip, focused);
       return;
@@ -314,6 +321,7 @@
   };
   const pinTip = (root, tip, node, event) => {
     cancelTooltipRequest(root);
+    if (root.dataset.cfxPinOnSelect === 'false') return;
     if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);
@@ -329,4 +337,10 @@
     root.dataset.cfxPinnedTarget = key;
     moveTip(tip, event, node);
     emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
+  };
+  const unpinTooltip = root => {
+    const key = root.dataset.cfxPinnedTarget;
+    const target = key && interactiveTargets(root).find(node => targetKey(targetIdentity(node)) === key);
+    hideTip(root, root.querySelector('.cfx-tooltip'), true);
+    if (key) emitHostEvent(root, 'cfxtooltip', { pinned: false, ...(target ? { target: targetIdentity(target) } : {}) });
   };

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
@@ -22,6 +23,14 @@ public sealed partial class HtmlInteractiveChartRenderer {
             for (var point = 0; point < series.SourcePointIndices.Count; point++) {
                 if (point > 0) json.Append(',');
                 json.Append(series.SourcePointIndices[point].ToString(CultureInfo.InvariantCulture));
+            }
+            json.Append("],\"observationIds\":[");
+            var firstId = true;
+            foreach (var observation in series.ObservationIds.OrderBy(observation => observation.Key)) {
+                if (!firstId) json.Append(',');
+                firstId = false;
+                json.Append("{\"index\":").Append(observation.Key.ToString(CultureInfo.InvariantCulture))
+                    .Append(",\"id\":").Append(HtmlJsonString.Encode(observation.Value.Value)).Append('}');
             }
             json.Append("]}");
         }
@@ -58,6 +67,20 @@ public sealed partial class HtmlInteractiveChartRenderer {
             json.Append('}');
         }
         json.Append(']');
+        if (prepared.Scene.DataProjection is ChartDataProjection dataProjection) {
+            var plot = dataProjection.Plot;
+            json.Append(",\"dataProjection\":{\"x\":");
+            AppendDataAxis(json, dataProjection.X);
+            if (dataProjection.Y != null) {
+                json.Append(",\"y\":");
+                AppendDataAxis(json, dataProjection.Y);
+            }
+            json.Append(",\"horizontal\":").Append(dataProjection.Horizontal ? "true" : "false")
+                .Append(",\"plotBounds\":{\"x\":").Append(plot.X.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"y\":").Append(plot.Y.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"width\":").Append(plot.Width.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"height\":").Append(plot.Height.ToString("R", CultureInfo.InvariantCulture)).Append("}}");
+        }
         if (prepared.XProjection is ChartXProjection projection) {
             var plot = projection.PlotBounds;
             json.Append(",\"xProjection\":{\"fullMinimum\":").Append(projection.FullMinimum.ToString("R", CultureInfo.InvariantCulture))
@@ -72,4 +95,13 @@ public sealed partial class HtmlInteractiveChartRenderer {
         }
         return json.Append('}').ToString();
     }
+
+    private static void AppendDataAxis(StringBuilder json, ChartDataAxisProjection axis) => json.Append("{\"minimum\":")
+        .Append(axis.Minimum.ToString("R", CultureInfo.InvariantCulture))
+        .Append(",\"maximum\":").Append(axis.Maximum.ToString("R", CultureInfo.InvariantCulture))
+        .Append(",\"transformedMinimum\":").Append(axis.TransformedMinimum.ToString("R", CultureInfo.InvariantCulture))
+        .Append(",\"transformedMaximum\":").Append(axis.TransformedMaximum.ToString("R", CultureInfo.InvariantCulture))
+        .Append(",\"scale\":").Append(HtmlJsonString.Encode(axis.Scale.ToString().ToLowerInvariant()))
+        .Append(",\"threshold\":").Append(axis.Threshold.ToString("R", CultureInfo.InvariantCulture))
+        .Append(",\"reversed\":").Append(axis.Reversed ? "true" : "false").Append('}');
 }

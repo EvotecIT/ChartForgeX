@@ -459,3 +459,22 @@ test('dense motion retains subpixel stroke coverage and restores precise ribbons
   const settled = api.webGlEdgeMesh(root, state, state.byId, palette, true, false, .1);
   assert.ok(settled.positions.length > moving.positions.length);
 });
+
+test('linked dim and emphasis share CPU and GPU paint without changing selection', () => {
+  const { api, root, a, b, edge, state, palette } = runtime();
+  const baseline = api.graphEdgePaint(root, edge, state.byId, palette, false, false);
+  a.el.classList.add('cfx-graph-link-dim');
+  b.el.classList.add('cfx-graph-highlighted');
+  edge.el.classList.add('cfx-graph-link-dim');
+  const dimmed = api.graphEdgePaint(root, edge, state.byId, palette, false, false);
+  close(dimmed.alpha, baseline.alpha * .3); close(dimmed.arrowAlpha, baseline.arrowAlpha * .3);
+  const points = api.webGlNodePoints(state, palette, true, false, 1, 4096);
+  close(points.colors[3], .3); close(points.colors[7], 1);
+  assert.equal(a.el.classList.contains('cfx-graph-selected'), false);
+  assert.equal(b.el.classList.contains('cfx-graph-selected'), false);
+  const alpha = [], context = new Proxy({ fill() { alpha.push(this.globalAlpha); } }, {
+    get: (target, key) => target[key] || (() => {}), set: (target, key, value) => (target[key] = value, true)
+  });
+  api.drawCanvasNodes(context, root, state.nodes, true, false);
+  close(alpha[0], .3); close(alpha[1], 1);
+});

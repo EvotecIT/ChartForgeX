@@ -134,6 +134,17 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether interactive HTML pages should include lightweight zoom and pan controls.</summary>
     public bool EnableHtmlViewportControls { get; set; }
 
+    private double _htmlNarrowMinimumHeight;
+
+    /// <summary>Gets or sets the minimum drawing height in pixels for interactive viewports in containers up to 640 pixels wide. Zero preserves proportional sizing.</summary>
+    public double HtmlNarrowMinimumHeight {
+        get => _htmlNarrowMinimumHeight;
+        set {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+            _htmlNarrowMinimumHeight = value;
+        }
+    }
+
     /// <summary>Gets or sets whether interactive HTML pages should include lightweight SVG and PNG export controls.</summary>
     public bool EnableHtmlExportControls { get; set; }
 

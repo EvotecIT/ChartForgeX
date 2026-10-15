@@ -8,12 +8,19 @@
     if (!root.isConnected) throw new TypeError('Mount the chart after inserting its section into the document.');
     const lifetime = { cleanups: new Set(), disposed: false, controller: null, xViewportConnection: null,
       xViewportPending: null, sceneRevision: nextChartSceneRevision() };
+    lifetime.adaptive = readAdaptiveLayout(root);
     const requireMounted = () => {
       if (lifetime.disposed || !root.isConnected) { controller.dispose(); throw new Error('The chart controller is disposed; mount the connected section again.'); }
     };
     const controller = Object.freeze({
       root,
       get sceneRevision() { return lifetime.sceneRevision; },
+      select: (match, options) => { requireMounted(); runSelectionCommand(root, match, options); return controller; },
+      clearSelection: options => { requireMounted(); clearSelectionCommand(root, options); return controller; },
+      getSelection: () => { requireMounted(); return copyHostValue(selectedTargets(root)); },
+      highlight: (match, options) => { requireMounted(); runHighlightCommand(root, match, options); return controller; },
+      clearHighlight: options => { requireMounted(); clearHighlightCommand(root, options); return controller; },
+      unpinTooltip: () => { requireMounted(); unpinTooltip(root); return controller; },
       update: section => {
         requireMounted();
         const next = readChartSection(section, true).cloneNode(true);
@@ -38,10 +45,11 @@
       dispose: () => { if (!lifetime.disposed) releaseChartLifetime(root); }
     });
     lifetime.controller = controller; chartLifetimes.set(root, lifetime); mountedCharts.add(root);
-    try { bindChart(root); watchChartLifetimes(); } catch (error) { releaseChartLifetime(root); throw error; }
+    try { prepareAdaptiveRoot(root, lifetime); bindChart(root); bindAdaptiveLayout(root); watchChartLifetimes(); } catch (error) { releaseChartLifetime(root); throw error; }
     return controller;
   };
   // Shared assets may be registered by more than one fragment. One installed runtime owns all controllers.
-  window.ChartForgeXCharts = Object.freeze({ mount: mountChart });
+  window.ChartForgeXCharts = Object.freeze({ mount: mountChart,
+    get: target => { const root = chartRoot(target), lifetime = root?.isConnected && chartLifetimes.get(root); return lifetime && !lifetime.disposed ? lifetime.controller : null; } });
   document.querySelectorAll('.cfx-interactive-chart').forEach(root => mountChart(root));
 })();

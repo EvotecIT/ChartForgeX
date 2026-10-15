@@ -51,7 +51,12 @@
         active = { mode: 'pan', pointerId: event.pointerId, screenX: point.screenX, screenY: point.screenY, view: viewport(root) };
       } else root.dataset.cfxGraphLastPointerMode = 'none';
     });
+    stage.addEventListener('pointerleave', () => graphHover(root, null));
     stage.addEventListener('pointermove', event => {
+      if (!active && (root.classList.contains('cfx-graph-render-canvas') || root.dataset.cfxGraphRendererActive === 'webgl' || attr(root, 'data-cfx-graph-accelerated-markup') === 'true')) {
+        const hit = hitGraphItemAt(root, scenePoint(root, event));
+        graphHover(root, hit?.el || null);
+      }
       if (!active || active.pointerId !== event.pointerId) return;
       const point = scenePoint(root, event);
       if (active.mode === 'box-select') {

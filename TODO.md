@@ -4,7 +4,7 @@ This is the active product roadmap. The [README](README.md) introduces the libra
 
 ## Current position
 
-Assessment refreshed on 15 October 2026. The shared native renderer and package separation are implemented. The nine coordinated 2.0.0 package IDs were verified on NuGet during the earlier assessment; that does not establish that later source changes are published or that every downstream host has migrated. The unified authoring contracts use the coordinated 3.0.0 package family.
+Assessment refreshed on 16 October 2026. The shared native renderer and package separation are implemented. The nine coordinated 2.0.0 package IDs were verified on NuGet during the earlier assessment; that does not establish that later source changes are published or that every downstream host has migrated. The unified authoring contracts use the coordinated 3.0.0 package family.
 
 | Area | Implemented foundation | Remaining work |
 | --- | --- | --- |
@@ -78,6 +78,8 @@ Completion: every advertised capability has a usable API, valid native output, a
 ## 4. Interactive charts
 
 The ordinary-chart HTML controller mounts dynamic fragments, replaces the browser view from a freshly prepared adapter section, refreshes browser geometry and releases its resources on disposal or removal. Explicit series and observation identities reconcile selection and legend state; removed and anonymous targets clear. Cancellation preserves a committed brush, and disposal clears owned comparison and brush UI. Standalone pages share text polish and print the complete unzoomed scene with browser controls, readouts and focus outlines hidden. C# remains the data and layout owner. Native reflow uses a new render context and replacement section, while graph patching retains its separate API. The completed API qualification includes repeated lifecycle cleanup, typed and relationship updates, hidden/slotted hosts, updated exports and inline/external print layouts.
+
+Linked views use bubbling chart events, complete selection notifications and silent-by-default public selection/highlight commands. Source identities, contributor IDs, interval marks and prepared brush projections let hosts join observations or filter data without inspecting renderer markup. Highlight remains separate from selection; their active marks stay visible together. Adaptive HTML layout switches wide/narrow native preparations inside one root and retains same-source state, including legend items omitted in a compact drawing. Tooltip pin policy, container-responsive toolbar density and theme-based controls belong to the adapter. Topology and graph explorers expose their own public selection and highlight contracts; topology also supports late mounting. The two-chart example exercises the ordinary contract without another view library; cross-product adapters and installed consumers still require their own delivery proof.
 
 Connected applications can request native X windows for supported vertical numeric Line/StepLine charts. Each committed window has fresh native ticks and geometry, full-data Y bounds and source facts, and a matching detached scene for export. Responses commit only while their request, scene revision, connection and controller lifetime remain current; cancellation or failure leaves the committed scene intact. Reset restores the full native domain. The [connected native X-window guide](docs/interactivity.md#connected-native-x-windows) documents the host callback and projection contract. Standalone zoom keeps its SVG-transform behavior.
 

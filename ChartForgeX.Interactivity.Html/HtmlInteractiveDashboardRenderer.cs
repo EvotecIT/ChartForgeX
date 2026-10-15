@@ -38,8 +38,9 @@ public sealed class HtmlInteractiveDashboardRenderer {
         var scope = options.IdScope ?? HtmlInteractiveChartRenderer.Slugify(title);
         var groupName = options.Interaction.GroupName ?? scope;
 
-        var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets);
-        writer.StartElement("main").Attribute("class", "cfx-shell").EndStartElement().Line()
+        var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chartArray[0]);
+        var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle);
+        writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .StartElement("div").Attribute("class", "cfx-dashboard").Attribute("style", "--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture)).EndStartElement().Line();
         for (var i = 0; i < chartArray.Length; i++) {
             var childOptions = CreateChildOptions(options, scope, groupName, i);
@@ -57,14 +58,20 @@ public sealed class HtmlInteractiveDashboardRenderer {
         var childOptions = new HtmlChartInteractionOptions {
             IdScope = chartId,
             IncludeResetButton = options.IncludeResetButton,
-            ResponsiveLayout = options.ResponsiveLayout
+            ResponsiveLayout = options.ResponsiveLayout,
+            Toolbar = options.Toolbar
         };
+        childOptions.Adaptive.NarrowWidth = options.Adaptive.NarrowWidth;
+        childOptions.Adaptive.NarrowHeight = options.Adaptive.NarrowHeight;
+        childOptions.Adaptive.Breakpoint = options.Adaptive.Breakpoint;
         HtmlChartTooltipOptionsCopy.Copy(options.Tooltip, childOptions.Tooltip);
         options.Highlight.CopyTo(childOptions.Highlight);
         options.Crosshair.CopyTo(childOptions.Crosshair);
         childOptions.Interaction.ChartId = chartId;
         childOptions.Interaction.GroupName = groupName;
         childOptions.Interaction.Features = options.Interaction.Features;
+        childOptions.Interaction.SelectionMode = options.Interaction.SelectionMode;
+        childOptions.Interaction.BrushAxis = options.Interaction.BrushAxis;
         childOptions.Interaction.ActiveScenarioId = options.Interaction.ActiveScenarioId;
         childOptions.Interaction.EnableDeepLinkState = options.Interaction.EnableDeepLinkState;
         foreach (var scenario in options.Interaction.Scenarios) childOptions.Interaction.Scenarios.Add(CloneScenario(scenario));

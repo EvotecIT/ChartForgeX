@@ -10,6 +10,8 @@ public sealed class ChartInteractionOptions {
     private string? _chartId;
     private string? _groupName;
     private string? _activeScenarioId;
+    private ChartSelectionMode _selectionMode;
+    private ChartBrushAxis _brushAxis;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartInteractionOptions"/> class.
@@ -57,6 +59,18 @@ public sealed class ChartInteractionOptions {
     /// </summary>
     public ChartInteractionFeatures Features { get; set; }
 
+    /// <summary>Gets or sets how pointer and keyboard activation changes the selected marks.</summary>
+    public ChartSelectionMode SelectionMode {
+        get => _selectionMode;
+        set { if (!Enum.IsDefined(typeof(ChartSelectionMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _selectionMode = value; }
+    }
+
+    /// <summary>Gets or sets whether a brush spans both plot axes or only the horizontal axis.</summary>
+    public ChartBrushAxis BrushAxis {
+        get => _brushAxis;
+        set { if (!Enum.IsDefined(typeof(ChartBrushAxis), value)) throw new ArgumentOutOfRangeException(nameof(value)); _brushAxis = value; }
+    }
+
     /// <summary>
     /// Returns a configured copy of the default report-review interaction profile.
     /// </summary>
@@ -93,4 +107,22 @@ public sealed class ChartInteractionOptions {
     private static string? NormalizeOptionalToken(string? value, string parameterName) {
         return ChartInteractionText.OptionalText(value, parameterName, "Interaction identifiers");
     }
+}
+
+/// <summary>Controls selection when a reader activates a chart mark.</summary>
+public enum ChartSelectionMode {
+    /// <summary>Toggles the activated mark without changing other selected marks.</summary>
+    Toggle,
+    /// <summary>Replaces the selection; Ctrl or Meta toggles and Shift extends it.</summary>
+    Replace,
+    /// <summary>Keeps at most one activated mark selected.</summary>
+    Single
+}
+
+/// <summary>Controls the dimensions selected by a chart brush.</summary>
+public enum ChartBrushAxis {
+    /// <summary>Selects a rectangle on both plot axes.</summary>
+    XY,
+    /// <summary>Selects a horizontal range across the complete plot height.</summary>
+    X
 }

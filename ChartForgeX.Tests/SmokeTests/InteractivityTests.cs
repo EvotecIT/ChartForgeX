@@ -10,6 +10,7 @@ internal static partial class SmokeTests {
         var options = ChartInteractionOptions.ReportReview();
         Assert(options.HasFeature(ChartInteractionFeatures.Tooltips), "Report-review interactivity should include tooltips.");
         Assert(options.HasFeature(ChartInteractionFeatures.Selection), "Report-review interactivity should include selection.");
+        Assert(options.SelectionMode == ChartSelectionMode.Toggle && options.BrushAxis == ChartBrushAxis.XY, "Interaction defaults should preserve toggled selection and a two-axis brush.");
         Assert(options.HasFeature(ChartInteractionFeatures.LegendToggles), "Report-review interactivity should include legend toggles.");
         Assert(options.HasFeature(ChartInteractionFeatures.KeyboardNavigation), "Report-review interactivity should include keyboard navigation.");
         Assert(options.HasFeature(ChartInteractionFeatures.Crosshair), "Report-review interactivity should include nearest-point crosshair exploration.");
@@ -222,6 +223,9 @@ internal static partial class SmokeTests {
         Assert(html.Contains("new XMLSerializer().serializeToString(svg)", StringComparison.Ordinal) && html.Contains("'cfxexport'", StringComparison.Ordinal), "Interactive HTML should export inline SVG without external libraries.");
         Assert(html.Contains("canvas.toBlob((blob)", StringComparison.Ordinal) && html.Contains("image/png", StringComparison.Ordinal), "Interactive HTML should export inline SVG as PNG without external libraries.");
         Assert(html.Contains("new CustomEvent(name", StringComparison.Ordinal) && html.Contains("'cfxviewport'", StringComparison.Ordinal) && html.Contains("'cfxselect'", StringComparison.Ordinal) && html.Contains("'cfxseries'", StringComparison.Ordinal) && html.Contains("'cfxreset'", StringComparison.Ordinal), "Interactive HTML should publish host events for viewport, selection, series toggles, and reset.");
+        Assert(html.Contains("'cfxselectionchange'", StringComparison.Ordinal) && html.Contains("'cfx-select'", StringComparison.Ordinal)
+            && html.Contains("'cfx-clear-selection'", StringComparison.Ordinal) && html.Contains("'cfx-highlight'", StringComparison.Ordinal)
+            && html.Contains("'cfx-clear-highlight'", StringComparison.Ordinal) && html.Contains("bubbles: true", StringComparison.Ordinal), "Interactive HTML should include the bubbling selection and silent linked-host command contract.");
         Assert(html.Contains("'cfxseriesfocus'", StringComparison.Ordinal), "Interactive HTML should publish host events for one-series focus changes.");
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive HTML should synchronize grouped chart state without external libraries.");
         Assert(html.Contains("action: 'viewport'", StringComparison.Ordinal) && html.Contains("action: 'series'", StringComparison.Ordinal) && html.Contains("action: 'selection'", StringComparison.Ordinal) && html.Contains("action: 'brush'", StringComparison.Ordinal), "Interactive HTML should synchronize viewport, series, selection, and brush changes.");

@@ -1,5 +1,8 @@
 (() => {
-  for (const wrapper of document.querySelectorAll('.cfx-topology-wrapper[data-cfx-interactive="true"]')) {
+  const mount = root => {
+    const selector = '.cfx-topology-wrapper[data-cfx-interactive="true"]';
+    const wrappers = root?.matches?.(selector) ? [root] : Array.from((root || document).querySelectorAll(selector));
+    for (const wrapper of wrappers) {
     if (wrapper.getAttribute('data-cfx-runtime-bound') === 'true') continue;
     wrapper.setAttribute('data-cfx-runtime-bound', 'true');
     const selectables = '[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-group"]';
@@ -21,6 +24,8 @@
       const root = wrapper.querySelector('[data-cfx-role="topology"]');
       return root ? root.closest('svg') : (viewport.querySelector(':scope > svg') || wrapper.querySelector('svg'));
     };
+    const narrowSvg = topologySvg();
+    if (narrowSvg?.viewBox?.baseVal?.height > 0) wrapper.style.setProperty('--cfx-topology-aspect', String(narrowSvg.viewBox.baseVal.width / narrowSvg.viewBox.baseVal.height));
     let applyingSync = false;
     let scenarioPlayback = null;
     let forceGraphMotionTimer = null;

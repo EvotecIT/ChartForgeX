@@ -128,6 +128,7 @@
     });
     return { nodes, edges, clusters, byId, clusterById };
   };
+  const graphLinkOpacity = el => el.classList.contains('cfx-graph-link-dim') ? .3 : 1;
   const visible = (el) => !el.classList.contains('cfx-graph-neighborhood-hidden') && !el.classList.contains('cfx-graph-hidden') && !el.classList.contains('cfx-graph-cluster-collapsed-member') && !el.classList.contains('cfx-graph-bundle-member') && !el.classList.contains('cfx-graph-overview-member') && !el.classList.contains('cfx-graph-hierarchy-hidden');
   const viewport = (root) => ({
     x: num(root, 'data-cfx-viewport-x', 0),

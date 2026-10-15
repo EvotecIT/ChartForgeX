@@ -4,7 +4,7 @@
   });
   let graphNodeMeasureContext = null;
   const graphNodeMarkBounds = (node, compact, moving, margin) => {
-    const extents = nodeShapeExtents(node), paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
+    const extents = nodeShapeExtents(node), paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact);
     // Canvas's default miter limit is 10; angular strokes can extend beyond
     // half the width at star/triangle tips and rectangle corners.
     const angular = ['box', 'imageRect', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database'].includes(node.shape);

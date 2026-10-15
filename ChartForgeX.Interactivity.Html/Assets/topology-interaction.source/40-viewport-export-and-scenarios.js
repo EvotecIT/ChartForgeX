@@ -20,7 +20,7 @@
     const applyViewport = state => {
       if (!viewportControls) return;
       const next = {
-        zoom: clamp(Number(state.zoom) || 1, 0.5, 4),
+        zoom: clamp(Number(state.zoom) || 1, 0.001, 4),
         panX: clamp(Number(state.panX) || 0, -4000, 4000),
         panY: clamp(Number(state.panY) || 0, -4000, 4000)
       };
@@ -53,7 +53,7 @@
     };
     const zoomBy = (factor, origin) => {
       const state = viewportState();
-      const nextZoom = clamp(state.zoom * factor, 0.5, 4);
+      const nextZoom = clamp(state.zoom * factor, Math.min(0.5, state.zoom), 4);
       const ratio = nextZoom / state.zoom;
       const metrics = viewportMetrics();
       const localX = origin && Number.isFinite(origin.clientX) ? origin.clientX - metrics.rect.left : metrics.rect.width / 2;
@@ -68,8 +68,8 @@
     };
     const fitViewport = () => {
       const metrics = viewportMetrics();
-      const scale = clamp(Math.min(1, metrics.width / metrics.svgWidth, metrics.availableHeight / metrics.svgHeight), 0.5, 1);
-      applyViewport({ zoom: scale, panX: 0, panY: 0 });
+      const scale = clamp(Math.min(1, metrics.width / metrics.svgWidth, metrics.availableHeight / metrics.svgHeight), 0.001, 1);
+      applyViewport({ zoom: scale, panX: (metrics.width - metrics.svgWidth) / 2, panY: (metrics.availableHeight - metrics.svgHeight) / 2 });
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-fit', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
       emitViewport();
     };
@@ -113,7 +113,7 @@
       const boundsWidth = Math.max(1, (bounds.right - bounds.x) * unitX);
       const boundsHeight = Math.max(1, (bounds.bottom - bounds.y) * unitY);
       const padding = 44;
-      const zoom = clamp(Math.min(metrics.width / (boundsWidth + padding * 2), metrics.availableHeight / (boundsHeight + padding * 2)), 0.5, 3.2);
+      const zoom = clamp(Math.min(metrics.width / (boundsWidth + padding * 2), metrics.availableHeight / (boundsHeight + padding * 2)), 0.001, 3.2);
       const centerX = (bounds.x + (bounds.right - bounds.x) / 2 - viewBox.x) * unitX + offsetX;
       const centerY = (bounds.y + (bounds.bottom - bounds.y) / 2 - viewBox.y) * unitY + offsetY;
       const originX = metrics.svgWidth / 2;

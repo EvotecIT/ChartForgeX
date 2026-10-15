@@ -1,11 +1,17 @@
-  const toggleSelection = (root, node) => {
-    if (!hasFeature(root, 'Selection')) return;
-    const selected = !node.classList.contains('cfx-selected');
+  const toggleSelection = (root, node, event) => {
+    if (!hasFeature(root, 'Selection') || !isDataTarget(node)) return;
+    const previous = selectionSignature(root);
+    const mode = root.dataset.cfxSelectionMode || 'toggle';
+    const toggle = mode === 'toggle' || mode === 'replace' && (event?.ctrlKey || event?.metaKey);
+    const selected = toggle ? !node.classList.contains('cfx-selected') : true;
+    if (mode === 'single' || mode === 'replace' && !toggle && !event?.shiftKey) clearSelections(root);
     setNodeSelected(node, selected);
     syncResetControl(root);
     const target = targetIdentity(node);
     emitHostEvent(root, 'cfxselect', { label: text(node), selected, target });
     emitSync(root, { action: 'selection', label: text(node), selected, target });
+    syncSelectionAppearance(root);
+    if (previous !== selectionSignature(root)) publishSelectionChange(root, event instanceof KeyboardEvent ? 'keyboard' : 'click', true);
     publishCompare(root, true);
   };
   const setNodeSelected = (node, selected) => {
@@ -169,15 +175,18 @@
       node.classList.remove('cfx-selected');
       node.removeAttribute('aria-selected');
     });
+    syncSelectionAppearance(root);
     renderCompare(root);
     syncResetControl(root);
   };
   const applySelectionSetByTargets = (root, targets, replace) => {
-    if (replace !== false) clearSelections(root);
+    const single = root.dataset.cfxSelectionMode === 'single';
+    if (replace !== false || single) clearSelections(root);
     let count = 0;
-    (targets || []).forEach((target) => {
+    for (const target of targets || []) {
       if (applySelectionByTarget(root, target, true)) count++;
-    });
+      if (single && count) break;
+    }
     return count;
   };
   const nodeCenterInRect = (node, rect) => {
@@ -190,15 +199,17 @@
   };
   const selectTargetsInBox = (root, rect, append) => {
     if (!hasFeature(root, 'Selection')) return [];
-    if (!append) clearSelections(root);
+    const single = root.dataset.cfxSelectionMode === 'single';
+    let candidates = dataTargets(root).filter(node => !node.closest('[data-cfx-role="legend-item"]') && nodeCenterInRect(node, rect));
+    if (single) candidates = candidates.slice(0, 1);
+    if (!append || single && candidates.length) clearSelections(root);
     const targets = [];
-    interactiveTargets(root, lassoSelector).forEach((node) => {
-      if (node.closest('[data-cfx-role="legend-item"]')) return;
-      if (!nodeCenterInRect(node, rect)) return;
+    candidates.forEach((node) => {
       setNodeSelected(node, true);
       targets.push(targetIdentity(node));
     });
     syncResetControl(root);
+    syncSelectionAppearance(root);
     return targets;
   };
   const applySync = (root, detail) => {
@@ -208,15 +219,19 @@
       root.dataset.cfxBrush = detail.bounds || '';
       syncResetControl(root);
     }
+    else if (detail.action === 'highlight') applyHostHighlight(root, detail.state || null);
     else if (detail.action === 'selection') {
       if (!applySelectionByTarget(root, detail.target, detail.selected === true) && !(detail.target && (detail.target.id || detail.target.targetId))) applySelectionByLabel(root, detail.label || '', detail.selected === true);
       renderCompare(root);
+      syncSelectionAppearance(root);
     } else if (detail.action === 'lasso') {
       applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
       renderCompare(root);
+      syncSelectionAppearance(root);
     } else if (detail.action === 'compare') {
       applySelectionSetByTargets(root, detail.targets || [], true);
       renderCompare(root);
+      syncSelectionAppearance(root);
     }
     else if (detail.action === 'hover') {
       clearHover(root, false, false);

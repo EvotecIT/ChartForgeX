@@ -8,6 +8,7 @@
       if (event.key === 'Escape') cancelXViewportRequest(chartLifetimes.get(root));
     }, true);
     applyRenderedTargetContract(root);
+    bindHostCommands(root);
     prepareRootBranchHighlights(root);
     if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
       if (event.key !== 'Escape') return;
@@ -19,6 +20,13 @@
     });
     applyViewport(root, getState(root));
     renderCompare(root);
+    syncSelectionAppearance(root);
+    listenChart(root, root, 'keydown', event => {
+      if (event.key !== 'Escape' || !hasFeature(root, 'Selection') || !selectedTargets(root).length) return;
+      clearSelections(root);
+      publishSelectionChange(root, 'clear', true);
+      publishCompare(root, false);
+    }, true);
     if (compareTray) listenChart(root, compareTray, 'pointerdown', (event) => event.stopPropagation());
     if (hasFeature(root, 'StateBookmarks')) {
       listenChart(root, root, 'cfx-capture-state', (event) => {
@@ -61,8 +69,10 @@
         listenChart(root, focusNode, 'focus', (event) => {
           refreshKeyboardNavigation(root, node);
           // Revealing a partly visible mark between pointer down and up retargets its native click.
-          if (hasFeature(root, 'KeyboardNavigation') && !pointerFocus) scrollKeyboardTargetIntoView(root, focusNode);
+          const keyboardFocus = focusNode.matches(':focus-visible');
+          if (hasFeature(root, 'KeyboardNavigation') && !pointerFocus && keyboardFocus) scrollKeyboardTargetIntoView(root, focusNode);
           pointerFocus = false;
+          if (!keyboardFocus) return;
           if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
@@ -81,7 +91,7 @@
           else toggleSeries(root, node);
         }
         else {
-          toggleSelection(root, node);
+          toggleSelection(root, node, event);
           pinTip(root, tip, node, event);
         }
       };
@@ -219,15 +229,13 @@
           event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         } else if (root.dataset.cfxMode === 'brush' && hasFeature(root, 'Brush') && brush) {
-          const point = stagePointer(stage, event, true);
+          const point = brushPointer(root, stage, event);
           const previousBrush = { hidden: brush.hidden, left: brush.style.left, top: brush.style.top,
             width: brush.style.width, height: brush.style.height };
           drag = { mode: 'brush', id: event.pointerId, left: point.x, top: point.y, previousBrush };
           brush.hidden = false;
           brush.style.left = drag.left + 'px';
-          brush.style.top = drag.top + 'px';
-          brush.style.width = '0px';
-          brush.style.height = '0px';
+          setBrushBox(root, stage, brush, drag, point);
           event.preventDefault();
           stage.setPointerCapture(event.pointerId);
         }
@@ -245,13 +253,7 @@
           const point = stagePointer(stage, event);
           applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
         } else if (drag.mode === 'brush' && brush) {
-          const { x, y } = stagePointer(stage, event, true);
-          const left = Math.min(drag.left, x);
-          const top = Math.min(drag.top, y);
-          brush.style.left = left + 'px';
-          brush.style.top = top + 'px';
-          brush.style.width = Math.abs(x - drag.left) + 'px';
-          brush.style.height = Math.abs(y - drag.top) + 'px';
+          setBrushBox(root, stage, brush, drag, brushPointer(root, stage, event));
         }
       });
       listenChart(root, stage, 'pointerup', (event) => {
@@ -262,10 +264,13 @@
         } else if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           syncResetControl(root);
+          const previousSelection = selectionSignature(root);
           const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
           const replaceSelection = !event.shiftKey;
-          emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush });
-          if (selectedTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets });
+          const dataRange = brushDataSelection(root, brush.getBoundingClientRect());
+          emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush, ...dataRange });
+          if (selectedTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets, ...dataRange });
+          if (previousSelection !== selectionSignature(root)) publishSelectionChange(root, 'lasso');
           emitSync(root, { action: 'brush', bounds: root.dataset.cfxBrush });
           if (selectedTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush, targets: selectedTargets, replace: replaceSelection });
           publishCompare(root, true);
@@ -308,7 +313,9 @@
       emitHostEvent(root, 'cfxreset', {});
       emitHostEvent(root, 'cfxviewport', { state: getState(root) });
       emitSync(root, { action: 'viewport', state: getState(root) });
+      const previousSelection = selectionSignature(root);
       clearSelections(root);
+      if (previousSelection) publishSelectionChange(root, 'reset');
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
       setSeriesIsolation(root, null, false);

@@ -35,15 +35,21 @@
     const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
     return Number.isFinite(point.x) ? point.x : null;
   };
-  const replaceChartSection = (root, lifetime, next, nativeKind = '') => {
-    const state = chartUpdateState(root);
+  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '') => {
+    // Validate every alternate before releasing the working scene, preserving atomic host updates.
+    const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
+    const state = chartUpdateState(root, !!adaptiveDrawing);
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
     releaseChartLifetime(root);
     installChartSection(root, next);
     // The application owns the root and connection; each installed scene owns fresh browser work.
     lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();
+    lifetime.adaptive = adaptive;
+    if (adaptiveDrawing) adaptive.current = adaptiveDrawing;
     chartLifetimes.set(root, lifetime); mountedCharts.add(root);
+    prepareAdaptiveRoot(root, lifetime);
     bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind);
+    bindAdaptiveLayout(root);
     syncXViewportControls(root);
   };
   const requestXViewport = (root, kind, left, right) => {
@@ -52,7 +58,8 @@
     if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return;
     cancelXViewportRequest(lifetime);
     const request = Object.freeze({ chartId: root.dataset.cfxChartId, requestId: 'cfx-request-' + (++chartViewportRequestSequence),
-      sceneRevision: lifetime.sceneRevision, kind, ...(kind === 'reset' ? {} : { left, right }) });
+      sceneRevision: lifetime.sceneRevision, kind, ...(lifetime.adaptive ? { drawing: lifetime.adaptive.current } : {}),
+      ...(kind === 'reset' ? {} : { left, right }) });
     const pending = { request, abort: new AbortController() }; lifetime.xViewportPending = pending;
     const current = () => root.isConnected && chartLifetimes.get(root) === lifetime && !lifetime.disposed
       && lifetime.xViewportConnection === connection && lifetime.xViewportPending === pending
