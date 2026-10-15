@@ -17,15 +17,30 @@ internal static partial class TopologyDenseRoutePlanner {
         var searched = boundary ? routes.Select(route => new List<ChartPoint>(route.Points)).ToList() : null;
         SeparateLanes(scene, routes, fixedRoutes);
         RepairLaneOverlaps(scene, requests, routes, fixedRoutes, sideUse, buffers);
-        if (searched == null) return;
-        var preferred = routes.Select(route => route.Points).ToList();
-        var before = PlanQuality(routes, fixedRoutes);
-        for (var i = 0; i < routes.Count; i++) routes[i].Points = searched[i];
-        SeparateLanes(scene, routes, fixedRoutes, keepBoundaryRuns: true);
-        RepairLaneOverlaps(scene, requests, routes, fixedRoutes, sideUse, buffers, keepBoundaryRuns: true);
-        var after = PlanQuality(routes, fixedRoutes);
-        if (after.Shared < before.Shared - 0.01 || Math.Abs(after.Shared - before.Shared) <= 0.01 && after.Cost < before.Cost) return;
-        for (var i = 0; i < routes.Count; i++) routes[i].Points = preferred[i];
+        if (searched != null) {
+            var preferred = routes.Select(route => route.Points).ToList();
+            var before = PlanQuality(routes, fixedRoutes);
+            for (var i = 0; i < routes.Count; i++) routes[i].Points = searched[i];
+            SeparateLanes(scene, routes, fixedRoutes, keepBoundaryRuns: true);
+            RepairLaneOverlaps(scene, requests, routes, fixedRoutes, sideUse, buffers, keepBoundaryRuns: true);
+            var after = PlanQuality(routes, fixedRoutes);
+            if (!(after.Shared < before.Shared - 0.01 || Math.Abs(after.Shared - before.Shared) <= 0.01 && after.Cost < before.Cost))
+                for (var i = 0; i < routes.Count; i++) routes[i].Points = preferred[i];
+        }
+
+        ImproveSeparatedCrossings(scene, requests, routes, fixedRoutes, sideUse, buffers);
+    }
+
+    /// <summary>Rechecks the final separated routes against a fresh grid of their actual occupied corridors.</summary>
+    private static void ImproveSeparatedCrossings(Scene scene, List<Request> requests, List<PlannedRoute> routes,
+        List<List<ChartPoint>> fixedRoutes, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse, GridBuffers buffers) {
+        if (TotalInteraction(routes, fixedRoutes).Crossings == 0) return;
+        var occupied = fixedRoutes.Concat(routes.Select(route => route.Points)).ToList();
+        // Repair grids reuse these buffers. The original search grid no longer owns them or describes the moved lanes.
+        var grid = Grid.Create(scene, requests, occupied, buffers, preserveRouteCoordinates: true);
+        if (grid == null) return;
+        foreach (var points in occupied) grid.Record(points, 1);
+        ImproveCrossings(scene, grid, routes, fixedRoutes, sideUse);
     }
 
     private static (double Shared, double Cost) PlanQuality(List<PlannedRoute> routes, List<List<ChartPoint>> fixedRoutes) {
@@ -37,13 +52,18 @@ internal static partial class TopologyDenseRoutePlanner {
 
     // A different search can leave a tight corridor whose lane pass cannot separate every route. Repair only that
     // observed residual, keeping the complete before/after geometry so a local reroute cannot worsen another pair.
+    // Reassess the worst residual after each accepted change; rejected routes are retried only when that geometry changes.
     private static void RepairLaneOverlaps(Scene scene, List<Request> requests, List<PlannedRoute> routes,
         List<List<ChartPoint>> fixedRoutes, Dictionary<(TopologyNode Node, TopologyEdgePort Side), int> sideUse, GridBuffers buffers, bool keepBoundaryRuns = false) {
-        var attempts = 0;
-        foreach (var route in routes.OrderByDescending(item => ResidualOverlap(item, routes, fixedRoutes)).ThenBy(item => item.Request.Order)) {
-            if (attempts >= 8) break;
-            if (ResidualOverlap(route, routes, fixedRoutes) < 6) continue;
-            attempts++;
+        var rejected = new HashSet<PlannedRoute>();
+        var maximumAttempts = Math.Min(MaximumReroutes, routes.Count);
+        for (var attempt = 0; attempt < maximumAttempts; attempt++) {
+            var selected = routes.Where(item => !rejected.Contains(item))
+                .Select(item => new { Route = item, Overlap = ResidualOverlap(item, routes, fixedRoutes) })
+                .Where(item => item.Overlap >= 6).OrderByDescending(item => item.Overlap).ThenBy(item => item.Route.Request.Order).FirstOrDefault();
+            if (selected == null) break;
+            var route = selected.Route;
+            rejected.Add(route);
             var originals = routes.Select(item => new List<ChartPoint>(item.Points)).ToList();
             var before = TotalInteraction(routes, fixedRoutes);
             var occupied = fixedRoutes.Concat(routes.Where(item => !ReferenceEquals(item, route)).Select(item => item.Points)).ToList();
@@ -57,7 +77,10 @@ internal static partial class TopologyDenseRoutePlanner {
             var after = TotalInteraction(routes, fixedRoutes);
             // A few explicit crossings are easier to follow than a long overdrawn relationship. Keep that exchange
             // bounded: clear at least 6px of ambiguous corridor and introduce at most four crossings in a repair.
-            if (after.Shared + 6 <= before.Shared && after.Crossings <= before.Crossings + 4) continue;
+            if (after.Shared + 6 <= before.Shared && after.Crossings <= before.Crossings + 4) {
+                rejected.Clear();
+                continue;
+            }
             for (var i = 0; i < routes.Count; i++) routes[i].Points = originals[i];
         }
     }

@@ -133,7 +133,7 @@ internal static partial class TopologyDenseRoutePlanner {
         }
     }
 
-    /// <summary>Moves one flexible predecessor after the constrained run it prevents from fitting.</summary>
+    /// <summary>Moves a blocking predecessor after a constrained run that can fit before it.</summary>
     private static bool ReorderCriticalChain(List<Run> runs, List<int>[] neighbours, List<int> members, int[] ranks, double spacing) {
         var failed = -1;
         foreach (var index in members) {
@@ -152,7 +152,8 @@ internal static partial class TopologyDenseRoutePlanner {
             }
 
             if (previous < 0 || runs[previous].Earliest + spacing < runs[current].Earliest - 0.001) return false;
-            if (runs[previous].High > runs[failed].High + 0.001) {
+            // A pinned predecessor can still follow a flexible run. TryPlace checks the complete reordered corridor.
+            if (runs[failed].Low + spacing <= runs[previous].High + 0.001) {
                 members.Remove(previous);
                 members.Insert(members.IndexOf(failed) + 1, previous);
                 for (var position = 0; position < members.Count; position++) ranks[members[position]] = position;

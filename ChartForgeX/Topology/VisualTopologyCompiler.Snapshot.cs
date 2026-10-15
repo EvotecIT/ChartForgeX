@@ -14,6 +14,11 @@ internal sealed partial class VisualTopologyCompiler {
 
     internal TopologyChart LayoutSnapshot() {
         var snapshot = TopologyLayoutEngine.Clone(_chart);
+        // Routing must replay the same policy reservations it saw before native painting captured
+        // the actual glyph bounds. Keep both immutable observations rather than rerouting at capture.
+        snapshot.PreparedGroupHeaderLayoutParts = new ReadOnlyDictionary<string, IReadOnlyList<ChartRect>>(
+            _chart.Groups.ToDictionary(group => group.Id,
+                group => (IReadOnlyList<ChartRect>)Array.AsReadOnly(TopologyGroupHeader.LayoutParts(_chart, group, _options).ToArray()), StringComparer.Ordinal));
         // The common frame owns headings and legend. Reintroducing them into this domain
         // would reserve their space again when diagnostics replay the canonical route plan.
         snapshot.Title = null; snapshot.Subtitle = null; snapshot.Legend = null;

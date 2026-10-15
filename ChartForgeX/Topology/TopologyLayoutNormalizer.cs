@@ -33,7 +33,7 @@ internal static class TopologyLayoutNormalizer {
 
         foreach (var node in chart.Nodes) {
             if (string.IsNullOrWhiteSpace(node.GroupId) || !groups.TryGetValue(node.GroupId!, out var group)) continue;
-            var parts = TopologyGroupHeader.PaintedParts(chart, group, options);
+            var parts = TopologyGroupHeader.LayoutParts(chart, group, options);
             if (!parts.Any(part => Intersects(node.X, node.Y, node.Width, node.Height, part.X, part.Y, part.Width, part.Height))) continue;
             var header = TopologyGroupHeader.ReservedBounds(chart, group, options);
             var safeY = header.Bottom + GroupHeaderBottomGap;

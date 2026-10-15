@@ -53,8 +53,27 @@ public sealed class TopologyDensePlanCacheTests {
         AssertSame(Routes(again, trunks), recolouredRoutes);
     }
 
-    private static List<IReadOnlyList<ChartPoint>> Routes(TopologyChart chart, TopologyRenderOptions options) =>
-        chart.Prepare(options).Analyze().Edges.Select(edge => (IReadOnlyList<ChartPoint>)edge.Points.ToList()).ToList();
+    private static List<IReadOnlyList<ChartPoint>> Routes(TopologyChart chart, TopologyRenderOptions options) {
+        var prepared = chart.Prepare(options);
+        var rendered = prepared.ToInterchangeEnvelope().Edges;
+        var analyzed = prepared.Analyze().Edges;
+        var native = prepared.Geometry.Routes.ToDictionary(entry => entry.Key.Id, entry => entry.Value, StringComparer.Ordinal);
+        Assert.Equal(rendered.Count, analyzed.Count);
+        Assert.Equal(rendered.Count, native.Count);
+        for (var edge = 0; edge < rendered.Count; edge++) {
+            var route = rendered[edge].ResolvedRoute;
+            var nativeRoute = native[rendered[edge].Id];
+            Assert.Equal(route.Count, analyzed[edge].Points.Count);
+            Assert.Equal(route.Count, nativeRoute.Count);
+            for (var point = 0; point < route.Count; point++) {
+                Assert.Equal(route[point].X, analyzed[edge].Points[point].X, 6);
+                Assert.Equal(route[point].Y, analyzed[edge].Points[point].Y, 6);
+                Assert.Equal(route[point].X, nativeRoute[point].X, 6);
+                Assert.Equal(route[point].Y, nativeRoute[point].Y, 6);
+            }
+        }
+        return analyzed.Select(edge => (IReadOnlyList<ChartPoint>)edge.Points.ToList()).ToList();
+    }
 
     private static void AssertSame(List<IReadOnlyList<ChartPoint>> expected, List<IReadOnlyList<ChartPoint>> actual) {
         Assert.Equal(expected.Count, actual.Count);

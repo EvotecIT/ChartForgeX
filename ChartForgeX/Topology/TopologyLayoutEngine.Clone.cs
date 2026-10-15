@@ -17,7 +17,8 @@ internal static partial class TopologyLayoutEngine {
             // Prepare replaces these values for a fresh layout; detached prepared clones retain them.
             RenderOptions = chart.RenderOptions?.Clone(),
             TextMeasurement = chart.TextMeasurement,
-            PreparedGroupHeaderParts = chart.PreparedGroupHeaderParts
+            PreparedGroupHeaderParts = chart.PreparedGroupHeaderParts,
+            PreparedGroupHeaderLayoutParts = chart.PreparedGroupHeaderLayoutParts
         };
         copy.Accessibility.Name = chart.Accessibility.Name;
         copy.Accessibility.Description = chart.Accessibility.Description;

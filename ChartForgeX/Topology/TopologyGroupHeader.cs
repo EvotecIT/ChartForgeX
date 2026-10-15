@@ -31,7 +31,7 @@ internal static class TopologyGroupHeader {
 
     /// <summary>Returns the header block with the room layout keeps free below it, which nodes are moved out of.</summary>
     public static ChartRect ReservedBounds(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) {
-        var painted = Bounds(chart, group, options);
+        var painted = Bounds(group, LayoutParts(chart, group, options));
         var bottom = group.Y + (string.IsNullOrWhiteSpace(group.Subtitle) ? 54 : 74);
         return new ChartRect(painted.Left, painted.Top, painted.Width, Math.Max(0, Math.Max(painted.Bottom, bottom) - painted.Top));
     }
@@ -41,6 +41,14 @@ internal static class TopologyGroupHeader {
         if (!IsDrawn(options)) return Array.Empty<ChartRect>();
         if (chart.PreparedGroupHeaderParts != null)
             return chart.PreparedGroupHeaderParts.TryGetValue(group.Id, out var captured) ? captured : Array.Empty<ChartRect>();
+        return LayoutParts(chart, group, options);
+    }
+
+    /// <summary>Returns the stable measurement-policy reservations used when the prepared routes were planned.</summary>
+    internal static IReadOnlyList<ChartRect> LayoutParts(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) {
+        if (!IsDrawn(options)) return Array.Empty<ChartRect>();
+        if (chart.PreparedGroupHeaderLayoutParts != null)
+            return chart.PreparedGroupHeaderLayoutParts.TryGetValue(group.Id, out var captured) ? captured : Array.Empty<ChartRect>();
         return (chart.GroupHeaderLayout ??= new TopologyGroupHeaderLayout()).Parts(chart, group, options);
     }
 

@@ -329,7 +329,7 @@ internal static partial class TopologyEdgeRouter {
 
         const double groupPadding = 10;
         foreach (var group in chart.Groups) {
-            foreach (var header in TopologyGroupHeader.PaintedParts(chart, group, chart.RenderOptions ?? new TopologyRenderOptions()))
+            foreach (var header in TopologyGroupHeader.LayoutParts(chart, group, chart.RenderOptions ?? new TopologyRenderOptions()))
                 if (header.Width > 0 && header.Height > 0) obstacles.Add(new RouteBox(header.Left, header.Top, header.Right, header.Bottom).Expand(groupPadding));
         }
 
