@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
 
 namespace ChartForgeX.Tests;
@@ -153,10 +155,32 @@ internal static partial class SmokeTests {
             .AddNode("dc2", "DC2", 220, 72, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "site", width: 46, height: 40, symbol: "DC")
             .AddEdge("rep", "dc1", "dc2", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight, "Q:312", tertiaryLabel: "7m ago");
 
-        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }.WithMonitoringDashboardStyle());
-        var y = GetAttribute(svg, "data-edge-id=\"rep\"", "data-label-y");
-        Assert(y > 124, "Edge labels should avoid grouped-card headers so site titles remain readable.");
-        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Length > 64, "Header-aware edge labels should render as PNG.");
+        var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }.WithMonitoringDashboardStyle());
+        ScatterBubbleColorRenderingTests.Capture(prepared.Visual, "topology-edge-label-painted-headers");
+        var badge = prepared.Visual.Scene.Regions.Single(region => region.Id == "rep-label").Bounds;
+        var headers = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role is "topology-group-label" or "topology-group-subtitle").ToArray();
+        Assert(headers.Length == 2, "The fixture must paint both the site title and subtitle.");
+        foreach (var header in headers) {
+            var bounds = PaintedBounds(header);
+            Assert(bounds.Width > 0 && bounds.Height > 0, "The group-header fixture must contain measured visible captions.");
+            Assert(!Overlaps(badge, bounds), "The complete edge-label badge must avoid the measured site title and subtitle.");
+        }
+        var labels = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "topology-edge-label-text").ToArray();
+        Assert(labels.Length == 3, "Header-aware edge labels must retain all three authored lines.");
+        foreach (var label in labels) {
+            var bounds = PaintedBounds(label);
+            Assert(bounds.Left >= badge.Left && bounds.Right <= badge.Right && bounds.Top >= badge.Top && bounds.Bottom <= badge.Bottom,
+                "The reserved label badge must contain its actual painted text.");
+        }
+        var svg = prepared.ToSvg();
+        Assert(Math.Abs(GetAttribute(svg, "data-cfx-source-id=\"rep-label\"", "data-label-x") - (badge.Left + badge.Width / 2)) < .001 &&
+            Math.Abs(GetAttribute(svg, "data-cfx-source-id=\"rep-label\"", "data-label-y") - (badge.Top + badge.Height / 2)) < .001,
+            "SVG must expose the same prepared badge bounds used for header avoidance.");
+        Assert(prepared.ToPng().Length > 64, "The same prepared header-aware label layout should render as PNG.");
+
+        static ChartRect PaintedBounds(VisualSceneText text) => new(text.LineLeft(text.Text.Lines[0]),
+            text.Baseline - text.Text.Ascent, text.Text.Metrics.Width, text.Text.Metrics.Height);
+        static bool Overlaps(ChartRect a, ChartRect b) => a.Left < b.Right && a.Right > b.Left && a.Top < b.Bottom && a.Bottom > b.Top;
     }
 
     private static void TopologyMultilineEdgeLabelsAvoidOwnRoute() {
