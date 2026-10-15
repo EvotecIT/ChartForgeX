@@ -13,7 +13,7 @@ internal static class HtmlInteractivePage {
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
         var pageStyle = "body{" + HtmlSurfacePolish.BrowserTextPolishCss + "}"
-            + HtmlSurfacePolish.PrintBodyCss("0", ".cfx-shell{min-height:auto;padding:0;background:transparent!important}");
+            + HtmlSurfacePolish.PrintBodyCss("0", "body{background:transparent!important}.cfx-shell{min-height:auto;padding:0;background:transparent!important}");
         HtmlChartRenderer.WriteDocumentHead(writer, title, assets == null ? HtmlInteractiveAssets.Style : null);
         if (assets != null) {
             HtmlInteractiveAssetFiles.WriteStylesheet(writer, assets, HtmlInteractiveAssetFiles.ChartStyle);

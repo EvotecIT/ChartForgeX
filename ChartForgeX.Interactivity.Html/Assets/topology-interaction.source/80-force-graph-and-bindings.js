@@ -370,6 +370,18 @@
     }
     return wrappers;
   };
+  // Prefix-specific assets share one dispatcher. Re-registering an asset replaces its
+  // prefix entry without adding recursive wrappers or invalidating retained mount references.
+  const mountsKey = Symbol.for('ChartForgeXTopology.mounts');
+  const previous = window.ChartForgeXTopology?.mount;
+  const prefixMounts = previous?.[mountsKey] instanceof Map ? previous[mountsKey] : new Map();
+  prefixMounts.set(selector, mountForPrefix);
+  const mount = previous?.[mountsKey] === prefixMounts ? previous : root => {
+    const wrappers = new Set();
+    for (const bind of prefixMounts.values()) for (const wrapper of bind(root)) wrappers.add(wrapper);
+    return Array.from(wrappers);
+  };
+  if (!mount[mountsKey]) Object.defineProperty(mount, mountsKey, { value: prefixMounts });
   window.ChartForgeXTopology = Object.freeze({ mount });
   mount(document);
 })();

@@ -81,10 +81,7 @@
   };
   const restoreChartUpdateState = (root, state, nativeCommit = false) => {
     // Explicit identity survives position changes; anonymous ordinal facts never inherit full-replacement state.
-    clearSelections(root);
-    for (const target of state.selected) interactiveTargets(root).forEach(node => {
-      if (seriesKey(node) === target.seriesKey && matchesTargetIdentity(node, target)) setNodeSelected(node, true);
-    });
+    applySelectionSetByTargets(root, state.selected, true);
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
     for (const target of state.isolated) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesIsolation(root, resolved, true); }
     applyHostHighlight(root, state.highlight);

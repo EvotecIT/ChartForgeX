@@ -66,30 +66,72 @@ public sealed class TopologyGraphLinkedBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    [BrowserFact]
-    public async Task LateInsertedTopologyMountsOnceAndNarrowFitCentersTheWholeDrawing() {
+    [BrowserTheory]
+    [InlineData("cfx-topology")]
+    [InlineData("linked-topology")]
+    public async Task LateInsertedTopologyMountsOnceAndNarrowFitCentersTheWholeDrawing(string prefix) {
         if (!Enabled) return;
         var chart = Topology(false);
-        var options = new TopologyRenderOptions { EnableHtmlViewportControls = true, HtmlNarrowMinimumHeight = 288 };
+        var options = new TopologyRenderOptions { EnableHtmlViewportControls = true, HtmlNarrowMinimumHeight = 288, CssClassPrefix = prefix };
+        var rootSelector = "." + prefix + "-wrapper";
+        var viewportSelector = "." + prefix + "-viewport";
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options), 390, 680);
         var page = session.Page;
         var late = Topology(false).WithId("late").ToInteractiveHtmlFragmentWithoutAssets(options);
-        await page.EvaluateAsync("html=>{document.querySelector('.cfx-topology-wrapper').remove();document.body.insertAdjacentHTML('beforeend',html);}", late);
-        Assert.Null(await page.Locator(TopologyRoot).GetAttributeAsync("data-cfx-runtime-bound"));
-        await page.Locator(TopologyRoot).EvaluateAsync("root=>{ChartForgeXTopology.mount(root);ChartForgeXTopology.mount(root);window.lateEvents=0;root.addEventListener('cfx-topology-select',()=>lateEvents++);}");
-        Assert.True(await page.Locator(TopologyRoot + " .cfx-topology-viewport>svg").EvaluateAsync<bool>("svg=>svg.getBoundingClientRect().height>=287"));
+        await page.EvaluateAsync("({html,root})=>{document.querySelector(root).remove();document.body.insertAdjacentHTML('beforeend',html);}", new { html = late, root = rootSelector });
+        Assert.Null(await page.Locator(rootSelector).GetAttributeAsync("data-cfx-runtime-bound"));
+        await page.Locator(rootSelector).EvaluateAsync("root=>{ChartForgeXTopology.mount(root);ChartForgeXTopology.mount(root);window.lateEvents=0;root.addEventListener('cfx-topology-select',()=>lateEvents++);}");
+        Assert.True(await page.Locator(rootSelector + " " + viewportSelector + ">svg").EvaluateAsync<bool>("svg=>svg.getBoundingClientRect().height>=287"));
         await page.Locator("[data-cfx-topology-fit]").ClickAsync();
         await page.WaitForTimeoutAsync(150);
-        var fit = await page.Locator(TopologyRoot).EvaluateAsync<JsonElement>("""
-            root=>{const viewport=root.querySelector('.cfx-topology-viewport').getBoundingClientRect(),svg=root.querySelector('.cfx-topology-viewport>svg').getBoundingClientRect();
+        var fit = await page.Locator(rootSelector).EvaluateAsync<JsonElement>("""
+            (root,selector)=>{const viewport=root.querySelector(selector).getBoundingClientRect(),svg=root.querySelector(selector+'>svg').getBoundingClientRect();
               return {zoom:Number(root.dataset.cfxTopologyZoom),left:svg.left-viewport.left,right:svg.right-viewport.right};}
-            """);
+            """, viewportSelector);
         Assert.InRange(fit.GetProperty("zoom").GetDouble(), .001, .499);
         Assert.InRange(fit.GetProperty("left").GetDouble(), -.6, .6);
         Assert.InRange(fit.GetProperty("right").GetDouble(), -.6, .6);
         await page.Locator("[data-node-id=a][data-cfx-role=topology-node]").ClickAsync();
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>lateEvents"));
-        await CaptureAsync(page, "topology-linked-narrow-fit", fit);
+        await CaptureAsync(page, "topology-linked-narrow-fit-" + prefix, fit);
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MixedTopologyPrefixesRetainPublicLateMountAcrossRegistrationOrderAndRepeatedAssets(bool reverse) {
+        if (!Enabled) return;
+        var first = reverse ? "linked-topology" : "cfx-topology";
+        var last = reverse ? "cfx-topology" : "linked-topology";
+        TopologyRenderOptions Options(string prefix) => new() { CssClassPrefix = prefix, EnableHtmlSelectionPanel = false };
+        var html = "<!doctype html><html><body>"
+            + Topology(false).WithId("initial-first").ToInteractiveHtmlFragment(Options(first))
+            + "<script>window.retainedTopologyMount=ChartForgeXTopology.mount;</script>"
+            + Topology(false).WithId("initial-last").ToInteractiveHtmlFragment(Options(last)) + "</body></html>";
+        await using var session = await OpenAsync(html, 960, 680);
+        var page = session.Page;
+        Assert.Equal(2, await page.Locator("[data-cfx-interactive=true][data-cfx-runtime-bound=true]").CountAsync());
+        for (var registration = 0; registration < 3; registration++)
+            await page.AddScriptTagAsync(new PageAddScriptTagOptions { Content = HtmlInteractiveTopologyRenderer.BuildInteractionScript(Options(first)) });
+        await page.EvaluateAsync("()=>window.mixedTopologyEvents=[]");
+        foreach (var prefix in new[] { first, last }) {
+            var id = "late-" + prefix;
+            await page.EvaluateAsync("html=>document.body.insertAdjacentHTML('beforeend',html)",
+                Topology(false).WithId(id).ToInteractiveHtmlFragmentWithoutAssets(Options(prefix)));
+            var root = page.Locator("[data-chart-id='" + id + "'][data-cfx-interactive=true]");
+            await root.EvaluateAsync("root=>ChartForgeXTopology.mount(root)");
+            Assert.Equal("true", await root.GetAttributeAsync("data-cfx-runtime-bound"));
+            await root.EvaluateAsync("root=>{retainedTopologyMount(root);ChartForgeXTopology.mount(root);root.addEventListener('cfx-topology-select',event=>mixedTopologyEvents.push(event.detail));}");
+            await root.EvaluateAsync("root=>root.dispatchEvent(new CustomEvent('cfx-topology-set-selection',{detail:{kind:'node',ids:['a']}}))");
+            Assert.Equal("true", await root.Locator("[data-cfx-role=topology-node][data-node-id=a]").GetAttributeAsync("aria-selected"));
+            var second = root.Locator("[data-cfx-role=topology-node][data-node-id=b]");
+            await second.FocusAsync();
+            await second.PressAsync("Enter");
+            Assert.Equal("true", await second.GetAttributeAsync("aria-selected"));
+        }
+        Assert.Equal(2, await page.EvaluateAsync<int>("()=>mixedTopologyEvents.length"));
+        await CaptureAsync(page, "topology-linked-mixed-prefixes-" + reverse, new { first, last, repeatedRegistrations = 3 });
         AssertNoConsoleErrors(session);
     }
 

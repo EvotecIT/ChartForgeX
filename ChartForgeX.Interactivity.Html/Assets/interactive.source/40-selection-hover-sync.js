@@ -138,9 +138,9 @@
   };
   const applySelectionByLabel = (root, label, selected) => {
     if (!label) return;
-    interactiveTargets(root).forEach((node) => {
-      if (text(node) === label) setNodeSelected(node, selected);
-    });
+    let nodes = dataTargets(root).filter(node => text(node) === label);
+    if (selected && root.dataset.cfxSelectionMode === 'single' && nodes.length) { clearSelections(root); nodes = nodes.slice(0, 1); }
+    nodes.forEach(node => setNodeSelected(node, selected));
     syncResetControl(root);
   };
   const matchesTargetIdentity = (node, target) => {
@@ -161,14 +161,11 @@
   };
   const applySelectionByTarget = (root, target, selected) => {
     if (!target) return false;
-    let matched = false;
-    interactiveTargets(root).forEach((node) => {
-      if (!matchesTargetIdentity(node, target)) return;
-      matched = true;
-      setNodeSelected(node, selected);
-    });
+    let nodes = dataTargets(root).filter(node => (!target.seriesKey || seriesKey(node) === target.seriesKey) && matchesTargetIdentity(node, target));
+    if (selected && root.dataset.cfxSelectionMode === 'single' && nodes.length) { clearSelections(root); nodes = nodes.slice(0, 1); }
+    nodes.forEach(node => setNodeSelected(node, selected));
     syncResetControl(root);
-    return matched;
+    return nodes.length > 0;
   };
   const clearSelections = (root) => {
     root.querySelectorAll('.cfx-selected').forEach((node) => {
@@ -178,6 +175,12 @@
     syncSelectionAppearance(root);
     renderCompare(root);
     syncResetControl(root);
+  };
+  const publishResetSelection = (root, previousSelection) => {
+    if (previousSelection) publishSelectionChange(root, 'reset');
+    publishCompare(root, false);
+    // Reset clears the group's data selection even when the compare tray is disabled.
+    emitSync(root, { action: 'compare', count: 0, targets: [] });
   };
   const applySelectionSetByTargets = (root, targets, replace) => {
     const single = root.dataset.cfxSelectionMode === 'single';

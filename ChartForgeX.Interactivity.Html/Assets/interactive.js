@@ -2613,9 +2613,9 @@
   };
   const applySelectionByLabel = (root, label, selected) => {
     if (!label) return;
-    interactiveTargets(root).forEach((node) => {
-      if (text(node) === label) setNodeSelected(node, selected);
-    });
+    let nodes = dataTargets(root).filter(node => text(node) === label);
+    if (selected && root.dataset.cfxSelectionMode === 'single' && nodes.length) { clearSelections(root); nodes = nodes.slice(0, 1); }
+    nodes.forEach(node => setNodeSelected(node, selected));
     syncResetControl(root);
   };
   const matchesTargetIdentity = (node, target) => {
@@ -2636,14 +2636,11 @@
   };
   const applySelectionByTarget = (root, target, selected) => {
     if (!target) return false;
-    let matched = false;
-    interactiveTargets(root).forEach((node) => {
-      if (!matchesTargetIdentity(node, target)) return;
-      matched = true;
-      setNodeSelected(node, selected);
-    });
+    let nodes = dataTargets(root).filter(node => (!target.seriesKey || seriesKey(node) === target.seriesKey) && matchesTargetIdentity(node, target));
+    if (selected && root.dataset.cfxSelectionMode === 'single' && nodes.length) { clearSelections(root); nodes = nodes.slice(0, 1); }
+    nodes.forEach(node => setNodeSelected(node, selected));
     syncResetControl(root);
-    return matched;
+    return nodes.length > 0;
   };
   const clearSelections = (root) => {
     root.querySelectorAll('.cfx-selected').forEach((node) => {
@@ -2653,6 +2650,12 @@
     syncSelectionAppearance(root);
     renderCompare(root);
     syncResetControl(root);
+  };
+  const publishResetSelection = (root, previousSelection) => {
+    if (previousSelection) publishSelectionChange(root, 'reset');
+    publishCompare(root, false);
+    // Reset clears the group's data selection even when the compare tray is disabled.
+    emitSync(root, { action: 'compare', count: 0, targets: [] });
   };
   const applySelectionSetByTargets = (root, targets, replace) => {
     const single = root.dataset.cfxSelectionMode === 'single';
@@ -3846,7 +3849,6 @@
       emitSync(root, { action: 'viewport', state: getState(root) });
       const previousSelection = selectionSignature(root);
       clearSelections(root);
-      if (previousSelection) publishSelectionChange(root, 'reset');
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
       setSeriesIsolation(root, null, false);
@@ -3856,7 +3858,7 @@
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
       if (root._cfxBranchHighlights) clearHover(root, true, true);
-      publishCompare(root, true);
+      publishResetSelection(root, previousSelection);
       syncResetControl(root);
     });
   };
@@ -3943,10 +3945,7 @@
   };
   const restoreChartUpdateState = (root, state, nativeCommit = false) => {
     // Explicit identity survives position changes; anonymous ordinal facts never inherit full-replacement state.
-    clearSelections(root);
-    for (const target of state.selected) interactiveTargets(root).forEach(node => {
-      if (seriesKey(node) === target.seriesKey && matchesTargetIdentity(node, target)) setNodeSelected(node, true);
-    });
+    applySelectionSetByTargets(root, state.selected, true);
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
     for (const target of state.isolated) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesIsolation(root, resolved, true); }
     applyHostHighlight(root, state.highlight);
@@ -4000,6 +3999,8 @@
     // Validate every alternate before releasing the working scene, preserving atomic host updates.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
     const state = chartUpdateState(root, !!adaptiveDrawing);
+    // Keep the request current through validation so a rejected alternate reports its failure.
+    if (nativeKind) lifetime.xViewportPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
     releaseChartLifetime(root);
     installChartSection(root, next);
@@ -4035,8 +4036,13 @@
       const next = readChartSection(html, true).cloneNode(true);
       if (next.dataset.cfxChartId !== request.chartId || !chartXProjection(next))
         throw new TypeError('The viewport reply must retain the chart identity and a supported X projection.');
-      lifetime.xViewportPending = null;
+      const previousSelection = kind === 'reset' ? selectionSignature(root) : '';
       replaceChartSection(root, lifetime, next, kind);
+      if (kind === 'reset') {
+        emitHostEvent(root, 'cfxreset', {});
+        publishResetSelection(root, previousSelection);
+        emitSync(root, { action: 'viewport', state: getState(root) });
+      }
       emitHostEvent(root, 'cfxviewportchange', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind });
     }).catch(error => {
       if (!current()) return;

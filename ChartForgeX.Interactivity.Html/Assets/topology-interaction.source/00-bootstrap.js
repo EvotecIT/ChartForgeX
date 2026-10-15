@@ -1,6 +1,6 @@
 (() => {
-  const mount = root => {
-    const selector = '.cfx-topology-wrapper[data-cfx-interactive="true"]';
+  const selector = '.cfx-topology-wrapper[data-cfx-interactive="true"]';
+  const mountForPrefix = root => {
     const wrappers = root?.matches?.(selector) ? [root] : Array.from((root || document).querySelectorAll(selector));
     for (const wrapper of wrappers) {
     if (wrapper.getAttribute('data-cfx-runtime-bound') === 'true') continue;

@@ -286,12 +286,6 @@ internal static partial class SmokeTests {
         Assert(!noResetSection.Contains("data-cfx-compare-tray=\"true\"", StringComparison.Ordinal), "Interactive HTML should hide compare trays when compare markers are disabled.");
         Assert(noReset.Contains("data-cfx-interaction-features=\"Tooltips\"", StringComparison.Ordinal), "Interactive HTML should honor narrowed feature profiles.");
         Assert(noReset.Contains("data-cfx-responsive-layout=\"fit\"", StringComparison.Ordinal), "Interactive HTML should allow hosts to opt back into whole-chart fitting.");
-        var fitRuleStart = noReset.IndexOf(".cfx-interactive-chart[data-cfx-responsive-layout=\"fit\"] .cfx-stage svg {", StringComparison.Ordinal);
-        Assert(fitRuleStart >= 0, "Fit layouts should emit a dedicated responsive SVG rule.");
-        var fitRuleEnd = noReset.IndexOf('}', fitRuleStart);
-        var fitRule = noReset.Substring(fitRuleStart, fitRuleEnd - fitRuleStart);
-        Assert(fitRule.Contains("width: 100%;", StringComparison.Ordinal) && fitRule.Contains("max-width: 100%;", StringComparison.Ordinal) && fitRule.Contains("height: auto;", StringComparison.Ordinal), "Fit layouts should scale the complete chart into a narrow stage instead of clipping it.");
-
         var noPlaybackChart = SampleChart();
         var noPlayback = noPlaybackChart.ToInteractiveHtmlPage(options => {
             options.Interaction

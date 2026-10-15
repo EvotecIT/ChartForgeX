@@ -315,7 +315,6 @@
       emitSync(root, { action: 'viewport', state: getState(root) });
       const previousSelection = selectionSignature(root);
       clearSelections(root);
-      if (previousSelection) publishSelectionChange(root, 'reset');
       root.querySelectorAll('.cfx-series-muted').forEach((node) => node.classList.remove('cfx-series-muted'));
       root.querySelectorAll('[data-cfx-muted]').forEach((node) => node.removeAttribute('data-cfx-muted'));
       setSeriesIsolation(root, null, false);
@@ -325,7 +324,7 @@
       hideCrosshair(root, crosshair);
       hideTip(root, tip, true);
       if (root._cfxBranchHighlights) clearHover(root, true, true);
-      publishCompare(root, true);
+      publishResetSelection(root, previousSelection);
       syncResetControl(root);
     });
   };

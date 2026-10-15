@@ -39,6 +39,8 @@
     // Validate every alternate before releasing the working scene, preserving atomic host updates.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
     const state = chartUpdateState(root, !!adaptiveDrawing);
+    // Keep the request current through validation so a rejected alternate reports its failure.
+    if (nativeKind) lifetime.xViewportPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
     releaseChartLifetime(root);
     installChartSection(root, next);
@@ -74,8 +76,13 @@
       const next = readChartSection(html, true).cloneNode(true);
       if (next.dataset.cfxChartId !== request.chartId || !chartXProjection(next))
         throw new TypeError('The viewport reply must retain the chart identity and a supported X projection.');
-      lifetime.xViewportPending = null;
+      const previousSelection = kind === 'reset' ? selectionSignature(root) : '';
       replaceChartSection(root, lifetime, next, kind);
+      if (kind === 'reset') {
+        emitHostEvent(root, 'cfxreset', {});
+        publishResetSelection(root, previousSelection);
+        emitSync(root, { action: 'viewport', state: getState(root) });
+      }
       emitHostEvent(root, 'cfxviewportchange', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind });
     }).catch(error => {
       if (!current()) return;

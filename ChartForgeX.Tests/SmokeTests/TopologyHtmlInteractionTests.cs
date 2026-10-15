@@ -275,7 +275,8 @@ internal static partial class SmokeTests {
         Assert(assetlessStyle.Contains(".report-topology-wrapper{", StringComparison.Ordinal), "Host-registered topology CSS should honor the requested wrapper prefix.");
         Assert(assetlessStyle.Contains(".report-topology-wrapper[data-cfx-viewport-controls='true']", StringComparison.Ordinal), "Host-registered topology CSS should honor prefixed control selectors.");
         Assert(!assetlessStyle.Contains(".cfx-topology-wrapper", StringComparison.Ordinal), "Host-registered topology CSS should not leave stale default wrapper selectors for custom prefixes.");
-        Assert(assetlessScript.Contains("document.querySelectorAll('.report-topology-wrapper[data-cfx-interactive=\"true\"]')", StringComparison.Ordinal), "Host-registered topology runtime should honor the requested wrapper prefix.");
+        Assert(assetlessScript.Contains(".report-topology-wrapper[data-cfx-interactive=\"true\"]", StringComparison.Ordinal), "Host-registered topology runtime should honor the requested wrapper prefix.");
+        Assert(!assetlessScript.Contains(".cfx-topology-wrapper", StringComparison.Ordinal), "Host-registered topology runtime should not retain a default wrapper selector for a custom prefix.");
         Assert(!assetlessScript.Contains("<script>", StringComparison.Ordinal), "Host-registered topology runtime should return raw JavaScript for library registration.");
 
         var staticExportHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = false, EnableHtmlExportControls = true });

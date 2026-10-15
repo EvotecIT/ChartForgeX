@@ -1,6 +1,6 @@
 (() => {
-  const mount = root => {
-    const selector = '.cfx-topology-wrapper[data-cfx-interactive="true"]';
+  const selector = '.cfx-topology-wrapper[data-cfx-interactive="true"]';
+  const mountForPrefix = root => {
     const wrappers = root?.matches?.(selector) ? [root] : Array.from((root || document).querySelectorAll(selector));
     for (const wrapper of wrappers) {
     if (wrapper.getAttribute('data-cfx-runtime-bound') === 'true') continue;
@@ -1601,6 +1601,18 @@
     }
     return wrappers;
   };
+  // Prefix-specific assets share one dispatcher. Re-registering an asset replaces its
+  // prefix entry without adding recursive wrappers or invalidating retained mount references.
+  const mountsKey = Symbol.for('ChartForgeXTopology.mounts');
+  const previous = window.ChartForgeXTopology?.mount;
+  const prefixMounts = previous?.[mountsKey] instanceof Map ? previous[mountsKey] : new Map();
+  prefixMounts.set(selector, mountForPrefix);
+  const mount = previous?.[mountsKey] === prefixMounts ? previous : root => {
+    const wrappers = new Set();
+    for (const bind of prefixMounts.values()) for (const wrapper of bind(root)) wrappers.add(wrapper);
+    return Array.from(wrappers);
+  };
+  if (!mount[mountsKey]) Object.defineProperty(mount, mountsKey, { value: prefixMounts });
   window.ChartForgeXTopology = Object.freeze({ mount });
   mount(document);
 })();
