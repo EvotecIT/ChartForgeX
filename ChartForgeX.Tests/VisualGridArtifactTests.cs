@@ -11,6 +11,24 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class VisualGridArtifactTests {
+    [Theory]
+    [InlineData("", "ChartForgeX visual grid")]
+    [InlineData(" \t\r\n", "ChartForgeX visual grid")]
+    [InlineData("Service summary", "Service summary")]
+    public void EnvelopesPreserveAnAccessibleNameForBlankAndAuthoredTitles(string title, string expectedName) {
+        var child = MetricCard.Create().WithMetric("Ready", "12").WithSize(120, 70);
+        var grid = VisualGrid.Create().WithTitle(title).Add(child);
+        var artifact = grid.ToVisualArtifact();
+
+        var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
+
+        Assert.Equal(expectedName, artifact.Accessibility.Name);
+        Assert.Equal(expectedName, envelope.AccessibleName);
+        var svg = XDocument.Parse(artifact.ToSvg()).Root!;
+        Assert.Equal(expectedName, svg.Element(XName.Get("title", "http://www.w3.org/2000/svg"))!.Value);
+        Assert.Contains("<title>" + expectedName + "</title>", new HtmlVisualGridRenderer().RenderPage(grid), StringComparison.Ordinal);
+    }
+
     [Fact]
     public void CreatingAnEnvelopeMeasuresLogicalSizeWithoutRenderingChildren() {
         var child = new DeferredBlock();

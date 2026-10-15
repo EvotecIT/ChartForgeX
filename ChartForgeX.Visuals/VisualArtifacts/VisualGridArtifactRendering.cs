@@ -21,7 +21,7 @@ public static class VisualGridArtifactRendering {
         artifact.NaturalSize = new VisualArtifactSize(layout.Width, layout.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png |
             VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Office;
-        artifact.Accessibility.Name = grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title;
+        artifact.Accessibility.Name = grid.ResolvedAccessibleName;
         artifact.Metadata["render.model"] = nameof(VisualGrid);
         artifact.Metadata["visual-grid.items"] = grid.Items.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["visual-grid.columns"] = grid.Columns.ToString(CultureInfo.InvariantCulture);

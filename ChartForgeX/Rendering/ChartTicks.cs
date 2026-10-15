@@ -103,7 +103,10 @@ internal static class ChartTicks {
                 if (normalizedValue - normalizedMax > tolerance) break;
                 normalizedValue = normalizedMax;
             }
-            AddFiniteDistinct(ticks, Denormalize(NormalizeZero(normalizedValue, normalizedStep), scale, min, max, normalizedMin, normalizedMax));
+            var value = Denormalize(NormalizeZero(normalizedValue, normalizedStep), scale, min, max, normalizedMin, normalizedMax);
+            // Multiplication by a large normalization scale can move an aligned
+            // endpoint outward by one ULP. Interior ticks retain strict bounds.
+            AddFiniteDistinct(ticks, Math.Max(min, Math.Min(max, value)));
         }
 
         return ticks.Count >= 2 ? ticks : DistinctEndpoints(min, max);

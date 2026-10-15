@@ -54,6 +54,10 @@ internal static partial class VisualScheduleCompiler {
             now.HasValue && now.Value >= min && now.Value <= max, ticks, Format, hasFixedTicks: fixedTicks != null);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);
         var slot = plot.Height / Math.Max(1, row); var height = Math.Max(0, Math.Min(gantt ? 30 : 34, slot * .65));
+        // Linked rows need a gutter at least as wide as the connector's painted stroke. Keep the ordinary
+        // mark height when it fits, and retain marks when the declared stroke cannot fit even an empty row.
+        if (renderedLinks.Length > 0 && slot > context.Theme.AxisStrokeWidth)
+            height = Math.Min(height, slot - context.Theme.AxisStrokeWidth);
         var milestoneSize = Math.Min(height, plot.Width);
         var milestoneExtent = items.Any(item => item.Milestone) ? milestoneSize / 2 : 0;
         var markerAtMin = items.Any(item => item.Marker && item.Start == min);

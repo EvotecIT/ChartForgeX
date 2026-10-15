@@ -25,6 +25,65 @@ public sealed class NiceNumericLayoutTests {
     }
 
     [Theory]
+    [InlineData(.2, .8)]
+    [InlineData(-.8, -.2)]
+    [InlineData(-.2, .4)]
+    public void ArithmeticRoundoffPreservesAlignedDecimalTicks(double minimum, double maximum) {
+        foreach (var inside in new[] { false, true }) {
+            var ticks = inside ? ChartTicks.GenerateInside(minimum, maximum, 4) : ChartTicks.Generate(minimum, maximum, 4);
+            Assert.Equal(4, ticks.Count);
+            for (var index = 0; index < ticks.Count; index++) Assert.Equal(minimum + .2 * index, ticks[index], 14);
+            if (inside) Assert.All(ticks, tick => Assert.InRange(tick, minimum, maximum));
+            else Assert.True(ticks[0] <= minimum && ticks[^1] >= maximum);
+        }
+    }
+
+    [Theory]
+    [InlineData(1, 2)]
+    [InlineData(2, 2.5)]
+    [InlineData(2.5, 5)]
+    [InlineData(5, 10)]
+    public void GenuinelyLargerIntervalsStillRoundUp(double boundary, double expectedStep) {
+        var requestedStep = boundary + 5e-13;
+        foreach (var inside in new[] { false, true }) {
+            var ticks = inside ? ChartTicks.GenerateInside(0, requestedStep * 3, 4) : ChartTicks.Generate(0, requestedStep * 3, 4);
+            Assert.InRange(ticks.Count, 2, 4);
+            Assert.Equal(expectedStep, ticks[1] - ticks[0]);
+            for (var index = 1; index < ticks.Count; index++) Assert.True(ticks[index] - ticks[index - 1] >= requestedStep);
+        }
+    }
+
+    [Fact]
+    public void OutwardAlignmentAdvancesTheStepToRespectTheTickBudget() {
+        var ticks = ChartTicks.Generate(.1, .7, 4);
+        Assert.Equal(new[] { 0d, .25, .5, .75 }, ticks);
+    }
+
+    [Theory]
+    [InlineData(1e180, 9.999999999999999e181)]
+    [InlineData(2e180, 1.9999999999999998e182)]
+    [InlineData(-9.999999999999999e181, -1e180)]
+    public void DenormalizedInteriorTicksRetainStrictAuthoredBounds(double minimum, double maximum) {
+        var ticks = ChartTicks.GenerateInside(minimum, maximum, 100);
+        Assert.InRange(ticks.Count, 2, 100);
+        Assert.Equal(minimum, ticks[0]);
+        Assert.All(ticks, tick => Assert.InRange(tick, minimum, maximum));
+        for (var index = 1; index < ticks.Count; index++) Assert.True(ticks[index] > ticks[index - 1]);
+        var outside = ChartTicks.Generate(minimum, maximum, 100);
+        Assert.InRange(outside.Count, 2, 100);
+        Assert.True(outside[0] <= minimum && outside[^1] >= maximum);
+    }
+
+    [Fact]
+    public void DecimalCountBinsRetainTheirAlignedDataEnvelope() {
+        var bins = ChartHistogramBinLayout.FromCount(.2, .8, 3);
+        Assert.Equal(3, bins.Count);
+        Assert.Equal(.2, bins.Minimum);
+        Assert.Equal(.8, bins.Maximum);
+        for (var index = 0; index < bins.Count; index++) Assert.Equal(.2, bins.GetWidth(index), 14);
+    }
+
+    [Theory]
     [InlineData(28, 98, 3)]
     [InlineData(-14, 79, 4)]
     [InlineData(-2, 0, 1)]
