@@ -47,6 +47,8 @@ internal sealed partial class VisualTopologyCompiler {
 
     private void BuildGroups() {
         if (_options.IncludeGroups) foreach (var group in _chart.Groups) {
+            var headerParts = new List<ChartRect>();
+            _groupHeaderParts.Add(group.Id, headerParts);
             var active = _highlight.IsGroupHighlighted(group);
             var authoredAccent = group.Color ?? ResolveGroupIcon(group, _options)?.Color;
             var baseAccent = Color(authoredAccent, Status(group.Status));
@@ -65,23 +67,35 @@ internal sealed partial class VisualTopologyCompiler {
                     if (_options.RequireResolvedIcons && group.IconId != null && icon == null) throw new InvalidOperationException("Unresolved topology group icon: " + group.IconId);
                     var symbol = group.Symbol ?? icon?.Symbol;
                     var symbolCenter = TopologyGroupHeader.SymbolCenter(group);
-                    if (TopologyGroupHeader.SymbolReserve(group, _options) > 0) BuildGlyph(new TopologyNode { IconId = group.IconId, Symbol = symbol, Kind = icon?.NodeKind ?? TopologyNodeKind.Hub, Color = authoredAccent, Status = group.Status }, symbolCenter.X, symbolCenter.Y, accent, TopologyGroupHeader.SymbolScale, accentRole, artworkOpacity: HighlightFactor(active));
+                    if (TopologyGroupHeader.SymbolReserve(group, _options) > 0) {
+                        BuildGlyph(new TopologyNode { IconId = group.IconId, Symbol = symbol, Kind = icon?.NodeKind ?? TopologyNodeKind.Hub, Color = authoredAccent, Status = group.Status }, symbolCenter.X, symbolCenter.Y, accent, TopologyGroupHeader.SymbolScale, accentRole, artworkOpacity: HighlightFactor(active));
+                        headerParts.Add(TopologyGroupHeader.SymbolBounds(group));
+                    }
                     var titleBounds = TopologyGroupHeader.TitleBounds(group, _options);
                     var fitTitle = ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize, titleBounds.Height, 600);
                     var fitSubtitle = ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize * .85, TopologyGroupHeader.SubtitleHeight);
-                    Text(group.Label, Bounds(titleBounds.X, titleBounds.Y, titleBounds.Width, titleBounds.Height), _context.Theme.Typography.DataLabelSize, Highlight(_colors.Foreground, active), 600, "topology-group-label", opacity: HighlightFactor(active), fitSingleLine: fitTitle);
+                    CaptureCaption(Text(group.Label, Bounds(titleBounds.X, titleBounds.Y, titleBounds.Width, titleBounds.Height), _context.Theme.Typography.DataLabelSize, Highlight(_colors.Foreground, active), 600, "topology-group-label", opacity: HighlightFactor(active), fitSingleLine: fitTitle));
                     if (!string.IsNullOrWhiteSpace(group.Subtitle)) {
                         var subtitleBounds = TopologyGroupHeader.SubtitleBounds(group, _options, fitTitle || fitSubtitle);
-                        Text(group.Subtitle!, Bounds(subtitleBounds.X, subtitleBounds.Y, subtitleBounds.Width, subtitleBounds.Height), _context.Theme.Typography.DataLabelSize * .85, Highlight(_colors.MutedForeground, active), 400, "topology-group-subtitle", paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)), fitSingleLine: fitSubtitle);
+                        CaptureCaption(Text(group.Subtitle!, Bounds(subtitleBounds.X, subtitleBounds.Y, subtitleBounds.Width, subtitleBounds.Height), _context.Theme.Typography.DataLabelSize * .85, Highlight(_colors.MutedForeground, active), 400, "topology-group-subtitle", paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)), fitSingleLine: fitSubtitle));
                     }
                     if (_options.IncludeGroupStatusDots) {
                         var status = Highlight(Status(group.Status), active);
                         var statusCenter = Point(TopologyGroupHeader.StatusCenter(group));
                         using (PinnedState()) _builder.Ellipse(statusCenter.X, statusCenter.Y, TopologyGroupHeader.StatusRadius * _scale, TopologyGroupHeader.StatusRadius * _scale, status, role: "topology-group-status", paint: new VisualScenePaintBinding(StatusPaint(group.Status, status, HighlightFactor(active))));
+                        headerParts.Add(TopologyGroupHeader.StatusBounds(group));
                     }
                 }
             }
             _builder.AddRegion(new VisualSemanticRegion(group.Id, "topology-group", bounds, group.Label));
+
+            void CaptureCaption(ChartRect? painted) {
+                if (painted.HasValue) {
+                    var part = painted.Value;
+                    headerParts.Add(new ChartRect((part.X - _offsetX) / _scale, (part.Y - _offsetY) / _scale,
+                        part.Width / _scale, part.Height / _scale));
+                }
+            }
         }
         if (_chart.LayoutMode != TopologyLayoutMode.Geographic) return;
         if (_options.IncludeGeographicRegionHulls) foreach (var group in _chart.Groups) {

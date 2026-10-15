@@ -1,8 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
+    private IReadOnlyDictionary<string, IReadOnlyList<ChartRect>> CaptureGroupHeaderParts() =>
+        new ReadOnlyDictionary<string, IReadOnlyList<ChartRect>>(_groupHeaderParts.ToDictionary(entry => entry.Key,
+            entry => (IReadOnlyList<ChartRect>)Array.AsReadOnly(entry.Value.ToArray()), StringComparer.Ordinal));
+
     internal TopologyChart LayoutSnapshot() {
         var snapshot = TopologyLayoutEngine.Clone(_chart);
         // The common frame owns headings and legend. Reintroducing them into this domain

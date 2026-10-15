@@ -25,9 +25,12 @@ public static partial class TopologyLayoutDiagnostics {
         var report = new TopologyLayoutDiagnosticReport(chart.Viewport.Width, chart.Viewport.Height, chart.LayoutMode, chart.LayoutDirection);
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var headers = TopologyGroupHeader.IsDrawn(options);
+        var headerParts = chart.Groups.ToDictionary(group => group.Id,
+            group => TopologyGroupHeader.PaintedParts(chart, group, options), StringComparer.Ordinal);
         foreach (var group in chart.Groups) {
+            var parts = headerParts.TryGetValue(group.Id, out var captured) ? captured : Array.Empty<ChartRect>();
             report.Groups.Add(new TopologyLayoutGroupDiagnostic(group.Id, new ChartRect(group.X, group.Y, group.Width, group.Height),
-                headers ? TopologyGroupHeader.Bounds(chart, group, options) : null));
+                headers ? TopologyGroupHeader.Bounds(group, parts) : null));
         }
         foreach (var node in chart.Nodes) {
             var caption = TopologyNodeFootprint.RenderedCaption(node, options, chart.TextMeasurement);
@@ -44,7 +47,7 @@ public static partial class TopologyLayoutDiagnostics {
         for (var i = 0; i < report.Nodes.Count; i++) for (var j = i + 1; j < report.Nodes.Count; j++) {
             if (Intersects(report.Nodes[i].Bounds, report.Nodes[j].Bounds)) report.Collisions.Add(new TopologyLayoutCollisionDiagnostic("node-node", report.Nodes[i].Id, report.Nodes[j].Id, Intersection(report.Nodes[i].Bounds, report.Nodes[j].Bounds)));
         }
-        AnalyzeRoutes(report, chart, options);
+        AnalyzeRoutes(report, chart, options, headerParts);
         return report;
     }
 

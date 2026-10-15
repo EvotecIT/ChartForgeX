@@ -20,8 +20,11 @@ internal static class TopologyGroupHeader {
     public static bool IsDrawn(TopologyRenderOptions options) => options.IncludeGroups && options.IncludeGroupLabels;
 
     /// <summary>Returns the union used to describe the native painted header.</summary>
-    public static ChartRect Bounds(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) {
-        var parts = PaintedParts(chart, group, options);
+    public static ChartRect Bounds(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) =>
+        Bounds(group, PaintedParts(chart, group, options));
+
+    /// <summary>Describes already captured header parts without resolving font resources again.</summary>
+    internal static ChartRect Bounds(TopologyGroup group, IReadOnlyList<ChartRect> parts) {
         if (parts.Count == 0) return new ChartRect(group.X, group.Y, 0, 0);
         var left = parts.Min(part => part.Left); var top = parts.Min(part => part.Top);
         return new ChartRect(left, top, parts.Max(part => part.Right) - left, parts.Max(part => part.Bottom) - top);
@@ -37,6 +40,8 @@ internal static class TopologyGroupHeader {
     /// <summary>Returns individual painted obstacles without filling the space between captions and status dots.</summary>
     internal static IReadOnlyList<ChartRect> PaintedParts(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) {
         if (!IsDrawn(options)) return Array.Empty<ChartRect>();
+        if (chart.PreparedGroupHeaderParts != null)
+            return chart.PreparedGroupHeaderParts.TryGetValue(group.Id, out var captured) ? captured : Array.Empty<ChartRect>();
         var font = chart.TextMeasurement?.Font ?? chart.Theme.Typography.ToFontSpec();
         var builder = new VisualSceneBuilder(new VisualSize(1, 1), font);
         var size = chart.Theme.Typography.DataLabelSize;
@@ -46,14 +51,8 @@ internal static class TopologyGroupHeader {
         AddCaption(group.Label, TitleBounds(group, options), size, 600, fitTitle);
         if (!string.IsNullOrWhiteSpace(group.Subtitle))
             AddCaption(group.Subtitle!, SubtitleBounds(group, options, fitTitle || fitSubtitle), size * .85, 400, fitSubtitle);
-        if (SymbolReserve(group, options) > 0) {
-            var center = SymbolCenter(group); var half = 13 * SymbolScale;
-            parts.Add(new ChartRect(center.X - half, center.Y - half, half * 2, half * 2));
-        }
-        if (options.IncludeGroupStatusDots) {
-            var center = StatusCenter(group);
-            parts.Add(new ChartRect(center.X - StatusRadius, center.Y - StatusRadius, StatusRadius * 2, StatusRadius * 2));
-        }
+        if (SymbolReserve(group, options) > 0) parts.Add(SymbolBounds(group));
+        if (options.IncludeGroupStatusDots) parts.Add(StatusBounds(group));
         return parts;
 
         void AddCaption(string value, ChartRect allocation, double preferred, int weight, bool fit) {
@@ -74,6 +73,16 @@ internal static class TopologyGroupHeader {
 
     internal static ChartPoint SymbolCenter(TopologyGroup group) => new(group.X + 22, group.Y + 21);
     internal static ChartPoint StatusCenter(TopologyGroup group) => new(group.X + group.Width - 12, group.Y + 16);
+
+    internal static ChartRect SymbolBounds(TopologyGroup group) {
+        var center = SymbolCenter(group); var half = 13 * SymbolScale;
+        return new ChartRect(center.X - half, center.Y - half, half * 2, half * 2);
+    }
+
+    internal static ChartRect StatusBounds(TopologyGroup group) {
+        var center = StatusCenter(group);
+        return new ChartRect(center.X - StatusRadius, center.Y - StatusRadius, StatusRadius * 2, StatusRadius * 2);
+    }
 
     private static ChartRect TextBounds(TopologyGroup group, TopologyRenderOptions options, double top, double height) {
         var reserve = SymbolReserve(group, options);

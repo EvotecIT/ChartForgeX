@@ -16,7 +16,8 @@ internal static partial class TopologyLayoutEngine {
             // Prepared geometry depends on the resolved routing policy and measured font.
             // Prepare replaces these values for a fresh layout; detached prepared clones retain them.
             RenderOptions = chart.RenderOptions?.Clone(),
-            TextMeasurement = chart.TextMeasurement
+            TextMeasurement = chart.TextMeasurement,
+            PreparedGroupHeaderParts = chart.PreparedGroupHeaderParts
         };
         copy.Accessibility.Name = chart.Accessibility.Name;
         copy.Accessibility.Description = chart.Accessibility.Description;

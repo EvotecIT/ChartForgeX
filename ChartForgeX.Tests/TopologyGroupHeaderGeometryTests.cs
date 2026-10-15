@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Xml.Linq;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
@@ -38,6 +39,7 @@ public sealed class TopologyGroupHeaderGeometryTests {
             Assert.Equal(Assert.Single(caption.Text.Lines).Text, element.Value);
             Assert.True(HasNativeInk(image, caption), "The group caption must contribute native raster ink.");
         }
+        if (family == "CFX Group Header Carlito") AssertDetachedFromFontRegistry(prepared, chart, family);
     }
 
     [Theory]
@@ -95,6 +97,42 @@ public sealed class TopologyGroupHeaderGeometryTests {
 
     private static VisualSceneText[] Captions(PreparedTopology prepared) => prepared.Visual.Scene.Nodes.OfType<VisualSceneText>()
         .Where(node => node.Role is "topology-group-label" or "topology-group-subtitle").ToArray();
+
+    private static void AssertDetachedFromFontRegistry(PreparedTopology prepared, TopologyChart source, string family) {
+        var routedSource = TopologyLayoutEngine.Clone(source);
+        routedSource.Edges[0].Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
+        var routedOptions = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeEdgeLabels = false };
+        var routed = routedSource.Prepare(routedOptions);
+        var scenes = new (PreparedTopology Prepared, TopologyChart Source, TopologyRenderOptions? Options)[] {
+            (prepared, source, null), (routed, routedSource, routedOptions)
+        };
+        var expected = scenes.Select(scene => {
+            var report = scene.Prepared.Analyze();
+            var serialized = JsonSerializer.Serialize(report);
+            // Every call owns its mutable report; clearing it must not alter the captured header parts.
+            report.Groups.Clear();
+            return (scene.Prepared, scene.Source, scene.Options, Report: serialized, Svg: scene.Prepared.ToSvg(), Png: scene.Prepared.ToPng());
+        }).ToArray();
+        AssertStable();
+        try {
+            FontRegistry.Clear();
+            AssertStable();
+            var regular = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+            FontRegistry.Register(family, regular, 400);
+            FontRegistry.Register(family, regular, 700);
+            AssertStable();
+            Assert.All(expected, scene => Assert.False(scene.Png.SequenceEqual(scene.Source.Prepare(scene.Options).ToPng()), "A newly prepared scene must observe the replacement face."));
+        } finally { FontRegistry.Clear(); }
+
+        void AssertStable() {
+            // Compare full bounds, route crossings, label placement, and attachment data, rather than counts.
+            Assert.All(expected, scene => {
+                Assert.Equal(scene.Report, JsonSerializer.Serialize(scene.Prepared.Analyze()));
+                Assert.Equal(scene.Svg, scene.Prepared.ToSvg());
+                Assert.Equal(scene.Png, scene.Prepared.ToPng());
+            });
+        }
+    }
 
     private static void AssertHeaderContainsPaintAndAvoidsNodes(PreparedTopology prepared) {
         var header = Assert.Single(prepared.Analyze().Groups).HeaderBounds!.Value;

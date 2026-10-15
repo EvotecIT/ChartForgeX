@@ -16,7 +16,8 @@ public static partial class TopologyLayoutDiagnostics {
     /// <summary>How far past its end a route is extended when testing that it points at its node.</summary>
     private const double AttachmentReach = 14;
 
-    private static void AnalyzeRoutes(TopologyLayoutDiagnosticReport report, TopologyChart chart, TopologyRenderOptions options) {
+    private static void AnalyzeRoutes(TopologyLayoutDiagnosticReport report, TopologyChart chart, TopologyRenderOptions options,
+        IReadOnlyDictionary<string, IReadOnlyList<ChartRect>> headerParts) {
         var nodeBounds = new Dictionary<string, TopologyLayoutNodeDiagnostic>(StringComparer.Ordinal);
         foreach (var node in report.Nodes) {
             if (!nodeBounds.ContainsKey(node.Id)) nodeBounds.Add(node.Id, node);
@@ -37,7 +38,7 @@ public static partial class TopologyLayoutDiagnostics {
             }
 
             foreach (var group in chart.Groups) {
-                if (TopologyGroupHeader.PaintedParts(chart, group, options).Any(part => Crosses(edge.Points, part)))
+                if (headerParts.TryGetValue(group.Id, out var parts) && parts.Any(part => Crosses(edge.Points, part)))
                     report.RouteCrossings.Add(new TopologyLayoutRouteCrossingDiagnostic(TopologyLayoutRouteCrossingKind.GroupHeader, edge.Id, group.Id));
             }
 
