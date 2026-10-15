@@ -18,7 +18,8 @@ internal static partial class TopologyRenderPrimitives {
             .Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
             .Select(node => EdgeLabelNodeObstacle(node, options, 8))
             .ToList();
-        var groupHeaderBoxes = chart.Groups.Select(group => LabelBox.FromGroupHeader(group, 8)).ToList();
+        var groupHeaderBoxes = chart.Groups.SelectMany(group => TopologyGroupHeader.PaintedParts(chart, group, options))
+            .Select(header => LabelBox.FromBounds(header.Left - 8, header.Top - 8, header.Right + 8, header.Bottom + 8)).ToList();
         var groupBoxes = chart.Groups.Select(group => LabelBox.FromGroup(group, 8)).ToList();
         List<EdgeSegment>? edgeSegments = null;
         var edgeRenderOrders = EdgeRenderOrderMap(chart, options);
