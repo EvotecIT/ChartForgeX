@@ -1,0 +1,65 @@
+{
+  "hero": {
+    "lede": "PowerBGInfo is an Evotec PowerShell module that puts machine details, charts and small topology diagrams on Windows desktop and lock-screen wallpapers. ChartForgeX draws the whole image, from the generated backdrop to the last chart label.",
+    "show": "server-status",
+    "alt": "Server status wallpaper rendered by PowerBGInfo: the host name SQL-PROD-01 with its role and owner, four tiles for uptime, CPU, memory and network, and panels for volumes, network throughput and critical services."
+  },
+  "scenarios": {
+    "title": "Four wallpapers, each with one job",
+    "body": "Each script answers one question for the person in front of the screen and renders in light and dark at any resolution. They share one look, defined once in HudTheme.ps1: the same margins, glass panels, type scale and status colours. The values are fixed samples so anyone can reproduce the renders; comments in the scripts show where real values come from, such as Get-Counter or Get-Volume. Under each wallpaper is the New-BGInfo call that places what it shows; the full script is one click away."
+  },
+  "alts": {
+    "server-status": "Server status wallpaper for SQL-PROD-01: role, owner, maintenance window and on-call address, tiles for uptime, CPU, memory and network, and panels for volume usage, network throughput and running services.",
+    "helpdesk": "Help desk wallpaper: how to reach the service desk, its portal, hours and current service status, with tiles for asset tag, computer name, IP address, signed-in user and Windows version.",
+    "classroom": "Lab wallpaper for seat LAB-B-14: a large seat name, the nightly reset time, the instructor and Wi-Fi details, and panels for session time left, completed exercises and class progress.",
+    "admin-workstation": "Privileged access workstation wallpaper for PAW-T0-03: seven health tiles, a privileged sign-in chart, a topology of the allowed path from the workstation through a jump host to tier 0, a tier 0 change trend and open security alerts."
+  },
+  "parts": {
+    "title": "What ChartForgeX draws",
+    "body": "PowerBGInfo collects the values, lays out the wallpaper and applies it through Windows. Every pixel of the image comes from ChartForgeX; there is no System.Drawing or browser underneath.",
+    "items": [
+      {
+        "title": "Charts",
+        "command": "New-BGInfoChart",
+        "body": "Thirteen chart kinds, from sparklines and gauges to progress bars and pictorial rows, on panels with the corner radius and border of the rest of the wallpaper.",
+        "links": [
+          { "title": "Chart gallery", "url": "/gallery/" }
+        ]
+      },
+      {
+        "title": "Topology",
+        "command": "New-BGInfoTopology",
+        "body": "Groups, nodes and links with status and replication lag, drawn by the same TopologyChart that renders service maps in .NET.",
+        "links": [
+          { "title": "Topology and hierarchy", "url": "/docs/topology-and-hierarchy/" }
+        ]
+      },
+      {
+        "title": "Canvas and backdrop",
+        "command": "New-BGInfoVisualCanvas",
+        "body": "Info tiles with icons, mini charts and progress, and generated backdrops of gradients, glows and grid or dot patterns, composed with VisualCanvas and ImageComposition.",
+        "links": [
+          { "title": "Choose a rendering surface", "url": "/docs/choosing-a-surface/" }
+        ]
+      },
+      {
+        "title": "One theme",
+        "command": "-ThemeMode Light | Dark",
+        "body": "Charts, topology and tiles each take a light or dark mode and draw text with the ChartForgeX text engine, so a wallpaper reads as one design instead of three overlays.",
+        "links": [
+          { "title": "ChartForgeX overview", "url": "/docs/overview/" }
+        ]
+      }
+    ]
+  },
+  "start": {
+    "title": "Get started",
+    "body": "Install the module from the PowerShell Gallery and render to a file first, so you can check the layout before anything changes on a desktop.",
+    "install": "Install-Module PowerBGInfo",
+    "links": [
+      { "title": "PowerShell Gallery", "url": "https://www.powershellgallery.com/packages/PowerBGInfo" },
+      { "title": "Source and README", "url": "https://github.com/EvotecIT/PowerBGInfo" },
+      { "title": "ChartForgeX in PowerShell", "url": "/powershell/" }
+    ]
+  }
+}
