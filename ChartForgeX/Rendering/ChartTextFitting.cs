@@ -16,7 +16,7 @@ internal static class ChartTextFitting {
     }
 
     public static string TrimEnd(string value, double fontSize, double maxWidth, Func<string, double, double> measure) {
-        return FitEnd(value, maxWidth, text => measure(text, fontSize), "...");
+        return FitEnd(value, maxWidth, text => measure(text, fontSize), "…");
     }
 
     /// <summary>Fits a prefix without first shaping an arbitrarily long source value.</summary>

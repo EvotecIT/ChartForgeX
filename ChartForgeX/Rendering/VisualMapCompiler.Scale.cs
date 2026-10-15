@@ -9,16 +9,14 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
-    private static MapLayout ScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, double min, double max, ChartColorPresentation presentation) {
+    private static MapLayout ScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, double min, double max,
+        ChartColorPresentation presentation, TileMapLegendInset? legendInset = null) {
         if (!presentation.ShowLegend || !context.Frame.ShowLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
         if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) return DiscreteScaleLayout(chart, context, builder, plot, presentation);
         if (chart.Options.MapColorScale is ChartColorScale scale && !MapHasDomain(chart, scale, min, max))
             return MissingScaleLayout(chart, context, builder, plot, presentation);
-        var values = new[] { ChartHeatmapSurface.MapScaleValue(chart, min, max, 1), ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), ChartHeatmapSurface.MapScaleValue(chart, min, max, 0) };
-        var captions = presentation.ScaleValues(values);
-        var texts = new[] { (chart.Options.MapColorScale?.HighLabel ?? presentation.Labels.More) + " · " + captions[0],
-            (ChartHeatmapSurface.MapMidpointLabel(chart) ?? "") + " " + captions[1],
-            (chart.Options.MapColorScale?.LowLabel ?? presentation.Labels.Less) + " · " + captions[2] };
+        var texts = ResolveScaleCaptions(chart, min, max, presentation);
+        if (legendInset != null) return new MapLayout(legendInset.Map, legendInset.ColorKey, texts, false, true, true);
         var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
         var title = presentation.HasName ? presentation.Name : chart.Series[0].Name;
         var height = texts.Concat(new[] { "Mg", title, presentation.NoData })
@@ -29,9 +27,28 @@ internal static partial class VisualMapCompiler {
             return new MapLayout(new ChartRect(plot.Left, plot.Top, Math.Max(0, plot.Width - width - gap), plot.Height),
                 new ChartRect(plot.Right - width, plot.Top, width, plot.Height), texts, true);
         }
-        var reserve = Math.Min(plot.Height * .35, height * (ChartHeatmapSurface.MapMidpointLabel(chart) != null ? 4 : 3) + gap * 2 + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null));
-        return new MapLayout(new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, plot.Height - reserve - gap)),
-            new ChartRect(plot.Left, plot.Bottom - reserve, plot.Width, reserve), texts, false);
+        var missingWidth = height * .7 + 4 + builder.MeasureText(presentation.NoData, style).Width;
+        // A measured missing-data item can share the endpoint-caption row. This retains both the numeric key
+        // and readable map cells in compact views without a thumbnail-specific legend suppression.
+        var inlineMissing = !presentation.HasName && ChartHeatmapSurface.MapMidpointLabel(chart) == null && HasMissingMapValues(chart)
+            && Math.Max(builder.MeasureText(texts[0], style).Width, builder.MeasureText(texts[2], style).Width) / 2
+                + missingWidth / 2 + gap <= plot.Width / 4;
+        // An inline key needs one measured caption row and a half-row color ramp. Keep its map separation
+        // proportional to that compact key, so a readable key does not consume another full row of tile codes.
+        var reserve = Math.Min(plot.Height * .35, inlineMissing ? height * 1.5
+            : height * (ChartHeatmapSurface.MapMidpointLabel(chart) != null ? 4 : 3) + gap * 2
+                + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null));
+        return new MapLayout(new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, plot.Height - reserve - (inlineMissing ? gap / 4 : gap))),
+            new ChartRect(plot.Left, plot.Bottom - reserve, plot.Width, reserve), texts, false, inlineMissing);
+    }
+
+    /// <summary>Resolves the same complete three-value key before either inset measurement or static painting.</summary>
+    private static string[] ResolveScaleCaptions(Chart chart, double min, double max, ChartColorPresentation presentation) {
+        var values = new[] { ChartHeatmapSurface.MapScaleValue(chart, min, max, 1), ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), ChartHeatmapSurface.MapScaleValue(chart, min, max, 0) };
+        var captions = presentation.ScaleValues(values);
+        return new[] { (chart.Options.MapColorScale?.HighLabel ?? presentation.Labels.More) + " · " + captions[0],
+            (ChartHeatmapSurface.MapMidpointLabel(chart) ?? "") + " " + captions[1],
+            (chart.Options.MapColorScale?.LowLabel ?? presentation.Labels.Less) + " · " + captions[2] };
     }
 
     private static void DrawScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
@@ -89,6 +106,11 @@ internal static partial class VisualMapCompiler {
                 if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, area.Bottom - row, area.Width, row), area), style, row, presentation.NoData);
             } else {
                 ChartRect? inlineMissing = null;
+                if (layout.InlineMissing) {
+                    var width = row * .7 + 4 + builder.MeasureText(presentation.NoData, style).Width;
+                    inlineMissing = new ChartRect(area.Left + (area.Width - width) / 2, area.Top, width, row);
+                    MissingScale(chart, builder, colors, inlineMissing.Value, style, row, presentation.NoData);
+                }
                 if (presentation.HasName) {
                     var heading = Math.Min(area.Height, VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.Name));
                     var keyArea = new ChartRect(area.Left, area.Top + heading, area.Width, Math.Max(0, area.Height - heading));
@@ -110,8 +132,10 @@ internal static partial class VisualMapCompiler {
                             blend.Color, role: "map-scale-step", paint: VisualChartPaint.Fill(blend.Paint));
                     }
                 }
-                VisualRadialPrimitives.Text(builder, layout.Texts[2], new ChartRect(area.Left, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-low");
-                VisualRadialPrimitives.Text(builder, layout.Texts[0], new ChartRect(area.Left + area.Width / 2, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-high");
+                VisualRadialPrimitives.Text(builder, layout.Texts[2], new ChartRect(area.Left, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-low",
+                    alignment: layout.Inset ? TextAlignment.Left : TextAlignment.Center);
+                VisualRadialPrimitives.Text(builder, layout.Texts[0], new ChartRect(area.Left + area.Width / 2, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-high",
+                    alignment: layout.Inset ? TextAlignment.Right : TextAlignment.Center);
                 var next = swatchTop + swatchHeight;
                 if (ChartHeatmapSurface.MapMidpointLabel(chart) != null) {
                     var center = gradient ? area.Left + area.Width * ChartColorScaleLegend.MidpointRatio(scale!, min, max)
@@ -151,13 +175,21 @@ internal static partial class VisualMapCompiler {
 
     private static void MissingScale(Chart chart, VisualSceneBuilder builder, VisualThemeColors colors, ChartRect area, TextStyle style, double size, string noData) {
         var swatch = Math.Min(size * .7, Math.Min(area.Width, area.Height));
+        var gap = Math.Min(4, Math.Max(0, area.Width - swatch));
+        var captionWidth = Math.Min(builder.MeasureText(noData, style).Width, Math.Max(0, area.Width - swatch - gap));
+        var left = area.Left + (area.Width - swatch - gap - captionWidth) / 2;
         var blend = ChartHeatmapSurface.MapNoDataBlend(chart, colors);
-        builder.Rect(new ChartRect(area.Left, area.Top + (area.Height - swatch) / 2, swatch, swatch), blend.Color, role: "map-scale-no-data", paint: VisualChartPaint.Fill(blend.Paint));
-        VisualRadialPrimitives.Text(builder, noData, new ChartRect(area.Left + swatch, area.Top, Math.Max(0, area.Width - swatch), area.Height), style, "map-scale-no-data-label", "map-scale-no-data-label");
+        builder.Rect(new ChartRect(left, area.Top + (area.Height - swatch) / 2, swatch, swatch), blend.Color, role: "map-scale-no-data", paint: VisualChartPaint.Fill(blend.Paint));
+        VisualRadialPrimitives.Text(builder, noData, new ChartRect(left + swatch + gap, area.Top, captionWidth, area.Height),
+            style, "map-scale-no-data-label", "map-scale-no-data-label", alignment: TextAlignment.Left);
     }
 
     private sealed class MapLayout {
-        internal MapLayout(ChartRect map, ChartRect scale, string[] texts, bool right) { Map = map; Scale = scale; Texts = texts; Right = right; }
+        internal MapLayout(ChartRect map, ChartRect scale, string[] texts, bool right, bool inlineMissing = false, bool inset = false) {
+            Map = map; Scale = scale; Texts = texts; Right = right; InlineMissing = inlineMissing; Inset = inset;
+        }
         internal ChartRect Map { get; } internal ChartRect Scale { get; } internal string[] Texts { get; } internal bool Right { get; }
+        internal bool InlineMissing { get; }
+        internal bool Inset { get; }
     }
 }

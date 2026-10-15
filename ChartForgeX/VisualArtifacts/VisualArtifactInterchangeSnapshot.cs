@@ -320,6 +320,7 @@ internal static class VisualArtifactInterchangeSnapshot {
             Status = source.Status,
             DisplayMode = source.DisplayMode,
             Shape = source.Shape,
+            FitLabelToContent = source.FitLabelToContent,
             Longitude = source.Longitude,
             Latitude = source.Latitude,
             ShowStatusBadge = source.ShowStatusBadge,

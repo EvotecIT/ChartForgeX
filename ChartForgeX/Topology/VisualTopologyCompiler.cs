@@ -96,6 +96,7 @@ internal sealed partial class VisualTopologyCompiler {
             Padding = _context.Layout.Padding
         };
         input.Theme = _context.Theme; input.ThemeMode = _context.ThemeMode;
+        if (!_resolvedLayout) FitNodeLabels(input);
         var layoutOptions = _options.CloneForRendering();
         layoutOptions.IncludeTitle = false; layoutOptions.IncludeLegend = false;
         // A view selects data and identity here. Its headings were already measured by the

@@ -24,6 +24,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Status = node.Status,
             DisplayMode = displayMode,
             Shape = node.Shape,
+            FitLabelToContent = node.FitLabelToContent,
             Artwork = MapArtwork(node.Artwork),
             Longitude = node.Longitude,
             Latitude = node.Latitude,

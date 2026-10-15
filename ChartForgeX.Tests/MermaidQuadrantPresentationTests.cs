@@ -40,8 +40,11 @@ public sealed class MermaidQuadrantPresentationTests {
         Assert.Contains("var(--host-quadrant,", Paints(mapped, "plot-region-label-backplate")[0]);
         var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
         var regions = prepared.Regions.Where(region => region.Role == "plot-region").ToArray();
-        chart.PlotRegions.Clear();
-        var background = chart.Prepare(context).ToRgba(new VisualRenderOptions(supersampling: 1));
+        // Keep the exact projection and captions: clearing every region makes this
+        // empty chart enter its no-data path and can put new text under the sample.
+        var scene = prepared.Scene;
+        var control = new VisualScene(scene.Size, scene.Nodes.Where(node => node.Role != "plot-region-fill").ToArray(), scene.Diagnostics, scene.Regions);
+        var background = VisualSceneRasterRenderer.Render(control, supersampling: 1);
         for (var i = 0; i < regions.Length; i++) {
             var bounds = regions[i].Bounds;
             var offset = ((int)(bounds.Top + 8) * image.Width + (int)(bounds.Left + 8)) * 4;

@@ -15,29 +15,44 @@ internal static partial class VisualMatrixCompiler {
         var x = chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels;
         var y = chart.Options.ShowAxes && chart.Options.YAxis.Visible;
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground });
-        var widest = columns.Select(formatColumn)
+        var captions = columns.Select(formatColumn).ToArray();
+        var widest = captions
             .Select(text => builder.MeasureText(text, style).Width).DefaultIfEmpty(0).Max();
         var lineHeight = builder.MeasureText("Mg", style).Height;
+        var left = y ? Math.Min(viewport.Width * .3, rows.Select(row => builder.MeasureText(row.Name, style).Width).DefaultIfEmpty(0).Max() + gap) : 0;
+        var hexagonal = rows[0].Kind == ChartSeriesKind.HexbinHeatmap;
+        var pitch = Math.Max(0, viewport.Width - left) / (columns.Length + (hexagonal ? .5 : 0));
+        var angle = ChartHeatmapColumnLabels.Angle(chart);
+        var displayed = captions;
+        if (x && !chart.Options.XAxis.HasExplicitLabelAngle && Math.Abs(angle) < .001 && widest + LabelPlacementService.DefaultGap > pitch) {
+            var wrapped = captions.Select(text => string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
+                Math.Max(0, pitch - LabelPlacementService.DefaultGap), (value, _) => builder.MeasureText(value, style).Width))).ToArray();
+            // Wrap at word boundaries when every full caption fits; otherwise use the same measured rotated band
+            // as an authored angle. A compact categorical matrix must not shorten ordinary service names by default.
+            if (wrapped.All(text => builder.MeasureText(text, style).Width + LabelPlacementService.DefaultGap <= pitch)
+                && wrapped.Max(text => builder.MeasureText(text, style).Height) + 8 <= viewport.Height * .28) displayed = wrapped;
+            else angle = -45;
+        }
         // The shared rotated-label owner already bounds its reach to 40% of the canvas.
         // Apply that same budget to the remaining frame viewport instead of a second,
         // tighter cap that shortens ordinary captions while the cell rows have room.
-        var labels = x ? Math.Min(viewport.Height * (ChartHeatmapColumnLabels.IsRotated(chart) ? .4 : .28), ChartHeatmapColumnLabels.Reserve(chart, widest, lineHeight)) : 0;
-        var left = y ? Math.Min(viewport.Width * .3, rows.Select(row => builder.MeasureText(row.Name, style).Width).DefaultIfEmpty(0).Max() + gap) : 0;
+        var labels = x ? Math.Min(viewport.Height * (ChartHeatmapColumnLabels.IsRotated(chart, angle) ? .4 : .28),
+            ChartHeatmapColumnLabels.IsRotated(chart, angle) ? ChartHeatmapColumnLabels.Reserve(chart, widest, lineHeight, angle)
+                : displayed.Max(text => builder.MeasureText(text, style).Height) + 24) : 0;
         var top = y && chart.YAxisTitle.Length > 0 ? builder.MeasureText(chart.YAxisTitle, titleStyle).Height + gap : 0;
         var xTitle = x ? ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle) : string.Empty;
         var titleHeight = xTitle.Length > 0 ? builder.MeasureText(xTitle, titleStyle).Height + gap : 0;
         // Only left-slanting captions can use the row-label gutter. The right side has no
         // equivalent gutter inside the common viewport, so reserve its complete reach there.
         var side = 0d;
-        if (x && ChartHeatmapColumnLabels.IsRotated(chart)) {
-            var hexagonal = rows[0].Kind == ChartSeriesKind.HexbinHeatmap;
-            var anchorShare = hexagonal ? (ChartHeatmapColumnLabels.EndsAtColumn(chart) ? .5 : 1) / (columns.Length + .5) : .5 / columns.Length;
+        if (x && ChartHeatmapColumnLabels.IsRotated(chart, angle)) {
+            var anchorShare = hexagonal ? (ChartHeatmapColumnLabels.EndsAtColumn(chart, angle) ? .5 : 1) / (columns.Length + .5) : .5 / columns.Length;
             var columnGap = hexagonal ? 0 : Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2, viewport.Width / columns.Length * .5));
             // An outer caption starts at a cell centre, not at the plot edge. Solve
             // side + anchorShare * remainingPlotWidth = reach, retaining that usable
             // half-cell before sacrificing plot width and thinning readable columns.
             side = Side(left);
-            var minimumPitch = ChartHeatmapColumnLabels.MinimumPitch(chart, lineHeight, widest);
+            var minimumPitch = ChartHeatmapColumnLabels.MinimumPitch(chart, lineHeight, widest, angle);
             var minimumPlot = hexagonal ? minimumPitch * (columns.Length + .5) : minimumPitch * columns.Length - columnGap;
             var minimumGutter = Math.Min(left, builder.MeasureText("…", style).Width + gap);
             if (minimumPlot > viewport.Width - left - side && minimumPlot <= viewport.Width - minimumGutter - side) {
@@ -48,31 +63,32 @@ internal static partial class VisualMatrixCompiler {
             }
 
             double Side(double rowGutter) {
-                var spaceBeside = ChartHeatmapColumnLabels.EndsAtColumn(chart) ? rowGutter : 0;
-                var reach = ChartHeatmapColumnLabels.SideReserve(chart, widest, lineHeight, spaceBeside);
+                var spaceBeside = ChartHeatmapColumnLabels.EndsAtColumn(chart, angle) ? rowGutter : 0;
+                var reach = ChartHeatmapColumnLabels.SideReserve(chart, widest, lineHeight, spaceBeside, angle);
                 return Math.Min(viewport.Width * .15, Math.Max(0,
                     (reach - anchorShare * (viewport.Width - rowGutter - columnGap * (columns.Length - 1))) / (1 - anchorShare)));
             }
         }
-        var plotLeft = viewport.Left + left + (ChartHeatmapColumnLabels.EndsAtColumn(chart) ? side : 0);
+        var plotLeft = viewport.Left + left + (ChartHeatmapColumnLabels.EndsAtColumn(chart, angle) ? side : 0);
         var scaleHeight = !categorical && ScaleVisible(context, presentation)
             ? chart.Options.HeatmapColorScale != null
                 ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left - side), viewport.Height * .35, presentation, hasDomain: hasDomain)
                 : Math.Min(viewport.Height * .22, lineHeight * 2 + gap + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null)) : 0;
         var plot = new ChartRect(plotLeft, viewport.Top + top, Math.Max(0, viewport.Width - left - side), Math.Max(0, viewport.Height - top - labels - titleHeight - scaleHeight));
-        return new MatrixLayout(plot, new ChartRect(plot.Left, viewport.Bottom - scaleHeight, plot.Width, scaleHeight), labels, titleHeight, xTitle, titleStyle);
+        return new MatrixLayout(plot, new ChartRect(plot.Left, viewport.Bottom - scaleHeight, plot.Width, scaleHeight), labels, titleHeight, xTitle, titleStyle,
+            angle, displayed);
     }
 
     private static void MatrixAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ChartRect plot,
         double[] columns, double cellWidth, double gap, MatrixLayout layout, Func<double, string> formatColumn) {
         var style = VisualStateSceneTools.TickStyle(chart, context);
         if (chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels) {
-            var angle = ChartHeatmapColumnLabels.Angle(chart);
+            var angle = layout.LabelAngle;
             var width = columns.Select(value => builder.MeasureText(formatColumn(value), style).Width).DefaultIfEmpty(0).Max();
             var pitch = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Width / (columns.Length + .5) : cellWidth + gap;
-            var step = Math.Abs(angle) < .001 ? 1 : ChartHeatmapColumnLabels.Step(chart, pitch, builder.MeasureText("Mg", style).Height, width);
+            var step = Math.Abs(angle) < .001 ? 1 : ChartHeatmapColumnLabels.Step(chart, pitch, builder.MeasureText("Mg", style).Height, width, angle);
             if (step > 1) builder.AddDiagnostic(new VisualDiagnostic("matrix.column-label-density",
-                "Some column captions were omitted to keep measured rotated labels separated; all complete captions remain in descriptive regions."));
+                "Some column captions were omitted to keep measured labels separated; all complete captions remain in descriptive regions."));
             for (var index = 0; index < columns.Length; index++) {
                 var text = formatColumn(columns[index]);
                 var x = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Left + (index + .5) * plot.Width / (columns.Length + .5)
@@ -85,12 +101,12 @@ internal static partial class VisualMatrixCompiler {
                     continue;
                 }
                 if (Math.Abs(angle) < .001) {
-                    VisualStateSceneTools.Text(builder, text, new ChartRect(x - cellWidth / 2, plot.Bottom, cellWidth, layout.LabelHeight), style,
-                        "heatmap-column-label", "matrix-column-" + index, TextAlignment.Center);
+                    MatrixColumnText(builder, text, layout.ColumnLabels[index], new ChartRect(x - pitch / 2 + 1, plot.Bottom, Math.Max(0, pitch - 2), layout.LabelHeight),
+                        style, "matrix-column-" + index);
                 } else {
                     var radians = Math.Abs(angle) * Math.PI / 180;
                     var height = builder.MeasureText(text, style).Height;
-                    var maxWidth = Math.Max(0, Math.Min(ChartHeatmapColumnLabels.MaximumRotatedLength(chart, height),
+                    var maxWidth = Math.Max(0, Math.Min(ChartHeatmapColumnLabels.MaximumRotatedLength(chart, height, angle),
                         (layout.LabelHeight - height * Math.Cos(radians) - 8) / Math.Max(.001, Math.Sin(radians))));
                     var horizontal = angle < 0 ? x - viewport.Left : viewport.Right - x;
                     // The height projects towards the opposite side of the anchor; only the text width
@@ -206,11 +222,14 @@ internal static partial class VisualMatrixCompiler {
     }
 
     private sealed class MatrixLayout {
-        internal MatrixLayout(ChartRect plot, ChartRect scale, double labelHeight, double titleHeight, string xTitle, TextStyle titleStyle) {
+        internal MatrixLayout(ChartRect plot, ChartRect scale, double labelHeight, double titleHeight, string xTitle, TextStyle titleStyle,
+            double labelAngle, string[] columnLabels) {
             Plot = plot; Scale = scale; LabelHeight = labelHeight; TitleHeight = titleHeight; XTitle = xTitle; TitleStyle = titleStyle;
+            LabelAngle = labelAngle; ColumnLabels = columnLabels;
         }
         internal ChartRect Plot { get; } internal ChartRect Scale { get; }
         internal double LabelHeight { get; } internal double TitleHeight { get; }
         internal string XTitle { get; } internal TextStyle TitleStyle { get; }
+        internal double LabelAngle { get; } internal string[] ColumnLabels { get; }
     }
 }

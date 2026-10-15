@@ -33,9 +33,24 @@ internal static partial class ChartTimeScale {
         if (min > max) (min, max) = (max, min);
         // OLE dates before 1899-12-30 store the time of day with an inverted sign, so they are not ordered within a day.
         if (min < 0 || !IsRepresentable(max) || max - min < DaysPerSecond) return null;
-        var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
-        var interval = ChooseInterval((max - min) / (Math.Max(2, axis.TickCount) - 1));
+        var desiredCount = Math.Max(2, axis.TickCount);
+        var interval = ChooseInterval((max - min) / (desiredCount - 1));
         try {
+            for (var attempt = 0; attempt < 32; attempt++) {
+                var ticks = GenerateInterval(axis, min, max, inside, interval);
+                if (ticks.Count <= desiredCount) return ticks;
+                // Month boundaries, repeated hours and outer alignment can add
+                // ticks beyond a nominal duration estimate. Recheck the actual set.
+                interval = ChooseInterval(interval.ApproximateDays * 1.01);
+            }
+            return new[] { min, max };
+        } catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) {
+            return null;
+        }
+    }
+
+    private static IReadOnlyList<double> GenerateInterval(ChartAxis axis, double min, double max, bool inside, TimeInterval interval) {
+            var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
             var localMin = ToLocal(min, zone);
             var localMax = ToLocal(max, zone);
             // A repeated wall-clock hour at either end hides instants on the other side of the bound, so walk past it.
@@ -76,9 +91,6 @@ internal static partial class ChartTimeScale {
             if (ticks.Count == 0 || ticks[0] > min) ticks.Insert(0, min);
             if (ticks[ticks.Count - 1] < max) ticks.Add(max);
             return ticks;
-        } catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) {
-            return null;
-        }
     }
 
     /// <summary>Formats a time-axis value, preserving milliseconds when the tick interval requires them.</summary>
@@ -194,26 +206,15 @@ internal static partial class ChartTimeScale {
     }
 
     private static TimeInterval ChooseInterval(double targetDays) {
-        var best = Intervals[0];
-        var bestScore = double.PositiveInfinity;
         foreach (var candidate in Intervals) {
-            var score = Math.Abs(Math.Log(candidate.ApproximateDays / targetDays));
-            if (score < bestScore) {
-                best = candidate;
-                bestScore = score;
-            }
+            if (candidate.ApproximateDays >= targetDays) return candidate;
         }
-
-        if (best.Unit != TimeUnit.Year) return best;
         return new TimeInterval(TimeUnit.Year, NiceYearStep(targetDays / 365.25));
     }
 
     private static int NiceYearStep(double years) {
-        if (years <= 1.5) return 1;
-        var power = Math.Pow(10, Math.Floor(Math.Log10(years)));
-        var fraction = years / power;
-        var nice = fraction < 1.5 ? 1 : fraction < 3 ? 2 : fraction < 7 ? 5 : 10;
-        return (int)Math.Min(1000, nice * power);
+        if (years <= 1) return 1;
+        return (int)Math.Min(10_000, Math.Ceiling(ChartNiceNumbers.Step(years)));
     }
 
     private static DateTime Floor(DateTime value, TimeInterval interval) {

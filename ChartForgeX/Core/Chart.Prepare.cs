@@ -62,8 +62,11 @@ public sealed partial class Chart : IVisualRenderable {
         context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var content = VisualFrameLayout.Build(builder, context, entries, out var legendHeight);
-        var projection = VisualChartCompiler.Build(family, this, context, builder, content, axisLabels, bubbleScale, colorScales, legendHeight, viewport);
+        var mapLegendInset = family == VisualChartFamily.Map && !sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition
+            ? VisualMapCompiler.ResolveTileLegendInset(this, context, builder, entries, colorScales.Map) : null;
+        var content = VisualFrameLayout.Build(builder, context, mapLegendInset == null ? entries : Array.Empty<VisualLegendEntry>(), out var legendHeight);
+        var projection = VisualChartCompiler.Build(family, this, context, builder, content, axisLabels, bubbleScale, colorScales, legendHeight, viewport, mapLegendInset);
+        if (mapLegendInset != null) VisualFrameLayout.PaintOverlayLegend(builder, context, entries, mapLegendInset.LegendArea);
         builder.CaptureChartIdentity(this);
         var accessibility = Accessibility.Clone();
         accessibility.Name ??= !string.IsNullOrWhiteSpace(frame.Title) ? frame.Title

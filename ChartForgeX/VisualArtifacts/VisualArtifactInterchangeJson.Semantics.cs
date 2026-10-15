@@ -117,6 +117,7 @@ internal static partial class VisualArtifactInterchangeJson {
         String(writer, "status", topology.Status.ToString());
         String(writer, "displayMode", topology.DisplayMode.ToString());
         OptionalString(writer, "shape", topology.Shape?.ToString());
+        if (topology.FitLabelToContent) Boolean(writer, "fitLabelToContent", true);
         OptionalNumber(writer, "longitude", topology.Longitude);
         OptionalNumber(writer, "latitude", topology.Latitude);
         Boolean(writer, "showStatusBadge", topology.ShowStatusBadge);
@@ -333,6 +334,7 @@ internal static partial class VisualArtifactInterchangeJson {
             Status = RequiredEnum<ChartForgeX.Topology.TopologyHealthStatus>(item, "status"),
             DisplayMode = RequiredEnum<ChartForgeX.Topology.TopologyNodeDisplayMode>(item, "displayMode"),
             Shape = OptionalEnum<ChartForgeX.Topology.TopologyNodeShape>(item, "shape"),
+            FitLabelToContent = OptionalBool(item, "fitLabelToContent") ?? false,
             Longitude = OptionalNumber(item, "longitude"), Latitude = OptionalNumber(item, "latitude"),
             ShowStatusBadge = OptionalBool(item, "showStatusBadge") ?? true,
             MaximumLabelCharacters = OptionalInt(item, "maximumLabelCharacters"), Artwork = ReadArtwork(item)

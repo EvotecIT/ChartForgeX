@@ -84,6 +84,7 @@ internal static partial class TopologyLayoutEngine {
             BackgroundColor = node.BackgroundColor,
             ShowStatusBadge = node.ShowStatusBadge,
             PreserveDisplayModeSize = node.PreserveDisplayModeSize,
+            FitLabelToContent = node.FitLabelToContent,
             MaximumLabelCharacters = node.MaximumLabelCharacters,
             HasPositionOverride = node.HasPositionOverride
         };

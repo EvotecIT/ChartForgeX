@@ -11,7 +11,7 @@ internal static class ChartNiceNumbers {
         var fraction = value / power;
         var nice = nearest
             ? fraction < 1.5 ? 1 : fraction < 2.25 ? 2 : fraction < 3.75 ? 2.5 : fraction < 7.5 ? 5 : 10
-            : fraction <= 1 + 1e-12 ? 1 : fraction <= 2 + 1e-12 ? 2 : fraction <= 2.5 + 1e-12 ? 2.5 : fraction <= 5 + 1e-12 ? 5 : 10;
+            : fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 2.5 ? 2.5 : fraction <= 5 ? 5 : 10;
         return nice * power;
     }
 }

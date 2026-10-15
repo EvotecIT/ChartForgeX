@@ -44,7 +44,10 @@ internal static partial class SmokeTests {
         var axisTicks = RadarSample();
         axisTicks.Options.XAxis.TickCount = 2;
         axisTicks.Options.YAxis.TickCount = 10;
-        Assert(CountOccurrences(axisTicks.ToSvg(), "data-cfx-role=\"radar-ring\"") > CountOccurrences(RadarSample().ToSvg(), "data-cfx-role=\"radar-ring\""), "Increasing the y-axis tick budget should add rings independently from the category x-axis.");
+        var coarseTicks = RadarSample().ConfigureYAxis(axis => axis.TickCount = 3);
+        Assert(CountOccurrences(axisTicks.ToSvg(), "data-cfx-role=\"radar-ring\"") > CountOccurrences(coarseTicks.ToSvg(), "data-cfx-role=\"radar-ring\""), "A meaningfully denser y-axis tick budget should add rings independently from the category x-axis.");
+        Assert(CountOccurrences(axisTicks.ToSvg(), "data-cfx-role=\"radar-axis-label\"") == CountOccurrences(coarseTicks.ToSvg(), "data-cfx-role=\"radar-axis-label\""),
+            "Changing the value tick budget should preserve all authored category labels.");
         Assert(axisTicks.ToPng().Length > 64, "Radar y-axis tick counts should render through the PNG path.");
 
         var formattedRings = RadarSample().ConfigureYAxis(axis => {

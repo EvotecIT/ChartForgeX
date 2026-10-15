@@ -534,15 +534,22 @@ internal static partial class SmokeTests {
 
     private static void DenseXAxisLabelsAreAutomaticallyReduced() {
         var labels = Enumerable.Range(1, 20).Select(value => "Checkpoint " + value.ToString("00", CultureInfo.InvariantCulture)).ToArray();
-        var auto = Chart.Create().WithSize(420, 280).WithXLabels(labels).AddLine("Values", Points(Enumerable.Range(1, 20).Select(value => (double)value).ToArray())).ToSvg();
+        var chart = Chart.Create().WithSize(420, 280).WithXLabels(labels).AddLine("Values", Points(Enumerable.Range(1, 20).Select(value => (double)value).ToArray()));
+        var prepared = PreparedFamily(chart);
+        var auto = prepared.ToSvg();
         Assert(auto.Contains(">Checkpoint 01</text>", StringComparison.Ordinal), "Automatic x-axis label thinning should preserve the first label.");
-        Assert(auto.Contains(">Checkpoint 20</text>", StringComparison.Ordinal), "Automatic x-axis label thinning should preserve the last label.");
+        Assert(prepared.Regions.Any(region => region.Role == "axis-x-label" && region.Label == "Checkpoint 20 (20)"),
+            "Regular category thinning should preserve the complete final source caption in descriptive facts.");
         Assert(!auto.Contains(">Checkpoint 02</text>", StringComparison.Ordinal), "Automatic x-axis label thinning should omit intermediate labels when space is tight.");
+        var selected = FamilyLabels(prepared, "axis-x-label").Select(label => int.Parse(label.Text.Lines.Single().Text[11..], CultureInfo.InvariantCulture)).ToArray();
+        Assert(selected.Length >= 2 && selected.Length < labels.Length, "A crowded category axis should retain useful readable captions.");
+        for (var index = 2; index < selected.Length; index++)
+            Assert(selected[index] - selected[index - 1] == selected[1] - selected[0], "Category thinning should keep a regular stride without appending an uneven final label.");
         var all = Chart.Create().WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels(labels).AddLine("Values", Points(Enumerable.Range(1, 20).Select(value => (double)value).ToArray())).ToSvg();
         Assert(all.Contains(">Checkpoint 02</text>", StringComparison.Ordinal), "All label density should preserve every explicit x-axis label.");
     }
 
-    private static void EdgeXAxisLabelsStayInsidePlot() {
+    private static void EdgeXAxisLabelsUseReservedFramePadding() {
         var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels("January", "February", "March", "April", "May", "December").AddLine("Values", Points(10, 20, 15, 30, 24, 35));
         var prepared = PreparedFamily(chart);
         var scopes = new System.Collections.Generic.Stack<VisualSceneGroup>();
@@ -561,8 +568,15 @@ internal static partial class SmokeTests {
         var labels = FamilyLabels(prepared, "axis-x-label");
         Assert(labels.Any(label => label.Text.Lines.Single().Text == "January") && labels.Any(label => label.Text.Lines.Single().Text == "December"),
             "Edge x-axis labels should preserve their complete visible category text.");
-        Assert(labels.All(label => label.Text.Lines.All(line => label.LineLeft(line) >= plot.Left - .000001
-            && label.LineLeft(line) + line.Width <= plot.Right + .000001)), "Every measured x-axis label should remain inside the plot's horizontal bounds.");
+        Assert(labels.All(label => label.Text.Lines.All(line => label.LineLeft(line) >= 0
+            && label.LineLeft(line) + line.Width <= prepared.Size.Width)), "Every measured x-axis label should remain inside the exported frame.");
+        foreach (var label in labels) {
+            var text = label.Text.Lines.Single().Text;
+            var source = prepared.Regions.Single(region => region.Role == "axis-x-label" && region.Label!.StartsWith(text + " (", StringComparison.Ordinal));
+            Assert(Math.Abs(label.X + label.Text.Metrics.Width / 2 - source.Bounds.Left) <= .5, "Edge labels should stay centered on their own tick instead of moving inside the plot.");
+        }
+        Assert(labels.Any(label => label.X < plot.Left) && labels.Any(label => label.X + label.Text.Metrics.Width > plot.Right),
+            "The first and last centered captions should use the frame padding reserved around the plot.");
     }
 
     private static void XAxisLabelsCanBeRotated() {

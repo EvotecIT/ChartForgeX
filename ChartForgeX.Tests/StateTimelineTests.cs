@@ -278,8 +278,8 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_CompactTimeline_UsesAxisLabelDensity() {
-        var auto = CreateChart().WithSize(390, 300);
-        var all = CreateChart().WithSize(390, 300);
+        var auto = CreateChart().WithSize(390, 300).WithTickCount(25);
+        var all = CreateChart().WithSize(390, 300).WithTickCount(25);
         all.Options.XAxisLabelDensity = ChartLabelDensity.All;
         var a = Texts(XDocument.Parse(auto.ToSvg()), "schedule-tick-label");
         var b = Texts(XDocument.Parse(all.ToSvg()), "schedule-tick-label");
@@ -313,17 +313,20 @@ public sealed class StateTimelineTests {
     }
 
     [Fact]
-    public void Render_DefaultDateTimeLane_SvgEndpointAnchorsMatchActualTextEdges() {
+    public void Render_DefaultDateTimeLane_KeepsCenteredCaptionsOnTheirOwnTicksInsideTheViewport() {
         var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 300)
+            .ConfigureGridStyle(style => style.ShowVerticalLines = true)
             .AddStateTimelineLane("Default DateTime lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
         var svg = XDocument.Parse(chart.ToSvg());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        var plot = prepared.Regions.Single(region => region.Role == "schedule-plot").Bounds;
+        var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid").OrderBy(line => line.Start.X).ToArray();
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "schedule-tick-label").ToArray();
         Assert.True(labels.Length >= 2);
+        Assert.Equal(grid.Length, labels.Length);
+        for (var index = 0; index < labels.Length; index++) Assert.InRange(Math.Abs(labels[index].X - grid[index].Start.X), 0, .5);
         Assert.All(labels, label => Assert.All(label.Text.Lines, line => {
-            Assert.InRange(label.LineLeft(line), plot.Left - .001, plot.Right);
-            Assert.InRange(label.LineLeft(line) + line.Width, plot.Left, plot.Right + .001);
+            Assert.InRange(label.LineLeft(line), chart.Options.Padding.Left - .001, chart.Options.Size.Width - chart.Options.Padding.Right);
+            Assert.InRange(label.LineLeft(line) + line.Width, chart.Options.Padding.Left, chart.Options.Size.Width - chart.Options.Padding.Right + .001);
         }));
     }
 

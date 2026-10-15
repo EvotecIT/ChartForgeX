@@ -95,6 +95,7 @@ internal sealed partial class VisualTopologyCompiler {
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
         if (node.Details.Count > 0 || !string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
             size = FitNodeTextSize(node, label, bounds, size, caption);
+        else if (CanFitNodeLabelToContent(node)) size = FitMeasuredNodeLabelSize(label, size, _ => bounds);
         var titleLines = TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
         var height = Math.Min(bounds.Height, _builder.MeasureText("Ag", size * _scale, 600).LineHeight * titleLines);
         var fitSingleLine = _builder.MeasureText("Ag", size * _scale, 600).LineHeight > height;

@@ -201,6 +201,8 @@ public sealed class VisualArtifactInterchangeTopologyNode {
     public TopologyNodeDisplayMode DisplayMode { get; set; }
     /// <summary>Gets or sets the optional diagram surface.</summary>
     public TopologyNodeShape? Shape { get; set; }
+    /// <summary>Gets or sets whether label-only node dimensions are minimums for prepared font fitting.</summary>
+    public bool FitLabelToContent { get; set; }
     /// <summary>Gets or sets the optional longitude.</summary>
     public double? Longitude { get; set; }
     /// <summary>Gets or sets the optional latitude.</summary>

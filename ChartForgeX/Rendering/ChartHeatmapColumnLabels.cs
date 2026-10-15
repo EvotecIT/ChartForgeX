@@ -4,14 +4,13 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 /// <summary>
-/// Places the column labels under a matrix or categorical heatmap. Without an angle they sit on one line and shrink to
-/// the column width; with <see cref="ChartOptions.XAxisLabelAngle"/> they rotate at the tick font size, as x-axis labels
-/// do, and the plot reserves the height they take. Shared by the SVG and PNG renderers so both reserve the same band.
+/// Measures the label band and density under matrix heatmaps. The compiler can choose a measured automatic angle;
+/// authored <see cref="ChartOptions.XAxisLabelAngle"/> values retain the same geometry in both static painters.
 /// </summary>
 internal static class ChartHeatmapColumnLabels {
     /// <summary>Limits both rotated reaches to portions of the padded canvas, retaining room for cells at shallow angles.</summary>
-    internal static double MaximumRotatedLength(Chart chart, double textHeight) {
-        var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
+    internal static double MaximumRotatedLength(Chart chart, double textHeight, double? angle = null) {
+        var radians = Math.Abs(angle ?? Angle(chart)) * Math.PI / 180;
         var sine = Math.Sin(radians);
         var cosine = Math.Cos(radians);
         var height = Math.Max(0, chart.Options.Size.Height - chart.Options.Padding.Top - chart.Options.Padding.Bottom);
@@ -35,7 +34,7 @@ internal static class ChartHeatmapColumnLabels {
     }
 
     /// <summary>Returns true when column labels are rotated.</summary>
-    public static bool IsRotated(Chart chart) => Math.Abs(Angle(chart)) >= 0.001;
+    public static bool IsRotated(Chart chart, double? angle = null) => Math.Abs(angle ?? Angle(chart)) >= 0.001;
 
     /// <summary>
     /// Returns the height below the plot that the column labels take, up to the top of what follows them (an axis
@@ -44,10 +43,11 @@ internal static class ChartHeatmapColumnLabels {
     /// <param name="chart">The chart.</param>
     /// <param name="widestLabel">Width of the widest label at the tick font size.</param>
     /// <param name="textHeight">Height of a line of tick text.</param>
-    public static double Reserve(Chart chart, double widestLabel, double textHeight) {
-        if (!IsRotated(chart)) return textHeight + 24;
-        var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
-        return RotatedOffset + Math.Sin(radians) * Math.Min(MaximumRotatedLength(chart, textHeight), widestLabel) + Math.Cos(radians) * textHeight + 8;
+    /// <param name="angle">Measured automatic angle, or null to use the authored chart angle.</param>
+    public static double Reserve(Chart chart, double widestLabel, double textHeight, double? angle = null) {
+        if (!IsRotated(chart, angle)) return textHeight + 24;
+        var radians = Math.Abs(angle ?? Angle(chart)) * Math.PI / 180;
+        return RotatedOffset + Math.Sin(radians) * Math.Min(MaximumRotatedLength(chart, textHeight, angle), widestLabel) + Math.Cos(radians) * textHeight + 8;
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ internal static class ChartHeatmapColumnLabels {
     /// than starting there. Labels never flip at the plot edge, which would cross their neighbours; the plot moves in
     /// to leave them room (see <see cref="SideReserve"/>) and anything longer is shortened (see <see cref="MaximumLength"/>).
     /// </summary>
-    public static bool EndsAtColumn(Chart chart) => Angle(chart) < 0;
+    public static bool EndsAtColumn(Chart chart, double? angle = null) => (angle ?? Angle(chart)) < 0;
 
     /// <summary>
     /// Returns the width the plot must give up on the side the labels slant towards (left for negative angles, right
@@ -65,9 +65,10 @@ internal static class ChartHeatmapColumnLabels {
     /// <param name="widestLabel">Width of the widest label at the tick font size.</param>
     /// <param name="textHeight">Height of a line of tick text.</param>
     /// <param name="spaceBeside">Space between the plot and the chart edge on that side before the reserve.</param>
-    public static double SideReserve(Chart chart, double widestLabel, double textHeight, double spaceBeside) {
-        if (!IsRotated(chart)) return 0;
-        return Math.Max(0, Reach(chart, Math.Min(MaximumRotatedLength(chart, textHeight), widestLabel), textHeight) - spaceBeside);
+    /// <param name="angle">Measured automatic angle, or null to use the authored chart angle.</param>
+    public static double SideReserve(Chart chart, double widestLabel, double textHeight, double spaceBeside, double? angle = null) {
+        if (!IsRotated(chart, angle)) return 0;
+        return Math.Max(0, Reach(chart, Math.Min(MaximumRotatedLength(chart, textHeight, angle), widestLabel), textHeight, angle) - spaceBeside);
     }
 
     /// <summary>
@@ -83,8 +84,8 @@ internal static class ChartHeatmapColumnLabels {
     }
 
     /// <summary>Returns how far a rotated label of <paramref name="length"/> reaches sideways from its column, edge inset included.</summary>
-    private static double Reach(Chart chart, double length, double textHeight) {
-        var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
+    private static double Reach(Chart chart, double length, double textHeight, double? angle = null) {
+        var radians = Math.Abs(angle ?? Angle(chart)) * Math.PI / 180;
         return length * Math.Cos(radians) + Math.Sin(radians) * textHeight / 2 + EdgeInset;
     }
 
@@ -92,9 +93,9 @@ internal static class ChartHeatmapColumnLabels {
     private const double MinimumLineSeparation = .9;
 
     /// <summary>Returns the smallest column pitch that can show every measured caption without thinning.</summary>
-    internal static double MinimumPitch(Chart chart, double textHeight, double widestLabel) {
-        var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
-        var length = Math.Min(MaximumRotatedLength(chart, textHeight), widestLabel);
+    internal static double MinimumPitch(Chart chart, double textHeight, double widestLabel, double? angle = null) {
+        var radians = Math.Abs(angle ?? Angle(chart)) * Math.PI / 180;
+        var length = Math.Min(MaximumRotatedLength(chart, textHeight, angle), widestLabel);
         return Math.Min(length / Math.Max(.000001, Math.Cos(radians)),
             textHeight * MinimumLineSeparation / Math.Max(.000001, Math.Sin(radians)));
     }
@@ -108,9 +109,10 @@ internal static class ChartHeatmapColumnLabels {
     /// <param name="columnPitch">Distance between the centres of neighbouring columns.</param>
     /// <param name="textHeight">Height of a line of tick text.</param>
     /// <param name="widestLabel">Width of the widest label at the tick font size.</param>
-    public static int Step(Chart chart, double columnPitch, double textHeight, double widestLabel) {
-        var radians = Math.Abs(Angle(chart)) * Math.PI / 180;
-        if (columnPitch >= MinimumPitch(chart, textHeight, widestLabel) - .000001) return 1;
+    /// <param name="angle">Measured automatic angle, or null to use the authored chart angle.</param>
+    public static int Step(Chart chart, double columnPitch, double textHeight, double widestLabel, double? angle = null) {
+        var radians = Math.Abs(angle ?? Angle(chart)) * Math.PI / 180;
+        if (columnPitch >= MinimumPitch(chart, textHeight, widestLabel, angle) - .000001) return 1;
         var spacing = columnPitch * Math.Sin(radians);
         if (spacing <= 0) return 1;
         return Math.Max(1, (int)Math.Ceiling(textHeight * MinimumLineSeparation / spacing - 0.000001));
