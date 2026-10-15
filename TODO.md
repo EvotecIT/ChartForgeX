@@ -4,7 +4,7 @@ This is the active product roadmap. The [README](README.md) introduces the libra
 
 ## Current position
 
-Assessment refreshed on 14 October 2026. The shared native renderer and package separation are implemented. The nine coordinated 2.0.0 package IDs were verified on NuGet during the earlier assessment; that does not establish that later source changes are published or that every downstream host has migrated.
+Assessment refreshed on 15 October 2026. The shared native renderer and package separation are implemented. The nine coordinated 2.0.0 package IDs were verified on NuGet during the earlier assessment; that does not establish that later source changes are published or that every downstream host has migrated. The unified authoring contracts use the coordinated 3.0.0 package family.
 
 | Area | Implemented foundation | Remaining work |
 | --- | --- | --- |
@@ -18,7 +18,7 @@ Assessment refreshed on 14 October 2026. The shared native renderer and package 
 
 These are separate completion dimensions. Source coverage, usability, appearance, interaction behavior, translation fidelity, package publication, and installed-consumer proof cannot be reduced to one parity percentage.
 
-The integrated authoring APIs, Mermaid rendering and connected native X windows pass local qualification: 7,183 native tests, all 1,669 required Chromium cases without browser skips, Native AOT, 852 standalone recipe selections and 410 SVG/PNG/HTML health checks. Nine packages pass the framework, adapter, CLI, Visuals and Stories qualification matrix; 14 additional isolated programs exercise the authoring APIs and selected verbatim downloads. Additional focused checks qualify the retained flowchart reference corpus and refreshed gallery. The ordinary native run reports 394 explicit browser/platform prerequisite skips. Hosted cross-platform checks, public package delivery and installed-consumer behavior remain separate gates.
+The integrated source passes local qualification: 7,347 native tests, all 1,671 required Chromium cases without browser skips, four target frameworks, Native AOT compilation and execution, 412 SVG/PNG pairs and gallery HTML health checks. Nine packages pass all six framework, adapter, CLI, Visuals and Stories qualification reports. Actual compact/wide light/dark catalog renders and targeted SVG/native PNG pairs have been inspected. Earlier recipe and isolated-program qualification remains evidence for its recorded source and package identities. The ordinary native run reports 395 explicit browser/platform prerequisite skips. Hosted cross-platform checks, public package delivery and installed-consumer behavior remain separate gates.
 
 ## Delivery order
 
@@ -103,7 +103,7 @@ The stages set the default work order. Independent family fixes can proceed once
 
 Gantt support includes month/minute duration semantics, dependency/calendar resolution, input date fields and timestamps, English D3 axis directives, calendar tick intervals, vertical markers, explicit today-marker suppression and dependency arrows. Native sequence presentation and readable sequence HTML sizing preserve nested SVG constraints and support root-only host sizing.
 
-Source font families and logical-pixel sizes flow through the native chart, topology, sequence and visual-block owners. Oversized captions fit their measured bounds, dense sequence layouts respect raster allocation limits, and ordinary title/subtitle roles retain their theme sizes. Packet source configuration controls row width, bit visibility/direction, preferred dimensions and gaps through shared SVG/PNG geometry with independent host overrides.
+Source font families and logical-pixel sizes flow through the native chart, topology, sequence and visual-block owners. Fit-content flowchart boxes use the prepared scene's native font measurements before layout and routing; explicit fixed-size policy remains authoritative. Oversized captions fit their measured bounds, dense sequence layouts respect raster allocation limits, and ordinary title/subtitle roles retain their theme sizes. Packet source configuration controls row width, bit visibility/direction, preferred dimensions and gaps through shared SVG/PNG geometry with independent host overrides.
 
 Flowchart source shapes use plain native surfaces with measured centered captions; full labels and line-break markup remain available in source metadata. Infrastructure glyphs and badges remain explicit native topology choices. Mermaid headings share one precedence: caller title, supported diagram title statement, front-matter title, then family default; keyword headers remain metadata, and subtitles are caller-authored. Pie header titles are parsed, light sequence presentation stays light, and state diagrams use plain rounded states, a filled start dot, a ringed end dot, choice diamonds and solid transitions. Flowchart and swimlane link lengths map to native minimum rank spans, excluding caption punctuation. Shared layered topology reserves lanes for rank-skipping edges while preserving authored ports and waypoints.
 
