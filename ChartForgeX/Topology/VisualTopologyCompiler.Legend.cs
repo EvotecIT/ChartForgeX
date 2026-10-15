@@ -10,9 +10,9 @@ internal sealed partial class VisualTopologyCompiler {
         var metadata = new System.Collections.Generic.Dictionary<string, string> {
             ["data-legend-kind"] = item.Kind.ToString().ToLowerInvariant(), ["data-cfx-status"] = item.Status?.ToString() ?? string.Empty
         };
-        if (!string.IsNullOrWhiteSpace(item.IconId)) {
-            metadata["data-legend-icon-id"] = item.IconId;
-            var resolved = TopologyRenderPrimitives.ResolveNodeIcon(new TopologyNode { IconId = item.IconId }, _options);
+        if (item.IconId is { } iconId && !string.IsNullOrWhiteSpace(iconId)) {
+            metadata["data-legend-icon-id"] = iconId;
+            var resolved = TopologyRenderPrimitives.ResolveNodeIcon(new TopologyNode { IconId = iconId }, _options);
             if (resolved != null) metadata["data-legend-icon-shape"] = resolved.Shape.ToString();
         }
         using var markerGroup = _builder.PushGroup(null, "topology-legend-item", metadata);
