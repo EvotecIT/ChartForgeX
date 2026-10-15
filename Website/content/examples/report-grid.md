@@ -5,7 +5,7 @@ description: "Facet typed records into a deterministic multi-panel chart report 
 layout: example
 ---
 
-Typed records become one chart per site, laid out as a grid. The output above is this program's SVG; the site adds `WithThemeMode` to each panel to show it in its light and dark themes.
+Typed records become one chart per site, laid out as a grid. The output above is this program's SVG; the site adds `WithThemeMode` to the grid, which themes every panel, to show it in its light and dark themes.
 
 ## Load typed records
 

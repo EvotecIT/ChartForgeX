@@ -71,7 +71,7 @@ internal static class NavVisuals {
             .AddStackedArea("App", Points(72, 75, 75, 73, 69, 64))
             .AddStackedArea("SMS", Points(42, 38, 32, 26, 20, 15));
         foreach (var chart in new[] { bars, line, donut, area }) chart.WithSize(Width / 2, Height / 2);
-        return ChartGrid.Create().WithColumns(2).WithGap(6).WithPadding(0).WithPanelSize(Width / 2 - 3, Height / 2 - 3)
+        return ChartGrid.Create().WithThemeMode(mode).WithColumns(2).WithGap(6).WithPadding(0).WithPanelSize(Width / 2 - 3, Height / 2 - 3)
             .Add(bars).Add(line).Add(donut).Add(area);
     }
 
@@ -82,7 +82,7 @@ internal static class NavVisuals {
             ("Berlin", new double[] { 22, 28, 31, 30, 36, 41 }),
             ("Madrid", new double[] { 51, 47, 44, 49, 42, 39 })
         };
-        var grid = ChartGrid.Create().WithColumns(2).WithGap(6).WithPadding(0).WithPanelSize(Width / 2 - 3, Height / 2 - 3);
+        var grid = ChartGrid.Create().WithThemeMode(mode).WithColumns(2).WithGap(6).WithPadding(0).WithPanelSize(Width / 2 - 3, Height / 2 - 3);
         foreach (var (site, values) in sites) {
             grid.Add(Mini(mode).WithSize(Width / 2, Height / 2).AddArea(site, Points(values)));
         }

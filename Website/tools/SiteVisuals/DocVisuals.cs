@@ -90,7 +90,7 @@ internal static class DocVisuals {
         var teams = Chart.Create().WithThemeMode(mode).WithTitle("Open findings").WithSubtitle("By team")
             .WithXLabels("Identity", "Network", "Endpoints", "Mail", "Data")
             .AddBar("Open", Points(14, 9, 21, 6, 11));
-        return ChartGrid.Create().WithColumns(3).WithGap(12).WithPanelSize(320, 240).WithPanelFit(VisualPanelFit.Stretch)
+        return ChartGrid.Create().WithThemeMode(mode).WithColumns(3).WithGap(12).WithPanelSize(320, 240).WithPanelFit(VisualPanelFit.Stretch)
             .Add(trend, 2).Add(share).Add(coverage).Add(teams, 2);
     }
 
@@ -122,7 +122,7 @@ internal static class DocVisuals {
             MetricCard.Create().WithMetric("Memory used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
         };
         foreach (var card in cards) card.Options.ThemeMode = mode;
-        return VisualGrid.CreateMetricStrip("Endpoint snapshot", cards, columns: 2, panelWidth: 260, panelHeight: 150);
+        return VisualGrid.CreateMetricStrip("Endpoint snapshot", cards, columns: 2, panelWidth: 260, panelHeight: 150).WithThemeMode(mode);
     }
 
     private static VisualCanvas Canvas(VisualThemeMode mode) {

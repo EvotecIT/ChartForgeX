@@ -96,11 +96,10 @@ internal static class ExampleVisuals {
             samples,
             sample => sample.Site,
             (site, rows) => Chart.Create()
-                .WithThemeMode(mode)
                 .WithTitle(site)
                 .WithYAxis("CPU (%)")
                 .AddLine("CPU", rows, sample => sample.Minute, sample => sample.Cpu),
-            columns: 2);
+            columns: 2).WithThemeMode(mode);
     }
 
     // content/examples/organization-hierarchy.md

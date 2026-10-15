@@ -88,7 +88,7 @@ ChartGrid HeroDashboard(VisualThemeMode mode) {
         panel.WithSize(520, 320);
     }
 
-    return ChartGrid.Create().WithColumns(3).WithGap(16).WithPanelSize(520, 320).WithPanelFit(VisualPanelFit.Stretch)
+    return ChartGrid.Create().WithThemeMode(mode).WithColumns(3).WithGap(16).WithPanelSize(520, 320).WithPanelFit(VisualPanelFit.Stretch)
         .Add(trend, 2).Add(methods).Add(posture).Add(heat).Add(coverage);
 }
 
