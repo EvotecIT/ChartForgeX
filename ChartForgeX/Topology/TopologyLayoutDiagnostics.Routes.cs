@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Primitives;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
@@ -35,8 +36,9 @@ public static partial class TopologyLayoutDiagnostics {
                 if (node.CaptionBounds.HasValue && Crosses(edge.Points, node.CaptionBounds.Value)) report.RouteCrossings.Add(new TopologyLayoutRouteCrossingDiagnostic(TopologyLayoutRouteCrossingKind.NodeCaption, edge.Id, node.Id));
             }
 
-            foreach (var group in report.Groups) {
-                if (group.HeaderBounds.HasValue && Crosses(edge.Points, group.HeaderBounds.Value)) report.RouteCrossings.Add(new TopologyLayoutRouteCrossingDiagnostic(TopologyLayoutRouteCrossingKind.GroupHeader, edge.Id, group.Id));
+            foreach (var group in chart.Groups) {
+                if (TopologyGroupHeader.PaintedParts(chart, group, options).Any(part => Crosses(edge.Points, part)))
+                    report.RouteCrossings.Add(new TopologyLayoutRouteCrossingDiagnostic(TopologyLayoutRouteCrossingKind.GroupHeader, edge.Id, group.Id));
             }
 
             edge.SourceAttached = nodeBounds.TryGetValue(edge.SourceNodeId, out var source) && RouteEndPointsAtNode(edge.Points, fromStart: true, source.Bounds);

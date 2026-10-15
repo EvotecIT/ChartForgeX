@@ -35,8 +35,8 @@ internal static partial class TopologyRenderPrimitives {
 
         if (!TopologyGroupHeader.IsDrawn(options)) return boxes;
         foreach (var group in chart.Groups) {
-            var header = TopologyGroupHeader.Bounds(group, options, chart.TextMeasurement);
-            boxes.Add(LabelBox.FromBounds(header.Left - 2, header.Top - 2, header.Right + 2, header.Bottom + 2));
+            foreach (var header in TopologyGroupHeader.PaintedParts(chart, group, options))
+                boxes.Add(LabelBox.FromBounds(header.Left - 2, header.Top - 2, header.Right + 2, header.Bottom + 2));
         }
 
         return boxes;

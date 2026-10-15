@@ -115,8 +115,8 @@ public sealed class TopologyRoutingMilestoneTests {
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ClassicRoutesAvoidTheDrawnCenteredHeader(bool labels) {
-        var chart = CenteredHeader();
+    public void ClassicRoutesAvoidThePaintedHeader(bool labels) {
+        var chart = PaintedHeader();
         var options = Options();
         options.ReadableDenseLayout = false;
         options.IncludeGroupLabels = labels;

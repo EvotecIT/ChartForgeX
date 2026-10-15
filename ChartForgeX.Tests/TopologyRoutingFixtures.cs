@@ -9,8 +9,8 @@ internal static class TopologyRoutingFixtures {
         ReadableDenseLayout = true, IncludeLegend = false, IncludeEdgeLabels = false, IncludeTitle = false
     };
 
-    internal static TopologyChart CenteredHeader() => TopologyChart.Create().WithId("centered-header").WithViewport(1000, 400).WithLegend(null)
-        .AddGroup("group", "Middle", 200, 40, 600, 220)
+    internal static TopologyChart PaintedHeader() => TopologyChart.Create().WithId("painted-header").WithViewport(1000, 400).WithLegend(null)
+        .AddGroup("group", "Middle", 430, 40, 240, 220)
         .AddNode("a", "Source", 350, 40, width: 60, height: 40)
         .AddNode("b", "Target", 650, 40, width: 60, height: 40)
         .AddEdge("planned", "a", "b", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);

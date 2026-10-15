@@ -1,59 +1,83 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Primitives;
-using ChartForgeX.Typography;
+using ChartForgeX.Rendering;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
-/// Owns the geometry of the label block drawn at the top of a group (symbol, label, optional subtitle), so layout
-/// normalization, readable dense routing, and diagnostics agree with what the SVG and PNG renderers draw: centered in
-/// the group, or left-aligned on the neutral monitoring surface.
+/// Shares native caption allocation and measured painted header obstacles with normalization, routing, and diagnostics.
 /// </summary>
 internal static class TopologyGroupHeader {
-    private const double GroupPadding = 24;
-    private const double TopPadding = 14;
+    internal const double TitleHeight = 24;
+    internal const double SubtitleHeight = 18;
+    internal const double SymbolScale = .8;
+    internal const double StatusRadius = 4;
 
     /// <summary>Returns true when group headers are drawn with the given options.</summary>
     public static bool IsDrawn(TopologyRenderOptions options) => options.IncludeGroups && options.IncludeGroupLabels;
 
-    /// <summary>Returns the rectangle the symbol, label, and subtitle of a group are drawn in.</summary>
-    public static ChartRect Bounds(TopologyGroup group, TopologyRenderOptions options, TextMeasurementContext? measurement) =>
-        Block(group, options, measurement, string.IsNullOrWhiteSpace(group.Subtitle) ? 24 : 42);
+    /// <summary>Returns the union used to describe the native painted header.</summary>
+    public static ChartRect Bounds(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) {
+        var parts = PaintedParts(chart, group, options);
+        if (parts.Count == 0) return new ChartRect(group.X, group.Y, 0, 0);
+        var left = parts.Min(part => part.Left); var top = parts.Min(part => part.Top);
+        return new ChartRect(left, top, parts.Max(part => part.Right) - left, parts.Max(part => part.Bottom) - top);
+    }
 
     /// <summary>Returns the header block with the room layout keeps free below it, which nodes are moved out of.</summary>
-    public static ChartRect ReservedBounds(TopologyGroup group, TopologyRenderOptions options, TextMeasurementContext? measurement) =>
-        Block(group, options, measurement, string.IsNullOrWhiteSpace(group.Subtitle) ? 40 : 60);
-
-    private static ChartRect Block(TopologyGroup group, TopologyRenderOptions options, TextMeasurementContext? measurement, double height) {
-        var rendersSymbol = !IsMonitoringDashboardStyle(options) || !string.IsNullOrWhiteSpace(group.Symbol) || ResolveGroupIcon(group, options) != null;
-        if (IsMonitoringDashboardStyle(options) && UseNeutralGroupSurface(options)) return NeutralBounds(group, options, measurement, rendersSymbol, height);
-        var width = Width(group, options, measurement, rendersSymbol);
-        return new ChartRect(group.X + (group.Width - width) / 2, group.Y + TopPadding, width, height);
+    public static ChartRect ReservedBounds(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) {
+        var painted = Bounds(chart, group, options);
+        var bottom = group.Y + (string.IsNullOrWhiteSpace(group.Subtitle) ? 54 : 74);
+        return new ChartRect(painted.Left, painted.Top, painted.Width, Math.Max(0, Math.Max(painted.Bottom, bottom) - painted.Top));
     }
 
-    // The neutral monitoring surface draws the symbol at the left edge with the label and subtitle beside it.
-    private static ChartRect NeutralBounds(TopologyGroup group, TopologyRenderOptions options, TextMeasurementContext? measurement, bool rendersSymbol, double height) {
-        var left = group.X + (rendersSymbol ? 12 : 22);
-        var textLeft = group.X + (rendersSymbol ? 42 : 22);
-        var maxLabelWidth = LabelWidth(group, options, rendersSymbol);
-        var labelSize = FitFontSize(group.Label, maxLabelWidth, 15, 12, true, measurement);
-        var labelWidth = EstimateTextWidth(TrimToEstimatedWidth(group.Label, maxLabelWidth, labelSize, true, measurement), labelSize, true, measurement);
-        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(TrimToEstimatedWidth(group.Subtitle!, maxLabelWidth, 11, false, measurement), 11, false, measurement);
-        return new ChartRect(left, group.Y + TopPadding, textLeft + Math.Max(labelWidth, subtitleWidth) + 6 - left, height);
+    /// <summary>Returns individual painted obstacles without filling the space between captions and status dots.</summary>
+    internal static IReadOnlyList<ChartRect> PaintedParts(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) {
+        if (!IsDrawn(options)) return Array.Empty<ChartRect>();
+        var font = chart.TextMeasurement?.Font ?? chart.Theme.Typography.ToFontSpec();
+        var builder = new VisualSceneBuilder(new VisualSize(1, 1), font);
+        var size = chart.Theme.Typography.DataLabelSize;
+        var fitTitle = size > VisualTextFitting.MaximumOrdinaryFontSize || builder.MeasureText("Ag", size, 600).LineHeight > TitleHeight;
+        var fitSubtitle = size > VisualTextFitting.MaximumOrdinaryFontSize || builder.MeasureText("Ag", size * .85, 400).LineHeight > SubtitleHeight;
+        var parts = new List<ChartRect>();
+        AddCaption(group.Label, TitleBounds(group, options), size, 600, fitTitle);
+        if (!string.IsNullOrWhiteSpace(group.Subtitle))
+            AddCaption(group.Subtitle!, SubtitleBounds(group, options, fitTitle || fitSubtitle), size * .85, 400, fitSubtitle);
+        if (SymbolReserve(group, options) > 0) {
+            var center = SymbolCenter(group); var half = 13 * SymbolScale;
+            parts.Add(new ChartRect(center.X - half, center.Y - half, half * 2, half * 2));
+        }
+        if (options.IncludeGroupStatusDots) {
+            var center = StatusCenter(group);
+            parts.Add(new ChartRect(center.X - StatusRadius, center.Y - StatusRadius, StatusRadius * 2, StatusRadius * 2));
+        }
+        return parts;
+
+        void AddCaption(string value, ChartRect allocation, double preferred, int weight, bool fit) {
+            var layout = TopologyTextLayout.Prepare(value, allocation.Width, allocation.Height, preferred, weight, 1,
+                fit, DotNodeSymbolFontSize, options, builder.MeasureText);
+            if (layout != null && layout.Width > 0 && layout.Height > 0)
+                parts.Add(new ChartRect(allocation.X, allocation.Y, layout.Width, layout.Height));
+        }
     }
 
-    private static double Width(TopologyGroup group, TopologyRenderOptions options, TextMeasurementContext? measurement, bool rendersSymbol) {
-        var maxLabelWidth = LabelWidth(group, options, rendersSymbol);
-        var labelSize = FitFontSize(group.Label, maxLabelWidth, 16, 12, true, measurement);
-        var labelWidth = EstimateTextWidth(TrimToEstimatedWidth(group.Label, maxLabelWidth, labelSize, true, measurement), labelSize, true, measurement) + (rendersSymbol ? 30 : 0);
-        var subtitleWidth = string.IsNullOrWhiteSpace(group.Subtitle) ? 0 : EstimateTextWidth(group.Subtitle!, 12, false, measurement);
-        return Math.Min(Math.Max(96, Math.Max(labelWidth, subtitleWidth) + 12), Math.Max(96, group.Width - GroupPadding * 2));
+    internal static double SymbolReserve(TopologyGroup group, TopologyRenderOptions options) =>
+        string.IsNullOrWhiteSpace(group.Symbol ?? ResolveGroupIcon(group, options)?.Symbol) && string.IsNullOrWhiteSpace(group.IconId) ? 0 : 28;
+
+    internal static ChartRect TitleBounds(TopologyGroup group, TopologyRenderOptions options) => TextBounds(group, options, 9, TitleHeight);
+
+    internal static ChartRect SubtitleBounds(TopologyGroup group, TopologyRenderOptions options, bool fitted) =>
+        TextBounds(group, options, fitted ? 33 : 31, SubtitleHeight);
+
+    internal static ChartPoint SymbolCenter(TopologyGroup group) => new(group.X + 22, group.Y + 21);
+    internal static ChartPoint StatusCenter(TopologyGroup group) => new(group.X + group.Width - 12, group.Y + 16);
+
+    private static ChartRect TextBounds(TopologyGroup group, TopologyRenderOptions options, double top, double height) {
+        var reserve = SymbolReserve(group, options);
+        return new ChartRect(group.X + 12 + reserve, group.Y + top, Math.Max(0, group.Width - 24 - reserve), height);
     }
 
-    private static double LabelWidth(TopologyGroup group, TopologyRenderOptions options, bool includesLeadingSymbol) {
-        var statusReserve = options.IncludeGroupStatusDots && IsMonitoringDashboardStyle(options) && group.Status != TopologyHealthStatus.Unknown ? 38 : 0;
-        var symbolReserve = includesLeadingSymbol ? 42 : 0;
-        return Math.Max(36, group.Width - 44 - statusReserve - symbolReserve);
-    }
 }

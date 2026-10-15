@@ -318,8 +318,8 @@ internal static partial class TopologyDenseRoutePlanner {
 
             if (TopologyGroupHeader.IsDrawn(options)) {
                 foreach (var group in chart.Groups) {
-                    var header = TopologyGroupHeader.Bounds(group, options, chart.TextMeasurement);
-                    if (header.Width > 0 && header.Height > 0) obstacles.Add(new Obstacle(new Box(header.Left, header.Top, header.Right, header.Bottom), null));
+                    foreach (var header in TopologyGroupHeader.PaintedParts(chart, group, options))
+                        if (header.Width > 0 && header.Height > 0) obstacles.Add(new Obstacle(new Box(header.Left, header.Top, header.Right, header.Bottom), null));
                 }
             }
 

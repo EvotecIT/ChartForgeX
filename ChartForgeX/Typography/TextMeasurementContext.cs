@@ -21,6 +21,8 @@ internal sealed class TextMeasurementContext {
         _mode = mode;
     }
 
+    internal FontSpec Font => _font.Clone();
+
     internal double Measure(string value, double size, bool bold) {
         if (value.Length == 0) return 0;
         // Preserve portable layout's historical estimate unless font-dependent

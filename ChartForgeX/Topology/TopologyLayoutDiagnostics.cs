@@ -27,7 +27,7 @@ public static partial class TopologyLayoutDiagnostics {
         var headers = TopologyGroupHeader.IsDrawn(options);
         foreach (var group in chart.Groups) {
             report.Groups.Add(new TopologyLayoutGroupDiagnostic(group.Id, new ChartRect(group.X, group.Y, group.Width, group.Height),
-                headers ? TopologyGroupHeader.Bounds(group, options, chart.TextMeasurement) : null));
+                headers ? TopologyGroupHeader.Bounds(chart, group, options) : null));
         }
         foreach (var node in chart.Nodes) {
             var caption = TopologyNodeFootprint.RenderedCaption(node, options, chart.TextMeasurement);

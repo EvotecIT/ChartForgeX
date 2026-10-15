@@ -305,6 +305,12 @@ internal static class VisualFrameLayout {
 
         void Header(string? text, TextStyle style, SvgPaint? paint) {
             if (string.IsNullOrEmpty(text)) return;
+            // Keep the authored request separate from the face-dependent fitted paint size.
+            using var fontRequest = builder.PushGroup(null, "frame-heading-source", new Dictionary<string, string> {
+                ["data-cfx-authored-font-request"] = string.Join("|", style.Font.Family,
+                    style.Font.Weight.ToString(CultureInfo.InvariantCulture), style.Font.Italic ? "italic" : "normal",
+                    style.EffectiveFontSize.ToString("R", CultureInfo.InvariantCulture), style.Font.Variations.Key)
+            });
             var scale = (OversizedHeading(style) ? headingWidthScale : 1) * headingScale;
             if (scale < 1) { style = style.Clone(); style.FontSize *= scale; }
             var fontSize = style.EffectiveFontSize;

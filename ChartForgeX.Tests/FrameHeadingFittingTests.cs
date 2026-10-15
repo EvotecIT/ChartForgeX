@@ -84,6 +84,10 @@ public sealed class FrameHeadingFittingTests {
         var prepared = chart.Prepare(request.Context);
         var headings = XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").ToArray();
         Assert.Contains(headings, element => element.Value == "Oversized heading");
+        var title = Assert.Single(headings, element => element.Value == "Oversized heading");
+        Assert.True((double)title.Attribute("font-size")! < 256);
+        var authoredTitleRequest = Assert.Single(title.Ancestors(), element => element.Attribute("data-cfx-authored-font-request") != null);
+        Assert.Equal(request.Context.Font.Family + "|700|normal|256|", (string?)authoredTitleRequest.Attribute("data-cfx-authored-font-request"));
         var subtitle = Assert.Single(headings, element => element.Value == "Short subtitle");
         Assert.Equal(request.Context.Theme.Typography.SubtitleSize, (double)subtitle.Attribute("font-size")!, 7);
     }

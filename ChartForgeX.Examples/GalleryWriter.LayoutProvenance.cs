@@ -26,6 +26,7 @@ public static partial class GalleryWriter {
         "map-viewport-showcase-grid",
         "mermaid-cynefin-basic",
         "mermaid-er-direction",
+        "mermaid-source-font-size-group-header-fit",
         "mermaid-state-direction",
         "mermaid-swimlane-basic",
         "mermaid-usecase-basic",
@@ -83,14 +84,16 @@ public static partial class GalleryWriter {
         Inspect(document.Root, SvgRasterStyle.Default, false);
         return new("natural", string.Join("\n", requests), unavailable || faces.Count == 0 ? "" : Hash(Encoding.UTF8.GetBytes(string.Join("\n", faces))));
 
-        void Inspect(SvgRasterElement element, SvgRasterStyle parent, bool heading) {
+        void Inspect(SvgRasterElement element, SvgRasterStyle parent, bool heading, string? authoredRequest = null) {
             if (element.Name is "defs" or "style" or "title" or "desc" || element.Get("data-cfx-role") == "panel" || element.Name == "svg" && ancestors.Count > 0) return;
             var style = SvgRasterStyle.Resolve(parent, element, definitions.StyleSheet, ancestors);
+            authoredRequest = element.Get("data-cfx-authored-font-request") ?? authoredRequest;
             heading |= element.Get("data-cfx-role") is "frame-heading" or "frame-heading-continuation" or "legend-title" or "legend-label";
             if (heading && element.Name == "text") {
-                var request = string.Join("|", style.FontFamily, style.FontWeight.ToString(CultureInfo.InvariantCulture), style.FontStyle, style.FontSize.ToString("R", CultureInfo.InvariantCulture), style.Variations?.Key ?? "");
+                var request = authoredRequest ?? string.Join("|", style.FontFamily, style.FontWeight.ToString(CultureInfo.InvariantCulture), style.FontStyle, style.FontSize.ToString("R", CultureInfo.InvariantCulture), style.Variations?.Key ?? "");
                 requests.Add(request);
                 var face = TypographyFontResolver.WithVariations(TypographyFontResolver.ResolveFace(style.FontFamily, style.FontWeight, style.FontStyle != "normal"), style.Variations);
+                // Font-size fitting changes the paint request, not the identity of the resolved face.
                 if (face.Font == null) faces.Add(request + "|bitmap");
                 else if (face.Path == null || !File.Exists(face.Path)) unavailable = true;
                 else {
@@ -101,7 +104,7 @@ public static partial class GalleryWriter {
                 }
             }
             ancestors.Add(element);
-            foreach (var child in element.Children) Inspect(child, style, heading);
+            foreach (var child in element.Children) Inspect(child, style, heading, authoredRequest);
             ancestors.RemoveAt(ancestors.Count - 1);
         }
     }
