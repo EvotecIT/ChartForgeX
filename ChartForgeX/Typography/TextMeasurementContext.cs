@@ -9,6 +9,7 @@ namespace ChartForgeX.Typography;
 internal sealed class TextMeasurementContext {
     private readonly FontSpec _font;
     private readonly TextMeasurementMode _mode;
+    private readonly Dictionary<int, VisualSceneTextFace> _faces = new();
     private static readonly LabelPlacementService Service = new();
 
     internal TextMeasurementContext(string family, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate)
@@ -22,6 +23,20 @@ internal sealed class TextMeasurementContext {
     }
 
     internal FontSpec Font => _font.Clone();
+    internal TextMeasurementMode Mode => _mode;
+
+    /// <summary>Measures topology allocations with their selected policy and emitted font weight.</summary>
+    internal TextMetrics MeasureMetrics(string value, double size, int weight) {
+        if (_mode == TextMeasurementMode.PortableEstimate) {
+            var lineHeight = size * 1.5;
+            return new TextMetrics(value.Length * size * (weight >= 600 ? .62 : .56), lineHeight, lineHeight);
+        }
+        if (!_faces.TryGetValue(weight, out var face)) {
+            face = new VisualSceneTextFace(_font, weight);
+            _faces.Add(weight, face);
+        }
+        return face.Prepare(value, size).Metrics;
+    }
 
     internal double Measure(string value, double size, bool bold) {
         if (value.Length == 0) return 0;

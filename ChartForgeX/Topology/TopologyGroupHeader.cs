@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Primitives;
-using ChartForgeX.Rendering;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
-/// Shares native caption allocation and measured painted header obstacles with normalization, routing, and diagnostics.
+/// Shares caption allocations and measurement-policy reservations with layout, retaining actual painted parts after capture.
 /// </summary>
 internal static class TopologyGroupHeader {
     internal const double TitleHeight = 24;
@@ -37,30 +36,12 @@ internal static class TopologyGroupHeader {
         return new ChartRect(painted.Left, painted.Top, painted.Width, Math.Max(0, Math.Max(painted.Bottom, bottom) - painted.Top));
     }
 
-    /// <summary>Returns individual painted obstacles without filling the space between captions and status dots.</summary>
+    /// <summary>Returns captured painted parts, or policy-based reservations before native painting.</summary>
     internal static IReadOnlyList<ChartRect> PaintedParts(TopologyChart chart, TopologyGroup group, TopologyRenderOptions options) {
         if (!IsDrawn(options)) return Array.Empty<ChartRect>();
         if (chart.PreparedGroupHeaderParts != null)
             return chart.PreparedGroupHeaderParts.TryGetValue(group.Id, out var captured) ? captured : Array.Empty<ChartRect>();
-        var font = chart.TextMeasurement?.Font ?? chart.Theme.Typography.ToFontSpec();
-        var builder = new VisualSceneBuilder(new VisualSize(1, 1), font);
-        var size = chart.Theme.Typography.DataLabelSize;
-        var fitTitle = size > VisualTextFitting.MaximumOrdinaryFontSize || builder.MeasureText("Ag", size, 600).LineHeight > TitleHeight;
-        var fitSubtitle = size > VisualTextFitting.MaximumOrdinaryFontSize || builder.MeasureText("Ag", size * .85, 400).LineHeight > SubtitleHeight;
-        var parts = new List<ChartRect>();
-        AddCaption(group.Label, TitleBounds(group, options), size, 600, fitTitle);
-        if (!string.IsNullOrWhiteSpace(group.Subtitle))
-            AddCaption(group.Subtitle!, SubtitleBounds(group, options, fitTitle || fitSubtitle), size * .85, 400, fitSubtitle);
-        if (SymbolReserve(group, options) > 0) parts.Add(SymbolBounds(group));
-        if (options.IncludeGroupStatusDots) parts.Add(StatusBounds(group));
-        return parts;
-
-        void AddCaption(string value, ChartRect allocation, double preferred, int weight, bool fit) {
-            var layout = TopologyTextLayout.Prepare(value, allocation.Width, allocation.Height, preferred, weight, 1,
-                fit, DotNodeSymbolFontSize, options, builder.MeasureText);
-            if (layout != null && layout.Width > 0 && layout.Height > 0)
-                parts.Add(new ChartRect(allocation.X, allocation.Y, layout.Width, layout.Height));
-        }
+        return (chart.GroupHeaderLayout ??= new TopologyGroupHeaderLayout()).Parts(chart, group, options);
     }
 
     internal static double SymbolReserve(TopologyGroup group, TopologyRenderOptions options) =>

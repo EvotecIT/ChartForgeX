@@ -64,7 +64,7 @@ internal sealed partial class VisualTopologyCompiler {
                     paint: new VisualScenePaintBinding(neutral ? CardPaint(fill, HighlightFactor(active)) : GroupAccentPaint(group, fill, active, .06), GroupAccentPaint(group, stroke, active, .5)));
                 if (_options.IncludeGroupLabels) {
                     var icon = ResolveGroupIcon(group, _options);
-                    if (_options.RequireResolvedIcons && group.IconId != null && icon == null) throw new InvalidOperationException("Unresolved topology group icon: " + group.IconId);
+                    if (_options.RequireResolvedIcons && !string.IsNullOrWhiteSpace(group.IconId) && icon == null) throw new InvalidOperationException("Unresolved topology group icon: " + group.IconId);
                     var symbol = group.Symbol ?? icon?.Symbol;
                     var symbolCenter = TopologyGroupHeader.SymbolCenter(group);
                     if (TopologyGroupHeader.SymbolReserve(group, _options) > 0) {

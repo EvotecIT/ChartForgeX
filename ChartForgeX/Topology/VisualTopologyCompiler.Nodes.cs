@@ -20,7 +20,7 @@ internal sealed partial class VisualTopologyCompiler {
         var bounds = Bounds(node.X, node.Y, node.Width, node.Height);
         var active = _highlight.IsNodeHighlighted(node);
         var icon = ResolveNodeIcon(node, _options);
-        if (_options.RequireResolvedIcons && node.IconId != null && icon == null) throw new InvalidOperationException("Unresolved topology icon: " + node.IconId);
+        if (_options.RequireResolvedIcons && !string.IsNullOrWhiteSpace(node.IconId) && icon == null) throw new InvalidOperationException("Unresolved topology icon: " + node.IconId);
         var authoredAccent = node.Color ?? icon?.Color;
         var accentRole = node.PaletteIndex.HasValue && string.IsNullOrWhiteSpace(authoredAccent) ? SvgColorRole.Series : AccentRole(authoredAccent);
         var baseAccent = NodeAccent(node);
@@ -55,7 +55,7 @@ internal sealed partial class VisualTopologyCompiler {
                     foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) _builder.Path(Transform(part.Path), part.Fill ? fill : null, accent, strokeWidth, role: "topology-node-surface", close: part.Close, paint: surfacePaint);
                 } else _builder.Rect(bounds, fill, accent, strokeWidth, mode == TopologyNodeDisplayMode.Pill ? bounds.Height / 2 : _context.Theme.BarRadius * _scale, role: "topology-node-surface", paint: surfacePaint);
                 if (UseNodeAccentBand(mode, _options)) _builder.Rect(new ChartRect(bounds.X + strokeWidth / 2, bounds.Y + strokeWidth / 2, 4 * _scale, Math.Max(0, bounds.Height - strokeWidth)), accent, role: "topology-node-accent", paint: new VisualScenePaintBinding(accentPaint));
-                var hasGlyph = node.Kind != TopologyNodeKind.Generic || node.Symbol != null || node.IconId != null || ResolveRenderableNodeArtwork(node, _options) != null
+                var hasGlyph = node.Kind != TopologyNodeKind.Generic || !string.IsNullOrWhiteSpace(node.Symbol) || !string.IsNullOrWhiteSpace(node.IconId) || ResolveRenderableNodeArtwork(node, _options) != null
                     || node.Shape != TopologyNodeShape.Actor && (mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork);
                 if (hasGlyph && mode != TopologyNodeDisplayMode.Dot) {
                     var center = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork;
@@ -64,13 +64,13 @@ internal sealed partial class VisualTopologyCompiler {
                 if (_options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)) {
                     var caption = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
                     var left = hasGlyph && !caption ? mode == TopologyNodeDisplayMode.Pill ? 34 : 44 : 10;
-                    var textInset = mode == TopologyNodeDisplayMode.Pill && !string.IsNullOrEmpty(node.Subtitle) ? 4 : 6;
+                    var textInset = mode == TopologyNodeDisplayMode.Pill && !string.IsNullOrWhiteSpace(node.Subtitle) ? 4 : 6;
                     var textBounds = caption ? Bounds(node.X - 17, node.Y + node.Height + 5, node.Width + 34, (_options.MaxNodeLabelLines + 1) * 18) : Bounds(node.X + left, node.Y + textInset, Math.Max(0, node.Width - left - 12), Math.Max(0, node.Height - textInset * 2));
                     if (mode == TopologyNodeDisplayMode.Tile) BuildTileCaption(node, accent, active);
                     else if (mode == TopologyNodeDisplayMode.Icon) BuildIconCaption(node, accent, active);
                     else if (node.Shape == TopologyNodeShape.Actor) BuildDiagramCaption(node, active);
                     else if (mode != TopologyNodeDisplayMode.Dot && node.Shape.HasValue && !hasGlyph && !caption
-                        && string.IsNullOrEmpty(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge))
+                        && string.IsNullOrWhiteSpace(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge))
                         BuildShapeCaption(node, active);
                     else if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
                 }
@@ -93,7 +93,7 @@ internal sealed partial class VisualTopologyCompiler {
     private void BuildNodeText(TopologyNode node, ChartRect bounds, ChartColor accent, bool active, bool caption) {
         var size = _context.Theme.Typography.DataLabelSize;
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
-        if (node.Details.Count > 0 || !string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
+        if (node.Details.Count > 0 || !string.IsNullOrWhiteSpace(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
             size = FitNodeTextSize(node, label, bounds, size, caption);
         else if (CanFitNodeLabelToContent(node)) size = FitMeasuredNodeLabelSize(label, size, _ => bounds);
         var titleLines = TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
@@ -101,7 +101,7 @@ internal sealed partial class VisualTopologyCompiler {
         var fitSingleLine = _builder.MeasureText("Ag", size * _scale, 600).LineHeight > height;
         Text(label, new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(_colors.Foreground, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label", opacity: HighlightFactor(active), fitSingleLine: fitSingleLine);
         var y = bounds.Y + height;
-        if (!string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles)) {
+        if (!string.IsNullOrWhiteSpace(node.Subtitle) && (!caption || _options.IncludeTileSubtitles)) {
             var subtitleHeight = _builder.MeasureText("Ag", size * .85 * _scale, 400).LineHeight * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
             var subtitle = new ChartRect(bounds.X, y, bounds.Width, Math.Min(Math.Max(0, bounds.Bottom - y), subtitleHeight));
             if (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) {
@@ -150,7 +150,7 @@ internal sealed partial class VisualTopologyCompiler {
         return ChartTextFitting.FitFontSize(Math.Min(8, preferred), preferred, size => {
             var height = _builder.MeasureText("Ag", size * _scale, 600).LineHeight
                 * TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
-            if (!string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
+            if (!string.IsNullOrWhiteSpace(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
                 height += _builder.MeasureText("Ag", size * .85 * _scale, 400).LineHeight
                     * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
             if (node.Details.Count == 0) return height <= bounds.Height;

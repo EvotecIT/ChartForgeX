@@ -38,9 +38,9 @@ internal sealed partial class VisualTopologyCompiler {
 
     private bool CanFitNodeLabelToContent(TopologyNode node) => node.FitLabelToContent
         && EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.Card
-        && node.Shape != TopologyNodeShape.Actor && node.Kind == TopologyNodeKind.Generic && node.IconId == null
-        && node.Symbol == null && ResolveRenderableNodeArtwork(node, _options) == null
-        && string.IsNullOrEmpty(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge);
+        && node.Shape != TopologyNodeShape.Actor && node.Kind == TopologyNodeKind.Generic && string.IsNullOrWhiteSpace(node.IconId)
+        && string.IsNullOrWhiteSpace(node.Symbol) && ResolveRenderableNodeArtwork(node, _options) == null
+        && string.IsNullOrWhiteSpace(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge);
 
     private double FitMeasuredNodeLabelSize(string label, double preferred, Func<double, ChartRect> contentBounds) =>
         ChartTextFitting.FitFontSize(Math.Min(11, preferred), preferred, candidate => {

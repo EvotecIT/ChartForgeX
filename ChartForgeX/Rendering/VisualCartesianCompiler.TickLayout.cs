@@ -30,8 +30,7 @@ internal static partial class VisualCartesianCompiler {
         for (var count = axis.TickCount; count >= 2; count--) {
             policy.TickCount = count;
             ticks = ChartTicks.GenerateInside(policy, minimum, maximum);
-            var extent = maximum == minimum ? 1 : ChartScaleTransform.Forward(maximum, axis) - ChartScaleTransform.Forward(minimum, axis);
-            double Position(double value) => (ChartScaleTransform.Forward(value, axis) - ChartScaleTransform.Forward(minimum, axis)) / extent * length;
+            double Position(double value) => ChartScaleTransform.Normalize(value, minimum, maximum, axis) * length;
             if (AxisLabelSequenceFits(builder, axis, ticks, Position, horizontal, style, gap, fallback, labels)) break;
         }
         labels.SetFittedTicks(axis, ticks);

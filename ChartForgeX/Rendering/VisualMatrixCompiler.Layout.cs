@@ -33,11 +33,10 @@ internal static partial class VisualMatrixCompiler {
                 && wrapped.Max(text => builder.MeasureText(text, style).Height) + 8 <= viewport.Height * .28) displayed = wrapped;
             else angle = -45;
         }
-        // The shared rotated-label owner already bounds its reach to 40% of the canvas.
-        // Apply that same budget to the remaining frame viewport instead of a second,
-        // tighter cap that shortens ordinary captions while the cell rows have room.
+        // Use the remaining frame viewport for both the rotated band and text fitting;
+        // host sizing overrides must not retain a budget from the authored model size.
         var labels = x ? Math.Min(viewport.Height * (ChartHeatmapColumnLabels.IsRotated(chart, angle) ? .4 : .28),
-            ChartHeatmapColumnLabels.IsRotated(chart, angle) ? ChartHeatmapColumnLabels.Reserve(chart, widest, lineHeight, angle)
+            ChartHeatmapColumnLabels.IsRotated(chart, angle) ? ChartHeatmapColumnLabels.Reserve(chart, viewport, widest, lineHeight, angle)
                 : displayed.Max(text => builder.MeasureText(text, style).Height) + 24) : 0;
         var top = y && chart.YAxisTitle.Length > 0 ? builder.MeasureText(chart.YAxisTitle, titleStyle).Height + gap : 0;
         var xTitle = x ? ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle) : string.Empty;
@@ -52,7 +51,7 @@ internal static partial class VisualMatrixCompiler {
             // side + anchorShare * remainingPlotWidth = reach, retaining that usable
             // half-cell before sacrificing plot width and thinning readable columns.
             side = Side(left);
-            var minimumPitch = ChartHeatmapColumnLabels.MinimumPitch(chart, lineHeight, widest, angle);
+            var minimumPitch = ChartHeatmapColumnLabels.MinimumPitch(chart, viewport, lineHeight, widest, angle);
             var minimumPlot = hexagonal ? minimumPitch * (columns.Length + .5) : minimumPitch * columns.Length - columnGap;
             var minimumGutter = Math.Min(left, builder.MeasureText("…", style).Width + gap);
             if (minimumPlot > viewport.Width - left - side && minimumPlot <= viewport.Width - minimumGutter - side) {
@@ -64,7 +63,7 @@ internal static partial class VisualMatrixCompiler {
 
             double Side(double rowGutter) {
                 var spaceBeside = ChartHeatmapColumnLabels.EndsAtColumn(chart, angle) ? rowGutter : 0;
-                var reach = ChartHeatmapColumnLabels.SideReserve(chart, widest, lineHeight, spaceBeside, angle);
+                var reach = ChartHeatmapColumnLabels.SideReserve(chart, viewport, widest, lineHeight, spaceBeside, angle);
                 return Math.Min(viewport.Width * .15, Math.Max(0,
                     (reach - anchorShare * (viewport.Width - rowGutter - columnGap * (columns.Length - 1))) / (1 - anchorShare)));
             }
@@ -86,7 +85,7 @@ internal static partial class VisualMatrixCompiler {
             var angle = layout.LabelAngle;
             var width = columns.Select(value => builder.MeasureText(formatColumn(value), style).Width).DefaultIfEmpty(0).Max();
             var pitch = chart.Series[0].Kind == ChartSeriesKind.HexbinHeatmap ? plot.Width / (columns.Length + .5) : cellWidth + gap;
-            var step = Math.Abs(angle) < .001 ? 1 : ChartHeatmapColumnLabels.Step(chart, pitch, builder.MeasureText("Mg", style).Height, width, angle);
+            var step = Math.Abs(angle) < .001 ? 1 : ChartHeatmapColumnLabels.Step(chart, viewport, pitch, builder.MeasureText("Mg", style).Height, width, angle);
             if (step > 1) builder.AddDiagnostic(new VisualDiagnostic("matrix.column-label-density",
                 "Some column captions were omitted to keep measured labels separated; all complete captions remain in descriptive regions."));
             for (var index = 0; index < columns.Length; index++) {
@@ -106,7 +105,7 @@ internal static partial class VisualMatrixCompiler {
                 } else {
                     var radians = Math.Abs(angle) * Math.PI / 180;
                     var height = builder.MeasureText(text, style).Height;
-                    var maxWidth = Math.Max(0, Math.Min(ChartHeatmapColumnLabels.MaximumRotatedLength(chart, height, angle),
+                    var maxWidth = Math.Max(0, Math.Min(ChartHeatmapColumnLabels.MaximumRotatedLength(chart, viewport, height, angle),
                         (layout.LabelHeight - height * Math.Cos(radians) - 8) / Math.Max(.001, Math.Sin(radians))));
                     var horizontal = angle < 0 ? x - viewport.Left : viewport.Right - x;
                     // The height projects towards the opposite side of the anchor; only the text width

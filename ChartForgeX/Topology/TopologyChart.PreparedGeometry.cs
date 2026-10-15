@@ -9,4 +9,7 @@ public sealed partial class TopologyChart {
     /// Fresh layout clears this snapshot; deferred routing and diagnostics reuse its immutable rectangles.
     /// </summary>
     internal IReadOnlyDictionary<string, IReadOnlyList<ChartRect>>? PreparedGroupHeaderParts { get; set; }
+
+    /// <summary>Reuses policy-based header reservations only within the current detached layout pass.</summary>
+    internal TopologyGroupHeaderLayout? GroupHeaderLayout { get; set; }
 }
