@@ -32,11 +32,15 @@ internal static class ChartTicks {
 
     public static IReadOnlyList<double> GenerateInside(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
-        if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Generate(axis, min, max, true) ?? new NumericTimeTicks(GenerateInside(min, max, axis.TickCount));
+        if (axis.Scale == ChartScaleKind.Time) return GenerateTimeInside(axis, min, max);
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, true);
         if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return GenerateInside(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, true);
     }
+
+    /// <summary>Uses a schedule axis's complete authored policy while retaining numeric time fallback identity.</summary>
+    internal static IReadOnlyList<double> GenerateTimeInside(ChartAxis axis, double min, double max) =>
+        ChartTimeScale.Generate(axis, min, max, true) ?? new NumericTimeTicks(GenerateInside(min, max, axis.TickCount));
 
     public static IReadOnlyList<double> Generate(double min, double max, int desiredCount) {
         desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));
@@ -75,7 +79,7 @@ internal static class ChartTicks {
     internal static bool IsNumericTimeFallback(IReadOnlyList<double> ticks) => ticks is NumericTimeTicks;
 
     internal static IReadOnlyList<double> PreserveFormatting(IReadOnlyList<double> source, IReadOnlyList<double> selected) =>
-        IsNumericTimeFallback(source) ? new NumericTimeTicks(selected) : selected;
+        IsNumericTimeFallback(source) ? new NumericTimeTicks(selected) : ChartTimeScale.PreserveFormatting(source, selected);
 
     private sealed class NumericTimeTicks : List<double> {
         public NumericTimeTicks(IEnumerable<double> ticks) : base(ticks) { }

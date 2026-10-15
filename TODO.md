@@ -4,7 +4,9 @@ This is the active product roadmap. The [README](README.md) introduces the libra
 
 ## Current position
 
-Assessment refreshed on 15 October 2026. The shared native renderer and package separation are implemented. The nine coordinated 2.0.0 package IDs were verified on NuGet during the earlier assessment; that does not establish that later source changes are published or that every downstream host has migrated. The unified authoring contracts use the coordinated 3.0.0 package family.
+Assessment refreshed on 16 October 2026. The shared native renderer and package separation are implemented. The nine coordinated 2.0.0 package IDs were verified on NuGet during the earlier assessment; that does not establish that later source changes are published or that every downstream host has migrated. The unified authoring contracts use the coordinated 3.0.0 package family.
+
+Calendar axes choose intervals from measured label space, preserve an authored tick-count ceiling and keep regular time-bar captions on their observations. The same fitting owner covers oversized schedule labels. Short threshold captions can use a leader and the available margin; default reference lines remain distinct from the grid. Hierarchy labels give the complete primary name priority over its value, and map keys separate missing data from quantitative ramp values. Broader whole-chart acceptance remains part of the work below.
 
 | Area | Implemented foundation | Remaining work |
 | --- | --- | --- |

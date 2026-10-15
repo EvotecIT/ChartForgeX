@@ -51,6 +51,8 @@ internal static partial class VisualScheduleCompiler {
         var style = layout.TickStyle; var gap = context.Theme.Spacing;
         format = layout.FormatTick;
         ticks = ScheduleTicks(chart, context, builder, ticks, project, format, style, layout.HasFixedTicks);
+        if (!layout.HasFixedTicks && chart.Options.XAxis.Labels.Count == 0 && chart.Options.XAxis.LabelDensity != ChartLabelDensity.All)
+            style = GeneratedScheduleTickStyle(chart, context, builder, ticks, project, format, style);
         var grid = chart.Options.ResolvePreparedGridLineStyle();
         var gridWidth = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
         var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;

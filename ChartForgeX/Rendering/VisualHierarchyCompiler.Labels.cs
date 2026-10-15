@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualHierarchyCompiler {
     private static void Label(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
-        ChartColor fill, int pointIndex, string role, bool center = false, SvgPaint? fillPaint = null, double insetLimit = 8, int maximumLines = 2) {
+        ChartColor fill, int pointIndex, string role, bool center = false, SvgPaint? fillPaint = null, double insetLimit = 8, int maximumLines = 2, string? secondary = null) {
         var style = LabelStyle(chart, context, fill, pointIndex);
         var inset = Math.Min(insetLimit, Math.Min(bounds.Width, bounds.Height) / 5);
         double width = Math.Max(0, bounds.Width - inset * 2), height = Math.Max(0, bounds.Height - inset * 2);
@@ -21,8 +21,15 @@ internal static partial class VisualHierarchyCompiler {
         var metrics = builder.MeasureText("M", style);
         int count = Math.Min(maximumLines, (int)Math.Floor(height / metrics.LineHeight));
         if (count < 1 || width < 6) { builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.")); return; }
-        var paragraphs = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        var primary = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        var paragraphs = secondary == null ? primary : primary.Concat(new[] { secondary }).ToArray();
         var wrapped = new List<string>();
+        // The name identifies the mark. A factual value remains in its semantic source
+        // and gives its row back when that is enough to keep the complete name readable.
+        if (secondary != null && (count < paragraphs.Length || primary.Any(paragraph => builder.MeasureText(paragraph, style).Width > width) && count < paragraphs.Length + 1)) {
+            paragraphs = primary;
+            builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A hierarchy value was omitted to preserve its primary caption; complete text remains in source semantics."));
+        }
         for (var i = 0; i < paragraphs.Length; i++) {
             // Reserve one row for each following paragraph, including the leaf's factual value.
             var spareRows = count - wrapped.Count - (paragraphs.Length - i - 1);
@@ -35,7 +42,7 @@ internal static partial class VisualHierarchyCompiler {
         bool shortened = lines.Length > count;
         for (int i = 0; i < Math.Min(count, lines.Length); i++) {
             string line = lines[i];
-            if (i == count - 1 && lines.Length > count) line += "...";
+            if (i == count - 1 && lines.Length > count) line += "…";
             string result = ChartTextFitting.TrimEnd(line, style.EffectiveFontSize, width, (value, _) => builder.MeasureText(value, style).Width);
             shortened |= result != line; fitted.Add(result);
         }

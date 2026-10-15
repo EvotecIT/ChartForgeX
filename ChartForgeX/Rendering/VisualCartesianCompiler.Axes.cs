@@ -18,9 +18,15 @@ internal static partial class VisualCartesianCompiler {
         private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _captionTicks = new();
         private readonly Dictionary<ChartAxis, Func<double, string>> _formatters = new();
         private readonly Dictionary<ChartAxis, HashSet<double>> _formattedValues = new();
+        private IReadOnlyList<double>? _regularTimeBarObservations;
+        private bool _hasTimeBarObservations;
         internal ChartAxis? HorizontalValueAxis { get; set; }
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
         internal AxisLabelCache(ChartAxisValueFormatter.Cache labels) => _labels = labels;
+        internal IReadOnlyList<double>? TimeBarObservations(Chart chart) {
+            if (!_hasTimeBarObservations) { _regularTimeBarObservations = RegularTimeBarObservations(chart); _hasTimeBarObservations = true; }
+            return _regularTimeBarObservations;
+        }
         internal void Set(ChartAxis axis, double value, string text) => _labels.Set(axis, value, text);
         internal void SetTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _ticks[axis] = ticks;
         internal bool HasAuthoredTicks(ChartAxis axis) => axis.Labels.Count > 0 || _ticks.ContainsKey(axis);
@@ -39,7 +45,8 @@ internal static partial class VisualCartesianCompiler {
         }
         private void RefreshFormatter(ChartAxis axis, IReadOnlyList<double> ticks) {
             if (!_captionTicks.TryGetValue(axis, out var previous) || !previous.SequenceEqual(ticks)
-                || ChartTicks.IsNumericTimeFallback(previous) != ChartTicks.IsNumericTimeFallback(ticks)) {
+                || ChartTicks.IsNumericTimeFallback(previous) != ChartTicks.IsNumericTimeFallback(ticks)
+                || !ChartTimeScale.SameFormatting(previous, ticks)) {
                 _captionTicks[axis] = ticks;
                 _formatters.Remove(axis);
             }

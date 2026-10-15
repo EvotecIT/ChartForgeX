@@ -9,12 +9,13 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, ChartMapper map, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles,
-        bool constrainXToPlot, ChartXViewport? xViewport = null) {
+        bool constrainXToPlot, ChartXViewport? xViewport = null, ChartRect? labelBounds = null, bool clipGeometry = false) {
         var horizontalValues = ChartCartesianOrientation.IsHorizontal(chart);
         VisualAnnotationCompiler.Draw(chart.Annotations, context, builder, plot, map.X, map.Y, colors, bands, obstacles,
             kindSelector: annotation => ChartCartesianOrientation.AnnotationKind(annotation, horizontalValues),
             isVisible: constrainXToPlot ? annotation => IsAnnotationVisible(annotation, plot, map, xViewport,
-                ChartCartesianOrientation.AnnotationKind(annotation, horizontalValues)) : null);
+                ChartCartesianOrientation.AnnotationKind(annotation, horizontalValues)) : null,
+            labelBounds: labelBounds, clipGeometry: clipGeometry);
     }
 
     private static bool IsAnnotationVisible(ChartAnnotation annotation, ChartRect plot, ChartMapper map, ChartXViewport? xViewport, ChartAnnotationKind kind) {

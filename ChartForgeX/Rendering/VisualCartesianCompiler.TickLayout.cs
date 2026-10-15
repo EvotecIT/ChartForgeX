@@ -14,7 +14,8 @@ internal static partial class VisualCartesianCompiler {
 
     /// <summary>Chooses the numeric/calendar scale before painting so text never has to leave its tick to avoid a neighbour.</summary>
     private static void FitGeneratedAxisTicks(VisualSceneBuilder builder, ChartAxis axis, double minimum, double maximum,
-        double length, bool horizontal, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels) {
+        double length, bool horizontal, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels,
+        IReadOnlyList<double>? regularObservations = null) {
         labels.ResetFittedTicks(axis);
         if (labels.HasAuthoredTicks(axis) || axis.LabelDensity == ChartLabelDensity.All || length <= 0) return;
         // Authored oversized type can fit down to the established readable floor.
@@ -27,10 +28,16 @@ internal static partial class VisualCartesianCompiler {
         var policy = axis.Clone();
         var gap = AxisLabelGap(axis, spacing);
         IReadOnlyList<double> ticks = labels.Ticks(axis, minimum, maximum);
+        double Position(double value) => ChartScaleTransform.Normalize(value, minimum, maximum, axis) * length;
+        if (axis.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(axis, minimum, maximum,
+            candidates => AxisLabelSequenceFits(builder, axis, candidates, Position, horizontal, style, gap, fallback, labels),
+            allowCompactDates: axis.ValueFormat == null && fallback == null, regularObservations: regularObservations) is { } timeTicks) {
+            labels.SetFittedTicks(axis, timeTicks);
+            return;
+        }
         for (var count = axis.TickCount; count >= 2; count--) {
             policy.TickCount = count;
             ticks = ChartTicks.GenerateInside(policy, minimum, maximum);
-            double Position(double value) => ChartScaleTransform.Normalize(value, minimum, maximum, axis) * length;
             if (AxisLabelSequenceFits(builder, axis, ticks, Position, horizontal, style, gap, fallback, labels)) break;
         }
         labels.SetFittedTicks(axis, ticks);
@@ -49,10 +56,22 @@ internal static partial class VisualCartesianCompiler {
                 FitGeneratedAxisTicks(builder, axes.Category, range.MinY, range.MaxY, plot.Height, false, style, spacing, null, labels);
             return;
         }
-        if (chart.Options.XAxis.Visible) FitGeneratedAxisTicks(builder, chart.Options.XAxis, range.MinX, range.MaxX, plot.Width, true, style, spacing, null, labels);
+        if (chart.Options.XAxis.Visible) FitGeneratedAxisTicks(builder, chart.Options.XAxis, range.MinX, range.MaxX, plot.Width, true, style, spacing, null, labels, labels.TimeBarObservations(chart));
         if (chart.Options.YAxis.Visible) FitGeneratedAxisTicks(builder, chart.Options.YAxis, range.MinY, range.MaxY, plot.Height, false, style, spacing, chart.Options.ValueFormatter, labels);
         if (secondaryRange != null && chart.Options.SecondaryYAxis.Visible)
             FitGeneratedAxisTicks(builder, chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY, plot.Height, false, style, spacing, chart.Options.ValueFormatter, labels);
+    }
+
+    private static IReadOnlyList<double>? RegularTimeBarObservations(Chart chart) {
+        if (chart.Options.XAxis.Scale != ChartScaleKind.Time || chart.Series.Count == 0
+            || chart.Series.Any(series => series.Kind != ChartSeriesKind.Bar)) return null;
+        var values = chart.Series.SelectMany(series => series.RenderPoints.Select(point => point.X)).Distinct().OrderBy(value => value).ToArray();
+        if (values.Length < 2) return null;
+        var cadence = values[1] - values[0];
+        if (cadence <= 0) return null;
+        for (var index = 2; index < values.Length; index++)
+            if (Math.Abs((values[index] - values[index - 1]) / cadence - 1) > 1e-6) return null;
+        return values;
     }
 
     /// <summary>Keeps authored/category captions on a regular stride without appending a crowded final caption.</summary>

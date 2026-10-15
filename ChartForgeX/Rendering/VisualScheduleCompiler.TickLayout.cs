@@ -16,13 +16,32 @@ internal static partial class VisualScheduleCompiler {
         var policy = axis.Clone();
         // Lane models use calendar ticks even when their source axis retains the default linear scale.
         if (chart.Series[0].Kind is ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane) policy.Scale = ChartScaleKind.Time;
+        if (policy.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(policy, ticks[0], ticks[ticks.Count - 1],
+            candidates => ScheduleCaptionsFit(chart, context, builder, candidates, project, format,
+                GeneratedScheduleTickStyle(chart, context, builder, candidates, project, format, style)), allowCompactDates: false) is { } calendarTicks)
+            return calendarTicks;
         var selected = ticks;
         for (var count = axis.TickCount; count >= 2; count--) {
             policy.TickCount = count;
             selected = ChartTicks.GenerateInside(policy, ticks[0], ticks[ticks.Count - 1]);
-            if (ScheduleCaptionsFit(chart, context, builder, selected, project, format, style)) break;
+            if (ScheduleCaptionsFit(chart, context, builder, selected, project, format,
+                GeneratedScheduleTickStyle(chart, context, builder, selected, project, format, style))) break;
         }
         return selected;
+    }
+
+    /// <summary>Fits oversized generated type to the selected pitch while ordinary and authored captions retain their style.</summary>
+    private static TextStyle GeneratedScheduleTickStyle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
+        IReadOnlyList<double> ticks, Func<double, double> project, Func<double, string> format, TextStyle style) {
+        if (ticks.Count < 2 || style.EffectiveFontSize <= VisualTextFitting.MaximumOrdinaryFontSize) return style;
+        var gap = chart.Options.XAxis.LabelDensity == ChartLabelDensity.Dense ? 0
+            : chart.Options.XAxis.LabelDensity == ChartLabelDensity.Relaxed ? context.Theme.Spacing * 2 : context.Theme.Spacing / 2;
+        var pitch = double.PositiveInfinity;
+        for (var index = 1; index < ticks.Count; index++) pitch = Math.Min(pitch, Math.Abs(project(ticks[index]) - project(ticks[index - 1])));
+        var angle = Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle));
+        var texts = ticks.Select(format).ToArray();
+        var height = texts.Select(text => VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), angle).Height).DefaultIfEmpty(0).Max();
+        return VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, Math.Max(0, pitch - gap), height), texts, angle);
     }
 
     /// <summary>Authored labels and fixed intervals keep their exact ticks; only their captions use an even stride.</summary>

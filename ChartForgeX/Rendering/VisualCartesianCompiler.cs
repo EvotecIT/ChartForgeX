@@ -127,14 +127,15 @@ internal static partial class VisualCartesianCompiler {
             else DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
         }
         var obstacles = new List<LabelObstacle>();
+        var annotationBounds = hasSecondary ? plot : new ChartRect(plot.Left, plot.Top, Math.Max(plot.Width, viewport.Right - plot.Left), plot.Height);
         // Caption placement needs the actual marks before the background band layer is
         // emitted. Collect those marks once; ordinary charts keep the direct builder path.
         var seriesBuilder = chart.Annotations.Any(annotation => annotation.EndValue.HasValue && annotation.ShowLabel && annotation.Label.Length > 0)
             ? new VisualSceneBuilder(builder.Size, context.Font) : builder;
         {
             if (ReferenceEquals(seriesBuilder, builder)) {
-                using (clipMarks ? builder.PushClip(plot) : null)
-                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
+                DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
+                    xViewport: xViewport, labelBounds: annotationBounds, clipGeometry: clipMarks);
             }
             foreach (var index in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[index];
@@ -158,12 +159,12 @@ internal static partial class VisualCartesianCompiler {
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
-                using (clipMarks ? builder.PushClip(plot) : null)
-                    DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
+                DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
+                    xViewport: xViewport, labelBounds: annotationBounds, clipGeometry: clipMarks);
                 builder.Append(seriesBuilder.Build());
             }
-            using (clipMarks ? builder.PushClip(plot) : null)
-                DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null, xViewport: xViewport);
+            DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null,
+                xViewport: xViewport, labelBounds: annotationBounds, clipGeometry: clipMarks);
         }
         if (chart.Options.ShowStackTotals && stacks.HasBarStacks) {
             if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, stacks, labels);

@@ -22,7 +22,7 @@ internal static partial class ChartTimeScale {
         new(TimeUnit.Second, 1), new(TimeUnit.Second, 5), new(TimeUnit.Second, 15), new(TimeUnit.Second, 30),
         new(TimeUnit.Minute, 1), new(TimeUnit.Minute, 2), new(TimeUnit.Minute, 5), new(TimeUnit.Minute, 10), new(TimeUnit.Minute, 15), new(TimeUnit.Minute, 30),
         new(TimeUnit.Hour, 1), new(TimeUnit.Hour, 2), new(TimeUnit.Hour, 3), new(TimeUnit.Hour, 6), new(TimeUnit.Hour, 12),
-        new(TimeUnit.Day, 1), new(TimeUnit.Day, 2), new(TimeUnit.Week, 1),
+        new(TimeUnit.Day, 1), new(TimeUnit.Day, 2), new(TimeUnit.Day, 3), new(TimeUnit.Day, 4), new(TimeUnit.Week, 1), new(TimeUnit.Week, 2),
         new(TimeUnit.Month, 1), new(TimeUnit.Month, 3), new(TimeUnit.Month, 6),
         new(TimeUnit.Year, 1)
     };
@@ -38,12 +38,26 @@ internal static partial class ChartTimeScale {
         try {
             for (var attempt = 0; attempt < 32; attempt++) {
                 var ticks = GenerateInterval(axis, min, max, inside, interval);
-                if (ticks.Count <= desiredCount) return ticks;
+                if (ticks.Count <= desiredCount) {
+                    if (inside && ticks.Count < 2) {
+                        // A nominally adequate month/year step may contain only one
+                        // boundary. Try the preceding real intervals before accepting
+                        // that sparse result; padded range ends are not calendar ticks.
+                        for (var index = Intervals.Length - 1; index >= 0; index--) {
+                            if (Intervals[index].ApproximateDays >= interval.ApproximateDays) continue;
+                            var finer = GenerateInterval(axis, min, max, true, Intervals[index]);
+                            if (finer.Count > desiredCount) break;
+                            if (finer.Count >= 2) return finer;
+                        }
+                        if (ticks.Count == 0) return CalendarEndpoints(axis, min, max, interval);
+                    }
+                    return ticks;
+                }
                 // Month boundaries, repeated hours and outer alignment can add
                 // ticks beyond a nominal duration estimate. Recheck the actual set.
                 interval = ChooseInterval(interval.ApproximateDays * 1.01);
             }
-            return new[] { min, max };
+            return inside ? CalendarEndpoints(axis, min, max, interval) : new[] { min, max };
         } catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) {
             return null;
         }
@@ -85,7 +99,7 @@ internal static partial class ChartTimeScale {
                 if (!inside || (value >= min && value <= max)) ticks.Add(value);
             }
 
-            if (inside) return ticks.Count >= 2 ? ticks : new[] { min, max };
+            if (inside) return ticks;
             while (ticks.Count > 1 && ticks[1] <= min) ticks.RemoveAt(0);
             while (ticks.Count > 1 && ticks[ticks.Count - 2] >= max) ticks.RemoveAt(ticks.Count - 1);
             if (ticks.Count == 0 || ticks[0] > min) ticks.Insert(0, min);
@@ -224,7 +238,12 @@ internal static partial class ChartTimeScale {
             case TimeUnit.Minute: return new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute / step * step, 0);
             case TimeUnit.Hour: return new DateTime(value.Year, value.Month, value.Day, value.Hour / step * step, 0, 0);
             case TimeUnit.Day: return new DateTime(value.Year, value.Month, (value.Day - 1) / step * step + 1);
-            case TimeUnit.Week: return value.Date.AddDays(-(((int)value.DayOfWeek + 6) % 7));
+            case TimeUnit.Week:
+                var monday = value.Date.AddDays(-(((int)value.DayOfWeek + 6) % 7));
+                // All multi-week ticks share one calendar phase across months and windows.
+                var epochMonday = new DateTime(1970, 1, 5);
+                var weeks = (monday.Ticks - epochMonday.Ticks) / (TimeSpan.TicksPerDay * 7);
+                return monday.AddDays(-PositiveRemainder(weeks, step) * 7);
             case TimeUnit.Month: return new DateTime(value.Year, (value.Month - 1) / step * step + 1, 1);
             default: return new DateTime(Math.Max(1, value.Year / step * step), 1, 1);
         }
@@ -236,11 +255,8 @@ internal static partial class ChartTimeScale {
             case TimeUnit.Second: return value.AddSeconds(step);
             case TimeUnit.Minute: return value.AddMinutes(step);
             case TimeUnit.Hour: return value.AddHours(step);
-            case TimeUnit.Day:
-                // Day steps restart on the first of each month so labels stay on predictable days (1, 3, 5, ...).
-                var next = value.AddDays(step);
-                return next.Month == value.Month ? next : new DateTime(next.Year, next.Month, 1);
-            case TimeUnit.Week: return value.AddDays(7);
+            case TimeUnit.Day: return value.AddDays(step);
+            case TimeUnit.Week: return value.AddDays(step * 7);
             case TimeUnit.Month: return value.AddMonths(step);
             default: return value.AddYears(step);
         }
