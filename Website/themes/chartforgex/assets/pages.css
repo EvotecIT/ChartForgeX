@@ -8,17 +8,6 @@
   margin-inline: auto;
 }
 
-/* Mermaid hero: the rendered diagram in an output window, its source floating over the corner. */
-.cfx-mmhero { position: relative; padding: 0 0 56px 56px; }
-.cfx-mmhero__source {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  z-index: 2;
-  width: min(400px, 54%);
-  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .85);
-}
-.cfx-mmhero__source pre { max-height: 300px; font-size: .75rem; }
 
 /* Atlas */
 .cfx-atlas { padding-block: clamp(56px, 7vw, 96px) 0; scroll-margin-top: 72px; }
@@ -135,7 +124,9 @@
   z-index: 2;
   aspect-ratio: 4 / 3;
 }
-.cfx-family__source .cfx-codeblock pre { height: 100%; border-width: 0 0 1px; border-radius: 0; font-size: .75rem; }
+.cfx-family__source .cfx-codeblock { border-width: 0 0 1px; border-radius: 0; }
+.cfx-family__source .cfx-codeblock__bar { border-radius: 0; }
+.cfx-family__source .cfx-codeblock pre { font-size: .75rem; }
 .cfx-family__edit { padding: 8px 6px; color: var(--cfx-accent); font-size: .875rem; font-weight: 620; text-decoration: none; }
 .cfx-family__edit:hover { text-decoration: underline; }
 
@@ -207,6 +198,24 @@
     var(--cfx-card-alt);
 }
 .cfx-figure__plate img { display: block; width: 100%; height: auto; border: 0; border-radius: 0; background: none; }
+.cfx-figure__open { position: relative; width: 100%; border-radius: 6px; cursor: zoom-in; }
+.cfx-figure__open::after {
+  /* A full-size cue in the corner, shown on hover and keyboard focus. */
+  content: "Full size";
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 3px 9px;
+  border: 1px solid var(--cfx-line-strong);
+  border-radius: 6px;
+  background: var(--cfx-card);
+  color: var(--cfx-ink);
+  font-size: .75rem;
+  font-weight: 640;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+.cfx-figure__open:is(:hover, :focus-visible)::after { opacity: 1; }
 .cfx-figure figcaption {
   display: flex;
   gap: 10px;
@@ -220,8 +229,6 @@
 .cfx-figure--strip .cfx-figure__plate img { border: 1px solid var(--cfx-line); border-radius: 6px; }
 
 @media (max-width: 900px) {
-  .cfx-mmhero { padding: 0; }
-  .cfx-mmhero__source { position: relative; width: auto; margin-top: 14px; box-shadow: none; }
   .cfx-atlas__head { grid-template-columns: minmax(0, 1fr); }
   .cfx-step__body,
   .cfx-step__body:not(:has(> :is(pre, .cfx-codeblock, .cfx-figure))) { grid-template-columns: minmax(0, 1fr); }
@@ -379,8 +386,6 @@
   .cfx-next__grid { grid-template-columns: minmax(0, 1fr); }
 }
 /* Docs map: each topic with a render of what it covers. */
-.cfx-stage__install { margin-top: 28px; max-width: 460px; background: var(--cfx-card); }
-.cfx-stage__install + .cfx-stage__actions { margin-top: 16px; }
 .cfx-docmap { padding-top: clamp(56px, 7vw, 88px); }
 .cfx-docmap__head { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 12px clamp(24px, 4vw, 56px); align-items: end; margin-bottom: 24px; }
 .cfx-docmap__head h2 { font-size: clamp(1.75rem, 1.1rem + 1.9vw, 2.625rem); }

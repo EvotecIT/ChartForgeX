@@ -25,23 +25,24 @@
         alt="A dark dashboard rendered by ChartForgeX: sign-ins by method as a stacked area, this week's share as a donut, a security posture radar, sign-ins by hour as a heatmap and an MFA coverage gauge at 87." />
     </figure>
 
-    <figure class="cfx-float cfx-float--code" aria-label="C# that builds the dashboard">
-      <figcaption><span class="cfx-float__dot cfx-float__dot--cs" aria-hidden="true"></span>Report.cs</figcaption>
-<pre><code><span class="k">var</span> report = <span class="t">ChartGrid</span>.Create()
-    .WithColumns(<span class="n">3</span>)
-    .Add(signIns, columnSpan: <span class="n">2</span>)
+    <figure class="cfx-codeblock cfx-hero__code" data-lang="csharp">
+      <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">C#</span><span class="cfx-codeblock__file">Report.cs</span><span class="cfx-codeblock__actions"></span></figcaption>
+<pre><code class="language-csharp">var report = ChartGrid.Create()
+    .WithThemeMode(VisualThemeMode.Dark)
+    .WithColumns(3)
+    .Add(signIns, columnSpan: 2)
     .Add(methods).Add(posture)
     .Add(byHour).Add(coverage);
 
-report.SavePng(<span class="s">"identity-overview.png"</span>);</code></pre>
+report.SavePng("identity-overview.png");</code></pre>
     </figure>
 
-    <figure class="cfx-float cfx-float--ps" aria-label="The same engine from PowerShell with ImagePlayground">
-      <figcaption><span class="cfx-float__dot cfx-float__dot--ps" aria-hidden="true"></span>Usage.ps1 <em>ImagePlayground</em></figcaption>
-<pre><code>New-ImageChart {
-    <span class="t">New-ImageChartDonut</span> -Name <span class="s">'Used'</span> -Value <span class="n">72</span>
-    <span class="t">New-ImageChartDonut</span> -Name <span class="s">'Free'</span> -Value <span class="n">28</span>
-} -Theme Dark -FilePath <span class="s">usage.png</span></code></pre>
+    <figure class="cfx-codeblock cfx-hero__code" data-lang="powershell">
+      <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">Usage.ps1, ImagePlayground</span><span class="cfx-codeblock__actions"></span></figcaption>
+<pre><code class="language-powershell">New-ImageChart {
+    New-ImageChartDonut -Name 'Used' -Value 72
+    New-ImageChartDonut -Name 'Free' -Value 28
+} -Theme Dark -FilePath usage.png</code></pre>
     </figure>
   </div>
 </section>

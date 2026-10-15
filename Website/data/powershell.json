@@ -1,12 +1,7 @@
 {
   "intro": "ImagePlayground is the Evotec PowerShell module for visual automation. It wraps ChartForgeX, so a script can turn the objects it already has into charts, service maps, dashboards, social cards and animated terminal stories.",
   "hero": {
-    "lede": "Charts, service maps, dashboards and animated stories from the objects your scripts already have. Every script on this page ran as shown against the published module, next to the files it wrote and the console output it printed.",
-    "badges": [
-      "Windows PowerShell 5.1 and PowerShell 7",
-      "PNG, SVG, JPEG and HTML from one definition",
-      "No browser, no Node.js"
-    ]
+    "lede": "Charts, service maps, dashboards and animated stories from the objects your scripts already have, in Windows PowerShell 5.1 and PowerShell 7. Every script on this page ran as shown against the published module, next to the files it wrote and the console output it printed."
   },
   "sections": {
     "charts": {

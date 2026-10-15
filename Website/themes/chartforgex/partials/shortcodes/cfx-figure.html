@@ -1,5 +1,6 @@
 {{~ ## Docs figure shortcode (cfx-figure with id and caption) shows the light and dark render of a docs figure in
-     data/visuals.json. ids="a,b,c" sets several frames as a strip; frame="/site/..." embeds a live HTML output. ## ~}}
+     data/visuals.json. ids="a,b,c" sets several frames as a strip; frame="/site/..." embeds a live HTML output. Each
+     render links to its full-size file, so dense figures stay readable in the measured column. ## ~}}
 {{~ a = shortcode.attrs; figs = data.visuals.docs.figures; ids = []
     if !a.frame; ids = (a.ids ?? a.id) | string.split ","; end ~}}
 <figure class="cfx-figure{{ if ids.size > 1 }} cfx-figure--strip{{ end }}{{ if a.frame }} cfx-figure--frame{{ end }}">
@@ -7,9 +8,9 @@
 {{~ if a.frame ~}}
 <iframe src="{{ a.frame }}" title="{{ a.title }}" loading="lazy"></iframe>
 {{~ else ~}}
-{{~ for id in ids; f = figs[id | string.strip] ~}}
-<img class="cfx-only-light" src="{{ f.base }}-light.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="{{ a.alt ?? a.caption }}" />
-<img class="cfx-only-dark" src="{{ f.base }}-dark.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="{{ a.alt ?? a.caption }}" />
+{{~ for id in ids; key = id | string.strip; f = figs[key] ~}}
+<a class="cfx-figure__open cfx-only-light" href="{{ f.base }}-light.{{ f.ext }}" aria-label="Open the {{ key }} figure full size, light theme"><img src="{{ f.base }}-light.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="{{ a.alt ?? a.caption }}" /></a>
+<a class="cfx-figure__open cfx-only-dark" href="{{ f.base }}-dark.{{ f.ext }}" aria-label="Open the {{ key }} figure full size, dark theme"><img src="{{ f.base }}-dark.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="{{ a.alt ?? a.caption }}" /></a>
 {{~ end ~}}
 {{~ end ~}}
 </div>

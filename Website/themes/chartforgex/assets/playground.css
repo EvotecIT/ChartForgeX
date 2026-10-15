@@ -1,7 +1,7 @@
 /* ChartForgeX playground (/playground/): source editor beside a live WebAssembly render. */
 
 .cfx-pg { --pg-line: var(--cfx-line); --pg-err: #d1242f; --pg-err-soft: rgba(209, 36, 47, .1);
-  width: min(100% - 32px, 1600px); margin: 0 auto; padding: 20px 0 64px; }
+  width: min(100% - 2 * var(--cfx-gutter), var(--cfx-max)); margin: 0 auto; padding: 20px 0 64px; }
 :root[data-theme="dark"] .cfx-pg { --pg-err: #ff7b72; --pg-err-soft: rgba(255, 123, 114, .12); }
 
 /* Toolbar, ruled like the masthead on the other pages. */
@@ -104,6 +104,10 @@
 }
 @media (max-width: 560px) {
   .cfx-pg__samples, .cfx-pg__samples select { width: 100%; max-width: none; }
+  .cfx-pg__actions { width: 100%; }
+  .cfx-pg__actions > .cfx-pg__seg { flex: 1 1 100%; }
+  .cfx-pg__actions > .cfx-pg__seg > button { flex: 1; justify-content: center; }
+  .cfx-pg__actions > .cfx-pg__btn { flex: 1; }
   .cfx-pg__foot span:last-child { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {

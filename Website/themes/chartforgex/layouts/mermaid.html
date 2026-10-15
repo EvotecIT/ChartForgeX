@@ -27,18 +27,18 @@
   </div>
   {{~ end ~}}
   {{~ capture stage_art ~}}
-  <div class="cfx-mmhero">
-    <figure class="cfx-output cfx-mmhero__render">
-      <figcaption><span class="cfx-output__file">{{ m.hero }}.svg</span><span>{{ hero.kb }} KB, rendered by ChartForgeX</span></figcaption>
-      <img src="{{ hero.base }}-dark.svg" width="{{ hero.w }}" height="{{ hero.h }}" fetchpriority="high" decoding="async" alt="A sequence diagram rendered by ChartForgeX from the Mermaid source beside it: a user, an app, an identity provider and an API exchanging tokens." />
-    </figure>
-    <figure class="cfx-codeblock cfx-mmhero__source" data-lang="mermaid">
+  <div class="cfx-pair">
+    <figure class="cfx-codeblock cfx-pair__source" data-lang="mermaid">
       <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">Mermaid</span><span class="cfx-codeblock__file">{{ m.hero }}.mmd</span><span class="cfx-codeblock__actions"></span></figcaption>
       <pre><code class="language-mermaid">{{ hero.source | html.escape }}</code></pre>
     </figure>
+    <figure class="cfx-output cfx-pair__output">
+      <figcaption><span class="cfx-output__file">{{ m.hero }}.svg</span><span>{{ hero.kb }} KB, rendered by ChartForgeX</span></figcaption>
+      <img src="{{ hero.base }}-dark.svg" width="{{ hero.w }}" height="{{ hero.h }}" fetchpriority="high" decoding="async" alt="A sequence diagram rendered by ChartForgeX from the Mermaid source beside it: a user, an app, an identity provider and an API exchanging tokens." />
+    </figure>
   </div>
   {{~ end ~}}
-  {{~ stage_title = page.title; stage_lede = m.summary ~}}
+  {{~ stage_title = page.title; stage_lede = m.summary; stage_wide = true ~}}
   {{ include "stage" }}
 
   <section class="cfx-atlas" id="atlas" aria-labelledby="cfx-atlas-title">

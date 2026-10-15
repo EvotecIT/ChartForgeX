@@ -3,14 +3,14 @@
     <h2 id="cfx-surfaces-demo-title">One definition, every surface</h2>
     <p>The same chart object writes vector SVG, native PNG, a script-free HTML page or an interactive one, an email-ready image and a Markdown fence. Switch the tabs; every file below was written by ChartForgeX.</p>
   </div>
-  <figure class="cfx-stage" data-cfx-stage>
-    <div class="cfx-stage__tabs" role="tablist" aria-label="Output surface">
+  <figure class="cfx-demo" data-cfx-stage>
+    <div class="cfx-demo__tabs" role="tablist" aria-label="Output surface">
       {{~ for s in data.home.surfaces ~}}
       <button type="button" role="tab" id="cfx-tab-{{ s.id }}" aria-controls="cfx-panel-{{ s.id }}" aria-selected="{{ if s.id == "svg" }}true{{ else }}false{{ end }}" tabindex="{{ if s.id == "svg" }}0{{ else }}-1{{ end }}" data-cfx-surface="{{ s.id }}">{{ s.label }}</button>
       {{~ end ~}}
     </div>
 
-    <div class="cfx-stage__screen">
+    <div class="cfx-demo__screen">
       <div class="cfx-panel cfx-panel--code" role="tabpanel" id="cfx-panel-csharp" aria-labelledby="cfx-tab-csharp" hidden>
 <pre class="cfx-code"><code><span class="k">var</span> chart = <span class="t">Chart</span>.Create()
     .WithTitle(<span class="s">"Sign-ins by method"</span>)
@@ -73,9 +73,9 @@ chart.SaveHtml(<span class="s">"sign-ins.html"</span>);</code></pre>
       </div>
     </div>
 
-    <figcaption class="cfx-stage__caption">
+    <figcaption class="cfx-demo__caption">
       {{~ for s in data.home.surfaces ~}}
-      <p data-cfx-caption="{{ s.id }}"{{ if s.id != "svg" }} hidden{{ end }}>{{ s.caption }}{{ if s.size }} <span class="cfx-stage__size">{{ data.hero.sizes[s.size] }}</span>{{ end }}</p>
+      <p data-cfx-caption="{{ s.id }}"{{ if s.id != "svg" }} hidden{{ end }}>{{ s.caption }}{{ if s.size }} <span class="cfx-demo__size">{{ data.hero.sizes[s.size] }}</span>{{ end }}</p>
       {{~ end ~}}
     </figcaption>
   </figure>

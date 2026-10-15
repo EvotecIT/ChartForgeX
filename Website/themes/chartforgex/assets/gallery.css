@@ -129,8 +129,9 @@
     var(--cfx-page);
 }
 .cfx-viewer__image img { display: block; width: 100%; max-height: calc(100vh - 160px); object-fit: contain; }
-.cfx-viewer__source { display: flex; flex-direction: column; min-height: 0; margin: 16px; }
-.cfx-viewer__source pre { flex: 1; max-height: calc(100vh - 160px); }
+/* The source fills the dialog height under its head (dialog 100vh - 32px, head about 72px, margins 32px) and scrolls
+   below its caption bar. */
+.cfx-viewer__source { min-height: 0; max-height: calc(100vh - 136px); margin: 16px; }
 
 @media (max-width: 900px) {
   .cfx-viewer__head { flex-wrap: wrap; }
@@ -139,6 +140,7 @@
   .cfx-viewer__links { order: 3; }
   .cfx-viewer__body { grid-template-columns: minmax(0, 1fr); }
   .cfx-viewer__image { border-right: 0; border-bottom: 1px solid var(--cfx-line); }
+  .cfx-viewer__source { max-height: none; }
   .cfx-viewer__source pre { max-height: 60vh; }
 }
 

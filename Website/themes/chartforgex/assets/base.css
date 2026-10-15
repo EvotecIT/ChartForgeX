@@ -320,13 +320,37 @@ code, pre, kbd, samp { font-family: var(--cfx-mono); font-variant-ligatures: non
   letter-spacing: -.035em;
 }
 .cfx-stage__lede { max-width: 46ch; margin-top: 20px; color: var(--cfx-ink-2); font-size: var(--cfx-t-lede); line-height: 1.55; }
-.cfx-stage__stats { display: flex; flex-wrap: wrap; gap: 0; margin: 28px 0 0; padding: 0; }
-.cfx-stage__stats > div { min-width: 0; padding: 12px 22px 0 0; margin-right: 22px; border-top: 1px solid var(--cfx-axis); }
+.cfx-stage__stats { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0 20px; max-width: 480px; margin: 28px 0 0; padding: 0; }
+.cfx-stage__stats > div { display: flex; flex-direction: column; min-width: 0; padding: 12px 8px 0 0; border-top: 1px solid var(--cfx-axis); }
 .cfx-stage__stats > div:first-child { border-top-color: var(--cfx-glow); }
 .cfx-stage__stats dt { color: var(--cfx-ink-3); font-size: .8125rem; }
-.cfx-stage__stats dd { margin: 2px 0 0; color: var(--cfx-ink); font-family: var(--cfx-mono); font-size: 1.75rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.cfx-stage__stats dd { margin: auto 0 0; padding-top: 2px; color: var(--cfx-ink); font-family: var(--cfx-mono); font-size: 1.75rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .cfx-stage__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.cfx-stage__install { margin-top: 28px; max-width: 520px; background: var(--cfx-card); }
+.cfx-stage__install + .cfx-stage__actions { margin-top: 16px; }
 .cfx-stage__art { min-width: 0; }
+
+/* Wide stage: the title row on top (title and lede left, figures and actions right), the output full width below. */
+.cfx-stage--wide .cfx-stage__inner { grid-template-columns: minmax(0, 1fr); gap: clamp(32px, 4vw, 52px); align-items: start; }
+.cfx-stage--wide .cfx-stage__text {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  grid-template-rows: auto auto;
+  align-items: end;
+  gap: 0 clamp(32px, 5vw, 72px);
+}
+.cfx-stage--wide h1 { grid-column: 1; grid-row: 1; max-width: 18ch; }
+.cfx-stage--wide .cfx-stage__lede { grid-column: 1; grid-row: 2; align-self: start; }
+.cfx-stage--wide .cfx-stage__stats { grid-column: 2; grid-row: 1; margin-top: 0; }
+.cfx-stage--wide .cfx-stage__actions { grid-column: 2; grid-row: 2; align-self: start; }
+
+/* Pair: source beside the output it renders. Nothing overlaps; the source column is as wide as its longest line
+   (up to a cap) and the output takes the rest, so both read in full. Below 1180px, where the output would shrink
+   under its natural size, the output comes first at full width and the source follows. */
+.cfx-pair { display: grid; grid-template-columns: fit-content(500px) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.cfx-pair__source pre { font-size: .75rem; }
+.cfx-pair__output { display: flex; flex-direction: column; }
+.cfx-pair__output img { flex: 1; min-height: 0; object-fit: contain; }
 
 .cfx-btn--glow {
   background: var(--cfx-glow);
@@ -361,23 +385,36 @@ code, pre, kbd, samp { font-family: var(--cfx-mono); font-variant-ligatures: non
 .cfx-output > figcaption::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--cfx-glow); }
 .cfx-output__file { flex: 1; min-width: 0; overflow: hidden; color: #c8d0da; text-overflow: ellipsis; white-space: nowrap; }
 .cfx-output img { display: block; width: 100%; height: auto; }
-/* Code block: one component for docs, examples, the gallery viewer, Mermaid, the playground and PowerShell.
-   The caption bar sits over the space the block reserves, so enhancing a plain Markdown block never shifts layout. */
-.cfx-codeblock { position: relative; min-width: 0; margin: 0; }
-.cfx-codeblock__bar {
-  position: absolute;
-  inset: 1px 1px auto;
-  z-index: 1;
+/* Code block: one component for docs, examples, the gallery viewer, Mermaid, the playground, PowerShell and the API
+   references. The block is the frame: an opaque caption bar, then the code in its own scroll area, so code scrolled in
+   either direction never passes under the caption and the scrollbars start below it. A plain Markdown block reserves
+   the same height for the bar (38px bar + 14px padding = 52px), so enhancing it never shifts layout. A block that
+   should stop growing sets --cfx-code-max (or a height); the code scrolls inside it. */
+.cfx-codeblock {
+  position: relative;
   display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--cfx-code-line);
+  border-radius: var(--cfx-r);
+  background: var(--cfx-code-bg);
+  color: var(--cfx-code-ink);
+}
+.cfx-codeblock__bar {
+  display: flex;
+  flex: none;
   align-items: center;
   gap: 10px;
-  height: 37px;
+  height: 38px;
   padding: 0 6px 0 14px;
+  border-bottom: 1px solid var(--cfx-code-line);
+  border-radius: calc(var(--cfx-r) - 1px) calc(var(--cfx-r) - 1px) 0 0;
+  background: var(--cfx-code-bar);
   color: var(--cfx-code-label);
   font-family: var(--cfx-mono);
   font-size: var(--cfx-t-micro);
   font-weight: 500;
-  pointer-events: none;
 }
 .cfx-codeblock__lang { display: inline-flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; }
 .cfx-codeblock__lang::before {
@@ -389,7 +426,7 @@ code, pre, kbd, samp { font-family: var(--cfx-mono); font-variant-ligatures: non
   background: var(--cfx-lang, var(--cfx-code-muted));
 }
 .cfx-codeblock__file { overflow: hidden; color: var(--cfx-code-muted); text-overflow: ellipsis; white-space: nowrap; }
-.cfx-codeblock__actions { display: flex; align-items: center; gap: 2px; margin-left: auto; pointer-events: auto; }
+.cfx-codeblock__actions { display: flex; align-items: center; gap: 2px; margin-left: auto; }
 .cfx-codeblock__btn {
   display: inline-flex;
   align-items: center;
@@ -431,6 +468,15 @@ code, pre, kbd, samp { font-family: var(--cfx-mono); font-variant-ligatures: non
   line-height: 1.7;
   tab-size: 4;
   text-shadow: none;
+}
+.cfx-codeblock > pre {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: var(--cfx-code-max, none);
+  padding-top: 14px;
+  border: 0;
+  border-radius: 0 0 calc(var(--cfx-r) - 1px) calc(var(--cfx-r) - 1px);
+  background: none;
 }
 .cfx-codeblock pre code,
 .cfx-prose pre code { display: block; width: max-content; min-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; white-space: pre; }
@@ -687,8 +733,15 @@ code, pre, kbd, samp { font-family: var(--cfx-mono); font-variant-ligatures: non
   .cfx-footer__brand { grid-column: 1 / -1; }
 }
 
+@media (max-width: 1180px) {
+  .cfx-pair { grid-template-columns: minmax(0, 1fr); }
+  .cfx-pair__output { order: -1; }
+}
+
 @media (max-width: 900px) {
   .cfx-stage__inner { grid-template-columns: minmax(0, 1fr); }
+  .cfx-stage--wide .cfx-stage__text { display: block; }
+  .cfx-stage--wide .cfx-stage__stats { margin-top: 28px; }
 }
 
 @media (max-width: 820px) {
@@ -697,6 +750,8 @@ code, pre, kbd, samp { font-family: var(--cfx-mono); font-variant-ligatures: non
 
 @media (max-width: 560px) {
   .cfx-masthead__inner { padding-block: 36px 28px; }
+  .cfx-stage__stats { gap: 0 14px; }
+  .cfx-stage__stats dd { font-size: 1.5rem; }
   .cfx-codeblock pre, .cfx-prose pre { padding-inline: 16px; font-size: .78rem; }
 }
 
