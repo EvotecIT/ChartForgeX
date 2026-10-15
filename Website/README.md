@@ -1,6 +1,6 @@
 # ChartForgeX website
 
-This folder builds [chartforgex.com](https://chartforgex.com) with PowerForge.Web: the home page, gallery, Mermaid support, playground, PowerShell examples, docs, examples and API reference.
+This folder builds [chartforgex.com](https://chartforgex.com) with PowerForge.Web: the home page, gallery, Mermaid support, playground, PowerShell examples, PowerBGInfo wallpapers, docs, examples and API reference.
 
 ```powershell
 pwsh Website/build.ps1 -Serve
