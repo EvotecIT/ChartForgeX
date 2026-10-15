@@ -27,6 +27,9 @@ internal sealed partial class VisualTopologyCompiler {
         var requiredWidth = Math.Max(1, _chart.Viewport.Width - padding * 2);
         var requiredHeight = Math.Max(1, _chart.Viewport.Height - padding * 2);
         var grew = false;
+        var previousWidth = _context.Layout.Size.Width;
+        var previousHeight = _context.Layout.Size.Height;
+        var previousPlotHeight = _plot.Height;
         // Growing the width can make a previously omitted heading fit, reserving more height.
         // Remeasure the same resolved content through the shared frame until that reservation
         // stabilizes; do not lay out or route the diagram a second time.
@@ -35,15 +38,41 @@ internal sealed partial class VisualTopologyCompiler {
             var missingHeight = Math.Max(0, requiredHeight - _plot.Height);
             if (missingWidth <= .001 && missingHeight <= .001) break;
             var width = _context.Layout.Size.Width + missingWidth;
-            var height = _context.Layout.Size.Height + missingHeight;
+            var lowerHeight = _context.Layout.Size.Height;
+            var extraHeight = missingHeight;
+            // Oversized headings can reserve a share of each additional canvas pixel.
+            // Once width is stable, use the measured plot response to close that deficit.
+            if (pass > 0 && missingWidth <= .001 && _context.Layout.Size.Width == previousWidth && lowerHeight > previousHeight) {
+                var response = (_plot.Height - previousPlotHeight) / (lowerHeight - previousHeight);
+                if (response > 0 && response < 1 && !double.IsInfinity(missingHeight / response)) extraHeight = missingHeight / response;
+            }
+            previousWidth = _context.Layout.Size.Width;
+            previousHeight = lowerHeight;
+            previousPlotHeight = _plot.Height;
+            Resize(width, lowerHeight + extraHeight);
+            grew = true;
+            if (extraHeight <= missingHeight || _plot.Width + .001 < requiredWidth || _plot.Height + .001 < requiredHeight) continue;
+            // A heading may wrap or stop shrinking across the extrapolated interval.
+            // Keep a measured fitting upper bound and remove any excess natural space.
+            var upperHeight = _context.Layout.Size.Height;
+            for (var refinement = 0; refinement < 32 && upperHeight - lowerHeight > .001; refinement++) {
+                var candidate = lowerHeight + (upperHeight - lowerHeight) / 2;
+                Resize(width, candidate);
+                if (_plot.Width + .001 >= requiredWidth && _plot.Height + .001 >= requiredHeight) upperHeight = candidate;
+                else lowerHeight = candidate;
+            }
+            Resize(width, upperHeight);
+            break;
+        }
+        if (!grew) return;
+        _builder.AddDiagnostic(new VisualDiagnostic("topology.natural-size", "The convenience export canvas includes the complete resolved topology and shared frame at natural size."));
+
+        void Resize(double width, double height) {
             _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), _context.Layout.PaddingEdges),
                 _context.Theme, _context.ThemeMode, _context.Frame, _context.Font);
             _builder = new VisualSceneBuilder(_context.Layout.Size, _context.Font);
             _plot = VisualFrameLayout.Build(_builder, _context, entries, FramePaints());
-            grew = true;
         }
-        if (!grew) return;
-        _builder.AddDiagnostic(new VisualDiagnostic("topology.natural-size", "The convenience export canvas includes the complete resolved topology and shared frame at natural size."));
     }
 
     private void ResolveFit() {

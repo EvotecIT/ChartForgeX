@@ -4,6 +4,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class ChartOptions {
+    private ChartMapScaleLegendPosition _mapScaleLegendPosition = ChartMapScaleLegendPosition.Bottom;
     /// <summary>
     /// Gets or sets the longitude/latitude window rendered by dotted map charts.
     /// </summary>
@@ -37,7 +38,12 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets where map scale legends are rendered.
     /// </summary>
-    public ChartMapScaleLegendPosition MapScaleLegendPosition { get; set; } = ChartMapScaleLegendPosition.Bottom;
+    public ChartMapScaleLegendPosition MapScaleLegendPosition {
+        get => _mapScaleLegendPosition;
+        set { _mapScaleLegendPosition = value; HasExplicitMapScaleLegendPosition = true; }
+    }
+
+    internal bool HasExplicitMapScaleLegendPosition { get; private set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether map charts render their own background surface.

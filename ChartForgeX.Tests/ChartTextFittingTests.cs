@@ -24,9 +24,10 @@ public sealed class ChartTextFittingTests {
     }
 
     [Fact]
-    public void ExistingEllipsisContractRetainsFittingValuesAndSuffixBudget() {
+    public void CanonicalEllipsisRetainsFittingValuesAndMeasuredSuffixBudget() {
         Assert.Equal("whole", ChartTextFitting.TrimEnd("whole", 12, 5, (text, _) => text.Length));
-        Assert.Equal("lo...", ChartTextFitting.TrimEnd("long value", 12, 5, (text, _) => text.Length));
-        Assert.Equal("", ChartTextFitting.TrimEnd("long value", 12, 2, (text, _) => text.Length));
+        Assert.Equal("long…", ChartTextFitting.TrimEnd("long value", 12, 5, (text, _) => text.Length));
+        Assert.Equal("l…", ChartTextFitting.TrimEnd("long value", 12, 2, (text, _) => text.Length));
+        Assert.Equal("", ChartTextFitting.TrimEnd("long value", 12, .5, (text, _) => text.Length));
     }
 }

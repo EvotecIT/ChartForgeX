@@ -453,6 +453,9 @@ public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
     /// <summary>Gets or sets the grid title.</summary>
     public string Title { get => _title; set => _title = value ?? throw new ArgumentNullException(nameof(value)); }
 
+    /// <summary>Resolves the common accessible name for artifacts, SVG and HTML.</summary>
+    internal string ResolvedAccessibleName => string.IsNullOrWhiteSpace(Title) ? "ChartForgeX visual grid" : Title.Trim();
+
     /// <summary>Gets or sets the grid subtitle.</summary>
     public string Subtitle { get => _subtitle; set => _subtitle = value ?? throw new ArgumentNullException(nameof(value)); }
 

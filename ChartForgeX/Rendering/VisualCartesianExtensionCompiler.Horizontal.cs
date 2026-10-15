@@ -81,24 +81,40 @@ internal static partial class VisualCartesianCompiler {
         var axes = HorizontalAxes(chart, cache); var spacing = context.Theme.Spacing;
         cache.IncludeValueTicks(axes.Value, range.MinX, range.MaxX);
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
-        var categories = HorizontalCategoryTicks(chart, range, axes.Category); var widest = 0d;
-        foreach (var category in categories) widest = Math.Max(widest, VisualAxisText.RotatedMetrics(builder.MeasureText(cache.Format(axes.Category, category, null, categories), style), axes.Category.LabelAngle).Width);
+        var categories = chart.Series.All(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
+            ? cache.Ticks(axes.Category, range.MinY, range.MaxY) : HorizontalCategoryTicks(chart, range, axes.Category);
+        var widest = 0d; var tallest = 0d;
+        foreach (var category in categories) {
+            var text = cache.Format(axes.Category, category, null, categories);
+            if (cache.HasAuthoredTicks(axes.Category) && VisualAxisText.Angle(axes.Category.LabelAngle) == 0)
+                text = string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
+                    Math.Max(0, viewport.Width * .35 - spacing), (value, _) => builder.MeasureText(value, style).Width));
+            var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), axes.Category.LabelAngle);
+            widest = Math.Max(widest, metrics.Width); tallest = Math.Max(tallest, metrics.Height);
+        }
         var left = chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .35, widest + spacing) : 0;
-        var bottom = chart.Options.XAxis.Visible ? TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache).Height + spacing : 0;
+        var valueMetrics = chart.Options.XAxis.Visible ? TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache) : default;
+        var bottom = chart.Options.XAxis.Visible ? valueMetrics.Height + spacing : 0;
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
         var xTitle = XAxisTitle(chart);
         if (chart.Options.XAxis.Visible && xTitle.Length > 0) bottom += builder.MeasureText(xTitle, titleStyle).Height + spacing;
         var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
         var top = chart.Options.YAxis.Visible && yTitle.Length > 0 ? Math.Min(viewport.Height * .25, builder.MeasureText(yTitle, titleStyle).Height + spacing) : 0;
         bottom = Math.Min(viewport.Height * .45, bottom);
-        return new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height - top - bottom));
+        left = Math.Max(left, Math.Min(valueMetrics.Width / 2, viewport.Width * .35));
+        var right = Math.Min(valueMetrics.Width / 2, viewport.Width * .35);
+        top = Math.Max(top, Math.Min(chart.Options.YAxis.Visible ? tallest / 2 : 0, viewport.Height * .25));
+        bottom = Math.Max(bottom, Math.Min(chart.Options.YAxis.Visible ? tallest / 2 : 0, viewport.Height * .45));
+        return new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left - right), Math.Max(0, viewport.Height - top - bottom));
     }
 
     private static void DrawHorizontalAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartRange range, ChartMapper map, VisualThemeColors colors, ChartRect viewport, AxisLabelCache cache, double categoryLabelRight) {
         var axes = HorizontalAxes(chart, cache);
         cache.IncludeValueTicks(axes.Value, range.MinX, range.MaxX);
-        var xTicks = cache.Ticks(axes.Value, range.MinX, range.MaxX); var categories = HorizontalCategoryTicks(chart, range, axes.Category);
+        var xTicks = cache.Ticks(axes.Value, range.MinX, range.MaxX);
+        var categories = chart.Series.All(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
+            ? cache.Ticks(axes.Category, range.MinY, range.MaxY) : HorizontalCategoryTicks(chart, range, axes.Category);
         var spacing = context.Theme.Spacing;
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle(); var width = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
@@ -120,15 +136,15 @@ internal static partial class VisualCartesianCompiler {
             var titleHeight = title.Length == 0 ? 0 : builder.MeasureText(title,
                 chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground })).Height + spacing;
             titleHeight = FitAxisTitleReservation(tickHeight, titleHeight, available);
-            var bounds = new ChartRect(plot.Left, plot.Bottom + spacing, plot.Width, Math.Max(0, Math.Min(tickHeight, available - titleHeight)));
-            DrawAxisLabels(builder, chart.Options, axes.Value, xTicks, map.X, true, false, bounds, style, spacing, chart.Options.ValueFormatter, cache);
+            var bounds = new ChartRect(viewport.Left, plot.Bottom + spacing, viewport.Width, Math.Max(0, Math.Min(tickHeight, available - titleHeight)));
+            DrawAxisLabels(builder, chart.Options, axes.Value, xTicks, map.X, true, false, bounds, style, spacing, chart.Options.ValueFormatter, cache, plot.Width);
             if (title.Length > 0) DrawAxisTitle(chart, context, builder, title,
                 new ChartRect(plot.Left, bounds.Bottom + spacing, plot.Width, Math.Max(0, viewport.Bottom - bounds.Bottom - spacing)), colors, TextAlignment.Center, "axis-x-title");
         }
         if (chart.Options.YAxis.Visible) {
             if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             DrawAxisLabels(builder, chart.Options, axes.Category, categories, map.Y, false, false,
-                new ChartRect(viewport.Left, plot.Top, Math.Max(0, categoryLabelRight - viewport.Left - spacing), plot.Height), style, spacing, null, cache);
+                new ChartRect(viewport.Left, viewport.Top, Math.Max(0, categoryLabelRight - viewport.Left - spacing), viewport.Height), style, spacing, null, cache, plot.Height);
             var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
             if (yTitle.Length > 0) DrawAxisTitle(chart, context, builder, yTitle,
                 new ChartRect(plot.Left, viewport.Top, plot.Width, Math.Max(0, plot.Top - viewport.Top - spacing)), colors, TextAlignment.Left, "axis-y-title");

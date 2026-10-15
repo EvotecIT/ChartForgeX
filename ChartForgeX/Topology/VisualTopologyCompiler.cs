@@ -28,6 +28,7 @@ internal sealed partial class VisualTopologyCompiler {
     private Dictionary<string, TopologyNode> _nodesById = null!;
     private IReadOnlyDictionary<TopologyEdge, int> _edgeRenderOrders = null!;
     private readonly Dictionary<TopologyEdge, ChartRect> _resolvedLabelBounds = new();
+    private readonly Dictionary<string, IReadOnlyList<ChartRect>> _groupHeaderParts = new(StringComparer.Ordinal);
     private TopologyChart _chart = null!;
     private TopologyHighlightState _highlight = null!;
     private TopologyLegend? _legend;
@@ -96,6 +97,7 @@ internal sealed partial class VisualTopologyCompiler {
             Padding = _context.Layout.Padding
         };
         input.Theme = _context.Theme; input.ThemeMode = _context.ThemeMode;
+        if (!_resolvedLayout) FitNodeLabels(input);
         var layoutOptions = _options.CloneForRendering();
         layoutOptions.IncludeTitle = false; layoutOptions.IncludeLegend = false;
         // A view selects data and identity here. Its headings were already measured by the
@@ -130,6 +132,7 @@ internal sealed partial class VisualTopologyCompiler {
         using (_builder.PushGroup(_source.Id, "topology", RootMetadata()))
         using (_builder.PushClip(_plot)) {
             BuildSurface(); BuildGroups();
+            _chart.PreparedGroupHeaderParts = CaptureGroupHeaderParts();
             foreach (var edge in OrderedEdgesForRendering(_chart, _options)) BuildEdge(edge.Edge);
             BuildEdgeLabels();
             foreach (var node in _chart.Nodes) BuildNode(node);

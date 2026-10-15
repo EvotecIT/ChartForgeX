@@ -75,7 +75,7 @@ internal static partial class VisualCartesianCompiler {
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
             var visible = radius > 0 && insideSourceX && (!clipMarks || inside)
                 && ShowMarker(chart, series, pointIndex);
-            var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
+            var resolvedLabel = ((CartesianLabels)labels).PointLabel(chart, series, pointIndex, labelStyle);
             var pointColor = PointColor(series, index, pointIndex, colors);
             var pointPaint = VisualChartPaint.Series(series, pointColor, pointIndex);
             if (colorSurface != null) (pointColor, pointPaint) = colorSurface.Paint(series, index, pointIndex, colors);
@@ -123,7 +123,7 @@ internal static partial class VisualCartesianCompiler {
             var direction = MappedBarDirection(axis, stack.Value, baseY, y);
             var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
             if (!series.IsHistogramDensity) bounds = VisibleSegmentBounds(chart, bounds, direction);
-            var resolvedLabel = ResolvePointLabel(chart, series, pointIndex, labelStyle);
+            var resolvedLabel = ((CartesianLabels)labels).PointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stack)) {
                 if (series.IsHistogramDensity) DrawDensityHistogramSurface(chart, context, builder, series, index, pointIndex, bounds, colors);
                 else DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors, direction: direction);
@@ -223,6 +223,10 @@ internal static partial class VisualCartesianCompiler {
         else {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
             candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, .5, positive ? 1 : 0));
+            if (bar) {
+                candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 0, positive ? 1 : 0));
+                candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 1, positive ? 1 : 0));
+            }
             candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
             candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
             // A label beside the value edge can fit above a sloping envelope even when a

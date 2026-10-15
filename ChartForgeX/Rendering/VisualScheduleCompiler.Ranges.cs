@@ -51,9 +51,13 @@ internal static partial class VisualScheduleCompiler {
         var tickLabels = ticks.ToDictionary(value => value, formatTick);
         string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : formatTick(value);
         var layout = LaneLayout(chart, context, builder, viewport, items.Where(item => !item.Marker).Select(item => chart.Series[item.Index].Name), Array.Empty<string>(), false,
-            now.HasValue && now.Value >= min && now.Value <= max, ticks, Format);
+            now.HasValue && now.Value >= min && now.Value <= max, ticks, Format, hasFixedTicks: fixedTicks != null);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);
         var slot = plot.Height / Math.Max(1, row); var height = Math.Max(0, Math.Min(gantt ? 30 : 34, slot * .65));
+        // Linked rows need a gutter at least as wide as the connector's painted stroke. Keep the ordinary
+        // mark height when it fits, and retain marks when the declared stroke cannot fit even an empty row.
+        if (renderedLinks.Length > 0 && slot > context.Theme.AxisStrokeWidth)
+            height = Math.Min(height, slot - context.Theme.AxisStrokeWidth);
         var milestoneSize = Math.Min(height, plot.Width);
         var milestoneExtent = items.Any(item => item.Milestone) ? milestoneSize / 2 : 0;
         var markerAtMin = items.Any(item => item.Marker && item.Start == min);
@@ -61,8 +65,13 @@ internal static partial class VisualScheduleCompiler {
         var minimumExtent = Math.Max(milestoneExtent, markerAtMin ? context.Theme.AxisStrokeWidth / 2 : 0);
         var instantExtent = items.Any(item => !item.Milestone && item.Start == item.End) ? 1 : 0;
         var maximumExtent = Math.Max(Math.Max(milestoneExtent, instantExtent), markerAtMax ? context.Theme.AxisStrokeWidth / 2 : 0);
-        if (renderedLinks.Length > 0) maximumExtent = Math.Max(maximumExtent,
-            (renderedLinks.Any(link => bySeries[link.SuccessorIndex].Milestone) ? milestoneExtent : 0) + Math.Min(5, height / 3) + context.Theme.AxisStrokeWidth / 2);
+        if (renderedLinks.Length > 0) {
+            // Automatic windows contain the incoming arrow and outgoing routing stub as well as the marks.
+            // Authored windows keep their exact dates and retain the normal plot clip.
+            var clearance = DependencyClearance(context); var arrow = DependencyArrowExtent(height);
+            minimumExtent = Math.Max(minimumExtent, milestoneExtent + clearance + arrow + context.Theme.AxisStrokeWidth / 2);
+            maximumExtent = Math.Max(maximumExtent, milestoneExtent + clearance + DependencyStubLength(context, arrow) + context.Theme.AxisStrokeWidth / 2);
+        }
         var projection = GuideProjection(chart, context, plot, min, max, minimumExtent, maximumExtent, now);
         double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
@@ -77,9 +86,8 @@ internal static partial class VisualScheduleCompiler {
                 if (item.Marker) continue;
                 var series = chart.Series[item.Index]; var center = plot.Top + (item.Row + .5) * slot;
                 var visible = item.End >= min && item.Start <= max;
-                var left = Project(item.Start); var right = Project(item.End);
-                var bounds = new ChartRect(left, center - height / 2, visible ? Math.Min(plot.Right - left, Math.Max(1, right - left)) : 0, height);
-                if (item.Milestone) bounds = new ChartRect(left - milestoneSize / 2, center - milestoneSize / 2, milestoneSize, milestoneSize);
+                var left = Project(item.Start);
+                var bounds = RangeBounds(item, plot, Project, slot, height, visible);
                 var id = VisualStateSceneTools.SourceId(item.Index, 0);
                 if (visible) obstacles.Add(new LabelObstacle(id, bounds));
                 var duration = chart.Options.ValueFormatter?.Invoke(item.End - item.Start) ?? ChartStateTimelineModel.FormatDuration(item.End - item.Start);
@@ -135,6 +143,17 @@ internal static partial class VisualScheduleCompiler {
             // Links are foreground annotations: successor fills must not cover their arrowheads.
             if (gantt) Dependencies(chart, context, builder, plot, bySeries, renderedLinks, Project, slot, height, min, max);
         }
+    }
+
+    /// <summary>Shares the exact task/diamond surface between painting, semantics and dependency anchoring.</summary>
+    private static ChartRect RangeBounds(RangeItem item, ChartRect plot, Func<double, double> project, double slot, double height, bool visible = true) {
+        var center = plot.Top + (item.Row + .5) * slot; var left = project(item.Start);
+        if (item.Milestone) {
+            var size = Math.Min(height, plot.Width);
+            return new ChartRect(left - size / 2, center - size / 2, size, size);
+        }
+        return new ChartRect(left, center - height / 2,
+            visible ? Math.Min(plot.Right - left, Math.Max(1, project(item.End) - left)) : 0, height);
     }
 
     private sealed class RangeItem {

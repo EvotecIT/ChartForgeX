@@ -85,8 +85,9 @@ internal static partial class VisualCartesianCompiler {
         var range = ChartRange.FromChart(chart, coordinates, stacks);
         var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range, stacks) : null;
+        var labels = new CartesianLabels();
         var layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
-            stacks, bubbleScale, colors, categoryLabels, expandMarkers: true);
+            stacks, coordinates, bubbleScale, colors, categoryLabels, labels, expandMarkers: true);
         if (layout == null) {
             if (xViewport != null) throw new InvalidOperationException("An X viewport requires a usable plot rectangle.");
             return null;
@@ -103,7 +104,7 @@ internal static partial class VisualCartesianCompiler {
                 range = range.Copy(); range.SetXBounds(xViewport.Minimum, xViewport.Maximum);
                 secondaryRange = secondaryRange?.Copy(); secondaryRange?.SetXBounds(xViewport.Minimum, xViewport.Maximum);
                 layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
-                    stacks, bubbleScale, colors, categoryLabels, expandMarkers: false)
+                    stacks, coordinates, bubbleScale, colors, categoryLabels, labels, expandMarkers: false)
                     ?? throw new InvalidOperationException("An X viewport requires a usable plot rectangle.");
             }
         }
@@ -125,7 +126,6 @@ internal static partial class VisualCartesianCompiler {
             if (horizontal) DrawHorizontalAxes(chart, context, builder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
             else DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
         }
-        var labels = new CartesianLabels();
         var obstacles = new List<LabelObstacle>();
         // Caption placement needs the actual marks before the background band layer is
         // emitted. Collect those marks once; ordinary charts keep the direct builder path.

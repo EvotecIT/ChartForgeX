@@ -24,7 +24,8 @@ internal sealed class ChartMapper {
 
     public double X(double value) => ProjectX(ChartScaleTransform.Normalize(value, _range.MinX, _range.MaxX, _xAxis), _plot);
     internal static double ProjectX(double ratio, ChartRect plot) => plot.Left + ratio * plot.Width;
-    public double Y(double value) => _plot.Bottom - ChartScaleTransform.Normalize(value, _range.MinY, _range.MaxY, _yAxis) * _plot.Height;
+    public double Y(double value) => ChartMath.InterpolateOrExtrapolateRange(_plot.Bottom, _plot.Top,
+        ChartScaleTransform.Normalize(value, _range.MinY, _range.MaxY, _yAxis));
 
     public double XBaseline() {
         if (_xAxis.Scale == ChartScaleKind.Logarithmic) return X(_range.MinX);

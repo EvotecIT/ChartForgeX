@@ -43,10 +43,7 @@ internal static partial class VisualCartesianCompiler {
         // Retain measured space outside the value mapper rather than relying on its
         // numeric range padding. Tall or multiline fonts must leave a useful subset
         // of totals, with the same bounded overflow policy as horizontal stacks.
-        var available = bounds.Height - Math.Min(bounds.Height / 2, Math.Max(1, spacing));
-        var scale = top + bottom > available ? available / (top + bottom) : 1;
-        top *= scale; bottom *= scale;
-        return new ChartRect(bounds.Left, bounds.Top + top, bounds.Width, bounds.Height - top - bottom);
+        return InsetVerticalLabelGutters(bounds, top, bottom, spacing);
     }
 
     private static void AddStackTotals(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,

@@ -22,7 +22,7 @@
     <Authors>Evotec</Authors>
     <Description>Dependency-free static canvas, image composition, factual tiles, tables, lists and watermark decoration over ChartForgeX.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>ChartForgeX 2.0.0 provides shared native chart and diagram rendering with independent Visuals and Stories packages. See the v2 migration guide for assembly and API changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.0.0 unifies paired themes, typed observations, stable series handles and atomic configuration callbacks. See the consumer migration guide for breaking API changes.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>

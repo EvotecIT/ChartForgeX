@@ -11,6 +11,9 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyLayoutEngine {
     public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null, TextMeasurementContext? measurement = null) {
         var copy = Clone(chart);
+        copy.PreparedGroupHeaderParts = null;
+        copy.PreparedGroupHeaderLayoutParts = null;
+        copy.GroupHeaderLayout = null;
         copy.TextMeasurement = measurement ?? new TextMeasurementContext((copy.ResolvedTheme).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.PortableEstimate);
         if (options != null) options.TextMeasurement = copy.TextMeasurement;
         copy.RenderOptions = options;

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
 using Microsoft.Playwright;
@@ -29,6 +30,15 @@ public sealed class MermaidCartesianSequenceFontBudgetTests {
         Assert.Contains(kind == "quadrant" ? "Alpha" : "Alpha [Sam]", labels);
         Assert.Contains(kind == "quadrant" ? "Beta" : "Beta [Sam]", labels);
         Assert.Equal(size, Assert.IsType<Chart>(artifact.Model).Options.Theme.Typography.DataLabelSize);
+        var chart = Assert.IsType<Chart>(artifact.Model);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var captionBounds = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label")
+            .Select(node => new ChartRect(node.X, node.Baseline - node.Text.Ascent, node.Text.Metrics.Width, node.Text.Metrics.Height)).ToArray();
+        Assert.Equal(2, captionBounds.Length);
+        Assert.False(captionBounds[0].Left < captionBounds[1].Right && captionBounds[0].Right > captionBounds[1].Left
+            && captionBounds[0].Top < captionBounds[1].Bottom && captionBounds[0].Bottom > captionBounds[1].Top,
+            "Complete oversized captions must fit around the earlier caption rather than overlap or drop the later one.");
+        ScatterBubbleColorRenderingTests.Capture(prepared, kind + "-complete-caption-pair-" + size);
     }
 
     [Trait("Category", "Browser")]

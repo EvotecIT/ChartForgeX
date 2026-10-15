@@ -177,13 +177,24 @@ public sealed class GanttTickIntervalTests {
         var start = new DateTime(2026, 1, 1);
         var chart = Chart.Create().WithLegend(false).WithSize(960, 360).AddGanttTask("Window", start, start.AddDays(7))
             .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, count));
-        var svg = chart.ToSvg();
-        var labels = XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").Select(element => element.Value).ToArray();
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var document = XDocument.Parse(prepared.ToSvg());
+        var labels = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").Select(element => element.Value).ToArray();
         Assert.Contains(labels, label => label.StartsWith("2026-01-01", StringComparison.Ordinal));
-        Assert.Contains(labels, label => label.StartsWith("2026-01-08", StringComparison.Ordinal));
+        Assert.All(labels, label => Assert.True(DateTime.TryParseExact(label,
+            fixedInterval ? "yyyy-MM-dd HH:mm:ss.fff" : "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _),
+            "Every displayed caption must retain its complete date identity: " + label));
+        var task = document.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "gantt-task");
+        Assert.Equal(start.ToOADate(), (double)task.Attribute("data-cfx-start")!);
+        Assert.Equal(start.AddDays(7).ToOADate(), (double)task.Attribute("data-cfx-end")!);
+        if (fixedInterval) {
+            var retained = prepared.Regions.Where(region => region.Role == "schedule-tick-label").ToArray();
+            Assert.Equal(8, retained.Length);
+            Assert.StartsWith("2026-01-08", retained[^1].Label!);
+        }
         Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
         Assert.Equal(fixedInterval, labels.Any(label => label.Contains("00:00:00.000", StringComparison.Ordinal)));
-        Assert.NotEmpty(chart.ToPng());
+        Assert.NotEmpty(prepared.ToPng());
     }
 
     [Theory]

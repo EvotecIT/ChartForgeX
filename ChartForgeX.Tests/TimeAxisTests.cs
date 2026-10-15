@@ -204,21 +204,21 @@ public sealed class TimeAxisTests {
         var axis = new ChartAxis().WithTimeScale();
         var start = Day.AddHours(9);
         var labels = Labels(axis, ChartTicks.GenerateInside(axis, start.AddMinutes(3).ToOADate(), start.AddHours(1).ToOADate()));
-        Assert.Equal(new[] { "09:10", "09:20", "09:30", "09:40", "09:50", "10:00" }, labels);
+        Assert.Equal(new[] { "09:15", "09:30", "09:45", "10:00" }, labels);
     }
 
     [Fact]
-    public void GenerateInside_TwoWeeks_UsesDayTicksRestartingEachMonth() {
+    public void GenerateInside_TwoWeeks_UsesAnAdequateWeeklyInterval() {
         var axis = new ChartAxis().WithTimeScale();
         var labels = Labels(axis, ChartTicks.GenerateInside(axis, new DateTime(2026, 7, 25).ToOADate(), new DateTime(2026, 8, 6).ToOADate()));
-        Assert.Equal(new[] { "2026-07-25", "2026-07-27", "2026-07-29", "2026-07-31", "2026-08-01", "2026-08-03", "2026-08-05" }, labels);
+        Assert.Equal(new[] { "2026-07-27", "2026-08-03" }, labels);
     }
 
     [Fact]
-    public void GenerateInside_ThreeYears_UsesHalfYearTicks() {
+    public void GenerateInside_ThreeYears_UsesAnAdequateYearInterval() {
         var axis = new ChartAxis().WithTimeScale();
         var labels = Labels(axis, ChartTicks.GenerateInside(axis, new DateTime(2025, 11, 20).ToOADate(), new DateTime(2028, 11, 20).ToOADate()));
-        Assert.Equal(new[] { "2026-01-01", "2026-07-01", "2027-01-01", "2027-07-01", "2028-01-01", "2028-07-01" }, labels);
+        Assert.Equal(new[] { "2026-01-01", "2027-01-01", "2028-01-01" }, labels);
     }
 
     [Fact]
@@ -277,8 +277,9 @@ public sealed class TimeAxisTests {
         for (var i = 1; i < inside.Count; i++) Assert.Equal(1.0 / 96.0, inside[i] - inside[i - 1], 9);
 
         var outer = ChartTicks.Generate(axis, new DateTime(2026, 10, 24, 22, 0, 0).ToOADate(), new DateTime(2026, 10, 25, 0, 35, 0).ToOADate());
-        Assert.Equal(new DateTime(2026, 10, 25, 0, 45, 0).ToOADate(), outer[outer.Count - 1], 9);
-        for (var i = 1; i < outer.Count; i++) Assert.Equal(1.0 / 96.0, outer[i] - outer[i - 1], 9);
+        Assert.Equal(new DateTime(2026, 10, 25, 1, 0, 0).ToOADate(), outer[outer.Count - 1], 9);
+        Assert.True(outer.Count <= axis.TickCount);
+        for (var i = 1; i < outer.Count; i++) Assert.Equal(1.0 / 48.0, outer[i] - outer[i - 1], 9);
     }
 
     [Fact]

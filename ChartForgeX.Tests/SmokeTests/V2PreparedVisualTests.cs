@@ -74,8 +74,11 @@ public sealed class V2PreparedVisualTests {
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.no-data");
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "frame.heading-overflow");
         var xml = XDocument.Parse(prepared.ToSvg());
-        Assert.Equal(2, xml.Descendants().Count(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("frame-heading", StringComparison.Ordinal) == true));
-        Assert.DoesNotContain("Third line", string.Concat(xml.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value)));
+        var headings = prepared.Scene.Nodes.OfType<VisualSceneText>()
+            .Where(node => node.Role is "frame-heading" or "frame-heading-continuation").ToArray();
+        Assert.Equal(new[] { "First line", "Second line" }, headings.SelectMany(node => node.Text.Lines.Select(line => line.Text)));
+        Assert.Equal(2, xml.Descendants().Count(element =>
+            (string?)element.Attribute("data-cfx-role") is "frame-heading" or "frame-heading-continuation"));
     }
 
     [Fact]

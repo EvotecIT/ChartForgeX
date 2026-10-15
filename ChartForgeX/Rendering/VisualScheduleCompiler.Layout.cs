@@ -10,16 +10,21 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualScheduleCompiler {
     private static ScheduleLayout LaneLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
-        IEnumerable<string> names, IEnumerable<string?> summaries, bool hasSummary, bool now, IReadOnlyList<double> ticks, Func<double, string> format) {
+        IEnumerable<string> names, IEnumerable<string?> summaries, bool hasSummary, bool now, IReadOnlyList<double> ticks, Func<double, string> format, bool hasFixedTicks = false) {
+        var cache = new Dictionary<double, string>(); var originalFormat = format;
+        string Format(double value) {
+            if (!cache.TryGetValue(value, out var text)) cache.Add(value, text = originalFormat(value));
+            return text;
+        }
+        format = Format;
         var style = VisualStateSceneTools.TickStyle(chart, context); var gap = context.Theme.Spacing;
         style = VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, viewport.Width * .25, Math.Max(0, viewport.Height * .25 - gap)), ticks.Select(format).ToArray(), chart.Options.XAxis.LabelAngle);
         var lineHeight = builder.MeasureText("Mg", style).Height;
         var nameWidth = names.Select(name => builder.MeasureText(name, style).Width).DefaultIfEmpty(0).Max();
         var summaryWidth = summaries.Select(summary => builder.MeasureText(summary ?? string.Empty, style).Width).DefaultIfEmpty(0).Max();
         summaryWidth = Math.Max(summaryWidth, builder.MeasureText(chart.Options.LaneSummaryHeader ?? string.Empty, style).Width);
-        var angle = Math.Min(80, Math.Abs(chart.Options.XAxis.LabelAngle)) * Math.PI / 180;
-        var widestTick = ticks.Select(tick => builder.MeasureText(format(tick), style).Width).DefaultIfEmpty(0).Max();
-        var axisReserve = Math.Min(viewport.Height * .25, Math.Sin(angle) * Math.Min(widestTick, viewport.Width * .25) + Math.Cos(angle) * lineHeight + gap);
+        var angle = Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle));
+        var tickHeight = ticks.Select(tick => VisualAxisText.RotatedMetrics(builder.MeasureText(format(tick), style), angle).Height).DefaultIfEmpty(lineHeight).Max();
         var axisTitleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle {
             Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
         });
@@ -27,18 +32,25 @@ internal static partial class VisualScheduleCompiler {
         axisTitleStyle = VisualAxisText.FitOversized(builder, axisTitleStyle, new ChartRect(0, 0, viewport.Width, viewport.Height * .15), new[] { axisTitle });
         var axisTitleHeight = builder.MeasureText(axisTitle, axisTitleStyle).Height;
         var top = now || chart.YAxisTitle.Length > 0 ? Math.Min(viewport.Height * .15, lineHeight + gap) : 0;
+        // A rotated ordinary caption needs its complete footprint, including the text beyond a quarter-width estimate.
+        // Leave the title and a nonempty plotting lane intact; uncontainable captions retain semantics without clipped paint.
+        var titleReserve = axisTitle.Length > 0 ? axisTitleHeight + gap : 0;
+        var axisReserve = Math.Min(tickHeight + gap, Math.Max(0, viewport.Height - top - titleReserve - 1));
         var plot = ChartStateTimelineModel.LanePlotArea(chart, viewport, hasSummary, chart.Options.LaneSummaryHeader,
             nameWidth, summaryWidth, lineHeight, 0, top, axisReserve, axisTitleHeight + gap);
         var plotLeft = Math.Min(viewport.Right, plot.Left); var plotTop = Math.Min(viewport.Bottom, plot.Top);
         plot = new ChartRect(plotLeft, plotTop, Math.Max(0, Math.Min(viewport.Right, plot.Right) - plotLeft), Math.Max(0, Math.Min(viewport.Bottom, plot.Bottom) - plotTop));
         var summaryLeft = hasSummary ? Math.Min(viewport.Right, plot.Right + ChartStateTimelineModel.ColumnGap) : viewport.Right;
-        return new ScheduleLayout(plot, hasSummary, summaryLeft, axisReserve, viewport);
+        plot = ScheduleEndGutters(chart, builder, viewport, plot, ticks, format, style);
+        return new ScheduleLayout(plot, hasSummary, summaryLeft, axisReserve, viewport, style, format, hasFixedTicks);
     }
 
     private static void Axis(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ScheduleLayout layout,
         IReadOnlyList<double> ticks, Func<double, double> project, Func<double, string> format) {
         var colors = context.Theme.Resolve(context.ThemeMode); var plot = layout.Plot;
-        var style = VisualStateSceneTools.TickStyle(chart, context); var gap = context.Theme.Spacing;
+        var style = layout.TickStyle; var gap = context.Theme.Spacing;
+        format = layout.FormatTick;
+        ticks = ScheduleTicks(chart, context, builder, ticks, project, format, style, layout.HasFixedTicks);
         var grid = chart.Options.ResolvePreparedGridLineStyle();
         var gridWidth = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
         var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;
@@ -132,8 +144,14 @@ internal static partial class VisualScheduleCompiler {
     }
 
     private sealed class ScheduleLayout {
-        internal ScheduleLayout(ChartRect plot, bool hasSummary, double summaryLeft, double axisReserve, ChartRect viewport) { Plot = plot; HasSummary = hasSummary; SummaryLeft = summaryLeft; AxisReserve = axisReserve; Viewport = viewport; }
+        internal ScheduleLayout(ChartRect plot, bool hasSummary, double summaryLeft, double axisReserve, ChartRect viewport, TextStyle tickStyle, Func<double, string> formatTick, bool hasFixedTicks) {
+            Plot = plot; HasSummary = hasSummary; SummaryLeft = summaryLeft; AxisReserve = axisReserve; Viewport = viewport;
+            TickStyle = tickStyle; FormatTick = formatTick; HasFixedTicks = hasFixedTicks;
+        }
         internal ChartRect Plot { get; } internal bool HasSummary { get; } internal double SummaryLeft { get; } internal double AxisReserve { get; }
         internal ChartRect Viewport { get; }
+        internal TextStyle TickStyle { get; }
+        internal Func<double, string> FormatTick { get; }
+        internal bool HasFixedTicks { get; }
     }
 }

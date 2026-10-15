@@ -42,7 +42,7 @@ public sealed class SvgVisualGridRenderer {
             .Attribute("style", "max-width:100%;height:auto;display:block")
             .EndStartElement()
             .Line()
-            .StartElement("title").Attribute("id", id + "-title").Text(grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title).EndElement()
+            .StartElement("title").Attribute("id", id + "-title").Text(grid.ResolvedAccessibleName).EndElement()
             .Line()
             .StartElement("desc").Attribute("id", id + "-desc").Text("Static visual grid containing charts and visual blocks.").EndElement()
             .Line();

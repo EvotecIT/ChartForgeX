@@ -526,11 +526,6 @@ internal static partial class TopologyRenderPrimitives {
             return new LabelBox(group.X - padding, group.Y - padding, group.X + group.Width + padding, group.Y + group.Height + padding);
         }
 
-        public static LabelBox FromGroupHeader(TopologyGroup group, double padding) {
-            var headerHeight = Math.Min(68, Math.Max(44, group.Height * 0.32));
-            return new LabelBox(group.X - padding, group.Y - padding, group.X + group.Width + padding, group.Y + headerHeight + padding);
-        }
-
         public LabelBox Expand(double padding) {
             return new LabelBox(_left - padding, _top - padding, _right + padding, _bottom + padding);
         }

@@ -115,8 +115,8 @@ public sealed class TopologyRoutingMilestoneTests {
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void ClassicRoutesAvoidTheDrawnCenteredHeader(bool labels) {
-        var chart = CenteredHeader();
+    public void ClassicRoutesAvoidThePaintedHeader(bool labels) {
+        var chart = PaintedHeader();
         var options = Options();
         options.ReadableDenseLayout = false;
         options.IncludeGroupLabels = labels;
@@ -178,7 +178,19 @@ public sealed class TopologyRoutingMilestoneTests {
     [InlineData("overview", 700)]
     public void CompletePlanReducesCrossingsWithoutOverdraw(string fixture, int maximumCrossings) {
         var chart = fixture == "mesh" ? DenseRouteFixture.Mesh() : DenseRouteFixture.Overview();
-        var report = chart.Prepare(DenseRouteFixture.Options(legend: false)).Analyze();
+        var prepared = chart.Prepare(DenseRouteFixture.Options(legend: false));
+        ScatterBubbleColorRenderingTests.Capture(prepared.Visual, "topology-complete-plan-" + fixture);
+        var rendered = prepared.ToInterchangeEnvelope().Edges;
+        var report = prepared.Analyze();
+        Assert.Equal(rendered.Count, report.Edges.Count);
+        foreach (var edge in rendered) {
+            var analyzed = Assert.Single(report.Edges, candidate => candidate.Id == edge.Id);
+            Assert.Equal(edge.ResolvedRoute.Count, analyzed.Points.Count);
+            for (var point = 0; point < edge.ResolvedRoute.Count; point++) {
+                Assert.Equal(edge.ResolvedRoute[point].X, analyzed.Points[point].X, 6);
+                Assert.Equal(edge.ResolvedRoute[point].Y, analyzed.Points[point].Y, 6);
+            }
+        }
         // Independent segment intersections protect the observed readability improvement. The old planner produced
         // 578/854 crossings on these fixtures; diagnostics alone did not count relationship-to-relationship crossings.
         Assert.InRange(ProperCrossings(report), 1, maximumCrossings);

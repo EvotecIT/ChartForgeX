@@ -47,6 +47,8 @@ internal sealed partial class VisualTopologyCompiler {
 
     private void BuildGroups() {
         if (_options.IncludeGroups) foreach (var group in _chart.Groups) {
+            var headerParts = new List<ChartRect>();
+            _groupHeaderParts.Add(group.Id, headerParts);
             var active = _highlight.IsGroupHighlighted(group);
             var authoredAccent = group.Color ?? ResolveGroupIcon(group, _options)?.Color;
             var baseAccent = Color(authoredAccent, Status(group.Status));
@@ -62,21 +64,38 @@ internal sealed partial class VisualTopologyCompiler {
                     paint: new VisualScenePaintBinding(neutral ? CardPaint(fill, HighlightFactor(active)) : GroupAccentPaint(group, fill, active, .06), GroupAccentPaint(group, stroke, active, .5)));
                 if (_options.IncludeGroupLabels) {
                     var icon = ResolveGroupIcon(group, _options);
-                    if (_options.RequireResolvedIcons && group.IconId != null && icon == null) throw new InvalidOperationException("Unresolved topology group icon: " + group.IconId);
+                    if (_options.RequireResolvedIcons && !string.IsNullOrWhiteSpace(group.IconId) && icon == null) throw new InvalidOperationException("Unresolved topology group icon: " + group.IconId);
                     var symbol = group.Symbol ?? icon?.Symbol;
-                    var reserve = string.IsNullOrWhiteSpace(symbol) && string.IsNullOrWhiteSpace(group.IconId) ? 0 : 28;
-                    if (reserve > 0) BuildGlyph(new TopologyNode { IconId = group.IconId, Symbol = symbol, Kind = icon?.NodeKind ?? TopologyNodeKind.Hub, Color = authoredAccent, Status = group.Status }, group.X + 22, group.Y + 21, accent, .8, accentRole, artworkOpacity: HighlightFactor(active));
-                    var fitTitle = ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize, 24, 600);
-                    var fitSubtitle = ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize * .85, 18);
-                    Text(group.Label, Bounds(group.X + 12 + reserve, group.Y + 9, Math.Max(0, group.Width - 24 - reserve), 24), _context.Theme.Typography.DataLabelSize, Highlight(_colors.Foreground, active), 600, "topology-group-label", opacity: HighlightFactor(active), fitSingleLine: fitTitle);
-                    if (!string.IsNullOrWhiteSpace(group.Subtitle)) Text(group.Subtitle!, Bounds(group.X + 12 + reserve, group.Y + (fitTitle || fitSubtitle ? 33 : 31), Math.Max(0, group.Width - 24 - reserve), 18), _context.Theme.Typography.DataLabelSize * .85, Highlight(_colors.MutedForeground, active), 400, "topology-group-subtitle", paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)), fitSingleLine: fitSubtitle);
+                    var symbolCenter = TopologyGroupHeader.SymbolCenter(group);
+                    if (TopologyGroupHeader.SymbolReserve(group, _options) > 0) {
+                        BuildGlyph(new TopologyNode { IconId = group.IconId, Symbol = symbol, Kind = icon?.NodeKind ?? TopologyNodeKind.Hub, Color = authoredAccent, Status = group.Status }, symbolCenter.X, symbolCenter.Y, accent, TopologyGroupHeader.SymbolScale, accentRole, artworkOpacity: HighlightFactor(active));
+                        headerParts.Add(TopologyGroupHeader.SymbolBounds(group));
+                    }
+                    var titleBounds = TopologyGroupHeader.TitleBounds(group, _options);
+                    var fitTitle = ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize, titleBounds.Height, 600);
+                    var fitSubtitle = ShouldFitHeaderLine(_context.Theme.Typography.DataLabelSize * .85, TopologyGroupHeader.SubtitleHeight);
+                    CaptureCaption(Text(group.Label, Bounds(titleBounds.X, titleBounds.Y, titleBounds.Width, titleBounds.Height), _context.Theme.Typography.DataLabelSize, Highlight(_colors.Foreground, active), 600, "topology-group-label", opacity: HighlightFactor(active), fitSingleLine: fitTitle));
+                    if (!string.IsNullOrWhiteSpace(group.Subtitle)) {
+                        var subtitleBounds = TopologyGroupHeader.SubtitleBounds(group, _options, fitTitle || fitSubtitle);
+                        CaptureCaption(Text(group.Subtitle!, Bounds(subtitleBounds.X, subtitleBounds.Y, subtitleBounds.Width, subtitleBounds.Height), _context.Theme.Typography.DataLabelSize * .85, Highlight(_colors.MutedForeground, active), 400, "topology-group-subtitle", paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)), fitSingleLine: fitSubtitle));
+                    }
                     if (_options.IncludeGroupStatusDots) {
                         var status = Highlight(Status(group.Status), active);
-                        using (PinnedState()) _builder.Ellipse(bounds.Right - 12 * _scale, bounds.Y + 16 * _scale, 4 * _scale, 4 * _scale, status, role: "topology-group-status", paint: new VisualScenePaintBinding(StatusPaint(group.Status, status, HighlightFactor(active))));
+                        var statusCenter = Point(TopologyGroupHeader.StatusCenter(group));
+                        using (PinnedState()) _builder.Ellipse(statusCenter.X, statusCenter.Y, TopologyGroupHeader.StatusRadius * _scale, TopologyGroupHeader.StatusRadius * _scale, status, role: "topology-group-status", paint: new VisualScenePaintBinding(StatusPaint(group.Status, status, HighlightFactor(active))));
+                        headerParts.Add(TopologyGroupHeader.StatusBounds(group));
                     }
                 }
             }
             _builder.AddRegion(new VisualSemanticRegion(group.Id, "topology-group", bounds, group.Label));
+
+            void CaptureCaption(ChartRect? painted) {
+                if (painted.HasValue) {
+                    var part = painted.Value;
+                    headerParts.Add(new ChartRect((part.X - _offsetX) / _scale, (part.Y - _offsetY) / _scale,
+                        part.Width / _scale, part.Height / _scale));
+                }
+            }
         }
         if (_chart.LayoutMode != TopologyLayoutMode.Geographic) return;
         if (_options.IncludeGeographicRegionHulls) foreach (var group in _chart.Groups) {
