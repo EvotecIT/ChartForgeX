@@ -231,6 +231,13 @@
         ]
       },
       {
+        "Match": "/powerbginfo/**",
+        "Bundles": [
+          "docs",
+          "pages"
+        ]
+      },
+      {
         "Match": "/playground/**",
         "Bundles": [
           "docs",
@@ -344,6 +351,13 @@
                 "Url": "/powershell/",
                 "Meta": { "key": 1 },
                 "Description": "ImagePlayground scripts beside the files they produced."
+              },
+              {
+                "Id": "powerbginfo",
+                "Title": "PowerBGInfo",
+                "Url": "/powerbginfo/",
+                "Meta": { "key": 1, "hollow": true },
+                "Description": "Windows wallpapers with charts and topology, from PowerShell."
               }
             ]
           },
@@ -407,6 +421,10 @@
           {
             "Title": "PowerShell",
             "Url": "/powershell/"
+          },
+          {
+            "Title": "PowerBGInfo wallpapers",
+            "Url": "/powerbginfo/"
           }
         ]
       },
