@@ -15,7 +15,14 @@
     {
       "task": "optimize",
       "id": "optimize-site",
-      "dependsOn": "build-site",
+      "dependsOn": [
+        "build-site",
+        "build-llms",
+        "build-apidocs",
+        "build-powershell-commands",
+        "sitemap",
+        "playground-engine-overlay"
+      ],
       "modes": ["ci"],
       "siteRoot": "./_site",
       "config": "./site.json",

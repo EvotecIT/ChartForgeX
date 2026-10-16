@@ -34,6 +34,14 @@ $sourceRoot = Join-Path $website 'powershell'
 $outputRoot = Join-Path $website 'static/powershell/examples'
 $dataPath = Join-Path $website 'data/powershell-examples.json'
 $manifest = Get-Content -LiteralPath (Join-Path $sourceRoot 'examples.json') -Raw | ConvertFrom-Json
+$manifestIds = @(
+    foreach ($example in $manifest.examples) {
+        if ($example.id -notmatch '^[a-z0-9][a-z0-9-]*$') {
+            throw "Invalid example id '$($example.id)'. Example IDs must be lowercase slugs."
+        }
+        [string]$example.id
+    }
+)
 
 if (-not $ModulePath) {
     $installed = Get-Module ImagePlayground -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
@@ -81,14 +89,34 @@ if ($Id -and $previousVersion -ne $moduleVersion) {
     throw "A partial render cannot mix module versions. Existing snapshot is '$previousVersion'; requested version is '$moduleVersion'. Run without -Id to refresh every example."
 }
 
+$outputRootItem = Get-Item -LiteralPath $outputRoot -ErrorAction SilentlyContinue
+if ($outputRootItem -and ($outputRootItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    throw "Refusing to prune examples through a reparse point: $outputRoot"
+}
+$outputRootFull = [IO.Path]::GetFullPath($outputRoot).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+$outputPrefix = $outputRootFull + [IO.Path]::DirectorySeparatorChar
+$pathComparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+$staleIds = @($previous.Keys | Where-Object { $_ -notin $manifestIds })
+foreach ($staleId in $staleIds) {
+    if ($staleId -notmatch '^[a-z0-9][a-z0-9-]*$') {
+        throw "Invalid previous example id '$staleId'; refusing to prune its output."
+    }
+    $staleOutput = [IO.Path]::GetFullPath((Join-Path $outputRoot $staleId))
+    if (-not $staleOutput.StartsWith($outputPrefix, $pathComparison)) {
+        throw "Refusing to prune an output outside the examples folder: $staleOutput"
+    }
+    $staleItem = Get-Item -LiteralPath $staleOutput -ErrorAction SilentlyContinue
+    if (-not $staleItem) { continue }
+    if (-not $staleItem.PSIsContainer -or ($staleItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+        throw "Refusing to prune an unexpected example output: $staleOutput"
+    }
+    [IO.Directory]::Delete($staleOutput, $true)
+}
+
 $results = foreach ($example in $manifest.examples) {
     if ($Id -and $example.id -notin $Id) {
         if ($previous.ContainsKey($example.id)) { $previous[$example.id] }
         continue
-    }
-
-    if ($example.id -notmatch '^[a-z0-9][a-z0-9-]*$') {
-        throw "Invalid example id '$($example.id)'. Example IDs must be lowercase slugs."
     }
 
     $scriptPath = Join-Path $sourceRoot "$($example.id).ps1"

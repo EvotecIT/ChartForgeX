@@ -116,7 +116,7 @@
     {
       "task": "apidocs",
       "id": "build-powershell-commands",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "api-chrome"],
       "type": "PowerShell",
       "config": "./site.json",
       "help": "./powershell/imageplayground-help.xml",
@@ -154,7 +154,7 @@
     {
       "task": "sitemap",
       "id": "sitemap",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "build-apidocs", "build-powershell-commands"],
       "config": "./site.json",
       "siteRoot": "./_site",
       "baseUrl": "https://chartforgex.com",

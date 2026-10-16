@@ -295,18 +295,24 @@ function start(root) {
   // Rendering.
   function scheduleRender() {
     clearTimeout(state.timer);
+    state.token++;
+    setDownloads(false);
     state.timer = setTimeout(renderNow, RENDER_DELAY);
   }
 
   async function renderNow() {
     clearTimeout(state.timer);
+    setDownloads(false);
     if (engine.status !== 'ready') return;
+    const language = state.language;
+    const source = ui.source.value;
+    const theme = state.theme;
     const token = ++state.token;
-    const result = await engine.render(state.language, ui.source.value, state.theme);
-    if (token !== state.token) return;
+    const result = await engine.render(language, source, theme);
+    if (token !== state.token || language !== state.language || source !== ui.source.value || theme !== state.theme) return;
     state.result = result;
     if (result.ok && result.svg) {
-      state.lastGood = { language: state.language, source: ui.source.value, theme: state.theme };
+      state.lastGood = { language, source, theme };
       ui.canvas.replaceChildren(...sanitizeSvgs(result.svg));
       ui.canvas.style.opacity = '';
       applyZoom();
@@ -320,11 +326,11 @@ function start(root) {
     showError(result);
     // Keep the last good render visible, dimmed, in the current preview theme.
     const good = state.lastGood;
-    if (good && good.theme !== state.theme) {
-      const previous = await engine.render(good.language, good.source, state.theme);
+    if (good && good.theme !== theme) {
+      const previous = await engine.render(good.language, good.source, theme);
       if (token !== state.token) return;
       if (previous.ok && previous.svg) {
-        good.theme = state.theme;
+        good.theme = theme;
         ui.canvas.replaceChildren(...sanitizeSvgs(previous.svg));
         applyZoom();
       }

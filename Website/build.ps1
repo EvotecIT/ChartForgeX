@@ -37,7 +37,7 @@
     Root folder of PSPublishModule (overrides $env:POWERFORGE_ROOT).
 
 .PARAMETER CI
-    Force pipeline CI mode locally (equivalent to setting CI=true).
+    Force pipeline CI mode locally (equivalent to setting CI=true). This overrides the implicit fast and dev modes from -Serve.
 
 .EXAMPLE
     ./build.ps1
@@ -285,12 +285,12 @@ function Test-SiteOutputRequired {
 }
 
 try {
-    $UseDev = ($Dev -or ($Serve -and -not $NoDev))
-    $UseFast = ($Fast -or ($Serve -and -not $NoFast))
     $IsCI = $CI -or
             ($env:CI -and $env:CI.ToString().ToLowerInvariant() -eq 'true') -or
             ($env:GITHUB_ACTIONS -and $env:GITHUB_ACTIONS.ToString().ToLowerInvariant() -eq 'true') -or
             ($env:TF_BUILD -and $env:TF_BUILD.ToString().ToLowerInvariant() -eq 'true')
+    $UseDev = ($Dev -or ($Serve -and -not $NoDev -and -not $IsCI))
+    $UseFast = ($Fast -or ($Serve -and -not $NoFast -and -not $IsCI))
 
     $pipelineArgsBase = @('pipeline', '--config', 'pipeline.json', '--profile')
     if ($UseDev) {
