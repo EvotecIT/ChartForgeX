@@ -15746,7 +15746,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 15
     },
     {
       "id": "family-timeline-compact-light",
@@ -15780,7 +15780,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 12
     },
     {
       "id": "family-timeline-wide-dark",
@@ -15814,7 +15814,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 15
     },
     {
       "id": "family-timeline-compact-dark",
@@ -15848,7 +15848,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 12
     },
     {
       "id": "family-gantt-wide-light",
@@ -15882,7 +15882,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 21
     },
     {
       "id": "family-gantt-compact-light",
@@ -15916,7 +15916,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 18
     },
     {
       "id": "family-gantt-wide-dark",
@@ -15950,7 +15950,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 21
     },
     {
       "id": "family-gantt-compact-dark",
@@ -15984,7 +15984,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 18
     },
     {
       "id": "family-sankey-wide-light",
@@ -19710,7 +19710,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 21
     },
     {
       "id": "family-state-timeline-compact-light",
@@ -19744,7 +19744,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-state-timeline-wide-dark",
@@ -19778,7 +19778,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 21
     },
     {
       "id": "family-state-timeline-compact-dark",
@@ -19812,7 +19812,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-gantt-lane-wide-light",
@@ -19846,7 +19846,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 22
     },
     {
       "id": "family-gantt-lane-compact-light",
@@ -19880,7 +19880,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 18
     },
     {
       "id": "family-gantt-lane-wide-dark",
@@ -19914,7 +19914,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 22
     },
     {
       "id": "family-gantt-lane-compact-dark",
@@ -19948,7 +19948,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 18
     },
     {
       "id": "family-pyramid-wide-light",
@@ -22327,7 +22327,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 29
     },
     {
       "id": "family-difference-area-compact-dated-gaps-light",
@@ -22362,7 +22362,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-difference-area-step-start-light",
@@ -22601,7 +22601,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 33
+      "semanticRegions": 29
     },
     {
       "id": "family-difference-area-compact-dated-gaps-dark",
@@ -22636,7 +22636,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-difference-area-step-start-dark",
