@@ -76,6 +76,52 @@ public sealed class VisualCanvasTileTypographyTests {
             diagnostic => diagnostic.Code == "InfoTileTextScaleReduced");
     }
 
+    [Fact]
+    public void FixedSizeFallbackKeepsTheIconVisibleAndTextAfterItsBox() {
+        var accent = ChartColor.FromHex("#38BDF8");
+        var withIcon = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
+            8, 8, 304, 84, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            new VisualCanvasInfoTileTextOptions(textScale: 4),
+            "Windows desktop", accent,
+            surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline,
+            iconKind: VisualCanvasInfoTileIconKind.Computer);
+        var withoutIcon = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
+            8, 8, 304, 84, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            new VisualCanvasInfoTileTextOptions(textScale: 4),
+            "Windows desktop", accent,
+            surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline);
+        var tile = (VisualCanvasInfoTileLayer)withIcon.Layers[0];
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile,
+            withIcon.ResolveStyle());
+        var withIconPixels = withIcon.ToRgbaImage();
+        var withoutIconPixels = withoutIcon.ToRgbaImage();
+        var changedPixels = 0;
+        var left = Math.Max(0, (int)Math.Floor(metrics.IconX));
+        var right = Math.Min(withIconPixels.Width,
+            (int)Math.Ceiling(metrics.IconX + metrics.IconBox));
+        var top = Math.Max(0, (int)Math.Floor(metrics.IconY));
+        var bottom = Math.Min(withIconPixels.Height,
+            (int)Math.Ceiling(metrics.IconY + metrics.IconBox));
+
+        for (var y = top; y < bottom; y++) {
+            for (var x = left; x < right; x++) {
+                var offset = (y * withIconPixels.Width + x) * 4;
+                if (withIconPixels.Pixels[offset] != withoutIconPixels.Pixels[offset] ||
+                    withIconPixels.Pixels[offset + 1] != withoutIconPixels.Pixels[offset + 1] ||
+                    withIconPixels.Pixels[offset + 2] != withoutIconPixels.Pixels[offset + 2] ||
+                    withIconPixels.Pixels[offset + 3] != withoutIconPixels.Pixels[offset + 3]) {
+                    changedPixels++;
+                }
+            }
+        }
+
+        Assert.True(metrics.IconBox >= 24);
+        Assert.True(metrics.TextX >= metrics.IconX + metrics.IconBox);
+        Assert.True(changedPixels > 0);
+        Assert.Contains(withIcon.AnalyzeLayout().Diagnostics,
+            diagnostic => diagnostic.Code == "InfoTileTextScaleReduced");
+    }
+
     [Theory]
     [InlineData(1.5)]
     [InlineData(4)]
