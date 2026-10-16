@@ -67,7 +67,7 @@ foreach ($relativePath in $sourceFiles) {
     if (-not (Test-Path -LiteralPath $localSource -PathType Leaf)) { throw "$moduleRoot is missing '$relativePath' from $commit." }
     $expectedBlob = (git -C $RepositoryPath rev-parse "${commit}:$relativePath").Trim()
     if ($LASTEXITCODE -ne 0) { throw "Cannot resolve '$relativePath' at $commit." }
-    $actualBlob = (git -C $RepositoryPath hash-object -- $localSource).Trim()
+    $actualBlob = (git -C $RepositoryPath hash-object "--path=$relativePath" -- $localSource).Trim()
     if ($LASTEXITCODE -ne 0 -or $actualBlob -ne $expectedBlob) { throw "$localSource does not match '$relativePath' at $commit." }
 }
 
@@ -76,7 +76,7 @@ if (-not (Test-Path -LiteralPath $project -PathType Leaf)) { throw "The source b
 Write-Host "Building PowerBGInfo $($commit.Substring(0, 7)) for the step renders..." -ForegroundColor Cyan
 Push-Location $moduleRoot
 try {
-    dotnet build 'Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj' --configuration Debug --framework net8.0-windows --property:GeneratePackageOnBuild=false
+    dotnet build 'Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj' --configuration Debug --framework net8.0-windows --no-incremental --property:GeneratePackageOnBuild=false
     $buildExitCode = $LASTEXITCODE
 } finally {
     Pop-Location
