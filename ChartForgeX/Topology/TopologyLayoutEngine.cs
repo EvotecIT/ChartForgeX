@@ -11,6 +11,8 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyLayoutEngine {
     public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null, TextMeasurementContext? measurement = null) {
         var copy = Clone(chart);
+        var authoredEdges = copy.Edges.Zip(chart.Edges, (working, authored) => (working, authored))
+            .ToDictionary(pair => pair.working, pair => pair.authored);
         copy.PreparedGroupHeaderParts = null;
         copy.PreparedGroupHeaderLayoutParts = null;
         copy.GroupHeaderLayout = null;
@@ -57,7 +59,7 @@ internal static partial class TopologyLayoutEngine {
                 break;
         }
 
-        if (copy.LayoutMode == TopologyLayoutMode.Layered) PlaceAutomaticLayeredGroups(copy, chart, options);
+        if (copy.LayoutMode == TopologyLayoutMode.Layered) PlaceAutomaticLayeredGroups(copy, chart, options, authoredEdges);
         TopologyLayoutNormalizer.Normalize(copy, options);
         SyncHierarchyRouteDiagnostics(copy);
         return copy;

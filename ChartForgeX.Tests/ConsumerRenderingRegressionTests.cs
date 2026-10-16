@@ -190,6 +190,20 @@ public sealed class ConsumerRenderingRegressionTests {
     }
 
     [Fact]
+    public void FitContentScalesFixedCardsWithoutChangingTheirRelativeDimensions() {
+        var chart = TopologyChart.Create().WithViewport(960, 400).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("short", "A", 40, 60, width: 90, height: 52)
+            .AddNode("long", "A long service label that needs wrapping", 210, 60, width: 90, height: 52)
+            .AddEdge("link", "short", "long");
+        var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false }));
+        var widths = svg.Descendants().Where(element => Role(element) == "topology-node-surface")
+            .Select(element => N(element, "width")).ToArray();
+
+        Assert.Equal(2, widths.Length);
+        Assert.Equal(widths[0], widths[1], 3);
+    }
+
+    [Fact]
     public void HubAndSpokeContentUsesAvailablePanelSizeWhenFittingIsEnabled() {
         var chart = TopologyChart.Create().WithViewport(1300, 560).WithLayout(TopologyLayoutMode.HubAndSpoke)
             .AddAutoNode("site", "AMS-HQ", TopologyNodeKind.Hub)
@@ -230,7 +244,8 @@ public sealed class ConsumerRenderingRegressionTests {
             .SelectMany(element => element.DescendantsAndSelf()).Where(element => element.Name.LocalName == "text")
             .Select(element => element.Value).ToArray();
 
-        Assert.Contains("Recovery coordinator", labels);
+        Assert.Contains("Recovery", labels);
+        Assert.Contains("coordinator", labels);
         Assert.NotEmpty(chart.ToPng(options));
     }
 
@@ -249,6 +264,81 @@ public sealed class ConsumerRenderingRegressionTests {
         var roundTrip = VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson());
         Assert.Equal("#ef4444", roundTrip.Nodes.Single(item => item.Label == "Escalation").LabelColor);
         Assert.NotEmpty(result.Artifact.ToPng());
+    }
+
+    [Fact]
+    public void MermaidClassDefColorReachesTileIconAndActorCaptions() {
+        var result = MermaidRenderer.Render("flowchart LR\n A[Escalation]\n classDef oncall color:#ef4444,fill:#111827,stroke:#64748b\n class A oncall");
+        var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
+        var node = chart.Nodes.Single(item => item.Id == "A");
+        var options = new TopologyRenderOptions { IncludeLegend = false, IncludeIconLabels = true };
+
+        foreach (var mode in new[] { "tile", "icon", "actor" }) {
+            node.DisplayMode = null;
+            node.Shape = mode == "actor" ? TopologyNodeShape.Actor : null;
+            if (mode == "tile") node.DisplayMode = TopologyNodeDisplayMode.Tile;
+            if (mode == "icon") node.DisplayMode = TopologyNodeDisplayMode.Icon;
+            var svg = XDocument.Parse(chart.ToSvg(options));
+            var label = svg.Descendants().Where(element => Role(element) == "topology-node-label")
+                .SelectMany(element => element.DescendantsAndSelf()).First(element => element.Name.LocalName == "text");
+            Assert.Equal("#EF4444", (string?)label.Attribute("fill"));
+        }
+    }
+
+    [Theory]
+    [InlineData(TopologyNodeDisplayMode.Tile)]
+    [InlineData(TopologyNodeDisplayMode.Card)]
+    public void MermaidCustomCaptionColorRetainsHighlightDimming(TopologyNodeDisplayMode mode) {
+        var result = MermaidRenderer.Render("flowchart LR\n A[Escalation] --> B[Response]\n classDef oncall color:#ef4444,fill:#111827,stroke:#64748b\n class A oncall");
+        var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
+        var node = chart.Nodes.Single(item => item.Id == "A");
+        node.DisplayMode = mode;
+        if (mode == TopologyNodeDisplayMode.Card) node.Shape = TopologyNodeShape.Actor;
+        var options = new TopologyRenderOptions { IncludeLegend = false, DimmedOpacity = .5 };
+        options.HighlightNodeIds.Add("B");
+
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var label = svg.Descendants().Where(element => Role(element) == "topology-node-label")
+            .SelectMany(element => element.DescendantsAndSelf()).First(element => element.Name.LocalName == "text" && element.Value == "Escalation");
+
+        Assert.Equal("rgba(239,68,68,0.502)", (string?)label.Attribute("fill"));
+        Assert.NotEmpty(chart.ToPng(options));
+    }
+
+    [Theory]
+    [InlineData(TopologyNodeDisplayMode.Tile)]
+    [InlineData(TopologyNodeDisplayMode.Icon)]
+    public void FitContentKeepsExternalNodeCaptionsInsideTheViewport(TopologyNodeDisplayMode mode) {
+        var chart = TopologyChart.Create().WithViewport(520, 150).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.TopToBottom)
+            .AddAutoNode("one", "Primary directory controller")
+            .AddAutoNode("two", "Secondary directory controller")
+            .AddAutoNode("three", "Recovery services controller")
+            .AddEdge("first", "one", "two").AddEdge("second", "two", "three");
+        foreach (var node in chart.Nodes) node.DisplayMode = mode;
+        var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeIconLabels = true }));
+        var clipId = svg.Descendants().Single(element => element.Name.LocalName == "clipPath").Attribute("id")!.Value;
+        var clip = svg.Descendants().Single(element => element.Name.LocalName == "rect"
+            && element.Parent?.Name.LocalName == "clipPath" && (string?)element.Parent.Attribute("id") == clipId);
+        var bottom = N(clip, "y") + N(clip, "height");
+        var labels = svg.Descendants().Where(element => Role(element) == "topology-node-label")
+            .SelectMany(element => element.DescendantsAndSelf()).Where(element => element.Name.LocalName == "text").ToArray();
+
+        Assert.NotEmpty(labels);
+        Assert.All(labels, label => Assert.True(N(label, "y") <= bottom,
+            $"External caption '{label.Value}' must remain within the fitted content clip at y={label.Attribute("y")?.Value}, bottom={bottom}."));
+    }
+
+    [Fact]
+    public void EnclosedShapeCaptionsKeepTheirMeasuredMultilineLayout() {
+        var chart = TopologyChart.Create().WithViewport(320, 220)
+            .AddAutoNode("decision", "Review service health before changing production traffic");
+        chart.Nodes[0].Shape = TopologyNodeShape.Diamond;
+        var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, MaxNodeLabelLines = 3, WrapNodeLabels = true }));
+        var lines = svg.Descendants().Where(element => Role(element) == "topology-node-label")
+            .SelectMany(element => element.DescendantsAndSelf()).Count(element => element.Name.LocalName == "text");
+
+        Assert.True(lines > 1, "The measured diamond caption should retain multiple readable rows.");
     }
     [Fact]
     public void WideMermaidFlowchartsScaleToTheirExplicitViewport() {

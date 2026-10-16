@@ -20,7 +20,7 @@ internal sealed partial class VisualTopologyCompiler {
         var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
         Text(label, Bounds(content.X, content.Y, content.Width, content.Height), size, Highlight(labelColor, active), 600,
             "topology-node-label", _options.MaxNodeLabelLines, centered: true, id: node.Id + "-label", opacity: HighlightFactor(active),
-            paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SvgPaint.Of(labelColor, SvgColorRole.Any), fitSingleLine: true, verticallyCentered: true);
+            paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SvgPaint.Of(labelColor, SvgColorRole.Any), verticallyCentered: true);
     }
 
     private ChartRect ShapeCaptionBounds(TopologyNode node, string label, double size) {
@@ -52,7 +52,9 @@ internal sealed partial class VisualTopologyCompiler {
         var stroke = ChartForgeX.Rendering.ChartColorMath.WithOpacity(accent, .4);
         _builder.Rect(bounds, Highlight(_colors.Surface, active), stroke, _context.Theme.AxisStrokeWidth * _scale,
             _context.Theme.BarRadius * _scale, "topology-node-icon-label", paint: new ChartForgeX.Rendering.VisualScenePaintBinding(CardPaint(Highlight(_colors.Surface, active), HighlightFactor(active)), NodeAccentPaint(node, stroke, active, .4)));
-        Text(text, bounds, size, Highlight(_colors.Foreground, active), 700, "topology-node-label", centered: true, id: node.Id + "-label", opacity: HighlightFactor(active));
+        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        Text(text, bounds, size, Highlight(labelColor, active), 700, "topology-node-label", centered: true, id: node.Id + "-label",
+            paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SvgPaint.Of(labelColor, SvgColorRole.Any), opacity: HighlightFactor(active));
     }
 
     private void BuildDiagramCaption(TopologyNode node, bool active) {
@@ -60,10 +62,14 @@ internal sealed partial class VisualTopologyCompiler {
         var size = FitCaptionFontSize(lines, node.Width * .65, _context.Theme.Typography.DataLabelSize, 600);
         var lineHeight = Math.Max(14 * _scale, _builder.MeasureText("Ag", size * _scale, 600).LineHeight);
         var center = Point(new ChartPoint(node.X + node.Width / 2, DiagramNodeLabelCenterY(node)));
+        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        var paint = string.IsNullOrWhiteSpace(node.LabelColor)
+            ? ForegroundPaint(Highlight(labelColor, active), HighlightFactor(active))
+            : SvgPaint.Of(labelColor, SvgColorRole.Any).WithOpacity(Highlight(labelColor, active), HighlightFactor(active));
         for (var i = 0; i < lines.Count; i++) _builder.Text(lines[i], center.X,
             center.Y - _builder.MeasureText("Ag", size * _scale, 600).Height / 2 + _builder.TextAscent(size * _scale, 600) + i * lineHeight,
-            size * _scale, Highlight(_colors.Foreground, active), 600, "topology-node-label", node.Id + "-label-" + i,
-            TextAlignment.Center, ForegroundPaint(Highlight(_colors.Foreground, active), HighlightFactor(active)));
+            size * _scale, Highlight(labelColor, active), 600, "topology-node-label", node.Id + "-label-" + i,
+            TextAlignment.Center, paint);
     }
 
     private void BuildTileCaption(TopologyNode node, ChartColor accent, bool active) {
@@ -72,10 +78,14 @@ internal sealed partial class VisualTopologyCompiler {
         var size = FitCaptionFontSize(lines, node.Width, _context.Theme.Typography.DataLabelSize, 700);
         var lineHeight = Math.Max(14 * _scale, _builder.MeasureText("Ag", size * _scale, 700).LineHeight);
         var origin = Point(new ChartPoint(node.X + node.Width / 2, node.Y + node.Height + 5));
+        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        var paint = string.IsNullOrWhiteSpace(node.LabelColor)
+            ? ForegroundPaint(Highlight(labelColor, active), HighlightFactor(active))
+            : SvgPaint.Of(labelColor, SvgColorRole.Any).WithOpacity(Highlight(labelColor, active), HighlightFactor(active));
         for (var index = 0; index < lines.Count; index++) _builder.Text(lines[index], origin.X,
             origin.Y + _builder.TextAscent(size * _scale, 700) + index * lineHeight, size * _scale,
-            Highlight(_colors.Foreground, active), 700, "topology-node-label", node.Id + "-label-" + index,
-            TextAlignment.Center, ForegroundPaint(Highlight(_colors.Foreground, active), HighlightFactor(active)));
+            Highlight(labelColor, active), 700, "topology-node-label", node.Id + "-label-" + index,
+            TextAlignment.Center, paint);
         if (_options.IncludeTileSubtitles && !string.IsNullOrWhiteSpace(node.Subtitle))
             BuildSubtitleChip(node, TopologyNodeDisplayMode.Tile, node.Y + node.Height + 7 + lines.Count * lineHeight / _scale, accent, active);
     }

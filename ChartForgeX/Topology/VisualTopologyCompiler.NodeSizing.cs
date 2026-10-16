@@ -8,7 +8,7 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     private void FitNodeLabels(TopologyChart chart) {
-        if (!_options.IncludeNodeLabels || !_options.FitContentToViewport && !chart.Nodes.Any(node => node.FitLabelToContent)) return;
+        if (!_options.IncludeNodeLabels || !chart.Nodes.Any(node => node.FitLabelToContent)) return;
         var size = _context.Theme.Typography.DataLabelSize;
         var lineHeight = _builder.MeasureText("Ag", size, 600).LineHeight;
         foreach (var node in chart.Nodes) {
@@ -36,7 +36,7 @@ internal sealed partial class VisualTopologyCompiler {
         }
     }
 
-    private bool CanFitNodeLabelToContent(TopologyNode node) => (node.FitLabelToContent || _options.FitContentToViewport)
+    private bool CanFitNodeLabelToContent(TopologyNode node) => node.FitLabelToContent
         && EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.Card
         && node.Shape != TopologyNodeShape.Actor && node.Kind == TopologyNodeKind.Generic && string.IsNullOrWhiteSpace(node.IconId)
         && string.IsNullOrWhiteSpace(node.Symbol) && ResolveRenderableNodeArtwork(node, _options) == null

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Rendering;
+using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.Topology;
 
@@ -104,7 +105,23 @@ internal sealed partial class VisualTopologyCompiler {
                 right = Math.Max(right, x2); bottom = Math.Max(bottom, y2);
             }
             foreach (var group in _chart.Groups) Include(group.X, group.Y, group.X + group.Width, group.Y + group.Height);
-            foreach (var node in _chart.Nodes) Include(node.X, node.Y, node.X + node.Width, node.Y + node.Height);
+            foreach (var node in _chart.Nodes) {
+                Include(node.X, node.Y, node.X + node.Width, node.Y + node.Height);
+                if (!_options.IncludeNodeLabels) continue;
+                var mode = EffectiveNodeDisplayMode(node, _options);
+                if (mode == TopologyNodeDisplayMode.Tile) {
+                    var caption = TopologyNodeFootprint.RenderedCaption(node, _options, _chart.TextMeasurement);
+                    var center = CenterX(node);
+                    Include(center - caption.Width / 2, node.Y + node.Height + 4,
+                        center + caption.Width / 2, node.Y + node.Height + 4 + caption.Height);
+                } else if (mode == TopologyNodeDisplayMode.Icon && _options.IncludeIconLabels) {
+                    var labelWidth = IconLabelPlateWidth(node, _chart.TextMeasurement, _options.ResolvedIconLabelFontSize);
+                    var labelY = IconLabelPlateY(node);
+                    var labelHeight = IconLabelPlateHeight(node, _chart.TextMeasurement, _options.ResolvedIconLabelFontSize);
+                    var center = CenterX(node);
+                    Include(center - labelWidth / 2, labelY, center + labelWidth / 2, labelY + labelHeight);
+                }
+            }
             foreach (var point in _routes.Values.SelectMany(route => route)) Include(point.X, point.Y, point.X, point.Y);
             foreach (var label in _edgeLabels) Include(label.CenterX - label.Width / 2, label.CenterY - label.Height / 2,
                 label.CenterX + label.Width / 2, label.CenterY + label.Height / 2);

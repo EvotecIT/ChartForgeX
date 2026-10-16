@@ -43,6 +43,17 @@ public static class ConsumerRenderingExamples {
         });
         if (wideFlow.HasErrors) throw new InvalidOperationException("Cannot render the wide Mermaid flowchart example.");
         SaveExample("flow-wide-panel-dark", wideFlow.Artifact!.ToSvg(), wideFlow.Artifact!.ToPng());
+        var actorColor = MermaidRenderer.Render("flowchart LR\n A[Escalation] --> B[Response]\n classDef oncall color:#ef4444,fill:#111827,stroke:#64748b\n class A oncall");
+        if (actorColor.HasErrors) throw new InvalidOperationException("Cannot render the Mermaid actor label-color example.");
+        if (actorColor.Artifact!.Model is not TopologyChart actorChart)
+            throw new InvalidOperationException("The Mermaid actor label-color example did not produce a topology chart.");
+        actorChart.Nodes.Single(node => node.Id == "A").Shape = TopologyNodeShape.Actor;
+        SaveExample("flow-class-color-actor", actorChart.ToSvg(), actorChart.ToPng());
+        actorChart.Nodes.Single(node => node.Id == "A").Shape = null;
+        actorChart.Nodes.Single(node => node.Id == "A").DisplayMode = TopologyNodeDisplayMode.Tile;
+        var highlightOptions = new TopologyRenderOptions { IncludeLegend = false, DimmedOpacity = .5 };
+        highlightOptions.HighlightNodeIds.Add("B");
+        SaveExample("flow-class-color-highlight-dimming", actorChart.ToSvg(highlightOptions), actorChart.ToPng(highlightOptions));
         var topology = TopologyChart.Create().WithViewport(680, 330).WithLegend(null)
             .WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("edge", "Edge").AddAutoGroup("core", "Core")
@@ -73,6 +84,16 @@ public static class ConsumerRenderingExamples {
             .AddAutoNode("identity", "Identity service").AddEdge("request", "gateway", "identity", "HTTPS");
         var growingOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false };
         SaveExample( "topology-fit-growth", growing.ToSvg(growingOptions), growing.ToPng(growingOptions));
+        foreach (var mode in new[] { TopologyNodeDisplayMode.Tile, TopologyNodeDisplayMode.Icon }) {
+            var captions = TopologyChart.Create().WithViewport(520, 150).WithLayout(TopologyLayoutMode.Layered)
+                .WithLayoutDirection(TopologyLayoutDirection.TopToBottom)
+                .AddAutoNode("one", "Primary directory controller")
+                .AddAutoNode("two", "Secondary directory controller")
+                .AddAutoNode("three", "Recovery services controller")
+                .AddEdge("first", "one", "two").AddEdge("second", "two", "three");
+            foreach (var node in captions.Nodes) node.DisplayMode = mode;
+            SaveExample("topology-fit-captions-" + mode.ToString().ToLowerInvariant(), captions.ToSvg(growingOptions), captions.ToPng(growingOptions));
+        }
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var suffix = mode.ToString().ToLowerInvariant();
             var radar = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(520, 320)

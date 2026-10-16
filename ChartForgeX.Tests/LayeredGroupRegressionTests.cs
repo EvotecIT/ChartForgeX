@@ -61,6 +61,23 @@ public sealed class LayeredGroupRegressionTests {
     }
 
     [Fact]
+    public void GroupCompactionKeepsWideUngroupedRanksBetweenGroupMembers() {
+        var chart = TopologyChart.Create().WithViewport(1600, 600).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddAutoGroup("a", "Group A").AddAutoGroup("b", "Group B")
+            .AddAutoNode("a1", "A1", groupId: "a").AddAutoNode("middle", "Wide ungrouped service")
+            .AddAutoNode("a2", "A2", groupId: "a").AddAutoNode("other", "Other", groupId: "b")
+            .AddEdge("first", "a1", "middle").AddEdge("second", "middle", "a2");
+        chart.Nodes.Single(node => node.Id == "middle").Width = 480;
+
+        var prepared = TopologyLayoutEngine.Prepare(chart);
+        var nodes = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+
+        Assert.True(nodes["middle"].X + nodes["middle"].Width <= nodes["a2"].X,
+            $"The ungrouped rank must remain a flow-axis barrier: middle={nodes["middle"].X}-{nodes["middle"].X + nodes["middle"].Width}; A2={nodes["a2"].X}.");
+    }
+
+    [Fact]
     public void ThreeInterleavedGroupShellsAreRecheckedUntilAllAreSeparated() {
         var chart = TopologyChart.Create().WithViewport(1300, 700).WithLayout(TopologyLayoutMode.Layered)
             .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
@@ -127,6 +144,46 @@ public sealed class LayeredGroupRegressionTests {
             || groups["child-group"].Y + groups["child-group"].Height <= groups["parent-group"].Y,
             $"Fixture must force a packing shift: parent={groups["parent-group"].X},{groups["parent-group"].Y},{groups["parent-group"].Width},{groups["parent-group"].Height}; child={groups["child-group"].X},{groups["child-group"].Y},{groups["child-group"].Width},{groups["child-group"].Height}.");
         Assert.All(edges, edge => Assert.Equal(0, TopologyEdgeRouter.Diagnose(prepared, edge, nodes).ObstacleHits));
+    }
+
+    [Fact]
+    public void WaypointEdgeWithMissingEndpointReachesTopologyValidation() {
+        var chart = TopologyChart.Create().WithViewport(800, 420).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddAutoGroup("a", "Group A").AddAutoGroup("b", "Group B")
+            .AddAutoNode("source", "Source", groupId: "a").AddAutoNode("target", "Target", groupId: "b")
+            .AddEdge("broken", "source", "missing", "invalid");
+        chart.Edges[0].Waypoints.Add(new ChartPoint(160, 100));
+
+        var exception = Assert.Throws<TopologyValidationException>(() => chart.ToSvg());
+
+        Assert.Contains(exception.Result.Errors, error => error.Code == "missing-edge-target");
+    }
+
+    [Fact]
+    public void ViewFilteredEdgesRetainTheirAuthoredRouteAndPortsAfterGroupPacking() {
+        var chart = TopologyChart.Create().WithViewport(1200, 700).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddAutoGroup("a", "Group A").AddAutoGroup("b", "Group B")
+            .AddAutoNode("a0", "A0", groupId: "a").AddAutoNode("b1", "B1", groupId: "b")
+            .AddAutoNode("a2", "A2", groupId: "a").AddAutoNode("b3", "B3", groupId: "b")
+            .AddEdge("omitted", "a0", "b1")
+            .AddEdge("first", "a0", "b1").AddEdge("second", "b1", "a2")
+            .AddEdge("third", "a2", "b3").AddEdge("skip", "b1", "b3");
+        chart.Edges[0].SourcePort = TopologyEdgePort.Top;
+        chart.Edges[0].TargetPort = TopologyEdgePort.Bottom;
+        chart.Edges[^1].SourcePort = TopologyEdgePort.Left;
+        chart.Edges[^1].TargetPort = TopologyEdgePort.Right;
+        chart.Edges[^1].Metadata["layout.route"] = "long-edge-lane";
+        var view = new TopologyView();
+        view.EdgeIds.AddRange(new[] { "first", "second", "third", "skip" });
+
+        var prepared = TopologyLayoutEngine.Prepare(chart, view);
+
+        var repaired = prepared.Edges.Single(edge => edge.Id == "skip");
+        Assert.Equal(TopologyEdgePort.Left, repaired.SourcePort);
+        Assert.Equal(TopologyEdgePort.Right, repaired.TargetPort);
+        Assert.Equal("packed-group-obstacle-route", repaired.Metadata["layout.route"]);
     }
 
     [Theory]
