@@ -147,6 +147,37 @@ public sealed class CartesianAnnotationPlacementTests {
     }
 
     [Theory]
+    [InlineData(320, VisualThemeMode.Light)]
+    [InlineData(320, VisualThemeMode.Dark)]
+    [InlineData(800, VisualThemeMode.Light)]
+    [InlineData(800, VisualThemeMode.Dark)]
+    public void LongReferenceCaptionCanShortenInTheMeasuredTitleStripWhenMarksBlockThePlot(int width, VisualThemeMode mode) {
+        const string source = "A detailed service level objective for every selected region and its monitored production services, including all regional availability targets, response-time budgets and error-rate requirements";
+        var chart = Chart.Create().WithSize(width, 300).WithPadding(64, 14, 20, 50)
+            .WithHeader(false).WithLegend(true).WithDataLabels(false).WithThemeMode(mode)
+            .WithYAxis("Y").WithYAxisBounds(0, 10)
+            .AddBar("Observed", Enumerable.Range(0, 20).Select(index => new ChartPoint(index, 10)))
+            .AddHorizontalLine(5, source);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"threshold-title-strip-ellipsis-{width}-{mode}");
+        var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "annotation-label");
+        var displayed = Assert.Single(caption.Text.Lines).Text;
+        Assert.StartsWith("A detailed service level", displayed, StringComparison.Ordinal);
+        Assert.EndsWith("…", displayed, StringComparison.Ordinal);
+        Assert.Equal(12, caption.Text.Size);
+        var plate = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "annotation-label-backplate");
+        var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
+        Assert.True(plate.Bounds.Bottom <= plot.Top);
+        Assert.All(prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bar"), bar => Assert.False(Overlaps(plate.Bounds, bar.Bounds)));
+        Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role is "axis-y-title" or "legend-label"), text => Assert.False(Overlaps(plate.Bounds, TextBounds(text))));
+        Assert.Contains(prepared.Scene.Nodes, node => node.Role == "annotation-label-leader");
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.annotation-label-overflow");
+        Assert.Contains(source, Assert.Single(prepared.Regions, region => region.Role == "annotation").Label);
+        Assert.Contains(displayed, prepared.ToSvg(), StringComparison.Ordinal);
+        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void PeakWindowCaptionAvoidsBarsAndTheirValueLabelsWithoutLosingSourceFacts(bool dataLabels) {

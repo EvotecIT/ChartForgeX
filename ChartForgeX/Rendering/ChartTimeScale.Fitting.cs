@@ -15,30 +15,52 @@ internal static partial class ChartTimeScale {
         // Begin one density level finer, then enforce the actual authored count.
         var interval = ChooseInterval(Math.Max(minimumStepDays, (max - min) / (limit * 2)));
         IReadOnlyList<double>? sparse = null;
-        try {
-            for (var attempt = 0; attempt < 64; attempt++) {
-                if (regularObservations != null && interval.Unit > TimeUnit.Week) break;
-                var ticks = regularObservations == null ? GenerateInterval(axis, min, max, true, interval)
-                    : ObservationInterval(regularObservations, min, max, interval);
-                if (ticks == null) { interval = ChooseInterval(interval.ApproximateDays * 1.01); continue; }
-                if (ticks.Count > 0 && ticks.Count <= limit) {
-                    if (fits(ticks)) return ticks;
-                    if (allowCompactDates && interval.Unit >= TimeUnit.Day) {
-                        var compact = new CompactDateTicks(ticks, CompactDateFormat(axis, min, max));
-                        if (fits(compact)) return compact;
-                    }
-                    sparse = ticks;
-                }
-                // No boundary at this interval means coarser steps cannot restore a useful
-                // sequence. Keep the last real calendar boundary; never invent padded instants.
-                if (ticks.Count == 0) break;
-                interval = ChooseInterval(interval.ApproximateDays * 1.01);
+        for (var attempt = 0; attempt < 64; attempt++) {
+            if (regularObservations != null && interval.Unit > TimeUnit.Week) break;
+            var ticks = regularObservations == null ? TryGenerateFittingInterval(axis, min, max, interval)
+                : ObservationInterval(regularObservations, min, max, interval);
+            if (ticks == null) {
+                if (regularObservations == null) return null;
+                interval = ChooseInterval(interval.ApproximateDays * 1.01); continue;
             }
-            if (regularObservations != null)
-                return FitObservationCadence(regularObservations, axis, min, max, limit, fits, allowCompactDates)
-                    ?? GenerateFitting(axis, min, max, fits, allowCompactDates, minimumStepDays: minimumStepDays);
-            return sparse ?? GenerateInterval(axis, min, max, true, ChooseInterval(max - min));
-        } catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { return null; }
+            if (ticks.Count > 0 && ticks.Count <= limit) {
+                if (fits(ticks)) return ticks;
+                if (allowCompactDates && interval.Unit >= TimeUnit.Day && TryCompactDates(ticks, axis, min, max) is { } compact
+                    && fits(compact)) return compact;
+                sparse = ticks;
+            }
+            // No boundary at this interval means coarser steps cannot restore a useful
+            // sequence. Keep the last real calendar boundary; never invent padded instants.
+            if (ticks.Count == 0) break;
+            interval = ChooseInterval(interval.ApproximateDays * 1.01);
+        }
+        if (regularObservations != null)
+            return FitObservationCadence(regularObservations, axis, min, max, limit, fits, allowCompactDates)
+                ?? GenerateFitting(axis, min, max, fits, allowCompactDates, minimumStepDays: minimumStepDays);
+        return sparse ?? TryGenerateFittingInterval(axis, min, max, ChooseInterval(max - min));
+    }
+
+    // Calendar arithmetic may be outside DateTime's supported range. Authored
+    // fitting/formatting callbacks run outside these catches and retain their errors.
+    private static IReadOnlyList<double>? TryGenerateFittingInterval(ChartAxis axis, double min, double max, TimeInterval interval) {
+        try { return GenerateInterval(axis, min, max, true, interval); }
+        catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { return null; }
+    }
+
+    private static CompactDateTicks? TryCompactDates(IReadOnlyList<double> ticks, ChartAxis axis, double min, double max) {
+        try { return new CompactDateTicks(ticks, CompactDateFormat(axis, min, max)); }
+        catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { return null; }
+    }
+
+    /// <summary>Rejects a finer automatic time step when its formatter cannot distinguish neighbouring instants.</summary>
+    internal static bool HasDistinctAdjacentLabels(IEnumerable<string> labels) {
+        string? previous = null;
+        foreach (var text in labels) {
+            if (text.Length == 0) continue;
+            if (string.Equals(previous, text, StringComparison.Ordinal)) return false;
+            previous = text;
+        }
+        return true;
     }
 
     // A three-day cadence has no coarser multiple in the ordinary day/week
@@ -58,10 +80,8 @@ internal static partial class ChartTimeScale {
             var ticks = new List<double>();
             for (var index = 0; index < visible.Count; index += stride) ticks.Add(visible[index]);
             if (fits(ticks)) return ticks;
-            if (allowCompactDates && cadence * stride >= 1) {
-                var compact = new CompactDateTicks(ticks, CompactDateFormat(axis, min, max));
-                if (fits(compact)) return compact;
-            }
+            if (allowCompactDates && cadence * stride >= 1 && TryCompactDates(ticks, axis, min, max) is { } compact
+                && fits(compact)) return compact;
         }
         return null;
     }

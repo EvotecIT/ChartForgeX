@@ -68,16 +68,18 @@ internal static class VisualAnnotationCompiler {
                 var placement = new LabelPlacementService();
                 var preferred = available.Top < plot.Top
                     ? new ChartRect(available.Left, plot.Top, available.Width, available.Bottom - plot.Top) : available;
+                ChartRect? titleStrip = available.Top < preferred.Top
+                    ? new ChartRect(available.Left, available.Top, available.Width, preferred.Top - available.Top) : null;
                 var label = placement.Place(new[] { request }, preferred, obstacles, 2, builder.MeasureText)[0];
-                if (label.IsDropped && available.Top < preferred.Top) {
-                    var titleStrip = new ChartRect(available.Left, available.Top, available.Width, preferred.Top - available.Top);
-                    label = placement.Place(new[] { request }, titleStrip, obstacles, 2, builder.MeasureText)[0];
-                }
+                if (label.IsDropped && titleStrip.HasValue)
+                    label = placement.Place(new[] { request }, titleStrip.Value, obstacles, 2, builder.MeasureText)[0];
                 // Candidate alignments must remain available when a multiline caption
                 // shortens to fewer rows. Its original height cannot prefilter them.
                 if (label.IsDropped && annotation.Label.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length > 2) {
                     request.Fallback = LabelFallbackRule.EllipsisThenDrop;
                     label = placement.Place(new[] { request }, preferred, obstacles, 2, builder.MeasureText)[0];
+                    if (label.IsDropped && titleStrip.HasValue)
+                        label = placement.Place(new[] { request }, titleStrip.Value, obstacles, 2, builder.MeasureText)[0];
                 }
                 if (label.IsDropped || label.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic(overflowCode, "An annotation label was shortened or omitted to avoid marks and other labels within the plot."));
                 if (!label.IsDropped) {

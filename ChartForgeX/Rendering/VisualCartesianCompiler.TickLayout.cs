@@ -30,7 +30,8 @@ internal static partial class VisualCartesianCompiler {
         IReadOnlyList<double> ticks = labels.Ticks(axis, minimum, maximum);
         double Position(double value) => ChartScaleTransform.Normalize(value, minimum, maximum, axis) * length;
         if (axis.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(axis, minimum, maximum,
-            candidates => AxisLabelSequenceFits(builder, axis, candidates, Position, horizontal, style, gap, fallback, labels),
+            candidates => ChartTimeScale.HasDistinctAdjacentLabels(candidates.Select(tick => labels.Format(axis, tick, fallback, candidates)))
+                && AxisLabelSequenceFits(builder, axis, candidates, Position, horizontal, style, gap, fallback, labels),
             allowCompactDates: axis.ValueFormat == null && fallback == null, regularObservations: regularObservations) is { } timeTicks) {
             labels.SetFittedTicks(axis, timeTicks);
             return;

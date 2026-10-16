@@ -22,7 +22,8 @@ internal static partial class VisualScheduleCompiler {
         var minimumStepDays = chart.Series[0].Kind == ChartSeriesKind.Gantt
             && axis.ValueFormat == null && ticks[ticks.Count - 1] - ticks[0] >= 1 ? 1 : 0;
         if (policy.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(policy, ticks[0], ticks[ticks.Count - 1],
-            candidates => ScheduleCaptionsFit(chart, context, builder, candidates, project, format,
+            candidates => ChartTimeScale.HasDistinctAdjacentLabels(candidates.Select(format))
+                && ScheduleCaptionsFit(chart, context, builder, candidates, project, format,
                 GeneratedScheduleTickStyle(chart, context, builder, candidates, project, format, style)), allowCompactDates: false,
             minimumStepDays: minimumStepDays) is { } calendarTicks)
             return calendarTicks;
