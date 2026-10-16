@@ -49,6 +49,9 @@ public static class ConsumerRenderingExamples {
             throw new InvalidOperationException("The Mermaid actor label-color example did not produce a topology chart.");
         actorChart.Nodes.Single(node => node.Id == "A").Shape = TopologyNodeShape.Actor;
         SaveExample("flow-class-color-actor", actorChart.ToSvg(), actorChart.ToPng());
+        var fittedActorOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        actorChart.WithViewport(480, 260, 12);
+        SaveExample("topology-fit-actor-caption", actorChart.ToSvg(fittedActorOptions), actorChart.ToPng(fittedActorOptions));
         actorChart.Nodes.Single(node => node.Id == "A").Shape = null;
         actorChart.Nodes.Single(node => node.Id == "A").DisplayMode = TopologyNodeDisplayMode.Tile;
         var highlightOptions = new TopologyRenderOptions { IncludeLegend = false, DimmedOpacity = .5 };
@@ -87,6 +90,10 @@ public static class ConsumerRenderingExamples {
             .AddAutoNode("identity", "Identity service").AddEdge("request", "gateway", "identity", "HTTPS");
         var growingOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
         SaveExample( "topology-fit-growth", growing.ToSvg(growingOptions), growing.ToPng(growingOptions));
+        var artworkFallback = TopologyChart.Create().WithViewport(460, 240, 8).WithLegend(null)
+            .AddArtworkNode("fallback", "Artwork fallback caption", TopologyIconArtwork.Image("data:image/png;base64,AA=="),
+                12, 10, width: 88, height: 52);
+        SaveExample("topology-fit-artwork-fallback-caption", artworkFallback.ToSvg(fittedTopologyOptions), artworkFallback.ToPng(fittedTopologyOptions));
         var sharedTrunk = TopologyChart.Create().WithViewport(900, 460).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
             .AddNode("target", "Service", 700, 180, width: 100, height: 44)
             .AddNode("north", "North input", 100, 60, width: 100, height: 44)

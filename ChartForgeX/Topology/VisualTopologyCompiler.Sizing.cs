@@ -136,13 +136,36 @@ internal sealed partial class VisualTopologyCompiler {
                     var labelY = IconLabelPlateY(node);
                     var labelHeight = IconLabelPlateHeight(node, _chart.TextMeasurement, _options.ResolvedIconLabelFontSize);
                     var center = CenterX(node);
-                    Include(center - labelWidth / 2, labelY, center + labelWidth / 2, labelY + labelHeight);
+                    IncludeStroked(center - labelWidth / 2, labelY, center + labelWidth / 2, labelY + labelHeight, _context.Theme.AxisStrokeWidth);
+                } else if (node.Shape == TopologyNodeShape.Actor) {
+                    var lines = DiagramNodeLabelLines(node, _options);
+                    if (lines.Count > 0) {
+                        var size = FitCaptionFontSize(lines, node.Width * .65, _context.Theme.Typography.DataLabelSize, 600);
+                        var lineHeight = Math.Max(14, _builder.MeasureText("Ag", size * _scale, 600).LineHeight / _scale);
+                        var centerY = DiagramNodeLabelCenterY(node);
+                        Include(node.X + node.Width * .175, centerY - lineHeight * lines.Count / 2,
+                            node.X + node.Width * .825, centerY + lineHeight * lines.Count / 2);
+                    }
+                } else if (mode == TopologyNodeDisplayMode.Artwork && !CanRenderNodeArtwork(node)) {
+                    var textBounds = new ChartRect(node.X - 17, node.Y + node.Height + 5, node.Width + 34,
+                        (_options.MaxNodeLabelLines + 1) * 18);
+                    Include(textBounds.X, textBounds.Y, textBounds.Right, textBounds.Bottom);
                 }
             }
             foreach (var route in _routes) {
                 if (route.Value.Count == 0) continue;
                 var halfStroke = FittedRouteStrokeWidth(route.Key) / 2;
                 foreach (var point in route.Value) Include(point.X - halfStroke, point.Y - halfStroke, point.X + halfStroke, point.Y + halfStroke);
+                var markerExtent = 12 + _context.Theme.AxisStrokeWidth / 2;
+                if (RenderedSourceMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
+                    IncludeMarker(route.Value[0], markerExtent);
+                if (_trunks.TryGetValue(route.Key, out var trunk)) {
+                    if (ReferenceEquals(trunk.Owner, route.Key) && trunk.Tail.Count > 0
+                        && RenderedTargetMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
+                        IncludeMarker(trunk.Tail[trunk.Tail.Count - 1], markerExtent);
+                } else if (RenderedTargetMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None) {
+                    IncludeMarker(route.Value[route.Value.Count - 1], markerExtent);
+                }
             }
             foreach (var label in _edgeLabels) Include(label.CenterX - label.Width / 2, label.CenterY - label.Height / 2,
                 label.CenterX + label.Width / 2, label.CenterY + label.Height / 2);
@@ -166,6 +189,9 @@ internal sealed partial class VisualTopologyCompiler {
                 var halfStroke = Math.Max(0, strokeWidth) / 2;
                 Include(x1 - halfStroke, y1 - halfStroke, x2 + halfStroke, y2 + halfStroke);
             }
+
+            void IncludeMarker(ChartPoint point, double extent) =>
+                Include(point.X - extent, point.Y - extent, point.X + extent, point.Y + extent);
 
             double FittedRouteStrokeWidth(TopologyEdge edge) {
                 var selected = _options.SelectedEdgeIds.Contains(edge.Id);

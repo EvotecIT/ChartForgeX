@@ -27,6 +27,29 @@ public sealed class NativeTopologyArtworkTests {
     }
 
     [Fact]
+    public void FittedArtworkFallbackKeepsItsExternalCaptionInTheViewport() {
+        var chart = TopologyChart.Create().WithViewport(460, 240, 8).WithLegend(null)
+            .AddArtworkNode("fallback", "Artwork fallback caption", TopologyIconArtwork.Image("data:image/png;base64,AA=="),
+                12, 10, width: 88, height: 52);
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        var prepared = chart.Prepare(options);
+        Assert.Contains(prepared.Visual.Scene.Diagnostics, diagnostic => diagnostic.Code == "topology.artwork-fallback");
+        var svg = XDocument.Parse(prepared.ToSvg());
+        var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath").Elements().Single(element => element.Name.LocalName == "rect");
+        var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-node-label")
+            .SelectMany(element => element.DescendantsAndSelf().Where(child => child.Name.LocalName == "text")).ToArray();
+        Assert.NotEmpty(labels);
+        Assert.All(labels, label => {
+            var baseline = double.Parse((string)label.Attribute("y")!, System.Globalization.CultureInfo.InvariantCulture);
+            var size = double.Parse((string)label.Attribute("font-size")!, System.Globalization.CultureInfo.InvariantCulture);
+            var top = double.Parse((string)clip.Attribute("y")!, System.Globalization.CultureInfo.InvariantCulture);
+            var bottom = top + double.Parse((string)clip.Attribute("height")!, System.Globalization.CultureInfo.InvariantCulture);
+            Assert.InRange(baseline - size, top - 1, bottom + 1);
+        });
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Fact]
     public void BitmapSliceKeepsAlignedSourcePixelsAndClipsToTheNativeNodeViewport() {
         var artwork = TopologyIconArtwork.Image("data:image/png;base64," + Convert.ToBase64String(PngWriter.WriteRgba(
             new RgbaImage(2, 1, new byte[] { 220, 30, 40, 255, 30, 40, 220, 255 })))).WithPreserveAspectRatio("xMaxYMid slice");

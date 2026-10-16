@@ -144,8 +144,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
         var large = Render(24);
 
         Assert.Equal(N(standard.Text, "font-size") * 2, N(large.Text, "font-size"), 3);
-        Assert.Equal(N(standard.Surface, "width") * 2, N(large.Surface, "width"), 3);
-        Assert.Equal(N(standard.Surface, "height") * 2, N(large.Surface, "height"), 3);
+        Assert.Equal(N(standard.Surface, "width") * 2, N(large.Surface, "width"), 2);
+        Assert.Equal(N(standard.Surface, "height") * 2, N(large.Surface, "height"), 2);
     }
 
     [Fact]

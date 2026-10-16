@@ -184,8 +184,11 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private ChartRect? Text(string value, ChartRect bounds, double size, ChartColor color, int weight, string role, int maxLines = 1, bool centered = false, string? id = null, SvgPaint? paint = null, double opacity = 1, bool fitSingleLine = false, bool verticallyCentered = false) {
+        var minimumFontSize = role == "topology-node-label" && !_options.WrapNodeLabels && _options.FitContentToViewport
+            ? DotNodeSymbolFontSize * .9 * _scale
+            : DotNodeSymbolFontSize * _scale;
         var layout = TopologyTextLayout.Prepare(value, bounds.Width, bounds.Height, size * _scale, weight, maxLines,
-            fitSingleLine, DotNodeSymbolFontSize * _scale, _options, _builder.MeasureText,
+            fitSingleLine, minimumFontSize, _options, _builder.MeasureText,
             (code, message) => _builder.AddDiagnostic(new VisualDiagnostic(code, message)));
         if (layout == null) return null;
         size = layout.Size;

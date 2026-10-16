@@ -357,6 +357,82 @@ public sealed partial class ConsumerRenderingRegressionTests {
         Assert.NotEmpty(chart.ToPng(options));
     }
 
+    [Theory]
+    [InlineData(TopologyNodeDisplayMode.Icon, 1)]
+    [InlineData(TopologyNodeDisplayMode.Icon, 2)]
+    public void FittedIconCaptionPlateStrokeStaysInsideTheContentClip(TopologyNodeDisplayMode mode, int outputScale) {
+        var chart = TopologyChart.Create().WithViewport(460, 240).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("icon", "Caption plate at canvas edge", 10, 10, width: 84, height: 54);
+        chart.Nodes[0].DisplayMode = mode;
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeIconLabels = true, PngOutputScale = outputScale };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath").Elements().Single(element => element.Name.LocalName == "rect");
+        var plate = svg.Descendants().Single(element => Role(element) == "topology-node-icon-label");
+        var halfStroke = N(plate, "stroke-width") / 2;
+        Assert.True(N(plate, "x") - halfStroke >= N(clip, "x") - .1);
+        Assert.True(N(plate, "y") - halfStroke >= N(clip, "y") - .1);
+        Assert.True(N(plate, "x") + N(plate, "width") + halfStroke <= N(clip, "x") + N(clip, "width") + .1);
+        Assert.True(N(plate, "y") + N(plate, "height") + halfStroke <= N(clip, "y") + N(clip, "height") + .1);
+        Assert.NotEmpty(chart.ToPng(options));
+    }
+
+    [Fact]
+    public void FittedActorCaptionContributesToTheContentBounds() {
+        var chart = TopologyChart.Create().WithViewport(480, 260).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("actor", "Escalation contact", 42, 28, width: 100, height: 108);
+        chart.Nodes[0].Shape = TopologyNodeShape.Actor;
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath").Elements().Single(element => element.Name.LocalName == "rect");
+        var labels = svg.Descendants().Where(element => Role(element) == "topology-node-label")
+            .SelectMany(element => element.DescendantsAndSelf().Where(child => child.Name.LocalName == "text")).ToArray();
+        Assert.NotEmpty(labels);
+        foreach (var label in labels) {
+            var x = N(label, "x"); var y = N(label, "y"); var fontSize = N(label, "font-size");
+            var estimatedHalfWidth = ((label.Value.Length * fontSize * .62) / 2) + 1;
+            Assert.True(x - estimatedHalfWidth >= N(clip, "x") - 1 && x + estimatedHalfWidth <= N(clip, "x") + N(clip, "width") + 1);
+            Assert.True(y - fontSize >= N(clip, "y") - 1
+                && y + fontSize * .25 <= N(clip, "y") + N(clip, "height") + 1);
+        }
+        Assert.NotEmpty(chart.ToPng(options));
+    }
+
+    [Theory]
+    [InlineData(TopologyMarkerKind.OpenTriangle, TopologyMarkerKind.ZeroOrMany)]
+    [InlineData(TopologyMarkerKind.OneOrMany, TopologyMarkerKind.Diamond)]
+    public void FittedEndpointMarkersStayInsideTheContentClip(TopologyMarkerKind sourceMarker, TopologyMarkerKind targetMarker) {
+        var chart = TopologyChart.Create().WithViewport(500, 260).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("source", "Source", 18, 92, width: 92, height: 62)
+            .AddNode("target", "Target", 378, 92, width: 92, height: 62)
+            .AddEdge("marked", "source", "target", "HTTPS");
+        chart.Edges[0].SourceMarker = sourceMarker;
+        chart.Edges[0].TargetMarker = targetMarker;
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath").Elements().Single(element => element.Name.LocalName == "rect");
+        var markers = svg.Descendants().Where(element => Role(element) == "topology-marker").ToArray();
+        Assert.NotEmpty(markers);
+        foreach (var marker in markers) {
+            var bounds = marker.Name.LocalName == "ellipse"
+                ? (Left: N(marker, "cx") - N(marker, "rx"), Top: N(marker, "cy") - N(marker, "ry"),
+                    Right: N(marker, "cx") + N(marker, "rx"), Bottom: N(marker, "cy") + N(marker, "ry"))
+                : PathBounds((string)marker.Attribute("d")!);
+            Assert.True(bounds.Left >= N(clip, "x") - 1 && bounds.Right <= N(clip, "x") + N(clip, "width") + 1,
+                "Fitted endpoint marker geometry must stay within the horizontal content clip.");
+            Assert.True(bounds.Top >= N(clip, "y") - 1 && bounds.Bottom <= N(clip, "y") + N(clip, "height") + 1,
+                "Fitted endpoint marker geometry must stay within the vertical content clip.");
+        }
+        Assert.NotEmpty(chart.ToPng(options));
+
+        static (double Left, double Top, double Right, double Bottom) PathBounds(string path) {
+            var values = Regex.Matches(path, @"-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?")
+                .Cast<Match>().Select(match => double.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
+            var xs = values.Where((_, index) => index % 2 == 0).ToArray();
+            var ys = values.Where((_, index) => index % 2 == 1).ToArray();
+            return (xs.Min(), ys.Min(), xs.Max(), ys.Max());
+        }
+    }
+
     [Fact]
     public void LayeredLayoutPacksOneAutomaticGroupAgainstAnExplicitShell() {
         var chart = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
