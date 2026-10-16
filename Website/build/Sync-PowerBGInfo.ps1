@@ -11,11 +11,18 @@
     commit that produced the renders. The commit is recorded in the data file, so the page can link every script to
     the exact source it shows.
 
+    From the scenario renders the page uses the 1920 x 1080 render of each scenario in both themes, plus the
+    -ScreenSizes renders (the ultrawide and portrait screens) of the scenarios that have them. The 2560 x 1440 renders
+    are skipped: the page shows every wallpaper at most 1240 pixels wide, so they would only add weight. Each
+    scenario's script is also written to static/powerbginfo/scripts/<file>.txt for the scenario viewer, which slices
+    the presentation and data lines out of it.
+
     From the feature renders the page uses the 1920 x 1080 render of each widget in both themes, every theme preset,
     and the region example at 1920 x 1080, 3440 x 1440 and 1080 x 1920.
 
-    The script owns the PNG files in static/powerbginfo/ and static/powerbginfo/features/ and clears them on each
-    run. It never changes the PowerBGInfo repository; it only reads files with git show.
+    The script owns the PNG files in static/powerbginfo/ and static/powerbginfo/features/ and the scripts in
+    static/powerbginfo/scripts/, and clears them on each run. It never changes the PowerBGInfo repository; it only
+    reads files with git show.
 
 .EXAMPLE
     pwsh ./Website/build/Sync-PowerBGInfo.ps1 -RepositoryPath C:\Support\GitHub\PowerBGInfo `
@@ -26,7 +33,9 @@ param(
     [Parameter(Mandatory)] [string] $RepositoryPath,
     [Parameter(Mandatory)] [string] $Ref,
     [Parameter(Mandatory)] [string] $RenderPath,
-    [Parameter(Mandatory)] [string] $FeaturePath
+    [Parameter(Mandatory)] [string] $FeaturePath,
+    # Scenario renders shown besides the 1920 x 1080 ones, to show that one script fits any screen.
+    [string[]] $ScreenSizes = @('3440x1440', '1080x1920')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -70,17 +79,21 @@ function Copy-Render($Render, [string] $From, [string] $To, [string] $Url) {
     return [ordered] @{ url = "$Url/$($Render.file)"; file = $Render.file; width = $size.Width; height = $size.Height; kb = [math]::Round($size.Bytes / 1KB) }
 }
 
-function Clear-Renders([string] $Path) {
+function Clear-Renders([string] $Path, [string] $Filter = '*.png') {
     New-Item -ItemType Directory -Force -Path $Path | Out-Null
-    Get-ChildItem -LiteralPath $Path -Filter '*.png' -File | Remove-Item -Force
+    Get-ChildItem -LiteralPath $Path -Filter $Filter -File | Remove-Item -Force
 }
 
 $manifest = Read-Manifest $RenderPath
 $target = Join-Path $website 'static/powerbginfo'
+$scriptTarget = Join-Path $target 'scripts'
 Clear-Renders $target
+Clear-Renders $scriptTarget '*.txt'
 
 $scenarios = [ordered]@{}
 foreach ($render in $manifest.renders) {
+    $size = "$($render.width)x$($render.height)"
+    if ($size -ne '1920x1080' -and $size -notin $ScreenSizes) { continue }
     $copied = Copy-Render $render $RenderPath $target '/powerbginfo'
     if (-not $scenarios.Contains($render.scenario)) {
         $script = Get-SourceText $render.script
@@ -88,27 +101,52 @@ foreach ($render in $manifest.renders) {
         # The excerpt is the New-BGInfo call: the part of the script that places what the wallpaper shows.
         $start = [array]::FindIndex($lines, [Predicate[string]] { param($line) $line -match '^New-BGInfo\b' })
         if ($start -lt 0) { throw "$($render.script) has no top-level New-BGInfo call." }
-        # The data block is the part a reader replaces with their own sources.
-        $data = [regex]::Match($script, '(?ms)^#region Data.*?^#endregion')
-        $preset = [regex]::Match($script, 'New-BGInfoTheme\s+(?:-Preset\s+)?(\w+)')
+        # The data block is the part a reader replaces with their own sources: whole lines from #region Data to the
+        # #endregion that closes it.
+        $dataFrom = [array]::FindIndex($lines, [Predicate[string]] { param($line) $line -match '^#region Data\b' })
+        $dataTo = if ($dataFrom -ge 0) { [array]::FindIndex($lines, $dataFrom, [Predicate[string]] { param($line) $line -match '^#endregion\b' }) } else { -1 }
+        # Newer runners name the preset in the manifest; older ones only in the script.
+        $preset = if ($render.preset) { "$($render.preset)" } else {
+            $match = [regex]::Match($script, 'New-BGInfoTheme\s+(?:-Preset\s+)?(\w+)')
+            if ($match.Success) { $match.Groups[1].Value } else { $null }
+        }
+        $file = Split-Path -Leaf $render.script
+        Set-Content -LiteralPath (Join-Path $scriptTarget "$file.txt") -Value $script -NoNewline -Encoding utf8NoBOM
         $scenarios[$render.scenario] = [ordered]@{
             id          = $render.scenario
             title       = $render.title
             purpose     = $render.purpose
             script      = $render.script
-            file        = Split-Path -Leaf $render.script
+            file        = $file
             url         = "https://github.com/$repository/blob/$commit/$($render.script)"
+            text        = "/powerbginfo/scripts/$file.txt"
             lines       = $lines.Count
-            theme       = if ($preset.Success) { $preset.Groups[1].Value } else { $null }
+            theme       = $preset
             excerptFrom = $start + 1
             excerpt     = ($lines[$start..($lines.Count - 1)] -join "`n") + "`n"
-            data        = if ($data.Success) { $data.Value + "`n" } else { $null }
+            dataFrom    = if ($dataTo -ge 0) { $dataFrom + 1 } else { $null }
+            dataTo      = if ($dataTo -ge 0) { $dataTo + 1 } else { $null }
+            data        = if ($dataTo -ge 0) { ($lines[$dataFrom..$dataTo] -join "`n") + "`n" } else { $null }
             source      = $script
             features    = @($render.chartForgeXFeatures)
             renders     = [ordered]@{}
+            screens     = [ordered]@{}
         }
     }
-    $scenarios[$render.scenario].renders[$render.theme] = $copied
+    $scenario = $scenarios[$render.scenario]
+    if ($size -eq '1920x1080') {
+        $scenario.renders[$render.theme] = $copied
+    } else {
+        if (-not $scenario.screens.Contains($size)) {
+            $scenario.screens[$size] = [ordered]@{ id = $size; width = $render.width; height = $render.height; renders = [ordered]@{} }
+        }
+        $scenario.screens[$size].renders[$render.theme] = $copied
+    }
+}
+foreach ($scenario in $scenarios.Values) {
+    foreach ($mode in 'light', 'dark') {
+        if (-not $scenario.renders.Contains($mode)) { throw "$RenderPath has no 1920x1080 $mode render of '$($scenario.id)'." }
+    }
 }
 
 $featureManifest = Read-Manifest $FeaturePath
@@ -187,4 +225,5 @@ $data = [ordered]@{
 $dataPath = Join-Path $website 'data/powerbginfo-showcase.json'
 Set-Content -LiteralPath $dataPath -Value (($data | ConvertTo-Json -Depth 8).Replace("`r`n", "`n") + "`n") -NoNewline -Encoding utf8NoBOM
 $total = (@(Get-ChildItem -LiteralPath $target -Filter '*.png' -File) + @(Get-ChildItem -LiteralPath $featureTarget -Filter '*.png' -File) | Measure-Object Length -Sum).Sum
-Write-Host "PowerBGInfo $($commit.Substring(0, 7)): $($scenarios.Count) scenarios, $($widgets.Count) widgets, $($themes.Count) themes, $($regions.Count) region sizes, $([math]::Round($total / 1KB)) KB -> $dataPath"
+$screens = @($scenarios.Values | ForEach-Object { $_.screens.Count } | Measure-Object -Sum).Sum
+Write-Host "PowerBGInfo $($commit.Substring(0, 7)): $($scenarios.Count) scenarios ($screens extra screen sizes), $($widgets.Count) widgets, $($themes.Count) themes, $($regions.Count) region sizes, $([math]::Round($total / 1KB)) KB -> $dataPath"
