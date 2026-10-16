@@ -182,6 +182,18 @@ Completion: each new family passes the same source/model/diagnostic/scene/export
 
 Completion: the documented support window is backed by source, artifacts, host workflows and package evidence. Implementation, merge, publication and installed-consumer qualification remain separate gates.
 
+## Visual effects
+
+The [visual effects design](docs/visual-effects.md) is the reference: shared effect definitions, theme tokens, output profiles, kernels, parity rules and phases. Nothing is implemented yet. PowerBGInfo and ImagePlayground currently hand-build glows, glass and blur, and five internal approximations already render differently in SVG and PNG.
+
+- [ ] Phase 0: benchmark an integer triple-box blur at 2560×1440 on net472 and net10, measure browser parity for blur, shadow and two blend modes, check Office, Safari and resvg with one blur each, and close the design's open decisions.
+- [ ] Phases 1–2: add the bounded premultiplied raster layer stack, the effect kernels, the sRGB blend engine and ordered dither; the internal scene layer and backdrop nodes; one `SvgEffectWriter`; and the matching `SvgRaster` primitives. Every existing output must stay byte-identical.
+- [ ] Phase 3: ship the public `ChartForgeX.Effects` presets, `VisualThemeEffects` with JSON round-trip and output profiles. Migrate the card shadow, the canvas glow and depth, and the terminal shadow onto them.
+- [ ] Phases 4–5: add frosted glass, bloom, gradient and tapered strokes, light streaks, grain, turbulence, particles, dot matrix, perspective grid, vignette and `VisualBackdrop`.
+- [ ] Phases 6–7: adopt effects in charts, Mermaid, topology, canvas, stories and `ImageComposition`, then move PowerBGInfo and ImagePlayground onto them.
+
+Completion: every effect has one owner, deterministic native PNG output and declared SVG behaviour per output profile; existing defaults are unchanged; and the integrated HUD-wallpaper acceptance example renders in both outputs within the stated performance budget.
+
 ## Focused extensions
 
 These are later lanes selected by real consumers; they do not block making the current report/chart product coherent.
