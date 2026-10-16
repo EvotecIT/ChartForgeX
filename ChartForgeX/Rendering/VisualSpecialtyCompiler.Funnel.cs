@@ -84,23 +84,54 @@ internal static partial class VisualSpecialtyCompiler {
         var textColor = inside ? ChartColorMath.AccessibleTextOnBackground(color) : colors.Foreground;
         var style = Style(chart, context, index, textColor);
         var bounds = stage.LabelBounds;
+        var metricsBounds = stage.MetricsBounds;
+        var metricsStyle = Style(chart, context, index, colors.MutedForeground);
+        var metrics = (retention.HasValue ? retention.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " retained" : "No initial baseline")
+            + "\n" + (drop.HasValue ? drop.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline");
+        var displayed = text;
         var measured = builder.MeasureText(text, style);
         double Fit(ChartRect box) => Math.Min(box.Width / Math.Max(1, measured.Width), box.Height / Math.Max(1, measured.Height));
-        // Keep very small positive marks truthful; a fitted label can use the adjacent empty space instead.
-        if (Fit(bounds) < .65 && Fit(stage.OutsideLabelBounds) > Fit(bounds)) {
-            bounds = stage.OutsideLabelBounds;
-            inside = false;
-            style = Style(chart, context, index, colors.Foreground);
+        // Try complete outside text before shortening a positive bar's caption. The empty side of a narrow stage
+        // can share one rail with its retention rows; neither caption needs to compete for a separate narrow box.
+        if (inside && Fit(bounds) < 1) {
+            if (Fit(stage.OutsideLabelBounds) >= 1) {
+                bounds = stage.OutsideLabelBounds;
+                inside = false;
+            } else if (chart.Options.Funnel.Orientation == ChartOrientation.Vertical && index > 0) {
+                var outside = new ChartRect(stage.OutsideLabelBounds.Left, bounds.Top,
+                    Math.Max(0, metricsBounds.Right - stage.OutsideLabelBounds.Left), bounds.Height);
+                var metricSize = builder.MeasureText(metrics, metricsStyle);
+                var separation = Math.Min(context.Theme.Spacing / 4, 3);
+                var height = measured.Height + separation + metricSize.Height;
+                if (measured.Width <= outside.Width && metricSize.Width <= outside.Width && height <= outside.Height) {
+                    var top = outside.Top + (outside.Height - height) / 2;
+                    bounds = new ChartRect(outside.Left, top, outside.Width, measured.Height);
+                    metricsBounds = new ChartRect(outside.Left, bounds.Bottom + separation, outside.Width, metricSize.Height);
+                    inside = false;
+                } else {
+                    // A shallow stage may not have three rows for the complete caption and its two ratios.
+                    // Wrap the caption at words and place it beside the complete ratio block at the requested size.
+                    var captionWidth = Math.Max(0, outside.Width - metricSize.Width - separation);
+                    var wrapped = string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
+                        captionWidth, (value, _) => builder.MeasureText(value, style).Width));
+                    var wrappedSize = builder.MeasureText(wrapped, style);
+                    if (wrappedSize.Width <= captionWidth && Math.Max(wrappedSize.Height, metricSize.Height) <= outside.Height) {
+                        bounds = new ChartRect(outside.Left, outside.Top, captionWidth, outside.Height);
+                        metricsBounds = new ChartRect(bounds.Right + separation, outside.Top, metricSize.Width, outside.Height);
+                        displayed = wrapped;
+                        inside = false;
+                    }
+                }
+            }
+            if (!inside) style = Style(chart, context, index, colors.Foreground);
         }
-        StageText(builder, text, bounds, style, "funnel-label", Id(index) + "-label", TextAlignment.Center,
+        StageText(builder, displayed, bounds, style, "funnel-label", Id(index) + "-label", TextAlignment.Center,
             VisualChartPaint.ExplicitDataLabelColor(chart, index) || !inside ? VisualChartPaint.Text(style)
                 : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "funnel");
-        if (index > 0 && stage.MetricsBounds.Width > 0 && stage.MetricsBounds.Height > 0) {
-            var metrics = (retention.HasValue ? retention.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " retained" : "No initial baseline")
-                + "\n" + (drop.HasValue ? drop.Value.ToString("0.#%", CultureInfo.InvariantCulture) + " drop-off" : "No previous baseline");
-            StageText(builder, metrics, stage.MetricsBounds, Style(chart, context, index, colors.MutedForeground),
+        if (index > 0 && metricsBounds.Width > 0 && metricsBounds.Height > 0) {
+            StageText(builder, metrics, metricsBounds, metricsStyle,
                 "funnel-ratio", Id(index) + "-ratio", TextAlignment.Left,
-                VisualChartPaint.Text(Style(chart, context, index, colors.MutedForeground)), "funnel");
+                VisualChartPaint.Text(metricsStyle), "funnel");
         }
     }
 

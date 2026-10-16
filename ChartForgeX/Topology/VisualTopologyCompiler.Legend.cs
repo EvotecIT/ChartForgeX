@@ -10,9 +10,9 @@ internal sealed partial class VisualTopologyCompiler {
         var metadata = new System.Collections.Generic.Dictionary<string, string> {
             ["data-legend-kind"] = item.Kind.ToString().ToLowerInvariant(), ["data-cfx-status"] = item.Status?.ToString() ?? string.Empty
         };
-        if (item.IconId != null) {
-            metadata["data-legend-icon-id"] = item.IconId;
-            var resolved = TopologyRenderPrimitives.ResolveNodeIcon(new TopologyNode { IconId = item.IconId }, _options);
+        if (item.IconId is { } iconId && !string.IsNullOrWhiteSpace(iconId)) {
+            metadata["data-legend-icon-id"] = iconId;
+            var resolved = TopologyRenderPrimitives.ResolveNodeIcon(new TopologyNode { IconId = iconId }, _options);
             if (resolved != null) metadata["data-legend-icon-shape"] = resolved.Shape.ToString();
         }
         using var markerGroup = _builder.PushGroup(null, "topology-legend-item", metadata);
@@ -24,7 +24,7 @@ internal sealed partial class VisualTopologyCompiler {
         var centerX = bounds.X + bounds.Width / 2; var centerY = bounds.Y + bounds.Height / 2;
         if (item.Kind == TopologyLegendItemKind.Node) {
             var node = new TopologyNode { Kind = item.NodeKind ?? TopologyNodeKind.Generic, Symbol = item.Symbol, IconId = item.IconId, Color = item.Color, Status = item.Status ?? TopologyHealthStatus.Unknown };
-            if (_options.RequireResolvedIcons && node.IconId != null && TopologyRenderPrimitives.ResolveNodeIcon(node, _options) == null)
+            if (_options.RequireResolvedIcons && !string.IsNullOrWhiteSpace(node.IconId) && TopologyRenderPrimitives.ResolveNodeIcon(node, _options) == null)
                 throw new System.InvalidOperationException("Unresolved topology legend icon: " + node.IconId);
             _builder.Rect(bounds, Color(item.BackgroundColor, _colors.Surface), color, _context.Theme.AxisStrokeWidth,
                 _context.Theme.BarRadius, "topology-legend-node", paint: new VisualScenePaintBinding(SourcePaint(string.IsNullOrWhiteSpace(item.BackgroundColor) ? _svgTheme?.Card : item.BackgroundColor, Color(item.BackgroundColor, _colors.Surface), string.IsNullOrWhiteSpace(item.BackgroundColor) ? SvgColorRole.Surface : SvgColorRole.Any, fallback: _colors.Surface), colorPaint));

@@ -25,6 +25,7 @@ internal static class TopologyLayoutNormalizer {
     }
 
     private static void ResolveGroupHeaderOverlaps(TopologyChart chart, TopologyRenderOptions options) {
+        if (!TopologyGroupHeader.IsDrawn(options)) return;
         var groups = chart.Groups
             .Where(group => !string.IsNullOrWhiteSpace(group.Id))
             .GroupBy(group => group.Id, StringComparer.Ordinal)
@@ -32,8 +33,9 @@ internal static class TopologyLayoutNormalizer {
 
         foreach (var node in chart.Nodes) {
             if (string.IsNullOrWhiteSpace(node.GroupId) || !groups.TryGetValue(node.GroupId!, out var group)) continue;
-            var header = TopologyGroupHeader.ReservedBounds(group, options, options.TextMeasurement);
-            if (!Intersects(node.X, node.Y, node.Width, node.Height, header.X, header.Y, header.Width, header.Height)) continue;
+            var parts = TopologyGroupHeader.LayoutParts(chart, group, options);
+            if (!parts.Any(part => Intersects(node.X, node.Y, node.Width, node.Height, part.X, part.Y, part.Width, part.Height))) continue;
+            var header = TopologyGroupHeader.ReservedBounds(chart, group, options);
             var safeY = header.Bottom + GroupHeaderBottomGap;
             if (node.Y < safeY) node.Y = safeY;
         }

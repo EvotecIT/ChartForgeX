@@ -8,6 +8,7 @@ namespace ChartForgeX.Topology;
 internal static partial class TopologyDenseRoutePlanner {
     /// <summary>Lane spacings tried from the most to the least comfortable.</summary>
     private static readonly double[] LaneSpacings = { 8, 6, 5, 4, 3, 2.5 };
+    private const int MaximumLaneReorders = 16;
     /// <summary>A run moves at most this far per neighbour it has to make room for.</summary>
     private const double DriftPerNeighbour = 8;
     private const double MaximumDrift = 48;
@@ -116,45 +117,92 @@ internal static partial class TopologyDenseRoutePlanner {
     /// where the search put it; any other run stays where it is unless a neighbour needs the room.
     /// </summary>
     private static void Place(List<Run> runs, List<int>[] neighbours, List<int> members) {
+        var ranks = new int[runs.Count];
+        for (var position = 0; position < members.Count; position++) ranks[members[position]] = position;
         foreach (var spacing in LaneSpacings) {
-            var fits = true;
-            foreach (var index in members) {
-                var run = runs[index];
-                run.Earliest = run.Low;
-                foreach (var other in neighbours[index]) {
-                    if (other < index) run.Earliest = Math.Max(run.Earliest, runs[other].Earliest + spacing);
-                }
-
-                if (run.Earliest > run.High + 0.001) fits = false;
-            }
-
-            if (!fits && spacing > LaneSpacings[LaneSpacings.Length - 1]) continue;
-            for (var position = members.Count - 1; position >= 0; position--) {
-                var index = members[position];
-                var run = runs[index];
-                run.Earliest = Math.Min(run.Earliest, run.High);
-                run.Latest = run.High;
-                foreach (var other in neighbours[index]) {
-                    if (other > index) run.Latest = Math.Min(run.Latest, runs[other].Latest - spacing);
-                }
-
-                run.Latest = Math.Max(run.Latest, run.Earliest);
-            }
-
-            foreach (var index in members) {
-                var run = runs[index];
-                var crowded = false;
-                foreach (var other in neighbours[index]) crowded |= Math.Abs(runs[other].Position - run.Position) < spacing;
-                var wanted = crowded ? (run.Earliest + run.Latest) / 2 : run.Position;
-                foreach (var other in neighbours[index]) {
-                    if (other < index) wanted = Math.Max(wanted, runs[other].Placed + spacing);
-                }
-
-                run.Placed = Math.Min(Math.Max(wanted, run.Earliest), run.Latest);
-            }
-
-            return;
+            if (TryPlace(runs, neighbours, members, ranks, spacing)) return;
         }
+
+        // Change only the predecessor chain that prevents a constrained run from fitting. Sorting the whole
+        // corridor by its upper bounds can put a late lower bound before otherwise fitting neighbours.
+        var constrained = new List<int>(members);
+        var minimumSpacing = LaneSpacings[LaneSpacings.Length - 1];
+        for (var attempt = 0; attempt < MaximumLaneReorders; attempt++) {
+            if (!ReorderCriticalChain(runs, neighbours, constrained, ranks, minimumSpacing)) return;
+            if (TryPlace(runs, neighbours, constrained, ranks, minimumSpacing)) return;
+        }
+    }
+
+    /// <summary>Moves a blocking predecessor after a constrained run that can fit before it.</summary>
+    private static bool ReorderCriticalChain(List<Run> runs, List<int>[] neighbours, List<int> members, int[] ranks, double spacing) {
+        var failed = -1;
+        foreach (var index in members) {
+            if (runs[index].Earliest <= runs[index].High + 0.001) continue;
+            failed = index;
+            break;
+        }
+
+        if (failed < 0) return false;
+        var current = failed;
+        while (true) {
+            var previous = -1;
+            foreach (var other in neighbours[current]) {
+                if (ranks[other] >= ranks[current]) continue;
+                if (previous < 0 || runs[other].Earliest > runs[previous].Earliest) previous = other;
+            }
+
+            if (previous < 0 || runs[previous].Earliest + spacing < runs[current].Earliest - 0.001) return false;
+            // A pinned predecessor can still follow a flexible run. TryPlace checks the complete reordered corridor.
+            if (runs[failed].Low + spacing <= runs[previous].High + 0.001) {
+                members.Remove(previous);
+                members.Insert(members.IndexOf(failed) + 1, previous);
+                for (var position = 0; position < members.Count; position++) ranks[members[position]] = position;
+                return true;
+            }
+
+            current = previous;
+        }
+    }
+
+    /// <summary>Applies one lane order only when every neighbouring pair fits within its movement bounds.</summary>
+    private static bool TryPlace(List<Run> runs, List<int>[] neighbours, List<int> members, int[] ranks, double spacing) {
+        var fits = true;
+        foreach (var index in members) {
+            var run = runs[index];
+            run.Earliest = run.Low;
+            foreach (var other in neighbours[index]) {
+                if (ranks[other] < ranks[index]) run.Earliest = Math.Max(run.Earliest, runs[other].Earliest + spacing);
+            }
+
+            if (run.Earliest > run.High + 0.001) fits = false;
+        }
+
+        if (!fits) return false;
+        for (var position = members.Count - 1; position >= 0; position--) {
+            var index = members[position];
+            var run = runs[index];
+            run.Earliest = Math.Min(run.Earliest, run.High);
+            run.Latest = run.High;
+            foreach (var other in neighbours[index]) {
+                if (ranks[other] > ranks[index]) run.Latest = Math.Min(run.Latest, runs[other].Latest - spacing);
+            }
+
+            run.Latest = Math.Max(run.Latest, run.Earliest);
+        }
+
+        foreach (var index in members) {
+            var run = runs[index];
+            var crowded = false;
+            foreach (var other in neighbours[index]) crowded |= Math.Abs(runs[other].Position - run.Position) < spacing;
+            var wanted = crowded ? (run.Earliest + run.Latest) / 2 : run.Position;
+            foreach (var other in neighbours[index]) {
+                if (ranks[other] < ranks[index]) wanted = Math.Max(wanted, runs[other].Placed + spacing);
+            }
+
+            run.Placed = Math.Min(Math.Max(wanted, run.Earliest), run.Latest);
+        }
+
+        return true;
     }
 
     /// <summary>

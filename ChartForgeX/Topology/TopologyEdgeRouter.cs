@@ -329,8 +329,8 @@ internal static partial class TopologyEdgeRouter {
 
         const double groupPadding = 10;
         foreach (var group in chart.Groups) {
-            var header = GroupHeaderBox(chart, group);
-            if (header.Width > 0 && header.Height > 0) obstacles.Add(header.Expand(groupPadding));
+            foreach (var header in TopologyGroupHeader.LayoutParts(chart, group, chart.RenderOptions ?? new TopologyRenderOptions()))
+                if (header.Width > 0 && header.Height > 0) obstacles.Add(new RouteBox(header.Left, header.Top, header.Right, header.Bottom).Expand(groupPadding));
         }
 
         if (!includeLabels) return obstacles;
@@ -454,16 +454,6 @@ internal static partial class TopologyEdgeRouter {
     }
 
     private static string RouteKey(IReadOnlyList<ChartPoint> points) => string.Join(";", points.Select(point => F(point.X) + "," + F(point.Y)));
-
-    /// <summary>
-    /// All obstacle-aware routes use the same header block as SVG, PNG, normalization, and diagnostics.
-    /// </summary>
-    private static RouteBox GroupHeaderBox(TopologyChart chart, TopologyGroup group) {
-        var options = chart.RenderOptions ?? new TopologyRenderOptions();
-        if (!TopologyGroupHeader.IsDrawn(options)) return new RouteBox(0, 0, 0, 0);
-        var bounds = TopologyGroupHeader.Bounds(group, options, chart.TextMeasurement);
-        return new RouteBox(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
-    }
 
     private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port) {
         if (node.Shape.HasValue) return TopologyNodeShapeGeometry.BoundaryPoint(node, towardX, towardY, port, 7);

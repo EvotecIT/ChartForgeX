@@ -1,12 +1,18 @@
-# ChartForgeX v2 consumer migration
+# ChartForgeX consumer migration
 
 This guide records the breaking-release target and the observed consumer contracts. Charts, grids, topology, flow and sequence diagrams use the shared native scene. Optional package extraction and actual consumer upgrades have their own qualification gates. The [capability ledger](consumer-capabilities.csv) maps inspected calls to their destination, migration recipe and acceptance fixture. Its `owner_implementation` and `owner_evidence` columns distinguish available source and owner fixtures from downstream qualification. A row with `status=planned` still requires consumer migration or qualification; an implemented owner path does not close that gate. The ledger covers observed consumer capabilities, not every exported member of ChartForgeX.
 
 Qualify consumer candidates from their intended branches. A primary checkout, remote source, local project reference and installed NuGet package are different evidence boundaries; source migration alone does not establish an installed consumer or a public release.
 
+The unified authoring API uses the coordinated 3.0.0 package family. Upgrade the ChartForgeX packages used by a consumer together, then migrate the calls below. The earlier 2.0.0 packages introduced the separate Visuals and Stories assemblies; they do not contain the later theme, observation and series-identity changes.
+
 ## Unified authoring contracts
 
 Use the same immutable `VisualTheme` and explicit `VisualThemeMode` for every visual model. Replace `ChartTheme` and `TopologyTheme` with paired presets such as `VisualTheme.Graphite()` or `VisualTheme.Report()`, then select `Dark` through `WithTheme(theme, VisualThemeMode.Dark)` or `ThemeMode`. Replace mutable theme and brand-kit edits with `theme.Configure(builder => ...)`; assign the returned snapshot. Palette colors live in `builder.Light` and `builder.Dark`, typography in `builder.Typography`, and geometry/effects in their named builder properties. Local canvas/story/window controls live in their owning style options.
+
+Replace independent `VisualCanvasTheme` text paints with `canvas.ConfigureStyle(...)`: `TileLabelColor`, `TileValueColor`, `TileDetailColor` and `HeroBadgeTextColor` preserve independent authored roles. A null override inherits the selected shared theme; changing the canvas mode does not discard an explicit color. Title and other positioned text keep their existing text-layer color options.
+
+Wrap mixed chart/factual grids with `grid.ToVisualArtifact(id)` from `ChartForgeX.VisualArtifacts` in the Visuals package. It measures the natural logical size through the native grid layout without rendering child visuals. Remove consumer helpers that parse SVG dimensions or rasterize a grid to discover its size. The envelope borrows the mutable grid; create a fresh envelope after changing its layout or headings.
 
 Replace full-theme `FromThemeJson`/`ToThemeJson` with `FromJson`/`ToJson`. The former generated-color `FromJson` importer is `FromPaletteJson`. Version-1 full themes remain readable; independent plot border/radius, axis-title size and monospace family have explicit backward defaults. Shared effects apply to both modes. The Report preset uses shadow opacity 0.10 in both modes. Grids use their own theme and mode instead of inheriting the first child implicitly. Add `WithPanelThemes()` when independently authored panel themes must remain visible, such as preset comparisons. Each child then retains its mode, typography, native font request and SVG color mappings; the grid context's theme and font style the outer frame. See [theme ownership](api-conventions.md#one-theme-and-an-explicit-mode) for context precedence and pagination.
 

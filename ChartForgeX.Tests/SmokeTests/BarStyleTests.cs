@@ -98,7 +98,7 @@ internal static partial class SmokeTests {
             .WithSize(640, 360)
             .WithStackedHorizontalBars()
             .WithBarStyle(ChartBarStyle.SegmentedCapsule)
-            .WithHighlightedXAxisLabel(50, ChartColor.FromHex("#E11D48"))
+            .WithHighlightedXAxisLabel(40, ChartColor.FromHex("#E11D48"))
             .WithXLabels("Alpha", "Beta")
             .AddHorizontalBar("Done", Points(32, 45), ChartColor.FromHex("#22C55E"))
             .AddHorizontalBar("Open", Points(18, 22), ChartColor.FromHex("#8B5CF6"))

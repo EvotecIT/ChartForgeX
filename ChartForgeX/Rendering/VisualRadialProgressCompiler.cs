@@ -9,7 +9,7 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Compiles concentric progress rings and independently scaled radial layers.</summary>
-internal static class VisualRadialProgressCompiler {
+internal static partial class VisualRadialProgressCompiler {
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         var series = chart.Series[0];
         if (series.Kind == ChartSeriesKind.LayeredRadial && series.RadialLayers.Any(layer => layer == null))
@@ -47,8 +47,7 @@ internal static class VisualRadialProgressCompiler {
         var style = VisualRadialPrimitives.Style(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, 700);
         var captionStyle = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize);
         var requested = series.ShowDataLabels != false && chart.Options.ShowProgressRingCenterLabel
-            ? Math.Max(Math.Max(builder.MeasureText(value, style).Width, builder.MeasureText(series.Name, captionStyle).Width) / 2,
-                (builder.MeasureText(value, style).Height + builder.MeasureText(series.Name, captionStyle).Height) / 2) + context.Theme.Spacing : 0;
+            ? RequestedCenterRadius(builder, context, value, series.Name, style, captionStyle) : 0;
         var layout = ProgressRingLayout.Create(outer, series.RenderPoints.Count, chart.Options.RadialProgressStrokeScale, requested);
         for (var index = 0; index < series.RenderPoints.Count; index++) {
             var point = series.RenderPoints[index]; var label = VisualRadialPrimitives.Label(chart, point, index);
@@ -109,27 +108,6 @@ internal static class VisualRadialProgressCompiler {
             Center(builder, context, cx, cy, centerRadius, centerValue!, series.Name,
                 CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, centerRadius, 700),
                 CenterStyle(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize, centerRadius), "layered-radial");
-        }
-    }
-
-    private static ChartForgeX.Typography.TextStyle CenterStyle(Chart chart, VisualRenderContext context, ChartColor color, double size, double radius, int weight = 400) =>
-        VisualRadialPrimitives.Style(chart, context, color, Math.Min(size, Math.Max(.1, radius * .7 / 1.3)), weight);
-
-    private static void Center(VisualSceneBuilder builder, VisualRenderContext context, double cx, double cy, double radius, string value, string caption,
-        ChartForgeX.Typography.TextStyle valueStyle, ChartForgeX.Typography.TextStyle captionStyle, string role) {
-        var availableHeight = Math.Max(0, radius * 1.6);
-        var gap = Math.Min(context.Theme.Spacing / 3, radius * .1);
-        var captionHeight = Math.Min(builder.MeasureText(caption, captionStyle).Height, availableHeight * .45);
-        var valueHeight = Math.Min(builder.MeasureText(value, valueStyle).Height, Math.Max(0, availableHeight - captionHeight - gap));
-        var top = cy - (valueHeight + gap + captionHeight) / 2;
-        Draw(value, top, valueHeight, valueStyle, role + "-value", "series-0-center-value");
-        Draw(caption, top + valueHeight + gap, captionHeight, captionStyle, role + "-title", "series-0-center-caption");
-
-        void Draw(string text, double y, double height, ChartForgeX.Typography.TextStyle style, string textRole, string id) {
-            // The row's outermost corners must stay within the actual circular hole.
-            var offset = Math.Max(Math.Abs(y - cy), Math.Abs(y + height - cy));
-            var width = Math.Min(radius * 1.6, 2 * Math.Sqrt(Math.Max(0, radius * radius - offset * offset)));
-            VisualRadialPrimitives.Text(builder, text, new ChartRect(cx - width / 2, y, width, height), style, textRole, id);
         }
     }
 

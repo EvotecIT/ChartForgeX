@@ -38,7 +38,7 @@ public sealed class HeatmapColumnLabelTests {
         var legendTop = ByRole(svg, "state-legend-swatch").Min(swatch => Number(swatch, "y"));
         Assert.All(ColumnGeometry(prepared), label => Assert.All(label.Corners,
             corner => Assert.True(corner.Y <= legendTop + 1, "Rotated labels must not run into the legend.")));
-        Assert.NotEqual(MatrixWithPinnedFont().ToPng(), chart.ToPng());
+        Assert.NotEqual(MatrixWithPinnedFont().WithXAxisLabelAngle(45).ToPng(), chart.ToPng());
     }
 
     [Theory]
@@ -52,7 +52,7 @@ public sealed class HeatmapColumnLabelTests {
         Assert.Equal(Checks, labels.Select(label => label.Value).ToArray());
         Assert.All(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-column-label"),
             node => Assert.Equal(angle < 0 ? TextAlignment.Right : TextAlignment.Left, node.Alignment));
-        Assert.NotEqual(MatrixWithPinnedFont().ToPng(), chart.ToPng());
+        Assert.NotEqual(MatrixWithPinnedFont().WithXAxisLabelAngle(-angle).ToPng(), chart.ToPng());
     }
 
     [Theory]
@@ -122,11 +122,38 @@ public sealed class HeatmapColumnLabelTests {
     }
 
     [Fact]
-    public void ToSvg_UnrotatedColumnLabels_StillShrinkToTheirColumn() {
-        var svg = XDocument.Parse(Matrix().ToSvg());
+    public void ToSvg_DefaultColumnLabels_ChooseReadableMeasuredRotationBeforeShortening() {
+        var chart = MatrixWithPinnedFont();
+        var svg = XDocument.Parse(chart.ToSvg());
         var labels = ByRole(svg, "heatmap-column-label");
-        Assert.All(labels, label => Assert.Null(label.RenderedAttribute("transform")));
-        Assert.Contains(labels, label => Number(label, "font-size") < 12 || label.Value.EndsWith("…", StringComparison.Ordinal) || label.Value.EndsWith("...", StringComparison.Ordinal));
+        Assert.Equal(Checks, labels.Select(label => label.Value));
+        Assert.All(labels, label => {
+            Assert.StartsWith("rotate(-45 ", (string?)label.RenderedAttribute("transform"), StringComparison.Ordinal);
+            Assert.Equal(chart.Options.Theme.Typography.AxisSize, Number(label, "font-size"));
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExplicitZeroAngleSurvivesConfigurationAndPreparationAndCanReturnToAutomatic(bool configure) {
+        var chart = MatrixWithPinnedFont();
+        if (configure) chart.ConfigureXAxis(axis => axis.LabelAngle = 0);
+        else chart.WithXAxisLabelAngle(0);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, "matrix-explicit-zero-" + configure);
+        var fixedSvg = prepared.ToSvg();
+        var flat = ByRole(XDocument.Parse(fixedSvg), "heatmap-column-label");
+        Assert.NotEmpty(flat);
+        Assert.All(flat, label => Assert.DoesNotContain("rotate(", (string?)label.RenderedAttribute("transform") ?? string.Empty, StringComparison.Ordinal));
+        Assert.Equal(Checks, prepared.Regions.Where(region => region.Role == "heatmap-column-label").Select(region => region.Label));
+        Assert.NotEmpty(prepared.ToPng());
+        chart.ConfigureXAxis(axis => axis.WithAutomaticLabelAngle());
+        var automatic = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-column-label");
+        Assert.Equal(Checks, automatic.Select(label => label.Value));
+        Assert.All(automatic, label => Assert.StartsWith("rotate(-45 ", (string?)label.RenderedAttribute("transform"), StringComparison.Ordinal));
+        Assert.Equal(fixedSvg, prepared.ToSvg());
+        Assert.Equal(0, chart.Options.XAxis.LabelAngle);
     }
 
     [Fact]

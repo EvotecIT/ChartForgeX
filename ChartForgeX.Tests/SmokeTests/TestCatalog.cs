@@ -276,7 +276,7 @@ internal static partial class SmokeTests {
         ("Formatted numeric x-axis ticks thin when crowded", FormattedNumericXAxisTicksThinWhenCrowded),
         ("Numeric y-axis ticks thin when crowded", NumericYAxisTicksThinWhenCrowded),
         ("Horizontal category labels wrap in SVG", HorizontalCategoryLabelsWrapInSvg),
-        ("Edge x-axis labels stay inside the plot", EdgeXAxisLabelsStayInsidePlot),
+        ("Edge x-axis labels use reserved frame padding", EdgeXAxisLabelsUseReservedFramePadding),
         ("X-axis labels can be rotated", XAxisLabelsCanBeRotated),
         ("Large SVG values use compact units", LargeSvgValuesUseCompactUnits),
         ("Default numeric compact formatter is shared", DefaultNumericCompactFormatterIsShared),

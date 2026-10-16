@@ -57,6 +57,17 @@ internal sealed class VisualLegendEntry {
 
 /// <summary>Measures and paints one common frame before any family lays out its marks.</summary>
 internal static class VisualFrameLayout {
+    /// <summary>Paints existing legend identities after family surfaces inside an owner-measured empty slot.</summary>
+    internal static void PaintOverlayLegend(VisualSceneBuilder builder, VisualRenderContext context,
+        IReadOnlyList<VisualLegendEntry> entries, ChartRect bounds) {
+        var size = context.Layout.Size;
+        var layout = new VisualLayoutOptions(size, new ChartPadding(bounds.Left, bounds.Top, size.Width - bounds.Right, size.Height - bounds.Bottom));
+        var frame = new VisualFrame("", "", showLegend: true, legendPosition: ChartLegendPosition.TopLeft,
+            transparentBackground: true, legendStyle: context.Frame.LegendStyle,
+            legendMaximumRows: context.Frame.LegendMaximumRows, legendMaximumHeightFraction: 1);
+        Build(builder, new VisualRenderContext(layout, context.Theme, context.ThemeMode, frame, context.Font), entries);
+    }
+
     internal static ChartRect Build(VisualSceneBuilder builder, VisualRenderContext context, IReadOnlyList<VisualLegendEntry> entries, VisualFramePaints? paints = null) {
         return Build(builder, context, entries, out _, paints);
     }
@@ -294,6 +305,12 @@ internal static class VisualFrameLayout {
 
         void Header(string? text, TextStyle style, SvgPaint? paint) {
             if (string.IsNullOrEmpty(text)) return;
+            // Keep the authored request separate from the face-dependent fitted paint size.
+            using var fontRequest = builder.PushGroup(null, "frame-heading-source", new Dictionary<string, string> {
+                ["data-cfx-authored-font-request"] = string.Join("|", style.Font.Family,
+                    style.Font.Weight.ToString(CultureInfo.InvariantCulture), style.Font.Italic ? "italic" : "normal",
+                    style.EffectiveFontSize.ToString("R", CultureInfo.InvariantCulture), style.Font.Variations.Key)
+            });
             var scale = (OversizedHeading(style) ? headingWidthScale : 1) * headingScale;
             if (scale < 1) { style = style.Clone(); style.FontSize *= scale; }
             var fontSize = style.EffectiveFontSize;

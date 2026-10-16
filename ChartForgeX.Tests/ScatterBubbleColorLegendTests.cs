@@ -158,8 +158,9 @@ public sealed class ScatterBubbleColorLegendTests {
         var chart = V2GalleryModels.Create(kind, "compact-color-scale", VisualThemeMode.Light);
         var subtitle = kind == ChartSeriesKind.Scatter ? "Temperature has its own fixed color domain; processing time stays independent"
             : "Size shows requests; named color bands show temperature";
-        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(),
-            frame: new VisualFrame(V2GalleryModels.Title(kind), subtitle), font: FontSpec.FromFamily(family)));
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(),
+            frame: new VisualFrame(V2GalleryModels.Title(kind), subtitle), font: FontSpec.FromFamily(family));
+        var prepared = chart.Prepare(context);
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "color-scale-0-swatch").ToArray();
         Assert.All(swatches, swatch => Assert.Equal(12, swatch.Bounds.Height));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "cartesian.color-scale-overflow" or "cartesian.axis-title-overflow");
@@ -170,7 +171,17 @@ public sealed class ScatterBubbleColorLegendTests {
         });
         var y = prepared.Scene.Nodes.OfType<VisualSceneLine>().Single(node => node.Role == "axis-y");
         Assert.True(Math.Abs(y.End.Y - y.Start.Y) >= 60);
-        Assert.True(prepared.Scene.Nodes.Count(node => node.Role == "axis-y-label") >= 3);
+        var valueLabels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-y-label").ToArray();
+        Assert.True(valueLabels.Length >= 2);
+        Assert.All(valueLabels, label => {
+            Assert.Equal(context.Theme.Typography.AxisSize, label.Text.Size);
+            var text = string.Join("\n", label.Text.Lines.Select(line => line.Text));
+            Assert.DoesNotContain("…", text, StringComparison.Ordinal);
+            var source = Assert.Single(prepared.Regions, region => region.Role == "axis-y-label" && region.Label!.StartsWith(text + " (", StringComparison.Ordinal));
+            var center = label.Baseline - label.Text.Ascent + label.Text.Metrics.Height / 2;
+            Assert.InRange(Math.Abs(center - source.Bounds.Top), 0, .5);
+            Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "grid-y" && Math.Abs(line.Start.Y - source.Bounds.Top) < .0001);
+        });
         var document = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(kind == ChartSeriesKind.Scatter ? "-15" : null, (string?)Role(document, "color-scale-0").Single().Attribute("data-cfx-min-value"));
         if (kind == ChartSeriesKind.Scatter) {

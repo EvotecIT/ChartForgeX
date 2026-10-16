@@ -3,6 +3,7 @@ using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using Microsoft.Playwright;
 using Xunit;
@@ -26,9 +27,10 @@ public sealed class MermaidAxisTypographyBoundsTests {
             .WithXAxis("Count").WithYAxis("Month").WithXAxisBounds(0, 100)
             .AddHorizontalBar("Values", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50), new ChartPoint(3, 80) })
             : MermaidVerticalChart(width, dark);
-        var svg = chart.ToSvg();
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = prepared.ToSvg();
         var document = XDocument.Parse(svg);
-        var png = chart.ToPng();
+        var png = prepared.ToPng();
         Assert.NotEmpty(png);
         var evidence = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(evidence)) {
@@ -40,6 +42,20 @@ public sealed class MermaidAxisTypographyBoundsTests {
         var labels = document.Descendants().Where(element => element.Name.LocalName == "text"
             && ((string?)element.Parent?.Attribute("data-cfx-role")) is "axis-x-label" or "axis-y-label").ToArray();
         foreach (var caption in new[] { "Jan", "Feb", "Mar", "0", "100" }) Assert.Contains(caption, labels.Select(item => item.Value));
+        var numericRole = horizontal ? "axis-x-label" : "axis-y-label";
+        var numericLabels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(label => label.Role == numericRole).ToArray();
+        var numericAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
+        Assert.InRange(numericLabels.Length, 2, numericAxis.TickCount);
+        var values = numericLabels.Select(label => double.Parse(label.Text.Lines.Single().Text, CultureInfo.InvariantCulture)).ToArray();
+        for (var index = 2; index < values.Length; index++) Assert.Equal(values[1] - values[0], values[index] - values[index - 1], 7);
+        Assert.All(numericLabels, label => {
+            Assert.InRange(label.Text.Size, 10, 256);
+            var text = label.Text.Lines.Single().Text;
+            var source = Assert.Single(prepared.Regions, region => region.Role == numericRole && region.Label!.StartsWith(text + " (", StringComparison.Ordinal));
+            var center = horizontal ? label.X + label.Text.Metrics.Width / 2 : label.Baseline - label.Text.Ascent + label.Text.Metrics.Height / 2;
+            var tick = horizontal ? source.Bounds.Left : source.Bounds.Top;
+            Assert.InRange(Math.Abs(center - tick), 0, .5);
+        });
         foreach (var caption in new[] { "Month", "Count" }) Assert.Contains(document.Descendants(), item => item.Name.LocalName == "text" && item.Value == caption);
         Assert.Equal(256, chart.Options.Theme.Typography.DataLabelSize);
         if (!InteractiveChartBrowser.Enabled) return;

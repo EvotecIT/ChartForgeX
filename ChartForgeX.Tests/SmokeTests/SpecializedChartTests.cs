@@ -251,7 +251,8 @@ internal static partial class SmokeTests {
                 new ChartParetoItem("Critical", 50),
                 new ChartParetoItem("Low", 20)
             }, ChartColor.FromRgb(37, 99, 235), ChartColor.FromRgb(245, 158, 11));
-        var svg = chart.ToSvg();
+        var prepared = PreparedFamily(chart);
+        var svg = prepared.ToSvg();
         Assert(chart.Series.Count == 2, "Pareto charts should add contribution bars and a cumulative line.");
         Assert(chart.Series[0].Kind == ChartSeriesKind.Bar, "Pareto contribution values should render as bars.");
         Assert(chart.Series[1].Kind == ChartSeriesKind.Line, "Pareto cumulative values should render as a line.");
@@ -259,7 +260,8 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(chart.Series[0].Points[0].Y - 50) < 0.001, "Pareto contribution bars should use percentage share.");
         Assert(Math.Abs(chart.Series[1].Points[2].Y - 100) < 0.001, "Pareto cumulative line should end at one hundred percent.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 3, "Pareto charts should render one bar per item.");
-        Assert(CountOccurrences(svg, ">50%</text>") == 1, "Pareto charts should avoid duplicate first-point bar and cumulative labels.");
+        Assert(FamilyLabels(prepared, "data-label").Count(label => string.Join("", label.Text.Lines.Select(line => line.Text)) == "50%") == 1,
+            "Pareto charts should avoid duplicate first-point bar and cumulative data labels.");
         Assert(svg.Contains(">100%</text>", StringComparison.Ordinal), "Pareto data labels should include cumulative percentages.");
         Assert(svg.Contains(">Cumulative Findings</text>", StringComparison.Ordinal), "Pareto charts should render the cumulative series legend.");
         Assert(chart.ToPng().Length > 64, "Pareto charts should render PNG output.");
@@ -477,7 +479,7 @@ internal static partial class SmokeTests {
             .AddHeatmapRow(longLabel, Points(96))
             .ToSvg();
         Assert(heatmap.Contains("data-cfx-role=\"heatmap-row-label\"", StringComparison.Ordinal), "Heatmaps should mark fitted row labels.");
-        Assert(heatmap.Contains("...</text>", StringComparison.Ordinal), "Heatmap row, column, and cell labels should shorten inside constrained regions.");
+        Assert(heatmap.Contains("…</text>", StringComparison.Ordinal), "Heatmap row, column, and cell labels should shorten inside constrained regions.");
 
         var timeline = Chart.Create()
             .WithSize(320, 220)
@@ -485,7 +487,7 @@ internal static partial class SmokeTests {
             .AddTimelineItem(longLabel, new DateTime(2026, 1, 1), new DateTime(2026, 1, 15))
             .ToSvg();
         Assert(timeline.Contains("data-cfx-role=\"schedule-row-label\"", StringComparison.Ordinal), "Timelines should use the shared fitted schedule row labels.");
-        Assert(timeline.Contains("...</text>", StringComparison.Ordinal), "Timeline row and tick labels should shorten when their reserved regions are constrained.");
+        Assert(timeline.Contains("…</text>", StringComparison.Ordinal), "Timeline row labels should shorten when their reserved regions are constrained.");
     }
 
     private static void WaterfallSeriesRenderCumulativeChangeBars() {

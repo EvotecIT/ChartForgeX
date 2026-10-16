@@ -440,8 +440,11 @@ internal static partial class SmokeTests {
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var label = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "data-label");
-        chart.WithDataLabels(false);
-        var plain = ReadPngRgba(chart.ToPng(), out _, out _);
+        // Layout reserves space for visible captions. Isolate their ink without changing
+        // that measured projection by removing only their paint from the detached scene.
+        var scene = prepared.Scene;
+        var control = new VisualScene(scene.Size, scene.Nodes.Where(node => node.Role != "data-label").ToArray(), scene.Diagnostics, scene.Regions);
+        var plain = VisualSceneRasterRenderer.Render(control).Pixels;
         var labelPixels = 0;
         var rightEdgeLabelPixels = 0;
         var measured = label.Text.Metrics;

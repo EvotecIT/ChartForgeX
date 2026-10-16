@@ -206,7 +206,18 @@ public sealed class ChartXViewportTests {
         };
         var prepared = chart.Prepare(Context(), new ChartXViewport(2, 6));
         Assert.NotEmpty(calls); Assert.All(calls.Values, count => Assert.Equal(1, count));
-        Assert.All(prepared.Regions.Where(region => region.Role == "axis-x-label"), region => Assert.StartsWith("X ", region.Label!));
+        // Full-domain layout can probe the callback outside this window, but its
+        // measurement facts must not become captions of the final viewport.
+        Assert.Contains(calls.Keys, value => value < 2 || value > 6);
+        var projection = prepared.XProjection!;
+        Assert.All(prepared.Regions.Where(region => region.Role == "axis-x-label"), region => {
+            Assert.StartsWith("X ", region.Label!);
+            Assert.InRange(region.Bounds.Left, projection.PlotBounds.Left, projection.PlotBounds.Right);
+            var split = region.Label!.LastIndexOf(" (", StringComparison.Ordinal);
+            var value = double.Parse(region.Label[(split + 2)..^1], System.Globalization.CultureInfo.InvariantCulture);
+            Assert.InRange(value, 2, 6);
+            Assert.Equal(projection.Project(value), region.Bounds.Left, 9);
+        });
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "axis-x-label");
     }
 

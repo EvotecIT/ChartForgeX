@@ -3,6 +3,7 @@ using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 using Microsoft.Playwright;
@@ -66,11 +67,28 @@ public sealed class MermaidGanttAxisFormatTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var document = new MermaidParser().ParseGantt("gantt\naxisFormat %a %d %b\nFirst :first, 2026-01-04, 4d").Document!;
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .ConfigureGridStyle(style => style.ShowVerticalLines = true);
+        var source = chart.Series[0].GanttItems[0];
+        Assert.Equal("Sun 04 Jan", chart.Options.XAxisValueFormatter!(source.Start));
+        Assert.Equal("Thu 08 Jan", chart.Options.XAxisValueFormatter!(source.End));
+        Assert.Equal(new DateTime(2026, 1, 4).ToOADate(), source.Start);
+        Assert.Equal(new DateTime(2026, 1, 8).ToOADate(), source.End);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var nativeLabels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "schedule-tick-label").ToArray();
+        var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid").ToArray();
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);
         var labels = await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync();
-        Assert.Contains("Sun 04 Jan", labels);
-        Assert.Contains("Thu 08 Jan", labels);
+        Assert.Equal(nativeLabels.Select(text => text.Text.Lines.Single().Text), labels);
+        Assert.InRange(labels.Count, 2, chart.Options.XAxis.TickCount);
+        Assert.Equal(grid.Length, labels.Count);
+        var dates = labels.Select(label => DateTime.ParseExact(label + " 2026", "ddd dd MMM yyyy", CultureInfo.InvariantCulture)).ToArray();
+        for (var index = 0; index < dates.Length; index++) {
+            Assert.InRange(dates[index], new DateTime(2026, 1, 4), new DateTime(2026, 1, 8));
+            Assert.Equal(grid[index].Start.X, nativeLabels[index].X, 7);
+            if (index > 1) Assert.Equal(dates[1] - dates[0], dates[index] - dates[index - 1]);
+        }
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "schedule.axis-label-overflow");
         Assert.Equal(0, await session.Page.Locator("script").CountAsync());
         Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
@@ -78,7 +96,7 @@ public sealed class MermaidGanttAxisFormatTests {
         if (!string.IsNullOrWhiteSpace(captures)) {
             var name = "gantt-axis-" + (dark ? "dark-" : "light-") + width;
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + ".png"), FullPage = true });
-            File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), chart.ToPng());
+            File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), prepared.ToPng());
         }
     }
 }
