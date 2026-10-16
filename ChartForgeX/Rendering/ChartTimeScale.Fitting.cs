@@ -15,6 +15,7 @@ internal static partial class ChartTimeScale {
         var interval = FittingStartInterval(axis, min, max, limit, minimumStepDays);
         IReadOnlyList<double>? sparse = null;
         IReadOnlyList<double>? compactFit = null;
+        IReadOnlyList<double>? cadenceFit = null;
         if (regularObservations != null && FitObservationCadence(regularObservations, axis, min, max, limit, fits, false) is { Count: > 1 } cadenceTicks)
             return cadenceTicks;
         for (var attempt = 0; attempt < 64; attempt++) {
@@ -25,6 +26,7 @@ internal static partial class ChartTimeScale {
                 if (regularObservations == null) return null;
                 interval = ChooseInterval(interval.ApproximateDays * 1.01); continue;
             }
+            var intervalTicks = ticks;
             if (selectTicks != null) ticks = selectTicks(ticks);
             if (ticks.Count > 0 && ticks.Count <= limit) {
                 if (fits(ticks)) {
@@ -33,6 +35,11 @@ internal static partial class ChartTimeScale {
                 }
                 if (compactFit == null && ticks.Count > 1 && allowCompactDates && interval.Unit >= TimeUnit.Day
                     && TryCompactDates(ticks, axis, min, max) is { } compact && fits(compact)) compactFit = compact;
+                // A periodic formatter can alias every coarser calendar boundary
+                // after its last useful interval becomes too crowded. Preserve a
+                // measured regular stride of real boundaries before accepting one caption.
+                if (cadenceFit == null && intervalTicks.Count > 2)
+                    cadenceFit = FitCalendarStride(intervalTicks, limit, fits, selectTicks);
                 // A coarse authored formatter may not distinguish this interval.
                 // Preserve a real accepted caption, never the rejected sequence.
                 if (sparse == null) {
@@ -49,7 +56,19 @@ internal static partial class ChartTimeScale {
             return FitObservationCadence(regularObservations, axis, min, max, limit, fits, allowCompactDates)
                 ?? GenerateFitting(axis, min, max, fits, allowCompactDates, minimumStepDays: minimumStepDays,
                     automaticTickCount: automaticTickCount, selectTicks: selectTicks);
-        return compactFit ?? sparse;
+        return compactFit ?? cadenceFit ?? sparse;
+    }
+
+    /// <summary>Retains a measured stride of real calendar boundaries when all ordinary coarser choices lose caption precision.</summary>
+    private static IReadOnlyList<double>? FitCalendarStride(IReadOnlyList<double> ticks, int limit,
+        Func<IReadOnlyList<double>, bool> fits, Func<IReadOnlyList<double>, IReadOnlyList<double>>? selectTicks) {
+        for (var stride = 2; stride < ticks.Count; stride++) {
+            var values = new List<double>();
+            for (var index = 0; index < ticks.Count; index += stride) values.Add(ticks[index]);
+            IReadOnlyList<double> selected = selectTicks != null ? selectTicks(values) : values;
+            if (selected.Count > 1 && selected.Count <= limit && fits(selected)) return selected;
+        }
+        return null;
     }
 
     /// <summary>Uses a comfortable default pitch while keeping an authored count as a ceiling and dense labels opt-in.</summary>

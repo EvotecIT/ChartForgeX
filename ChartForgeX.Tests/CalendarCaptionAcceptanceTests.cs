@@ -73,6 +73,43 @@ public sealed class CalendarCaptionAcceptanceTests {
     }
 
     [Theory]
+    [InlineData(ChartSeriesKind.StateTimeline)]
+    [InlineData(ChartSeriesKind.Line)]
+    public void SharedCalendarFallbackKeepsMeasuredClockCadenceWhenCoarserBoundariesRepeat(ChartSeriesKind kind) {
+        var start = new DateTime(2026, 1, 1);
+        var finish = start.AddDays(7);
+        var chart = Base().ConfigureTickLabelStyle(style => style.WithFontSize(18))
+            .ConfigureXAxis(axis => {
+                axis.WithBounds(start.ToOADate(), finish.ToOADate());
+                axis.LabelDensity = ChartLabelDensity.Dense;
+                axis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture));
+            });
+        if (kind == ChartSeriesKind.StateTimeline) chart.AddStateTimelineLane("Window", new[] { new ChartStateTimelineSegment(start, finish, "up") });
+        else chart.AddLine("Window", new[] { new ChartPoint(start, 10), new ChartPoint(finish, 20) });
+        var prepared = Prepare(chart);
+        var captions = Captions(prepared);
+        Assert.True(captions.Length > 1, "A wider clock caption must not collapse the shared calendar scale to one midnight label.");
+        Assert.Contains(captions, caption => caption.Text.Lines.Single().Text != "00:00");
+        var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == (kind == ChartSeriesKind.Line ? "grid-x" : "schedule-grid")).ToArray();
+        Assert.Equal(captions.Length, grid.Length);
+        for (var index = 0; index < captions.Length; index++) {
+            var caption = captions[index];
+            var text = caption.Text.Lines.Single().Text;
+            Assert.Matches("^[0-2][0-9]:[0-5][0-9]$", text);
+            Assert.Equal(18, caption.Text.Style.EffectiveFontSize);
+            var center = caption.Text.Lines.Min(caption.LineLeft) + caption.Text.Metrics.Width / 2;
+            Assert.InRange(Math.Abs(center - grid[index].Start.X), 0, .5);
+            if (index == 0) continue;
+            Assert.NotEqual(captions[index - 1].Text.Lines.Single().Text, text);
+            var previous = captions[index - 1];
+            Assert.True(caption.Text.Lines.Min(caption.LineLeft) + .01 >= previous.Text.Lines.Min(previous.LineLeft) + previous.Text.Metrics.Width);
+        }
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "schedule.axis-label-overflow" or "cartesian.axis-label-overflow" or "text.overflow");
+        ScatterBubbleColorRenderingTests.Capture(prepared, "accepted-clock-cadence-" + kind);
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void AuthoredFixedIntervalsAndAllDensityKeepIntentionalRepeatedMonthCaptions(bool fixedInterval) {
