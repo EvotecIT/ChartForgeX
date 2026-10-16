@@ -44,6 +44,7 @@
     {
       "task": "overlay",
       "id": "playground-engine-overlay",
+      "dependsOn": ["build-site", "playground-engine-publish"],
       "source": "./_temp/playground-engine/wwwroot",
       "destination": "./_site/playground/engine",
       "include": "_framework/**",

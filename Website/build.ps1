@@ -122,6 +122,43 @@ function Resolve-PowerForgeRoot {
     return $null
 }
 
+function Get-PowerForgeCliArtifacts {
+    param(
+        [Parameter(Mandatory)]
+        [string]$CliRoot,
+        [Parameter(Mandatory)]
+        [string[]]$TargetFrameworks
+    )
+
+    $artifacts = [ordered]@{
+        ReleaseExe = $null
+        ReleaseAppHost = $null
+        ReleaseDll = $null
+        DebugExe = $null
+        DebugAppHost = $null
+        DebugDll = $null
+    }
+    foreach ($tfm in $TargetFrameworks) {
+        foreach ($configuration in @('Release', 'Debug')) {
+            $frameworkPath = Join-Path (Join-Path (Join-Path $CliRoot 'bin') $configuration) $tfm
+            $candidateTypes = @(
+                @{ Suffix = '.exe'; Property = "${configuration}Exe" },
+                @{ Suffix = ''; Property = "${configuration}AppHost" },
+                @{ Suffix = '.dll'; Property = "${configuration}Dll" }
+            )
+            foreach ($candidateType in $candidateTypes) {
+                if ($artifacts[$candidateType.Property]) { continue }
+                $candidate = Join-Path $frameworkPath ("PowerForge.Web.Cli" + $candidateType.Suffix)
+                if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+                    $artifacts[$candidateType.Property] = $candidate
+                }
+            }
+        }
+    }
+
+    return [pscustomobject]$artifacts
+}
+
 # Resolve PowerForge.Web.Cli executable (prefer local fresh build)
 $PowerForge = $null
 $PowerForgeArgs = @()
@@ -131,30 +168,26 @@ if (-not [string]::IsNullOrWhiteSpace($PowerForgeRoot)) {
     $cliRoot = Join-Path $PowerForgeRoot 'PowerForge.Web.Cli'
 
     $tfms = @('net10.0', 'net8.0')
-    foreach ($tfm in $tfms) {
-        $releaseFramework = Join-Path (Join-Path (Join-Path $cliRoot 'bin') 'Release') $tfm
-        $debugFramework = Join-Path (Join-Path (Join-Path $cliRoot 'bin') 'Debug') $tfm
-
-        $candidate = Join-Path $releaseFramework 'PowerForge.Web.Cli.exe'
-        if (-not $PowerForgeReleaseExe -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeReleaseExe = $candidate }
-        $candidate = Join-Path $releaseFramework 'PowerForge.Web.Cli'
-        if (-not $PowerForgeReleaseAppHost -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeReleaseAppHost = $candidate }
-        $candidate = Join-Path $releaseFramework 'PowerForge.Web.Cli.dll'
-        if (-not $PowerForgeReleaseDll -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeReleaseDll = $candidate }
-
-        $candidate = Join-Path $debugFramework 'PowerForge.Web.Cli.exe'
-        if (-not $PowerForgeDebugExe -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeDebugExe = $candidate }
-        $candidate = Join-Path $debugFramework 'PowerForge.Web.Cli'
-        if (-not $PowerForgeDebugAppHost -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeDebugAppHost = $candidate }
-        $candidate = Join-Path $debugFramework 'PowerForge.Web.Cli.dll'
-        if (-not $PowerForgeDebugDll -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeDebugDll = $candidate }
-    }
+    $cliArtifacts = Get-PowerForgeCliArtifacts -CliRoot $cliRoot -TargetFrameworks $tfms
+    $PowerForgeReleaseExe = $cliArtifacts.ReleaseExe
+    $PowerForgeReleaseAppHost = $cliArtifacts.ReleaseAppHost
+    $PowerForgeReleaseDll = $cliArtifacts.ReleaseDll
+    $PowerForgeDebugExe = $cliArtifacts.DebugExe
+    $PowerForgeDebugAppHost = $cliArtifacts.DebugAppHost
+    $PowerForgeDebugDll = $cliArtifacts.DebugDll
 }
 
 if (-not $SkipBuildTool -and $PowerForgeCliProject -and (Test-Path $PowerForgeCliProject)) {
     Write-Host "Building PowerForge.Web.Cli..." -ForegroundColor Cyan
     dotnet build $PowerForgeCliProject -c Release | Out-Host
     if ($LASTEXITCODE -ne 0) { throw "PowerForge.Web.Cli build failed (exit code $LASTEXITCODE)" }
+    $cliArtifacts = Get-PowerForgeCliArtifacts -CliRoot $cliRoot -TargetFrameworks $tfms
+    $PowerForgeReleaseExe = $cliArtifacts.ReleaseExe
+    $PowerForgeReleaseAppHost = $cliArtifacts.ReleaseAppHost
+    $PowerForgeReleaseDll = $cliArtifacts.ReleaseDll
+    $PowerForgeDebugExe = $cliArtifacts.DebugExe
+    $PowerForgeDebugAppHost = $cliArtifacts.DebugAppHost
+    $PowerForgeDebugDll = $cliArtifacts.DebugDll
 }
 
 if ($PowerForgeReleaseExe -and (Test-Path $PowerForgeReleaseExe)) {
@@ -190,8 +223,65 @@ function Assert-SiteOutput {
 
     $notFoundPage = Join-Path $SiteRoot '404.html'
     if (-not (Test-Path -LiteralPath $notFoundPage -PathType Leaf)) {
-        throw "Build validation failed: expected '$notFoundPage' for GitHub Pages 404 handling."
+        throw "Build validation failed: expected '$notFoundPage' in the generated site."
     }
+}
+
+function Test-PipelineTaskDependsOn {
+    param(
+        [Parameter(Mandatory)]
+        [string]$TaskId,
+        [Parameter(Mandatory)]
+        [string]$RequiredTaskId,
+        [Parameter(Mandatory)]
+        [hashtable]$Tasks,
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.HashSet[string]]$Visited
+    )
+
+    if ($TaskId -eq $RequiredTaskId) { return $true }
+    if (-not $Visited.Add($TaskId) -or -not $Tasks.ContainsKey($TaskId)) { return $false }
+    foreach ($dependency in @($Tasks[$TaskId].dependsOn)) {
+        if ([string]::IsNullOrWhiteSpace([string]$dependency)) { continue }
+        if (Test-PipelineTaskDependsOn -TaskId ([string]$dependency) -RequiredTaskId $RequiredTaskId -Tasks $Tasks -Visited $Visited) {
+            return $true
+        }
+    }
+    return $false
+}
+
+function Test-SiteOutputRequired {
+    param(
+        [string[]]$SelectedTask = @(),
+        [bool]$StartServer = $false,
+        [Parameter(Mandatory)]
+        [string]$PipelinePath
+    )
+
+    if ($StartServer -or -not $SelectedTask -or $SelectedTask.Count -eq 0) { return $true }
+
+    $pipeline = Get-Content -LiteralPath $pipelinePath -Raw | ConvertFrom-Json
+    $tasks = @{}
+    if ($pipeline.extends) {
+        $basePath = Join-Path (Split-Path -Parent $pipelinePath) ([string]$pipeline.extends)
+        $basePipeline = Get-Content -LiteralPath $basePath -Raw | ConvertFrom-Json
+        foreach ($task in $basePipeline.steps) { $tasks[[string]$task.id] = $task }
+    }
+    foreach ($task in $pipeline.steps) { $tasks[[string]$task.id] = $task }
+
+    $selectedTaskIds = @(
+        foreach ($selection in $SelectedTask) {
+            foreach ($taskId in ($selection -split '[;,]')) {
+                if (-not [string]::IsNullOrWhiteSpace($taskId)) { $taskId.Trim() }
+            }
+        }
+    )
+    foreach ($taskId in $selectedTaskIds) {
+        $visited = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+        if (Test-PipelineTaskDependsOn -TaskId $taskId -RequiredTaskId 'build-site' -Tasks $tasks -Visited $visited) { return $true }
+    }
+    return $false
 }
 
 try {
@@ -236,7 +326,9 @@ try {
             & $PowerForge @PowerForgeArgs @pipelineArgs
         }
         if ($LASTEXITCODE -ne 0) { throw "Build failed (exit code $LASTEXITCODE)" }
-        Assert-SiteOutput -SiteRoot (Join-Path $PSScriptRoot '_site')
+        if (Test-SiteOutputRequired -SelectedTask $Only -StartServer $Serve.IsPresent -PipelinePath (Join-Path $PSScriptRoot 'pipeline.json')) {
+            Assert-SiteOutput -SiteRoot (Join-Path $PSScriptRoot '_site')
+        }
         Write-Host "Starting dev server on http://localhost:$Port ..." -ForegroundColor Cyan
 
         $serveArgs = @($PowerForgeArgs + @('serve', '--path', '_site', '--port', $Port))
@@ -257,7 +349,9 @@ try {
         Write-Host 'Building website...' -ForegroundColor Cyan
         & $PowerForge @PowerForgeArgs @pipelineArgs
         if ($LASTEXITCODE -ne 0) { throw "Build failed (exit code $LASTEXITCODE)" }
-        Assert-SiteOutput -SiteRoot (Join-Path $PSScriptRoot '_site')
+        if (Test-SiteOutputRequired -SelectedTask $Only -StartServer $Serve.IsPresent -PipelinePath (Join-Path $PSScriptRoot 'pipeline.json')) {
+            Assert-SiteOutput -SiteRoot (Join-Path $PSScriptRoot '_site')
+        }
         Write-Host 'Build complete -> _site/' -ForegroundColor Green
     }
 } finally {
