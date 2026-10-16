@@ -8,13 +8,15 @@ namespace ChartForgeX.Rendering;
 internal static partial class ChartTimeScale {
     /// <summary>Walks actual calendar intervals, measuring complete captions before choosing a coarser scale.</summary>
     internal static IReadOnlyList<double>? GenerateFitting(ChartAxis axis, double min, double max,
-        Func<IReadOnlyList<double>, bool> fits, bool allowCompactDates, IReadOnlyList<double>? regularObservations = null, double minimumStepDays = 0) {
+        Func<IReadOnlyList<double>, bool> fits, bool allowCompactDates, IReadOnlyList<double>? regularObservations = null, double minimumStepDays = 0,
+        int automaticTickCount = 8, Func<IReadOnlyList<double>, IReadOnlyList<double>>? selectTicks = null) {
         if (min < 0 || !IsRepresentable(max) || max - min < DaysPerSecond) return null;
-        var limit = axis.HasExplicitTickCount ? axis.TickCount : 100;
-        // Alignment can leave room for another nominal interval at both ends.
-        // Begin one density level finer, then enforce the actual authored count.
-        var interval = ChooseInterval(Math.Max(minimumStepDays, (max - min) / (limit * 2)));
+        var limit = axis.HasExplicitTickCount ? axis.TickCount : automaticTickCount;
+        var interval = FittingStartInterval(axis, min, max, limit, minimumStepDays);
         IReadOnlyList<double>? sparse = null;
+        IReadOnlyList<double>? compactFit = null;
+        if (regularObservations != null && FitObservationCadence(regularObservations, axis, min, max, limit, fits, false) is { Count: > 1 } cadenceTicks)
+            return cadenceTicks;
         for (var attempt = 0; attempt < 64; attempt++) {
             if (regularObservations != null && interval.Unit > TimeUnit.Week) break;
             var ticks = regularObservations == null ? TryGenerateFittingInterval(axis, min, max, interval)
@@ -23,10 +25,11 @@ internal static partial class ChartTimeScale {
                 if (regularObservations == null) return null;
                 interval = ChooseInterval(interval.ApproximateDays * 1.01); continue;
             }
+            if (selectTicks != null) ticks = selectTicks(ticks);
             if (ticks.Count > 0 && ticks.Count <= limit) {
-                if (fits(ticks)) return ticks;
-                if (allowCompactDates && interval.Unit >= TimeUnit.Day && TryCompactDates(ticks, axis, min, max) is { } compact
-                    && fits(compact)) return compact;
+                if (fits(ticks) && ticks.Count > 1) return ticks;
+                if (compactFit == null && ticks.Count > 1 && allowCompactDates && interval.Unit >= TimeUnit.Day
+                    && TryCompactDates(ticks, axis, min, max) is { } compact && fits(compact)) compactFit = compact;
                 sparse = ticks;
             }
             // No boundary at this interval means coarser steps cannot restore a useful
@@ -36,8 +39,33 @@ internal static partial class ChartTimeScale {
         }
         if (regularObservations != null)
             return FitObservationCadence(regularObservations, axis, min, max, limit, fits, allowCompactDates)
-                ?? GenerateFitting(axis, min, max, fits, allowCompactDates, minimumStepDays: minimumStepDays);
-        return sparse ?? TryGenerateFittingInterval(axis, min, max, ChooseInterval(max - min));
+                ?? GenerateFitting(axis, min, max, fits, allowCompactDates, minimumStepDays: minimumStepDays,
+                    automaticTickCount: automaticTickCount, selectTicks: selectTicks);
+        return compactFit ?? sparse ?? TryGenerateFittingInterval(axis, min, max, ChooseInterval(max - min));
+    }
+
+    /// <summary>Uses a comfortable default pitch while keeping an authored count as a ceiling and dense labels opt-in.</summary>
+    internal static int AutomaticTickCount(ChartAxis axis, double length) => axis.LabelDensity == ChartLabelDensity.Dense ? 100
+        : Math.Max(2, Math.Min(8, (int)Math.Floor(length / 90) + 1));
+
+    /// <summary>Leaves room between automatic calendar captions rather than merely avoiding overlap.</summary>
+    internal static double ComfortableLabelGap(double firstExtent, double secondExtent, double ordinaryGap) =>
+        Math.Max(ordinaryGap, Math.Max(24, Math.Max(firstExtent, secondExtent)));
+
+    // A calendar phase can put just one boundary inside a nominal two-tick
+    // window. Try a finer actual calendar interval before accepting that loss.
+    private static TimeInterval FittingStartInterval(ChartAxis axis, double min, double max, int limit, double minimumStepDays) {
+        var interval = ChooseInterval(Math.Max(minimumStepDays, (max - min) / (limit - 1)));
+        if (TryGenerateFittingInterval(axis, min, max, interval) is { Count: >= 2 }) return interval;
+        for (var index = Intervals.Length - 1; index >= 0; index--) {
+            var finer = Intervals[index];
+            if (finer.ApproximateDays >= interval.ApproximateDays || finer.ApproximateDays < minimumStepDays) continue;
+            var ticks = TryGenerateFittingInterval(axis, min, max, finer);
+            if (ticks == null) continue;
+            if (ticks.Count > limit) break;
+            if (ticks.Count >= 2) return finer;
+        }
+        return interval;
     }
 
     // Calendar arithmetic may be outside DateTime's supported range. Authored
@@ -73,17 +101,18 @@ internal static partial class ChartTimeScale {
         if (visible.Count == 0) return null;
         var cadence = observations[1] - observations[0];
         var previousStride = 0;
+        IReadOnlyList<double>? compactFit = null; IReadOnlyList<double>? single = null;
         for (var count = Math.Min(limit, visible.Count); count >= 1; count--) {
             var stride = count == 1 ? visible.Count : (int)Math.Ceiling((visible.Count - 1d) / (count - 1));
             if (stride == previousStride) continue;
             previousStride = stride;
             var ticks = new List<double>();
             for (var index = 0; index < visible.Count; index += stride) ticks.Add(visible[index]);
-            if (fits(ticks)) return ticks;
-            if (allowCompactDates && cadence * stride >= 1 && TryCompactDates(ticks, axis, min, max) is { } compact
-                && fits(compact)) return compact;
+            if (fits(ticks)) { if (ticks.Count > 1) return ticks; single = ticks; }
+            if (compactFit == null && ticks.Count > 1 && allowCompactDates && cadence * stride >= 1
+                && TryCompactDates(ticks, axis, min, max) is { } compact && fits(compact)) compactFit = compact;
         }
-        return null;
+        return compactFit ?? single;
     }
 
     // Regular time bars have a source cadence. Retain calendar-sized steps which
@@ -127,7 +156,7 @@ internal static partial class ChartTimeScale {
     private static string CompactDateFormat(ChartAxis axis, double min, double max) {
         var first = ToDisplayTime(axis, min);
         var last = ToDisplayTime(axis, max);
-        return first?.Year == last?.Year ? "MMM d" : "MMM d, yyyy";
+        return first?.Year == last?.Year ? "MM-dd" : "yyyy-MM-dd";
     }
 
     internal static string FormatTick(ChartAxis axis, double value, IReadOnlyList<double>? ticks) =>

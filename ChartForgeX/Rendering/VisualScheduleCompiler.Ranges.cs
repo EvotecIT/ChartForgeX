@@ -42,6 +42,8 @@ internal static partial class VisualScheduleCompiler {
         var fixedTicks = axis.Labels.Count == 0 && gantt && axis.Scale == ChartScaleKind.Time && chart.Options.GanttTickInterval != null
             ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null;
         var ticks = fixedTicks ?? ChartTicks.ForAxis(axis, min, max);
+        if (gantt && axis.Scale == ChartScaleKind.Time && axis.Labels.Count == 0 && fixedTicks == null)
+            ticks = ScheduleProjectWindowTicks(ticks, min, max);
         var milliseconds = fixedTicks != null && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
         var effectiveInterval = fixedTicks == null ? (ChartTimeTickUnit?)null : chart.Options.GanttTickInterval?.Unit;
         var formatTick = ChartAxisValueFormatter.Create(axis, ticks,
@@ -76,7 +78,8 @@ internal static partial class VisualScheduleCompiler {
         double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
             var obstacles = new List<LabelObstacle>();
-            Axis(chart, context, builder, viewport, layout, ticks, Project, Format);
+            Axis(chart, context, builder, viewport, layout, ticks, Project, Format,
+                minimum: gantt ? min : null, maximum: gantt ? max : null);
             foreach (var item in items) {
                 if (item.Marker) continue;
                 var center = plot.Top + (item.Row + .5) * slot;

@@ -31,8 +31,10 @@ internal static partial class VisualCartesianCompiler {
         double Position(double value) => ChartScaleTransform.Normalize(value, minimum, maximum, axis) * length;
         if (axis.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(axis, minimum, maximum,
             candidates => ChartTimeScale.HasDistinctAdjacentLabels(candidates.Select(tick => labels.Format(axis, tick, fallback, candidates)))
-                && AxisLabelSequenceFits(builder, axis, candidates, Position, horizontal, style, gap, fallback, labels),
-            allowCompactDates: axis.ValueFormat == null && fallback == null, regularObservations: regularObservations) is { } timeTicks) {
+                && AxisLabelSequenceFits(builder, axis, candidates, Position, horizontal, style, gap, fallback, labels,
+                    comfortable: axis.LabelDensity != ChartLabelDensity.Dense && !axis.HasExplicitTickCount),
+            allowCompactDates: axis.ValueFormat == null && fallback == null, regularObservations: regularObservations,
+            automaticTickCount: ChartTimeScale.AutomaticTickCount(axis, length)) is { } timeTicks) {
             labels.SetFittedTicks(axis, timeTicks);
             return;
         }
@@ -89,7 +91,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static bool AxisLabelSequenceFits(VisualSceneBuilder builder, ChartAxis axis, IReadOnlyList<double> ticks,
         Func<double, double> coordinate, bool horizontal, TextStyle style, double gap, Func<double, string>? fallback, AxisLabelCache labels,
-        Func<double, string>? display = null) {
+        Func<double, string>? display = null, bool comfortable = false) {
         var previousPosition = 0d; var previousExtent = 0d; var hasPrevious = false;
         foreach (var tick in ticks) {
             var text = display?.Invoke(tick) ?? labels.Format(axis, tick, fallback, ticks);
@@ -97,7 +99,8 @@ internal static partial class VisualCartesianCompiler {
             var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), axis.LabelAngle);
             var extent = horizontal ? metrics.Width : metrics.Height;
             var position = coordinate(tick);
-            if (hasPrevious && Math.Abs(position - previousPosition) + .0001 < (extent + previousExtent) / 2 + gap) return false;
+            var requiredGap = comfortable ? ChartTimeScale.ComfortableLabelGap(extent, previousExtent, gap) : gap;
+            if (hasPrevious && Math.Abs(position - previousPosition) + .0001 < (extent + previousExtent) / 2 + requiredGap) return false;
             previousPosition = position; previousExtent = extent; hasPrevious = true;
         }
         return true;

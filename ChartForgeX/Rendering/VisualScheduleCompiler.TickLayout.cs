@@ -10,7 +10,8 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualScheduleCompiler {
     /// <summary>Chooses the shared numeric/calendar step before drawing either schedule grids or captions.</summary>
     private static IReadOnlyList<double> ScheduleTicks(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
-        IReadOnlyList<double> ticks, Func<double, double> project, Func<double, string> format, TextStyle style, bool hasFixedTicks) {
+        IReadOnlyList<double> ticks, Func<double, double> project, Func<double, string> format, TextStyle style, bool hasFixedTicks,
+        double? minimum = null, double? maximum = null) {
         var axis = chart.Options.XAxis;
         if (ticks.Count < 2 || axis.Labels.Count > 0 || hasFixedTicks || axis.LabelDensity == ChartLabelDensity.All) return ticks;
         var policy = axis.Clone();
@@ -21,11 +22,19 @@ internal static partial class VisualScheduleCompiler {
         // authored clock formats and successful fixed intervals remain authoritative.
         var minimumStepDays = chart.Series[0].Kind == ChartSeriesKind.Gantt
             && axis.ValueFormat == null && ticks[ticks.Count - 1] - ticks[0] >= 1 ? 1 : 0;
-        if (policy.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(policy, ticks[0], ticks[ticks.Count - 1],
+        var min = minimum ?? ticks[0]; var max = maximum ?? ticks[ticks.Count - 1];
+        bool Fits(IReadOnlyList<double> candidates) => ScheduleCaptionsFit(chart, context, builder, candidates, project, format,
+            GeneratedScheduleTickStyle(chart, context, builder, candidates, project, format, style),
+            comfortable: axis.LabelDensity != ChartLabelDensity.Dense && !axis.HasExplicitTickCount);
+        // A rejected authored interval still expresses a dense-step preference.
+        // Formatting alone never changes the automatic density policy.
+        var automaticCount = chart.Options.GanttTickInterval != null ? 100
+            : ChartTimeScale.AutomaticTickCount(axis, Math.Abs(project(max) - project(min)));
+        if (policy.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(policy, min, max,
             candidates => ChartTimeScale.HasDistinctAdjacentLabels(candidates.Select(format))
-                && ScheduleCaptionsFit(chart, context, builder, candidates, project, format,
-                GeneratedScheduleTickStyle(chart, context, builder, candidates, project, format, style)), allowCompactDates: false,
-            minimumStepDays: minimumStepDays) is { } calendarTicks)
+                && Fits(candidates), allowCompactDates: false, minimumStepDays: minimumStepDays,
+            automaticTickCount: automaticCount,
+            selectTicks: minimum.HasValue && maximum.HasValue ? candidates => ScheduleProjectEndpoints(candidates, min, max, Fits) : null) is { } calendarTicks)
             return calendarTicks;
         var selected = ticks;
         for (var count = axis.TickCount; count >= 2; count--) {
@@ -63,7 +72,7 @@ internal static partial class VisualScheduleCompiler {
     }
 
     private static bool ScheduleCaptionsFit(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
-        IReadOnlyList<double> ticks, Func<double, double> project, Func<double, string> format, TextStyle style) {
+        IReadOnlyList<double> ticks, Func<double, double> project, Func<double, string> format, TextStyle style, bool comfortable = false) {
         var axis = chart.Options.XAxis;
         var gap = axis.LabelDensity == ChartLabelDensity.Dense ? 0 : axis.LabelDensity == ChartLabelDensity.Relaxed ? context.Theme.Spacing * 2 : context.Theme.Spacing / 2;
         var angle = Math.Max(-80, Math.Min(80, axis.LabelAngle));
@@ -73,7 +82,8 @@ internal static partial class VisualScheduleCompiler {
             if (text.Length == 0) continue;
             var extent = VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), angle).Width;
             var position = project(tick);
-            if (hasPrevious && Math.Abs(position - previousPosition) + .0001 < (extent + previousExtent) / 2 + gap) return false;
+            var requiredGap = comfortable ? ChartTimeScale.ComfortableLabelGap(extent, previousExtent, gap) : gap;
+            if (hasPrevious && Math.Abs(position - previousPosition) + .0001 < (extent + previousExtent) / 2 + requiredGap) return false;
             previousPosition = position; previousExtent = extent; hasPrevious = true;
         }
         return true;

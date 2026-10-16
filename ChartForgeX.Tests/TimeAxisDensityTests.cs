@@ -12,8 +12,8 @@ public sealed class TimeAxisDensityTests {
     private static readonly DateTime Start = new(2026, 9, 14, 0, 0, 0, DateTimeKind.Utc);
 
     [Theory]
-    [InlineData(640, 7, false, 7, VisualThemeMode.Light)]
-    [InlineData(640, 7, false, 7, VisualThemeMode.Dark)]
+    [InlineData(640, 7, false, 3, VisualThemeMode.Light)]
+    [InlineData(640, 7, false, 3, VisualThemeMode.Dark)]
     [InlineData(800, 19, true, 5, VisualThemeMode.Light)]
     [InlineData(800, 19, true, 5, VisualThemeMode.Dark)]
     public void MeasuredTimeScaleKeepsDailyOrIntermediateDayTicksWhenTheyFit(int width, int days, bool authoredCount, int minimumLabels, VisualThemeMode mode) {
@@ -54,14 +54,16 @@ public sealed class TimeAxisDensityTests {
 
     [Fact]
     public void AuthoredTimeTickCountRemainsAnUpperBoundAndSurvivesDetachedConfiguration() {
-        var chart = Create(640).ConfigureXAxis(axis => axis.TickCount = 4)
+        var chart = Create(640)
             .AddLine("Readings", Enumerable.Range(0, 7).Select(day => new ChartPoint(Start.AddDays(day), 40 + day % 5)));
+        var automaticLabels = Captions(chart.Prepare(VisualExportRequest.ForChart(chart).Context)).Select(node => node.Text.Lines.Single().Text).ToArray();
+        chart.ConfigureXAxis(axis => axis.TickCount = 2);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        Assert.InRange(Captions(prepared).Length, 2, 4);
+        Assert.Equal(2, Captions(prepared).Length);
         AssertDateLabels(prepared);
         var svg = prepared.ToSvg();
         chart.ConfigureXAxis(axis => axis.WithAutomaticTickCount());
-        Assert.Equal(7, Captions(chart.Prepare(VisualExportRequest.ForChart(chart).Context)).Length);
+        Assert.Equal(automaticLabels, Captions(chart.Prepare(VisualExportRequest.ForChart(chart).Context)).Select(node => node.Text.Lines.Single().Text));
         Assert.Equal(svg, prepared.ToSvg());
     }
 
@@ -84,7 +86,7 @@ public sealed class TimeAxisDensityTests {
             var text = caption.Text.Lines.Single().Text;
             Assert.DoesNotContain(':', text);
             Assert.DoesNotContain('…', text);
-            Assert.True(DateTime.TryParseExact(text, new[] { "yyyy-MM-dd", "MMM d", "MMM d, yyyy" }, CultureInfo.InvariantCulture,
+            Assert.True(DateTime.TryParseExact(text, new[] { "yyyy-MM-dd", "MM-dd" }, CultureInfo.InvariantCulture,
                 DateTimeStyles.None, out _), "A multi-day axis must label dates: " + text);
         });
     }

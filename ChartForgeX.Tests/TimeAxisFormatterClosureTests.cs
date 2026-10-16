@@ -21,6 +21,7 @@ public sealed class TimeAxisFormatterClosureTests {
             .AddLine("Readings", new[] { new ChartPoint(Start, 10), new ChartPoint(Start.AddDays(4), 20) })
             .ConfigureXAxis(axis => {
                 axis.WithBounds(Start.ToOADate(), Start.AddDays(4).ToOADate());
+                axis.LabelDensity = ChartLabelDensity.Dense;
                 axis.WithLabelFormatter(value => {
                     if (!failed && DateTime.FromOADate(value).TimeOfDay != TimeSpan.Zero) { failed = true; throw failure; }
                     return DateTime.FromOADate(value).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);

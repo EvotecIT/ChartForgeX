@@ -15,7 +15,7 @@ public sealed class TimeAxisReviewClosureTests {
     [InlineData(true, VisualThemeMode.Light)]
     [InlineData(true, VisualThemeMode.Dark)]
     public void HorizontalAxesPreserveAutomaticAndAuthoredTickDensityThroughProjection(bool category, VisualThemeMode mode) {
-        var chart = Chart.Create().WithSize(category ? 360 : 800, category ? 800 : 360).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().WithSize(category ? 360 : 1400, category ? 800 : 360).WithHeader(false).WithLegend(false)
             .WithThemeMode(mode).WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
             .AddLine("Dates", Enumerable.Range(0, 7).Select(index => category
                 ? new ChartPoint(Start.AddDays(index), index) : new ChartPoint(index, Start.AddDays(index).ToOADate())));

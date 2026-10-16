@@ -101,7 +101,12 @@ public sealed class ScheduleTickPlacementTests {
             Assert.DoesNotContain("…", labels[index].Text.Lines.Single().Text, StringComparison.Ordinal);
             Assert.InRange(Left(labels[index]), chart.Options.Padding.Left - .001, chart.Options.Size.Width - chart.Options.Padding.Right);
             Assert.True(Left(labels[index]) + labels[index].Text.Metrics.Width <= chart.Options.Size.Width - chart.Options.Padding.Right + .001);
-            if (index > 1) Assert.Equal(grid[1].Start.X - grid[0].Start.X, grid[index].Start.X - grid[index - 1].Start.X, 6);
+            // A classic Gantt plan also prioritizes its exact project endpoints;
+            // the calendar sequence between those edge ticks remains regular.
+            if (kind != ChartSeriesKind.Gantt && index > 1)
+                Assert.Equal(grid[1].Start.X - grid[0].Start.X, grid[index].Start.X - grid[index - 1].Start.X, 6);
+            if (kind == ChartSeriesKind.Gantt && index > 2 && index < labels.Length - 1)
+                Assert.Equal(grid[2].Start.X - grid[1].Start.X, grid[index].Start.X - grid[index - 1].Start.X, 6);
         }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "schedule.axis-label-overflow" or "text.overflow");
         Assert.Equal(13, chart.Options.XAxis.TickCount);
