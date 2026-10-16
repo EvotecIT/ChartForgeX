@@ -52,7 +52,12 @@ internal static class StatisticalExamples {
                 new ChartBubble(2.3, 31, 42),
                 new ChartBubble(3.1, 68, 71),
                 new ChartBubble(3.8, 54, 36)
-            }, ChartColor.FromRgb(37, 99, 235));
+            }, ChartColor.FromRgb(37, 99, 235))
+            .ConfigureBubble(options => {
+                options.SizeDimension.Name = "Affected assets";
+                options.SizeDimension.ValueFormat = ChartValueFormat.Number("0");
+                options.SizeDimension.ShowLegend = true;
+            });
 
         SaveChart(exposureClusters, "exposure-clusters-bubble-light");
 

@@ -645,6 +645,9 @@ chart.ConfigureBubble(bubble => {
     bubble.WithSizeDomain(0, 100);
     bubble.MinimumRadius = 3;
     bubble.MaximumRadius = 24;
+    bubble.SizeDimension.Name = "Affected assets";
+    bubble.SizeDimension.ValueFormat = ChartValueFormat.Number("0");
+    bubble.SizeDimension.ShowLegend = true;
 });
 chart.Series[0].ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
 ```
