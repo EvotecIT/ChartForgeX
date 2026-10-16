@@ -2,6 +2,9 @@
     const data = node.dataset || {};
     const reference = legendTarget(node) || (['node', 'link', 'region'].includes(data.cfxTargetKind)
       ? { targetKind: data.cfxTargetKind, targetId: data.cfxTargetId } : null);
+    if (boxPlotGroup(node)) return { series: data.cfxSeries, point: data.cfxGroupIndex, seriesKey: seriesKey(node), seriesScope: data.cfxSeriesScope,
+      groupIndex: Number(data.cfxGroupIndex), groupId: data.cfxGroupId, derived: 'five-number-summary',
+      label: data.cfxLabel || seriesLabel(node), targetKind: 'point', targetId: boxPlotGroupTargetId(node) };
     return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), seriesScope: data.cfxSeriesScope,
       observationId: data.cfxObservationId, label: data.cfxLabel || seriesLabel(node),
       targetKind: data.cfxPoint === undefined ? 'series' : 'point',
@@ -13,6 +16,8 @@
     if (!target) return false;
     const data = node.dataset || {};
     if (data.cfxSeries !== String(target.series)) return false;
+    if (target.derived === 'five-number-summary' && target.groupIndex !== undefined)
+      return boxPlotGroup(node) && (target.groupId !== undefined ? data.cfxGroupId === target.groupId : data.cfxGroupIndex === String(target.groupIndex));
     if (target.targetKind && target.targetKind !== 'series' && target.targetId) {
       if (target.targetKind === 'point') return data.cfxPoint !== undefined && pointTargetId(node) === target.targetId;
       const reference = legendTarget(node);

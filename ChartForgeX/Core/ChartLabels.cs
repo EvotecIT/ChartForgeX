@@ -30,6 +30,19 @@ public sealed class ChartLabels {
     private string _median = "Median";
     private string _q3 = "Q3";
     private string _maximum = "Maximum";
+    private string _lowerWhisker = "Lower whisker";
+    private string _upperWhisker = "Upper whisker";
+    private string _sampleCount = "Sample count";
+    private string _sourceMinimum = "Source minimum";
+    private string _sourceMaximum = "Source maximum";
+    private string _inlierMinimum = "Inlier minimum";
+    private string _inlierMaximum = "Inlier maximum";
+    private string _outlierCount = "Outlier count";
+    private string _quartileEstimator = "Quartile estimator";
+    private string _whiskerPolicy = "Whisker policy";
+    private string _iqrMultiplier = "IQR multiplier";
+    private string _noInliers = "None";
+    private string _outlier = "Outlier";
     private string _openingBalance = "Opening balance";
     private string _subtotal = "Subtotal";
     private string _total = "Total";
@@ -159,6 +172,45 @@ public sealed class ChartLabels {
         var text = AccessibleTextFormatter?.Invoke(description);
         return string.IsNullOrWhiteSpace(text) ? description.EnglishText : text!;
     }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for lower whisker.</summary>
+    public string LowerWhisker { get => _lowerWhisker; set => _lowerWhisker = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for upper whisker.</summary>
+    public string UpperWhisker { get => _upperWhisker; set => _upperWhisker = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for sample count.</summary>
+    public string SampleCount { get => _sampleCount; set => _sampleCount = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for source minimum.</summary>
+    public string SourceMinimum { get => _sourceMinimum; set => _sourceMinimum = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for source maximum.</summary>
+    public string SourceMaximum { get => _sourceMaximum; set => _sourceMaximum = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for inlier minimum.</summary>
+    public string InlierMinimum { get => _inlierMinimum; set => _inlierMinimum = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for inlier maximum.</summary>
+    public string InlierMaximum { get => _inlierMaximum; set => _inlierMaximum = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for outlier count.</summary>
+    public string OutlierCount { get => _outlierCount; set => _outlierCount = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for quartile estimator.</summary>
+    public string QuartileEstimator { get => _quartileEstimator; set => _quartileEstimator = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for whisker policy.</summary>
+    public string WhiskerPolicy { get => _whiskerPolicy; set => _whiskerPolicy = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot tooltip row name for iqr multiplier.</summary>
+    public string IqrMultiplier { get => _iqrMultiplier; set => _iqrMultiplier = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the raw box-plot readout for an absent observed inlier.</summary>
+    public string NoInliers { get => _noInliers; set => _noInliers = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the tooltip row name for an individual outlier measurement.</summary>
+    public string Outlier { get => _outlier; set => _outlier = Required(value, nameof(value)); }
 
     internal ChartLabels Capture() => (ChartLabels)MemberwiseClone();
 

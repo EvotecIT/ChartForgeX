@@ -82,6 +82,9 @@ internal static partial class VisualCartesianCompiler {
 
     private static void IncludeIntervalExtents(MarkerExtents extents, ChartSeries series, ChartAxis valueAxis, double radius) {
         foreach (var point in series.RenderPoints) extents.Include(point.Y, radius, valueAxis);
+        foreach (var distribution in series.BoxPlotDistributions) {
+            extents.Include(distribution.SourceMinimum, radius, valueAxis); extents.Include(distribution.SourceMaximum, radius, valueAxis);
+        }
     }
 
     private sealed class MarkerExtents {

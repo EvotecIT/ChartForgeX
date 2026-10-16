@@ -14,7 +14,9 @@ internal static partial class VisualCartesianCompiler {
     private static double BoxPlotValuePaintRadius(ChartSeries series) {
         var bodyStroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;
         var medianStroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotMedianStrokeWidth;
-        return Math.Max(Math.Max(bodyStroke, medianStroke) / 2, BoxPlotMinimumLength + bodyStroke / 2);
+        var result = Math.Max(Math.Max(bodyStroke, medianStroke) / 2, BoxPlotMinimumLength + bodyStroke / 2);
+        return series.BoxPlotDistributions.Any(value => value.OutlierSourceIndices.Count > 0)
+            ? Math.Max(result, VisualMarkerScene.Extent(series, 4.5)) : result;
     }
 
     private static void DrawBoxPlots(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
@@ -42,7 +44,7 @@ internal static partial class VisualCartesianCompiler {
                 : Extents(box.Left, Math.Min(Math.Min(min.Y, max.Y), box.Top), box.Right, Math.Max(Math.Max(min.Y, max.Y), box.Bottom));
             var color = PointColor(series, index, item, colors); var sourcePaint = VisualChartPaint.Series(series, color, item);
             var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("median", median));
-            using (ObservationGroup(builder, series, index, item, raw, 5, bounds, label, BoxPlotMetadata(chart, categories[x]),
+            using (ObservationGroup(builder, series, index, item, raw, 5, bounds, label, BoxPlotMetadata(chart, series, item, categories[x]),
                 ("x", x), ("minimum", minimum), ("q1", q1), ("median", median), ("q3", q3), ("maximum", maximum))) {
                 var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;
                 var whisker = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BoxPlotWhiskerOpacity);
@@ -70,16 +72,24 @@ internal static partial class VisualCartesianCompiler {
             if (horizontal) AddHorizontalLabel(chart, context, series, index, item, Project(median), bounds, median,
                 max.X >= min.X ? 1 : -1, label, labels);
             else AddLabel(chart, context, series, index, item, Project(median), bounds, label, labels, median);
+            DrawBoxPlotOutliers(chart, builder, series, index, item, categories[x], Project, color, sourcePaint, obstacles);
         }
     }
 
-    private static Dictionary<string, string> BoxPlotMetadata(Chart chart, string category) => new() {
+    private static Dictionary<string, string> BoxPlotMetadata(Chart chart, ChartSeries series, int item, string category) {
+        var metadata = new Dictionary<string, string> {
         ["data-cfx-kind"] = "BoxPlot", ["data-cfx-category-label"] = category,
         ["data-cfx-orientation"] = chart.Options.BoxPlot.Orientation == ChartOrientation.Horizontal ? "horizontal" : "vertical",
         ["data-cfx-label-category"] = chart.Options.Labels.Category, ["data-cfx-label-minimum"] = chart.Options.Labels.Minimum,
         ["data-cfx-label-q1"] = chart.Options.Labels.Q1, ["data-cfx-label-median"] = chart.Options.Labels.Median,
         ["data-cfx-label-q3"] = chart.Options.Labels.Q3, ["data-cfx-label-maximum"] = chart.Options.Labels.Maximum
-    };
+        };
+        if (item < series.BoxPlotDistributions.Count) {
+            AddBoxPlotDistributionMetadata(chart, metadata, series.BoxPlotDistributions[item]);
+            if (series.BoxPlotGroupIds.TryGetValue(item, out var id)) metadata["data-cfx-group-id"] = id.Value;
+        }
+        return metadata;
+    }
 
     private static IReadOnlyList<VisualLegendEntry> BoxPlotLegendEntries(Chart chart, ChartSeries series, VisualThemeColors colors, ChartAxisValueFormatter.Cache cache) {
         var entries = new List<VisualLegendEntry>();
@@ -88,7 +98,7 @@ internal static partial class VisualCartesianCompiler {
             var category = categories[series.RenderPoints[item * 5].X]; var pattern = ObservationPattern(series, item);
             var color = PointColor(series, 0, item, colors); var paint = VisualChartPaint.Series(series, color, item);
             entries.Add(new VisualLegendEntry(category, color, PointId(0, item), series.Kind, pattern, series.StateRole, series.InteractionIdentityKey,
-                marker: VisualMarkerScene.Legend(chart, series, color, paint, item, pattern), paint: paint, metadata: BoxPlotMetadata(chart, category)));
+                marker: VisualMarkerScene.Legend(chart, series, color, paint, item, pattern), paint: paint, metadata: BoxPlotMetadata(chart, series, item, category)));
         }
         return entries;
     }

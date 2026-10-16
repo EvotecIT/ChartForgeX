@@ -89,11 +89,13 @@ public sealed class BoxPlotBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.SharedX));
         var page = session.Page;
         await page.EvaluateAsync("() => { window.rawSelections=[]; document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.rawSelections.push(event.detail.target)); }");
+        var distributionRows = new[] { "Category", "Raw input", "Minimum", "0", "Q1", "7.5", "Median", "15", "Q3", "22.5", "Maximum", "30",
+            "Sample count", "4", "Whisker policy", "MinMax", "Quartile estimator", "LinearInterpolated", "Source minimum", "0", "Source maximum", "30", "Outlier count", "0" };
         await MoveToAsync(page, Legend(0));
-        Assert.Equal(new[] { "Category", "Raw input", "Minimum", "0", "Q1", "7.5", "Median", "15", "Q3", "22.5", "Maximum", "30" }, await RowsAsync(page));
+        Assert.Equal(distributionRows, await RowsAsync(page));
         var point = page.Locator(Point(0, 0));
         await point.FocusAsync();
-        Assert.Equal(new[] { "Series", "Distribution", "Category", "Raw input", "Minimum", "0", "Q1", "7.5", "Median", "15", "Q3", "22.5", "Maximum", "30" }, await RowsAsync(page));
+        Assert.Equal(new[] { "Series", "Distribution" }.Concat(distributionRows), await RowsAsync(page));
         Assert.Equal("Distribution: Raw input", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal("five-number-summary", await point.GetAttributeAsync("data-cfx-derived"));
         Assert.Equal("4", await point.GetAttributeAsync("data-cfx-source-count"));

@@ -6,6 +6,12 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
+    /// <summary>Adds raw measurement groups using interpolated quartiles and minimum/maximum whiskers by default.</summary>
+    public Chart AddBoxPlot(string name, IEnumerable<ChartBoxPlotSampleGroup> groups, ChartColor? color = null) {
+        var series = ChartSeries.CreateBoxPlot(name, groups, color);
+        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one group.", nameof(groups));
+        AppendSeries(series); return this;
+    }
     /// <summary>Configures box plot value direction. Multiple box plot series share distinct category slots.</summary>
     /// <remarks>Horizontal box plots require only box plot series on the primary X value axis, with categories on Y. Configure before or after adding series.</remarks>
     public Chart ConfigureBoxPlot(Action<ChartBoxPlotOptions> configure) {

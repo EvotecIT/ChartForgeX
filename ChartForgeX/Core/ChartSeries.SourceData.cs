@@ -30,13 +30,6 @@ public sealed partial class ChartSeries {
     /// </remarks>
     public IReadOnlyList<double> BoxPlotSourceSamples { get; private set; } = Array.Empty<double>();
 
-    internal void SetBoxPlotSourceSamples(IReadOnlyList<double> samples) {
-        var snapshot = new double[samples.Count];
-        for (var index = 0; index < snapshot.Length; index++) snapshot[index] = samples[index];
-        BoxPlotSourceSamples = Array.AsReadOnly(snapshot);
-        SourcePointCount = snapshot.Length;
-    }
-
     internal void SetTrendLineSourcePoints(IReadOnlyList<ChartPoint> points) {
         var snapshot = new ChartPoint[points.Count];
         for (var index = 0; index < snapshot.Length; index++) snapshot[index] = points[index];

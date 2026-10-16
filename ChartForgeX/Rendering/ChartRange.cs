@@ -63,6 +63,9 @@ internal sealed class ChartRange {
                     range.IncludeY(point.X); horizontalBarYValues.Add(point.X);
                     range.IncludeX(point.Y);
                 }
+                foreach (var distribution in series.BoxPlotDistributions) {
+                    range.IncludeX(distribution.SourceMinimum); range.IncludeX(distribution.SourceMaximum);
+                }
                 continue;
             }
             if (series.YAxis == ChartAxisSide.Secondary && !ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
@@ -76,6 +79,9 @@ internal sealed class ChartRange {
             }
 
             if (contributesBaseline && ChartSeriesKindTraits.UsesVerticalBaseline(series.Kind)) usesVerticalBaseline = true;
+            foreach (var distribution in series.BoxPlotDistributions) {
+                range.IncludeY(distribution.SourceMinimum); range.IncludeY(distribution.SourceMaximum);
+            }
 
             if (series.Kind == ChartSeriesKind.Bar && series.HistogramBinLayout != null) {
                 if (series.HistogramBinLayout.Minimum == series.HistogramBinLayout.Maximum) {
@@ -313,6 +319,9 @@ internal sealed class ChartRange {
     }
 
     private static void IncludeSeriesY(ChartRange range, ChartSeries series, ChartAxis axis) {
+        foreach (var distribution in series.BoxPlotDistributions) {
+            range.IncludeY(distribution.SourceMinimum); range.IncludeY(distribution.SourceMaximum);
+        }
         if (series.Kind == ChartSeriesKind.Waterfall) {
             foreach (var step in ChartWaterfallSteps.Create(series)) {
                 if (step.Start != 0 || UsesZeroBaseline(axis)) range.IncludeY(step.Start);

@@ -42,12 +42,7 @@ public sealed partial class ChartSeries {
         BoxPlotSamples(new ChartSeries(name, ChartSeriesKind.BoxPlot, Array.Empty<ChartPoint>()) { Color = color }, x, samples);
 
     private static ChartSeries BoxPlotSamples(ChartSeries series, double x, IEnumerable<double> samples) {
-        ChartGuards.Finite(x, nameof(x));
-        if (samples == null) throw new ArgumentNullException(nameof(samples));
-        var source = samples.ToArray();
-        series.ReplaceBoxPlots(new[] { ChartBoxPlotStatistics.FromValues(x, source) });
-        series.SetBoxPlotSourceSamples(source);
-        return series;
+        return series.ReplaceBoxPlotSampleGroups(new[] { new ChartBoxPlotSampleGroup(x, samples) });
     }
 
     /// <summary>Creates a trend line while retaining the original observations used for the regression.</summary>
