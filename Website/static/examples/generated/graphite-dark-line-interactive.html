@@ -3400,6 +3400,7 @@ body {
       pointLabelSurfaces(root, node).forEach(label => label.classList.toggle('cfx-series-muted', muted));
     });
     refreshKeyboardNavigation(root);
+    syncSelectionAppearance(root);
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
@@ -3431,6 +3432,7 @@ body {
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
+    syncSelectionAppearance(root);
     syncResetControl(root);
   };
   const toggleSeriesFocus = (root, item, emit, sync) => {
@@ -3771,30 +3773,26 @@ body {
   const dataValue = (value, time) => {
     if (!tooltipNumber(value)) return undefined;
     const number = Number(value);
-    if (!time) return number;
+    if (!time || number < 0) return number;
     const instant = new Date((number - 25569) * 86400000);
     return Number.isFinite(instant.valueOf()) ? instant.toISOString() : undefined;
   };
   const timeTarget = node => {
     const projection = node.closest('.cfx-interactive-chart')?._cfxDataProjection;
-    return node.dataset.cfxXScale === 'time' || (projection?.horizontal ? projection.y : projection?.x)?.scale === 'time';
+    const axis = projection?.horizontal ? projection.y : projection?.x;
+    return axis ? axis.scale === 'time' && axis.minimum >= 0
+      : node.dataset.cfxXScale === 'time' || node.dataset.cfxRangeScale === 'time';
   };
-  const targetRawX = node => node.dataset.cfxXInstant ?? dataValue(node.dataset.cfxX, timeTarget(node));
+  const targetRawX = node => timeTarget(node) ? node.dataset.cfxXInstant ?? dataValue(node.dataset.cfxX, true) : dataValue(node.dataset.cfxX, false);
   const targetDataRange = node => {
     const data = node.dataset;
     const lower = data.cfxRangeStart;
     const upper = data.cfxRangeEnd;
     if (lower === undefined || upper === undefined) return undefined;
-    const time = data.cfxRangeScale === 'time';
-    const from = data.cfxRangeStartInstant ?? dataValue(lower, time);
-    let to = data.cfxRangeEndInstant ?? dataValue(upper, time);
-    if (data.cfxRangeEndExclusive === 'true' && to !== undefined) {
-      if (time) {
-        const fraction = String(to).match(/\.(\d+)Z$/)?.[1] || '';
-        const submillisecond = /[1-9]/.test(fraction.slice(3));
-        to = new Date(Date.parse(to) - (submillisecond ? 0 : 1)).toISOString();
-      }
-    }
+    // A range has one unit: native negative OLE coordinates cannot mix with Unix-millisecond ISO instants.
+    const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
+    const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
+    const to = time ? data.cfxRangeInclusiveEndInstant ?? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
     return from === undefined || to === undefined ? undefined : [from, to];
   };
   const contributorObservationIds = node => {
@@ -3806,14 +3804,16 @@ body {
   };
   const syncSelectionAppearance = root => {
     const nodes = dataTargets(root), selected = nodes.some(node => node.classList.contains('cfx-selected'));
+    const selectionForeground = nodes.some(node => node.classList.contains('cfx-selected') && keyboardTargetAvailable(node));
+    const highlightForeground = nodes.some(node => node.classList.contains('cfx-highlighted') && keyboardTargetAvailable(node));
     root.toggleAttribute('data-cfx-has-selection', selected);
     if (selected) root.dataset.cfxHasSelection = 'true';
     nodes.forEach(node => {
       // Selection and external highlights are independent foregrounds. Their combined dim policy
       // keeps either active mark at full strength instead of letting the two layers dim each other.
       const active = node.classList.contains('cfx-selected') || node.classList.contains('cfx-highlighted');
-      node.classList.toggle('cfx-selection-dim', selected && root.dataset.cfxDimOthersSelected === 'true' && !active);
-      node.classList.toggle('cfx-linked-dim', root._cfxHostHighlight?.dim === true && !active);
+      node.classList.toggle('cfx-selection-dim', selectionForeground && root.dataset.cfxDimOthersSelected === 'true' && !active);
+      node.classList.toggle('cfx-linked-dim', highlightForeground && root._cfxHostHighlight?.dim === true && !active);
     });
   };
   const selectionSignature = root => selectedTargets(root).map(targetKey).join('\n');
@@ -3834,6 +3834,17 @@ body {
   };
   const intervalNumber = value => typeof value === 'number' && Number.isFinite(value) ? value
     : typeof value === 'string' && /(?:Z|[+-]\d\d:\d\d)$/.test(value) ? Date.parse(value) : NaN;
+  const compareIntervalValues = (left, right) => {
+    const a = intervalNumber(left), b = intervalNumber(right);
+    if (a !== b) return a < b ? -1 : 1;
+    if (typeof left !== 'string') return 0;
+    // Date.parse normalizes offsets but truncates fractional milliseconds. Compare that remainder
+    // separately so precise instants never round together in a Unix-millisecond floating-point value.
+    const remainder = value => (value.match(/\.(\d+)(?:Z|[+-]\d\d:\d\d)$/)?.[1] || '').slice(3);
+    const x = remainder(left), y = remainder(right), length = Math.max(x.length, y.length);
+    const paddedX = x.padEnd(length, '0'), paddedY = y.padEnd(length, '0');
+    return paddedX === paddedY ? 0 : paddedX < paddedY ? -1 : 1;
+  };
   const overlapsRange = (target, range) => {
     if (!Array.isArray(range) || range.length !== 2) return false;
     const from = intervalNumber(range[0]), to = intervalNumber(range[1]);
@@ -3841,7 +3852,10 @@ body {
     if (!values || !Number.isFinite(from) || !Number.isFinite(to)) return false;
     if (typeof range[0] !== typeof values[0] || typeof range[1] !== typeof values[1] || typeof range[0] !== typeof range[1]) return false;
     const lower = intervalNumber(values[0]), upper = intervalNumber(values[1]);
-    return Number.isFinite(lower) && Number.isFinite(upper) && Math.min(lower, upper) <= Math.max(from, to) && Math.max(lower, upper) >= Math.min(from, to);
+    if (!Number.isFinite(lower) || !Number.isFinite(upper)) return false;
+    const [rangeStart, rangeEnd] = compareIntervalValues(range[0], range[1]) <= 0 ? range : [range[1], range[0]];
+    const [targetStart, targetEnd] = compareIntervalValues(values[0], values[1]) <= 0 ? values : [values[1], values[0]];
+    return compareIntervalValues(targetStart, rangeEnd) <= 0 && compareIntervalValues(targetEnd, rangeStart) >= 0;
   };
   const matchesHostTarget = (node, match) => {
     const target = targetIdentity(node);
@@ -3977,7 +3991,7 @@ body {
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
     const raw = axis.scale === 'logarithmic' ? Math.pow(10, value)
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
-    return dataValue(raw, axis.scale === 'time');
+    return raw;
   };
   const brushDataSelection = (root, rect) => {
     const projection = root._cfxDataProjection, svg = root.querySelector('.cfx-stage svg');
@@ -3990,15 +4004,18 @@ body {
     const plot = projection.plotBounds;
     const x = points.map(point => clamp((point.x - plot.x) / plot.width, 0, 1));
     const y = points.map(point => clamp(1 - (point.y - plot.y) / plot.height, 0, 1));
-    const ordered = (axis, ratios) => ratios.sort((left, right) => left - right)
-      .map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => intervalNumber(left) - intervalNumber(right));
+    const ordered = (axis, ratios) => {
+      const values = ratios.map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => left - right);
+      return values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
+    };
     const range = { x: ordered(projection.x, x) };
     if (root.dataset.cfxBrushAxis !== 'x' && projection.y) range.y = ordered(projection.y, y);
     const categoryRange = projection.horizontal ? range.y : range.x;
+    const data = categoryRange ? { range, categoryRange } : { range };
     let metadata;
-    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return { range }; }
+    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return data; }
     const categories = categoryRange && (metadata.xLabels || []).filter(item => item.value >= categoryRange[0] && item.value <= categoryRange[1]).map(item => item.text);
-    return categories?.length ? { range, categories } : { range };
+    return categories?.length ? { ...data, categories } : data;
   };
   const revealLayer = (root) => {
     let layer = root.querySelector('[data-cfx-reveal-layer]');
