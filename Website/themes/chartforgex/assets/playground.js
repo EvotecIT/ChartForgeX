@@ -77,10 +77,16 @@ function start(root) {
   const engine = loadPlaygroundEngine({ onProgress: showProgress });
 
   // Shared links and linked sample files win over the stored draft.
+  const initialLanguage = state.language;
+  const initialSource = ui.source.value;
   readLinkedSource().then((shared) => {
     if (shared) {
-      state.language = shared.language;
-      ui.source.value = shared.source;
+      // A linked sample can take a while to load. Keep anything the visitor
+      // typed or selected while the request was in flight.
+      if (state.language === initialLanguage && ui.source.value === initialSource) {
+        state.language = shared.language;
+        ui.source.value = shared.source;
+      }
     }
     selectLanguageTab();
     refreshEditor();
@@ -588,13 +594,20 @@ function sanitizeSvgs(markup) {
     for (const node of [svg, ...svg.querySelectorAll('*')]) {
       for (const attribute of Array.from(node.attributes)) {
         const name = attribute.name.toLowerCase();
-        const value = attribute.value.trim().toLowerCase();
         if (name.startsWith('on')) node.removeAttribute(attribute.name);
-        else if ((name === 'href' || name === 'xlink:href') && !(value.startsWith('#') || value.startsWith('https:') || value.startsWith('http:'))) node.removeAttribute(attribute.name);
+        else if ((name === 'href' || name === 'xlink:href') && !isSafeHref(attribute.value)) node.removeAttribute(attribute.name);
       }
     }
   }
   return svgs.map((svg) => document.importNode(svg, true));
+}
+
+function isSafeHref(href) {
+  const value = href.trim();
+  if (!value || /[\u0000-\u001f\u007f]/.test(value)) return false;
+  const scheme = /^([a-z][a-z\d+.-]*):/i.exec(value);
+  if (!scheme) return true;
+  return ['http', 'https', 'mailto', 'tel'].includes(scheme[1].toLowerCase());
 }
 
 function naturalSize(svg) {

@@ -136,7 +136,7 @@
     {
       "task": "seo-doctor",
       "id": "seo-doctor-ci",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "build-apidocs", "build-powershell-commands"],
       "modes": [
         "ci"
       ],
@@ -196,7 +196,7 @@
     {
       "task": "verify",
       "id": "verify-dev",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "build-apidocs", "build-powershell-commands"],
       "config": "./site.json",
       "siteRoot": "./_site",
       "skipModes": [
@@ -208,7 +208,7 @@
     {
       "task": "verify",
       "id": "verify-ci",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "build-apidocs", "build-powershell-commands"],
       "config": "./site.json",
       "siteRoot": "./_site",
       "modes": [
@@ -224,7 +224,7 @@
     {
       "task": "audit",
       "id": "audit-ci",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "build-apidocs", "build-powershell-commands"],
       "siteRoot": "./_site",
       "modes": [
         "ci"
