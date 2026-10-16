@@ -286,10 +286,11 @@ bin, the inclusive range ends at the representable number immediately below its
 upper edge; the last bin includes that edge. This lets an inclusive range filter
 select the same observations as the bin. State-timeline runs also have an
 exclusive end: their inclusive numeric range stops immediately before it, and
-their ISO range ends at the last browser-representable millisecond before it.
+their ISO range ends one native DateTime tick (100 nanoseconds) before it.
 Adjacent runs therefore keep their boundary observations separate. A time-axis bar can declare its
 bucket interval through `ChartSeries.WithTimeBuckets(...)`. Each bucket includes its start and excludes
-the next bucket's start; its public inclusive range ends at the last browser-representable millisecond before that boundary.
+the next bucket's start; its public inclusive ISO range ends one DateTime tick before that boundary.
+Range matching preserves fractional seconds beyond milliseconds, including equivalent instants with different time zone offsets.
 On a legacy numeric time domain, the inclusive end is the representable number immediately below the boundary.
 Assign matching row
 and observation IDs with `WithObservationIds(...)` when another view shares those
@@ -356,13 +357,17 @@ rendered value domain: if both primary and secondary axes contain observations o
 `range.y` is omitted because the same pixels represent two value domains. Primary Y annotations and
 plot regions with explicit Y bounds count toward this policy; X-only overlays and empty series do not.
 Unusable, non-finite projections are omitted.
+Both events also expose `categoryRange`, the inclusive interval on the authored category axis:
+`range.x` in vertical layouts and `range.y` in horizontal layouts. Hosts can use this field
+for a category or time filter without depending on the chart's orientation. It is omitted
+when that axis has no usable projection or the brush does not include it.
 Time bounds are ISO dates with a time zone. A prepared time domain containing pre-1899-12-30
 legacy OLE coordinates keeps all target coordinates, intervals and brushes numeric, including its positive coordinates,
 so ranges round-trip in one unit. Wholly positive time domains use ISO dates. Category axes
 also report `categories`. These facts come from the prepared plot projection,
 including the active viewport, rather than guessing from label text. Set
-`ChartInteractionOptions.BrushAxis = ChartBrushAxis.X` for a horizontal time-range
-brush; the default `XY` retains a rectangular brush. Timeline, Gantt, Gantt-lane
+`ChartInteractionOptions.BrushAxis = ChartBrushAxis.X` to restrict the brush to the physical X axis;
+the default `XY` retains a rectangular brush. Timeline, Gantt, Gantt-lane
 and state-timeline drawings report their horizontal data interval; their rows
 do not acquire a numeric Y range. This projection contract
 does not expand the separate connected native X-window capabilities.

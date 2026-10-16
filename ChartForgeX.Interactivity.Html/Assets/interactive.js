@@ -2824,14 +2824,7 @@
     // A range has one unit: native negative OLE coordinates cannot mix with Unix-millisecond ISO instants.
     const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
     const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
-    let to = time ? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
-    if (data.cfxRangeEndExclusive === 'true' && to !== undefined) {
-      if (time && typeof to === 'string') {
-        const fraction = String(to).match(/\.(\d+)Z$/)?.[1] || '';
-        const submillisecond = /[1-9]/.test(fraction.slice(3));
-        to = new Date(Date.parse(to) - (submillisecond ? 0 : 1)).toISOString();
-      }
-    }
+    const to = time ? data.cfxRangeInclusiveEndInstant ?? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
     return from === undefined || to === undefined ? undefined : [from, to];
   };
   const contributorObservationIds = node => {
@@ -2873,6 +2866,17 @@
   };
   const intervalNumber = value => typeof value === 'number' && Number.isFinite(value) ? value
     : typeof value === 'string' && /(?:Z|[+-]\d\d:\d\d)$/.test(value) ? Date.parse(value) : NaN;
+  const compareIntervalValues = (left, right) => {
+    const a = intervalNumber(left), b = intervalNumber(right);
+    if (a !== b) return a < b ? -1 : 1;
+    if (typeof left !== 'string') return 0;
+    // Date.parse normalizes offsets but truncates fractional milliseconds. Compare that remainder
+    // separately so precise instants never round together in a Unix-millisecond floating-point value.
+    const remainder = value => (value.match(/\.(\d+)(?:Z|[+-]\d\d:\d\d)$/)?.[1] || '').slice(3);
+    const x = remainder(left), y = remainder(right), length = Math.max(x.length, y.length);
+    const paddedX = x.padEnd(length, '0'), paddedY = y.padEnd(length, '0');
+    return paddedX === paddedY ? 0 : paddedX < paddedY ? -1 : 1;
+  };
   const overlapsRange = (target, range) => {
     if (!Array.isArray(range) || range.length !== 2) return false;
     const from = intervalNumber(range[0]), to = intervalNumber(range[1]);
@@ -2880,7 +2884,10 @@
     if (!values || !Number.isFinite(from) || !Number.isFinite(to)) return false;
     if (typeof range[0] !== typeof values[0] || typeof range[1] !== typeof values[1] || typeof range[0] !== typeof range[1]) return false;
     const lower = intervalNumber(values[0]), upper = intervalNumber(values[1]);
-    return Number.isFinite(lower) && Number.isFinite(upper) && Math.min(lower, upper) <= Math.max(from, to) && Math.max(lower, upper) >= Math.min(from, to);
+    if (!Number.isFinite(lower) || !Number.isFinite(upper)) return false;
+    const [rangeStart, rangeEnd] = compareIntervalValues(range[0], range[1]) <= 0 ? range : [range[1], range[0]];
+    const [targetStart, targetEnd] = compareIntervalValues(values[0], values[1]) <= 0 ? values : [values[1], values[0]];
+    return compareIntervalValues(targetStart, rangeEnd) <= 0 && compareIntervalValues(targetEnd, rangeStart) >= 0;
   };
   const matchesHostTarget = (node, match) => {
     const target = targetIdentity(node);
@@ -3036,10 +3043,11 @@
     const range = { x: ordered(projection.x, x) };
     if (root.dataset.cfxBrushAxis !== 'x' && projection.y) range.y = ordered(projection.y, y);
     const categoryRange = projection.horizontal ? range.y : range.x;
+    const data = categoryRange ? { range, categoryRange } : { range };
     let metadata;
-    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return { range }; }
+    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return data; }
     const categories = categoryRange && (metadata.xLabels || []).filter(item => item.value >= categoryRange[0] && item.value <= categoryRange[1]).map(item => item.text);
-    return categories?.length ? { range, categories } : { range };
+    return categories?.length ? { ...data, categories } : data;
   };
   const revealLayer = (root) => {
     let layer = root.querySelector('[data-cfx-reveal-layer]');

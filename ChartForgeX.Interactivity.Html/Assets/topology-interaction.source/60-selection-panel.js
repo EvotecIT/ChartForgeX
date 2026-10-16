@@ -395,21 +395,27 @@
       if (detail.sync === true) emitSync('selection', { selection: { kind: detail.kind, ids: selections.map(item => item.id) } });
       return selections;
     };
-    const highlight = request => {
-      const detail = request || {};
+    let topologyHighlightState = { nodeIds: [], edgeIds: [], dim: false };
+    const syncTopologyHighlightAppearance = () => {
+      const detail = topologyHighlightState;
       const nodeIds = new Set((detail.nodeIds || []).map(String)), edgeIds = new Set((detail.edgeIds || []).map(String));
       const elements = Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"]'));
       const matches = new Set(elements.filter(element => {
         const node = attr(element, 'data-cfx-role') === 'topology-node';
         return (node ? nodeIds : edgeIds).has(attr(element, node ? 'data-node-id' : 'data-edge-id'));
       }));
-      const active = matches.size > 0;
+      const active = Array.from(matches).some(isViewportVisible);
       elements.forEach(element => {
         const matching = matches.has(element);
         element.classList.toggle('cfx-topology-html-highlighted', matching);
         if (matching) element.setAttribute('data-cfx-highlighted', 'true'); else element.removeAttribute('data-cfx-highlighted');
         setTopologyMuted(element, 'highlight', active && detail.dim === true && !matching);
       });
+    };
+    const highlight = request => {
+      const detail = request || {};
+      topologyHighlightState = { nodeIds: (detail.nodeIds || []).map(String), edgeIds: (detail.edgeIds || []).map(String), dim: detail.dim === true };
+      syncTopologyHighlightAppearance();
     };
     const hydrateSelected = element => {
       const detail = identity(element);

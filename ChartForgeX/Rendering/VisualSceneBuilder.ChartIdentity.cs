@@ -64,14 +64,20 @@ internal sealed partial class VisualSceneBuilder {
                 }
             } else {
                 CaptureTimeInstant(metadata, "data-cfx-range-start", "data-cfx-range-start-instant");
-                CaptureTimeInstant(metadata, "data-cfx-range-end", "data-cfx-range-end-instant");
+                CaptureTimeInstant(metadata, "data-cfx-range-end", "data-cfx-range-end-instant",
+                    metadata.TryGetValue("data-cfx-range-end-exclusive", out var exclusive) && exclusive == "true");
             }
         }
     }
 
-    private static void CaptureTimeInstant(IDictionary<string, string> metadata, string valueKey, string instantKey) {
+    private static void CaptureTimeInstant(IDictionary<string, string> metadata, string valueKey, string instantKey, bool captureInclusiveEnd = false) {
         if (!metadata.TryGetValue(valueKey, out var text) || !double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) || value < 0) return;
-        try { metadata[instantKey] = ChartDateTime.FromOrderedOaDate(value).ToString("O", CultureInfo.InvariantCulture); }
+        try {
+            var instant = ChartDateTime.FromOrderedOaDate(value);
+            metadata[instantKey] = instant.ToString("O", CultureInfo.InvariantCulture);
+            // Preserve the exact native boundary while publishing the last DateTime tick inside a half-open interval.
+            if (captureInclusiveEnd) metadata["data-cfx-range-inclusive-end-instant"] = instant.AddTicks(-1).ToString("O", CultureInfo.InvariantCulture);
+        }
         catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { }
     }
 

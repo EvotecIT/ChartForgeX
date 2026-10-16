@@ -62,6 +62,12 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         else Assert.False(result.GetProperty("brush").TryGetProperty("categories", out _));
         Assert.Equal(range.GetProperty("x").EnumerateArray().Select(value => value.GetRawText()),
             result.GetProperty("lasso").GetProperty("range").GetProperty("x").EnumerateArray().Select(value => value.GetRawText()));
+        Assert.Equal(range.GetProperty("x").GetRawText(), result.GetProperty("brush").GetProperty("categoryRange").GetRawText());
+        Assert.Equal(result.GetProperty("brush").GetProperty("categoryRange").GetRawText(), result.GetProperty("lasso").GetProperty("categoryRange").GetRawText());
+        var replayed = await page.EvaluateAsync<int[]>("""
+            rangeJson=>{chartController.select({ranges:[JSON.parse(rangeJson)]});return chartController.getSelection().map(target=>target.sourcePoint)}
+            """, result.GetProperty("brush").GetProperty("categoryRange").GetRawText());
+        Assert.Equal(new[] { 1 }, replayed);
         if (brushAxis == ChartBrushAxis.XY) Assert.Equal(range.GetProperty("y").EnumerateArray().Select(value => value.GetRawText()),
             result.GetProperty("lasso").GetProperty("range").GetProperty("y").EnumerateArray().Select(value => value.GetRawText()));
         Assert.All(result.GetProperty("lasso").GetProperty("targets").EnumerateArray(), target => Assert.Equal("point", target.GetProperty("targetKind").GetString()));

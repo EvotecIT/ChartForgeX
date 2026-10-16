@@ -82,6 +82,22 @@ public sealed class ChartLinkedProjectionContractsTests {
         Assert.Null(first.Attribute("data-cfx-range-end-instant"));
     }
 
+    [Theory]
+    [InlineData("cadence", 0)]
+    [InlineData("cadence", 1_000)]
+    [InlineData("cadence", 9_000)]
+    [InlineData("state", 0)]
+    [InlineData("state", 1_000)]
+    [InlineData("state", 9_000)]
+    public void HalfOpenTimeMetadataPreservesItsPreciseExclusiveAndInclusiveEndpoints(string family, int phaseTicks) {
+        var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddTicks(phaseTicks);
+        var first = XDocument.Parse(PreciseTimeIntervalsChart(family, start).ToSvg()).Descendants()
+            .Single(node => (string?)node.Attribute("data-cfx-observation-id") == "first");
+        Assert.Equal(start.ToString("O"), first.Attribute("data-cfx-range-start-instant")!.Value);
+        Assert.Equal(start.AddDays(1).ToString("O"), first.Attribute("data-cfx-range-end-instant")!.Value);
+        Assert.Equal(start.AddDays(1).AddTicks(-1).ToString("O"), first.Attribute("data-cfx-range-inclusive-end-instant")!.Value);
+    }
+
     internal static Chart ValueDomainsChart(string domains) {
         var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(0, 3).WithYAxisBounds(0, 10).WithSecondaryYAxisBounds(1000, 2000);
         if (!domains.StartsWith("secondary", StringComparison.Ordinal)) chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("primary"), "Primary",
@@ -112,6 +128,18 @@ public sealed class ChartLinkedProjectionContractsTests {
                 new ChartStateCategory("down", "Down", ChartColor.FromRgb(220, 38, 38)))
             .AddStateTimelineLane("States", new[] { new ChartStateTimelineSegment(start, boundary, "up"),
                 new ChartStateTimelineSegment(boundary, boundary + (boundary - start), "down") });
+        chart.Series[0].WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
+        return chart;
+    }
+
+    internal static Chart PreciseTimeIntervalsChart(string family, DateTime start) {
+        var boundary = start.AddDays(1); var end = start.AddDays(2);
+        var chart = Chart.Create().WithSize(640, 360).WithXAxisTimeScale();
+        if (family == "cadence") chart.AddSeries(ChartSeries.CreateBar(new ChartSeriesId("precise-days"), "Days",
+            new[] { new ChartPoint(start, 5), new ChartPoint(boundary, 8) }).WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
+        else chart.WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromRgb(13, 148, 136)),
+                new ChartStateCategory("down", "Down", ChartColor.FromRgb(220, 38, 38)))
+            .AddStateTimelineLane("States", new[] { new ChartStateTimelineSegment(start, boundary, "up"), new ChartStateTimelineSegment(boundary, end, "down") });
         chart.Series[0].WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
         return chart;
     }

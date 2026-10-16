@@ -44,8 +44,9 @@
     const range = { x: ordered(projection.x, x) };
     if (root.dataset.cfxBrushAxis !== 'x' && projection.y) range.y = ordered(projection.y, y);
     const categoryRange = projection.horizontal ? range.y : range.x;
+    const data = categoryRange ? { range, categoryRange } : { range };
     let metadata;
-    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return { range }; }
+    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return data; }
     const categories = categoryRange && (metadata.xLabels || []).filter(item => item.value >= categoryRange[0] && item.value <= categoryRange[1]).map(item => item.text);
-    return categories?.length ? { range, categories } : { range };
+    return categories?.length ? { ...data, categories } : data;
   };

@@ -45,7 +45,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var selected = Assert.Single(result.GetProperty("selection").EnumerateArray());
         Assert.Equal("point", selected.GetProperty("targetKind").GetString());
         Assert.Equal(start, DateTimeOffset.Parse(selected.GetProperty("range")[0].GetString()!).UtcDateTime);
-        Assert.Equal(kind == ChartSeriesKind.StateTimeline ? end.AddMilliseconds(-1) : end,
+        Assert.Equal(kind == ChartSeriesKind.StateTimeline ? end.AddTicks(-1) : end,
             DateTimeOffset.Parse(selected.GetProperty("range")[1].GetString()!).UtcDateTime);
         await CaptureAsync(page, "linked-schedule-brush-" + kind, result);
         AssertNoConsoleErrors(session);
@@ -67,7 +67,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 const target=chartController.getSelection()[0];chartController.highlight({ranges:[[instant,instant]]});
                 return{target,highlighted:chartController.root.querySelectorAll('.cfx-highlighted').length}}
             """, instant);
-        Assert.Equal(end.AddMilliseconds(-1), DateTimeOffset.Parse(result.GetProperty("target").GetProperty("range")[1].GetString()!).UtcDateTime);
+        Assert.Equal(end.AddTicks(-1), DateTimeOffset.Parse(result.GetProperty("target").GetProperty("range")[1].GetString()!).UtcDateTime);
         Assert.Equal(0, result.GetProperty("highlighted").GetInt32());
         AssertNoConsoleErrors(session);
     }

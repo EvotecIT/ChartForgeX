@@ -95,7 +95,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 return{first,roundTrip,exact,before:chartController.getSelection().map(target=>target.observationId),events:linkedEvents.length};
             }
             """, boundary.ToString("O"));
-        Assert.Equal(boundary.AddMilliseconds(-1), DateTimeOffset.Parse(result.GetProperty("first").GetProperty("range")[1].GetString()!).UtcDateTime);
+        Assert.Equal(boundary.AddTicks(-1), DateTimeOffset.Parse(result.GetProperty("first").GetProperty("range")[1].GetString()!).UtcDateTime);
         Assert.Equal("first", Assert.Single(result.GetProperty("roundTrip").EnumerateArray()).GetString());
         Assert.Equal("second", Assert.Single(result.GetProperty("exact").EnumerateArray()).GetString());
         Assert.Equal("first", Assert.Single(result.GetProperty("before").EnumerateArray()).GetString());
@@ -212,6 +212,6 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await page.Mouse.MoveAsync((float)positions[0], (float)positions[1]); await page.Mouse.DownAsync();
         await page.Mouse.MoveAsync((float)positions[2], (float)positions[3], new MouseMoveOptions { Steps = 4 }); await page.Mouse.UpAsync();
-        return await page.EvaluateAsync<JsonElement>("()=>projectionBrush");
+        return await page.EvaluateAsync<JsonElement>("()=>JSON.parse(JSON.stringify(projectionBrush))");
     }
 }
