@@ -131,7 +131,8 @@ internal static partial class VisualCartesianCompiler {
         if (colorSurface != null) description = colorSurface.AddFacts(metadata, observation, description);
         if (facts != null) {
             foreach (var fact in facts) metadata[fact.Key] = fact.Value;
-            if (facts.TryGetValue("data-cfx-category-label", out var category)) description += " " + category;
+            if (facts.TryGetValue("aria-label", out var accessibleDescription)) description = accessibleDescription;
+            else if (facts.TryGetValue("data-cfx-category-label", out var category)) description += " " + category;
         }
         metadata["aria-label"] = description;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, description));

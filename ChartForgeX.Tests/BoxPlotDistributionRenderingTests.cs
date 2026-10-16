@@ -10,6 +10,43 @@ namespace ChartForgeX.Tests;
 
 public sealed class BoxPlotDistributionRenderingTests {
     [Theory]
+    [InlineData(ChartBoxPlotWhiskerPolicy.Iqr, false, true)]
+    [InlineData(ChartBoxPlotWhiskerPolicy.Iqr, true, false)]
+    [InlineData(ChartBoxPlotWhiskerPolicy.MinMax, false, false)]
+    public void AccessibleSummaryDistinguishesInterpolatedWhiskersFromMeasuredExtrema(ChartBoxPlotWhiskerPolicy policy, bool noInliers, bool localized) {
+        var samples = noInliers ? new[] { 0d, 100 } : new[] { 0d, 100, 101, 102 };
+        var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("sparse"), "Latency", 1, samples)
+            .ConfigureBoxPlotStatistics(options => { options.WhiskerPolicy = policy; options.IqrMultiplier = noInliers ? .0001 : 1.5; });
+        var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(false).WithDataLabels(false).WithXLabels("Service B").AddSeries(series);
+        if (localized) chart.ConfigureLabels(labels => {
+            labels.LowerWhisker = "Dolny wąs"; labels.UpperWhisker = "Górny wąs";
+            labels.SourceMinimum = "Minimum próbek"; labels.SourceMaximum = "Maksimum próbek";
+            labels.InlierMinimum = "Minimum wewnątrz"; labels.InlierMaximum = "Maksimum wewnątrz";
+        });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var group = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "point" && node.Metadata.ContainsKey("data-cfx-derived"));
+        var description = group.Metadata["aria-label"];
+        var region = Assert.Single(prepared.Regions, item => item.Id == group.Id && item.Role == "point");
+        Assert.Equal(description, region.Label);
+        Assert.Contains("Service B", description);
+        Assert.Equal("0", group.Metadata["data-cfx-source-minimum"]);
+        if (policy == ChartBoxPlotWhiskerPolicy.Iqr) {
+            if (noInliers) {
+                Assert.Contains("Lower whisker=25", description); Assert.Contains("Upper whisker=75", description);
+                Assert.Contains("Source minimum=0", description); Assert.Contains("Source maximum=100", description);
+                Assert.Contains("Inlier minimum=None", description); Assert.Contains("Inlier maximum=None", description);
+            } else {
+                Assert.Contains("Dolny wąs=75", description); Assert.Contains("Górny wąs=102", description);
+                Assert.Contains("Minimum próbek=0", description); Assert.Contains("Minimum wewnątrz=100", description);
+            }
+        } else Assert.Contains(" minimum=0", description);
+        var svg = XDocument.Parse(prepared.ToSvg());
+        Assert.Equal(description, svg.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "point"
+            && node.Attribute("data-cfx-derived") != null).Attribute("aria-label")!.Value);
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]

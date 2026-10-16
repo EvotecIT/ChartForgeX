@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -7,6 +8,26 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
+    /// <summary>Keeps interpolated whisker bounds distinct from measured source and inlier extrema.</summary>
+    private static string DescribeIqrBoxPlot(Chart chart, ChartSeries series, ResolvedPointLabel label, string category,
+        ChartBoxPlotDistribution distribution) {
+        var words = chart.Options.Labels; var summary = distribution.Summary;
+        var description = new StringBuilder(series.Name).Append(": ").Append(label.DisplayedText)
+            .Append(' ').Append(words.Category).Append('=').Append(category);
+        void Fact(string name, double value) => description.Append(' ').Append(name).Append('=').Append(Number(value));
+        Fact(words.LowerWhisker, summary.Minimum); Fact(words.Q1, summary.Q1); Fact(words.Median, summary.Median);
+        Fact(words.Q3, summary.Q3); Fact(words.UpperWhisker, summary.Maximum);
+        Fact(words.SourceMinimum, distribution.SourceMinimum); Fact(words.SourceMaximum, distribution.SourceMaximum);
+        if (distribution.InlierMinimum.HasValue && distribution.InlierMaximum.HasValue) {
+            Fact(words.InlierMinimum, distribution.InlierMinimum.Value); Fact(words.InlierMaximum, distribution.InlierMaximum.Value);
+        } else {
+            description.Append(' ').Append(words.InlierMinimum).Append('=').Append(words.NoInliers);
+            description.Append(' ').Append(words.InlierMaximum).Append('=').Append(words.NoInliers);
+        }
+        Fact(words.SampleCount, distribution.Count); Fact(words.OutlierCount, distribution.OutlierSourceIndices.Count);
+        return description.ToString();
+    }
+
     private static void AddBoxPlotDistributionMetadata(Chart chart, IDictionary<string, string> facts, ChartBoxPlotDistribution distribution) {
         facts["data-cfx-derived"] = "five-number-summary";
         facts["data-cfx-group-index"] = Number(distribution.Index);

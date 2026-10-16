@@ -38,6 +38,9 @@ public sealed class BoxPlotDistributionBrowserTests {
         Assert.Null(await summary.GetAttributeAsync("data-cfx-source-point"));
         Assert.Null(await summary.GetAttributeAsync("data-cfx-observation-id"));
         Assert.Equal("[\"latency\",\"five-number-summary\",\"A\"]", await summary.GetAttributeAsync("data-cfx-target-id"));
+        var accessible = await summary.GetAttributeAsync("aria-label");
+        Assert.Contains("Dolny wąs=", accessible); Assert.Contains("Górny wąs=", accessible);
+        Assert.Contains("Minimum próbek=", accessible);
         await MoveToAsync(page, Outlier);
         Assert.Equal(new[] { "Series", "Latency", "Kategoria", "Service A", "Pomiar odstający", "100" }, await RowsAsync(page));
         await FocusWithKeyboardAsync(page, outlier); await page.Keyboard.PressAsync("Space");
@@ -87,6 +90,9 @@ public sealed class BoxPlotDistributionBrowserTests {
         Assert.Equal("Brak", rows[Array.IndexOf(rows, "Minimum wewnętrzne") + 1]);
         Assert.Equal("25", rows[Array.IndexOf(rows, "Lower whisker") + 1]);
         Assert.Equal("75", rows[Array.IndexOf(rows, "Upper whisker") + 1]);
+        var accessible = await page.Locator(Summary + "[data-cfx-group-index='1']").GetAttributeAsync("aria-label");
+        Assert.Contains("Lower whisker=25", accessible); Assert.Contains("Upper whisker=75", accessible);
+        Assert.Contains("Minimum źródła=0", accessible); Assert.Contains("Minimum wewnętrzne=Brak", accessible);
         await CaptureAsync(page, "boxplot-no-inlier-readout"); AssertNoConsoleErrors(session);
     }
 
