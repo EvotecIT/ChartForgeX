@@ -62,16 +62,18 @@ public sealed class ConsumerRenderingRegressionTests {
         Assert.NotEmpty(list.ToPng());
     }
     [Theory]
-    [InlineData("progressive-gray")]
-    [InlineData("progressive-rgb")]
-    public void ProgressiveJpegUsesTheHuffmanTablesOfEachScan(string name) {
+    [InlineData("progressive-gray", 32, 24)]
+    [InlineData("progressive-rgb", 32, 24)]
+    [InlineData("progressive-rgb-padded", 24, 24)]
+    [InlineData("progressive-rgb-refinement", 32, 32)]
+    public void ProgressiveJpegPreservesScanTablesEdgeBlocksAndRefinementPixels(string name, int width, int height) {
         byte[] Read(string suffix) {
             using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ChartForgeX.Tests.Fixtures.Raster." + name + suffix)!;
             using var output = new MemoryStream(); stream.CopyTo(output); return output.ToArray();
         }
         var image = RasterImageDecoder.Decode(Read(".jpg"));
         var expected = Read(".rgb");
-        Assert.Equal(32, image.Width); Assert.Equal(24, image.Height);
+        Assert.Equal(width, image.Width); Assert.Equal(height, image.Height);
         var totalError = 0d;
         for (var i = 0; i < expected.Length; i++) totalError += Math.Abs(expected[i] - image.Pixels[(i / 3) * 4 + i % 3]);
         Assert.InRange(totalError / expected.Length, 0, 3);
@@ -275,4 +277,3 @@ public sealed class ConsumerRenderingRegressionTests {
     private static double N(XElement e, string attribute) => double.Parse((string)e.Attribute(attribute)!, CultureInfo.InvariantCulture);
     private static byte[] Pixel(RgbaImage image, int x, int y) => image.Pixels.AsSpan((y * image.Width + x) * 4, 4).ToArray();
 }
-

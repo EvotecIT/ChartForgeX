@@ -97,7 +97,8 @@ internal static partial class TopologyLayoutEngine {
             return new LayerPlacement(group.Index, group.Layer, group.Nodes, columns, rows, maxWidth, maxHeight, width);
         }).ToList();
         var totalWidth = prepared.Sum(layer => layer.BlockSize);
-        var layerGap = prepared.Count <= 1 ? 0 : Math.Max(rankSpacing + 14, (availableW - totalWidth) / (prepared.Count - 1));
+        var minimumGap = options?.LayeredRankSpacing.HasValue == true ? rankSpacing + 14 : Math.Max(56, rankSpacing);
+        var layerGap = prepared.Count <= 1 ? 0 : Math.Max(minimumGap, (availableW - totalWidth) / (prepared.Count - 1));
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var lanes = LongEdgeLanePlan.Create(chart, prepared, true, availableH, nodeSpacing + 6);
         var x = pad;

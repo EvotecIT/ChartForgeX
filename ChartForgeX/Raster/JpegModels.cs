@@ -89,6 +89,8 @@ internal static partial class JpegReader {
         public int DcTable;
         public int AcTable;
         public int PreviousDc;
+        public int ScanWidthInBlocks;
+        public int ScanHeightInBlocks;
         public int WidthInBlocks;
         public int HeightInBlocks;
         public int CurrentBlockOffset;
