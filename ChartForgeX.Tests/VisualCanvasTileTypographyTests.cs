@@ -120,7 +120,10 @@ public sealed class VisualCanvasTileTypographyTests {
         Assert.True(metrics.TextMax > 20);
         Assert.DoesNotContain("data-cfx-role=\"visual-canvas-info-tile-mini-chart\"",
             canvas.ToSvg());
-        Assert.NotEmpty(canvas.ToPng());
+        var withoutMiniChart = VisualCanvas.Create(300, 80).AddInfoTileWithTextOptions(8, 8,
+            284, 56, "CPU", "PROCESSOR", "Intel Xeon",
+            new VisualCanvasInfoTileTextOptions(textScale: 3));
+        Assert.Equal(withoutMiniChart.ToPng(), canvas.ToPng());
     }
 
     [Fact]
