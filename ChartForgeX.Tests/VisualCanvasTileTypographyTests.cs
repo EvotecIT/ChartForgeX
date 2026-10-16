@@ -76,8 +76,28 @@ public sealed class VisualCanvasTileTypographyTests {
             diagnostic => diagnostic.Code == "InfoTileTextScaleReduced");
     }
 
+    [Theory]
+    [InlineData(1.5)]
+    [InlineData(4)]
+    public void ShrinkToFitKeepsTextInsideShortTiles(double requestedScale) {
+        var canvas = VisualCanvas.Create(300, 100).AddInfoTileWithTextOptions(
+            8, 8, 284, 58, "PC", "VERY LONG HOST LABEL",
+            "A workstation value that needs room",
+            new VisualCanvasInfoTileTextOptions(textScale: requestedScale), "extra detail");
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var style = canvas.ResolveStyle();
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, style);
+        var layout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y,
+            metrics.Height, metrics.TextX, metrics.TextMax, style);
+
+        Assert.True(layout.WasScaledDown);
+        Assert.False(layout.HasVerticalOverflow);
+        Assert.All(layout.Lines, line => Assert.True(
+            line.Y + line.FontSize <= metrics.Y + metrics.Height + 0.5));
+    }
+
     [Fact]
-    public void ShrinkLoopEvaluatesItsComputedMinimumScale() {
+    public void ShrinkLoopGoesBelowItsPreferredFloorToPreventVerticalOverflow() {
         var canvas = VisualCanvas.Create(240, 100).AddInfoTileWithTextOptions(8, 8,
             224, 84, "PC", "A long label", "A value that cannot fit at scale three",
             new VisualCanvasInfoTileTextOptions(textScale: 3));
@@ -87,7 +107,9 @@ public sealed class VisualCanvasTileTypographyTests {
         var layout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y,
             metrics.Height, metrics.TextX, metrics.TextMax, style);
 
-        Assert.Equal(1.35, layout.Scale, 6);
+        Assert.True(layout.Scale < 1.35);
+        Assert.True(layout.WasScaledDown);
+        Assert.False(layout.HasVerticalOverflow);
     }
 
     [Fact]
@@ -280,7 +302,11 @@ public sealed class VisualCanvasTileTypographyTests {
         Assert.NotEmpty(changedRows);
         Assert.InRange(changedRows[0], (int)metrics.Y, (int)tileBottom - 1);
         Assert.InRange(changedRows[^1], (int)metrics.Y, (int)tileBottom - 1);
-        Assert.InRange(Math.Abs(changedRows.Count - metrics.ProgressRailHeight), 0, 2);
+        var railTop = Math.Max(0, (int)Math.Floor(metrics.ProgressRailY));
+        var railBottom = Math.Min(image.Height,
+            (int)Math.Ceiling(metrics.ProgressRailY + metrics.ProgressRailHeight));
+        var changedRailRows = changedRows.Count(row => row >= railTop && row < railBottom);
+        Assert.InRange(Math.Abs(changedRailRows - metrics.ProgressRailHeight), 0, 2);
     }
 
     [Fact]

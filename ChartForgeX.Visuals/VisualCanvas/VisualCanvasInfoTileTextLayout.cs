@@ -166,9 +166,22 @@ internal static class VisualCanvasInfoTileTextLayout {
             scale = minimumScale;
         }
 
+        var detailOmitted = false;
         if (best.HasVerticalOverflow && tile.Detail.Length > 0) {
             var withoutDetail = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, true, faces, theme);
-            if (withoutDetail.TextHeight < best.TextHeight || !withoutDetail.HasVerticalOverflow) best = withoutDetail;
+            if (withoutDetail.TextHeight < best.TextHeight || !withoutDetail.HasVerticalOverflow) {
+                best = withoutDetail;
+                detailOmitted = true;
+            }
+        }
+
+        var minimumVerticalScale = Math.Min(requestedScale, 0.4);
+        for (var i = 0; best.HasVerticalOverflow && i < 96 && scale > minimumVerticalScale; i++) {
+            var nextScale = Math.Max(minimumVerticalScale, scale - 0.04);
+            if (nextScale >= scale) break;
+            best = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine,
+                nextScale, detailOmitted, faces, theme);
+            scale = nextScale;
         }
 
         best.WasScaledDown = best.Scale < requestedScale - 0.001;
@@ -184,14 +197,15 @@ internal static class VisualCanvasInfoTileTextLayout {
         var valueFont = (tile.ValueFontSize ?? theme.TileValueSize) * (tileHeight < 72 ? 17.0 / 22.0 : tileHeight < 92 ? 21.0 / 22.0 : 1) * scale;
         var detailFont = (tile.DetailFontSize ?? theme.TileDetailSize) * (tileHeight < 72 ? 11.0 / 13.0 : 1) * scale;
         var requestedScale = tile.TextScale ?? theme.TileTextScale;
-        var lineSpacing = 4 * requestedScale;
+        var layoutScale = requestedScale == 1 ? requestedScale : scale;
+        var lineSpacing = 4 * layoutScale;
         var labelLineHeight = labelFont + lineSpacing;
         var valueLineHeight = valueFont + lineSpacing;
         var detailLineHeight = detailFont + lineSpacing;
-        var topPadding = Math.Max(10 * requestedScale, Math.Min(18 * requestedScale, tileHeight * 0.16));
+        var topPadding = Math.Max(10 * layoutScale, Math.Min(18 * layoutScale, tileHeight * 0.16));
         var bottomPadding = tile.Progress.HasValue
-            ? 30 * requestedScale
-            : Math.Max(12 * requestedScale, Math.Min(18 * requestedScale, tileHeight * 0.15));
+            ? 30 * layoutScale
+            : Math.Max(12 * layoutScale, Math.Min(18 * layoutScale, tileHeight * 0.15));
         var availableHeight = Math.Max(valueLineHeight, tileHeight - topPadding - bottomPadding);
         var hasDetail = tile.Detail.Length > 0;
         var detailLineLimit = omitDetail || !hasDetail ? 0 : singleLine ? 1 : tileHeight >= 122 ? 2 : 1;
