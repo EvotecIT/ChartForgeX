@@ -82,7 +82,8 @@ internal sealed partial class VisualTopologyCompiler {
         var width = Math.Max(1, _chart.Viewport.Width - padding * 2);
         var height = Math.Max(1, _chart.Viewport.Height - padding * 2);
         _offsetX = _plot.X - padding; _offsetY = _plot.Y - padding;
-        var canFitManualCards = _chart.Nodes.All(node => node.Kind == TopologyNodeKind.Generic && !node.Shape.HasValue
+        var canFitManualCards = _chart.Nodes.Where(node => EffectiveNodeDisplayMode(node, _options) != TopologyNodeDisplayMode.Hidden)
+            .All(node => node.Kind == TopologyNodeKind.Generic && !node.Shape.HasValue
             && node.DisplayMode is not (TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Dot)
             && string.IsNullOrWhiteSpace(node.IconId) && string.IsNullOrWhiteSpace(node.Symbol));
         var fitResolvedLayout = _options.FitContentToViewport
@@ -138,7 +139,11 @@ internal sealed partial class VisualTopologyCompiler {
                     Include(center - labelWidth / 2, labelY, center + labelWidth / 2, labelY + labelHeight);
                 }
             }
-            foreach (var point in _routes.Values.SelectMany(route => route)) Include(point.X, point.Y, point.X, point.Y);
+            foreach (var route in _routes) {
+                if (route.Value.Count == 0) continue;
+                var halfStroke = FittedRouteStrokeWidth(route.Key) / 2;
+                foreach (var point in route.Value) Include(point.X - halfStroke, point.Y - halfStroke, point.X + halfStroke, point.Y + halfStroke);
+            }
             foreach (var label in _edgeLabels) Include(label.CenterX - label.Width / 2, label.CenterY - label.Height / 2,
                 label.CenterX + label.Width / 2, label.CenterY + label.Height / 2);
             if (_options.IncludeEndpointLabels) {
@@ -160,6 +165,22 @@ internal sealed partial class VisualTopologyCompiler {
             void IncludeStroked(double x1, double y1, double x2, double y2, double strokeWidth) {
                 var halfStroke = Math.Max(0, strokeWidth) / 2;
                 Include(x1 - halfStroke, y1 - halfStroke, x2 + halfStroke, y2 + halfStroke);
+            }
+
+            double FittedRouteStrokeWidth(TopologyEdge edge) {
+                var selected = _options.SelectedEdgeIds.Contains(edge.Id);
+                var width = edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth;
+                if (edge.Emphasis == TopologyEdgeEmphasis.Strong) width *= 1.6;
+                if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !_options.UseForceGraphPresentation && !IsMonitoringDashboardStyle(_options)) width *= .7;
+                if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options)) width = EdgeStrokeWidth(edge, selected, _options);
+                else if (selected) width *= 1.5;
+                var layers = ChartLineVisualLayers.Build(_colors.Foreground, width, EdgeVisualStyle(edge, selected, _options));
+                var maximum = layers.Where(layer => layer.IsVisible).Select(layer => layer.StrokeWidth).DefaultIfEmpty(width).Max();
+                if (ShouldRenderMonitoringRouteHalo(_chart, edge, _nodesById, _options)) {
+                    var geographic = ShouldRenderGeographicRouteHalo(_chart, edge, _nodesById, _options);
+                    maximum = Math.Max(maximum, width + RouteHaloStrokeExtra(geographic));
+                }
+                return maximum;
             }
         }
     }

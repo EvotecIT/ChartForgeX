@@ -87,6 +87,12 @@ public static class ConsumerRenderingExamples {
             .AddAutoNode("identity", "Identity service").AddEdge("request", "gateway", "identity", "HTTPS");
         var growingOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
         SaveExample( "topology-fit-growth", growing.ToSvg(growingOptions), growing.ToPng(growingOptions));
+        var selectedRoute = TopologyChart.Create().WithViewport(560, 320).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddNode("source", "Source", 70, 130, width: 100, height: 64).AddNode("target", "Target", 390, 130, width: 100, height: 64)
+            .AddEdge("link", "source", "target", "Selected route").WithEdgeWaypoints("link", new ChartPoint(260, 18));
+        var selectedRouteOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        selectedRouteOptions.SelectedEdgeIds.Add("link");
+        SaveExample("topology-fit-selected-route-stroke", selectedRoute.ToSvg(selectedRouteOptions), selectedRoute.ToPng(selectedRouteOptions));
         var namedPorts = TopologyChart.Create().WithViewport(900, 340).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
             .AddNode("source", "Source", 50, 70, width: 130, height: 72).AddNode("target", "Target", 390, 70, width: 130, height: 72)
             .AddNodePort("source", "upper", TopologyEdgePort.Right, 0.2).AddNodePort("target", "lower", TopologyEdgePort.Left, 0.8)

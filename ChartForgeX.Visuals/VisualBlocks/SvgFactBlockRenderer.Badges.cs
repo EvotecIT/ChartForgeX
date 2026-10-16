@@ -12,7 +12,7 @@ public sealed partial class SvgFactBlockRenderer {
         var theme = table.Options.ResolvedTheme;
         var color = cell.BadgeColor ?? VisualBlockRendering.StatusColor(theme, cell.BadgeStatus);
         var bodyScale = theme.DataLabelFontSize / 12;
-        var fontSize = Math.Max(9, table.Dense ? 10.5 : 11.5) * bodyScale;
+        var fontSize = Math.Max(table.Dense ? 10 : 9, (table.Dense ? 10.5 : 11.5) * bodyScale);
         var caption = VisualBlockRendering.SingleLineText(cell.BadgeText);
         var horizontalPadding = 18 * bodyScale;
         var badgeWidth = Math.Min(width, Math.Max(28 * bodyScale, VisualBlockRendering.MeasureTextWidth(caption, fontSize, theme.FontFamily, 700) + horizontalPadding));
