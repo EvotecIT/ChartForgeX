@@ -12,7 +12,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualSpecialtyCompiler {
     private static void Funnel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
-        var show = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
+        var show = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
         var form = chart.Options.Funnel.Form;
         var layout = ChartFunnelLayout.Compute(series.RenderPoints, plot, chart.Options.Funnel, context.Theme.Spacing, show);
         using var group = builder.PushGroup("funnel-chart", "funnel-chart", new Dictionary<string, string> {

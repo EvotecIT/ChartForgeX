@@ -25,14 +25,14 @@ internal sealed partial class VisualTopologyCompiler {
             var opacity = EdgeOpacity(edge, _options);
             color = color.WithOpacity(color.A / 255d * opacity); paintOpacity *= opacity;
         }
-        var width = (edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth) * _scale;
+        var width = (edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth) * (_options.UseForceGraphPresentation ? 1 : _scale);
         if (edge.Emphasis == TopologyEdgeEmphasis.Strong) width *= 1.6;
         if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !_options.UseForceGraphPresentation && !IsMonitoringDashboardStyle(_options)) { width *= .7; color = color.WithOpacity(color.A / 255d * .5); paintOpacity *= .5; }
         var edgePaint = usePalette ? PalettePaint(edge.PaletteIndex!.Value, color, paintOpacity)
             : cssVariable ? paintOpacity >= 1 ? sourcePaint : sourcePaint.WithOpacity(color, paintOpacity)
             : SvgPaint.Of(color, colorRole);
         if (_options.SelectedEdgeIds.Contains(edge.Id)) width *= 1.5;
-        if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options)) width = EdgeStrokeWidth(edge, _options.SelectedEdgeIds.Contains(edge.Id), _options) * _scale;
+        if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options)) width = EdgeStrokeWidth(edge, _options.SelectedEdgeIds.Contains(edge.Id), _options) * (_options.UseForceGraphPresentation ? 1 : _scale);
         var paintPoints = _paintRoutes[edge].Select(Point).ToArray();
         var hasTrunk = _trunks.TryGetValue(edge, out var trunk);
         using (Host(edge.Href, edge.Tooltip, edge.Id, "topology-edge-host"))
@@ -74,6 +74,28 @@ internal sealed partial class VisualTopologyCompiler {
                         role: "topology-edge-line" + layer.RoleSuffix, dash: dash,
                         paint: new VisualScenePaintBinding(stroke: layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity())
                             : layer.Opacity >= 1 ? edgePaint : edgePaint.WithOpacity(layer.ColorWithOpacity(), layer.Opacity)));
+                }
+                if (dash is { Length: > 0 }) {
+                    var layers = ChartLineVisualLayers.Build(color, width / _scale, style);
+                    DrawEndpointConnector(route[0], route[1]);
+                    DrawEndpointConnector(route[route.Length - 1], route[route.Length - 2]);
+
+                    void DrawEndpointConnector(ChartPoint endpoint, ChartPoint adjacent) {
+                        var dx = adjacent.X - endpoint.X;
+                        var dy = adjacent.Y - endpoint.Y;
+                        var distance = Math.Sqrt(dx * dx + dy * dy);
+                        if (distance <= .001) return;
+                        var length = Math.Min(EdgeEndpointGap * _scale, distance);
+                        var inner = new ChartPoint(endpoint.X + dx / distance * length, endpoint.Y + dy / distance * length);
+                        var connector = new ChartPath(new[] { ChartPathCommand.MoveTo(endpoint.X, endpoint.Y), ChartPathCommand.LineTo(inner.X, inner.Y) });
+                        foreach (var layer in layers) {
+                            if (!layer.IsVisible) continue;
+                            _builder.Path(connector, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth * _scale,
+                                role: "topology-edge-endpoint-connector",
+                                paint: new VisualScenePaintBinding(stroke: layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity())
+                                    : layer.Opacity >= 1 ? edgePaint : edgePaint.WithOpacity(layer.ColorWithOpacity(), layer.Opacity)));
+                        }
+                    }
                 }
             }
         }
@@ -167,7 +189,7 @@ internal sealed partial class VisualTopologyCompiler {
             ChartRect? measured = null;
             for (var i = 0; i < labels.Length; i++) {
                 var textBounds = Text(labels[i], new ChartRect(bounds.X + 4 * _scale, bounds.Y + i * height, Math.Max(0, bounds.Width - 8 * _scale), height),
-                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), LabelColor(i == 0 ? _colors.Foreground : _colors.MutedForeground), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true,
+                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), LabelColor(i == 0 ? _colors.Foreground : _colors.MutedForeground), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true, verticallyCentered: true,
                     paint: i == 0 ? ForegroundPaint(LabelColor(_colors.Foreground), EdgeLabelOpacity(edge)) : MutedPaint(LabelColor(_colors.MutedForeground), EdgeLabelOpacity(edge)), opacity: EdgeLabelOpacity(edge));
                 if (!textBounds.HasValue) continue;
                 if (!measured.HasValue) measured = textBounds;

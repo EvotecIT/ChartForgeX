@@ -6,6 +6,8 @@ Qualify consumer candidates from their intended branches. A primary checkout, re
 
 The unified authoring API uses the coordinated 3.0.0 package family. Upgrade the ChartForgeX packages used by a consumer together, then migrate the calls below. The earlier 2.0.0 packages introduced the separate Visuals and Stories assemblies; they do not contain the later theme, observation and series-identity changes.
 
+Treemaps display their group and leaf captions by default. An explicit `WithDataLabels(false)` on the chart or `ShowDataLabels = false` on its series still hides them. `ConfigureTreemap(options => options.ShowValues = false)` keeps the names while hiding their numeric values.
+
 ## Unified authoring contracts
 
 Use the same immutable `VisualTheme` and explicit `VisualThemeMode` for every visual model. Replace `ChartTheme` and `TopologyTheme` with paired presets such as `VisualTheme.Graphite()` or `VisualTheme.Report()`, then select `Dark` through `WithTheme(theme, VisualThemeMode.Dark)` or `ThemeMode`. Replace mutable theme and brand-kit edits with `theme.Configure(builder => ...)`; assign the returned snapshot. Palette colors live in `builder.Light` and `builder.Dark`, typography in `builder.Typography`, and geometry/effects in their named builder properties. Local canvas/story/window controls live in their owning style options.

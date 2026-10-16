@@ -103,7 +103,6 @@ public sealed class TopologyChartValidator {
             if (!IsFinite(group.X) || !IsFinite(group.Y)) Add(result, "group-coordinate", "Group '" + group.Id + "' coordinates must be finite.", group.Id);
             ValidateCoordinatePair(result, "group", group.Id, group.Longitude, group.Latitude);
         }
-
         foreach (var duplicate in chart.Groups.Where(group => !string.IsNullOrWhiteSpace(group.Id)).GroupBy(group => group.Id, StringComparer.Ordinal).Where(group => group.Count() > 1)) {
             Add(result, "duplicate-group-id", "Duplicate group id '" + duplicate.Key + "'.", duplicate.Key);
         }
@@ -164,6 +163,7 @@ public sealed class TopologyChartValidator {
             ValidateNamedPort(chart, result, edge, edge.SourceNodeId, edge.SourcePortId, "source");
             ValidateNamedPort(chart, result, edge, edge.TargetNodeId, edge.TargetPortId, "target");
         }
+
     }
 
     private static void ValidateNamedPort(TopologyChart chart, TopologyValidationResult result, TopologyEdge edge, string nodeId, string? portId, string endpoint) {

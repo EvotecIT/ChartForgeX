@@ -54,6 +54,10 @@ internal static partial class SequencePreparedCompiler {
             }
         }
         double labelY = b.Y + (kind == SequenceArtifactParticipantKind.Participant ? 8 : 48);
+        if (kind == SequenceArtifactParticipantKind.Participant) {
+            var textHeight = builder.MeasureText(item.Text, size).Height;
+            labelY = b.Y + (b.Height - textHeight) / 2;
+        }
         Text(builder, item.Text, new ChartRect(b.X + 8, labelY, b.Width - 16, b.Bottom - labelY - 8), size, colors.Foreground, center: true);
     }
 

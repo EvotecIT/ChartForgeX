@@ -105,7 +105,7 @@ internal static partial class VisualPolarCompiler {
                                 SvgPaint.Of(colors.Surface, SvgColorRole.Surface), Pattern(series, source),
                                 ChartStateMark.Backdrop(chart.Options, colors, context.Frame), radar ? "radar-point-pattern" : "polar-point-pattern");
                         }
-                        if (series.ShowDataLabels ?? chart.Options.ShowDataLabels)
+                        if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
                             AddDataLabel(chart, context, builder, plot, labels, series, source, pointId, formatted, mapped[index], angle, radar, seriesIndex, chart.Series.Count);
                     }
                 }

@@ -195,6 +195,8 @@ public sealed class VisualArtifactInterchangeNode {
     public string? Color { get; set; }
     /// <summary>Gets or sets the optional background color.</summary>
     public string? BackgroundColor { get; set; }
+    /// <summary>Gets or sets the optional label color.</summary>
+    public string? LabelColor { get; set; }
     /// <summary>Gets or sets an optional navigation target.</summary>
     public string? Href { get; set; }
     /// <summary>Gets or sets optional tooltip text.</summary>

@@ -59,7 +59,7 @@ internal static partial class VisualMapCompiler {
                         Math.Min(context.Theme.AxisStrokeWidth, arrowWidth / 4), "dotted-map-connector-arrow", close: true,
                         paint: new VisualScenePaintBinding(paint.WithOpacity(ChartColorMath.WithOpacity(color, .78), .78), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 }
-                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) {
+                if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) {
                     var style = MapDataStyle(chart, context, -1, color);
                     AddMapLabel(builder, labels, connector.Label, ChartRouteLabelCompaction.Compact(connector.Label), Along(samples, .36), style,
                         id + "-label", "dotted-map-connector-label", plot, context.Theme.Spacing + dot, 30,

@@ -90,6 +90,7 @@ internal static class VisualArtifactInterchangeValidation {
             OptionalText(node.Badge, "node badge");
             OptionalText(node.Color, "node color");
             OptionalText(node.BackgroundColor, "node background color");
+            OptionalText(node.LabelColor, "node label color");
             SafeLink(node.Href, "node href", envelope);
             OptionalText(node.Tooltip, "node tooltip");
             FiniteOptional(node.X, "node x");

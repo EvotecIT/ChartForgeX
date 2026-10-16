@@ -41,7 +41,10 @@ public sealed partial class VisualTheme {
                 Number(typography, "axisSize", "typography"), Number(typography, "legendSize", "typography"), Number(typography, "dataLabelSize", "typography"),
                 OptionalNumber(typography, "scalarValueSize", "typography", 34), OptionalNumber(typography, "centerValueSize", "typography", 20),
                 OptionalNumber(typography, "axisTitleSize", "typography", Number(typography, "axisSize", "typography")),
-                typography.TryGetValue("monospaceFamily", out var mono) ? mono.AsString("typography.monospaceFamily") : "Cascadia Mono, Consolas, monospace"),
+                typography.TryGetValue("monospaceFamily", out var mono) ? mono.AsString("typography.monospaceFamily") : "Cascadia Mono, Consolas, monospace",
+                OptionalNumber(typography, "tileLabelSize", "typography", 14),
+                OptionalNumber(typography, "tileValueSize", "typography", 22),
+                OptionalNumber(typography, "tileDetailSize", "typography", 13)),
             Number(geometry, "spacing", "geometry"), Number(geometry, "seriesStrokeWidth", "geometry"), Number(geometry, "markerRadius", "geometry"),
             Number(geometry, "areaOpacity", "geometry"), Number(geometry, "barRadius", "geometry"),
             Number(geometry, "gridStrokeWidth", "geometry"), Number(geometry, "axisStrokeWidth", "geometry"),
@@ -68,6 +71,8 @@ public sealed partial class VisualTheme {
         WriteNumber(writer, "titleSize", Typography.TitleSize); WriteNumber(writer, "subtitleSize", Typography.SubtitleSize);
         WriteNumber(writer, "axisSize", Typography.AxisSize); WriteNumber(writer, "legendSize", Typography.LegendSize); WriteNumber(writer, "dataLabelSize", Typography.DataLabelSize);
         WriteNumber(writer, "scalarValueSize", Typography.ScalarValueSize); WriteNumber(writer, "centerValueSize", Typography.CenterValueSize);
+        WriteNumber(writer, "tileLabelSize", Typography.TileLabelSize); WriteNumber(writer, "tileValueSize", Typography.TileValueSize);
+        WriteNumber(writer, "tileDetailSize", Typography.TileDetailSize);
         writer.EndObject();
         writer.Property("geometry"); writer.StartObject();
         WriteNumber(writer, "spacing", Spacing); WriteNumber(writer, "seriesStrokeWidth", SeriesStrokeWidth); WriteNumber(writer, "markerRadius", MarkerRadius);

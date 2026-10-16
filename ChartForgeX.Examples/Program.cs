@@ -38,6 +38,7 @@ dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.htm
 });
 
 MermaidExamples.Write(output);
+ConsumerRenderingExamples.Write(Path.Combine(output, "consumer-regressions"));
 DenseSignalExamples.Write(output, DemoPngOutputScale);
 CartesianCategoryExamples.Write(output, DemoPngOutputScale);
 ReportingExamples.Write(output, DemoPngOutputScale);
@@ -258,7 +259,7 @@ var sharedAxisGrid = ChartGrid.Create()
 
 ExampleArtifactWriter.SaveGrid(sharedAxisGrid, output, "shared-axis-coverage-grid", DemoPngOutputScale);
 
-ExpressiveExamples.Write(output, DemoPngOutputScale); WellnessDashboardExamples.Write(output, DemoPngOutputScale); PremiumSurfaceExamples.Write(output, DemoPngOutputScale); DashboardPortfolioExamples.Write(output, DemoPngOutputScale); DashboardPatternExamples.Write(output, DemoPngOutputScale); AxisQualityExamples.Write(output, DemoPngOutputScale);
+ExpressiveExamples.Write(output, DemoPngOutputScale); WellnessDashboardExamples.Write(output, DemoPngOutputScale); PremiumSurfaceExamples.Write(output, DemoPngOutputScale); VisualCanvasTypographyExamples.Write(output); DashboardPortfolioExamples.Write(output, DemoPngOutputScale); DashboardPatternExamples.Write(output, DemoPngOutputScale); AxisQualityExamples.Write(output, DemoPngOutputScale);
 
 var funnel = Chart.Create()
     .WithTitle("Domain Remediation Funnel")

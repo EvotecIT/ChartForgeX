@@ -20,7 +20,8 @@ public sealed class VisualThemeJsonTests {
         light.Neutral3 = ChartColor.FromHex("#A9BACBDC");
         dark.Status.Info = new VisualTokenColor(ChartColor.FromHex("#12345678"), ChartColor.FromHex("#ABCDEF12"));
         var typography = new VisualTypography("Example \"Family\", C:\\Fonts\tΩ", 27.25, 14.5, 10.75, 12.25, 11.5,
-            scalarValueSize: 41.25, centerValueSize: 23.75);
+            scalarValueSize: 41.25, centerValueSize: 23.75,
+            tileLabelSize: 16.25, tileValueSize: 28.5, tileDetailSize: 14.75);
         var original = new VisualTheme(light, dark, typography, 13.5, 2.75, 4.25, 0.375, 5.5, 0.5, 1.25, cardRadius: 17,
             cardShadowOpacity: .22, cardShadowColor: ChartColor.FromHex("#7C3AED80"), gaugeStrokeWidth: 15.75, gaugeBandWidth: 3.25);
         string json = original.ToJson();
@@ -44,6 +45,8 @@ public sealed class VisualThemeJsonTests {
         Assert.Equal(new[] { 27.25, 14.5, 10.75, 12.25, 11.5 }, new[] { imported.Typography.TitleSize, imported.Typography.SubtitleSize, imported.Typography.AxisSize, imported.Typography.LegendSize, imported.Typography.DataLabelSize });
         Assert.Equal(41.25, imported.Typography.ScalarValueSize);
         Assert.Equal(23.75, imported.Typography.CenterValueSize);
+        Assert.Equal(new[] { 16.25, 28.5, 14.75 }, new[] { imported.Typography.TileLabelSize,
+            imported.Typography.TileValueSize, imported.Typography.TileDetailSize });
         Assert.Equal(new[] { 13.5, 2.75, 4.25, 0.375, 5.5, 0.5, 1.25 }, new[] { imported.Spacing, imported.SeriesStrokeWidth, imported.MarkerRadius, imported.AreaOpacity, imported.BarRadius, imported.GridStrokeWidth, imported.AxisStrokeWidth });
         Assert.Equal(17, imported.CardRadius);
         Assert.Equal(.22, imported.CardShadowOpacity);

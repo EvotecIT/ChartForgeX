@@ -12,7 +12,7 @@ internal static partial class VisualCartesianCompiler {
         var top = 0d; var bottom = 0d; var spacing = Math.Max(2, context.Theme.Spacing);
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
-            if (series.Kind != ChartSeriesKind.Bar || !(series.ShowDataLabels ?? chart.Options.ShowDataLabels)
+            if (series.Kind != ChartSeriesKind.Bar || !(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
                 || ChartStackLayout.Participates(chart, series)) continue;
             var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
             if (placement is not (ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below)) continue;

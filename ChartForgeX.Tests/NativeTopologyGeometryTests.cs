@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -11,18 +12,34 @@ namespace ChartForgeX.Tests;
 
 public sealed class NativeTopologyGeometryTests {
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void SharedTailIsPaintedOnceWhileEveryRelationshipRetainsItsWholeRoute(bool namedPort) {
+    [InlineData(false, 1)]
+    [InlineData(false, 2)]
+    [InlineData(true, 1)]
+    [InlineData(true, 2)]
+    public void SharedTailIsPaintedOnceAndReachesTheFittedTargetBorder(bool namedPort, int pngScale) {
         var chart = TopologyRoutingFixtures.FanIn(namedPort);
-        var options = TopologyRoutingFixtures.Options(); options.ShareIncomingTrunks = true; options.FitContentToViewport = true;
+        var options = TopologyRoutingFixtures.Options(); options.ShareIncomingTrunks = true; options.FitContentToViewport = true; options.PngOutputScale = pngScale;
         var prepared = chart.Prepare(options);
         var document = XDocument.Parse(prepared.ToSvg());
         var tail = Assert.Single(document.Descendants(), element => Role(element) == "topology-shared-trunk-tail");
         var owner = (string?)tail.Attribute("data-trunk-owner-id"); Assert.False(string.IsNullOrEmpty(owner));
         var members = document.Descendants().Where(element => Role(element) == "topology-edge" && (string?)element.Attribute("data-trunk-owner-id") == owner).ToArray();
         Assert.Equal(3, members.Length);
-        Assert.Single(tail.Descendants(), element => Role(element) == "topology-edge-line");
+        var paintedTail = Assert.Single(tail.Descendants(), element => Role(element) == "topology-edge-line");
+        var tailCoordinates = PathCoordinates(paintedTail);
+        var endpoint = tailCoordinates.TakeLast(2).ToArray();
+        var target = document.Descendants().Single(element => Role(element) == "topology-node" && (string?)element.Attribute("data-node-id") == "target")
+            .Descendants().Single(element => Role(element) == "topology-node-surface");
+        Assert.Equal(Number(target, "x"), endpoint[0], 3);
+        Assert.InRange(endpoint[1], Number(target, "y") - .001, Number(target, "y") + Number(target, "height") + .001);
+        var unsharedPaintedLines = document.Descendants().Where(element => Role(element) == "topology-edge-line"
+            && !element.Ancestors().Any(ancestor => Role(ancestor) == "topology-shared-trunk-tail"));
+        Assert.DoesNotContain(unsharedPaintedLines, line => {
+            var routeEnd = PathCoordinates(line).TakeLast(2).ToArray();
+            return Math.Abs(routeEnd[0] - Number(target, "x")) < .001
+                && routeEnd[1] >= Number(target, "y") - .001
+                && routeEnd[1] <= Number(target, "y") + Number(target, "height") + .001;
+        });
         Assert.Single(tail.Descendants(), element => Role(element) == "topology-marker");
         Assert.Single(document.Descendants(), element => Role(element) == "topology-marker");
         var envelope = prepared.ToInterchangeEnvelope();
@@ -37,6 +54,9 @@ public sealed class NativeTopologyGeometryTests {
         });
         Assert.All(chart.Edges, edge => Assert.Null(edge.TargetMarker));
         Assert.NotEmpty(prepared.ToPng());
+
+        static double[] PathCoordinates(XElement element) => Regex.Matches((string)element.Attribute("d")!, @"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
+            .Select(match => double.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
     }
 
     [Fact]

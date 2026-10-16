@@ -57,7 +57,7 @@ internal static partial class VisualCartesianCompiler {
                 foreach (var layer in ChartLineVisualLayers.Build(color, stroke, chart.Options.ResolvePreparedLineVisualStyle()))
                     if (layer.IsVisible) builder.Path(linePath, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth, role: "line" + layer.RoleSuffix,
                         paint: VisualChartPaint.Stroke(VisualChartPaint.LineLayer(series, color, layer)));
-                if (chart.Series.Any(item => item.ShowDataLabels ?? chart.Options.ShowDataLabels)
+                if (chart.Series.Any(item => item.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
                     || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)) {
                     var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
                     obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, clipMarks ? plot : null)));
@@ -181,7 +181,7 @@ internal static partial class VisualCartesianCompiler {
         ChartPoint anchor, ChartRect mark, ResolvedPointLabel resolvedLabel, List<LabelPlacementRequest> labels, double? observationValue = null, string? associatedId = null,
         TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false, ChartColor? markFill = null, SvgColorRole? markFillRole = null, SvgPaint? markFillPaint = null,
         string? labelId = null) {
-        if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || resolvedLabel.Text.Length == 0) return;
+        if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) || resolvedLabel.Text.Length == 0) return;
         if (series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue &&
             (pointIndex >= series.PointLabels.Count || series.PointLabels[pointIndex] == null)) return;
         var value = observationValue ?? series.RenderPoints[pointIndex].Y;
@@ -223,7 +223,10 @@ internal static partial class VisualCartesianCompiler {
         else {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
             candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, .5, positive ? 1 : 0));
-            if (bar) {
+            if (bar && placement == ChartDataLabelPlacement.Auto) {
+                // Keep a bar caption centered on its own mark before trying sideways fallbacks.
+                candidates.Add(new LabelCandidate(mark.Left + mark.Width / 2 - anchor.X, mark.Top + mark.Height / 2 - anchor.Y, .5, .5));
+            } else if (bar) {
                 candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 0, positive ? 1 : 0));
                 candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 1, positive ? 1 : 0));
             }
