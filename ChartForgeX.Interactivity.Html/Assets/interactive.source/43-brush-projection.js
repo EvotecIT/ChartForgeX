@@ -24,7 +24,7 @@
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
     const raw = axis.scale === 'logarithmic' ? Math.pow(10, value)
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
-    return dataValue(raw, axis.scale === 'time');
+    return raw;
   };
   const brushDataSelection = (root, rect) => {
     const projection = root._cfxDataProjection, svg = root.querySelector('.cfx-stage svg');
@@ -37,8 +37,10 @@
     const plot = projection.plotBounds;
     const x = points.map(point => clamp((point.x - plot.x) / plot.width, 0, 1));
     const y = points.map(point => clamp(1 - (point.y - plot.y) / plot.height, 0, 1));
-    const ordered = (axis, ratios) => ratios.sort((left, right) => left - right)
-      .map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => intervalNumber(left) - intervalNumber(right));
+    const ordered = (axis, ratios) => {
+      const values = ratios.map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => left - right);
+      return values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
+    };
     const range = { x: ordered(projection.x, x) };
     if (root.dataset.cfxBrushAxis !== 'x' && projection.y) range.y = ordered(projection.y, y);
     const categoryRange = projection.horizontal ? range.y : range.x;

@@ -7,7 +7,8 @@ public sealed partial class ChartSeries {
     public ChartTimeTickInterval? TimeBucketInterval { get; private set; }
 
     /// <summary>Declares each ordinary bar's X value as the inclusive start of a time bucket.</summary>
-    /// <remarks>The inclusive end is the start advanced by the interval. Days, weeks and months advance in the X axis's
+    /// <remarks>The exclusive end is the start advanced by the interval. Linked target ranges expose an inclusive end
+    /// immediately before that boundary at the browser's supported time precision. Days, weeks and months advance in the X axis's
     /// display time zone; shorter units advance elapsed UTC time. This does not infer intervals from point spacing or alter
     /// bar geometry. Preparation requires a time X axis. Null restores point-observation semantics.</remarks>
     /// <param name="interval">The immutable bucket interval, or null to clear it.</param>

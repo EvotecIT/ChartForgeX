@@ -9,6 +9,8 @@ namespace ChartForgeX.Rendering;
 internal sealed partial class VisualSceneBuilder {
     /// <summary>Captures stable authored identities once, independently of each family's ordinal geometry IDs.</summary>
     internal void CaptureChartIdentity(Chart chart) {
+        var categoryProjection = DataProjection?.Horizontal == true ? DataProjection.Y : DataProjection?.X;
+        var numericTimeDomain = categoryProjection?.Scale == ChartScaleKind.Time && categoryProjection.Minimum < 0;
         for (var index = 0; index < _nodes.Count; index++) {
             if (_nodes[index] is not VisualSceneGroup group || !group.Metadata.TryGetValue("data-cfx-series", out var ordinal)
                 || !int.TryParse(ordinal, NumberStyles.None, CultureInfo.InvariantCulture, out var seriesIndex)
@@ -21,7 +23,7 @@ internal sealed partial class VisualSceneBuilder {
             if (metadata.TryGetValue("data-cfx-point", out var markIndex) && int.TryParse(markIndex, NumberStyles.None, CultureInfo.InvariantCulture, out var pointIndex)
                 && pointIndex >= 0 && pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null)
                 metadata["data-cfx-authored-label"] = series.PointLabels[pointIndex]!;
-            CaptureChartInterval(chart, series, metadata);
+            CaptureChartInterval(chart, series, metadata, numericTimeDomain);
             if (TryAuthoredObservationIndex(metadata, out var sourceIndex)
                 && series.ObservationIds.TryGetValue(sourceIndex, out var observationId))
                 metadata["data-cfx-observation-id"] = observationId.Value;
@@ -30,7 +32,7 @@ internal sealed partial class VisualSceneBuilder {
         }
     }
 
-    private static void CaptureChartInterval(Chart chart, ChartSeries series, IDictionary<string, string> metadata) {
+    private static void CaptureChartInterval(Chart chart, ChartSeries series, IDictionary<string, string> metadata, bool numericTimeDomain) {
         if (ChartCartesianOrientation.CategoryAxis(chart).Scale == ChartScaleKind.Time && metadata.ContainsKey("data-cfx-x")) metadata["data-cfx-x-scale"] = "time";
         if (series.Kind is ChartSeriesKind.Timeline or ChartSeriesKind.Gantt or ChartSeriesKind.StateTimeline or ChartSeriesKind.GanttLane
             && metadata.TryGetValue("data-cfx-start", out var start) && metadata.TryGetValue("data-cfx-end", out var end)) {
@@ -42,21 +44,33 @@ internal sealed partial class VisualSceneBuilder {
             metadata["data-cfx-range-start"] = x;
             metadata["data-cfx-range-end"] = ChartTimeScale.BucketEnd(chart.Options.XAxis, value, series.TimeBucketInterval).ToString("R", CultureInfo.InvariantCulture);
             metadata["data-cfx-range-scale"] = "time";
-        }
-        if (metadata.TryGetValue("data-cfx-x-scale", out var xScale) && xScale == "time") CaptureTimeInstant(metadata, "data-cfx-x", "data-cfx-x-instant");
-        if (metadata.TryGetValue("data-cfx-range-scale", out var rangeScale) && rangeScale == "time") {
-            CaptureTimeInstant(metadata, "data-cfx-range-start", "data-cfx-range-start-instant");
-            CaptureTimeInstant(metadata, "data-cfx-range-end", "data-cfx-range-end-instant");
+            metadata["data-cfx-range-end-exclusive"] = "true";
         }
         if (series.Kind == ChartSeriesKind.StateTimeline && metadata.TryGetValue("data-cfx-range-end", out var stateEnd)) {
             if (chart.Options.XAxis.Scale == ChartScaleKind.Time) metadata["data-cfx-range-end-exclusive"] = "true";
             else if (double.TryParse(stateEnd, NumberStyles.Float, CultureInfo.InvariantCulture, out var endpoint))
                 metadata["data-cfx-range-end"] = ChartMath.PreviousRepresentable(endpoint).ToString("R", CultureInfo.InvariantCulture);
         }
+        if (!numericTimeDomain && metadata.TryGetValue("data-cfx-x-scale", out var xScale) && xScale == "time")
+            CaptureTimeInstant(metadata, "data-cfx-x", "data-cfx-x-instant");
+        if (metadata.TryGetValue("data-cfx-range-scale", out var rangeScale) && rangeScale == "time") {
+            if (metadata.TryGetValue("data-cfx-range-start", out var rangeStart) && metadata.TryGetValue("data-cfx-range-end", out var rangeEnd)
+                && double.TryParse(rangeStart, NumberStyles.Float, CultureInfo.InvariantCulture, out var lower)
+                && double.TryParse(rangeEnd, NumberStyles.Float, CultureInfo.InvariantCulture, out var upper)
+                && (numericTimeDomain || lower < 0 || upper < 0)) {
+                if (metadata.TryGetValue("data-cfx-range-end-exclusive", out var exclusive) && exclusive == "true") {
+                    metadata["data-cfx-range-end"] = ChartMath.PreviousRepresentable(upper).ToString("R", CultureInfo.InvariantCulture);
+                    metadata.Remove("data-cfx-range-end-exclusive");
+                }
+            } else {
+                CaptureTimeInstant(metadata, "data-cfx-range-start", "data-cfx-range-start-instant");
+                CaptureTimeInstant(metadata, "data-cfx-range-end", "data-cfx-range-end-instant");
+            }
+        }
     }
 
     private static void CaptureTimeInstant(IDictionary<string, string> metadata, string valueKey, string instantKey) {
-        if (!metadata.TryGetValue(valueKey, out var text) || !double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)) return;
+        if (!metadata.TryGetValue(valueKey, out var text) || !double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) || value < 0) return;
         try { metadata[instantKey] = ChartDateTime.FromOrderedOaDate(value).ToString("O", CultureInfo.InvariantCulture); }
         catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { }
     }

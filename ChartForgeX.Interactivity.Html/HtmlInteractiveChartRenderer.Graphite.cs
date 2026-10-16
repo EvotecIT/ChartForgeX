@@ -1,4 +1,5 @@
 using ChartForgeX.Core;
+using ChartForgeX.Html;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -10,7 +11,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             ? "0 10px 30px rgba(0,0,0,.55),0 0 0 1px " + t.CardBorder.ToCss()
             : "0 8px 24px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.08)";
         return ";--cfx-host-background:" + (chart.Options.HostOwnsFrame || chart.Options.TransparentBackground ? "transparent" : t.Background.ToCss())
-            + ";--cfx-tooltip-font:" + t.FontFamily
+            + ";--cfx-tooltip-font:" + HtmlChartRenderer.CssFontFamily(t.FontFamily)
             + ";--cfx-tooltip-surface:var(--cfx-surface-card," + t.CardBackground.ToCss() + ")"
             + ";--cfx-tooltip-text:var(--cfx-text-primary," + t.Text.ToCss() + ")"
             + ";--cfx-tooltip-muted:var(--cfx-text-muted," + t.MutedText.ToCss() + ")"

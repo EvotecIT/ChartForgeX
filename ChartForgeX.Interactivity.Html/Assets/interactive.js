@@ -2432,6 +2432,7 @@
       pointLabelSurfaces(root, node).forEach(label => label.classList.toggle('cfx-series-muted', muted));
     });
     refreshKeyboardNavigation(root);
+    syncSelectionAppearance(root);
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
@@ -2463,6 +2464,7 @@
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
+    syncSelectionAppearance(root);
     syncResetControl(root);
   };
   const toggleSeriesFocus = (root, item, emit, sync) => {
@@ -2803,25 +2805,28 @@
   const dataValue = (value, time) => {
     if (!tooltipNumber(value)) return undefined;
     const number = Number(value);
-    if (!time) return number;
+    if (!time || number < 0) return number;
     const instant = new Date((number - 25569) * 86400000);
     return Number.isFinite(instant.valueOf()) ? instant.toISOString() : undefined;
   };
   const timeTarget = node => {
     const projection = node.closest('.cfx-interactive-chart')?._cfxDataProjection;
-    return node.dataset.cfxXScale === 'time' || (projection?.horizontal ? projection.y : projection?.x)?.scale === 'time';
+    const axis = projection?.horizontal ? projection.y : projection?.x;
+    return axis ? axis.scale === 'time' && axis.minimum >= 0
+      : node.dataset.cfxXScale === 'time' || node.dataset.cfxRangeScale === 'time';
   };
-  const targetRawX = node => node.dataset.cfxXInstant ?? dataValue(node.dataset.cfxX, timeTarget(node));
+  const targetRawX = node => timeTarget(node) ? node.dataset.cfxXInstant ?? dataValue(node.dataset.cfxX, true) : dataValue(node.dataset.cfxX, false);
   const targetDataRange = node => {
     const data = node.dataset;
     const lower = data.cfxRangeStart;
     const upper = data.cfxRangeEnd;
     if (lower === undefined || upper === undefined) return undefined;
-    const time = data.cfxRangeScale === 'time';
-    const from = data.cfxRangeStartInstant ?? dataValue(lower, time);
-    let to = data.cfxRangeEndInstant ?? dataValue(upper, time);
+    // A range has one unit: native negative OLE coordinates cannot mix with Unix-millisecond ISO instants.
+    const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
+    const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
+    let to = time ? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
     if (data.cfxRangeEndExclusive === 'true' && to !== undefined) {
-      if (time) {
+      if (time && typeof to === 'string') {
         const fraction = String(to).match(/\.(\d+)Z$/)?.[1] || '';
         const submillisecond = /[1-9]/.test(fraction.slice(3));
         to = new Date(Date.parse(to) - (submillisecond ? 0 : 1)).toISOString();
@@ -2838,14 +2843,16 @@
   };
   const syncSelectionAppearance = root => {
     const nodes = dataTargets(root), selected = nodes.some(node => node.classList.contains('cfx-selected'));
+    const selectionForeground = nodes.some(node => node.classList.contains('cfx-selected') && keyboardTargetAvailable(node));
+    const highlightForeground = nodes.some(node => node.classList.contains('cfx-highlighted') && keyboardTargetAvailable(node));
     root.toggleAttribute('data-cfx-has-selection', selected);
     if (selected) root.dataset.cfxHasSelection = 'true';
     nodes.forEach(node => {
       // Selection and external highlights are independent foregrounds. Their combined dim policy
       // keeps either active mark at full strength instead of letting the two layers dim each other.
       const active = node.classList.contains('cfx-selected') || node.classList.contains('cfx-highlighted');
-      node.classList.toggle('cfx-selection-dim', selected && root.dataset.cfxDimOthersSelected === 'true' && !active);
-      node.classList.toggle('cfx-linked-dim', root._cfxHostHighlight?.dim === true && !active);
+      node.classList.toggle('cfx-selection-dim', selectionForeground && root.dataset.cfxDimOthersSelected === 'true' && !active);
+      node.classList.toggle('cfx-linked-dim', highlightForeground && root._cfxHostHighlight?.dim === true && !active);
     });
   };
   const selectionSignature = root => selectedTargets(root).map(targetKey).join('\n');
@@ -3009,7 +3016,7 @@
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
     const raw = axis.scale === 'logarithmic' ? Math.pow(10, value)
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
-    return dataValue(raw, axis.scale === 'time');
+    return raw;
   };
   const brushDataSelection = (root, rect) => {
     const projection = root._cfxDataProjection, svg = root.querySelector('.cfx-stage svg');
@@ -3022,8 +3029,10 @@
     const plot = projection.plotBounds;
     const x = points.map(point => clamp((point.x - plot.x) / plot.width, 0, 1));
     const y = points.map(point => clamp(1 - (point.y - plot.y) / plot.height, 0, 1));
-    const ordered = (axis, ratios) => ratios.sort((left, right) => left - right)
-      .map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => intervalNumber(left) - intervalNumber(right));
+    const ordered = (axis, ratios) => {
+      const values = ratios.map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => left - right);
+      return values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
+    };
     const range = { x: ordered(projection.x, x) };
     if (root.dataset.cfxBrushAxis !== 'x' && projection.y) range.y = ordered(projection.y, y);
     const categoryRange = projection.horizontal ? range.y : range.x;

@@ -1041,10 +1041,14 @@
     const highlight = request => {
       const detail = request || {};
       const nodeIds = new Set((detail.nodeIds || []).map(String)), edgeIds = new Set((detail.edgeIds || []).map(String));
-      const active = nodeIds.size + edgeIds.size > 0;
-      wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"]').forEach(element => {
+      const elements = Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"]'));
+      const matches = new Set(elements.filter(element => {
         const node = attr(element, 'data-cfx-role') === 'topology-node';
-        const matching = (node ? nodeIds : edgeIds).has(attr(element, node ? 'data-node-id' : 'data-edge-id'));
+        return (node ? nodeIds : edgeIds).has(attr(element, node ? 'data-node-id' : 'data-edge-id'));
+      }));
+      const active = matches.size > 0;
+      elements.forEach(element => {
+        const matching = matches.has(element);
         element.classList.toggle('cfx-topology-html-highlighted', matching);
         if (matching) element.setAttribute('data-cfx-highlighted', 'true'); else element.removeAttribute('data-cfx-highlighted');
         setTopologyMuted(element, 'highlight', active && detail.dim === true && !matching);

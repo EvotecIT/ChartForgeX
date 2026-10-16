@@ -288,8 +288,10 @@ select the same observations as the bin. State-timeline runs also have an
 exclusive end: their inclusive numeric range stops immediately before it, and
 their ISO range ends at the last browser-representable millisecond before it.
 Adjacent runs therefore keep their boundary observations separate. A time-axis bar can declare its
-bucket interval through `ChartSeries.WithTimeBuckets(...)`; its declared end is
-inclusive, including an observation exactly on that boundary. Assign matching row
+bucket interval through `ChartSeries.WithTimeBuckets(...)`. Each bucket includes its start and excludes
+the next bucket's start; its public inclusive range ends at the last browser-representable millisecond before that boundary.
+On a legacy numeric time domain, the inclusive end is the representable number immediately below the boundary.
+Assign matching row
 and observation IDs with `WithObservationIds(...)` when another view shares those
 identities. The bulk method validates the complete candidate before replacing
 the series' IDs.
@@ -347,7 +349,16 @@ on a plain activation while Ctrl/Meta toggles and Shift extends, and `Single`
 retains one selected mark.
 
 `cfxbrush` and `cfxlasso` keep their CSS-pixel `bounds` and add `range.x` and
-`range.y` where the prepared drawing provides that projection. Time bounds are ISO dates with a time zone. Category axes
+`range.y` where the prepared drawing provides that projection. These are physical screen axes:
+horizontal layouts report values in `range.x` and categories in `range.y`. A vertical chart with only
+secondary-axis observations reports that secondary Y domain. The Y range requires one unambiguous
+rendered value domain: if both primary and secondary axes contain observations or authored Y bounds,
+`range.y` is omitted because the same pixels represent two value domains. Primary Y annotations and
+plot regions with explicit Y bounds count toward this policy; X-only overlays and empty series do not.
+Unusable, non-finite projections are omitted.
+Time bounds are ISO dates with a time zone. A prepared time domain containing pre-1899-12-30
+legacy OLE coordinates keeps all target coordinates, intervals and brushes numeric, including its positive coordinates,
+so ranges round-trip in one unit. Wholly positive time domains use ISO dates. Category axes
 also report `categories`. These facts come from the prepared plot projection,
 including the active viewport, rather than guessing from label text. Set
 `ChartInteractionOptions.BrushAxis = ChartBrushAxis.X` for a horizontal time-range
@@ -412,11 +423,11 @@ phones. Fit can zoom below the manual zoom floor when showing the whole diagram
 requires it.
 
 ```js
-ChartForgeXGraphExplorer.select(graphId, [{ role: 'node', id: 'api' }], {
+ChartForgeXGraphExplorer.select(graphId, [{ role: 'graph-node', id: 'api' }], {
   mode: 'replace', emit: false
 });
 ChartForgeXGraphExplorer.clearSelection(graphId, { emit: false });
-ChartForgeXGraphExplorer.highlight(graphId, [{ role: 'node', id: 'worker' }], { dim: true });
+ChartForgeXGraphExplorer.highlight(graphId, [{ role: 'graph-node', id: 'worker' }], { dim: true });
 ChartForgeXGraphExplorer.clearHighlight(graphId);
 ```
 

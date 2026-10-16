@@ -117,7 +117,16 @@ internal static partial class VisualCartesianCompiler {
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
-        builder.DataProjection = new ChartDataProjection(plot, range, chart.Options.XAxis, chart.Options.YAxis, horizontal);
+        var hasPrimaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Primary && series.RenderPoints.Count > 0)
+            || chart.Annotations.Any(annotation => ChartCartesianOrientation.AnnotationKind(annotation, horizontal) is ChartAnnotationKind.HorizontalLine or ChartAnnotationKind.HorizontalBand)
+            || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Primary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
+        var hasSecondaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary && series.RenderPoints.Count > 0)
+            || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Secondary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
+        var secondaryOnly = hasSecondaryDomain && !hasPrimaryDomain;
+        // A screen coordinate has no single value-domain meaning when both Y axes contain observations.
+        builder.DataProjection = ChartDataProjection.TryCreate(plot, secondaryOnly ? secondaryRange! : range,
+            chart.Options.XAxis, secondaryOnly ? chart.Options.SecondaryYAxis : chart.Options.YAxis, horizontal,
+            includeY: !(hasPrimaryDomain && hasSecondaryDomain));
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         if (xViewport != null && chart.Series.Any(series => series.RenderPoints.Any(point => !ChartMath.IsFinite(map.X(point.X)))))
             throw new ArgumentOutOfRangeException("viewport", "The X viewport cannot project the source coordinates into finite logical units.");

@@ -24,9 +24,12 @@
     redrawGraphLinkedState(root);
     return details;
   };
-  const highlightGraphItems = (root, requested, options) => {
-    const matches = new Set(graphRequestedItems(root, requested));
-    const dim = options?.dim === true && matches.size > 0;
+  const syncGraphHighlightAppearance = root => {
+    const state = root.__cfxGraphHighlight;
+    const matches = new Set(graphRequestedItems(root, state?.requested));
+    // SVG proxy marks also represent Canvas/WebGL items. Use logical graph visibility,
+    // rather than DOM display or requested-ID count, to find an available foreground.
+    const dim = state?.dim === true && Array.from(matches).some(visible);
     const matchingKeys = new Set(Array.from(matches, graphKeyboardItemKey));
     graphLinkedItems(root).forEach(item => {
       const highlighted = matches.has(item);
@@ -41,10 +44,17 @@
       const matching = matchingKeys.has((node ? 'graph-node:' : 'graph-edge:') + id);
       item.classList.toggle('cfx-graph-link-dim', dim && !matching);
     });
+    return Array.from(matches);
+  };
+  const highlightGraphItems = (root, requested, options) => {
+    root.__cfxGraphHighlight = { requested: (Array.isArray(requested) ? requested : [])
+      .filter(item => item && typeof item.id === 'string' && typeof item.role === 'string')
+      .map(item => ({ id: item.id, role: item.role })), dim: options?.dim === true };
+    const matches = syncGraphHighlightAppearance(root);
     const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
-    if (announcer) announcer.textContent = matches.size + ' items highlighted.';
+    if (announcer) announcer.textContent = matches.length + ' items highlighted.';
     redrawGraphLinkedState(root);
-    return Array.from(matches).map(item => selectionDetail(root, item));
+    return matches.map(item => selectionDetail(root, item));
   };
   const graphHover = (root, item) => {
     const key = item ? graphKeyboardItemKey(item) : '';

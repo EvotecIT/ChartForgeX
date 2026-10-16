@@ -5,7 +5,7 @@ namespace ChartForgeX.Interactivity.Html;
 
 internal static class HtmlInteractivePage {
     internal static string ChartSurfaceStyle(Chart chart) => "background:" + chart.Options.ResolvedTheme.Background.ToCss()
-        + ";color:" + chart.Options.ResolvedTheme.Text.ToCss() + ";font-family:" + chart.Options.ResolvedTheme.FontFamily;
+        + ";color:" + chart.Options.ResolvedTheme.Text.ToCss() + ";font-family:" + HtmlChartRenderer.CssFontFamily(chart.Options.ResolvedTheme.FontFamily);
 
     internal static HtmlMarkupWriter StartDocument(string title, HtmlAssetReferences? assets = null, string? bodyStyle = null) {
         var writer = new HtmlMarkupWriter();

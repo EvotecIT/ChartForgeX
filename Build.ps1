@@ -667,6 +667,7 @@ try {
         }
     }
 
+    Invoke-NodeCommand -FileName 'node' -Arguments @('Build/Test-GraphRuntime.js') -WorkingDirectory $root -Description 'Bundled graph runtime tests' -TimeoutSeconds $PackageConsumerTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('restore', '.\ChartForgeX.sln') -Description 'Solution restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('build', $solution, '-c', $Configuration, '--no-restore') -Description 'Solution build' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore') -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds

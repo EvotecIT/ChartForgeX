@@ -42,6 +42,7 @@ public sealed class ChartLinkedSourceContractsTests {
         Assert.Equal(start.ToOADate(), double.Parse(mark.Attribute("data-cfx-range-start")!.Value, CultureInfo.InvariantCulture));
         Assert.Equal(start.AddMonths(1).ToOADate(), double.Parse(mark.Attribute("data-cfx-range-end")!.Value, CultureInfo.InvariantCulture));
         Assert.Equal("time", mark.Attribute("data-cfx-range-scale")!.Value);
+        Assert.Equal("true", mark.Attribute("data-cfx-range-end-exclusive")!.Value);
         series.WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2));
         Assert.Equal(svg, prepared.ToSvg());
         Assert.NotEqual(svg, chart.Prepare(new VisualRenderContext()).ToSvg());
