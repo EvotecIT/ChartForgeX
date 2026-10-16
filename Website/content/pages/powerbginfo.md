@@ -1,6 +1,6 @@
 ---
 title: PowerBGInfo
-description: Windows wallpapers drawn by ChartForgeX. Four finished examples, one built step by step, your own data sources and the routes to production.
+description: Windows wallpapers drawn by ChartForgeX. Twelve finished examples, one built step by step, your own data sources and the routes to production.
 slug: powerbginfo
 layout: powerbginfo
 meta.prism: true

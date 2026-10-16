@@ -27,7 +27,7 @@
       "imageInclude": ["powerbginfo/**"],
       "imageGenerateWebp": true,
       "imagePreferNextGen": true,
-      "imageWidths": [960, 1440],
+      "imageWidths": [480, 960, 1440],
       "imageQuality": 86,
       "imageFailOnFailures": true
     },

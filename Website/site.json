@@ -239,8 +239,8 @@
       {
         "Match": "/powerbginfo/**",
         "Bundles": [
-          "docs",
           "pages",
+          "gallery",
           "powerbginfo"
         ]
       },

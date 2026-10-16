@@ -35,7 +35,7 @@
     <button type="button" class="cfx-copy" data-cfx-copy="{{ pbg.start.install }}">Copy</button>
   </div>
   <div class="cfx-stage__actions">
-    <a class="cfx-btn cfx-btn--glow" href="#scenarios">See the four wallpapers</a>
+    <a class="cfx-btn cfx-btn--glow" href="#scenarios">See all {{ show.scenarios.size }} wallpapers</a>
     <a class="cfx-btn cfx-btn--ghost" href="#build">Build one yourself</a>
   </div>
   {{~ end ~}}
@@ -49,20 +49,26 @@
   {{~ stage_title = page.title; stage_lede = pbg.hero.lede ~}}
   {{ include "stage" }}
 
+  {{~ ## Scenarios: a few in full with their code, the rest as gallery cards that open the shared viewer, filtered by
+       use, and the scenarios rendered at screen sizes other than 1920 x 1080. The featured list, the uses and the
+       screens come from data/powerbginfo.json; each use takes the next series key. ## ~}}
+  {{~ sc = pbg.scenarios; scen = {}; for s in show.scenarios; scen[s.id] = s; end
+      featured = {}; for id in sc.featured; featured[id] = true; end
+      use_of = {}; use_key = {}; keys = {}; hollow = null; more = {}
+      for u in sc.uses
+        use_key[u.id] = "var(--cfx-s" + (for.index + 1) + ")"; keys[u.id] = "--key: " + use_key[u.id]; more[u.id] = 0
+        for id in u.scenarios; use_of[id] = u.id; end
+      end
+      more_count = 0
+      for s in show.scenarios; if !featured[s.id]; more_count = more_count + 1; more[use_of[s.id]] = more[use_of[s.id]] + 1; end; end ~}}
   <section class="cfx-atlas" id="scenarios" aria-labelledby="cfx-pbg-scenarios-title">
     <div class="cfx-atlas__head">
-      <h2 id="cfx-pbg-scenarios-title">{{ pbg.scenarios.title }}</h2>
-      <p>{{ pbg.scenarios.body }}</p>
-      <nav class="cfx-atlas__index" aria-label="Scenarios">
-        {{~ for s in show.scenarios ~}}
-        <a href="#{{ s.id }}" style="--key: var(--cfx-s{{ for.index + 1 }})"><span class="cfx-key" aria-hidden="true"></span>{{ s.title }}{{ if s.theme }} <span class="cfx-count">{{ s.theme }}</span>{{ end }}</a>
-        {{~ end ~}}
-      </nav>
+      <h2 id="cfx-pbg-scenarios-title">{{ sc.title }}</h2>
+      <p>{{ sc.body }}</p>
     </div>
 
-    {{~ for s in show.scenarios ~}}
-    {{~ light = s.renders.light; dark = s.renders.dark; key = "var(--cfx-s" + (for.index + 1) + ")" ~}}
-    <section class="cfx-atlas__group cfx-pbg-scene" id="{{ s.id }}" aria-labelledby="cfx-pbg-{{ s.id }}" style="--key: {{ key }}">
+    {{~ for id in sc.featured; s = scen[id]; light = s.renders.light; dark = s.renders.dark ~}}
+    <section class="cfx-atlas__group cfx-pbg-scene" id="{{ s.id }}" aria-labelledby="cfx-pbg-{{ s.id }}" style="--key: {{ use_key[use_of[s.id]] }}">
       <h3 class="cfx-atlas__group-title" id="cfx-pbg-{{ s.id }}"><span class="cfx-key" aria-hidden="true"></span>{{ s.title }}</h3>
       <div class="cfx-pbg-scene__head">
         <p class="cfx-pbg-scene__purpose">{{ s.purpose }}</p>
@@ -118,9 +124,60 @@
       </div>
     </section>
     {{~ end ~}}
-    <p class="cfx-atlas__reference">Rendered at 1920 x 1080 by <code>{{ src.runner }}</code> from <a href="{{ src.url }}/tree/{{ src.commit }}/Examples">PowerBGInfo {{ src.short }}</a>. Every wallpaper on this page is a script's output, unedited.</p>
-  </section>
 
+    <div class="cfx-pbg-block cfx-pbg-more" id="more-wallpapers">
+      <div class="cfx-pbg-split cfx-pbg-split--head">
+        <div class="cfx-pbg-split__text">
+          <h3>{{ sc.more.title }}</h3>
+          <p>{{ sc.more.body }}</p>
+        </div>
+      </div>
+      <div class="cfx-filters cfx-seg cfx-seg--legend" role="group" aria-label="Filter wallpapers by use" data-cfx-filters>
+        <button type="button" aria-pressed="true" data-filter="all" style="--key: var(--cfx-ink)"><span class="cfx-key" aria-hidden="true"></span>All <span class="cfx-count">{{ more_count }}</span></button>
+        {{~ for u in sc.uses; if more[u.id] > 0 ~}}
+        <button type="button" aria-pressed="false" data-filter="{{ u.id }}" style="{{ keys[u.id] }}"><span class="cfx-key" aria-hidden="true"></span>{{ u.label }} <span class="cfx-count">{{ more[u.id] }}</span></button>
+        {{~ end; end ~}}
+      </div>
+      <ul class="cfx-grid" data-cfx-gallery>
+        {{~ for s in show.scenarios; if !featured[s.id]
+            tabs = '[{"label":"Presentation","from":' + s.excerptFrom + ',"to":' + s.lines + '}'
+            if s.dataFrom; tabs = tabs + ',{"label":"Data","from":' + s.dataFrom + ',"to":' + s.dataTo + '}'; end
+            item = {}; item.id = s.id; item.category = use_of[s.id]; item.title = s.title; item.note = s.purpose
+            item.familyLabel = s.theme + " preset"; item.alt = pbg.alts[s.id]; item.tabs = tabs + "]"
+            item.thumbnail = s.renders.light.url; item.darkThumbnail = s.renders.dark.url
+            item.thumbWidth = s.renders.light.width; item.thumbHeight = s.renders.light.height
+            item.thumbSizes = "(max-width: 560px) 50vw, (max-width: 1180px) 33vw, 390px"
+            item.full = s.renders.light.url; item.darkFull = s.renders.dark.url; item.source = s.text; item.html = s.url ~}}
+        {{ include "gallery-card" }}
+        {{~ end; end ~}}
+      </ul>
+    </div>
+
+    {{~ scr = sc.screens ~}}
+    <div class="cfx-pbg-block">
+      <div class="cfx-pbg-split cfx-pbg-split--head">
+        <div class="cfx-pbg-split__text">
+          <h3>{{ scr.title }}</h3>
+          <p>{{ scr.body }}</p>
+        </div>
+      </div>
+      <div class="cfx-pbg-screens">
+        {{~ for it in scr.items; s = scen[it.scenario]; z = s.screens[it.size]
+            shape = "landscape"; img_sizes = "(max-width: 900px) 100vw, 940px"
+            if z.height > z.width; shape = "portrait"; img_sizes = "(max-width: 900px) 240px, 230px"; end ~}}
+        <figure class="cfx-output cfx-pbg-screens__{{ shape }}" style="--key: {{ use_key[use_of[s.id]] }}">
+          <figcaption><span class="cfx-output__file">{{ it.label }}</span><span>{{ z.width }} x {{ z.height }}</span></figcaption>
+          {{~ img_renders = z.renders; img_alt = it.alt ~}}
+          {{ include "powerbginfo/image" }}
+        </figure>
+        {{~ end ~}}
+      </div>
+    </div>
+    <p class="cfx-atlas__reference">Rendered by <code>{{ src.runner }}</code> from <a href="{{ src.url }}/tree/{{ src.commit }}/Examples">PowerBGInfo {{ src.short }}</a>, every scenario at 1920 x 1080 and these two also at their own screen sizes. Every wallpaper on this page is a script's output, unedited.</p>
+    {{~ viewer_lang = "powershell"; viewer_label = "PowerShell"; viewer_open = "Full-size PNG"; viewer_page = "Script on GitHub"
+        viewer_sizes = "(max-width: 560px) calc(100vw - 50px), (max-width: 1272px) calc(100vw - 90px), 1180px"; viewer_stack = true ~}}
+    {{ include "gallery-dialog" }}
+  </section>
   <section class="cfx-atlas cfx-pbg-build" id="build" aria-labelledby="cfx-pbg-build-title">
     <div class="cfx-atlas__head">
       <h2 id="cfx-pbg-build-title">{{ pbg.build.title }}</h2>

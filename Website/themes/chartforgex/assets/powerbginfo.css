@@ -1,6 +1,7 @@
-/* PowerBGInfo page: the scenarios as atlas groups, the build steps as source and output pairs, the data sources, the
-   theme, region and widget renders, and the production routes. Shared stage, pair, code block, figure and tab
-   components live in base.css and pages.css; this file only arranges them. */
+/* PowerBGInfo page: the featured scenarios as atlas groups, the other scenarios as gallery cards, the build steps as
+   source and output pairs, the data sources, the theme, region and widget renders, and the production routes.
+   Shared stage, pair, code block, figure, tab, card and viewer components live in base.css, pages.css and
+   gallery.css; this file only arranges them. */
 
 /* Scenarios: each wallpaper fills the showcase frame, its source sits under it, and the full script opens below the
    excerpt instead of over the render. */
@@ -26,6 +27,18 @@
 .cfx-pbg-scene > .cfx-pbg-scene__code { margin-top: 16px; }
 .cfx-pbg-scene__more { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 20px; margin-top: 10px; }
 .cfx-pbg-scene__more > p { flex: 1 1 32ch; padding-top: 8px; color: var(--cfx-ink-3); font-size: .875rem; }
+
+/* The other scenarios: the shared gallery cards (gallery.css) at the wallpaper's 16:9, three to a row, each opening
+   the shared viewer with the wallpaper above its script. */
+.cfx-pbg-more { --cfx-card-ratio: 16 / 9; }
+.cfx-pbg-more .cfx-filters { margin-bottom: 20px; }
+.cfx-pbg-more .cfx-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.cfx-pbg-more .cfx-card { scroll-margin-top: 72px; }
+
+/* Screens other than 1920 x 1080: the ultrawide beside the portrait render, both at the same height. */
+.cfx-pbg-screens { display: grid; grid-template-columns: minmax(0, 2.389fr) minmax(0, .5625fr); gap: 16px; align-items: start; }
+.cfx-pbg-screens .cfx-output > figcaption::before { background: var(--key, var(--cfx-glow)); }
+.cfx-pbg-screens .cfx-output > a { display: block; }
 
 /* Tabs above a code block: the shared segmented control, then the selected panel. */
 .cfx-pbg-tabs { display: grid; gap: 10px; min-width: 0; }
@@ -213,6 +226,8 @@
   .cfx-pbg-split--head { align-items: start; }
   .cfx-pbg-regions { grid-template-columns: minmax(0, 1fr); }
   .cfx-pbg-regions__portrait { grid-column: auto; grid-row: auto; justify-self: center; width: min(100%, 360px); }
+  .cfx-pbg-screens { grid-template-columns: minmax(0, 1fr); }
+  .cfx-pbg-screens__portrait { justify-self: center; width: min(100%, 240px); }
 }
 @media (max-width: 700px) {
   .cfx-pbg-routes { border: 0; background: none; }
@@ -237,6 +252,9 @@
   .cfx-pbg-guides ul { grid-template-columns: minmax(0, 1fr); }
   .cfx-pbg-themes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cfx-pbg-scene .cfx-showcase__links .cfx-count { display: none; }
+  /* Two cards to a row, as in the gallery, so nine wallpapers stay a short scroll on a phone. */
+  .cfx-pbg-more .cfx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
+  .cfx-pbg-more .cfx-card__note { font-size: .8125rem; line-height: 1.4; }
   .cfx-pbg-step { grid-template-columns: minmax(0, 1fr); }
   .cfx-pbg-step__head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
   .cfx-pbg-step__n { width: 36px; height: 36px; }

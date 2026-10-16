@@ -5,14 +5,41 @@
     "alt": "Server status wallpaper rendered by PowerBGInfo: the host name SQL-PROD-01 with its role and owner, four tiles for uptime, CPU, memory and network, and panels for volumes, network throughput and critical services."
   },
   "scenarios": {
-    "title": "Four wallpapers, each with one job",
-    "body": "Each script answers one question for the person in front of the screen, and each renders in light and dark at any resolution. A theme preset gives each its look and regions place the panels. Every script starts with a data block of fixed samples, so anyone can reproduce the renders, and a comment beside each value names the command that supplies it on a real machine. Under each wallpaper is the New-BGInfo call that draws it and the data block it reads."
+    "title": "Twelve wallpapers, each with one job",
+    "body": "Each script answers one question for the person in front of the screen, and each renders in light and dark at any resolution. A theme preset gives each its look and regions place the panels. Every script starts with a data block of fixed samples, so anyone can reproduce the renders, and a comment beside each value names the command that supplies it on a real machine. Three are shown in full here, with the New-BGInfo call that draws each one and the data block it reads.",
+    "featured": ["hyperv-host", "helpdesk", "meeting-room"],
+    "uses": [
+      { "id": "servers", "label": "Servers and infrastructure", "scenarios": ["hyperv-host", "server-status", "domain-controller", "build-agent"] },
+      { "id": "people", "label": "End users and help desk", "scenarios": ["helpdesk", "branch-office", "patch-day"] },
+      { "id": "rooms", "label": "Rooms and signage", "scenarios": ["meeting-room", "classroom", "signage"] },
+      { "id": "operations", "label": "Operations", "scenarios": ["on-call", "admin-workstation"] }
+    ],
+    "more": {
+      "title": "More wallpapers",
+      "body": "Filter by who the screen is for. Each card opens the wallpaper in the page theme with the same Presentation and Data tabs, and links to the full-size PNG and the script on GitHub."
+    },
+    "screens": {
+      "title": "Any screen",
+      "body": "A script lays out for the screen it renders on. The on-call board spreads across a 3440 x 1440 ultrawide in the operations room, and the signage script turns a 1080 x 1920 portrait panel into a poster. Each file is drawn at its size, not scaled from 1920 x 1080.",
+      "items": [
+        { "scenario": "on-call", "size": "3440x1440", "label": "Ultrawide", "alt": "The NOC and on-call wallpaper at 3440 x 1440: the on-call engineer and contacts, a runbook QR code and open incidents across the top, and the escalation path and the week's rota spread across the ultrawide." },
+        { "scenario": "signage", "size": "1080x1920", "label": "Portrait", "alt": "The signage wallpaper at 1080 x 1920: Open day in large type with its date, and the QR code and the highlights in two cards at the foot of the portrait screen." }
+      ]
+    }
   },
   "alts": {
     "server-status": "Server status wallpaper for SQL-PROD-01: role, owner, maintenance window and on-call address, tiles for uptime, CPU, memory and network, and panels for volume usage, network throughput and running services.",
     "helpdesk": "Help desk wallpaper: how to reach the service desk, its portal, hours and current service status, with tiles for asset tag, computer name, IP address, signed-in user and Windows version.",
     "classroom": "Lab wallpaper for seat LAB-B-14: a large seat name, the nightly reset time, the instructor and Wi-Fi details, and panels for session time left, completed exercises and class progress.",
-    "admin-workstation": "Privileged access workstation wallpaper for PAW-T0-03: seven health tiles, a privileged sign-in chart, a topology of the allowed path from the workstation through a jump host to tier 0, a tier 0 change trend and open security alerts."
+    "admin-workstation": "Privileged access workstation wallpaper for PAW-T0-03: seven health tiles, a privileged sign-in chart, a topology of the allowed path from the workstation through a jump host to tier 0, a tier 0 change trend and open security alerts.",
+    "domain-controller": "Domain controller wallpaper for DC01: a replication warning, the FSMO roles it holds, a time offset card, an inbound replication table, site links, dcdiag results and a heatmap of failed sign-ins.",
+    "hyperv-host": "Hyper-V host wallpaper for HV-AMS-07: room for 72 GB of VMs before the failover reserve, tiles for CPU, memory, CSV space and running VMs, a treemap of VMs sized by memory and coloured by CPU, cluster memory bars, live migrations and old checkpoints.",
+    "on-call": "NOC wallpaper naming J. Smith as on call with the number to ring, the secondary, commander and bridge, a runbook QR code, open incidents, the escalation path as a flow and this week's rota as lanes.",
+    "branch-office": "Branch office wallpaper for Warsaw Mokotów: this PC, the printer and Wi-Fi, a QR code for IT help, opening hours, and the connection to head office as a topology of the SD-WAN link, the LTE standby, the switch, the printer and this PC.",
+    "meeting-room": "Meeting room wallpaper for Oslo: free until 13:00, the next booking, a guest Wi-Fi QR code, numbered steps to share a screen and today's bookings beside the neighbouring rooms.",
+    "build-agent": "Build agent wallpaper for BLD-WIN-04: the running pipeline, agent and toolchain details, jobs waiting, free space on D: and C:, a table of the last builds and the pipeline stages as a flow.",
+    "patch-day": "Patch day wallpaper: restart in 2 h 15 min with a countdown gauge, what is installing, a checklist for before you go, maintenance windows per ring and bars of installs per ring.",
+    "signage": "Signage wallpaper for an open day at the Contoso innovation hub: the date and time in large type, a QR code for the day and a list of highlights with their times."
   },
   "build": {
     "title": "Build one yourself",
