@@ -15,9 +15,10 @@
     Website/powerbginfo/sources/ are parsed, not run, and copied into the data file.
 
     -RepositoryPath and -Ref name the PowerBGInfo commit the module was built from. The script checks that the
-    module's PowerBGInfo.psd1 and PowerBGInfo.psm1 match that commit and records it in the data file. Each run uses
-    the en-US culture and sets COMPUTERNAME to the sample name the steps use, so a render never carries the name of
-    the machine that produced it.
+    module's PowerBGInfo.psd1, PowerBGInfo.psm1 and tracked Sources files match that commit, then builds the
+    net8.0-windows development assembly before importing the module. This prevents a stale DLL in the scratch module
+    from rendering steps while the data file claims a newer source commit. Each run uses the en-US culture and sets
+    COMPUTERNAME to the sample name the steps use, so a render never carries the name of the machine that produced it.
 
     The script owns static/powerbginfo/build/ and clears its PNG files on each run. It never changes the PowerBGInfo
     repository.
@@ -58,6 +59,29 @@ foreach ($file in 'PowerBGInfo.psd1', 'PowerBGInfo.psm1') {
     if ((Get-Text $committed) -ne (Get-Text $local)) { throw "$moduleRoot\$file does not match $file at $commit." }
 }
 $moduleVersion = (Import-PowerShellDataFile -LiteralPath $ModulePath).ModuleVersion
+
+$sourceFiles = @(git -C $RepositoryPath ls-tree -r --name-only $commit -- Sources Public Private Classes Enums)
+if ($LASTEXITCODE -ne 0 -or -not $sourceFiles.Count) { throw "Cannot list PowerBGInfo source files at $commit." }
+foreach ($relativePath in $sourceFiles) {
+    $localSource = Join-Path $moduleRoot $relativePath
+    if (-not (Test-Path -LiteralPath $localSource -PathType Leaf)) { throw "$moduleRoot is missing '$relativePath' from $commit." }
+    $expectedBlob = (git -C $RepositoryPath rev-parse "${commit}:$relativePath").Trim()
+    if ($LASTEXITCODE -ne 0) { throw "Cannot resolve '$relativePath' at $commit." }
+    $actualBlob = (git -C $RepositoryPath hash-object -- $localSource).Trim()
+    if ($LASTEXITCODE -ne 0 -or $actualBlob -ne $expectedBlob) { throw "$localSource does not match '$relativePath' at $commit." }
+}
+
+$project = Join-Path $moduleRoot 'Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj'
+if (-not (Test-Path -LiteralPath $project -PathType Leaf)) { throw "The source build is missing '$project'. Pass a PowerBGInfo source checkout or archive." }
+Write-Host "Building PowerBGInfo $($commit.Substring(0, 7)) for the step renders..." -ForegroundColor Cyan
+Push-Location $moduleRoot
+try {
+    dotnet build 'Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj' --configuration Debug --framework net8.0-windows --property:GeneratePackageOnBuild=false
+    $buildExitCode = $LASTEXITCODE
+} finally {
+    Pop-Location
+}
+if ($buildExitCode -ne 0) { throw "PowerBGInfo $($commit.Substring(0, 7)) source build failed with exit code $buildExitCode." }
 
 function Test-Lines([string] $Name, [string] $Text) {
     $wide = @($Text.Split("`n") | Where-Object { $_.Length -gt $MaximumLineLength })
