@@ -117,6 +117,8 @@ public sealed class VisualCanvasTileTypographyTests {
 
         Assert.True(metrics.IconBox >= 24);
         Assert.True(metrics.TextX >= metrics.IconX + metrics.IconBox);
+        Assert.Equal(metrics.IconBox * (22d / 54),
+            metrics.TextX - metrics.IconX - metrics.IconBox, 6);
         Assert.True(changedPixels > 0);
         Assert.Contains(withIcon.AnalyzeLayout().Diagnostics,
             diagnostic => diagnostic.Code == "InfoTileTextScaleReduced");

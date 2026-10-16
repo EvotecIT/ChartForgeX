@@ -106,6 +106,7 @@ internal static class VisualCanvasInfoTileTextLayout {
         var minIconBox = Math.Min(24, Math.Max(1, height - 12));
         iconBox = Math.Max(iconBox, minIconBox);
         iconBox = Math.Min(iconBox, Math.Max(1, innerWidth - textGap - minTextWidth));
+        textGap = Math.Min(textGap, iconBox * (22d / 54));
         var iconX = x + padX;
         var iconY = y + (height - iconBox) / 2;
         var textX = iconX + iconBox + textGap;
