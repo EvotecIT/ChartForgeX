@@ -262,9 +262,11 @@ stay selected. This uses the immediate gesture snapshot, without retaining anoth
 selection store. Chart-local automatic series never cross that transport boundary;
 moving from a shared target to a local target still retires the previous shared
 selection. Host commands are silent and local by default. With `sync: true`, `add`
-and `remove` reconcile represented identities, while `replace`, clear and Reset
-replace or clear the group's shared set. A replacement containing only local marks
-therefore sends an empty shared set. Single mode retains at most one local mark.
+and `remove` reconcile represented identities. When an explicit synchronized
+replacement or clear changes selection, peers replace or clear their selection,
+including local selections. Only shared target identities are transported, so a
+replacement containing only local marks sends an empty shared set. Reset clears
+the group selection. Single mode retains at most one local mark.
 
 Target identities retain their `targetKind`, `targetId`, `seriesKey`,
 `observationId`, `sourcePoint`, `sourcePoints`, `value` and `kind`. Additional facts
