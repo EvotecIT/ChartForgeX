@@ -192,6 +192,49 @@ public sealed class ConsumerRenderingRegressionTests {
     }
 
     [Theory]
+    [InlineData(900, 400, 1)]
+    [InlineData(520, 260, 2)]
+    public void FittedTopologyKeepsSelectedNodeStrokeInsideTheContentClip(int width, int height, int pngScale) {
+        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+            .AddGroup("selected-group", "Selected group", 24, 24, 240, 150)
+            .AddNode("selected", "Selected service", 30, 30, width: 160, height: 84, groupId: "selected-group");
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = pngScale };
+        options.SelectedNodeIds.Add("selected");
+        options.SelectedGroupIds.Add("selected-group");
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var clip = svg.Descendants().Where(element => element.Name.LocalName == "clipPath")
+            .SelectMany(element => element.Elements()).Single(element => element.Name.LocalName == "rect");
+        var surface = svg.Descendants().Single(element => Role(element) == "topology-node-surface");
+        var groupSurface = svg.Descendants().Single(element => Role(element) == "topology-group-surface");
+        AssertStrokeInsideClip(surface);
+        AssertStrokeInsideClip(groupSurface);
+        Assert.NotEmpty(chart.ToPng(options));
+
+        void AssertStrokeInsideClip(XElement strokedSurface) {
+            var halfStroke = N(strokedSurface, "stroke-width") / 2;
+            Assert.True(N(strokedSurface, "x") - halfStroke >= N(clip, "x") - .1);
+            Assert.True(N(strokedSurface, "y") - halfStroke >= N(clip, "y") - .1);
+            Assert.True(N(strokedSurface, "x") + N(strokedSurface, "width") + halfStroke <= N(clip, "x") + N(clip, "width") + .1);
+            Assert.True(N(strokedSurface, "y") + N(strokedSurface, "height") + halfStroke <= N(clip, "y") + N(clip, "height") + .1);
+        }
+    }
+
+    [Fact]
+    public void FittedTopologyPreservesDisabledNodeLabelWrapping() {
+        var chart = TopologyChart.Create().WithViewport(520, 260).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("service", "A long service label that should stay on one line", 40, 80, width: 230, height: 72);
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, WrapNodeLabels = false };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var labelGroup = svg.Descendants().Single(element => Role(element) == "topology-node-label");
+        var labelLines = labelGroup.Descendants().Where(element => element.Name.LocalName == "text").ToArray();
+
+        Assert.Single(labelLines);
+        Assert.DoesNotContain(labelGroup.Descendants(), element => element.Name.LocalName == "tspan");
+        Assert.Equal("A long service label that should stay on one line", labelLines[0].Value);
+        Assert.False(options.WrapNodeLabels);
+    }
+
+    [Theory]
     [InlineData(1300, 560, 1)]
     [InlineData(900, 400, 1)]
     [InlineData(520, 260, 1)]
@@ -245,7 +288,7 @@ public sealed class ConsumerRenderingRegressionTests {
                 : Math.Abs(x - (node.X + node.Width)) <= 1.5 ? 1
                 : Math.Abs(y - node.Y) <= 1.5 ? -2 : 2;
             var background = new[] { image.Pixels[0], image.Pixels[1], image.Pixels[2] };
-            for (var distance = 1; distance <= 8; distance++) {
+            for (var distance = 1; distance <= 2; distance++) {
                 for (var tangent = -3; tangent <= 3; tangent++) {
                     var px = (int)Math.Round((x + (side == -1 ? -distance : side == 1 ? distance : 0)) * scale);
                     var py = (int)Math.Round((y + (side == -2 ? -distance : side == 2 ? distance : 0)) * scale);
@@ -487,8 +530,7 @@ public sealed class ConsumerRenderingRegressionTests {
             .SelectMany(element => element.DescendantsAndSelf()).Where(element => element.Name.LocalName == "text")
             .Select(element => element.Value).ToArray();
 
-        Assert.Contains("Recovery", labels);
-        Assert.Contains("coordinator", labels);
+        Assert.Contains("Recovery coordinator", string.Join(" ", labels));
         Assert.NotEmpty(chart.ToPng(options));
     }
 

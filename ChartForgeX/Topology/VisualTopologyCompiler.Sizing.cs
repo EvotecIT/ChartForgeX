@@ -105,11 +105,15 @@ internal sealed partial class VisualTopologyCompiler {
                 right = Math.Max(right, x2); bottom = Math.Max(bottom, y2);
             }
             if (_options.IncludeGroups)
-                foreach (var group in _chart.Groups) Include(group.X, group.Y, group.X + group.Width, group.Y + group.Height);
+                foreach (var group in _chart.Groups) {
+                    var stroke = _options.SelectedGroupIds.Contains(group.Id) ? 2.4 : _context.Theme.AxisStrokeWidth;
+                    IncludeStroked(group.X, group.Y, group.X + group.Width, group.Y + group.Height, stroke);
+                }
             foreach (var node in _chart.Nodes) {
                 var mode = EffectiveNodeDisplayMode(node, _options);
                 if (mode == TopologyNodeDisplayMode.Hidden) continue;
-                Include(node.X, node.Y, node.X + node.Width, node.Y + node.Height);
+                var stroke = _options.SelectedNodeIds.Contains(node.Id) ? 2.8 : _context.Theme.AxisStrokeWidth;
+                IncludeStroked(node.X, node.Y, node.X + node.Width, node.Y + node.Height, stroke);
                 if (!string.IsNullOrWhiteSpace(node.Badge)) {
                     var badge = NodeBadgeBounds(node, mode, _options);
                     Include(badge.X, badge.Y, badge.Right, badge.Bottom);
@@ -145,6 +149,11 @@ internal sealed partial class VisualTopologyCompiler {
                 if (string.IsNullOrWhiteSpace(text)) return;
                 var label = EdgeEndpointLabelLayout(_chart, _options, endpoint, adjacent, text!);
                 Include(label.Bounds.Left, label.Bounds.Top, label.Bounds.Right, label.Bounds.Bottom);
+            }
+
+            void IncludeStroked(double x1, double y1, double x2, double y2, double strokeWidth) {
+                var halfStroke = Math.Max(0, strokeWidth) / 2;
+                Include(x1 - halfStroke, y1 - halfStroke, x2 + halfStroke, y2 + halfStroke);
             }
         }
     }

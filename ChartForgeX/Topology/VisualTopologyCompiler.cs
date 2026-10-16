@@ -43,7 +43,6 @@ internal sealed partial class VisualTopologyCompiler {
         _svgTheme = new TopologyPaint(context.Theme, context.ThemeMode, options.SvgColorVariables?.Clone());
         _context = ResolveFrame(context, source, options);
         _options = options.CloneForRendering();
-        if (_options.FitContentToViewport) _options.WrapNodeLabels = true;
         _options.ResolvedIconLabelFontSize = context.Theme.Typography.DataLabelSize * (10.5 / 11);
         _options.ResolvedEdgeLabelScale = context.Theme.Typography.DataLabelSize / 11;
         var badgeFace = new VisualSceneTextFace(context.Font, 600);

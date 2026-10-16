@@ -110,6 +110,17 @@ public static class ConsumerRenderingExamples {
             .AddNode("source", "Source", 120, 100, width: 80, height: 60).AddNode("target", "Target", 330, 100, width: 80, height: 60)
             .AddEdge("link", "source", "target").WithEdgeEndpointLabels("link", "Long source relationship label", "Long target relationship label");
         SaveExample("topology-fit-endpoint-labels", endpointLabels.ToSvg(fittedTopologyOptions), endpointLabels.ToPng(fittedTopologyOptions));
+        var selectedStroke = TopologyChart.Create().WithViewport(520, 260).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddGroup("selected-group", "Selected group", 24, 24, 240, 150)
+            .AddNode("selected", "Selected service", 30, 30, width: 160, height: 84, groupId: "selected-group");
+        var selectedStrokeOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        selectedStrokeOptions.SelectedNodeIds.Add("selected");
+        selectedStrokeOptions.SelectedGroupIds.Add("selected-group");
+        SaveExample("topology-fit-selected-stroke", selectedStroke.ToSvg(selectedStrokeOptions), selectedStroke.ToPng(selectedStrokeOptions));
+        var unwrappedLabel = TopologyChart.Create().WithViewport(520, 260).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddNode("service", "A long service label that stays on one line", 40, 80, width: 260, height: 72);
+        var unwrappedOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, WrapNodeLabels = false };
+        SaveExample("topology-fit-unwrapped-label", unwrappedLabel.ToSvg(unwrappedOptions), unwrappedLabel.ToPng(unwrappedOptions));
         var packedGroup = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
             .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddGroup("fixed", "Fixed shell", 0, 0, 520, 360)
             .AddAutoGroup("automatic", "Automatic shell").AddAutoNode("fixed-node", "Fixed member", groupId: "fixed")

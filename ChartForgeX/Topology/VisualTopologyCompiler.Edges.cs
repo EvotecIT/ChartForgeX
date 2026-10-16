@@ -75,6 +75,28 @@ internal sealed partial class VisualTopologyCompiler {
                         paint: new VisualScenePaintBinding(stroke: layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity())
                             : layer.Opacity >= 1 ? edgePaint : edgePaint.WithOpacity(layer.ColorWithOpacity(), layer.Opacity)));
                 }
+                if (dash is { Length: > 0 }) {
+                    var layers = ChartLineVisualLayers.Build(color, width / _scale, style);
+                    DrawEndpointConnector(route[0], route[1]);
+                    DrawEndpointConnector(route[route.Length - 1], route[route.Length - 2]);
+
+                    void DrawEndpointConnector(ChartPoint endpoint, ChartPoint adjacent) {
+                        var dx = adjacent.X - endpoint.X;
+                        var dy = adjacent.Y - endpoint.Y;
+                        var distance = Math.Sqrt(dx * dx + dy * dy);
+                        if (distance <= .001) return;
+                        var length = Math.Min(6 * _scale, distance);
+                        var inner = new ChartPoint(endpoint.X + dx / distance * length, endpoint.Y + dy / distance * length);
+                        var connector = new ChartPath(new[] { ChartPathCommand.MoveTo(endpoint.X, endpoint.Y), ChartPathCommand.LineTo(inner.X, inner.Y) });
+                        foreach (var layer in layers) {
+                            if (!layer.IsVisible) continue;
+                            _builder.Path(connector, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth * _scale,
+                                role: "topology-edge-endpoint-connector",
+                                paint: new VisualScenePaintBinding(stroke: layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity())
+                                    : layer.Opacity >= 1 ? edgePaint : edgePaint.WithOpacity(layer.ColorWithOpacity(), layer.Opacity)));
+                        }
+                    }
+                }
             }
         }
         var margin = Math.Max(8 * _scale, width / 2);
