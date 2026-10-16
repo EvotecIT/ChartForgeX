@@ -43,6 +43,8 @@ $website = Split-Path -Parent $PSScriptRoot
 $repository = 'EvotecIT/PowerBGInfo'
 # Widgets shown in the capabilities grid, plus the examples the logic section uses.
 $widgetIds = 'metrics', 'tables', 'lists', 'calendar-heatmap', 'timeline', 'treemap', 'mermaid', 'qrcode', 'system-info'
+$scenarioIds = 'server-status', 'helpdesk', 'classroom', 'admin-workstation'
+$themePresetIds = 'graphite', 'midnight', 'ember', 'orchid', 'corporate'
 $regionSizes = '1920x1080', '3440x1440', '1080x1920'
 
 $commit = (git -C $RepositoryPath rev-parse --verify "$Ref^{commit}").Trim()
@@ -62,9 +64,10 @@ function Get-PngSize([string] $Path) {
     return @{ Width = & $read 16; Height = & $read 20; Bytes = $bytes.Length }
 }
 
-function Read-Manifest([string] $Path) {
+function Read-Manifest([string] $Path, [string] $ExpectedCommit) {
     $manifest = Get-Content -LiteralPath (Join-Path $Path 'manifest.json') -Raw | ConvertFrom-Json
     if ($manifest.generator -ne 'PowerBGInfo') { throw "$Path/manifest.json was not written by a PowerBGInfo runner." }
+    if ($manifest.sourceCommit -ne $ExpectedCommit) { throw "$Path/manifest.json was rendered from '$($manifest.sourceCommit)', expected '$ExpectedCommit'. Rerun the matching PowerBGInfo runner at $ExpectedCommit." }
     return $manifest
 }
 
@@ -84,7 +87,13 @@ function Clear-Renders([string] $Path, [string] $Filter = '*.png') {
     Get-ChildItem -LiteralPath $Path -Filter $Filter -File | Remove-Item -Force
 }
 
-$manifest = Read-Manifest $RenderPath
+$manifest = Read-Manifest $RenderPath $commit
+$actualScenarioIds = @($manifest.renders | ForEach-Object -MemberName scenario | Sort-Object -Unique)
+$unknownScenarioIds = @($actualScenarioIds | Where-Object { $_ -notin $scenarioIds })
+$missingScenarioIds = @($scenarioIds | Where-Object { $_ -notin $actualScenarioIds })
+if ($unknownScenarioIds.Count -or $missingScenarioIds.Count) {
+    throw "Scenario manifest mismatch. Unknown: [$($unknownScenarioIds -join ', ')]; missing: [$($missingScenarioIds -join ', ')]."
+}
 $target = Join-Path $website 'static/powerbginfo'
 $scriptTarget = Join-Path $target 'scripts'
 Clear-Renders $target
@@ -147,9 +156,14 @@ foreach ($scenario in $scenarios.Values) {
     foreach ($mode in 'light', 'dark') {
         if (-not $scenario.renders.Contains($mode)) { throw "$RenderPath has no 1920x1080 $mode render of '$($scenario.id)'." }
     }
+    foreach ($screen in $scenario.screens.Values) {
+        foreach ($mode in 'light', 'dark') {
+            if (-not $screen.renders.Contains($mode)) { throw "$RenderPath has no $($screen.id) $mode render of '$($scenario.id)'." }
+        }
+    }
 }
 
-$featureManifest = Read-Manifest $FeaturePath
+$featureManifest = Read-Manifest $FeaturePath $commit
 $featureTarget = Join-Path $target 'features'
 Clear-Renders $featureTarget
 $widgets = [ordered] @{}
@@ -181,8 +195,18 @@ foreach ($render in $featureManifest.renders) {
     }
     if ($entry) { $entry.renders[$render.theme] = Copy-Render $render $FeaturePath $featureTarget '/powerbginfo/features' }
 }
-foreach ($id in $widgetIds) { if (-not $widgets.Contains($id)) { throw "$FeaturePath has no 1920x1080 render of '$id'." } }
-foreach ($id in $regionSizes) { if (-not $regions.Contains($id)) { throw "$FeaturePath has no $id region render." } }
+foreach ($id in $widgetIds) {
+    if (-not $widgets.Contains($id)) { throw "$FeaturePath has no 1920x1080 render of '$id'." }
+    foreach ($mode in 'light', 'dark') { if (-not $widgets[$id].renders.Contains($mode)) { throw "$FeaturePath has no 1920x1080 $mode render of '$id'." } }
+}
+foreach ($preset in $themes.Values) {
+    foreach ($mode in 'light', 'dark') { if (-not $preset.renders.Contains($mode)) { throw "$FeaturePath has no 1920x1080 $mode render of theme preset '$($preset.id)'." } }
+}
+foreach ($id in $themePresetIds) { if (-not $themes.Contains($id)) { throw "$FeaturePath has no 1920x1080 renders of theme preset '$id'." } }
+foreach ($id in $regionSizes) {
+    if (-not $regions.Contains($id)) { throw "$FeaturePath has no $id region render." }
+    foreach ($mode in 'light', 'dark') { if (-not $regions[$id].renders.Contains($mode)) { throw "$FeaturePath has no $id $mode region render." } }
+}
 $regionScript = 'Examples/Features/Feature.Regions.ps1'
 $themeScript = 'Examples/Features/Feature.Themes.ps1'
 
