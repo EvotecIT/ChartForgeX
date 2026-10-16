@@ -44,12 +44,12 @@ public sealed class RangeBarBrowserTests {
         var rawRows = await RowsAsync(page);
         Assert.Equal(new[] { "Series", "Observed", "Kategoria", "Express delivery", "Początek", "32", "Koniec", "12" }, rawRows);
         var defaultHeading = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
-        Assert.Equal("Observed: 12–32", defaultHeading);
+        Assert.Equal("Observed: Express delivery", defaultHeading);
         var rawAria = await page.Locator(neighbor).GetAttributeAsync("aria-label");
         Assert.Contains("x=2 start=32 end=12", rawAria);
         if (!string.IsNullOrWhiteSpace(directory))
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "range-bar-descending-hover.png") });
-        await page.Locator(neighbor).FocusAsync();
+        await FocusWithKeyboardAsync(page, page.Locator(neighbor));
         Assert.Equal(rawRows, await RowsAsync(page));
         Assert.Equal(defaultHeading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal("32", await page.Locator(neighbor).GetAttributeAsync("data-cfx-start"));
@@ -59,13 +59,13 @@ public sealed class RangeBarBrowserTests {
         Assert.Equal("true", await page.Locator(neighbor).GetAttributeAsync("aria-selected"));
         Assert.Equal("observed:1", await page.EvaluateAsync<string>("() => window.rangeSelections.at(-1).targetId"));
         Assert.Equal("point", await page.EvaluateAsync<string>("() => window.rangeSelections.at(-1).targetKind"));
-        await page.Locator(first).FocusAsync(); await page.Keyboard.PressAsync("Space");
+        await FocusWithKeyboardAsync(page, page.Locator(first)); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(first).GetAttributeAsync("aria-selected"));
         Assert.Equal("true", await page.Locator(neighbor).GetAttributeAsync("aria-selected"));
         Assert.Equal(new[] { "Standard", "Express delivery", "Premium", "Bulk" }, await page.Locator("[data-cfx-role='axis-y-label']").AllTextContentsAsync());
         await page.Locator(Legend(1)).ClickAsync();
         Assert.Equal(1, await page.Locator("g[data-cfx-role='series'][data-cfx-series='1'].cfx-series-muted").CountAsync());
-        await page.Locator(first).FocusAsync();
+        await FocusWithKeyboardAsync(page, page.Locator(first));
         Assert.Equal("Expected", (await RowsAsync(page))[1]);
         if (!string.IsNullOrWhiteSpace(directory)) {
             await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "range-bar-neighbors.png") });

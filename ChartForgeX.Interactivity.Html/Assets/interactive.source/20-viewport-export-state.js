@@ -57,6 +57,7 @@
       if (payload[field].length && !shared.length) return;
       payload[field] = shared;
     }
+    if (Array.isArray(payload.previousTargets)) payload.previousTargets = payload.previousTargets.filter(sharedTarget);
     if (payload.action === 'state' && payload.state) {
       const targets = payload.state.selectedTargets || [], shared = targets.filter(sharedTarget);
       if (targets.length && !shared.length) return;

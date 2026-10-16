@@ -57,7 +57,7 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
         } else await AssertRowAsync(kind == ChartSeriesKind.Treemap ? "Value" : "Y", kind == ChartSeriesKind.Treemap ? "9.0 units" : "18");
         if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "9");
         await CaptureAsync("pointer");
-        await MoveAwayAsync(page); await page.Locator(zero).FocusAsync(); await AssertRowAsync(name, format.Format(0));
+        await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(zero)); await AssertRowAsync(name, format.Format(0));
         if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "36");
         await page.Keyboard.PressAsync("Space");
         var selected = await page.EvaluateAsync<JsonElement>("() => window.dimensionSelection");
@@ -68,16 +68,20 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
         await AssertRowAsync(name, format.Format(0)); await CaptureAsync("zero-selected");
         await page.Keyboard.PressAsync("Space"); Assert.Null(await root.GetAttributeAsync("data-cfx-tooltip-pinned"));
         if (kind == ChartSeriesKind.Treemap) {
-            await MoveAwayAsync(page); await page.Locator("[data-cfx-role='legend-item'][data-cfx-legend-target-id='zero']").FocusAsync();
+            await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-role='legend-item'][data-cfx-legend-target-id='zero']"));
             await AssertRowAsync(name, format.Format(0)); await AssertRowAsync("Value", "4.0 units");
             await CaptureAsync("zero-legend-summary");
         }
         if (kind == ChartSeriesKind.Heatmap) Assert.Equal(0, await page.Locator("[data-cfx-role='heatmap-cell'][data-cfx-column='2']").CountAsync());
         else {
             var missing = page.Locator(Target("missing"));
-            await MoveAwayAsync(page); await missing.FocusAsync();
+            await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, missing);
             if (sameValue) {
-                await page.WaitForFunctionAsync("label => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.querySelector('.cfx-tooltip__title').textContent === label; }", await missing.GetAttributeAsync("aria-label"));
+                if (kind == ChartSeriesKind.TileMap) {
+                    Assert.Equal("North Carolina", await missing.GetAttributeAsync("data-cfx-label"));
+                    Assert.Equal("North Carolina (NC): Not sampled", await missing.GetAttributeAsync("aria-label"));
+                }
+                await page.WaitForFunctionAsync("label => { const tip = document.querySelector('.cfx-tooltip'); return tip && !tip.hidden && tip.querySelector('.cfx-tooltip__title').textContent === label; }", kind == ChartSeriesKind.TileMap ? "North Carolina" : await missing.GetAttributeAsync("aria-label"));
                 Assert.DoesNotContain(name, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
                 Assert.Equal(kind == ChartSeriesKind.TileMap ? "Not sampled" : null, await missing.GetAttributeAsync(displayAttribute));
             } else { await AssertRowAsync(name, "Not sampled"); Assert.Null(await missing.GetAttributeAsync(rawAttribute)); }

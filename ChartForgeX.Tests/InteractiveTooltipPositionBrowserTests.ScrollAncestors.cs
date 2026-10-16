@@ -10,14 +10,15 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     [BrowserTheory]
-    [InlineData(false, "hidden")]
-    [InlineData(true, "auto")]
-    public async Task DisplayContentsOverflowDoesNotClipVisibleNativeReadout(bool shadow, string overflow) {
+    [InlineData(false, "hidden", 950)]
+    [InlineData(true, "auto", 950)]
+    [InlineData(true, "auto", 390)]
+    public async Task DisplayContentsOverflowDoesNotClipVisibleNativeReadout(bool shadow, string overflow, int width) {
         if (!Enabled) return;
         await using var session = await OpenAsync(StatusLines(shadow).ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
-        }), 950, 760);
+        }), width, 760);
         var page = session.Page;
         await MountPositionFocusChartAsync(page, shadow);
         await page.EvaluateAsync("""
@@ -32,6 +33,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await page.Keyboard.PressAsync("Space"); await SettleObservedPositionAsync(page);
         var visible = await ScrollAncestorFactsAsync(page, Point(0, 0));
         await CaptureAsync(page, $"scroll-contents-{shadow}-{overflow}-visible", visible, session);
+        Assert.True(await page.EvaluateAsync<bool>("() => { const root = positionFocusChart, svg = root.querySelector('.cfx-stage svg'); return root.getBoundingClientRect().width > 0 && svg.getBoundingClientRect().width > 0; }"), "A chart in an auto-sized host retains its native intrinsic width.");
+        Assert.True(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"), "The standalone page bounds auto-sized hosts at compact widths.");
         Assert.Equal(0, await page.EvaluateAsync<int>("() => contentsOverflowWrapper.getClientRects().length"));
         Assert.True(visible.GetProperty("paintedHit").GetBoolean());
         Assert.False(visible.GetProperty("hidden").GetBoolean(), "Overflow on a display:contents ancestor has no clipping box.");

@@ -45,18 +45,18 @@ public sealed class IntervalPointLegendBrowserTests {
         Assert.Equal("Express", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal(expected, await RowsAsync(page));
         await CaptureAsync("legend");
-        await page.Locator(legend).FocusAsync();
+        await FocusWithKeyboardAsync(page, page.Locator(legend));
         Assert.Equal(expected, await RowsAsync(page));
 
         await MoveToAsync(page, Point(0, 0) + (boxPlot ? " [data-cfx-role='boxplot-body']" : " [data-cfx-role='range-bar']"));
-        var heading = seriesName + (boxPlot ? ": 15" : ": 0–30");
+        var heading = seriesName + ": Express";
         Assert.Equal(heading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal(new[] { "Series", seriesName }.Concat(expected), await RowsAsync(page));
         await CaptureAsync("mark");
-        await page.Locator(Point(0, 0)).FocusAsync();
+        await FocusWithKeyboardAsync(page, page.Locator(Point(0, 0)));
         Assert.Equal(heading, await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal(new[] { "Series", seriesName }.Concat(expected), await RowsAsync(page));
-        await page.Locator(Point(0, 1)).FocusAsync();
+        await FocusWithKeyboardAsync(page, page.Locator(Point(0, 1)));
         Assert.Equal(seriesName + ": Promised observation", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal(seriesName, (await RowsAsync(page))[1]);
         await CaptureAsync("keyboard-custom");

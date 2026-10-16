@@ -169,7 +169,8 @@
     const root = node.closest && node.closest('.cfx-interactive-chart');
     if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
     const label = text(node, true);
-    if (!label) return false;
+    // An explicitly captured empty caption remains a valid readout of the source fields.
+    if (label === undefined || label === null) return false;
     tip.replaceChildren();
     const title = document.createElement('div');
     title.className = 'cfx-tooltip__title';
@@ -303,12 +304,14 @@
     return items;
   };
   const hideTip = (root, tip, force) => {
+    // A delayed pointer handoff can hide an active readout; a force-dismissed readout has no request to restore.
+    const restoreKeyboardReadout = tip && (!tip.hidden || tooltipRequests.has(root));
     cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
     // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
     const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
     const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
-    if (focused && active.matches(':focus-visible') && tooltipReadoutAvailable(focused)) {
+    if (restoreKeyboardReadout && focused && active.matches(':focus-visible') && tooltipReadoutAvailable(focused)) {
       if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(focused))) setHover(root, focused, true, true);
       showTip(root, tip, focused);
       return;

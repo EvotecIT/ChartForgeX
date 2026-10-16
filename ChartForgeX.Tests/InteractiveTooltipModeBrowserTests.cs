@@ -28,8 +28,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
         var shared = mode == HtmlChartTooltipMode.SharedX;
         Assert.Equal(shared ? new[] { "Current", "Baseline" } : new[] { "Series", "X", "Y" },
             await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
-        Assert.Equal(shared ? "Tue" : await page.Locator(Point(0, 1)).GetAttributeAsync("aria-label"),
-            await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal("Tue", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         await page.Locator(Point(0, 1)).BlurAsync();
         await MoveToAsync(page, Point(0, 1));
         Assert.Equal(shared, (await TooltipTextAsync(page)).Contains("Baseline", StringComparison.Ordinal));

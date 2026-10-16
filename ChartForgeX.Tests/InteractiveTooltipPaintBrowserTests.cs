@@ -43,7 +43,16 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         }
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', e => window.textSelection = e.detail.target)");
         await target.FocusAsync();
-        if (width < 400) Assert.True(await page.Locator(".cfx-stage").EvaluateAsync<double>("n => n.scrollLeft") > scrollLeft);
+        Assert.False(await target.EvaluateAsync<bool>("node => node.matches(':focus-visible')"));
+        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync(), "Programmatic focus after pointer input does not impersonate keyboard input.");
+        Assert.Equal(scrollLeft, await page.Locator(".cfx-stage").EvaluateAsync<double>("node => node.scrollLeft"));
+        await target.BlurAsync();
+        await TabToNativeTargetAsync(page, target);
+        Assert.True(await target.EvaluateAsync<bool>("node => node.matches(':focus-visible')"));
+        if (width < 400) {
+            Assert.True(await page.Locator(".cfx-stage").EvaluateAsync<double>("node => node.scrollLeft") > scrollLeft);
+            Assert.True(await target.EvaluateAsync<bool>("node => { const term = node.getBoundingClientRect(), stage = node.closest('.cfx-stage').getBoundingClientRect(); return term.left >= stage.left && term.right <= stage.right; }"), "Keyboard navigation reveals the full native term.");
+        }
         Assert.Contains("100", await TooltipTextAsync(page), StringComparison.Ordinal);
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
@@ -202,6 +211,14 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     private static Chart Frame(bool dark) => Chart.Create().WithSize(800, 540).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
     private static Chart AnnotationChart(bool dark) => Frame(dark).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
         .AddLine("Measured", new[] { new ChartPoint(2, 2), new ChartPoint(8, 2) });
+
+    private static async Task TabToNativeTargetAsync(IPage page, ILocator target) {
+        for (var attempt = 0; attempt < 12; attempt++) {
+            await page.Keyboard.PressAsync("Tab");
+            if (await target.EvaluateAsync<bool>("node => node === document.activeElement")) return;
+        }
+        Assert.Fail("The native word-cloud target must be reachable through normal Tab navigation.");
+    }
 
     private static async Task MoveToNativeTextAsync(IPage page, string selector) {
         var position = await NativeTextPositionAsync(page, selector);

@@ -8,7 +8,7 @@ The selected-target compare tray appears below the chart viewport, preserving ax
 
 Native painted marks retain their observation identity when pointed at. Cartesian producers declare `data-cfx-coordinate-system="cartesian"` on their series groups; inferred observations and crosshair guides require that scope. A producer declares polar geometry with `data-cfx-coordinate-system="polar"` on the SVG or a containing semantic group. Polar and other native-only families use SVG hit testing, leave empty stage space without an inferred target, and suppress the Cartesian crosshair. Nested observations inherit their containing series identity.
 
-Every rendered interaction surface is normalized to `data-cfx-target-kind` and `data-cfx-target-id` before bindings run. The current target kinds are `series`, `point`, `annotation`, `region`, `node`, `link`, and `legend`. Hosts can therefore route one scenario across Cartesian marks, topology nodes and links, annotations, map regions, and legend entries without depending on renderer-specific markup. Use `AddRegionStep`, `AddNodeStep`, `AddLinkStep`, or `AddLegendStep` when building those routes.
+Every rendered interaction surface is normalized to `data-cfx-target-kind` and `data-cfx-target-id` before bindings run. The semantic target kinds are `series`, `point`, `annotation`, `region`, `node`, `link`, and `legend`. The adapter also retains `element` as the fallback for an identified native surface without one of those semantic kinds. Hosts can therefore route one scenario across Cartesian marks, topology nodes and links, annotations, map regions, and legend entries without depending on renderer-specific markup. Use `AddRegionStep`, `AddNodeStep`, `AddLinkStep`, or `AddLegendStep` when building those routes.
 
 Explicitly decimated series keep their original point identity. `data-cfx-point` remains the rendered ordinal, while the series source-index map and each host event's `sourcePoint` identify the caller's original point.
 
@@ -248,6 +248,19 @@ ChartForgeX does not require another view library.
 `keyboard`, `lasso`, `reset`, `clear` or `command`. Series wrapper groups are not
 selected marks. Escape clears the selection. `cfxselect` remains the individual
 mark notification; `cfxcompare` remains the optional compare-tray notification.
+The selected set includes native points, nodes, regions, links, annotations and
+value-bearing scalar series such as bullets and circles. A gauge exposes its
+value as a point. A generic native element
+with its own interaction identity remains selectable too. Legends, passive
+guidance and series wrappers without a value are excluded. The same eligibility
+applies to activation, host commands, highlighting, lasso and state restoration.
+Tooltip headings and compare chips use readable authored or category captions;
+the value and series remain in readout rows and the target payload's source fields.
+Native activation reconciles the source chart's previous and current selected
+identities in synchronized peers. Unrelated raw observations or derived summaries
+stay selected. This uses the immediate gesture snapshot, without retaining another
+selection store. Explicit clear, Reset and replacement commands still replace or
+clear the intended group selection; Single mode retains at most one local mark.
 
 Target identities retain their `targetKind`, `targetId`, `seriesKey`,
 `observationId`, `sourcePoint`, `sourcePoints`, `value` and `kind`. Additional facts

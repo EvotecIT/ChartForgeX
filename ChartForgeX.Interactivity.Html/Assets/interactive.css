@@ -20,6 +20,11 @@ body {
   padding: 24px;
 }
 
+.cfx-shell > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .cfx-dashboard {
   width: min(100%, 1440px);
   display: grid;
@@ -29,6 +34,7 @@ body {
 
 .cfx-interactive-chart {
   container: cfx-chart / inline-size;
+  contain-intrinsic-inline-size: var(--cfx-native-width, 640px);
   position: relative;
   width: min(100%, 1200px);
   min-width: 0;

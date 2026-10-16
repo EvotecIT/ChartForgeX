@@ -45,7 +45,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         var reset = page.Locator("[data-cfx-reset]");
         if (await reset.IsVisibleAsync()) await reset.ClickAsync();
         await MoveAwayAsync(page);
-        await target.FocusAsync();
+        await FocusWithKeyboardAsync(page, target);
         var keyboard = await TooltipTextAsync(page);
         await page.Keyboard.PressAsync("Space");
         var keyboardSelected = await target.GetAttributeAsync("aria-selected");
@@ -76,7 +76,8 @@ public sealed class PatternOnlyPaintBrowserTests {
         var target = session.Page.Locator(Legend(0)).First;
         await target.HoverAsync();
         var hover = await TooltipTextAsync(session.Page);
-        await target.FocusAsync(); var keyboard = await TooltipTextAsync(session.Page);
+        await MoveAwayAsync(session.Page);
+        await FocusWithKeyboardAsync(session.Page, target); var keyboard = await TooltipTextAsync(session.Page);
         await session.Page.Keyboard.PressAsync("Space");
         var muted = await session.Page.Locator(".cfx-series-muted").CountAsync();
         await CaptureAsync(session, name, new { pointLegend, hover, keyboard, muted });
@@ -135,7 +136,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         var events = await page.EvaluateAsync<JsonElement>("()=>window.cfxPatternEvents");
         var pointerSelected = await point.GetAttributeAsync("aria-selected");
         var reset = page.Locator("[data-cfx-reset]"); if (await reset.IsVisibleAsync()) await reset.ClickAsync(); await MoveAwayAsync(page);
-        await point.FocusAsync(); var keyboard = await TooltipTextAsync(page); await page.Keyboard.PressAsync("Space");
+        await FocusWithKeyboardAsync(page, point); var keyboard = await TooltipTextAsync(page); await page.Keyboard.PressAsync("Space");
         var selected = await point.GetAttributeAsync("aria-selected"); var status = await point.GetAttributeAsync("data-cfx-geometry-status");
         await CaptureAsync(session, name, new { bars, collapse, screen, events, id, pointerSelected, keyboard, selected, status });
         Assert.DoesNotContain(events.EnumerateArray(), item => item.GetProperty("detail").TryGetProperty("target", out var target)
@@ -165,7 +166,7 @@ public sealed class PatternOnlyPaintBrowserTests {
         var selected = await point.GetAttributeAsync("aria-selected"); var absent = await point.GetAttributeAsync("tabindex");
         var patterns = await point.Locator("[data-cfx-role='radial-fill-pattern']").CountAsync();
         var reset = page.Locator("[data-cfx-reset]"); if (await reset.IsVisibleAsync()) await reset.ClickAsync(); await MoveAwayAsync(page);
-        await path.EvaluateAsync("node=>node.style.stroke=''"); await point.FocusAsync(); var keyboard = await TooltipTextAsync(page);
+        await path.EvaluateAsync("node=>node.style.stroke=''"); await FocusWithKeyboardAsync(page, point); var keyboard = await TooltipTextAsync(page);
         await CaptureAsync(session, name, new { donut, selected, absent, patterns, keyboard });
         Assert.NotEqual("true", selected); Assert.Equal("-1", absent); Assert.Equal(0, patterns);
         Assert.Contains("Observed", keyboard); Assert.Equal("1", await point.GetAttributeAsync("data-cfx-value")); AssertNoConsoleErrors(session);

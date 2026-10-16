@@ -339,7 +339,8 @@
     const root = node.closest && node.closest('.cfx-interactive-chart');
     if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
     const label = text(node, true);
-    if (!label) return false;
+    // An explicitly captured empty caption remains a valid readout of the source fields.
+    if (label === undefined || label === null) return false;
     tip.replaceChildren();
     const title = document.createElement('div');
     title.className = 'cfx-tooltip__title';
@@ -473,12 +474,14 @@
     return items;
   };
   const hideTip = (root, tip, force) => {
+    // A delayed pointer handoff can hide an active readout; a force-dismissed readout has no request to restore.
+    const restoreKeyboardReadout = tip && (!tip.hidden || tooltipRequests.has(root));
     cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
     // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
     const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
     const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
-    if (focused && active.matches(':focus-visible') && tooltipReadoutAvailable(focused)) {
+    if (restoreKeyboardReadout && focused && active.matches(':focus-visible') && tooltipReadoutAvailable(focused)) {
       if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(focused))) setHover(root, focused, true, true);
       showTip(root, tip, focused);
       return;
@@ -1944,6 +1947,7 @@
       if (payload[field].length && !shared.length) return;
       payload[field] = shared;
     }
+    if (Array.isArray(payload.previousTargets)) payload.previousTargets = payload.previousTargets.filter(sharedTarget);
     if (payload.action === 'state' && payload.state) {
       const targets = payload.state.selectedTargets || [], shared = targets.filter(sharedTarget);
       if (targets.length && !shared.length) return;
@@ -2475,7 +2479,8 @@
   };
   const toggleSelection = (root, node, event) => {
     if (!hasFeature(root, 'Selection') || !isDataTarget(node)) return;
-    const previous = selectionSignature(root);
+    const previousTargets = selectedTargets(root);
+    const previous = previousTargets.map(targetKey).join('\n');
     const mode = root.dataset.cfxSelectionMode || 'toggle';
     const toggle = mode === 'toggle' || mode === 'replace' && (event?.ctrlKey || event?.metaKey);
     const selected = toggle ? !node.classList.contains('cfx-selected') : true;
@@ -2486,12 +2491,13 @@
     emitHostEvent(root, 'cfxselect', { label: text(node), selected, target });
     emitSync(root, { action: 'selection', label: text(node), selected, target });
     syncSelectionAppearance(root);
-    if (previous !== selectionSignature(root)) publishSelectionChange(root, event instanceof KeyboardEvent ? 'keyboard' : 'click', true);
-    publishCompare(root, true);
+    if (previous !== selectionSignature(root)) publishSelectionChange(root, event instanceof KeyboardEvent ? 'keyboard' : 'click', true, previousTargets);
+    publishCompare(root, false);
   };
   const setNodeSelected = (node, selected) => {
     node.classList.toggle('cfx-selected', selected);
-    node.setAttribute('aria-selected', selected ? 'true' : 'false');
+    const value = selected ? 'true' : 'false';
+    if (node.getAttribute('aria-selected') !== value) node.setAttribute('aria-selected', value);
   };
   const setNodeHovered = (node, hovered, related) => {
     node.classList.toggle('cfx-hovered', hovered);
@@ -2667,6 +2673,14 @@
     }
     return count;
   };
+  const reconcileSourceSelection = (root, previous, targets) => {
+    // One chart can share raw observations with one peer and derived summaries with another.
+    // Reconcile only this gesture's represented identities; an unrelated peer fact stays selected.
+    for (const target of previous) applySelectionByTarget(root, target, false);
+    for (const target of targets) {
+      if (applySelectionByTarget(root, target, true) && root.dataset.cfxSelectionMode === 'single') break;
+    }
+  };
   const nodeCenterInRect = (node, rect) => {
     const box = node.getBoundingClientRect();
     if (!box.width && !box.height) return null;
@@ -2707,7 +2721,8 @@
       renderCompare(root);
       syncSelectionAppearance(root);
     } else if (detail.action === 'compare') {
-      applySelectionSetByTargets(root, detail.targets || [], true);
+      if (Array.isArray(detail.previousTargets)) reconcileSourceSelection(root, detail.previousTargets, detail.targets || []);
+      else applySelectionSetByTargets(root, detail.targets || [], true);
       renderCompare(root);
       syncSelectionAppearance(root);
     }
@@ -2739,8 +2754,10 @@
       setScenarioStep(root, detail.index, false, false);
     }
   };
-  // Linked hosts consume source facts; browser focus/legend wrappers are never data observations.
-  const isDataTarget = node => ['point', 'node', 'region'].includes(renderedTargetKind(node));
+  // Native links, annotations and scalar series are selectable facts too. A series wrapper
+  // has no value of its own; its separately identified children own the observations.
+  const isDataTarget = node => isInteractiveTarget(node) && renderedTargetKind(node) !== 'legend'
+    && (renderedTargetKind(node) !== 'series' || node.dataset.cfxValue !== undefined);
   const dataTargets = root => interactiveTargets(root).filter(isDataTarget);
   const targetCategory = node => {
     const data = node.dataset || {};
@@ -2796,11 +2813,11 @@
     });
   };
   const selectionSignature = root => selectedTargets(root).map(targetKey).join('\n');
-  const publishSelectionChange = (root, reason, sync = false) => {
+  const publishSelectionChange = (root, reason, sync = false, previousTargets) => {
     syncSelectionAppearance(root);
     const targets = selectedTargets(root);
     emitHostEvent(root, 'cfxselectionchange', { reason, targets });
-    if (sync) emitSync(root, { action: 'compare', count: targets.length, targets });
+    if (sync) emitSync(root, { action: 'compare', count: targets.length, targets, previousTargets });
     return targets;
   };
   const copyHostValue = value => value == null ? value : JSON.parse(JSON.stringify(value));

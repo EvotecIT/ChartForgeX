@@ -1,5 +1,7 @@
-  // Linked hosts consume source facts; browser focus/legend wrappers are never data observations.
-  const isDataTarget = node => ['point', 'node', 'region'].includes(renderedTargetKind(node));
+  // Native links, annotations and scalar series are selectable facts too. A series wrapper
+  // has no value of its own; its separately identified children own the observations.
+  const isDataTarget = node => isInteractiveTarget(node) && renderedTargetKind(node) !== 'legend'
+    && (renderedTargetKind(node) !== 'series' || node.dataset.cfxValue !== undefined);
   const dataTargets = root => interactiveTargets(root).filter(isDataTarget);
   const targetCategory = node => {
     const data = node.dataset || {};
@@ -55,11 +57,11 @@
     });
   };
   const selectionSignature = root => selectedTargets(root).map(targetKey).join('\n');
-  const publishSelectionChange = (root, reason, sync = false) => {
+  const publishSelectionChange = (root, reason, sync = false, previousTargets) => {
     syncSelectionAppearance(root);
     const targets = selectedTargets(root);
     emitHostEvent(root, 'cfxselectionchange', { reason, targets });
-    if (sync) emitSync(root, { action: 'compare', count: targets.length, targets });
+    if (sync) emitSync(root, { action: 'compare', count: targets.length, targets, previousTargets });
     return targets;
   };
   const copyHostValue = value => value == null ? value : JSON.parse(JSON.stringify(value));
