@@ -341,55 +341,131 @@
     });
   });
 
-  // Gallery viewer. Each example's .csharp.txt is a standalone program for the published package.
+  // Viewer dialog for gallery cards (gallery-card.html). A card names its output in each theme, the full-size file,
+  // a page link and its source file; gallery sources are standalone .csharp.txt programs. A card may also carry tabs,
+  // line ranges of that one source (PowerBGInfo shows a script's presentation and data blocks). A card without
+  // data-image shows its own image for the page theme at the viewer's size, so the viewer uses whatever responsive
+  // variants the build wrote for it.
 
   var viewer = document.querySelector('[data-cfx-viewer]');
   if (viewer && typeof viewer.showModal === 'function') {
     var current = null;
+    var opener = null;
     var request = 0;
+    var tabIndex = 0;
+    var sources = {};
     var image = viewer.querySelector('[data-cfx-viewer-image]');
     var code = viewer.querySelector('[data-cfx-viewer-code]');
     var block = code.closest('.cfx-codeblock');
+    var tablist = viewer.querySelector('[data-cfx-viewer-tabs]');
+    var openLink = viewer.querySelector('[data-cfx-viewer-open]');
+    var pageLink = viewer.querySelector('[data-cfx-viewer-page]');
+    var download = viewer.querySelector('[data-cfx-viewer-download]');
+    var pick = function (light, darkValue) { return theme() === 'dark' && darkValue ? darkValue : light; };
+    var fileName = function (url) { return url.split('/').pop().replace(/\.csharp\.txt$/, '.cs').replace(/\.txt$/, ''); };
 
-    var render = function () {
-      if (!current) return;
-      var dark = theme() === 'dark';
-      var pick = function (light, darkValue) { return dark && darkValue ? darkValue : light; };
-      var imageUrl = pick(current.image, current.darkImage);
+    var loadSource = function (url) {
+      if (!sources[url]) {
+        sources[url] = fetch(url).then(function (response) { return response.ok ? response.text() : Promise.reject(); });
+        sources[url].catch(function () { delete sources[url]; });
+      }
+      return sources[url];
+    };
+
+    var showSource = function () {
       var source = pick(current.source, current.darkSource);
+      var range = current.tabs ? current.tabs[tabIndex] : null;
       var ticket = ++request;
-      image.src = imageUrl;
-      image.alt = current.title + ', ' + current.family + ' rendered by ChartForgeX';
-      viewer.querySelector('[data-cfx-viewer-title]').textContent = current.title;
-      viewer.querySelector('[data-cfx-viewer-family]').textContent = current.family;
-      viewer.querySelector('[data-cfx-viewer-svg]').href = imageUrl;
-      viewer.querySelector('[data-cfx-viewer-html]').href = pick(current.html, current.darkHtml);
-      var download = viewer.querySelector('[data-cfx-viewer-download]');
       download.href = source;
-      download.setAttribute('download', source.split('/').pop().replace(/\.csharp\.txt$/, '.cs'));
-      viewer.querySelector('[data-cfx-viewer-file]').textContent = source.split('/').pop().replace(/\.csharp\.txt$/, '.cs');
+      download.setAttribute('download', fileName(source));
+      viewer.querySelector('[data-cfx-viewer-file]').textContent = fileName(source);
       block.cfxSource = '';
       code.textContent = 'Loading source…';
-      fetch(source).then(function (response) { return response.ok ? response.text() : Promise.reject(); })
+      loadSource(source)
         .then(function (text) {
           if (ticket !== request) return;
+          if (range && range.from) text = text.split('\n').slice(range.from - 1, range.to).join('\n') + '\n';
           block.cfxSource = text;
-          code.textContent = block.cfxSource;
+          code.textContent = text;
           highlight(code);
         })
         .catch(function () {
           if (ticket !== request) return;
-          code.textContent = 'The source file could not be loaded. Open the SVG or HTML output instead.';
+          code.textContent = 'The source file could not be loaded. Use the links above instead.';
         });
+    };
+
+    var buildTabs = function () {
+      tablist.textContent = '';
+      tablist.hidden = !current.tabs;
+      tabIndex = 0;
+      if (!current.tabs) {
+        block.removeAttribute('role');
+        block.removeAttribute('aria-labelledby');
+        return;
+      }
+      block.setAttribute('role', 'tabpanel');
+      var tabs = current.tabs.map(function (entry, index) {
+        var tab = document.createElement('button');
+        tab.type = 'button';
+        tab.id = 'cfx-viewer-tab-' + index;
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', block.id);
+        tab.innerHTML = '<span class="cfx-key' + (index ? ' cfx-key--hollow' : '') + '" aria-hidden="true"></span>';
+        tab.appendChild(document.createTextNode(entry.label));
+        tablist.appendChild(tab);
+        return tab;
+      });
+      var choose = function (active, load) {
+        tabIndex = tabs.indexOf(active);
+        tabs.forEach(function (tab) {
+          tab.setAttribute('aria-selected', tab === active ? 'true' : 'false');
+          tab.tabIndex = tab === active ? 0 : -1;
+        });
+        block.setAttribute('aria-labelledby', active.id);
+        if (load !== false) showSource();
+      };
+      wireTabs(tabs, choose);
+      choose(tabs[0], false);
+    };
+
+    var render = function () {
+      if (!current) return;
+      var own = current.image ? null : opener.querySelector(theme() === 'dark' ? 'img.cfx-only-dark' : 'img.cfx-only-light');
+      if (own) {
+        image.sizes = viewer.getAttribute('data-sizes') || '100vw';
+        image.srcset = own.getAttribute('srcset') || '';
+        image.src = own.getAttribute('src');
+        image.width = +own.getAttribute('width');
+        image.height = +own.getAttribute('height');
+      } else {
+        ['srcset', 'sizes', 'width', 'height'].forEach(function (name) { image.removeAttribute(name); });
+        image.src = pick(current.image, current.darkImage);
+      }
+      image.alt = current.alt || current.title + ', ' + current.family + ' rendered by ChartForgeX';
+      viewer.querySelector('[data-cfx-viewer-title]').textContent = current.title;
+      viewer.querySelector('[data-cfx-viewer-family]').textContent = [current.family, current.note].filter(Boolean).join(' · ');
+      openLink.href = pick(current.full, current.darkFull) || image.getAttribute('src');
+      var page = pick(current.page, current.darkPage);
+      pageLink.hidden = !page;
+      if (page) pageLink.href = page;
+      showSource();
     };
 
     document.querySelectorAll('[data-cfx-gallery-open]').forEach(function (button) {
       button.addEventListener('click', function () {
         var d = button.dataset;
+        var tabs = null;
+        try { tabs = d.tabs ? JSON.parse(d.tabs) : null; } catch (e) { tabs = null; }
         current = {
-          title: d.title, family: d.family, image: d.image, darkImage: d.darkImage,
-          source: d.source, darkSource: d.darkSource, html: d.html, darkHtml: d.darkHtml
+          title: d.title, family: d.family, note: d.note, alt: d.alt, image: d.image, darkImage: d.darkImage, full: d.full,
+          darkFull: d.darkFull, source: d.source, darkSource: d.darkSource, page: d.page, darkPage: d.darkPage, tabs: tabs
         };
+        opener = button;
+        var card = button.closest('.cfx-card');
+        var key = card ? card.style.getPropertyValue('--key') : '';
+        if (key) viewer.style.setProperty('--key', key); else viewer.style.removeProperty('--key');
+        buildTabs();
         render();
         viewer.showModal();
       });
@@ -397,6 +473,8 @@
 
     viewer.querySelector('[data-cfx-viewer-close]').addEventListener('click', function () { viewer.close(); });
     viewer.addEventListener('click', function (event) { if (event.target === viewer) viewer.close(); });
+    // Escape and the close button both end here: focus goes back to the card that opened the viewer.
+    viewer.addEventListener('close', function () { if (opener && opener.isConnected) opener.focus(); });
     themeListeners.push(function () { if (viewer.open) render(); });
   }
 })();

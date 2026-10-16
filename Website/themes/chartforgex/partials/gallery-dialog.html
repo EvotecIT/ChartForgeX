@@ -1,12 +1,20 @@
-<dialog class="cfx-viewer" data-cfx-viewer aria-labelledby="cfx-viewer-title">
+{{~ ## The viewer dialog for gallery cards (gallery-card.html). The defaults suit the C# gallery; a page can set
+     viewer_lang and viewer_label (the source language and its label), viewer_open and viewer_page (the two link
+     labels), viewer_sizes (the image sizes when the viewer shows a card's own responsive image) and viewer_stack (the
+     output above its source, for wide outputs) before including it. ## ~}}
+{{~ v_lang = "csharp"; v_label = "C#"; v_open = "Open SVG"; v_page = "Open HTML page"
+    if viewer_lang; v_lang = viewer_lang; v_label = viewer_label; end
+    if viewer_open; v_open = viewer_open; end
+    if viewer_page; v_page = viewer_page; end ~}}
+<dialog class="cfx-viewer{{ if viewer_stack }} cfx-viewer--stack{{ end }}" data-cfx-viewer aria-labelledby="cfx-viewer-title"{{ if viewer_sizes }} data-sizes="{{ viewer_sizes }}"{{ end }}>
   <div class="cfx-viewer__head">
     <div class="cfx-viewer__titles">
       <h2 id="cfx-viewer-title" data-cfx-viewer-title></h2>
       <p class="cfx-viewer__family" data-cfx-viewer-family></p>
     </div>
     <div class="cfx-viewer__links">
-      <a class="cfx-viewer__link" data-cfx-viewer-svg href="#">Open SVG</a>
-      <a class="cfx-viewer__link" data-cfx-viewer-html href="#">Open HTML page</a>
+      <a class="cfx-viewer__link" data-cfx-viewer-open href="#">{{ v_open }}</a>
+      <a class="cfx-viewer__link" data-cfx-viewer-page href="#">{{ v_page }}</a>
     </div>
     <button type="button" class="cfx-viewer__close" data-cfx-viewer-close aria-label="Close">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -14,13 +22,14 @@
   </div>
   <div class="cfx-viewer__body">
     <div class="cfx-viewer__image"><img data-cfx-viewer-image alt="" /></div>
-    <figure class="cfx-codeblock cfx-viewer__source" data-lang="csharp">
+    <div class="cfx-seg cfx-viewer__tabs" role="tablist" aria-label="Source" data-cfx-viewer-tabs hidden></div>
+    <figure class="cfx-codeblock cfx-viewer__source" id="cfx-viewer-source" data-lang="{{ v_lang }}">
       <figcaption class="cfx-codeblock__bar">
-        <span class="cfx-codeblock__lang">C#</span>
+        <span class="cfx-codeblock__lang">{{ v_label }}</span>
         <span class="cfx-codeblock__file" data-cfx-viewer-file></span>
         <span class="cfx-codeblock__actions"><a class="cfx-codeblock__btn" data-cfx-viewer-download href="#" download>Download</a></span>
       </figcaption>
-      <pre><code class="language-csharp" data-cfx-viewer-code>Loading source…</code></pre>
+      <pre><code class="language-{{ v_lang }}" data-cfx-viewer-code>Loading source…</code></pre>
     </figure>
   </div>
 </dialog>
