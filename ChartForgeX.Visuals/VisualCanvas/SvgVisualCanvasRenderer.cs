@@ -274,9 +274,8 @@ public sealed class SvgVisualCanvasRenderer {
         }
         if (tile.Progress.HasValue) {
             var railX = textX;
-            var railScale = tile.TextScale ?? theme.TileTextScale;
-            var railY = y + height - 16 * railScale;
-            var railHeight = 8 * railScale;
+            var railY = metrics.ProgressRailY;
+            var railHeight = metrics.ProgressRailHeight;
             var railW = metrics.TextMax;
             writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW).Attribute("height", railHeight).Attribute("rx", railHeight / 2).Attribute("fill", theme.TileProgressTrackColor.ToCss()).EndEmptyElement().Line();
             writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW * tile.Progress.Value).Attribute("height", railHeight).Attribute("rx", railHeight / 2).Attribute("fill", accent.ToCss()).EndEmptyElement().Line();

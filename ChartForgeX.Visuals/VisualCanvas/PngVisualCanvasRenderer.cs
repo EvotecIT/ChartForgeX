@@ -183,9 +183,8 @@ public sealed class PngVisualCanvasRenderer {
         }
         if (tile.Progress.HasValue) {
             var railX = textX;
-            var railScale = tile.TextScale ?? theme.TileTextScale;
-            var railY = y + height - 16 * railScale;
-            var railHeight = 8 * railScale;
+            var railY = metrics.ProgressRailY;
+            var railHeight = metrics.ProgressRailHeight;
             var railW = metrics.TextMax;
             canvas.FillRoundedRect(railX, railY, railW, railHeight, railHeight / 2, theme.TileProgressTrackColor);
             canvas.FillRoundedRect(railX, railY, railW * tile.Progress.Value, railHeight, railHeight / 2, accent);

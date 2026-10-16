@@ -10,7 +10,7 @@ internal enum VisualCanvasInfoTileTextRole {
 }
 
 internal sealed class VisualCanvasInfoTileMetrics {
-    public VisualCanvasInfoTileMetrics(double x, double y, double width, double height, double padX, double iconBox, double iconX, double iconY, double textX, double textMax, bool hasMiniChart, double chartX, double chartY, double chartWidth, double chartHeight) {
+    public VisualCanvasInfoTileMetrics(double x, double y, double width, double height, double padX, double iconBox, double iconX, double iconY, double textX, double textMax, bool hasMiniChart, double chartX, double chartY, double chartWidth, double chartHeight, double progressRailY, double progressRailHeight) {
         X = x;
         Y = y;
         Width = width;
@@ -26,6 +26,8 @@ internal sealed class VisualCanvasInfoTileMetrics {
         ChartY = chartY;
         ChartWidth = chartWidth;
         ChartHeight = chartHeight;
+        ProgressRailY = progressRailY;
+        ProgressRailHeight = progressRailHeight;
     }
 
     public double X { get; }
@@ -43,6 +45,8 @@ internal sealed class VisualCanvasInfoTileMetrics {
     public double ChartY { get; }
     public double ChartWidth { get; }
     public double ChartHeight { get; }
+    public double ProgressRailY { get; }
+    public double ProgressRailHeight { get; }
 }
 
 internal sealed class VisualCanvasInfoTileTextLine {
@@ -109,10 +113,17 @@ internal static class VisualCanvasInfoTileTextLayout {
         var chartX = x + width - padX - chartWidth;
         var chartY = y + Math.Min(Math.Max(24 * scale, height * 0.30), Math.Max(0, height - 1));
         var chartHeight = Math.Min(Math.Max(28 * scale, Math.Min(46 * scale, height * 0.42)), Math.Max(1, y + height - chartY));
+        if (chartWidth < 17 || chartHeight < 15) {
+            hasMiniChart = false;
+            chartWidth = 0;
+            chartX = x + width - padX;
+        }
         var textMax = hasMiniChart
             ? Math.Max(0, chartX - textX - 16 * scale)
             : Math.Max(0, x + width - padX - textX);
-        return new VisualCanvasInfoTileMetrics(x, y, width, height, padX, iconBox, iconX, iconY, textX, textMax, hasMiniChart, chartX, chartY, chartWidth, chartHeight);
+        var railSize = Math.Min(8 * scale, Math.Max(1, height * 0.12));
+        var railY = y + height - 2 * railSize;
+        return new VisualCanvasInfoTileMetrics(x, y, width, height, padX, iconBox, iconX, iconY, textX, textMax, hasMiniChart, chartX, chartY, chartWidth, chartHeight, railY, railSize);
     }
 
     /// <summary>The icon text size both renderers use: the preferred size, reduced until the text fits inside the icon box.</summary>

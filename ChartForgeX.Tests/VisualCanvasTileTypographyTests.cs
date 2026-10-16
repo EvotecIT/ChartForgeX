@@ -106,6 +106,24 @@ public sealed class VisualCanvasTileTypographyTests {
     }
 
     [Fact]
+    public void MiniChartWithInsufficientHeightIsSuppressed() {
+        var canvas = VisualCanvas.Create(300, 80).AddInfoTileWithTextOptions(8, 8,
+            284, 56, "CPU", "PROCESSOR", "Intel Xeon",
+            new VisualCanvasInfoTileTextOptions(textScale: 3),
+            miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
+            miniChartValues: new[] { 1d, 2d, 3d });
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile,
+            canvas.ResolveStyle());
+
+        Assert.False(metrics.HasMiniChart);
+        Assert.True(metrics.TextMax > 20);
+        Assert.DoesNotContain("data-cfx-role=\"visual-canvas-info-tile-mini-chart\"",
+            canvas.ToSvg());
+        Assert.NotEmpty(canvas.ToPng());
+    }
+
+    [Fact]
     public void ExistingAddInfoTileClrSignaturesRemainAvailable() {
         var methods = typeof(VisualCanvas).GetMethods(BindingFlags.Public | BindingFlags.Instance)
             .Where(method => method.Name == nameof(VisualCanvas.AddInfoTile)).ToArray();
@@ -216,5 +234,49 @@ public sealed class VisualCanvasTileTypographyTests {
         }
 
         Assert.InRange(Math.Abs(matchingRows - expectedHeight), 0, 2);
+    }
+
+    [Fact]
+    public void LargeProgressRailScaleStaysInsideShortTileInBothRenderers() {
+        var canvas = VisualCanvas.Create(320, 80).AddInfoTileWithTextOptions(8, 8,
+            304, 56, "PC", "HOST", "WORKSTATION",
+            new VisualCanvasInfoTileTextOptions(textScale: 4), progress: 0.45);
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var style = canvas.ResolveStyle();
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, style);
+        var tileBottom = metrics.Y + metrics.Height;
+
+        Assert.True(metrics.ProgressRailY >= metrics.Y);
+        Assert.True(metrics.ProgressRailY + metrics.ProgressRailHeight <= tileBottom);
+        var svg = XDocument.Parse(canvas.ToSvg());
+        var track = Assert.Single(svg.Descendants(), element =>
+            element.Name.LocalName == "rect" &&
+            (string?)element.Attribute("fill") == style.TileProgressTrackColor.ToCss() &&
+            Math.Abs(double.Parse((string)element.Attribute("height")!,
+                System.Globalization.CultureInfo.InvariantCulture) -
+                metrics.ProgressRailHeight) < 0.001);
+        var railY = double.Parse((string)track.Attribute("y")!,
+            System.Globalization.CultureInfo.InvariantCulture);
+        Assert.InRange(railY, metrics.Y, tileBottom - metrics.ProgressRailHeight);
+
+        var image = canvas.ToRgbaImage();
+        var baseline = VisualCanvas.Create(320, 80).AddInfoTileWithTextOptions(8, 8,
+            304, 56, "PC", "HOST", "WORKSTATION",
+            new VisualCanvasInfoTileTextOptions(textScale: 4)).ToRgbaImage();
+        var railX = Math.Clamp((int)Math.Round(metrics.TextX + metrics.TextMax * 0.8),
+            0, image.Width - 1);
+        var changedRows = new List<int>();
+        for (var row = 0; row < image.Height; row++) {
+            var pixel = (row * image.Width + railX) * 4;
+            if (image.Pixels[pixel] != baseline.Pixels[pixel] ||
+                image.Pixels[pixel + 1] != baseline.Pixels[pixel + 1] ||
+                image.Pixels[pixel + 2] != baseline.Pixels[pixel + 2] ||
+                image.Pixels[pixel + 3] != baseline.Pixels[pixel + 3]) changedRows.Add(row);
+        }
+
+        Assert.NotEmpty(changedRows);
+        Assert.InRange(changedRows[0], (int)metrics.Y, (int)tileBottom - 1);
+        Assert.InRange(changedRows[^1], (int)metrics.Y, (int)tileBottom - 1);
+        Assert.InRange(Math.Abs(changedRows.Count - metrics.ProgressRailHeight), 0, 2);
     }
 }
