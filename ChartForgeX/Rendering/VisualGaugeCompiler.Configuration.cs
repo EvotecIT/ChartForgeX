@@ -13,8 +13,11 @@ internal static partial class VisualGaugeCompiler {
     private static double Start(ChartGaugeOptions options) => options.StartAngleDegrees % 360 * (Math.PI / 180);
     private static double Sweep(ChartGaugeOptions options) => options.SweepAngleDegrees * (Math.PI / 180);
     private static double Ratio(GaugeData data, double value) => VisualRadialPrimitives.Clamp((value - data.Min) / (data.Max - data.Min));
-    private static bool ConfiguredCircular(ChartGaugeOptions options) => options.StartAngleDegrees != 150 || options.SweepAngleDegrees != 240
-        || options.TickCount.HasValue || options.TickLabels.Count > 0;
+    private static bool ConfiguredCircular(ChartGaugeOptions options) {
+        var start = options.StartAngleDegrees % 360;
+        var defaultStart = start == 150 || start == 150 - 360;
+        return !defaultStart || options.SweepAngleDegrees != 240 || (options.TickCount ?? 2) != 2 || options.TickLabels.Count > 0;
+    }
 
     private static double[] ScaleValues(Chart chart, GaugeData data) {
         if (!chart.Options.ShowAxes) return Array.Empty<double>();
@@ -23,32 +26,55 @@ internal static partial class VisualGaugeCompiler {
             .Where(value => value >= data.Min && value <= data.Max).Distinct().OrderBy(value => value).ToArray();
         var count = options.TickCount ?? (options.Form == ChartGaugeForm.Linear ? 5 : 2);
         var fullTurn = options.Form != ChartGaugeForm.Linear && options.SweepAngleDegrees == 360;
-        return Enumerable.Range(0, count).Select(index => ChartHeatmapSurface.InterpolateObservedRange(data.Min, data.Max,
-            index / (double)(fullTurn ? count : count - 1))).ToArray();
+        return GeneratedScaleValues(data, count, fullTurn);
     }
+
+    private static double[] GeneratedScaleValues(GaugeData data, int count, bool fullTurn) =>
+        Enumerable.Range(0, count).Select(index => ChartHeatmapSurface.InterpolateObservedRange(data.Min, data.Max,
+            index / (double)(fullTurn ? count : count - 1))).ToArray();
 
     private static string? ExplicitScaleLabel(ChartGaugeOptions options, double value) => ChartAxisValueFormatter.FindExplicitLabel(options.TickLabels, value);
     private static string ScaleRole(GaugeData data, double value, int index) => value == data.Min ? "gauge-min-label" : value == data.Max ? "gauge-max-label" : "gauge-tick-label-" + index;
 
     private static void FitGeneratedScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
+        GaugeData data, ChartValueFormat format, IReadOnlyList<double> retainedValues, Dictionary<double, string> captured,
         ref double[] values, ref string[] captions) {
         var options = chart.Options.Gauge;
         if (options.TickLabels.Count > 0 || values.Length < 3) return;
         var style = VisualRadialPrimitives.Style(chart, context, context.Theme.Resolve(context.ThemeMode).MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
         var vertical = options.Form == ChartGaugeForm.Linear && options.Orientation == ChartOrientation.Vertical;
-        var extent = vertical ? captions.Max(text => builder.MeasureText(text, style).Height) : captions.Max(text => builder.MeasureText(text, style).Width);
         var length = options.Form == ChartGaugeForm.Linear ? vertical ? plot.Height * .55 : plot.Width - context.Theme.Spacing * 2
             : Math.Min(plot.Width, plot.Height) * .3 * Sweep(options);
-        var maximum = Math.Max(2, (int)Math.Floor(length / Math.Max(1, extent + context.Theme.Spacing)) + 1);
-        if (values.Length <= maximum) return;
-        // A divisor of the original intervals preserves uniform spacing and both partial-scale endpoints.
+        int Maximum(IReadOnlyList<string> labels) {
+            var extent = vertical ? labels.Max(text => builder.MeasureText(text, style).Height) : labels.Max(text => builder.MeasureText(text, style).Width);
+            return Math.Max(2, (int)Math.Floor(length / Math.Max(1, extent + context.Theme.Spacing)) + 1);
+        }
+        var maximum = Maximum(captions);
         var fullTurn = options.Form != ChartGaugeForm.Linear && options.SweepAngleDegrees == 360;
-        var intervals = fullTurn ? values.Length : values.Length - 1;
-        var stride = 1;
-        while (stride < intervals && (intervals % stride != 0 || (fullTurn ? intervals / stride : intervals / stride + 1) > maximum)) stride++;
-        if (fullTurn && intervals / stride < 2) return;
-        values = values.Where((_, index) => index % stride == 0).ToArray();
-        captions = captions.Where((_, index) => index % stride == 0).ToArray();
+        while (values.Length > maximum) {
+            // A divisor preserves existing positions and both partial-scale endpoints when one fits the budget.
+            var intervals = fullTurn ? values.Length : values.Length - 1;
+            var stride = 1;
+            while (stride < intervals && (intervals % stride != 0 || (fullTurn ? intervals / stride : intervals / stride + 1) > maximum)) stride++;
+            if (fullTurn && intervals / stride < 2) {
+                values = GeneratedScaleValues(data, maximum, fullTurn: true);
+                var missing = values.Where(value => !captured.ContainsKey(value)).ToArray();
+                var formatted = ChartNumericFormatter.FormatScaleValues(format, missing);
+                for (var index = 0; index < missing.Length; index++) captured.Add(missing[index], formatted[index]);
+            } else {
+                values = values.Where((_, index) => index % stride == 0).ToArray();
+            }
+            // Newly generated ticks must remain distinct from every retained reading/target fact.
+            // Refine captured defaults together; authored callbacks keep their captions and run once.
+            if (ReferenceEquals(format, ChartValueFormat.ExistingValue)) {
+                var facts = values.Concat(retainedValues).Distinct().ToArray();
+                var labels = facts.Select(value => captured[value]).ToArray();
+                ChartNumericFormatter.RefineDefaults(facts, labels, ChartValueFormat.ExistingValue.Format(0));
+                for (var index = 0; index < facts.Length; index++) captured[facts[index]] = labels[index];
+            }
+            captions = values.Select(value => captured[value]).ToArray();
+            maximum = Maximum(captions);
+        }
     }
 
     private static void CaptureTargets(Dictionary<string, string> metadata, GaugeData data, IReadOnlyDictionary<double, string> captions) {

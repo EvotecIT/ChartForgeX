@@ -18,10 +18,13 @@ internal static class ChartNumericFormatter {
     }
 
     /// <summary>Preserves authored value formats and refines ambiguous default scale captions.</summary>
-    internal static string[] FormatScaleValues(ChartOptions options, IReadOnlyList<double> values) {
+    internal static string[] FormatScaleValues(ChartOptions options, IReadOnlyList<double> values) => FormatScaleValues(options.ValueFormat, values);
+
+    /// <summary>Formats a scale with one captured policy even when a callback changes its originating chart.</summary>
+    internal static string[] FormatScaleValues(ChartValueFormat format, IReadOnlyList<double> values) {
         var captions = new string[values.Count];
-        for (var index = 0; index < values.Count; index++) captions[index] = FormatValue(options, values[index]);
-        if (ReferenceEquals(options.ValueFormat, ChartValueFormat.ExistingValue)) RefineDefaults(values, captions, FormatValue(options, 0));
+        for (var index = 0; index < values.Count; index++) captions[index] = format.Format(values[index]);
+        if (ReferenceEquals(format, ChartValueFormat.ExistingValue)) RefineDefaults(values, captions, format.Format(0));
         return captions;
     }
 

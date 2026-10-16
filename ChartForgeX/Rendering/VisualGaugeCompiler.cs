@@ -27,19 +27,20 @@ internal static partial class VisualGaugeCompiler {
         var showValue = series.ShowDataLabels != false;
         var caption = options.Caption ?? series.Name;
         var scaleValues = ScaleValues(chart, data);
-        var requestedValues = new List<double>(scaleValues.Where(number => ExplicitScaleLabel(options, number) == null));
-        if (authoredValue == null && showValue) requestedValues.Add(data.Raw);
-        requestedValues.AddRange(data.Targets.Select(target => target.Value));
+        var retainedValues = new List<double>(data.Targets.Select(target => target.Value));
+        if (authoredValue == null && showValue) retainedValues.Add(data.Raw);
+        var requestedValues = scaleValues.Where(number => ExplicitScaleLabel(options, number) == null).Concat(retainedValues);
         // One caption per requested numeric fact keeps a shared value/target/tick consistent and resolves callbacks once.
         var distinctValues = requestedValues.Distinct().ToArray();
-        var formatted = distinctValues.Length == 0 ? Array.Empty<string>() : ChartNumericFormatter.FormatScaleValues(chart.Options, distinctValues);
+        var format = chart.Options.ValueFormat;
+        var formatted = distinctValues.Length == 0 ? Array.Empty<string>() : ChartNumericFormatter.FormatScaleValues(format, distinctValues);
         var captions = new Dictionary<double, string>();
         for (var index = 0; index < distinctValues.Length; index++) captions[distinctValues[index]] = formatted[index];
+        var scaleCaptions = scaleValues.Select(number => ExplicitScaleLabel(options, number) ?? captions[number]).ToArray();
+        FitGeneratedScale(chart, context, builder, plot, data, format, retainedValues, captions, ref scaleValues, ref scaleCaptions);
         var value = authoredValue ?? (showValue ? captions[data.Raw] : N(data.Raw));
         var targetCaptions = data.Targets.Select(target => target.Label ?? captions[target.Value]).ToArray();
         var target = targetCaptions.Length > 0 ? targetCaptions[0] : null;
-        var scaleCaptions = scaleValues.Select(number => ExplicitScaleLabel(options, number) ?? captions[number]).ToArray();
-        FitGeneratedScale(chart, context, builder, plot, ref scaleValues, ref scaleCaptions);
         var min = scaleCaptions.Length > 0 ? scaleCaptions[0] : null;
         var max = scaleCaptions.Length > 0 ? scaleCaptions[scaleCaptions.Length - 1] : null;
         builder.AddRegion(new VisualSemanticRegion("series-0", "gauge", plot, series.Name + ": " + value));

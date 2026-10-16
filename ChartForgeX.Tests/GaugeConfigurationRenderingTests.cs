@@ -79,10 +79,12 @@ public sealed class GaugeConfigurationRenderingTests {
         Assert.DoesNotContain(prepared.Regions.Where(region => region.Role is "gauge-min-label" or "gauge-max-label" || region.Role.StartsWith("gauge-tick-label-", StringComparison.Ordinal)), region => region.Label == "100");
     }
 
-    [Fact]
-    public void ExplicitFullTurnEndpointsShareOnePaintedSeamWhileBothCaptionsRemainSemantic() {
+    [Theory]
+    [InlineData(ChartGaugeForm.Arc)]
+    [InlineData(ChartGaugeForm.Needle)]
+    public void ExplicitFullTurnEndpointsShareOnePaintedSeamWhileBothCaptionsRemainSemantic(ChartGaugeForm form) {
         var chart = Chart.Create().WithSize(640, 440).WithLegend(false).AddGauge("Capacity", 50)
-            .ConfigureGauge(options => { options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360;
+            .ConfigureGauge(options => { options.Form = form; options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360;
                 options.TickLabels = new[] { new ChartAxisLabel(0, "Empty"), new ChartAxisLabel(50, "Half"), new ChartAxisLabel(100, "Full") }; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "gauge-tick"));
