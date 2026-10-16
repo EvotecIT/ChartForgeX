@@ -456,6 +456,33 @@ public sealed partial class ConsumerRenderingRegressionTests {
         Assert.Single(markers);
         Assert.Equal(theme.Resolve(VisualThemeMode.Light).Palette[0].ToCss(), markers[0]);
     }
+    [Theory]
+    [InlineData(VisualListMarker.Bullet, "r", 4)]
+    [InlineData(VisualListMarker.Number, "font-size", 11)]
+    [InlineData(VisualListMarker.Check, "r", 7)]
+    [InlineData(VisualListMarker.Status, "r", 6)]
+    public void ListMarkersAndReservedWidthFollowThemeBodyTypography(VisualListMarker markerType, string geometryAttribute, double baselineGeometry) {
+        static (double Geometry, double MarkerStroke, double CheckStroke, double TextGap) Render(double size, VisualListMarker markerType, string geometryAttribute) {
+            var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: size));
+            var list = ChartList.Create().WithTheme(theme).WithSize(360, 160).WithMarker(markerType).AddItem("First");
+            var svg = XDocument.Parse(list.ToSvg());
+            var marker = svg.Descendants().Single(element => Role(element) == "list-marker");
+            var check = svg.Descendants().FirstOrDefault(element => Role(element) == "list-check");
+            var text = svg.Descendants().Single(element => element.Name.LocalName == "text" && element.Value == "First");
+            var markerStroke = marker.Attribute("stroke-width") == null ? 0 : N(marker, "stroke-width");
+            var checkStroke = check?.Attribute("stroke-width") == null ? 0 : N(check!, "stroke-width");
+            var markerCenter = marker.Name.LocalName == "text" ? N(marker, "x") : N(marker, "cx");
+            return (N(marker, geometryAttribute), markerStroke, checkStroke, N(text, "x") - markerCenter);
+        }
+
+        var regular = Render(12, markerType, geometryAttribute);
+        var large = Render(24, markerType, geometryAttribute);
+        Assert.Equal(baselineGeometry, regular.Geometry, 2);
+        Assert.Equal(2 * regular.Geometry, large.Geometry, 2);
+        Assert.Equal(2 * regular.TextGap, large.TextGap, 2);
+        if (regular.MarkerStroke > 0) Assert.Equal(2 * regular.MarkerStroke, large.MarkerStroke, 2);
+        if (regular.CheckStroke > 0) Assert.Equal(2 * regular.CheckStroke, large.CheckStroke, 2);
+    }
     [Fact]
     public void HorizontalBarsHonorPointColorsAndCategoryCaptions() {
         var chart = Chart.Create().WithSize(520, 220).WithXLabels("Alpha", "Beta", "Gamma")

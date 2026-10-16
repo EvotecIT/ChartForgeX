@@ -78,6 +78,32 @@ public sealed class LayeredGroupRegressionTests {
     }
 
     [Fact]
+    public void GroupRankCompactionDoesNotOverlapUngroupedPeersWithReversedCrossOrder() {
+        var chart = TopologyChart.Create().WithViewport(1400, 620).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddAutoGroup("group", "Grouped services")
+            .AddAutoNode("source-a", "Source A").AddAutoNode("source-b", "Source B")
+            .AddAutoNode("group-one", "Grouped one", groupId: "group").AddAutoNode("peer-one", "Peer one")
+            .AddAutoNode("group-two", "Grouped two", groupId: "group").AddAutoNode("peer-two", "Peer two")
+            .AddAutoNode("target-a", "Target A").AddAutoNode("target-b", "Target B")
+            .AddEdge("source-a-group", "source-a", "group-one").AddEdge("source-b-peer", "source-b", "peer-one")
+            .AddEdge("group-to-peer", "group-one", "peer-two").AddEdge("peer-to-group", "peer-one", "group-two")
+            .AddEdge("group-target", "group-two", "target-a").AddEdge("peer-target", "peer-two", "target-b");
+
+        var prepared = TopologyLayoutEngine.Prepare(chart);
+        var nodes = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        Assert.True(nodes["group-one"].X < nodes["group-two"].X, "The grouped members should occupy successive flow ranks.");
+        AssertNoOverlap(nodes["group-one"], nodes["peer-one"]);
+        AssertNoOverlap(nodes["group-two"], nodes["peer-two"]);
+
+        static void AssertNoOverlap(TopologyNode first, TopologyNode second) {
+            var overlaps = first.X < second.X + second.Width && first.X + first.Width > second.X
+                && first.Y < second.Y + second.Height && first.Y + first.Height > second.Y;
+            Assert.False(overlaps, $"Grouped node '{first.Id}' must not overlap ungrouped peer '{second.Id}'.");
+        }
+    }
+
+    [Fact]
     public void ThreeInterleavedGroupShellsAreRecheckedUntilAllAreSeparated() {
         var chart = TopologyChart.Create().WithViewport(1300, 700).WithLayout(TopologyLayoutMode.Layered)
             .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)

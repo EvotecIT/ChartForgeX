@@ -60,7 +60,8 @@ internal static partial class TopologyLayoutEngine {
             foreach (var rank in ranks) {
                 var ordered = rank.OrderBy(n => horizontal ? n.Y : n.X).ToArray();
                 var length = ordered.Sum(n => horizontal ? n.Height : n.Width) + Math.Max(0, ordered.Length - 1) * nodeSpacing;
-                var cursor = cross + (crossSize - length) / 2;
+                var preferred = cross + (crossSize - length) / 2;
+                var cursor = ReserveUngroupedRankPeers(rank.Key, preferred, length);
                 var main = rankPositions.TryGetValue(rank.Key, out var automaticRankOrigin)
                     ? automaticRankOrigin : rank.Min(node => horizontal ? node.X : node.Y);
                 foreach (var node in ordered) {
@@ -75,6 +76,20 @@ internal static partial class TopologyLayoutEngine {
             var header = options == null || TopologyGroupHeader.IsDrawn(options)
                 ? TopologyGroupHeader.ReservedBounds(chart, group, options ?? new TopologyRenderOptions()).Height + 12 : 0;
             group.Y -= header; group.Height += header;
+
+            double ReserveUngroupedRankPeers(int rankIndex, double preferred, double groupLength) {
+                var peers = chart.Nodes.Where(node => node.GroupId == null && GetLayer(node) == rankIndex)
+                    .Select(node => (Start: horizontal ? node.Y : node.X, Length: horizontal ? node.Height : node.Width))
+                    .ToArray();
+                if (peers.Length == 0) return preferred;
+                bool IsFree(double start) => peers.All(peer => start + groupLength + nodeSpacing <= peer.Start
+                    || start >= peer.Start + peer.Length + nodeSpacing);
+                var candidates = peers.SelectMany(peer => new[] { peer.Start - nodeSpacing - groupLength, peer.Start + peer.Length + nodeSpacing })
+                    .Append(preferred).Distinct().Where(IsFree)
+                    .OrderBy(start => Math.Abs(start - preferred)).ToArray();
+                if (candidates.Length > 0) return candidates[0];
+                return peers.Max(peer => peer.Start + peer.Length) + nodeSpacing;
+            }
         }
         TopologyLayoutNormalizer.PrepareGroupShellsForPacking(chart, options);
         var placed = chart.Groups.Where(g => !automatic.Contains(g.Id)).ToList();

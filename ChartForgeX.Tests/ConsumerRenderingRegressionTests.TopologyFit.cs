@@ -250,6 +250,38 @@ public sealed partial class ConsumerRenderingRegressionTests {
         Assert.NotEmpty(chart.ToPng(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false }));
     }
 
+    [Fact]
+    public void FittedShapedNodesPreserveNamedPortOffsets() {
+        var chart = TopologyChart.Create().WithViewport(900, 360).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("source", "Source", 70, 90, width: 140, height: 120)
+            .AddNode("target", "Target", 650, 90, width: 140, height: 120)
+            .AddNodePort("source", "upper", TopologyEdgePort.Right, 0.2)
+            .AddNodePort("target", "lower", TopologyEdgePort.Left, 0.8)
+            .AddEdge("link", "source", "target", "HTTPS").WithEdgeNamedPorts("link", "upper", "lower");
+        chart.Nodes[0].Shape = TopologyNodeShape.Diamond;
+        chart.Nodes[1].Shape = TopologyNodeShape.Diamond;
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = 2 };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var edge = svg.Descendants().Single(element => Role(element) == "topology-edge");
+        var surfaces = svg.Descendants().Where(element => Role(element) == "topology-node-surface")
+            .ToDictionary(element => (string)element.Parent!.Attribute("data-node-id")!, element =>
+                ShapeBounds((string)element.Attribute("d")!), StringComparer.Ordinal);
+
+        Assert.True(Math.Abs(surfaces["source"].Top + surfaces["source"].Height * .2 - N(edge, "data-route-start-y")) < .01,
+            $"Source named port should retain 20% offset: surface={surfaces["source"]}, route={N(edge, "data-route-start-y")}, port={edge.Attribute("data-source-port-id")?.Value}.");
+        Assert.Equal(surfaces["target"].Top + surfaces["target"].Height * .8, N(edge, "data-route-end-y"), 2);
+        var image = RasterImageDecoder.Decode(chart.ToPng(options));
+        Assert.Equal(1800, image.Width);
+        Assert.Equal(720, image.Height);
+
+        static (double Top, double Height) ShapeBounds(string path) {
+            var values = Regex.Matches(path, @"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
+                .Select(match => double.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
+            var ys = values.Where((_, index) => index % 2 == 1).ToArray();
+            return (ys.Min(), ys.Max() - ys.Min());
+        }
+    }
+
     [Theory]
     [InlineData(900, 400, 1)]
     [InlineData(620, 300, 2)]

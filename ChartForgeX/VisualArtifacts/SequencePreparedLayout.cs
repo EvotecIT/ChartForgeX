@@ -67,7 +67,7 @@ internal sealed partial class SequencePreparedLayout {
             }
             foreach (var branch in model.Branches.Select((value, index) => new { value, index }).Where(b => Step(b.value.StartStepIndex) == step).OrderBy(b => b.value.Depth)) {
                 var bounds = new ChartRect(plot.X + gap + branch.value.Depth * 10 + 8, y, plot.Width - gap * 2 - branch.value.Depth * 20 - 16, 0);
-                bool primary = branch.value.Kind == "Primary";
+                bool primary = string.Equals(branch.value.Kind, "Primary", StringComparison.OrdinalIgnoreCase);
                 bool implicitCaption = primary && model.Blocks.Any(b => b.Kind == branch.value.ParentKind && b.Depth == branch.value.Depth
                     && b.StartStepIndex == branch.value.StartStepIndex && b.Text == branch.value.Text);
                 string caption = primary ? (implicitCaption || branch.value.Text.Length == 0 ? "" : "[" + branch.value.Text + "]")

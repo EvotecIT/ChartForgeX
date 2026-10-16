@@ -19,12 +19,13 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     internal static void AttachEndpoint(TopologyNode node, TopologyEdgePort port, string? portId, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {
+        var namedPort = string.IsNullOrWhiteSpace(portId) ? null : node.Ports.Find(candidate => string.Equals(candidate.Id, portId, StringComparison.Ordinal));
         if (node.Shape.HasValue) {
-            TopologyNodeShapeGeometry.AttachRoute(node, points, endpointIndex, adjacentIndex, 0);
+            TopologyNodeShapeGeometry.AttachRoute(node, points, endpointIndex, adjacentIndex, 0,
+                namedPort?.Side ?? port, namedPort?.Offset);
             return;
         }
         var point = points[endpointIndex];
-        var namedPort = string.IsNullOrWhiteSpace(portId) ? null : node.Ports.Find(candidate => string.Equals(candidate.Id, portId, StringComparison.Ordinal));
         var side = namedPort?.Side ?? port;
         if (side == TopologyEdgePort.Auto) {
             var dx = point.X - CenterX(node); var dy = point.Y - CenterY(node);

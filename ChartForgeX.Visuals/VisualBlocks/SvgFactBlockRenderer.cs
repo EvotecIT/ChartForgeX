@@ -96,12 +96,12 @@ public sealed partial class SvgFactBlockRenderer {
         RenderBlockHeading(writer, list, ref y, content.X, content.Width);
         var bodyScale = theme.DataLabelFontSize / 12;
         var rowHeight = (list.Dense ? 25.0 : 33.0) * bodyScale;
-        var markerWidth = list.Marker == VisualListMarker.None ? 0 : 24;
+        var markerWidth = list.Marker == VisualListMarker.None ? 0 : 24 * bodyScale;
         var maxRows = Math.Max(0, (int)Math.Floor((options.Size.Height - options.Padding.Bottom - y) / rowHeight));
         for (var i = 0; i < list.Items.Count && i < maxRows; i++) {
             var item = list.Items[i];
             var centerY = y + rowHeight / 2;
-            WriteMarker(writer, list, item, i, content.X + 8, centerY);
+            WriteMarker(writer, list, item, i, content.X + 8 * bodyScale, centerY, bodyScale);
             var valueWidth = string.IsNullOrEmpty(item.Value) ? 0 : Math.Min(content.Width * 0.36, VisualBlockRendering.EstimateTextWidth(item.Value!, 11.5 * bodyScale) + 10);
             WriteText(writer, item.Text, content.X + markerWidth, y + rowHeight * 0.66, content.Width - markerWidth - valueWidth - 6, TextAlignment.Left, theme.Text, theme.FontFamily, (list.Dense ? 11 : 12.5) * bodyScale, "500");
             if (!string.IsNullOrEmpty(item.Value)) WriteText(writer, item.Value!, content.X + content.Width - valueWidth, y + rowHeight * 0.66, valueWidth, TextAlignment.Right, theme.MutedText, theme.FontFamily, (list.Dense ? 10.5 : 11.5) * bodyScale, "600");
@@ -412,22 +412,22 @@ public sealed partial class SvgFactBlockRenderer {
         writer.EndElement().Line();
     }
 
-    private static void WriteMarker(SvgMarkupWriter writer, ChartList list, ChartListItem item, int index, double x, double y) {
+    private static void WriteMarker(SvgMarkupWriter writer, ChartList list, ChartListItem item, int index, double x, double y, double scale) {
         var theme = list.Options.ResolvedTheme;
         var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : VisualBlockRendering.StatusColor(theme, item.Status);
         if (list.Marker == VisualListMarker.None) return;
         if (list.Marker == VisualListMarker.Number) {
-            writer.StartElement("text").Attribute("data-cfx-role", "list-marker").Attribute("x", x - 5).Attribute("y", y + 4).Attribute("fill", color.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 11).Attribute("font-weight", "800").Text((index + 1).ToString(CultureInfo.InvariantCulture)).EndElement().Line();
+            writer.StartElement("text").Attribute("data-cfx-role", "list-marker").Attribute("x", x - 5 * scale).Attribute("y", y + 4 * scale).Attribute("fill", color.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 11 * scale).Attribute("font-weight", "800").Text((index + 1).ToString(CultureInfo.InvariantCulture)).EndElement().Line();
             return;
         }
 
         if (list.Marker == VisualListMarker.Check) {
-            writer.StartElement("circle").Attribute("data-cfx-role", "list-marker").Attribute("cx", x).Attribute("cy", y).Attribute("r", 7).Attribute("fill", color.WithAlpha(55).ToCss()).Attribute("stroke", color.ToCss()).EndEmptyElement().Line();
-            if (item.IsChecked != false) writer.StartElement("polyline").Attribute("data-cfx-role", "list-check").Attribute("points", (x - 4).ToString(CultureInfo.InvariantCulture) + "," + y.ToString(CultureInfo.InvariantCulture) + " " + (x - 1).ToString(CultureInfo.InvariantCulture) + "," + (y + 4).ToString(CultureInfo.InvariantCulture) + " " + (x + 5).ToString(CultureInfo.InvariantCulture) + "," + (y - 4).ToString(CultureInfo.InvariantCulture)).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", 1.8).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
+            writer.StartElement("circle").Attribute("data-cfx-role", "list-marker").Attribute("cx", x).Attribute("cy", y).Attribute("r", 7 * scale).Attribute("fill", color.WithAlpha(55).ToCss()).Attribute("stroke", color.ToCss()).Attribute("stroke-width", scale).EndEmptyElement().Line();
+            if (item.IsChecked != false) writer.StartElement("polyline").Attribute("data-cfx-role", "list-check").Attribute("points", (x - 4 * scale).ToString(CultureInfo.InvariantCulture) + "," + y.ToString(CultureInfo.InvariantCulture) + " " + (x - 1 * scale).ToString(CultureInfo.InvariantCulture) + "," + (y + 4 * scale).ToString(CultureInfo.InvariantCulture) + " " + (x + 5 * scale).ToString(CultureInfo.InvariantCulture) + "," + (y - 4 * scale).ToString(CultureInfo.InvariantCulture)).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", 1.8 * scale).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement().Line();
             return;
         }
 
-        writer.StartElement("circle").Attribute("data-cfx-role", "list-marker").Attribute("cx", x).Attribute("cy", y).Attribute("r", list.Marker == VisualListMarker.Status ? 6 : 4).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
+        writer.StartElement("circle").Attribute("data-cfx-role", "list-marker").Attribute("cx", x).Attribute("cy", y).Attribute("r", (list.Marker == VisualListMarker.Status ? 6 : 4) * scale).Attribute("fill", color.ToCss()).EndEmptyElement().Line();
     }
 
     private static string WorkloadAvatar(WorkloadListRow row) {

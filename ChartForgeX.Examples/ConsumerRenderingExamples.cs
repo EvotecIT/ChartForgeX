@@ -38,6 +38,14 @@ public static class ConsumerRenderingExamples {
                 SaveExample( pair.Key + "-fit", fit.ToSvg(options), fit.ToPng(options));
             }
         }
+        var primaryBranchCase = SequenceArtifact.Create("sequence-primary-case").WithSize(640, 400)
+            .AddParticipant("client", "Client").AddParticipant("service", "Service")
+            .AddMessage("client", "service", "Request")
+            .AddBlock(SequenceArtifactBlockKind.Alt, "Success", 0, 1)
+            .AddBranch(SequenceArtifactBlockKind.Alt, "PRIMARY", "Success", 0, 1);
+        var preparedPrimaryBranchCase = primaryBranchCase.Prepare(new VisualRenderContext(
+            new VisualLayoutOptions(new VisualSize(640, 400)), frame: new VisualFrame(showLegend: false)));
+        SaveExample("sequence-primary-branch-case", preparedPrimaryBranchCase.ToSvg(), preparedPrimaryBranchCase.ToPng());
         var wideFlow = MermaidRenderer.Render("%%{init: {'theme':'dark'}}%%\n" + flow.Replace("flowchart TD", "flowchart LR"), new MermaidRenderOptions {
             Flowchart = new MermaidFlowchartRenderOptions { Width = 3440, Height = 1440 }
         });
@@ -90,6 +98,15 @@ public static class ConsumerRenderingExamples {
             .AddAutoNode("identity", "Identity service").AddEdge("request", "gateway", "identity", "HTTPS");
         var growingOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
         SaveExample( "topology-fit-growth", growing.ToSvg(growingOptions), growing.ToPng(growingOptions));
+        var shapedPorts = TopologyChart.Create().WithViewport(900, 360).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddNode("source", "Source", 70, 90, width: 140, height: 120)
+            .AddNode("target", "Target", 650, 90, width: 140, height: 120)
+            .AddNodePort("source", "upper", TopologyEdgePort.Right, .2)
+            .AddNodePort("target", "lower", TopologyEdgePort.Left, .8)
+            .AddEdge("link", "source", "target", "HTTPS").WithEdgeNamedPorts("link", "upper", "lower");
+        shapedPorts.Nodes[0].Shape = TopologyNodeShape.Diamond;
+        shapedPorts.Nodes[1].Shape = TopologyNodeShape.Diamond;
+        SaveExample("topology-fit-shaped-named-ports", shapedPorts.ToSvg(fittedTopologyOptions), shapedPorts.ToPng(fittedTopologyOptions));
         var artworkFallback = TopologyChart.Create().WithViewport(460, 240, 8).WithLegend(null)
             .AddArtworkNode("fallback", "Artwork fallback caption", TopologyIconArtwork.Image("data:image/png;base64,AA=="),
                 12, 10, width: 88, height: 52);
@@ -104,6 +121,17 @@ public static class ConsumerRenderingExamples {
         foreach (var edge in sharedTrunk.Edges) edge.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
         var sharedTrunkOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, ShareIncomingTrunks = true };
         SaveExample("topology-fit-shared-trunk", sharedTrunk.ToSvg(sharedTrunkOptions), sharedTrunk.ToPng(sharedTrunkOptions));
+        var groupedRanks = TopologyChart.Create().WithViewport(1400, 620).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).WithLegend(null)
+            .AddAutoGroup("group", "Grouped services")
+            .AddAutoNode("source-a", "Source A").AddAutoNode("source-b", "Source B")
+            .AddAutoNode("group-one", "Grouped one", groupId: "group").AddAutoNode("peer-one", "Peer one")
+            .AddAutoNode("group-two", "Grouped two", groupId: "group").AddAutoNode("peer-two", "Peer two")
+            .AddAutoNode("target-a", "Target A").AddAutoNode("target-b", "Target B")
+            .AddEdge("source-a-group", "source-a", "group-one").AddEdge("source-b-peer", "source-b", "peer-one")
+            .AddEdge("group-to-peer", "group-one", "peer-two").AddEdge("peer-to-group", "peer-one", "group-two")
+            .AddEdge("group-target", "group-two", "target-a").AddEdge("peer-target", "peer-two", "target-b");
+        SaveExample("topology-layered-ungrouped-rank-compaction", groupedRanks.ToSvg(), groupedRanks.ToPng());
         var selectedRoute = TopologyChart.Create().WithViewport(560, 320).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
             .AddNode("source", "Source", 70, 130, width: 100, height: 64).AddNode("target", "Target", 390, 130, width: 100, height: 64)
             .AddEdge("link", "source", "target", "Selected route").WithEdgeWaypoints("link", new ChartPoint(260, 18));
@@ -207,6 +235,10 @@ public static class ConsumerRenderingExamples {
             var list = ChartList.Create().WithTheme(markerTheme, mode).WithSize(330, 140).WithPadding(0).WithCard(false)
                 .AddCheckItem("Backups verified", true, "02:10").AddCheckItem("DR test", false, "due 30 Oct");
             SaveExample( "list-" + suffix, list.ToSvg(), list.ToPng());
+            var scaledListTheme = markerTheme.WithTypography(new VisualTypography(dataLabelSize: 18));
+            var scaledList = ChartList.Create().WithTheme(scaledListTheme, mode).WithSize(380, 170).WithMarker(VisualListMarker.Check)
+                .AddCheckItem("Backup integrity", true, "verified").AddCheckItem("Recovery exercise", false, "scheduled");
+            SaveExample("list-typography-" + suffix, scaledList.ToSvg(), scaledList.ToPng());
             var bars = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(520, 220)
                 .WithXLabels("Alpha", "Beta", "Gamma").WithDataLabels(true)
                 .AddBar("Count", new[] { new ChartPoint(1, 26), new ChartPoint(2, 24), new ChartPoint(3, 19) });
