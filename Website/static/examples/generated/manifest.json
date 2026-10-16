@@ -3968,7 +3968,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 36
     },
     {
       "id": "cartesian-compact-light",
@@ -4002,13 +4002,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 40
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 36
     },
     {
       "id": "cartesian-explicit-status-light",
@@ -4044,7 +4040,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 36
     },
     {
       "id": "cartesian-wide-dark",
@@ -4080,7 +4076,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 36
     },
     {
       "id": "cartesian-compact-dark",
@@ -4114,13 +4110,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 40
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 36
     },
     {
       "id": "cartesian-explicit-status-dark",
@@ -4156,7 +4148,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 36
     },
     {
       "id": "donut-wide-light",
@@ -4930,7 +4922,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-area-compact-light",
@@ -4964,7 +4956,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-area-wide-dark",
@@ -4998,7 +4990,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-area-compact-dark",
@@ -5032,7 +5024,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-step-area-wide-light",
@@ -5066,7 +5058,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-step-area-compact-light",
@@ -5100,7 +5092,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-step-area-wide-dark",
@@ -5134,7 +5126,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-step-area-compact-dark",
@@ -5168,7 +5160,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-scatter-wide-light",
@@ -5269,13 +5261,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 37
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 34
     },
     {
       "id": "family-scatter-compact-color-scale-light",
@@ -5308,13 +5296,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 37
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-positioned-color-scale-light",
@@ -5346,13 +5330,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 42
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 39
     },
     {
       "id": "family-scatter-compact-positioned-color-scale-light",
@@ -5384,13 +5364,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 42
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 39
     },
     {
       "id": "family-scatter-color-dimension-light",
@@ -5422,13 +5398,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-compact-color-dimension-light",
@@ -5460,13 +5432,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-gradient-color-legend-light",
@@ -5498,13 +5466,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 30
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 27
     },
     {
       "id": "family-scatter-compact-gradient-color-legend-light",
@@ -5536,13 +5500,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 30
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 28
     },
     {
       "id": "family-scatter-swatch-color-legend-light",
@@ -5574,13 +5534,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-compact-swatch-color-legend-light",
@@ -5612,13 +5568,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-quadrants-light",
@@ -5684,12 +5636,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 25
     },
     {
@@ -5722,13 +5670,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 33
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-compact-partial-color-range-light",
@@ -5760,13 +5704,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 33
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 31
     },
     {
       "id": "family-scatter-options-light",
@@ -5935,13 +5875,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 37
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 34
     },
     {
       "id": "family-scatter-compact-color-scale-dark",
@@ -5974,13 +5910,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 37
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-positioned-color-scale-dark",
@@ -6012,13 +5944,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 42
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 39
     },
     {
       "id": "family-scatter-compact-positioned-color-scale-dark",
@@ -6050,13 +5978,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 42
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 39
     },
     {
       "id": "family-scatter-color-dimension-dark",
@@ -6088,13 +6012,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-compact-color-dimension-dark",
@@ -6126,13 +6046,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-gradient-color-legend-dark",
@@ -6164,13 +6080,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 30
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 27
     },
     {
       "id": "family-scatter-compact-gradient-color-legend-dark",
@@ -6202,13 +6114,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 30
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 28
     },
     {
       "id": "family-scatter-swatch-color-legend-dark",
@@ -6240,13 +6148,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-compact-swatch-color-legend-dark",
@@ -6278,13 +6182,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 33
     },
     {
       "id": "family-scatter-quadrants-dark",
@@ -6350,12 +6250,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 25
     },
     {
@@ -6388,13 +6284,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 33
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-compact-partial-color-range-dark",
@@ -6426,13 +6318,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 33
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 31
     },
     {
       "id": "family-scatter-options-dark",
@@ -6601,13 +6489,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-compact-color-scale-light",
@@ -6640,13 +6524,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-color-dimension-light",
@@ -6678,13 +6558,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 32
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 29
     },
     {
       "id": "family-bubble-compact-color-dimension-light",
@@ -6716,13 +6592,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 32
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 30
     },
     {
       "id": "family-bubble-plot-regions-light",
@@ -6788,12 +6660,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 22
     },
     {
@@ -6828,7 +6696,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-bubble-compact-options-light",
@@ -6860,13 +6728,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 22
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 19
     },
     {
       "id": "family-bubble-wide-dark",
@@ -6967,13 +6831,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-compact-color-scale-dark",
@@ -7006,13 +6866,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 35
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
     },
     {
       "id": "family-bubble-color-dimension-dark",
@@ -7044,13 +6900,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 32
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 29
     },
     {
       "id": "family-bubble-compact-color-dimension-dark",
@@ -7082,13 +6934,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 32
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 30
     },
     {
       "id": "family-bubble-plot-regions-dark",
@@ -7154,12 +7002,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 22
     },
     {
@@ -7194,7 +7038,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-bubble-compact-options-dark",
@@ -7226,13 +7070,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 22
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 19
     },
     {
       "id": "family-error-bar-wide-light",
@@ -7266,7 +7106,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-error-bar-compact-light",
@@ -7300,7 +7140,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-error-bar-wide-dark",
@@ -7334,7 +7174,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-error-bar-compact-dark",
@@ -7368,7 +7208,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-candlestick-wide-light",
@@ -7402,7 +7242,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-candlestick-compact-light",
@@ -7436,7 +7276,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-candlestick-options-light",
@@ -7470,7 +7310,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-candlestick-compact-options-light",
@@ -7502,13 +7342,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-candlestick-dashed-light",
@@ -7542,7 +7378,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-candlestick-compact-dashed-light",
@@ -7574,13 +7410,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-candlestick-wide-dark",
@@ -7614,7 +7446,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-candlestick-compact-dark",
@@ -7648,7 +7480,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-candlestick-options-dark",
@@ -7682,7 +7514,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-candlestick-compact-options-dark",
@@ -7714,13 +7546,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-candlestick-dashed-dark",
@@ -7754,7 +7582,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-candlestick-compact-dashed-dark",
@@ -7786,13 +7614,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-range-band-wide-light",
@@ -7826,7 +7650,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-band-compact-light",
@@ -7860,7 +7684,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-band-wide-dark",
@@ -7894,7 +7718,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-band-compact-dark",
@@ -7928,7 +7752,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-area-wide-light",
@@ -7962,7 +7786,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-area-compact-light",
@@ -7996,7 +7820,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-area-options-light",
@@ -8030,7 +7854,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-range-area-compact-options-light",
@@ -8062,13 +7886,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 19
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
     },
     {
       "id": "family-range-area-wide-dark",
@@ -8102,7 +7922,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-area-compact-dark",
@@ -8136,7 +7956,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-area-options-dark",
@@ -8170,7 +7990,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-range-area-compact-options-dark",
@@ -8202,13 +8022,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 19
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
     },
     {
       "id": "family-bar-wide-light",
@@ -8242,7 +8058,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-bar-compact-light",
@@ -8276,7 +8092,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-bar-options-light",
@@ -8342,13 +8158,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 40
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 42
     },
     {
       "id": "family-bar-wide-dark",
@@ -8382,7 +8194,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-bar-compact-dark",
@@ -8416,7 +8228,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-bar-options-dark",
@@ -8482,13 +8294,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 40
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 42
     },
     {
       "id": "family-lollipop-wide-light",
@@ -8522,7 +8330,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-lollipop-compact-light",
@@ -8554,13 +8362,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 19
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
     },
     {
       "id": "family-lollipop-wide-dark",
@@ -8594,7 +8398,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-lollipop-compact-dark",
@@ -8626,13 +8430,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 19
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
     },
     {
       "id": "family-dumbbell-wide-light",
@@ -8666,7 +8466,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-dumbbell-compact-light",
@@ -8700,7 +8500,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-dumbbell-wide-dark",
@@ -8734,7 +8534,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-dumbbell-compact-dark",
@@ -8768,7 +8568,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-range-bar-wide-light",
@@ -8802,7 +8602,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-bar-compact-light",
@@ -8836,7 +8636,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-bar-options-light",
@@ -8870,7 +8670,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-range-bar-compact-options-light",
@@ -8903,14 +8703,12 @@
         "html"
       ],
       "diagnostics": [
-        "cartesian.axis-label-overflow",
         "cartesian.data-label-overflow"
       ],
       "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-range-bar-horizontal-light",
@@ -9016,7 +8814,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-range-bar-compact-endpoint-labels-light",
@@ -9048,13 +8846,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 21
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 17
     },
     {
       "id": "family-range-bar-horizontal-endpoint-labels-light",
@@ -9088,7 +8882,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-compact-horizontal-endpoint-labels-light",
@@ -9122,7 +8916,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-wide-dark",
@@ -9156,7 +8950,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-bar-compact-dark",
@@ -9190,7 +8984,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-range-bar-options-dark",
@@ -9224,7 +9018,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-range-bar-compact-options-dark",
@@ -9257,14 +9051,12 @@
         "html"
       ],
       "diagnostics": [
-        "cartesian.axis-label-overflow",
         "cartesian.data-label-overflow"
       ],
       "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-range-bar-horizontal-dark",
@@ -9370,7 +9162,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-range-bar-compact-endpoint-labels-dark",
@@ -9402,13 +9194,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 21
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 17
     },
     {
       "id": "family-range-bar-horizontal-endpoint-labels-dark",
@@ -9442,7 +9230,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-range-bar-compact-horizontal-endpoint-labels-dark",
@@ -9476,7 +9264,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-box-plot-wide-light",
@@ -9510,7 +9298,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-box-plot-compact-light",
@@ -9544,7 +9332,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-box-plot-options-light",
@@ -9578,7 +9366,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 20
     },
     {
       "id": "family-box-plot-compact-options-light",
@@ -9610,13 +9398,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 23
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 20
     },
     {
       "id": "family-box-plot-horizontal-light",
@@ -9650,7 +9434,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-box-plot-compact-horizontal-light",
@@ -9688,7 +9472,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-box-plot-wide-dark",
@@ -9722,7 +9506,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-box-plot-compact-dark",
@@ -9756,7 +9540,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-box-plot-options-dark",
@@ -9790,7 +9574,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 20
     },
     {
       "id": "family-box-plot-compact-options-dark",
@@ -9822,13 +9606,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 23
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 20
     },
     {
       "id": "family-box-plot-horizontal-dark",
@@ -9862,7 +9642,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-box-plot-compact-horizontal-dark",
@@ -9900,7 +9680,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 19
     },
     {
       "id": "family-horizontal-bar-wide-light",
@@ -10246,14 +10026,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "text.overflow",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 27
     },
     {
@@ -10660,14 +10434,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "text.overflow",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 27
     },
     {
@@ -11074,14 +10842,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "text.overflow",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 27
     },
     {
@@ -11216,14 +10978,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "text.overflow",
-        "text.overflow"
-      ],
-      "diagnosticMessages": [
-        "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 27
     },
     {
@@ -12054,98 +11810,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 106
     },
     {
@@ -13024,98 +12690,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow",
-        "map.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions.",
-        "A tile region code was omitted because it does not fit at a readable size; complete identity remains in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 106
     },
     {
@@ -14990,7 +14566,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 19
     },
     {
       "id": "family-waterfall-compact-options-light",
@@ -15022,15 +14598,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow",
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 23
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 19
     },
     {
       "id": "family-waterfall-horizontal-light",
@@ -15064,7 +14634,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 20
     },
     {
       "id": "family-waterfall-compact-horizontal-light",
@@ -15097,14 +14667,12 @@
         "html"
       ],
       "diagnostics": [
-        "cartesian.axis-label-overflow",
         "cartesian.data-label-overflow"
       ],
       "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 20
     },
     {
       "id": "family-waterfall-wide-dark",
@@ -15206,7 +14774,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 19
     },
     {
       "id": "family-waterfall-compact-options-dark",
@@ -15238,15 +14806,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow",
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 23
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 19
     },
     {
       "id": "family-waterfall-horizontal-dark",
@@ -15280,7 +14842,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 23
+      "semanticRegions": 20
     },
     {
       "id": "family-waterfall-compact-horizontal-dark",
@@ -15313,14 +14875,12 @@
         "html"
       ],
       "diagnostics": [
-        "cartesian.axis-label-overflow",
         "cartesian.data-label-overflow"
       ],
       "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 23
+      "semanticRegions": 20
     },
     {
       "id": "family-radar-wide-light",
@@ -15352,13 +14912,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "polar.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 25
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "family-radar-compact-light",
@@ -15390,15 +14946,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "polar.label-overflow",
-        "polar.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 25
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "family-radar-options-light",
@@ -15574,13 +15124,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "polar.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 25
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "family-radar-compact-dark",
@@ -15612,15 +15158,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "polar.label-overflow",
-        "polar.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 25
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 22
     },
     {
       "id": "family-radar-options-dark",
@@ -16206,7 +15746,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 19
     },
     {
       "id": "family-timeline-compact-light",
@@ -16274,7 +15814,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 19
     },
     {
       "id": "family-timeline-compact-dark",
@@ -16342,7 +15882,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 25
     },
     {
       "id": "family-gantt-compact-light",
@@ -16376,7 +15916,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 19
     },
     {
       "id": "family-gantt-wide-dark",
@@ -16410,7 +15950,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 25
     },
     {
       "id": "family-gantt-compact-dark",
@@ -16444,7 +15984,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 19
     },
     {
       "id": "family-sankey-wide-light",
@@ -17039,14 +16579,12 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17086,7 +16624,6 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -17095,8 +16632,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17133,14 +16669,12 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17180,7 +16714,6 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -17189,8 +16722,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17295,14 +16827,12 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17342,7 +16872,6 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -17351,8 +16880,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17389,14 +16917,12 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17436,7 +16962,6 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -17445,8 +16970,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -18026,7 +17550,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-slope-compact-light",
@@ -18058,13 +17582,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 19
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
     },
     {
       "id": "family-slope-wide-dark",
@@ -18098,7 +17618,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 16
     },
     {
       "id": "family-slope-compact-dark",
@@ -18130,13 +17650,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 19
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 16
     },
     {
       "id": "family-treemap-wide-light",
@@ -18168,12 +17684,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "hierarchy.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 17
     },
     {
@@ -18211,20 +17723,14 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 17
     },
@@ -18296,7 +17802,7 @@
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 13
     },
@@ -18330,12 +17836,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "hierarchy.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 17
     },
     {
@@ -18368,12 +17870,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "hierarchy.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 17
     },
     {
@@ -18411,20 +17909,14 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 17
     },
@@ -18496,7 +17988,7 @@
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 13
     },
@@ -18530,12 +18022,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "hierarchy.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 17
     },
     {
@@ -18986,7 +18474,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-ohlc-compact-light",
@@ -19020,7 +18508,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-ohlc-options-light",
@@ -19054,7 +18542,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-ohlc-compact-options-light",
@@ -19086,13 +18574,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-ohlc-dashed-light",
@@ -19126,7 +18610,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-ohlc-compact-dashed-light",
@@ -19158,13 +18642,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-ohlc-wide-dark",
@@ -19198,7 +18678,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-ohlc-compact-dark",
@@ -19232,7 +18712,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 15
     },
     {
       "id": "family-ohlc-options-dark",
@@ -19266,7 +18746,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-ohlc-compact-options-dark",
@@ -19298,13 +18778,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-ohlc-dashed-dark",
@@ -19338,7 +18814,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 21
     },
     {
       "id": "family-ohlc-compact-dashed-dark",
@@ -19370,13 +18846,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-polar-area-wide-light",
@@ -19958,7 +19430,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-polar-compact-light",
@@ -19990,15 +19462,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "polar.label-overflow",
-        "polar.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 17
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 14
     },
     {
       "id": "family-polar-angular-reversal-light",
@@ -20104,7 +19570,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 14
     },
     {
       "id": "family-polar-compact-dark",
@@ -20136,15 +19602,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "polar.label-overflow",
-        "polar.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions.",
-        "Polar text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."
-      ],
-      "semanticRegions": 17
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 14
     },
     {
       "id": "family-polar-angular-reversal-dark",
@@ -20250,7 +19710,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 36
     },
     {
       "id": "family-state-timeline-compact-light",
@@ -20318,7 +19778,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 36
     },
     {
       "id": "family-state-timeline-compact-dark",
@@ -20386,7 +19846,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 27
     },
     {
       "id": "family-gantt-lane-compact-light",
@@ -20418,13 +19878,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "schedule.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Some axis labels were omitted to preserve measured spacing; their complete values remain in descriptive regions."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-gantt-lane-wide-dark",
@@ -20458,7 +19914,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 24
+      "semanticRegions": 27
     },
     {
       "id": "family-gantt-lane-compact-dark",
@@ -20490,13 +19946,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "schedule.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Some axis labels were omitted to preserve measured spacing; their complete values remain in descriptive regions."
-      ],
-      "semanticRegions": 24
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 21
     },
     {
       "id": "family-pyramid-wide-light",
@@ -20820,7 +20272,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-radial-bar-compact-light",
@@ -20876,7 +20328,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-radial-bar-options-light",
@@ -21048,7 +20500,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 28
     },
     {
       "id": "family-radial-bar-compact-axis-labels-light",
@@ -21108,7 +20560,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 28
     },
     {
       "id": "family-radial-bar-all-labels-light",
@@ -21296,7 +20748,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-radial-bar-compact-dark",
@@ -21352,7 +20804,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-radial-bar-options-dark",
@@ -21524,7 +20976,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 28
     },
     {
       "id": "family-radial-bar-compact-axis-labels-dark",
@@ -21584,7 +21036,7 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 28
     },
     {
       "id": "family-radial-bar-all-labels-dark",
@@ -21760,9 +21212,6 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -21773,12 +21222,9 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-radial-column-compact-light",
@@ -21818,9 +21264,6 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -21831,12 +21274,9 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-radial-column-options-light",
@@ -21986,9 +21426,6 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -21999,12 +21436,9 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 28
     },
     {
       "id": "family-radial-column-compact-axis-labels-light",
@@ -22046,9 +21480,6 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -22061,12 +21492,9 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 28
     },
     {
       "id": "family-radial-column-all-labels-light",
@@ -22208,9 +21636,6 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -22221,12 +21646,9 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-radial-column-compact-dark",
@@ -22266,9 +21688,6 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -22279,12 +21698,9 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 29
+      "semanticRegions": 26
     },
     {
       "id": "family-radial-column-options-dark",
@@ -22434,9 +21850,6 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -22447,12 +21860,9 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 28
     },
     {
       "id": "family-radial-column-compact-axis-labels-dark",
@@ -22494,9 +21904,6 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
@@ -22509,12 +21916,9 @@
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 31
+      "semanticRegions": 28
     },
     {
       "id": "family-radial-column-all-labels-dark",
@@ -22854,7 +22258,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-difference-area-compact-light",
@@ -22888,7 +22292,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-difference-area-dated-gaps-light",
@@ -22923,7 +22327,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 33
     },
     {
       "id": "family-difference-area-compact-dated-gaps-light",
@@ -22956,16 +22360,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow",
-        "cartesian.axis-label-overflow",
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
-        "Axis labels were shortened or omitted to remain within the available frame.",
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 29
     },
     {
@@ -23000,7 +22396,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-difference-area-step-middle-light",
@@ -23034,7 +22430,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-difference-area-step-end-light",
@@ -23068,7 +22464,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-difference-area-compact-step-middle-light",
@@ -23102,7 +22498,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-difference-area-wide-dark",
@@ -23136,7 +22532,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-difference-area-compact-dark",
@@ -23170,7 +22566,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 21
+      "semanticRegions": 17
     },
     {
       "id": "family-difference-area-dated-gaps-dark",
@@ -23205,7 +22601,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 33
     },
     {
       "id": "family-difference-area-compact-dated-gaps-dark",
@@ -23238,16 +22634,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow",
-        "cartesian.axis-label-overflow",
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
-        "Axis labels were shortened or omitted to remain within the available frame.",
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 29
     },
     {
@@ -23282,7 +22670,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-difference-area-step-middle-dark",
@@ -23316,7 +22704,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-difference-area-step-end-dark",
@@ -23350,7 +22738,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-difference-area-compact-step-middle-dark",
@@ -23384,7 +22772,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 18
     },
     {
       "id": "family-radial-column-mixed-light",
@@ -23420,20 +22808,14 @@
       "diagnostics": [
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-mixed-curves-light",
@@ -23470,21 +22852,15 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-mixed-angular-reversal-light",
@@ -23520,20 +22896,14 @@
       "diagnostics": [
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-compact-mixed-light",
@@ -23569,20 +22939,14 @@
       "diagnostics": [
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-compact-mixed-curves-light",
@@ -23619,21 +22983,15 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-compact-mixed-angular-reversal-light",
@@ -23669,20 +23027,14 @@
       "diagnostics": [
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-mixed-dark",
@@ -23718,20 +23070,14 @@
       "diagnostics": [
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-mixed-curves-dark",
@@ -23768,21 +23114,15 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-mixed-angular-reversal-dark",
@@ -23818,20 +23158,14 @@
       "diagnostics": [
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-compact-mixed-dark",
@@ -23867,20 +23201,14 @@
       "diagnostics": [
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-compact-mixed-curves-dark",
@@ -23917,21 +23245,15 @@
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "family-radial-column-compact-mixed-angular-reversal-dark",
@@ -23967,20 +23289,14 @@
       "diagnostics": [
         "numeric-radial.label-overflow",
         "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
-        "numeric-radial.label-overflow",
         "numeric-radial.label-overflow"
       ],
       "diagnosticMessages": [
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
-        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
         "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
       ],
-      "semanticRegions": 26
+      "semanticRegions": 23
     },
     {
       "id": "chart-grid-wide-light",
@@ -24016,7 +23332,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 60
+      "semanticRegions": 51
     },
     {
       "id": "topology-expanded-light",
@@ -24079,12 +23395,10 @@
         "html"
       ],
       "diagnostics": [
-        "topology.content-fitted",
-        "topology.label-truncated"
+        "topology.content-fitted"
       ],
       "diagnosticMessages": [
-        "The complete topology, including text and native semantic geometry, was uniformly fitted into the common content viewport.",
-        "A topology label was shortened; complete source text remains in semantic interchange."
+        "The complete topology, including text and native semantic geometry, was uniformly fitted into the common content viewport."
       ],
       "semanticRegions": 14
     },
@@ -24154,7 +23468,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 60
+      "semanticRegions": 51
     },
     {
       "id": "topology-expanded-dark",
@@ -24217,12 +23531,10 @@
         "html"
       ],
       "diagnostics": [
-        "topology.content-fitted",
-        "topology.label-truncated"
+        "topology.content-fitted"
       ],
       "diagnosticMessages": [
-        "The complete topology, including text and native semantic geometry, was uniformly fitted into the common content viewport.",
-        "A topology label was shortened; complete source text remains in semantic interchange."
+        "The complete topology, including text and native semantic geometry, was uniformly fitted into the common content viewport."
       ],
       "semanticRegions": 14
     },
@@ -24290,7 +23602,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-compact-light",
@@ -24322,15 +23634,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow",
-        "cartesian.data-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
-        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
-      ],
-      "semanticRegions": 20
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 17
     },
     {
       "id": "histogram-density-light",
@@ -24364,7 +23670,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-compact-density-light",
@@ -24396,13 +23702,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 20
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 17
     },
     {
       "id": "histogram-sum-light",
@@ -24436,7 +23738,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-compact-sum-light",
@@ -24470,7 +23772,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-mean-light",
@@ -24504,7 +23806,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-compact-mean-light",
@@ -24538,7 +23840,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-wide-dark",
@@ -24572,7 +23874,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-compact-dark",
@@ -24604,15 +23906,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow",
-        "cartesian.data-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame.",
-        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
-      ],
-      "semanticRegions": 20
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 17
     },
     {
       "id": "histogram-density-dark",
@@ -24646,7 +23942,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-compact-density-dark",
@@ -24678,13 +23974,9 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "cartesian.axis-label-overflow"
-      ],
-      "diagnosticMessages": [
-        "Axis labels were shortened or omitted to remain within the available frame."
-      ],
-      "semanticRegions": 20
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 17
     },
     {
       "id": "histogram-sum-dark",
@@ -24718,7 +24010,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-compact-sum-dark",
@@ -24752,7 +24044,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-mean-dark",
@@ -24786,7 +24078,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "histogram-compact-mean-dark",
@@ -24820,7 +24112,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 17
     },
     {
       "id": "family-line-x-viewport-light",
@@ -24854,7 +24146,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 37
     },
     {
       "id": "family-line-compact-x-viewport-light",
@@ -24888,7 +24180,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 20
     },
     {
       "id": "family-line-x-viewport-dark",
@@ -24922,7 +24214,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 37
     },
     {
       "id": "family-line-compact-x-viewport-dark",
@@ -24956,7 +24248,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 20
     },
     {
       "id": "family-step-line-x-viewport-light",
@@ -24990,7 +24282,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 37
     },
     {
       "id": "family-step-line-compact-x-viewport-light",
@@ -25024,7 +24316,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 20
     },
     {
       "id": "family-step-line-x-viewport-dark",
@@ -25058,7 +24350,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 41
+      "semanticRegions": 37
     },
     {
       "id": "family-step-line-compact-x-viewport-dark",
@@ -25092,7 +24384,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 20
     }
   ]
 }
