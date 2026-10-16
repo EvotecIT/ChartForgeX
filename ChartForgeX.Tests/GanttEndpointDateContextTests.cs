@@ -21,7 +21,7 @@ public sealed class GanttEndpointDateContextTests {
     [InlineData("counted", VisualThemeMode.Dark)]
     [InlineData("windowed", VisualThemeMode.Light)]
     [InlineData("windowed", VisualThemeMode.Dark)]
-    public void DefaultDayScaleProjectEndpointsKeepDateIdentityWithoutMovingTheirInstants(string policy, VisualThemeMode mode) {
+    public void DefaultDayScaleCaptionsStayOnCalendarBoundariesAndKeepExactTaskInstants(string policy, VisualThemeMode mode) {
         var chart = Fixture(mode); var first = Start; var last = Finish;
         if (policy == "rejected") chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond));
         if (policy == "counted") chart.ConfigureXAxis(axis => axis.TickCount = 2);
@@ -31,13 +31,18 @@ public sealed class GanttEndpointDateContextTests {
         }
         var prepared = Prepare(chart);
         var labels = Captions(prepared);
-        Assert.InRange(labels.Length, 2, 6);
-        Assert.Equal(first.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), labels[0].Text.Lines.Single().Text);
-        Assert.Equal(last.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), labels[^1].Text.Lines.Single().Text);
+        Assert.InRange(labels.Length, 1, 6);
         Assert.All(labels, label => Assert.Matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", label.Text.Lines.Single().Text));
         var task = Assert.Single(prepared.Regions, region => region.Role == "gantt-task");
-        Assert.Equal(task.Bounds.Left, labels[0].X, 7);
-        Assert.Equal(task.Bounds.Right, labels[^1].X, 7);
+        var dates = labels.Select(label => DateTime.ParseExact(label.Text.Lines.Single().Text, "yyyy-MM-dd", CultureInfo.InvariantCulture)).ToArray();
+        for (var index = 0; index < labels.Length; index++) {
+            Assert.InRange(dates[index], policy == "windowed" ? first : first.Date, last);
+            var origin = policy == "windowed" ? first : Start;
+            var end = policy == "windowed" ? last : Finish;
+            var expected = task.Bounds.Left + (dates[index].ToOADate() - origin.ToOADate()) / (end.ToOADate() - origin.ToOADate()) * task.Bounds.Width;
+            Assert.Equal(expected, labels[index].X, 7);
+            if (index > 1) Assert.Equal(dates[1] - dates[0], dates[index] - dates[index - 1]);
+        }
         var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid").ToArray();
         Assert.Equal(labels.Length, grid.Length);
         for (var index = 0; index < labels.Length; index++) Assert.Equal(grid[index].Start.X, labels[index].X, 7);
@@ -46,7 +51,7 @@ public sealed class GanttEndpointDateContextTests {
             .Where(node => (string?)node.Attribute("data-cfx-role") == "schedule-tick-label").Select(node => node.Value));
         Assert.Equal(Start.ToOADate(), chart.Series[0].GanttItems[0].Start);
         Assert.Equal(Finish.ToOADate(), chart.Series[0].GanttItems[0].End);
-        if (policy == "counted") Assert.Equal(2, labels.Length);
+        if (policy == "counted") Assert.InRange(labels.Length, 1, 2);
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "schedule.axis-label-overflow");
         ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-endpoint-date-context-{policy}-{mode}");
         var pixels = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));

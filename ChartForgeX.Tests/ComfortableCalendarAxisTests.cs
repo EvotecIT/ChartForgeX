@@ -61,7 +61,7 @@ public sealed class ComfortableCalendarAxisTests {
         try {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
             var start = new DateTime(2026, 9, 14);
-            var chart = Base(170).ConfigureYAxis(axis => axis.Visible = false).WithPadding(0, 0, 0, 0)
+            var chart = Base(110).ConfigureYAxis(axis => axis.Visible = false).WithPadding(0, 0, 0, 0)
                 .AddLine("Readings", new[] { new ChartPoint(start, 10), new ChartPoint(start.AddDays(14), 20) });
             var prepared = Prepare(chart);
             ScatterBubbleColorRenderingTests.Capture(prepared, "numeric-short-date-" + culture);

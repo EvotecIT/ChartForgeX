@@ -12,8 +12,8 @@ public sealed class TimeAxisDensityTests {
     private static readonly DateTime Start = new(2026, 9, 14, 0, 0, 0, DateTimeKind.Utc);
 
     [Theory]
-    [InlineData(640, 7, false, 3, VisualThemeMode.Light)]
-    [InlineData(640, 7, false, 3, VisualThemeMode.Dark)]
+    [InlineData(640, 7, false, 7, VisualThemeMode.Light)]
+    [InlineData(640, 7, false, 7, VisualThemeMode.Dark)]
     [InlineData(800, 19, true, 5, VisualThemeMode.Light)]
     [InlineData(800, 19, true, 5, VisualThemeMode.Dark)]
     public void MeasuredTimeScaleKeepsDailyOrIntermediateDayTicksWhenTheyFit(int width, int days, bool authoredCount, int minimumLabels, VisualThemeMode mode) {

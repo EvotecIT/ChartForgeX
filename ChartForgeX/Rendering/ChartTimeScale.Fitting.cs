@@ -9,7 +9,7 @@ internal static partial class ChartTimeScale {
     /// <summary>Walks actual calendar intervals, measuring complete captions before choosing a coarser scale.</summary>
     internal static IReadOnlyList<double>? GenerateFitting(ChartAxis axis, double min, double max,
         Func<IReadOnlyList<double>, bool> fits, bool allowCompactDates, IReadOnlyList<double>? regularObservations = null, double minimumStepDays = 0,
-        int automaticTickCount = 8, Func<IReadOnlyList<double>, IReadOnlyList<double>>? selectTicks = null) {
+        int automaticTickCount = 8, double? calendarAnchor = null, Func<IReadOnlyList<double>, IReadOnlyList<double>>? selectTicks = null) {
         if (min < 0 || !IsRepresentable(max) || max - min < DaysPerSecond) return null;
         var limit = axis.HasExplicitTickCount ? axis.TickCount : automaticTickCount;
         var interval = FittingStartInterval(axis, min, max, limit, minimumStepDays);
@@ -20,7 +20,7 @@ internal static partial class ChartTimeScale {
             return cadenceTicks;
         for (var attempt = 0; attempt < 64; attempt++) {
             if (regularObservations != null && interval.Unit > TimeUnit.Week) break;
-            var ticks = regularObservations == null ? TryGenerateFittingInterval(axis, min, max, interval)
+            var ticks = regularObservations == null ? TryGenerateFittingInterval(axis, min, max, interval, calendarAnchor)
                 : ObservationInterval(regularObservations, min, max, interval);
             if (ticks == null) {
                 if (regularObservations == null) return null;
@@ -28,12 +28,16 @@ internal static partial class ChartTimeScale {
             }
             var intervalTicks = ticks;
             if (selectTicks != null) ticks = selectTicks(ticks);
-            if (ticks.Count > 0 && ticks.Count <= limit) {
-                if (fits(ticks)) {
-                    if (ticks.Count > 1) return ticks;
+            if (ticks.Count > 0) {
+                var ordinaryInterval = axis.HasExplicitTickCount || interval.ApproximateDays + 1e-10 >= Math.Max(minimumStepDays, (max - min) / (limit - 1));
+                if (ordinaryInterval && ticks.Count <= limit && fits(ticks)) {
+                    // A sparse coarse ladder step need not replace a readable
+                    // stride of the preceding real calendar boundaries.
+                    if (ticks.Count > 1) return !axis.HasExplicitTickCount && ticks.Count < 4 && cadenceFit is { Count: >= 4 }
+                        ? cadenceFit : ticks;
                     sparse = ticks;
                 }
-                if (compactFit == null && ticks.Count > 1 && allowCompactDates && interval.Unit >= TimeUnit.Day
+                if (compactFit == null && ordinaryInterval && ticks.Count <= limit && ticks.Count > 1 && allowCompactDates && interval.Unit >= TimeUnit.Day
                     && TryCompactDates(ticks, axis, min, max) is { } compact && fits(compact)) compactFit = compact;
                 // A periodic formatter can alias every coarser calendar boundary
                 // after its last useful interval becomes too crowded. Preserve a
@@ -55,8 +59,8 @@ internal static partial class ChartTimeScale {
         if (regularObservations != null)
             return FitObservationCadence(regularObservations, axis, min, max, limit, fits, allowCompactDates)
                 ?? GenerateFitting(axis, min, max, fits, allowCompactDates, minimumStepDays: minimumStepDays,
-                    automaticTickCount: automaticTickCount, selectTicks: selectTicks);
-        return compactFit ?? cadenceFit ?? sparse;
+                    automaticTickCount: automaticTickCount, calendarAnchor: calendarAnchor, selectTicks: selectTicks);
+        return cadenceFit ?? compactFit ?? sparse;
     }
 
     /// <summary>Retains a measured stride of real calendar boundaries when all ordinary coarser choices lose caption precision.</summary>
@@ -71,22 +75,40 @@ internal static partial class ChartTimeScale {
         return null;
     }
 
-    /// <summary>Uses a comfortable default pitch while keeping an authored count as a ceiling and dense labels opt-in.</summary>
-    internal static int AutomaticTickCount(ChartAxis axis, double length) => axis.LabelDensity == ChartLabelDensity.Dense ? 100
-        : Math.Max(2, Math.Min(8, (int)Math.Floor(length / 90) + 1));
+    /// <summary>Retains the broad calendar rhythm ceiling while measured spacing chooses the compact pitch.</summary>
+    internal static int AutomaticTickCount(ChartAxis axis) => axis.LabelDensity == ChartLabelDensity.Dense ? 100 : 8;
 
     /// <summary>Leaves room between automatic calendar captions rather than merely avoiding overlap.</summary>
-    internal static double ComfortableLabelGap(double firstExtent, double secondExtent, double ordinaryGap) =>
-        Math.Max(ordinaryGap, Math.Max(24, Math.Max(firstExtent, secondExtent)));
+    internal static double ComfortableLabelGap(double firstExtent, double secondExtent, double ordinaryGap, double length, double fontSize,
+        bool compactDefault) {
+        var mean = (firstExtent + secondExtent) / 2;
+        // Compact schedules have short captions and a useful six-tick rhythm.
+        // Measure their actual pitch rather than rounding width to a count.
+        // Ordinary plots retain a generous gap; short plots may use the existing
+        // collision gap when six complete captions already occupy the space.
+        var preferredPitch = Math.Min(80, length / 5);
+        var gap = Math.Min(mean, preferredPitch - mean);
+        // Longer captions normally retain 24 px of clear space. A compact
+        // uniform date sequence may use one em, while a broad date beside a
+        // shorter clock caption keeps the mixed-caption breathing room.
+        var longCaption = Math.Max(firstExtent, secondExtent) >= fontSize * 4;
+        var uniformLong = Math.Min(firstExtent, secondExtent) >= fontSize * 4;
+        if (longCaption) gap = Math.Max(compactDefault && length < 400 && uniformLong ? Math.Min(24, fontSize) : 24, gap);
+        else if (compactDefault && length < 400) ordinaryGap /= 2;
+        return Math.Max(ordinaryGap, gap);
+    }
 
     // A calendar phase can put just one boundary inside a nominal two-tick
     // window. Try a finer actual calendar interval before accepting that loss.
     private static TimeInterval FittingStartInterval(ChartAxis axis, double min, double max, int limit, double minimumStepDays) {
         var interval = ChooseInterval(Math.Max(minimumStepDays, (max - min) / (limit - 1)));
-        if (TryGenerateFittingInterval(axis, min, max, interval) is { Count: >= 2 }) return interval;
+        if (axis.HasExplicitTickCount && TryGenerateFittingInterval(axis, min, max, interval) is { Count: >= 2 }) return interval;
+        // Inspect the preceding real step as well. Its measured stride can
+        // preserve clock precision when ordinary day boundaries all read 00:00.
         for (var index = Intervals.Length - 1; index >= 0; index--) {
             var finer = Intervals[index];
             if (finer.ApproximateDays >= interval.ApproximateDays || finer.ApproximateDays < minimumStepDays) continue;
+            if (!axis.HasExplicitTickCount) return finer;
             var ticks = TryGenerateFittingInterval(axis, min, max, finer);
             if (ticks == null) continue;
             if (ticks.Count > limit) break;
@@ -97,8 +119,10 @@ internal static partial class ChartTimeScale {
 
     // Calendar arithmetic may be outside DateTime's supported range. Authored
     // fitting/formatting callbacks run outside these catches and retain their errors.
-    private static IReadOnlyList<double>? TryGenerateFittingInterval(ChartAxis axis, double min, double max, TimeInterval interval) {
-        try { return GenerateInterval(axis, min, max, true, interval); }
+    private static IReadOnlyList<double>? TryGenerateFittingInterval(ChartAxis axis, double min, double max, TimeInterval interval, double? calendarAnchor = null) {
+        try { return calendarAnchor.HasValue && interval.Unit is TimeUnit.Day or TimeUnit.Week
+            ? GenerateAnchoredCalendarInterval(axis, min, max, interval, calendarAnchor.Value)
+            : GenerateInterval(axis, min, max, true, interval); }
         catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { return null; }
     }
 

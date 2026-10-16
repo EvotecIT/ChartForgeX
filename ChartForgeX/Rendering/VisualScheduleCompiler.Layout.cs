@@ -46,11 +46,12 @@ internal static partial class VisualScheduleCompiler {
     }
 
     private static void Axis(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ScheduleLayout layout,
-        IReadOnlyList<double> ticks, Func<double, double> project, Func<double, string> format, double? minimum = null, double? maximum = null) {
+        IReadOnlyList<double> ticks, Func<double, double> project, Func<double, string> format, double? minimum = null, double? maximum = null,
+        double? calendarAnchor = null) {
         var colors = context.Theme.Resolve(context.ThemeMode); var plot = layout.Plot;
         var style = layout.TickStyle; var gap = context.Theme.Spacing;
         format = layout.FormatTick;
-        ticks = ScheduleTicks(chart, context, builder, ticks, project, format, style, layout.HasFixedTicks, minimum, maximum);
+        ticks = ScheduleTicks(chart, context, builder, ticks, project, format, style, layout.HasFixedTicks, minimum, maximum, calendarAnchor);
         if (!layout.HasFixedTicks && chart.Options.XAxis.Labels.Count == 0 && chart.Options.XAxis.LabelDensity != ChartLabelDensity.All)
             style = GeneratedScheduleTickStyle(chart, context, builder, ticks, project, format, style);
         var grid = chart.Options.ResolvePreparedGridLineStyle();

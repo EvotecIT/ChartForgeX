@@ -222,7 +222,10 @@ public sealed class ScheduleTickPlacementTests {
             Assert.Equal(grid[index].Start.X, labels[index].X, 7);
             Assert.Matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", labels[index].Text.Lines.Single().Text);
         }
-        Assert.Equal(Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), labels[0].Text.Lines.Single().Text);
+        Assert.All(labels, label => {
+            var date = DateTime.ParseExact(label.Text.Lines.Single().Text, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            Assert.InRange(date, Start.Date, Start.AddDays(7));
+        });
         Assert.Equal(labels.Length, labels.Select(label => label.Text.Lines.Single().Text).Distinct(StringComparer.Ordinal).Count());
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "schedule.axis-label-overflow");
         Assert.Equal(ChartTimeTickUnit.Millisecond, chart.Options.GanttTickInterval!.Unit);

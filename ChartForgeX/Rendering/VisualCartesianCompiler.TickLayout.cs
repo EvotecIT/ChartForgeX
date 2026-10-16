@@ -34,7 +34,7 @@ internal static partial class VisualCartesianCompiler {
                 && AxisLabelSequenceFits(builder, axis, candidates, Position, horizontal, style, gap, fallback, labels,
                     comfortable: axis.LabelDensity != ChartLabelDensity.Dense && !axis.HasExplicitTickCount),
             allowCompactDates: axis.ValueFormat == null && fallback == null, regularObservations: regularObservations,
-            automaticTickCount: ChartTimeScale.AutomaticTickCount(axis, length)) is { } timeTicks) {
+            automaticTickCount: ChartTimeScale.AutomaticTickCount(axis)) is { } timeTicks) {
             labels.SetFittedTicks(axis, timeTicks);
             return;
         }
@@ -99,7 +99,9 @@ internal static partial class VisualCartesianCompiler {
             var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), axis.LabelAngle);
             var extent = horizontal ? metrics.Width : metrics.Height;
             var position = coordinate(tick);
-            var requiredGap = comfortable ? ChartTimeScale.ComfortableLabelGap(extent, previousExtent, gap) : gap;
+            var length = ticks.Count > 1 ? Math.Abs(coordinate(ticks[ticks.Count - 1]) - coordinate(ticks[0])) : 0;
+            var requiredGap = comfortable ? ChartTimeScale.ComfortableLabelGap(extent, previousExtent, gap, length, style.EffectiveFontSize,
+                axis.LabelDensity == ChartLabelDensity.Auto && !axis.HasExplicitTickCount) : gap;
             if (hasPrevious && Math.Abs(position - previousPosition) + .0001 < (extent + previousExtent) / 2 + requiredGap) return false;
             previousPosition = position; previousExtent = extent; hasPrevious = true;
         }

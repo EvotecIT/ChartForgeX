@@ -14,7 +14,9 @@ internal static partial class VisualScheduleCompiler {
         var plot = layout.Plot; var gap = context.Theme.Spacing;
         var rotation = Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle));
         var top = Math.Min(viewport.Bottom, plot.Bottom + gap / 2);
-        var selected = ScheduleCaptionStride(chart, context, builder, ticks, project, format, style);
+        var automatic = !layout.HasFixedTicks && chart.Options.XAxis.Labels.Count == 0
+            && !chart.Options.XAxis.HasExplicitTickCount && chart.Options.XAxis.LabelDensity == ChartLabelDensity.Auto;
+        var selected = ScheduleCaptionStride(chart, context, builder, ticks, project, format, style, comfortable: automatic);
         var omitted = false;
         for (var index = 0; index < ticks.Count; index++) {
             var text = format(ticks[index]); var x = project(ticks[index]); var id = "schedule-tick-" + index;
