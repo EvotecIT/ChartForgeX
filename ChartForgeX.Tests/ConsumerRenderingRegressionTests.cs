@@ -164,6 +164,8 @@ public sealed class ConsumerRenderingRegressionTests {
             Assert.DoesNotContain("stale.svg", index, StringComparison.Ordinal);
             Assert.Contains("sequence.svg", index, StringComparison.Ordinal);
             Assert.Contains("sequence.png", index, StringComparison.Ordinal);
+            var iconFit = XDocument.Load(Path.Combine(output, "topology-fit-captions-icon.svg"));
+            Assert.Equal(3, iconFit.Descendants().Count(element => Role(element) == "topology-node-label"));
         } finally {
             Directory.Delete(output, recursive: true);
         }
@@ -227,6 +229,21 @@ public sealed class ConsumerRenderingRegressionTests {
                 (Math.Abs(x - node.X) <= tolerance || Math.Abs(x - (node.X + node.Width)) <= tolerance);
             Assert.True(onHorizontal || onVertical, $"Route endpoint ({x:0.##}, {y:0.##}) misses node '{node.Id}' border.");
         }
+    }
+
+    [Fact]
+    public void FittedContentIgnoresHiddenManualNodesWhenChoosingItsScale() {
+        TopologyChart Create(bool addHidden) {
+            var chart = TopologyChart.Create().WithViewport(1000, 420).WithLayout(TopologyLayoutMode.Manual)
+                .AddNode("visible", "Visible service", 40, 50, width: 110, height: 64);
+            if (addHidden) chart.AddNode("anchor", "Hidden anchor", 12000, 12000, width: 110, height: 64).Nodes.Single(node => node.Id == "anchor").DisplayMode = TopologyNodeDisplayMode.Hidden;
+            return chart;
+        }
+        double FontSize(TopologyChart chart) => XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false }))
+            .Descendants().Where(element => Role(element) == "topology-node-label").SelectMany(element => element.DescendantsAndSelf())
+            .Where(element => element.Name.LocalName == "text").Select(element => N(element, "font-size")).Single();
+
+        Assert.Equal(FontSize(Create(false)), FontSize(Create(true)), 2);
     }
 
     [Fact]
@@ -343,6 +360,37 @@ public sealed class ConsumerRenderingRegressionTests {
 
         Assert.Equal("rgba(239,68,68,0.502)", (string?)label.Attribute("fill"));
         Assert.NotEmpty(chart.ToPng(options));
+    }
+
+    [Fact]
+    public void CardLabelPaintPreservesHostColorVariablesAndHighlightDimming() {
+        var chart = TopologyChart.Create().WithViewport(520, 240).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("service", "Directory service", 30, 50, width: 130, height: 70)
+            .AddNode("peer", "Peer", 250, 50, width: 130, height: 70);
+        chart.Nodes[0].LabelColor = "var(--host-label)";
+        var options = new TopologyRenderOptions {
+            IncludeLegend = false, DimmedOpacity = .5,
+            SvgColorVariables = new SvgColorVariables().Add("--host-label", ChartColor.FromHex("#ef4444"), SvgColorRole.Text)
+        };
+        options.HighlightNodeIds.Add("peer");
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var label = svg.Descendants().Where(element => Role(element) == "topology-node-label")
+            .SelectMany(element => element.DescendantsAndSelf()).Single(element => element.Name.LocalName == "text" && element.Value == "Directory service");
+
+        var fill = (string?)label.Attribute("fill") ?? (string?)label.Attribute("style");
+        Assert.Contains("color-mix(in srgb, var(--host-label", fill, StringComparison.Ordinal);
+        Assert.Contains("50%", fill, StringComparison.Ordinal);
+        Assert.NotEmpty(chart.ToPng(options));
+    }
+
+    [Fact]
+    public void InterchangeValidationBoundsTheOptionalNodeLabelColor() {
+        var result = MermaidRenderer.Render("flowchart LR\n A[Escalation]");
+        var envelope = result.Artifact!.ToInterchangeEnvelope();
+        envelope.Nodes.Single().LabelColor = new string('x', VisualArtifactInterchangeValidation.MaximumTextCharacters + 1);
+
+        var error = Assert.Throws<ArgumentException>(() => envelope.Validate());
+        Assert.Contains("node label color", error.Message, StringComparison.Ordinal);
     }
 
     [Theory]

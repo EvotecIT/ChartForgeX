@@ -139,6 +139,9 @@ internal static partial class VisualScheduleCompiler {
             // Thin schedule bars still carry meaningful labels. Place them above the mark
             // when their complete text cannot fit inside the bar instead of dropping them.
             placement = ChartDataLabelPlacement.Above;
+            style = VisualStateSceneTools.DataStyle(chart, context, series, index, ChartColorMath.AccessibleTextOnBackground(colors.Surface));
+            measured = builder.MeasureText(text, style);
+            ink = null;
         }
         var width = Math.Min(viewport.Width, measured.Width); var height = Math.Min(viewport.Height, measured.Height);
         var left = bounds.Left + (bounds.Width - width) / 2; var top = bounds.Top - gap - height;

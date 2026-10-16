@@ -106,9 +106,10 @@ internal sealed partial class VisualTopologyCompiler {
             }
             foreach (var group in _chart.Groups) Include(group.X, group.Y, group.X + group.Width, group.Y + group.Height);
             foreach (var node in _chart.Nodes) {
+                var mode = EffectiveNodeDisplayMode(node, _options);
+                if (mode == TopologyNodeDisplayMode.Hidden) continue;
                 Include(node.X, node.Y, node.X + node.Width, node.Y + node.Height);
                 if (!_options.IncludeNodeLabels) continue;
-                var mode = EffectiveNodeDisplayMode(node, _options);
                 if (mode == TopologyNodeDisplayMode.Tile) {
                     var caption = TopologyNodeFootprint.RenderedCaption(node, _options, _chart.TextMeasurement);
                     var center = CenterX(node);

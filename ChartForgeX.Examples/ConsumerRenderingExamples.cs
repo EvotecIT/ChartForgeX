@@ -82,7 +82,7 @@ public static class ConsumerRenderingExamples {
         var growing = TopologyChart.Create().WithViewport(1300, 560).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
             .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoNode("gateway", "Gateway")
             .AddAutoNode("identity", "Identity service").AddEdge("request", "gateway", "identity", "HTTPS");
-        var growingOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false };
+        var growingOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
         SaveExample( "topology-fit-growth", growing.ToSvg(growingOptions), growing.ToPng(growingOptions));
         foreach (var mode in new[] { TopologyNodeDisplayMode.Tile, TopologyNodeDisplayMode.Icon }) {
             var captions = TopologyChart.Create().WithViewport(520, 150).WithLayout(TopologyLayoutMode.Layered)

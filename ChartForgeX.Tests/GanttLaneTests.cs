@@ -117,6 +117,23 @@ public sealed class GanttLaneTests {
     }
 
     [Fact]
+    public void ThinGanttLaneLabelUsesContrastForItsOutsidePlacement() {
+        var start = new DateTime(2026, 9, 24, 0, 0, 0, DateTimeKind.Utc);
+        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(520, 240).WithHeader(false).WithLegend(false)
+            .WithXAxisTimeScale(TimeZoneInfo.Utc, true, "UTC")
+            .AddGanttLane("Service", new[] { new ChartGanttLaneItem(start, start.AddMinutes(2), "critical", "Restart service") });
+        chart.Options.XAxis.WithBounds(start.ToOADate(), start.AddDays(2).ToOADate());
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = XDocument.Parse(prepared.ToSvg());
+        var bar = ByRole(svg, "gantt-lane-item").Single();
+        var label = ByRole(svg, "data-label").Single().DescendantsAndSelf().Single(element => element.Name.LocalName == "text");
+
+        Assert.True(Number(label, "y") < Number(bar, "y"), "A label that cannot fit in a thin item is placed above it.");
+        Assert.Equal(ChartColorMath.AccessibleTextOnBackground(chart.Options.ResolvedTheme.PlotBackground).ToCss(), (string?)label.Attribute("fill"));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Fact]
     public void Render_NearPixelThreshold_UsesSharedSubRowsForSvgAndPng() {
         Chart Create(double boundary) {
             var candidate = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
