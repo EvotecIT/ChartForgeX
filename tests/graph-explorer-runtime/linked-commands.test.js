@@ -15,12 +15,13 @@ const items = (root, selector) => root.elements.filter(item => selector.split(',
   return (!role || attr(item,'data-cfx-role') === role[1]) && (!part.includes('.cfx-graph-selected') || item.classList.contains('cfx-graph-selected'));
 }));
 function fixture() {
+  const visible = new Function(source(['00-core'])+'\nreturn visible;')();
   const node = element('graph-node','shared'), peer = element('graph-node','peer'), edge = element('graph-edge','shared');
   edge.setAttribute('data-source-node-id','shared'); edge.setAttribute('data-target-node-id','peer');
   const events=[],announcer={textContent:''};
   const root={getAttribute:name=>name==='data-cfx-graph-id'?'fixture':null,elements:[node,peer,edge],dataset:{},querySelector:selector=>selector.includes('announcer')?announcer:null,state:{nodes:[],edges:[],clusters:[]}};
-  const runtime=new Function('items','attr','graphKeyboardItemKey','hasFeature','graphState','drawCanvas','syncSelectedEdgeLabels','emit', source(['10-layout','36-host-commands'])+'\nreturn {selectGraphItems,highlightGraphItems,graphHover,selectedItems};')(
-    items,attr,item=>`${attr(item,'data-cfx-role')}:${attr(item,'data-node-id') || attr(item,'data-edge-id')}`,()=>true,root=>root.state,()=>{},()=>{},(_root,name,detail)=>events.push({name,detail}));
+  const runtime=new Function('items','attr','visible','graphKeyboardItemKey','hasFeature','graphState','drawCanvas','syncSelectedEdgeLabels','emit', source(['10-layout','36-host-commands'])+'\nreturn {selectGraphItems,highlightGraphItems,graphHover,selectedItems};')(
+    items,attr,visible,item=>`${attr(item,'data-cfx-role')}:${attr(item,'data-node-id') || attr(item,'data-edge-id')}`,()=>true,root=>root.state,()=>{},()=>{},(_root,name,detail)=>events.push({name,detail}));
   return {node,peer,edge,root,runtime,events,announcer};
 }
 test('silent host selection is role-qualified and supports replacement, addition and removal',()=>{
