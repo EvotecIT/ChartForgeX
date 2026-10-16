@@ -48,6 +48,7 @@ public static class LinkedChartViewsExamples {
             Configure(options, "linked-totals", "linked-totals-empty"));
         var days = Enumerable.Range(0, Api.Length).Select(day => FirstDay.AddDays(day).ToString("O")).ToArray();
         var page = CreateTimeChart(dark).ToInteractiveHtmlPage(ConfigureTime);
+        var timeDrawing = CreateTimeChart(dark).ToInteractiveHtmlFragmentWithoutAssets(ConfigureTime);
         var summary = CreateTotalsChart(0, Api.Length - 1, dark).ToInteractiveHtmlFragmentWithoutAssets(ConfigureTotals);
         var controls = "<div class='linked-controls'><button type='button' id='linked-reset'>Show every day</button>"
             + "<p id='linked-status' role='status'>Showing every day. Brush a date range, then select a service below.</p></div>";
@@ -57,7 +58,8 @@ public static class LinkedChartViewsExamples {
             + "border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;cursor:pointer}"
             + ".cfx-interactive-chart{min-width:0;max-width:100%}</style>";
         var script = "<script>const linkedWindows=" + JsonSerializer.Serialize(windows)
-            + ",linkedDays=" + JsonSerializer.Serialize(days) + ";" + """
+            + ",linkedDays=" + JsonSerializer.Serialize(days)
+            + ",linkedTime=" + JsonSerializer.Serialize(timeDrawing) + ";" + """
             (()=>{
               const timeRoot=document.querySelector('[data-cfx-chart-id="linked-time"]');
               const totalsRoot=document.querySelector('[data-cfx-chart-id="linked-totals"]');
@@ -65,6 +67,7 @@ public static class LinkedChartViewsExamples {
               const status=document.getElementById('linked-status');
               const restore=()=>{
                 totals.update(linkedWindows['0:3']);
+                time.update(linkedTime);
                 time.clearSelection();time.clearHighlight();totals.clearSelection();
                 status.textContent='Showing every day. Brush a date range, then select a service below.';
               };

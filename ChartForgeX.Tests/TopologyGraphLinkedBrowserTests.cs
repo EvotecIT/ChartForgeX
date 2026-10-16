@@ -201,6 +201,48 @@ public sealed class TopologyGraphLinkedBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GraphHighlightPaintStaysScopedToExplicitNodeShapes(bool dark) {
+        if (!Enabled) return;
+        var graph = GraphScene.Create("shape-highlights", "Service connections")
+            .AddNode("a", "API", node => { node.Fixed = true; node.Shape = GraphNodeShape.Box; node.X = 180; node.Y = 180; })
+            .AddNode("b", "Database", node => { node.Fixed = true; node.Shape = GraphNodeShape.Ellipse; node.X = 480; node.Y = 180; })
+            .AddNode("c", "Queue", node => { node.Fixed = true; node.Shape = GraphNodeShape.Diamond; node.X = 680; node.Y = 340; })
+            .AddEdge("ab", "a", "b").AddEdge("bc", "b", "c");
+        graph.Options.Features = GraphSceneFeatures.Selection;
+        await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => {
+            options.RenderBackend = HtmlGraphRenderBackend.Svg;
+            options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.PersistThemePreference = false;
+        }), 960, 680);
+        var page = session.Page;
+        const string paint = """
+            ()=>[...document.querySelectorAll('[data-cfx-role=graph-node]')].map(node=>{
+                const shape=node.querySelector('circle,rect,ellipse,polygon,path'),style=getComputedStyle(shape);
+                return{id:node.dataset.nodeId,stroke:style.stroke,width:style.strokeWidth};})
+            """;
+        var before = await page.EvaluateAsync<JsonElement>(paint);
+        await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.highlight('shape-highlights',['a','b','c'].map(id=>({role:'graph-node',id})))");
+        var highlighted = await page.EvaluateAsync<JsonElement>(paint);
+        var selectedColor = await page.Locator(".cfx-graph-explorer").EvaluateAsync<string>("""
+            root=>{const probe=document.createElement('span');probe.style.color='var(--cfx-color-selected)';
+                root.append(probe);const color=getComputedStyle(probe).color;probe.remove();return color;}
+            """);
+        Assert.Equal(3, highlighted.GetArrayLength());
+        Assert.All(highlighted.EnumerateArray(), item => {
+            Assert.Equal(selectedColor, item.GetProperty("stroke").GetString());
+            Assert.Equal("4px", item.GetProperty("width").GetString());
+        });
+        Assert.Equal("none", await page.Locator(".cfx-graph-bg").EvaluateAsync<string>("node=>getComputedStyle(node).stroke"));
+        await CaptureAsync(page, "graph-scoped-shape-highlights-" + dark, new { before, highlighted, selectedColor });
+        await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.clearHighlight('shape-highlights')");
+        var cleared = await page.EvaluateAsync<JsonElement>(paint);
+        Assert.Equal(before.GetRawText(), cleared.GetRawText());
+        AssertNoConsoleErrors(session);
+    }
+
     private static async Task CaptureAsync(IPage page, string name, object receipt) {
         var root = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");
         if (string.IsNullOrWhiteSpace(root)) return;
