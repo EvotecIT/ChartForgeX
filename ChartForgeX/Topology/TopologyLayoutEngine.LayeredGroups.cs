@@ -88,17 +88,19 @@ internal static partial class TopologyLayoutEngine {
                     && group.Y < other.Y + other.Height + 24 && group.Y + group.Height + 24 > other.Y);
                 if (collision == null) break;
                 if (horizontal) {
-                    if (packSingleGroupAlongFlow && chart.LayoutDirection == TopologyLayoutDirection.RightToLeft)
-                        group.X = collision.X - group.Width - 24;
-                    else if (packSingleGroupAlongFlow)
-                        group.X = collision.X + collision.Width + 24;
-                    else group.Y = collision.Y + collision.Height + 24;
+                    if (packSingleGroupAlongFlow) {
+                        var precedes = LayeredGroupPrecedes(group, collision, members, chart.Edges);
+                        group.X = precedes == (chart.LayoutDirection == TopologyLayoutDirection.LeftToRight)
+                            ? collision.X - group.Width - 24
+                            : collision.X + collision.Width + 24;
+                    } else group.Y = collision.Y + collision.Height + 24;
                 } else {
-                    if (packSingleGroupAlongFlow && chart.LayoutDirection == TopologyLayoutDirection.BottomToTop)
-                        group.Y = collision.Y - group.Height - 24;
-                    else if (packSingleGroupAlongFlow)
-                        group.Y = collision.Y + collision.Height + 24;
-                    else group.X = collision.X + collision.Width + 24;
+                    if (packSingleGroupAlongFlow) {
+                        var precedes = LayeredGroupPrecedes(group, collision, members, chart.Edges);
+                        group.Y = precedes == (chart.LayoutDirection == TopologyLayoutDirection.TopToBottom)
+                            ? collision.Y - group.Height - 24
+                            : collision.Y + collision.Height + 24;
+                    } else group.X = collision.X + collision.Width + 24;
                 }
             }
             var delta = new PlacementDelta(group.X - x, group.Y - y);
@@ -135,5 +137,22 @@ internal static partial class TopologyLayoutEngine {
                 edge.Metadata.Remove("hierarchy.route.busX"); edge.Metadata.Remove("hierarchy.route.busY");
             }
         }
+    }
+
+    private static bool LayeredGroupPrecedes(TopologyGroup group, TopologyGroup other,
+        IReadOnlyDictionary<string, List<TopologyNode>> members, IReadOnlyList<TopologyEdge> edges) {
+        if (members.TryGetValue(group.Id, out var current) && members.TryGetValue(other.Id, out var compared)
+            && current.Count > 0 && compared.Count > 0) {
+            var currentMin = current.Min(GetLayer); var currentMax = current.Max(GetLayer);
+            var comparedMin = compared.Min(GetLayer); var comparedMax = compared.Max(GetLayer);
+            if (currentMax < comparedMin) return true;
+            if (currentMin > comparedMax) return false;
+            var currentIds = new HashSet<string>(current.Select(node => node.Id), StringComparer.Ordinal);
+            var comparedIds = new HashSet<string>(compared.Select(node => node.Id), StringComparer.Ordinal);
+            var currentBefore = edges.Any(edge => currentIds.Contains(edge.SourceNodeId) && comparedIds.Contains(edge.TargetNodeId));
+            var otherBefore = edges.Any(edge => comparedIds.Contains(edge.SourceNodeId) && currentIds.Contains(edge.TargetNodeId));
+            if (currentBefore != otherBefore) return currentBefore;
+        }
+        return false;
     }
 }

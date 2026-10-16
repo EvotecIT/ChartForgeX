@@ -85,7 +85,7 @@ internal sealed partial class VisualTopologyCompiler {
                         var dy = adjacent.Y - endpoint.Y;
                         var distance = Math.Sqrt(dx * dx + dy * dy);
                         if (distance <= .001) return;
-                        var length = Math.Min(6 * _scale, distance);
+                        var length = Math.Min(EdgeEndpointGap * _scale, distance);
                         var inner = new ChartPoint(endpoint.X + dx / distance * length, endpoint.Y + dy / distance * length);
                         var connector = new ChartPath(new[] { ChartPathCommand.MoveTo(endpoint.X, endpoint.Y), ChartPathCommand.LineTo(inner.X, inner.Y) });
                         foreach (var layer in layers) {

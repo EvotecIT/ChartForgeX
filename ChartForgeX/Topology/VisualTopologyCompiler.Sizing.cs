@@ -114,6 +114,12 @@ internal sealed partial class VisualTopologyCompiler {
                 if (mode == TopologyNodeDisplayMode.Hidden) continue;
                 var stroke = _options.SelectedNodeIds.Contains(node.Id) ? 2.8 : _context.Theme.AxisStrokeWidth;
                 IncludeStroked(node.X, node.Y, node.X + node.Width, node.Y + node.Height, stroke);
+                if (node.Shape.HasValue) {
+                    foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) {
+                        var shape = part.Path.Bounds();
+                        IncludeStroked(shape.Left, shape.Top, shape.Right, shape.Bottom, stroke);
+                    }
+                }
                 if (!string.IsNullOrWhiteSpace(node.Badge)) {
                     var badge = NodeBadgeBounds(node, mode, _options);
                     Include(badge.X, badge.Y, badge.Right, badge.Bottom);

@@ -117,6 +117,11 @@ public static class ConsumerRenderingExamples {
         selectedStrokeOptions.SelectedNodeIds.Add("selected");
         selectedStrokeOptions.SelectedGroupIds.Add("selected-group");
         SaveExample("topology-fit-selected-stroke", selectedStroke.ToSvg(selectedStrokeOptions), selectedStroke.ToPng(selectedStrokeOptions));
+        var fittedCloud = TopologyChart.Create().WithViewport(560, 300).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddNode("cloud", "Cloud service", 10, 10, width: 180, height: 120);
+        fittedCloud.Nodes[0].Shape = TopologyNodeShape.Cloud;
+        var fittedCloudOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeNodeLabels = false };
+        SaveExample("topology-fit-cloud-shape", fittedCloud.ToSvg(fittedCloudOptions), fittedCloud.ToPng(fittedCloudOptions));
         var unwrappedLabel = TopologyChart.Create().WithViewport(520, 260).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
             .AddNode("service", "A long service label that stays on one line", 40, 80, width: 260, height: 72);
         var unwrappedOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, WrapNodeLabels = false };
@@ -126,6 +131,11 @@ public static class ConsumerRenderingExamples {
             .AddAutoGroup("automatic", "Automatic shell").AddAutoNode("fixed-node", "Fixed member", groupId: "fixed")
             .AddAutoNode("automatic-node", "Automatic member", groupId: "automatic").AddEdge("link", "fixed-node", "automatic-node");
         SaveExample("topology-layered-single-automatic-group", packedGroup.ToSvg(), packedGroup.ToPng());
+        var reverseFlowGroup = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.RightToLeft)
+            .AddGroup("fixed", "Fixed shell", 0, 0, 520, 360).AddAutoGroup("automatic", "Automatic shell")
+            .AddAutoNode("fixed-node", "Fixed member", groupId: "fixed").AddAutoNode("automatic-node", "Automatic member", groupId: "automatic");
+        SaveExample("topology-layered-rtl-automatic-group", reverseFlowGroup.ToSvg(), reverseFlowGroup.ToPng());
         var labelColorModes = TopologyChart.Create().WithViewport(1120, 260).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
             .AddNode("card", "Card label", 20, 60, width: 150, height: 70).AddNode("shape", "Shape label", 230, 60, width: 150, height: 70)
             .AddNode("icon", "Icon label", 440, 60, width: 150, height: 70).AddNode("tile", "Tile label", 650, 60, width: 150, height: 70)
@@ -185,6 +195,7 @@ public static class ConsumerRenderingExamples {
             var largeText = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: 24));
             var table = ChartTable.Create().WithTheme(largeText, mode).WithSize(460, 260)
                 .WithColumns("Check", "State").AddRow("Backups", "Verified").AddRow("Recovery test", "Scheduled");
+            table.ConfigureRow(0, row => row.Cells[1].WithBadge("Verified", VisualStatus.Positive));
             SaveExample( "table-typography-" + suffix, table.ToSvg(), table.ToPng());
             var bullet = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(520, 200).AddBullet("Coverage", 72, 85);
             SaveExample( "bullet-" + suffix, bullet.ToSvg(), bullet.ToPng());

@@ -84,7 +84,10 @@ internal sealed partial class VisualTopologyCompiler {
             if (_options.IncludeStatusBadges && node.ShowStatusBadge && mode != TopologyNodeDisplayMode.Dot) {
                 var status = Highlight(Status(node.Status), active);
                 using var statusGroup = _builder.PushGroup(node.Id + "-status", "topology-node-status", new Dictionary<string, string> { ["data-node-id"] = node.Id });
-                using (PinnedState()) _builder.Ellipse(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: new VisualScenePaintBinding(StatusPaint(node.Status, status, HighlightFactor(active))));
+                var statusCenter = node.Shape == TopologyNodeShape.Cloud
+                    ? Point(new ChartPoint(node.X + node.Width * .78, node.Y + node.Height * .34))
+                    : new ChartPoint(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale);
+                using (PinnedState()) _builder.Ellipse(statusCenter.X, statusCenter.Y, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: new VisualScenePaintBinding(StatusPaint(node.Status, status, HighlightFactor(active))));
             }
             if (!string.IsNullOrWhiteSpace(node.Badge)) {
                 var reserved = NodeBadgeBounds(node, mode, _options);

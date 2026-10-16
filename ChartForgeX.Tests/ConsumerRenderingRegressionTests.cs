@@ -5,6 +5,7 @@ using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
 using System.Globalization;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
@@ -128,6 +129,25 @@ public sealed class ConsumerRenderingRegressionTests {
         Assert.Equal(N(small[0], "font-size") * 2, N(large[0], "font-size"), 3);
         Assert.Equal((N(small[1], "y") - N(small[0], "y")) * 2, N(large[1], "y") - N(large[0], "y"), 3);
     }
+
+    [Fact]
+    public void TableBadgeTypographyAndBoundsFollowThemeBodyScale() {
+        (XElement Surface, XElement Text) Render(double dataLabelSize) {
+            var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: dataLabelSize));
+            var table = ChartTable.Create().WithTheme(theme).WithSize(420, 240).WithColumns("State").AddRow("placeholder");
+            table.ConfigureRow(0, row => row.Cells[0].WithBadge("Verified", VisualStatus.Positive));
+            var nodes = XDocument.Parse(table.ToSvg()).Descendants().ToArray();
+            return (nodes.Single(element => Role(element) == "visual-badge"),
+                nodes.Single(element => element.Name.LocalName == "text" && element.Value == "Verified"));
+        }
+        var standard = Render(12);
+        var large = Render(24);
+
+        Assert.Equal(N(standard.Text, "font-size") * 2, N(large.Text, "font-size"), 3);
+        Assert.Equal(N(standard.Surface, "width") * 2, N(large.Surface, "width"), 3);
+        Assert.Equal(N(standard.Surface, "height") * 2, N(large.Surface, "height"), 3);
+    }
+
     [Fact]
     public void MetricBadgeClearsInlineHistoryAndUsesThemeInk() {
         var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithSize(330, 150).WithPadding(0)
@@ -232,6 +252,105 @@ public sealed class ConsumerRenderingRegressionTests {
         Assert.DoesNotContain(labelGroup.Descendants(), element => element.Name.LocalName == "tspan");
         Assert.Equal("A long service label that should stay on one line", labelLines[0].Value);
         Assert.False(options.WrapNodeLabels);
+    }
+
+    [Theory]
+    [InlineData(560, 300, 1)]
+    [InlineData(480, 260, 2)]
+    public void FittedCloudGeometryStaysInsideTheContentClip(int width, int height, int pngScale) {
+        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("cloud", "Cloud", 10, 10, width: 180, height: 120);
+        chart.Nodes[0].Shape = TopologyNodeShape.Cloud;
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeNodeLabels = false, PngOutputScale = pngScale };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath")
+            .Elements().Single(element => element.Name.LocalName == "rect");
+        var cloud = svg.Descendants().Single(element => Role(element) == "topology-node-surface");
+        var bounds = CubicPathBounds((string)cloud.Attribute("d")!);
+        var halfStroke = N(cloud, "stroke-width") / 2;
+
+        Assert.True(bounds.Left - halfStroke >= N(clip, "x") - .2, "The cloud's left lobe and stroke must remain inside the fitted clip.");
+        Assert.True(bounds.Top - halfStroke >= N(clip, "y") - .2, "The cloud's upper lobe and stroke must remain inside the fitted clip.");
+        Assert.True(bounds.Right + halfStroke <= N(clip, "x") + N(clip, "width") + .2, "The cloud's right lobe and stroke must remain inside the fitted clip.");
+        Assert.True(bounds.Bottom + halfStroke <= N(clip, "y") + N(clip, "height") + .2, "The cloud's lower lobe and stroke must remain inside the fitted clip.");
+        var png = RasterImageDecoder.Decode(chart.ToPng(options));
+        Assert.Equal(width * pngScale, png.Width);
+        Assert.Equal(height * pngScale, png.Height);
+
+        static ChartRect CubicPathBounds(string path) {
+            var tokens = Regex.Matches(path, @"[A-Za-z]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
+                .Select(match => match.Value).ToArray();
+            var points = new List<ChartPoint>();
+            var current = default(ChartPoint);
+            for (var index = 0; index < tokens.Length;) {
+                var command = tokens[index++];
+                if (command == "M") {
+                    current = new ChartPoint(double.Parse(tokens[index++], CultureInfo.InvariantCulture), double.Parse(tokens[index++], CultureInfo.InvariantCulture));
+                    points.Add(current);
+                } else if (command == "C") {
+                    var first = new ChartPoint(double.Parse(tokens[index++], CultureInfo.InvariantCulture), double.Parse(tokens[index++], CultureInfo.InvariantCulture));
+                    var second = new ChartPoint(double.Parse(tokens[index++], CultureInfo.InvariantCulture), double.Parse(tokens[index++], CultureInfo.InvariantCulture));
+                    var end = new ChartPoint(double.Parse(tokens[index++], CultureInfo.InvariantCulture), double.Parse(tokens[index++], CultureInfo.InvariantCulture));
+                    for (var step = 1; step <= 256; step++) {
+                        var t = step / 256d; var inverse = 1 - t;
+                        var a = inverse * inverse * inverse; var b = 3 * inverse * inverse * t;
+                        var c = 3 * inverse * t * t; var d = t * t * t;
+                        points.Add(new ChartPoint(current.X * a + first.X * b + second.X * c + end.X * d,
+                            current.Y * a + first.Y * b + second.Y * c + end.Y * d));
+                    }
+                    current = end;
+                } else if (command != "Z") throw new InvalidOperationException("Unexpected cloud path command: " + command);
+            }
+            return new ChartRect(points.Min(point => point.X), points.Min(point => point.Y),
+                points.Max(point => point.X) - points.Min(point => point.X), points.Max(point => point.Y) - points.Min(point => point.Y));
+        }
+    }
+
+    [Fact]
+    public void CloudStatusBadgeSitsInsideTheCloudOutline() {
+        var chart = TopologyChart.Create().WithViewport(560, 300).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("cloud", "Cloud", 10, 10, width: 180, height: 120);
+        chart.Nodes[0].Shape = TopologyNodeShape.Cloud;
+        var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeNodeLabels = false }));
+        var cloud = svg.Descendants().Single(element => Role(element) == "topology-node-surface");
+        var status = svg.Descendants().Single(element => Role(element) == "topology-status");
+
+        Assert.True(CubicPathContains((string)cloud.Attribute("d")!, N(status, "cx"), N(status, "cy")),
+            "The cloud status marker must sit inside the visible cloud outline.");
+        Assert.NotEmpty(chart.ToPng(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeNodeLabels = false }));
+
+        static bool CubicPathContains(string path, double x, double y) {
+            var tokens = Regex.Matches(path, @"[A-Za-z]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
+                .Select(match => match.Value).ToArray();
+            var polygon = new List<ChartPoint>();
+            var current = default(ChartPoint);
+            for (var index = 0; index < tokens.Length;) {
+                var command = tokens[index++];
+                if (command == "M") {
+                    current = new ChartPoint(double.Parse(tokens[index++], CultureInfo.InvariantCulture), double.Parse(tokens[index++], CultureInfo.InvariantCulture));
+                    polygon.Add(current);
+                } else if (command == "C") {
+                    var first = new ChartPoint(double.Parse(tokens[index++], CultureInfo.InvariantCulture), double.Parse(tokens[index++], CultureInfo.InvariantCulture));
+                    var second = new ChartPoint(double.Parse(tokens[index++], CultureInfo.InvariantCulture), double.Parse(tokens[index++], CultureInfo.InvariantCulture));
+                    var end = new ChartPoint(double.Parse(tokens[index++], CultureInfo.InvariantCulture), double.Parse(tokens[index++], CultureInfo.InvariantCulture));
+                    for (var step = 1; step <= 256; step++) {
+                        var t = step / 256d; var inverse = 1 - t;
+                        var a = inverse * inverse * inverse; var b = 3 * inverse * inverse * t;
+                        var c = 3 * inverse * t * t; var d = t * t * t;
+                        polygon.Add(new ChartPoint(current.X * a + first.X * b + second.X * c + end.X * d,
+                            current.Y * a + first.Y * b + second.Y * c + end.Y * d));
+                    }
+                    current = end;
+                } else if (command == "Z") break;
+                else throw new InvalidOperationException("Unexpected cloud path command: " + command);
+            }
+            var inside = false;
+            for (int i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++) {
+                var a = polygon[i]; var b = polygon[j];
+                if ((a.Y > y) != (b.Y > y) && x < (b.X - a.X) * (y - a.Y) / (b.Y - a.Y) + a.X) inside = !inside;
+            }
+            return inside;
+        }
     }
 
     [Theory]
@@ -458,6 +577,46 @@ public sealed class ConsumerRenderingRegressionTests {
             $"The single automatic shell must follow the explicit shell along the left-to-right flow axis. fixed=({fixedGroup.X},{fixedGroup.Y},{fixedGroup.Width},{fixedGroup.Height}), automatic=({automatic.X},{automatic.Y},{automatic.Width},{automatic.Height}).");
         Assert.True(nodes["automatic-node"].X > nodes["fixed-node"].X,
             "Group packing must preserve the authored left-to-right node order.");
+    }
+
+    [Fact]
+    public void LayeredLayoutKeepsAnUpstreamAutomaticGroupBeforeAnExplicitShell() {
+        var chart = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddGroup("explicit", "Explicit downstream shell", 0, 0, 520, 360)
+            .AddAutoGroup("automatic", "Automatic upstream shell")
+            .AddAutoNode("automatic-source", "Automatic source", groupId: "automatic")
+            .AddAutoNode("explicit-target", "Explicit target", groupId: "explicit")
+            .AddEdge("dependency", "automatic-source", "explicit-target");
+        var prepared = TopologyLayoutEngine.Prepare(chart);
+        var groups = prepared.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal);
+        var nodes = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+
+        Assert.True(groups["automatic"].X + groups["automatic"].Width <= groups["explicit"].X,
+            "An upstream automatic group must be packed before the explicit downstream shell.");
+        Assert.True(nodes["automatic-source"].X < nodes["explicit-target"].X,
+            "Group packing must preserve the dependency's left-to-right direction.");
+    }
+
+    [Theory]
+    [InlineData(TopologyLayoutDirection.RightToLeft)]
+    [InlineData(TopologyLayoutDirection.BottomToTop)]
+    public void LayeredLayoutPreservesAutomaticGroupFlowOrderWithoutCrossGroupEdges(TopologyLayoutDirection direction) {
+        var chart = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(direction)
+            .AddGroup("fixed", "Fixed shell", 0, 0, 520, 360)
+            .AddAutoGroup("automatic", "Automatic shell")
+            .AddAutoNode("fixed-node", "Fixed member", groupId: "fixed")
+            .AddAutoNode("automatic-node", "Automatic member", groupId: "automatic");
+        var prepared = TopologyLayoutEngine.Prepare(chart);
+        var groups = prepared.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal);
+        var fixedGroup = groups["fixed"];
+        var automatic = groups["automatic"];
+
+        if (direction == TopologyLayoutDirection.RightToLeft)
+            Assert.True(automatic.X + automatic.Width <= fixedGroup.X, "The automatic shell must retain its prior left-of-fixed placement in RTL flow.");
+        else
+            Assert.True(automatic.Y + automatic.Height <= fixedGroup.Y, "The automatic shell must retain its prior above-fixed placement in bottom-to-top flow.");
     }
 
     [Fact]
