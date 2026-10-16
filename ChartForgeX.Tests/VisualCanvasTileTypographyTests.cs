@@ -80,19 +80,27 @@ public sealed class VisualCanvasTileTypographyTests {
     public void FixedSizeFallbackKeepsTheIconVisibleAndTextAfterItsBox() {
         var accent = ChartColor.FromHex("#38BDF8");
         var withIcon = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
-            8, 8, 304, 84, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
             new VisualCanvasInfoTileTextOptions(textScale: 4),
             "Windows desktop", accent,
             surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline,
             iconKind: VisualCanvasInfoTileIconKind.Computer);
         var withoutIcon = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
-            8, 8, 304, 84, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
             new VisualCanvasInfoTileTextOptions(textScale: 4),
             "Windows desktop", accent,
             surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline);
         var tile = (VisualCanvasInfoTileLayer)withIcon.Layers[0];
-        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile,
+        var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
             withIcon.ResolveStyle());
+        var metrics = layout.Metrics;
+        XNamespace svgNamespace = "http://www.w3.org/2000/svg";
+        var svg = XDocument.Parse(withIcon.ToSvg());
+        var svgIconBox = svg.Descendants(svgNamespace + "rect").Single(rect =>
+            (double?)rect.Attribute("x") == metrics.IconX &&
+            (double?)rect.Attribute("y") == metrics.IconY);
+        var svgLabel = svg.Descendants(svgNamespace + "text").Single(text =>
+            text.Value == "HOSTNAME");
         var withIconPixels = withIcon.ToRgbaImage();
         var withoutIconPixels = withoutIcon.ToRgbaImage();
         var changedPixels = 0;
@@ -116,12 +124,29 @@ public sealed class VisualCanvasTileTypographyTests {
         }
 
         Assert.True(metrics.IconBox >= 24);
+        Assert.True(layout.Text.WasScaledDown);
         Assert.True(metrics.TextX >= metrics.IconX + metrics.IconBox);
         Assert.Equal(metrics.IconBox * (22d / 54),
             metrics.TextX - metrics.IconX - metrics.IconBox, 6);
+        Assert.Equal(metrics.IconBox, (double)svgIconBox.Attribute("width")!, 6);
+        Assert.Equal(metrics.IconBox, (double)svgIconBox.Attribute("height")!, 6);
+        Assert.Equal(metrics.TextX, (double)svgLabel.Attribute("x")!, 3);
         Assert.True(changedPixels > 0);
         Assert.Contains(withIcon.AnalyzeLayout().Diagnostics,
             diagnostic => diagnostic.Code == "InfoTileTextScaleReduced");
+    }
+
+    [Fact]
+    public void SmallRequestedScaleKeepsTheSmallIconBoxWithoutFallback() {
+        var canvas = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
+            8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            new VisualCanvasInfoTileTextOptions(textScale: 0.2), "Windows desktop");
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
+            canvas.ResolveStyle());
+
+        Assert.False(layout.Text.WasScaledDown);
+        Assert.True(layout.Metrics.IconBox < 24);
     }
 
     [Theory]
