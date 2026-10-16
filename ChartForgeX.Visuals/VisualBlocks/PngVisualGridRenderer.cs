@@ -55,7 +55,8 @@ public sealed class PngVisualGridRenderer {
             block.Options.Theme = originalTheme.Configure(builder => {
                 var font = originalTheme.Typography;
                 builder.Typography = new VisualTypography(font.Family, 15, font.SubtitleSize, font.AxisSize, font.LegendSize,
-                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily);
+                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily,
+                    font.TileLabelSize, font.TileValueSize, font.TileDetailSize);
             });
             if (block is IFactualVisualPixels factual) return factual.RenderAtScale(density);
             if (SvgVisualBlockRenderer.IsNativeBlock(block)) return new PngVisualBlockRenderer().RenderCanvas(block, density).ToImage();

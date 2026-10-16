@@ -363,13 +363,13 @@ public sealed partial class VisualCanvas {
     }
 
     /// <summary>Adds a reusable information tile.</summary>
-    public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto) =>
-        AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, AccentOverride = accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind, TextFitPolicy = textFitPolicy }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
+    public VisualCanvas AddInfoTile(double x, double y, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto, double? textScale = null, double? labelFontSize = null, double? valueFontSize = null, double? detailFontSize = null) =>
+        AddLayer(new VisualCanvasInfoTileLayer(x, y, width, height, icon, label, value) { Detail = detail ?? string.Empty, AccentOverride = accent, Progress = progress, SurfaceStyle = surfaceStyle, IconKind = iconKind, TextFitPolicy = textFitPolicy, TextScale = textScale, LabelFontSize = labelFontSize, ValueFontSize = valueFontSize, DetailFontSize = detailFontSize }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
 
     /// <summary>Adds a reusable information tile using anchor-based placement.</summary>
-    public VisualCanvas AddInfoTile(VisualCanvasPlacement placement, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto) {
+    public VisualCanvas AddInfoTile(VisualCanvasPlacement placement, double width, double height, string icon, string label, string value, string? detail = null, ChartColor? accent = null, double? progress = null, VisualCanvasInfoTileSurfaceStyle surfaceStyle = VisualCanvasInfoTileSurfaceStyle.Glass, VisualCanvasInfoTileIconKind iconKind = VisualCanvasInfoTileIconKind.Text, VisualCanvasInfoTileMiniChartKind miniChartKind = VisualCanvasInfoTileMiniChartKind.None, IEnumerable<double>? miniChartValues = null, double? miniChartMaximum = null, VisualCanvasTextFitPolicy textFitPolicy = VisualCanvasTextFitPolicy.Auto, double? textScale = null, double? labelFontSize = null, double? valueFontSize = null, double? detailFontSize = null) {
         var bounds = ResolvePlacement(placement, width, height);
-        return AddInfoTile(bounds.X, bounds.Y, bounds.Width, bounds.Height, icon, label, value, detail, accent, progress, surfaceStyle, iconKind, miniChartKind, miniChartValues, miniChartMaximum, textFitPolicy);
+        return AddInfoTile(bounds.X, bounds.Y, bounds.Width, bounds.Height, icon, label, value, detail, accent, progress, surfaceStyle, iconKind, miniChartKind, miniChartValues, miniChartMaximum, textFitPolicy, textScale, labelFontSize, valueFontSize, detailFontSize);
     }
 
     /// <summary>Adds a central icon or logo badge.</summary>
@@ -593,6 +593,18 @@ public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     public VisualCanvasInfoTileMiniChartKind MiniChartKind { get; set; }
     /// <summary>Gets or sets how label, value, and detail text should be fitted inside this tile.</summary>
     public VisualCanvasTextFitPolicy TextFitPolicy { get; set; }
+    /// <summary>Scales all tile text and its supporting layout; null inherits the canvas style.</summary>
+    public double? TextScale { get => _textScale; set { ValidateOptionalPositive(value, nameof(value)); _textScale = value; } }
+    private double? _textScale;
+    /// <summary>Overrides the label font size before text scaling and fit adjustment.</summary>
+    public double? LabelFontSize { get => _labelFontSize; set { ValidateOptionalPositive(value, nameof(value)); _labelFontSize = value; } }
+    private double? _labelFontSize;
+    /// <summary>Overrides the value font size before text scaling and fit adjustment.</summary>
+    public double? ValueFontSize { get => _valueFontSize; set { ValidateOptionalPositive(value, nameof(value)); _valueFontSize = value; } }
+    private double? _valueFontSize;
+    /// <summary>Overrides the detail font size before text scaling and fit adjustment.</summary>
+    public double? DetailFontSize { get => _detailFontSize; set { ValidateOptionalPositive(value, nameof(value)); _detailFontSize = value; } }
+    private double? _detailFontSize;
     /// <summary>Gets finite compact observations. Use <see cref="SparklineData"/> for original nullable sample slots.</summary>
     public IReadOnlyList<double> MiniChartValues => _miniChartValues;
     /// <summary>Gets or sets the optional compact chart maximum. When empty, the values define the scale.</summary>
@@ -635,5 +647,9 @@ public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
         VisualCanvas.ValidateEnum(policy, nameof(policy));
         TextFitPolicy = policy;
         return this;
+    }
+
+    private static void ValidateOptionalPositive(double? value, string parameterName) {
+        if (value.HasValue) ValidatePositive(value.Value, parameterName);
     }
 }

@@ -149,6 +149,11 @@ internal static class ExampleProgramOptions {
             Console.WriteLine("Generated visual canvas files in: " + output);
             return true;
         }
+        if (HasArg(args, "--tile-typography-proof-only")) {
+            VisualCanvasTypographyExamples.WriteProofMatrix(output);
+            Console.WriteLine("Generated tile typography proof matrix in: " + output);
+            return true;
+        }
 
         if (HasArg(args, "--dashboard-shipment-only")) {
             DashboardPatternExamples.WriteShipmentActivityPanel(output, pngOutputScale);

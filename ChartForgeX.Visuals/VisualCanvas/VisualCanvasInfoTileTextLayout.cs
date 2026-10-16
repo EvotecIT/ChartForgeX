@@ -80,76 +80,90 @@ internal sealed class VisualCanvasInfoTileTextLayoutResult {
     public IReadOnlyList<VisualCanvasInfoTileTextLine> Lines { get; }
     public bool HasTruncatedText { get; }
     public bool HasVerticalOverflow { get; }
+    public bool WasScaledDown { get; set; }
     public double TextWidth { get; }
     public double TextHeight { get; }
 }
 
 internal static class VisualCanvasInfoTileTextLayout {
-    public static VisualCanvasInfoTileMetrics CalculateMetrics(VisualCanvasInfoTileLayer tile) {
+    public static VisualCanvasInfoTileMetrics CalculateMetrics(VisualCanvasInfoTileLayer tile, ResolvedVisualCanvasStyle theme) {
         var x = Math.Round(tile.X);
         var y = Math.Round(tile.Y);
         var width = Math.Round(tile.Width);
         var height = Math.Round(tile.Height);
-        var padX = Math.Max(20, Math.Min(28, width * 0.06));
-        var iconBox = Math.Max(44, Math.Min(54, height - 34));
+        var scale = tile.TextScale ?? theme.TileTextScale;
+        var padX = Math.Max(20 * scale, Math.Min(28 * scale, width * 0.06));
+        var iconBox = Math.Max(44 * scale, Math.Min(54 * scale, height - 34 * scale));
+        if (scale > 1) iconBox = Math.Min(iconBox, Math.Max(1, height - 12 * (scale - 1)));
         var iconX = x + padX;
         var iconY = y + (height - iconBox) / 2;
-        var textX = iconX + iconBox + 22;
+        var textX = iconX + iconBox + 22 * scale;
         var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartSampleCount > 0;
-        var chartWidth = hasMiniChart ? Math.Min(width * 0.24, Math.Max(82, width * 0.20)) : 0;
+        var chartWidth = hasMiniChart ? Math.Min(width * 0.24, Math.Max(82 * scale, width * 0.20)) : 0;
         var chartX = x + width - padX - chartWidth;
-        var chartY = y + Math.Max(24, height * 0.30);
-        var chartHeight = Math.Max(28, Math.Min(46, height * 0.42));
-        var textMax = hasMiniChart ? Math.Max(24, chartX - textX - 16) : Math.Max(24, width - (textX - x) - padX);
+        var chartY = y + Math.Max(24 * scale, height * 0.30);
+        var chartHeight = Math.Max(28 * scale, Math.Min(46 * scale, height * 0.42));
+        var textMax = hasMiniChart
+            ? Math.Max(24 * scale, chartX - textX - 16 * scale)
+            : Math.Max(24 * scale, width - (textX - x) - padX);
         return new VisualCanvasInfoTileMetrics(x, y, width, height, padX, iconBox, iconX, iconY, textX, textMax, hasMiniChart, chartX, chartY, chartWidth, chartHeight);
     }
 
     /// <summary>The icon text size both renderers use: the preferred size, reduced until the text fits inside the icon box.</summary>
     public static double IconFontSize(string icon, double iconBox, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
-        var size = Math.Min(25, iconBox * (icon.Length > 3 ? 0.34 : 0.42));
+        var size = iconBox * (icon.Length > 3 ? 0.34 : 0.42);
         var width = VisualCanvasTextFace.Resolve(fontFamily, VisualCanvasFontWeights.Emphasized, mode).Measure(icon, size);
         var available = Math.Max(4, iconBox - 8);
         return width > available ? Math.Max(1, size * available / width) : size;
     }
 
-    /// <summary>Lays out the tile text measured with <paramref name="fontFamily"/> at the weights each role draws with.</summary>
-    public static VisualCanvasInfoTileTextLayoutResult BuildResult(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, string fontFamily, TextMeasurementMode mode = TextMeasurementMode.PortableEstimate) {
+    /// <summary>Lays out tile text using the resolved theme's font family and measurement mode.</summary>
+    public static VisualCanvasInfoTileTextLayoutResult BuildResult(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, ResolvedVisualCanvasStyle theme) {
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
-        var faces = new TileFaces(fontFamily, mode);
+        var faces = new TileFaces(theme.FontFamily, theme.TextMeasurementMode);
         var policy = tile.TextFitPolicy == VisualCanvasTextFitPolicy.Auto ? VisualCanvasTextFitPolicy.WrapThenShrink : tile.TextFitPolicy;
         var singleLine = policy == VisualCanvasTextFitPolicy.SingleLineEllipsis || policy == VisualCanvasTextFitPolicy.ShrinkToFit;
-        var scale = 1.0;
-        var best = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false, faces);
+        var requestedScale = tile.TextScale ?? theme.TileTextScale;
+        var customized = requestedScale != 1 || tile.LabelFontSize.HasValue || tile.ValueFontSize.HasValue || tile.DetailFontSize.HasValue || theme.TileLabelSize != 14 || theme.TileValueSize != 22 || theme.TileDetailSize != 13;
+        var scale = requestedScale;
+        var best = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false, faces, theme);
         if (policy != VisualCanvasTextFitPolicy.ShrinkToFit && policy != VisualCanvasTextFitPolicy.WrapThenShrink) return best;
 
-        for (var i = 0; i < 8 && RequiresFitAdjustment(best); i++) {
+        var minimumScale = customized ? Math.Max(0.4, requestedScale * 0.45) : 0.72;
+        for (var i = 0; i < 24 && RequiresFitAdjustment(best); i++) {
             scale -= 0.04;
-            if (scale < 0.72) break;
-            var next = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false, faces);
+            if (scale < minimumScale) break;
+            var next = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false, faces, theme);
             best = next;
             if (!RequiresFitAdjustment(next)) break;
         }
 
         if (best.HasVerticalOverflow && tile.Detail.Length > 0) {
-            var withoutDetail = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, true, faces);
+            var withoutDetail = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, true, faces, theme);
             if (withoutDetail.TextHeight < best.TextHeight || !withoutDetail.HasVerticalOverflow) best = withoutDetail;
         }
 
+        best.WasScaledDown = scale < requestedScale - 0.001;
         return best;
     }
 
     private static bool RequiresFitAdjustment(VisualCanvasInfoTileTextLayoutResult result) =>
         result.HasTruncatedText || result.HasVerticalOverflow;
 
-    private static VisualCanvasInfoTileTextLayoutResult BuildCore(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, bool singleLine, double scale, bool omitDetail, TileFaces faces) {
-        var labelFont = Math.Max(10, (tileHeight < 72 ? 12.0 : 14.0) * scale);
-        var valueFont = Math.Max(13, (tileHeight < 72 ? 17.0 : tileHeight < 92 ? 21.0 : 22.0) * scale);
-        var detailFont = Math.Max(10, (tileHeight < 72 ? 11.0 : 13.0) * scale);
-        var labelLineHeight = labelFont + 4;
-        var valueLineHeight = valueFont + 4;
-        var detailLineHeight = detailFont + 4;
-        var topPadding = Math.Max(10, Math.Min(18, tileHeight * 0.16));
-        var bottomPadding = tile.Progress.HasValue ? 30.0 : Math.Max(12, Math.Min(18, tileHeight * 0.15));
+    private static VisualCanvasInfoTileTextLayoutResult BuildCore(VisualCanvasInfoTileLayer tile, double tileY, double tileHeight, double textX, double maxWidth, bool singleLine, double scale, bool omitDetail, TileFaces faces, ResolvedVisualCanvasStyle theme) {
+        var smallTileScale = tileHeight < 72 ? 12.0 / 14.0 : 1;
+        var labelFont = (tile.LabelFontSize ?? theme.TileLabelSize) * smallTileScale * scale;
+        var valueFont = (tile.ValueFontSize ?? theme.TileValueSize) * (tileHeight < 72 ? 17.0 / 22.0 : tileHeight < 92 ? 21.0 / 22.0 : 1) * scale;
+        var detailFont = (tile.DetailFontSize ?? theme.TileDetailSize) * (tileHeight < 72 ? 11.0 / 13.0 : 1) * scale;
+        var requestedScale = tile.TextScale ?? theme.TileTextScale;
+        var lineSpacing = 4 * requestedScale;
+        var labelLineHeight = labelFont + lineSpacing;
+        var valueLineHeight = valueFont + lineSpacing;
+        var detailLineHeight = detailFont + lineSpacing;
+        var topPadding = Math.Max(10 * requestedScale, Math.Min(18 * requestedScale, tileHeight * 0.16));
+        var bottomPadding = tile.Progress.HasValue
+            ? 30 * requestedScale
+            : Math.Max(12 * requestedScale, Math.Min(18 * requestedScale, tileHeight * 0.15));
         var availableHeight = Math.Max(valueLineHeight, tileHeight - topPadding - bottomPadding);
         var hasDetail = tile.Detail.Length > 0;
         var detailLineLimit = omitDetail || !hasDetail ? 0 : singleLine ? 1 : tileHeight >= 122 ? 2 : 1;
@@ -167,8 +181,8 @@ internal static class VisualCanvasInfoTileTextLayout {
             labelLines.Lines.Count * labelLineHeight +
             valueLines.Lines.Count * valueLineHeight +
             detailLines.Lines.Count * detailLineHeight +
-            (valueLines.Lines.Count > 0 ? 3 : 0) +
-            (detailLines.Lines.Count > 0 ? 2 : 0);
+            (valueLines.Lines.Count > 0 ? 3 * lineSpacing / 4 : 0) +
+            (detailLines.Lines.Count > 0 ? 2 * lineSpacing / 4 : 0);
         var y = tileY + Math.Max(topPadding, (tileHeight - bottomPadding - totalHeight) / 2);
         var lines = new List<VisualCanvasInfoTileTextLine>(labelLines.Lines.Count + valueLines.Lines.Count + detailLines.Lines.Count);
         foreach (var line in labelLines.Lines) {
@@ -176,14 +190,14 @@ internal static class VisualCanvasInfoTileTextLayout {
             y += labelLineHeight;
         }
 
-        y += 3;
+        y += 3 * lineSpacing / 4;
         foreach (var line in valueLines.Lines) {
             lines.Add(new VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole.Value, line.Text, textX, y, valueFont, line.Truncated));
             y += valueLineHeight;
         }
 
         if (detailLines.Lines.Count > 0) {
-            y += 2;
+            y += 2 * lineSpacing / 4;
             foreach (var line in detailLines.Lines) {
                 lines.Add(new VisualCanvasInfoTileTextLine(VisualCanvasInfoTileTextRole.Detail, line.Text, textX, y, detailFont, line.Truncated));
                 y += detailLineHeight;

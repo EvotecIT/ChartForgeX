@@ -17,6 +17,10 @@ internal sealed class ResolvedVisualCanvasStyle {
     public string FontFamily { get; set; } = "Segoe UI, Arial, sans-serif";
     /// <summary>Gets or sets the monospace font family stack used by symbolic badge text in SVG and PNG output.</summary>
     public string MonospaceFontFamily { get; set; } = "Cascadia Mono, Consolas, monospace";
+    public double TileLabelSize { get; set; } = 14;
+    public double TileValueSize { get; set; } = 22;
+    public double TileDetailSize { get; set; } = 13;
+    public double TileTextScale { get; set; } = 1;
     /// <summary>Gets or sets the primary accent used by built-in decorative elements.</summary>
     public ChartColor Accent { get; set; } = ChartColor.FromHex("#2F80FF");
     /// <summary>Gets or sets the secondary accent used by hero badges and backdrop highlights.</summary>

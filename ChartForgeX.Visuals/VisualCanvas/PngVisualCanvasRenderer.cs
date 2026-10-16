@@ -134,7 +134,7 @@ public sealed class PngVisualCanvasRenderer {
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
-        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile);
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, theme);
         var x = metrics.X;
         var y = metrics.Y;
         var width = metrics.Width;
@@ -177,7 +177,7 @@ public sealed class PngVisualCanvasRenderer {
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
-        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme.FontFamily, theme.TextMeasurementMode).Lines) {
+        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme).Lines) {
             VisualCanvasTextFace.Resolve(theme.FontFamily, line.Weight, theme.TextMeasurementMode).Draw(canvas, line.X, line.Y, line.Text, TileTextColor(line.Role, theme), line.FontSize);
         }
         if (tile.Progress.HasValue) {
