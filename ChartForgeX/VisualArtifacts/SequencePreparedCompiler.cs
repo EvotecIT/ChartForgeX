@@ -51,7 +51,9 @@ internal static partial class SequencePreparedCompiler {
         return theme.WithTypography(new VisualTypography(typography.Family,
             typography.TitleSize * factor, typography.SubtitleSize * factor,
             typography.AxisSize * factor, typography.LegendSize * factor, size,
-            typography.ScalarValueSize * factor, typography.CenterValueSize * factor));
+            typography.ScalarValueSize * factor, typography.CenterValueSize * factor,
+            tileLabelSize: typography.TileLabelSize, tileValueSize: typography.TileValueSize,
+            tileDetailSize: typography.TileDetailSize));
     }
 
     private static PreparedVisual PrepareNatural(SequenceArtifact model, VisualTheme theme) {

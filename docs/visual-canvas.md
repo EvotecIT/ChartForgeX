@@ -124,6 +124,27 @@ canvas.ConfigureStyle(style => {
 });
 ```
 
+Information-tile label, value, and detail sizes default to 14, 22, and 13
+logical pixels. Short tiles retain their compact defaults. Set the shared
+defaults in `VisualTypography`, scale every tile on a canvas with
+`TileTextScale`, or override one tile and individual roles:
+
+```csharp
+var theme = VisualTheme.Graphite().WithTypography(
+    new VisualTypography(tileLabelSize: 16, tileValueSize: 25,
+        tileDetailSize: 14));
+var canvas = VisualCanvas.Create(1200, 630).WithTheme(theme)
+    .ConfigureStyle(style => style.TileTextScale = 1.15)
+    .AddInfoTileWithTextOptions(48, 80, 520, 150, "PC", "HOST", "DEV-WKS-01",
+        new VisualCanvasInfoTileTextOptions(textScale: 1.25,
+            valueFontSize: 28));
+```
+
+The scale multiplies each role size and grows the icon area, padding, and
+mini-chart with it. `TextFitPolicy` still wraps, truncates, or shrinks text
+when the tile is too small. `AnalyzeLayout()` reports when the requested
+scale had to be reduced.
+
 To start from an existing background image without `System.Drawing` or platform-specific graphics APIs, decode it through the reusable raster input path and place it as the first canvas layer:
 
 ```csharp
