@@ -186,8 +186,11 @@ public sealed class VisualCanvasTileTypographyTests {
         Assert.Equal(requestedScale, layout.Scale, 6);
         var svg = XDocument.Parse(canvas.ToSvg());
         var rails = svg.Descendants().Where(element =>
-            (string?)element.Attribute("data-cfx-role") ==
-            "visual-canvas-info-tile-progress-track").ToArray();
+            element.Name.LocalName == "rect" &&
+            (string?)element.Attribute("fill") == style.TileProgressTrackColor.ToCss() &&
+            Math.Abs(double.Parse((string)element.Attribute("height")!,
+                System.Globalization.CultureInfo.InvariantCulture) - expectedHeight) < 0.001)
+            .ToArray();
         Assert.Single(rails);
         Assert.Equal(expectedHeight,
             double.Parse((string)rails[0].Attribute("height")!,
