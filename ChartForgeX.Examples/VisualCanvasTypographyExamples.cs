@@ -40,6 +40,7 @@ internal static class VisualCanvasTypographyExamples {
         var suffix = mode == VisualThemeMode.Dark ? "dark" : "light";
         canvas.SaveSvg(Path.Combine(output, "visual-canvas-tile-text-" + suffix + ".svg"));
         canvas.SavePng(Path.Combine(output, "visual-canvas-tile-text-" + suffix + ".png"));
+        canvas.SaveHtml(Path.Combine(output, "visual-canvas-tile-text-" + suffix + ".html"));
     }
 
     private static void SaveProof(string output, int width, int height, VisualThemeMode mode,
