@@ -15,9 +15,10 @@ public sealed class V2LinearGaugeLayoutTests {
     [InlineData(true, true)]
     public void FramedLinearGaugeMeasuresItsSummaryAboveThePointerAndKeepsScaleRowsSeparate(bool dark, bool carlito) {
         var chart = Chart.Create().WithSize(596, 230).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
-            .WithTitle("Linear readiness").WithSubtitle("Explicit target and bands").AddLinearGauge("Readiness", 87)
+            .WithTitle("Linear readiness").WithSubtitle("Explicit target and bands")
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) })))
             .ConfigureGauge(options => {
-                options.Target = 90;
+                options.Form = ChartGaugeForm.Linear;
                 options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Danger));
                 options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning));
                 options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Quiet));
@@ -54,7 +55,8 @@ public sealed class V2LinearGaugeLayoutTests {
 
     [Fact]
     public void HeightConstrainedLinearGaugeRetainsItsMeasurementInsteadOfPaintingAMicroscopicDefault() {
-        var chart = Chart.Create().AddLinearGauge("Readiness", 87).ConfigureGauge(options => options.Target = 90);
+        var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
+            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(options => options.Form = ChartGaugeForm.Linear);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(180, 58), 0));
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         VisualGaugeCompiler.Build(chart, context, builder, new ChartRect(0, 0, 180, 58));
@@ -70,7 +72,8 @@ public sealed class V2LinearGaugeLayoutTests {
 
     [Fact]
     public void LinearSummaryKeepsAuthoredLabelsAndExplicitFontSizesAuthoritative() {
-        var chart = Chart.Create().WithSize(596, 230).AddLinearGauge("Readiness", 87).ConfigureGauge(options => options.Target = 90);
+        var chart = Chart.Create().WithSize(596, 230).AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
+            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(options => options.Form = ChartGaugeForm.Linear);
         chart.Series[0].WithPointLabel(0, "Observed 87");
         chart.Series[0].DataLabelStyle.FontSize = 9;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

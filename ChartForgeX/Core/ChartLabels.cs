@@ -16,6 +16,7 @@ public sealed class ChartLabels {
     private string _noData = "No data";
     private string _color = "Color";
     private string _size = "Size";
+    private string _target = "Target";
     private string _authoredValue = "Provided value";
     private string _remainder = "Remainder";
     private string _allValues = "All values";
@@ -73,6 +74,9 @@ public sealed class ChartLabels {
 
     /// <summary>Gets or sets the interactive tooltip row name of a Bubble size measurement. Default <c>Size</c>.</summary>
     public string Size { get => _size; set => _size = Required(value, nameof(value)); }
+
+    /// <summary>Gets or sets the tooltip row name of an unnamed gauge or bullet reference value. Default <c>Target</c>.</summary>
+    public string Target { get => _target; set => _target = Required(value, nameof(value)); }
 
     /// <summary>Gets or sets the tooltip row name for a supplied group size that differs from its resolved size. Default <c>Provided value</c>.</summary>
     public string AuthoredValue { get => _authoredValue; set => _authoredValue = Required(value, nameof(value)); }

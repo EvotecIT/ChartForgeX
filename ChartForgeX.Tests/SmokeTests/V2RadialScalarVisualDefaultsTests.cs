@@ -54,8 +54,9 @@ public sealed class V2RadialScalarVisualDefaultsTests {
     public void ResolvedCarlitoGaugeRowsPaintTheScalarAndCaptionWithoutOverlapping(ChartGaugeForm form, VisualThemeMode mode) {
         var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(path), "The gallery's Carlito fixture must be available.");
-        var chart = Chart.Create().AddGauge("Capacity", 76).ConfigureGauge(options => {
-            options.Form = form; options.Target = 85; options.Caption = "Available capacity";
+        var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
+            new ChartGaugeValue(76, targets: new[] { new ChartGaugeTarget(85) }))).ConfigureGauge(options => {
+            options.Form = form; options.Caption = "Available capacity";
             options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
             options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
             options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Success));

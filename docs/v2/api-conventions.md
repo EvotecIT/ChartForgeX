@@ -46,7 +46,9 @@ HTML interaction presentation stays in the optional adapter. `HtmlChartInteracti
 | `ChartSeries.WithFlowState(id, state)` | Semantic state for an existing Sankey or Chord flow ID. `FlowStates` is read-only; null restores source-node/series inheritance and `None` suppresses it. |
 | `ChartOptions.Chord` | Typed circular span/start, node geometry, opacity, direction and label settings over the canonical weighted-flow facts. See [weighted chord charts](../chord.md). |
 | `ChartOptions.Sankey` | Alignment, ordering, node geometry and flow paint options. `ConfigureSankey` configures and installs an independent snapshot, then returns the chart. |
-| `ChartOptions.Bubble` | Size-domain, radius endpoints and reversal settings shared by every bubble series. `ConfigureBubble` configures and installs an independent snapshot, then returns the chart. |
+| `ChartOptions.Bubble` | Size-domain, radius endpoints, reversal and `SizeDimension` name/format/key settings shared by every bubble series. `ConfigureBubble` configures and installs an independent snapshot, including its owned size presentation, then returns the chart. |
+| `ChartGaugeValue` / `ChartGaugeTarget` | Immutable measured value, declared scale and ordered targets. A target contains its numeric value and optional label; the reading copies its supplied targets. |
+| `ChartOptions.Gauge` | Form, orientation, circular span, ticks, caption and semantic bands. `ConfigureGauge` configures and installs an independent snapshot, then returns the chart. |
 
 Keep the numeric scene and painter implementation internal. Public signatures use core-owned types and do not reference Visuals, Stories, browser hosts, their encoders or their policy objects. Static rendering is script-free. Optional animation, interaction and composition have the ownership described in the architecture and [consumer migration guide](migration.md).
 
@@ -394,6 +396,18 @@ Preparation evaluates the endpoint formatter once for Start then End per authore
 
 Endpoint captions inherit chart, series and point label typography and visibility. They use the shared measured placement and overflow diagnostics. Auto/Outside begins at the actual endpoint in its outward direction; Inside/Center uses that endpoint's half of the interval. Short, coincident or clipped intervals may omit or shorten captions while preserving complete text and raw facts. Both captions remain associated with one original observation for browser hover, selection and muting.
 
+## Gauge readings and scales
+
+`ChartGaugeValue` owns one measured `Value`, its `Minimum` and `Maximum`, and a read-only `Targets` collection. Its constructor accepts `value`, optional bounds of 0 and 100, and optional targets. Each readonly `ChartGaugeTarget` accepts `value` and an optional `label`; null uses the formatted target value. The reading copies the supplied targets so later changes to the input collection cannot change the authored observation. Values and targets must be finite, and the bounds must define a finite positive range.
+
+Use the existing `ChartSeries.CreateGauge(id, name, reading)` factory to retain and configure a gauge series. `GaugeValues` contains at most one complete reading. `UpdateGaugeValue` replaces that reading while preserving the observation's ID and styling; `ReplaceGaugeValues` follows the shared replacement rules. A target belongs to the reading and travels with it when its series moves between charts. `ChartOptions.Gauge.Target` is removed. Circle progress series use the same value type but require an empty target collection.
+
+`ConfigureGauge` owns the presentation shared by the gauge series. `Form` selects Arc, Needle or Linear. Linear gauges use `ChartOrientation.Horizontal` by default, with the minimum at the left; Vertical puts it at the bottom. Arc and Needle use `StartAngleDegrees` and `SweepAngleDegrees`, defaulting to 150 and 240 degrees. Zero degrees points right and positive angles turn clockwise; the sweep must be greater than zero and at most 360 degrees. Linear gauges ignore both angle settings.
+
+`TickCount` accepts a preferred ceiling of 2 through 100 generated ticks; crowded scales use fewer evenly spaced ticks. Null uses two radial ticks or five linear ticks. Linear and partial radial scales include both endpoints. A 360-degree radial sweep omits the maximum tick to avoid duplicating the minimum at the seam. A nonempty `TickLabels` collection replaces generated locations and text with authored `ChartAxisLabel` values. Assign an array or list; the setter retains a detached read-only snapshot in input order, while rendering uses distinct in-domain values in ascending numeric order. An empty collection restores generated ticks. Caption and semantic bands stay in these options.
+
+The declared reading bounds govern value, target and tick placement. Values and targets outside the scale retain their raw facts while their visible marks clamp to its endpoints. `WithValueFormat` and the value formatter apply to values, targets and generated numeric ticks. An authored tick label supplies its own text. See the [migration example](migration.md#gauge-readings-and-presentation) for moving a former chart-wide target into the reading.
+
 ## Grouped box plots and orientation
 
 `AddBoxPlot` accepts raw samples for one category or an enumerable of authored `ChartBoxPlot` summaries. Multiple box plot series use distinct category slots, including the body, median stroke and whisker caps. If the minimum painted footprint cannot fit, rendering throws an actionable `InvalidOperationException`: increase category-axis space (height for horizontal plots, width for vertical plots), reduce grouped series or use thinner strokes. Automatic value bounds in both orientations contain complete paint, including minimum-width quartile bodies; explicit value bounds stay exact and may clip paint. Point labels, colors, patterns and interaction keys index complete summaries. The default data label is the median; a custom point label takes precedence.
@@ -608,6 +622,10 @@ HTML financial tooltips expose Open, High, Low and Close rows, including zero pr
 ## Bubble size scale
 
 `ChartOptions.Bubble` owns one size domain for every bubble series, including series on the secondary Y axis and series with hidden glyphs. Automatic bounds use the minimum and maximum positive source sizes across those series; empty typed series contribute no extent. Equal source sizes therefore map to equal logical radii. Adding an observation outside the automatic domain changes that domain. Pin both the domain and radius endpoints when sizes must remain stable across additional series or viewport changes.
+
+Its getter-owned `SizeDimension` keeps the measurement's `Name`, `ValueFormat` and optional numeric key together. Configure it inside `ConfigureBubble`; the successful callback installs a detached copy. A null name uses `ChartLabels.Size`, and a null format uses the chart value format. Source size, Cartesian Y and independent color measurements retain separate names and formatting. Preparation captures each distinct size caption once; native labels, key captions and HTML readouts reuse it, including an explicitly empty formatter result. Raw positive sizes and observation identities remain unchanged.
+
+Set `SizeDimension.ShowLegend = true` to draw a numeric size key; the default is false. Chart/frame legend visibility remains the master switch. The key shares the categorical and color-key layout budget and uses the logical radii resolved for the final plot. It explains the existing radius mapping, not proportional painted areas. An oversized explicit key reports `cartesian.size-scale-overflow` and retains its complete facts instead of shrinking the authored marker radii.
 
 ```csharp
 chart.ConfigureBubble(bubble => {

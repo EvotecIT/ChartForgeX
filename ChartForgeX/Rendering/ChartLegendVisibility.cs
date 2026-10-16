@@ -10,6 +10,8 @@ internal static class ChartLegendVisibility {
         if (!chart.Options.HasExplicitLegend && chart.Series.Count > 0
             && chart.Series[0].Kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet) return false;
         colorScales ??= new ChartColorPresentationSet(chart);
+        if (chart.Options.Bubble.SizeDimension.ShowLegend && System.Linq.Enumerable.Any(chart.Series,
+            series => series.Kind == ChartSeriesKind.Bubble && series.AuthoredObservationCount > 0)) return true;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             if (series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble && series.ColorScale != null

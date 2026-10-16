@@ -243,8 +243,9 @@
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
   const sizeTooltipRows = (node) => {
-    const value = (node.dataset || {}).cfxSize;
-    return value === undefined || value === null || value === '' ? [] : [{ name: rowName(node, 'size', 'Size'), value }];
+    const data = node.dataset || {}, raw = data.cfxSize;
+    if (raw === undefined || raw === null || raw === '') return [];
+    return [{ name: rowName(node, 'size', 'Size'), value: capturedText(data, 'cfxFormattedSize', raw) }];
   };
   const dimensionTooltipRows = (node) => sizeTooltipRows(node).map((row) => ({ ...row, dimension: 'size' }))
     .concat(colorTooltipRows(node).map((row) => ({ ...row, dimension: 'color' })));
@@ -289,6 +290,11 @@
       value: numericFactText(data, part)
     }));
   };
+  const gaugeTargetTooltipRows = (node) => Array.from({ length: Number((node.dataset || {}).cfxGaugeTargetCount) || 0 }, (_, index) => {
+    const prefix = 'data-cfx-gauge-target-' + index + '-';
+    return { name: node.getAttribute(prefix + 'label') || rowName(node, 'target', 'Target'),
+      value: node.getAttribute(prefix + 'formatted-value') };
+  }).filter((row) => row.value !== null);
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -325,7 +331,8 @@
       push('End', capturedText(data, 'cfxFormattedEnd', data.cfxEnd));
     }
     sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
-    push('Target', data.cfxTarget);
+    rows.push(...gaugeTargetTooltipRows(node));
+    push(rowName(node, 'target', 'Target'), data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
     rows.push(...colorTooltipRows(node));

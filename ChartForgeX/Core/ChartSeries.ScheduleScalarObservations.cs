@@ -27,24 +27,31 @@ public sealed partial class ChartSeries {
     private static ChartGanttItem ValidateGanttItem(ChartGanttItem value) => new(value.Start, value.End, value.Progress, value.IsMilestone, value.IsVerticalMarker);
 
     private IReadOnlyList<ChartGaugeValue> _gaugeValues = Array.Empty<ChartGaugeValue>();
-    /// <summary>Gets the measured value and scale authored for this gauge or circle series. Empty means no data.</summary>
+    /// <summary>Gets the measured value, scale and gauge references authored for this gauge or circle series. Empty means no data.</summary>
     public IReadOnlyList<ChartGaugeValue> GaugeValues => _gaugeValues;
 
-    /// <summary>Replaces the single measured value or clears it with an empty sequence. Clears per-observation keys and overrides.</summary>
+    /// <summary>Replaces the complete measured reading, scale and references, or clears it with an empty sequence. Clears per-observation keys and overrides.</summary>
+    /// <remarks>Circular progress series require readings without target references.</remarks>
     public ChartSeries ReplaceGaugeValues(IEnumerable<ChartGaugeValue> values) {
         RequireObservationKind(ChartSeriesKind.Gauge, ChartSeriesKind.Circle);
         ReplaceObservations(ref _gaugeValues, SingleObservation(values), ValidateGaugeValue);
         return this;
     }
 
-    /// <summary>Updates the measured value and scale while preserving its explicit key and presentation overrides.</summary>
+    /// <summary>Updates the complete measured reading, scale and references while preserving its explicit key and presentation overrides.</summary>
+    /// <remarks>Omitting references clears the previous references. Circular progress series require readings without target references.</remarks>
     public ChartSeries UpdateGaugeValue(int index, ChartGaugeValue value) {
         RequireObservationKind(ChartSeriesKind.Gauge, ChartSeriesKind.Circle);
         UpdateObservation(ref _gaugeValues, index, value, ValidateGaugeValue);
         return this;
     }
 
-    private static ChartGaugeValue ValidateGaugeValue(ChartGaugeValue value) => new(value.Value, value.Minimum, value.Maximum);
+    private ChartGaugeValue ValidateGaugeValue(ChartGaugeValue value) {
+        var reading = new ChartGaugeValue(value.Value, value.Minimum, value.Maximum, value.Targets);
+        if (Kind == ChartSeriesKind.Circle && reading.Targets.Count != 0)
+            throw new InvalidOperationException("Circular progress readings do not support gauge target references.");
+        return reading;
+    }
 
     private IReadOnlyList<ChartBulletValue> _bulletValues = Array.Empty<ChartBulletValue>();
     /// <summary>Gets the measured value, target, scale and qualitative boundaries authored for this bullet series.</summary>

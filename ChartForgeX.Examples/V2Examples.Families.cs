@@ -63,6 +63,7 @@ public static partial class V2Examples {
                 if (kind == ChartSeriesKind.Sunburst) { variants.Add("authored-total"); variants.Add("compact-authored-total"); }
             }
             if (kind is ChartSeriesKind.TrendLine or ChartSeriesKind.Gauge) { variants.Add("precision"); variants.Add("compact-precision"); }
+            if (kind == ChartSeriesKind.Gauge) variants.AddRange(new[] { "vertical", "compact-vertical", "semicircle", "compact-semicircle", "full-circle", "compact-full-circle" });
             if (!curated) {
                 if (SparseFamilies.Contains(kind)) variants.Add("sparse");
                 if (OptionFamilies.Contains(kind) && !variants.Contains("options")) variants.Add("options");

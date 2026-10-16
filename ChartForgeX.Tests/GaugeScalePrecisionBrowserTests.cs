@@ -18,9 +18,10 @@ public sealed class GaugeScalePrecisionBrowserTests {
         Assert.True(File.Exists(path), "The existing Carlito fixture must be available.");
         var chart = Chart.Create().WithSize(width, height).WithPngFont(path)
             .WithTheme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito"), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
-            .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands").AddGauge("Readiness", 74)
+            .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands")
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) })))
             .ConfigureGauge(options => {
-                options.Form = ChartGaugeForm.Needle; options.Target = 90;
+                options.Form = ChartGaugeForm.Needle;
                 options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Danger));
                 options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning));
                 options.Bands.Add(new ChartGaugeBand(80, 100, ChartSeriesState.Quiet));
@@ -137,7 +138,9 @@ public sealed class GaugeScalePrecisionBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(width, height).WithLegend(false)
             .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
-            .WithTitle("Measured range").AddGauge("Tolerance", 1.003, 1.001, 1.005).ConfigureGauge(options => { options.Form = form; options.Target = 1.0025; });
+            .WithTitle("Measured range")
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance", new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) })))
+            .ConfigureGauge(options => options.Form = form);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var background = dark ? "#111827" : "#fff";
         var html = "<!doctype html><html><body style=\"margin:24px;background:" + background + ";color:" + (dark ? "#fff" : "#111827") + "\">SVG"

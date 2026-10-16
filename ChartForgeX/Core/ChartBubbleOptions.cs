@@ -12,6 +12,9 @@ public sealed class ChartBubbleOptions {
     private double _minimumRadius = 6;
     private double? _maximumRadius;
 
+    /// <summary>Gets independent name, number display and numeric key options for the shared source-size measurement.</summary>
+    public ChartSizeDimensionOptions SizeDimension { get; private set; } = new();
+
     /// <summary>Gets or sets the non-negative minimum logical radius in pixels. Default: six.</summary>
     public double MinimumRadius {
         get => _minimumRadius;
@@ -57,7 +60,11 @@ public sealed class ChartBubbleOptions {
     public ChartBubbleOptions UseAutomaticSizeDomain() { MinimumValue = null; MaximumValue = null; return this; }
 
     /// <summary>Copies the configured state for isolated chart configuration.</summary>
-    internal ChartBubbleOptions Clone() => (ChartBubbleOptions)MemberwiseClone();
+    internal ChartBubbleOptions Clone() {
+        var clone = (ChartBubbleOptions)MemberwiseClone();
+        clone.SizeDimension = SizeDimension.Clone();
+        return clone;
+    }
 
     internal void Validate() {
         if (MaximumRadius.HasValue && MaximumRadius.Value < MinimumRadius)
