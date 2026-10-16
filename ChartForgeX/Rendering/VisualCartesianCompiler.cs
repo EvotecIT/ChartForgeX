@@ -122,12 +122,22 @@ internal static partial class VisualCartesianCompiler {
             throw new ArgumentOutOfRangeException("viewport", "The X viewport cannot project the source coordinates into finite logical units.");
         var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);
         DrawPlotRegionFills(builder, plotRegions, colors);
-        using (builder.PushClip(viewport)) {
-            if (horizontal) DrawHorizontalAxes(chart, context, builder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
-            else DrawAxes(chart, context, builder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
+        var axisBuilder = chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)
+            ? new VisualSceneBuilder(builder.Size, context.Font) : builder;
+        using (axisBuilder.PushClip(viewport)) {
+            if (horizontal) DrawHorizontalAxes(chart, context, axisBuilder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
+            else DrawAxes(chart, context, axisBuilder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
         }
         var obstacles = new List<LabelObstacle>();
-        var annotationBounds = hasSecondary ? plot : new ChartRect(plot.Left, plot.Top, Math.Max(plot.Width, viewport.Right - plot.Left), plot.Height);
+        if (!ReferenceEquals(axisBuilder, builder)) {
+            var axes = axisBuilder.Build();
+            builder.Append(axes);
+            CaptureAnnotationAxisText(axes, obstacles);
+        }
+        // The owned viewport starts after the measured frame and legend. Its upper
+        // title strip can hold a complete guide caption without moving either axis.
+        var annotationBounds = new ChartRect(plot.Left, viewport.Top,
+            hasSecondary ? plot.Width : Math.Max(plot.Width, viewport.Right - plot.Left), plot.Bottom - viewport.Top);
         // Caption placement needs the actual marks before the background band layer is
         // emitted. Collect those marks once; ordinary charts keep the direct builder path.
         var seriesBuilder = chart.Annotations.Any(annotation => annotation.EndValue.HasValue && annotation.ShowLabel && annotation.Label.Length > 0)

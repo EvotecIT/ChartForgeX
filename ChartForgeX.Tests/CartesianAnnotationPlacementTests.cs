@@ -3,6 +3,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -54,28 +55,94 @@ public sealed class CartesianAnnotationPlacementTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void NarrowZoomedThresholdKeepsItsCompleteShortCaptionClearOfBothLines(VisualThemeMode mode) {
-        var start = new DateTime(2026, 9, 13, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithSize(360, 260).WithTransparentBackground().WithHeader(false)
-            .WithLegend(true).WithPadding(64, 14, 20, 74).WithThemeMode(mode)
-            .WithXAxisTimeScale(TimeZoneInfo.Utc, true, "UTC").WithYAxis("Score").WithYAxisBounds(60, 90)
-            .AddLine("Security", Enumerable.Range(0, 30).Select(day => new ChartPoint(start.AddDays(day),
-                72 + 8 * Math.Sin(day / 5.0 + 1) - (day > 12 && day < 24 ? 10 * Math.Sin((day - 12) / 12.0 * Math.PI) : 0))))
-            .AddLine("Health", Enumerable.Range(0, 30).Select(day => new ChartPoint(start.AddDays(day), 80 + 5 * Math.Cos(day / 5.0))))
-            .AddHorizontalLine(80, "Target 80");
+    [InlineData(360, 12, VisualThemeMode.Light)]
+    [InlineData(360, 12, VisualThemeMode.Dark)]
+    [InlineData(320, 12, VisualThemeMode.Light)]
+    [InlineData(320, 12, VisualThemeMode.Dark)]
+    [InlineData(360, 16, VisualThemeMode.Light)]
+    [InlineData(360, 16, VisualThemeMode.Dark)]
+    public void NarrowZoomedThresholdKeepsItsCompleteShortCaptionClearOfBothLines(int width, int axisSize, VisualThemeMode mode) {
+        var chart = NarrowThreshold(width, mode);
+        if (axisSize != 12) chart.WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: axisSize)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        ScatterBubbleColorRenderingTests.Capture(prepared, "threshold-narrow-zoom-" + mode);
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"threshold-narrow-zoom-{width}-{axisSize}-{mode}");
         var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "annotation-label");
         Assert.Equal("Target 80", Assert.Single(text.Text.Lines).Text);
         var plate = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "annotation-label-backplate");
-        Assert.InRange(plate.Bounds.Left, 0, 360); Assert.InRange(plate.Bounds.Right, 0, 360);
+        Assert.Equal(axisSize, text.Text.Size);
+        Assert.InRange(plate.Bounds.Left, 0, width); Assert.InRange(plate.Bounds.Right, 0, width);
         Assert.InRange(plate.Bounds.Top, 0, 260); Assert.InRange(plate.Bounds.Bottom, 0, 260);
         foreach (var line in prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "line"))
             Assert.False(new LabelMarkShape(VisualSceneGeometry.Flatten(line, 1), false, line.StrokeWidth).Intersects(plate.Bounds));
+        foreach (var axisText in prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role?.StartsWith("axis-", StringComparison.Ordinal) == true || node.Role == "legend-label"))
+            Assert.False(Overlaps(plate.Bounds, TextBounds(axisText)));
+        var guide = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "annotation-line").Commands[0].Y;
+        Assert.True(plate.Bounds.Bottom <= guide - 2 || plate.Bounds.Top >= guide + 2);
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.annotation-label-overflow");
         Assert.Contains(">Target 80</text>", prepared.ToSvg(), StringComparison.Ordinal);
+        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    [Theory]
+    [InlineData(false, VisualThemeMode.Light, false)]
+    [InlineData(false, VisualThemeMode.Dark, false)]
+    [InlineData(true, VisualThemeMode.Light, false)]
+    [InlineData(true, VisualThemeMode.Dark, false)]
+    [InlineData(false, VisualThemeMode.Light, true)]
+    [InlineData(false, VisualThemeMode.Dark, true)]
+    public void WideMeasuredThresholdUsesOnlyUnoccupiedTitleSpaceAndKeepsOmittedSourceFacts(bool occupiedTitle, VisualThemeMode mode, bool header) {
+        const string family = "CFX Threshold Wide Face";
+        var glyphs = Enumerable.Range(32, 95).ToDictionary(value => value, _ => OpenTypeTestFonts.H);
+        FontRegistry.Register(family, OpenTypeTestFonts.NameKeyed(extraGlyphs: glyphs));
+        var chart = NarrowThreshold(360, mode).WithFontFamily(family);
+        if (occupiedTitle) chart.WithYAxis("Coverage and availability scores");
+        if (header) chart.WithSize(360, 320).WithHeader(true).WithTitle("Coverage").WithSubtitle("Service checks");
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"threshold-wide-face-{occupiedTitle}-{header}-{mode}");
+        var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
+        var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "annotation-label").ToArray();
+        if (occupiedTitle) {
+            Assert.Empty(captions);
+            Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.annotation-label-overflow");
+        } else {
+            var caption = Assert.Single(captions);
+            Assert.Equal("Target 80", Assert.Single(caption.Text.Lines).Text);
+            Assert.Equal(12, caption.Text.Size);
+            var plate = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "annotation-label-backplate");
+            Assert.True(plate.Bounds.Bottom <= plot.Top);
+            Assert.Contains(prepared.Scene.Nodes, node => node.Role == "annotation-label-leader");
+            foreach (var text in prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role is "axis-y-title" or "legend-label" or "frame-heading" or "frame-heading-continuation"))
+                Assert.False(Overlaps(plate.Bounds, TextBounds(text)));
+            Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.annotation-label-overflow");
+        }
+        var source = Assert.Single(XDocument.Parse(prepared.ToSvg()).Descendants(), node => (string?)node.Attribute("data-cfx-role") == "annotation");
+        Assert.Equal("Target 80", (string?)source.Attribute("data-cfx-label"));
+        Assert.Contains("Target 80", Assert.Single(prepared.Regions, region => region.Role == "annotation").Label);
+        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MultilineReferenceCaptionCanShortenIntoItsOriginalGuideCandidates(bool band) {
+        const string source = "Long label\nWith words\nAcross lines";
+        var chart = Chart.Create().WithSize(320, 80).WithPadding(0, 0, 0, 0)
+            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithYAxisBounds(0, 10);
+        if (band) chart.AddHorizontalBand(5, 5.5, source);
+        else chart.AddHorizontalLine(5, source);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, "threshold-multiline-shortened-" + band);
+        var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "annotation-label");
+        var displayed = Assert.Single(caption.Text.Lines).Text;
+        Assert.StartsWith("Long label", displayed, StringComparison.Ordinal);
+        Assert.EndsWith("…", displayed, StringComparison.Ordinal);
+        Assert.Equal(12, caption.Text.Size);
+        var plate = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "annotation-label-backplate");
+        Assert.InRange(plate.Bounds.Left, 0, 320); Assert.InRange(plate.Bounds.Right, 0, 320);
+        Assert.InRange(plate.Bounds.Top, 0, 80); Assert.InRange(plate.Bounds.Bottom, 0, 80);
+        Assert.Contains(source, Assert.Single(prepared.Regions, region => region.Role == "annotation").Label);
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.annotation-label-overflow");
+        Assert.Contains(displayed, prepared.ToSvg(), StringComparison.Ordinal);
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 
@@ -157,6 +224,17 @@ public sealed class CartesianAnnotationPlacementTests {
         var bars = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bar").ToArray();
         Assert.All(plates, plate => Assert.All(bars, bar => Assert.False(Overlaps(plate.Bounds, bar.Bounds))));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.annotation-label-overflow");
+    }
+
+    private static Chart NarrowThreshold(int width, VisualThemeMode mode) {
+        var start = new DateTime(2026, 9, 13, 0, 0, 0, DateTimeKind.Utc);
+        return Chart.Create().WithSize(width, 260).WithTransparentBackground().WithHeader(false)
+            .WithLegend(true).WithPadding(64, 14, 20, 74).WithThemeMode(mode)
+            .WithXAxisTimeScale(TimeZoneInfo.Utc, true, "UTC").WithYAxis("Score").WithYAxisBounds(60, 90)
+            .AddLine("Security", Enumerable.Range(0, 30).Select(day => new ChartPoint(start.AddDays(day),
+                72 + 8 * Math.Sin(day / 5.0 + 1) - (day > 12 && day < 24 ? 10 * Math.Sin((day - 12) / 12.0 * Math.PI) : 0))))
+            .AddLine("Health", Enumerable.Range(0, 30).Select(day => new ChartPoint(start.AddDays(day), 80 + 5 * Math.Cos(day / 5.0))))
+            .AddHorizontalLine(80, "Target 80");
     }
 
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();

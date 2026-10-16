@@ -63,10 +63,22 @@ internal static class VisualAnnotationCompiler {
                     metrics.Width + labelPadding * 2, metrics.Height + labelPadding * 2);
                 var request = new LabelPlacementRequest(annotation.Label, anchor, style, candidates) {
                     Padding = labelPadding, MeasuredSize = metrics,
-                    Fallback = annotation.Label.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length <= 2
-                        ? LabelFallbackRule.Drop : LabelFallbackRule.EllipsisThenDrop
+                    Fallback = LabelFallbackRule.Drop
                 };
-                var label = new LabelPlacementService().Place(new[] { request }, available, obstacles, 2, builder.MeasureText)[0];
+                var placement = new LabelPlacementService();
+                var preferred = available.Top < plot.Top
+                    ? new ChartRect(available.Left, plot.Top, available.Width, available.Bottom - plot.Top) : available;
+                var label = placement.Place(new[] { request }, preferred, obstacles, 2, builder.MeasureText)[0];
+                if (label.IsDropped && available.Top < preferred.Top) {
+                    var titleStrip = new ChartRect(available.Left, available.Top, available.Width, preferred.Top - available.Top);
+                    label = placement.Place(new[] { request }, titleStrip, obstacles, 2, builder.MeasureText)[0];
+                }
+                // Candidate alignments must remain available when a multiline caption
+                // shortens to fewer rows. Its original height cannot prefilter them.
+                if (label.IsDropped && annotation.Label.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length > 2) {
+                    request.Fallback = LabelFallbackRule.EllipsisThenDrop;
+                    label = placement.Place(new[] { request }, preferred, obstacles, 2, builder.MeasureText)[0];
+                }
                 if (label.IsDropped || label.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic(overflowCode, "An annotation label was shortened or omitted to avoid marks and other labels within the plot."));
                 if (!label.IsDropped) {
                     obstacles.Add(new LabelObstacle(id + "-label", label.Bounds));
@@ -118,6 +130,26 @@ internal static class VisualAnnotationCompiler {
             if (available.Right > plot.Right + spacing + width) {
                 var outside = plot.Right + spacing - anchor.X;
                 candidates.Add(new LabelCandidate(outside, 0, 0, .5));
+            }
+            // A shallow plot can have room for the complete caption with a smaller
+            // guide gap than the preferred spacing. Search its measured upper and
+            // lower edges before treating those unused pixels as overflow.
+            foreach (var top in new[] { plot.Top, plot.Bottom - height }) {
+                if (!(top + height <= anchor.Y - 2 || top >= anchor.Y + 2)) continue;
+                for (var step = 0; step <= steps; step++) {
+                    var offset = steps == 0 ? 0 : travel * step / steps;
+                    candidates.Add(new LabelCandidate(offset, top - anchor.Y));
+                    candidates.Add(new LabelCandidate(travel - offset, top - anchor.Y));
+                }
+            }
+            // A complete caption can use unused space beside a painted axis title.
+            // The caller supplies the captured axis text as collision obstacles.
+            if (available.Top < plot.Top && available.Top + height <= anchor.Y - 2) {
+                for (var step = 0; step <= steps; step++) {
+                    var offset = steps == 0 ? 0 : travel * step / steps;
+                    candidates.Add(new LabelCandidate(offset, available.Top - anchor.Y));
+                    candidates.Add(new LabelCandidate(travel - offset, available.Top - anchor.Y));
+                }
             }
             return candidates;
         }
