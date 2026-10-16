@@ -32,6 +32,20 @@ internal static partial class TopologyRenderPrimitives {
         return new ChartPoint(centerX + dx * scale, centerY + dy * scale);
     }
 
+    // Facing automatic ports require enough free space for both endpoint gaps.
+    // Keep explicit port choices authoritative, including authored external doglegs.
+    private static bool OrthogonalRouteIsHorizontal(TopologyNode source, TopologyNode target, TopologyEdgePort sourcePort, TopologyEdgePort targetPort) {
+        var a = TopologyNodeShapeGeometry.RoutingCenter(source);
+        var b = TopologyNodeShapeGeometry.RoutingCenter(target);
+        var horizontal = ShouldRouteHorizontally(sourcePort, targetPort, Math.Abs(b.X - a.X) >= Math.Abs(b.Y - a.Y));
+        if (sourcePort != TopologyEdgePort.Auto || targetPort != TopologyEdgePort.Auto) return horizontal;
+        var x = Math.Abs(b.X - a.X) - (source.Width + target.Width) / 2;
+        var y = Math.Abs(b.Y - a.Y) - (source.Height + target.Height) / 2;
+        if (horizontal && x <= EdgeEndpointGap * 2 && y > EdgeEndpointGap * 2) return false;
+        if (!horizontal && y <= EdgeEndpointGap * 2 && x > EdgeEndpointGap * 2) return true;
+        return horizontal;
+    }
+
     private static bool ShouldRouteHorizontally(TopologyEdgePort sourcePort, TopologyEdgePort targetPort, bool fallback) {
         var hasHorizontalPort = sourcePort is TopologyEdgePort.Left or TopologyEdgePort.Right || targetPort is TopologyEdgePort.Left or TopologyEdgePort.Right;
         var hasVerticalPort = sourcePort is TopologyEdgePort.Top or TopologyEdgePort.Bottom || targetPort is TopologyEdgePort.Top or TopologyEdgePort.Bottom;

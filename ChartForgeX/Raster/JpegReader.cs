@@ -40,6 +40,9 @@ internal static partial class JpegReader {
             if (marker == 0xD9) break;
             if (marker == 0xDA) {
                 var scan = ParseScanHeader(data, ref offset, state);
+                scan.DcTables = (JpegHuffmanTable?[])state.DcTables.Clone();
+                scan.AcTables = (JpegHuffmanTable?[])state.AcTables.Clone();
+                scan.RestartInterval = state.RestartInterval;
                 scan.DataOffset = offset;
                 scan.DataEnd = FindEntropyEnd(data, offset);
                 state.Scans.Add(scan);
@@ -241,7 +244,10 @@ internal static partial class JpegReader {
     }
 
     private static void DecodeSequentialScans(byte[] data, JpegState state) {
-        foreach (var scan in state.Scans) DecodeSequentialScan(data, state, scan);
+        foreach (var scan in state.Scans) {
+            scan.RestoreTables(state);
+            DecodeSequentialScan(data, state, scan);
+        }
     }
 
     private static void DecodeSequentialScan(byte[] data, JpegState state, JpegScan scan) {
@@ -343,6 +349,7 @@ internal static partial class JpegReader {
     private static void DecodeProgressiveScans(byte[] data, JpegState state) {
         var frame = state.Frame!;
         foreach (var scan in state.Scans) {
+            scan.RestoreTables(state);
             if (scan.SpectralStart == 0 && scan.SpectralEnd == 0) {
                 if (scan.SuccessiveHigh == 0) DecodeProgressiveDcFirst(data, state, scan);
                 else DecodeProgressiveDcRefine(data, state, scan);

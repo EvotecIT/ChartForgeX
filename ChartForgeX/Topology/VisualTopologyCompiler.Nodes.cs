@@ -64,6 +64,9 @@ internal sealed partial class VisualTopologyCompiler {
                 if (_options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)) {
                     var caption = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
                     var left = hasGlyph && !caption ? mode == TopologyNodeDisplayMode.Pill ? 34 : 44 : 10;
+                    // A label-only card's heading sits above its glyph, so it can use the full heading row.
+                    if (mode == TopologyNodeDisplayMode.Card && hasGlyph && node.Details.Count == 0
+                        && string.IsNullOrWhiteSpace(node.Subtitle) && string.IsNullOrWhiteSpace(node.Badge)) left = 10;
                     var textInset = mode == TopologyNodeDisplayMode.Pill && !string.IsNullOrWhiteSpace(node.Subtitle) ? 4 : 6;
                     var textBounds = caption ? Bounds(node.X - 17, node.Y + node.Height + 5, node.Width + 34, (_options.MaxNodeLabelLines + 1) * 18) : Bounds(node.X + left, node.Y + textInset, Math.Max(0, node.Width - left - 12), Math.Max(0, node.Height - textInset * 2));
                     if (mode == TopologyNodeDisplayMode.Tile) BuildTileCaption(node, accent, active);

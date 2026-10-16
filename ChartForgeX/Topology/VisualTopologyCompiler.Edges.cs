@@ -167,7 +167,7 @@ internal sealed partial class VisualTopologyCompiler {
             ChartRect? measured = null;
             for (var i = 0; i < labels.Length; i++) {
                 var textBounds = Text(labels[i], new ChartRect(bounds.X + 4 * _scale, bounds.Y + i * height, Math.Max(0, bounds.Width - 8 * _scale), height),
-                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), LabelColor(i == 0 ? _colors.Foreground : _colors.MutedForeground), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true,
+                    _context.Theme.Typography.DataLabelSize * (i == 0 ? 1 : .85), LabelColor(i == 0 ? _colors.Foreground : _colors.MutedForeground), i == 0 ? 600 : 400, "topology-edge-label-text", centered: true, verticallyCentered: true,
                     paint: i == 0 ? ForegroundPaint(LabelColor(_colors.Foreground), EdgeLabelOpacity(edge)) : MutedPaint(LabelColor(_colors.MutedForeground), EdgeLabelOpacity(edge)), opacity: EdgeLabelOpacity(edge));
                 if (!textBounds.HasValue) continue;
                 if (!measured.HasValue) measured = textBounds;

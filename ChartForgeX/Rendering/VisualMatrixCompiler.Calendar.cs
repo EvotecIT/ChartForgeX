@@ -71,7 +71,7 @@ internal static partial class VisualMatrixCompiler {
                     var weekday = (DayOfWeek)(((int)model.FirstDay + row) % 7);
                     if (grid.Cell + grid.Gap < lineHeight && weekday != DayOfWeek.Monday && weekday != DayOfWeek.Wednesday && weekday != DayOfWeek.Friday) continue;
                     VisualStateSceneTools.Text(builder, model.DayName(row), new ChartRect(viewport.Left, grid.Y(row) - Math.Max(0, (lineHeight - grid.Cell) / 2),
-                        Math.Max(0, area.Left - viewport.Left - gap), Math.Max(lineHeight, grid.Cell)), style, "calendar-weekday", "calendar-weekday-" + row, TextAlignment.Right);
+                        Math.Max(0, grid.X(0) - viewport.Left - gap), Math.Max(lineHeight, grid.Cell)), style, "calendar-weekday", "calendar-weekday-" + row, TextAlignment.Right);
                 }
             }
             if (axes && chart.Options.XAxis.Visible)

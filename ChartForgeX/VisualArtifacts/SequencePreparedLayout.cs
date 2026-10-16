@@ -65,7 +65,7 @@ internal sealed partial class SequencePreparedLayout {
                 layout.Blocks.Add(new Item { Id = Annotation(semantics, VisualArtifactInterchangeAnnotationRole.SequenceBlock, block.index), Index = block.index, Text = text, Bounds = bounds, Y = header });
                 y += header + (block.value.IsEmpty ? gap : 0);
             }
-            foreach (var branch in model.Branches.Select((value, index) => new { value, index }).Where(b => Step(b.value.StartStepIndex) == step).OrderBy(b => b.value.Depth)) {
+            foreach (var branch in model.Branches.Select((value, index) => new { value, index }).Where(b => Step(b.value.StartStepIndex) == step && b.value.Kind != "Primary").OrderBy(b => b.value.Depth)) {
                 var bounds = new ChartRect(plot.X + gap + branch.value.Depth * 10 + 8, y, plot.Width - gap * 2 - branch.value.Depth * 20 - 16, 0);
                 string text = Wrap(branch.value.Kind.ToLowerInvariant() + (branch.value.Text.Length == 0 ? "" : "  [" + branch.value.Text + "]"), bounds.Width - 16, builder, size);
                 double header = builder.MeasureText(text, size).Height + 12;

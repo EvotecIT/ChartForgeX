@@ -17,12 +17,12 @@ public sealed partial class SvgFactBlockRenderer {
     /// <summary>Renders factual SVG with a caller-provided embedding identity.</summary>
     public string Render(IVisualBlock block, string idScope) {
         VisualFactBlockRendering.Validate(block);
-        return RenderOwned(block, idScope, RenderCore);
+        return RenderOwned(block, idScope, RenderCore, layoutLabels: block is not ChartList && block is not MetricCard);
     }
     internal ChartLabelScene RenderLabelScene(IVisualBlock block) {
         var font = new Typography.FontSpec { Family = block.Options.ResolvedTheme.FontFamily };
         using var measurement = ChartLabelScene.OpenFontScope(font);
-        return ChartLabelScene.Create(RenderCore(block, BuildProvisionalId(block, string.Empty)), font);
+        return ChartLabelScene.Create(RenderCore(block, BuildProvisionalId(block, string.Empty)), font, place: block is not ChartList && block is not MetricCard);
     }
     private static string RenderCore(IVisualBlock block, string id) => RenderSurface(block, id, writer => {
         if (block is ChartTable table) RenderTable(writer, table, id);
@@ -45,8 +45,9 @@ public sealed partial class SvgFactBlockRenderer {
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, table, ref y, content.X, content.Width);
-        var headerHeight = table.Dense ? 26.0 : 32.0;
-        var rowHeight = table.Dense ? 24.0 : 31.0;
+        var bodyScale = theme.DataLabelFontSize / 12;
+        var headerHeight = (table.Dense ? 26.0 : 32.0) * Math.Max(1, bodyScale);
+        var rowHeight = (table.Dense ? 24.0 : 31.0) * bodyScale;
         var widths = ColumnWidths(table, content.Width);
         if (table.ShowHeader) {
             writer.StartElement("rect").Attribute("data-cfx-role", "table-header").Attribute("class", ChartVisualPrimitives.SvgGuideStrokeClass).Attribute("x", content.X).Attribute("y", y).Attribute("width", content.Width).Attribute("height", headerHeight).Attribute("rx", Math.Min(6, theme.PlotCornerRadius)).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.ToCss()).EndEmptyElement().Line();
@@ -79,7 +80,7 @@ public sealed partial class SvgFactBlockRenderer {
                 var cellWidth = widths[i] - (textX - x) - 7;
                 if (cell.MicroVisualKind != ChartTableCellMicroVisualKind.None) RenderTableCellMicroVisual(writer, table, cell, textX, y + 4, cellWidth, rowHeight - 8, i);
                 else if (cell.BadgeText.Length > 0) RenderVisualBadge(writer, table, cell, textX, y + 4, cellWidth, rowHeight - 8);
-                else WriteText(writer, cell.Text, textX, y + rowHeight * 0.66, cellWidth, cell.Alignment ?? table.Columns[i].Alignment, cell.Foreground ?? row.Foreground ?? theme.Text, theme.FontFamily, table.Dense ? 10.5 : 11.5, "400");
+                else WriteText(writer, cell.Text, textX, y + rowHeight * 0.66, cellWidth, cell.Alignment ?? table.Columns[i].Alignment, cell.Foreground ?? row.Foreground ?? theme.Text, theme.FontFamily, (table.Dense ? 10.5 : 11.5) * bodyScale, "400");
                 x += widths[i];
             }
 
@@ -93,16 +94,17 @@ public sealed partial class SvgFactBlockRenderer {
         var content = VisualBlockRendering.ContentRect(options);
         var y = content.Y;
         RenderBlockHeading(writer, list, ref y, content.X, content.Width);
-        var rowHeight = list.Dense ? 25.0 : 33.0;
+        var bodyScale = theme.DataLabelFontSize / 12;
+        var rowHeight = (list.Dense ? 25.0 : 33.0) * bodyScale;
         var markerWidth = list.Marker == VisualListMarker.None ? 0 : 24;
         var maxRows = Math.Max(0, (int)Math.Floor((options.Size.Height - options.Padding.Bottom - y) / rowHeight));
         for (var i = 0; i < list.Items.Count && i < maxRows; i++) {
             var item = list.Items[i];
             var centerY = y + rowHeight / 2;
             WriteMarker(writer, list, item, i, content.X + 8, centerY);
-            var valueWidth = string.IsNullOrEmpty(item.Value) ? 0 : Math.Min(content.Width * 0.36, VisualBlockRendering.EstimateTextWidth(item.Value!, 11.5) + 10);
-            WriteText(writer, item.Text, content.X + markerWidth, y + rowHeight * 0.66, content.Width - markerWidth - valueWidth - 6, TextAlignment.Left, theme.Text, theme.FontFamily, list.Dense ? 11 : 12.5, "500");
-            if (!string.IsNullOrEmpty(item.Value)) WriteText(writer, item.Value!, content.X + content.Width - valueWidth, y + rowHeight * 0.66, valueWidth, TextAlignment.Right, theme.MutedText, theme.FontFamily, list.Dense ? 10.5 : 11.5, "600");
+            var valueWidth = string.IsNullOrEmpty(item.Value) ? 0 : Math.Min(content.Width * 0.36, VisualBlockRendering.EstimateTextWidth(item.Value!, 11.5 * bodyScale) + 10);
+            WriteText(writer, item.Text, content.X + markerWidth, y + rowHeight * 0.66, content.Width - markerWidth - valueWidth - 6, TextAlignment.Left, theme.Text, theme.FontFamily, (list.Dense ? 11 : 12.5) * bodyScale, "500");
+            if (!string.IsNullOrEmpty(item.Value)) WriteText(writer, item.Value!, content.X + content.Width - valueWidth, y + rowHeight * 0.66, valueWidth, TextAlignment.Right, theme.MutedText, theme.FontFamily, (list.Dense ? 10.5 : 11.5) * bodyScale, "600");
             y += rowHeight;
         }
     }
@@ -111,6 +113,10 @@ public sealed partial class SvgFactBlockRenderer {
         var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
+        if (card.Status != VisualStatus.None) {
+            var left = Math.Max(content.X, ChartVisualPrimitives.MetricStatusBarWidth + 5);
+            content = new ChartRect(left, content.Y, Math.Max(1, content.Right - left), content.Height);
+        }
         var detailBottom = options.Size.Height - options.Padding.Bottom;
         var hasMicroVisual = card.MiniBars.Count > 0 || card.SparklineCount > 0;
         var heroMicroVisual = hasMicroVisual && card.MicroVisualPlacement == MetricCardMicroVisualPlacement.Hero;
@@ -118,6 +124,7 @@ public sealed partial class SvgFactBlockRenderer {
         var labelX = content.X;
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
+        var badgeBottom = content.Y;
         if (card.Status != VisualStatus.None) {
             var barInset = options.ShowCard ? ChartVisualPrimitives.CardInnerHighlightInset : 0;
             writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", barInset).Attribute("y", barInset).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", Math.Max(1, options.Size.Height - barInset * 2)).Attribute("fill", statusColor.ToCss());
@@ -131,6 +138,8 @@ public sealed partial class SvgFactBlockRenderer {
             var leftBadge = card.BadgePlacement == MetricCardBadgePlacement.TopLeft;
             var cx = leftBadge ? content.X + badgeRadius : options.Size.Width - options.Padding.Right - badgeRadius;
             var cy = options.Padding.Top + badgeRadius;
+            badgeBottom = cy + badgeRadius + 8;
+            if (!leftBadge) labelWidth = Math.Max(1, cx - badgeRadius - 10 - labelX);
             if (leftBadge) {
                 labelX = cx + badgeRadius + 12;
                 labelWidth = Math.Max(1, content.X + content.Width - labelX);
@@ -139,7 +148,7 @@ public sealed partial class SvgFactBlockRenderer {
 
             var symbolMaxWidth = badgeRadius * 1.62;
             var symbolSize = VisualBlockRendering.FitFontSize(card.Symbol, symbolMaxWidth, Math.Max(10, badgeRadius * 0.46), 7.5);
-            var symbolColor = ChartColorMath.TextOnBackground(badgeColor);
+            var symbolColor = theme.Text;
             writer.StartElement("circle").Attribute("data-cfx-role", "metric-symbol-badge").Attribute("data-cfx-placement", leftBadge ? "top-left" : "top-right").Attribute("cx", cx).Attribute("cy", cy).Attribute("r", badgeRadius).Attribute("fill", badgeColor.WithAlpha(48).ToCss()).Attribute("stroke", badgeColor.ToCss()).EndEmptyElement().Line();
             if (card.Icon != VisualIcon.None) WriteIcon(writer, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
             else writer.StartElement("text").Attribute("data-cfx-role", "metric-symbol").Attribute("x", cx).Attribute("y", cy).Attribute("text-anchor", "middle").Attribute("dominant-baseline", "central").Attribute("alignment-baseline", "central").Attribute("fill", symbolColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", symbolSize).Attribute("font-weight", "850").Text(VisualBlockRendering.FitText(card.Symbol, symbolSize, symbolMaxWidth)).EndElement().Line();
@@ -158,6 +167,8 @@ public sealed partial class SvgFactBlockRenderer {
         else RenderMetricValueText(writer, card, content.X, content.Y + labelSize + valueSize + 14 + valueYOffset, valueSize, valueWidth, theme.Text, theme.MutedText);
         var microX = heroMicroVisual ? content.X + 24 : content.X + content.Width - microWidth;
         var microY = heroMicroVisual ? content.Y + Math.Max(66, options.Size.Height * 0.36) : content.Y + labelSize + Math.Max(20, valueSize * 0.52) + valueYOffset;
+        if (hasMicroVisual && !heroMicroVisual && card.BadgePlacement == MetricCardBadgePlacement.TopRight
+            && (card.Icon != VisualIcon.None || card.Symbol.Length > 0)) microY = Math.Max(microY, badgeBottom);
         if (heroMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset) {
             var surfaceX = content.X;
             var surfaceY = microY - 18;

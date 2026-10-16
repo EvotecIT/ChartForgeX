@@ -223,7 +223,10 @@ internal static partial class VisualCartesianCompiler {
         else {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
             candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, .5, positive ? 1 : 0));
-            if (bar) {
+            if (bar && placement == ChartDataLabelPlacement.Auto) {
+                // Keep a bar caption centered on its own mark before trying sideways fallbacks.
+                candidates.Add(new LabelCandidate(mark.Left + mark.Width / 2 - anchor.X, mark.Top + mark.Height / 2 - anchor.Y, .5, .5));
+            } else if (bar) {
                 candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 0, positive ? 1 : 0));
                 candidates.Add(new LabelCandidate(0, positive ? -spacing : spacing, 1, positive ? 1 : 0));
             }

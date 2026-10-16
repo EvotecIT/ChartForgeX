@@ -37,7 +37,7 @@ internal sealed partial class ChartLabelScene {
         if (place) Place();
     }
 
-    internal static ChartLabelScene Create(string svg, FontSpec font) => new(SvgMarkupParser.Parse(svg), font);
+    internal static ChartLabelScene Create(string svg, FontSpec font, bool place = true) => new(SvgMarkupParser.Parse(svg), font, place);
     internal string ToSvg() => _document.ToString();
     internal ChartRect PlotBounds {
         get {

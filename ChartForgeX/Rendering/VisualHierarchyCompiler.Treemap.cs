@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualHierarchyCompiler {
     private static void Treemap(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, ChartHierarchySurface surface) {
         var series = chart.Series[0]; var index = series.Relationships!; var options = chart.Options.Treemap;
-        var showLabels = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
+        var showLabels = series.ShowDataLabels ?? chart.Options.DataLabelVisibility ?? true;
         var areas = HierarchyScaleLayout(chart, context, builder, plot, surface);
         var layout = ChartTreemapLayout.Compute(series, areas.Content, options, item => {
             if (!showLabels) return 0;

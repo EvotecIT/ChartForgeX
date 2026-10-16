@@ -11,6 +11,7 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--consumer-rendering-only")) { ConsumerRenderingExamples.Write(output); return true; }
         if (HasArg(args, "--story-appearance-only")) {
             StoryAppearanceExamples.Write(output);
             Console.WriteLine("Generated desktop story examples in: " + output);

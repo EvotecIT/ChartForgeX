@@ -236,8 +236,11 @@ public sealed partial class ChartOptions {
 
     /// <summary>
     /// Gets or sets chart-level data-label visibility. Series without an explicit override use this setting.
+    /// When unset, ordinary chart values are hidden and treemap captions are visible.
     /// </summary>
-    public bool ShowDataLabels { get; set; }
+    public bool ShowDataLabels { get => _showDataLabels ?? false; set => _showDataLabels = value; }
+    private bool? _showDataLabels;
+    internal bool? DataLabelVisibility => _showDataLabels;
 
     /// <summary>
     /// Gets or sets the optional Gantt current-date marker as an OLE Automation date or numeric schedule value.

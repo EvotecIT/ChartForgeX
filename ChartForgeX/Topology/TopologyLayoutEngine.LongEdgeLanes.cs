@@ -119,7 +119,6 @@ internal static partial class TopologyLayoutEngine {
                 // A corridor wholly beside an endpoint leaves or enters through that endpoint's side, so it does not
                 // share the rank-facing stub with the endpoint's direct neighbours.
                 var lowSide = Beside(low, first, horizontal);
-                var highSide = Beside(high, last, horizontal);
                 var points = new List<ChartPoint>();
                 if (lowSide) AddDistinct(points, At(first, Main(low, horizontal)));
                 else {
@@ -132,18 +131,17 @@ internal static partial class TopologyLayoutEngine {
                     AddDistinct(points, At(lane.Centers[rank + 1], Bus(rank + 1)));
                 }
 
-                if (highSide) AddDistinct(points, At(last, Main(high, horizontal)));
-                else {
-                    AddDistinct(points, At(last, Bus(lane.HighRank)));
-                    AddDistinct(points, At(Cross(high, horizontal), Bus(lane.HighRank)));
-                }
+                // Rejoin the final rank corridor before the target. A side entry can leave a
+                // rank-skipping route under the node, where its arrow is easy to miss after fitting.
+                AddDistinct(points, At(last, Bus(lane.HighRank)));
+                AddDistinct(points, At(Cross(high, horizontal), Bus(lane.HighRank)));
 
                 if (lane.Reversed) points.Reverse();
                 var edge = lane.Edge;
                 edge.Waypoints.Clear();
                 edge.Waypoints.AddRange(points);
                 var lowPort = lowSide ? SidePort(first < Cross(low, horizontal), horizontal) : horizontal ? TopologyEdgePort.Right : TopologyEdgePort.Bottom;
-                var highPort = highSide ? SidePort(last < Cross(high, horizontal), horizontal) : horizontal ? TopologyEdgePort.Left : TopologyEdgePort.Top;
+                var highPort = horizontal ? TopologyEdgePort.Left : TopologyEdgePort.Top;
                 edge.SourcePort = lane.Reversed ? highPort : lowPort;
                 edge.TargetPort = lane.Reversed ? lowPort : highPort;
                 edge.Metadata["layout.route"] = "long-edge-lane";
