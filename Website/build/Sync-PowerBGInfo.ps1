@@ -1,31 +1,40 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Snapshots the PowerBGInfo wallpaper showcase for chartforgex.com/powerbginfo/.
+    Snapshots the PowerBGInfo wallpaper showcase and feature renders for chartforgex.com/powerbginfo/.
 
 .DESCRIPTION
-    Reads the manifest.json that PowerBGInfo's Examples/Run.BGInfo.Showcase.ps1 writes next to its renders, copies the
-    renders to Website/static/powerbginfo/ and writes Website/data/powerbginfo-showcase.json with each scenario's
-    script, read from the PowerBGInfo repository at the commit that produced the renders. The commit is recorded in the
-    data file, so the page can link every script to the exact source it shows.
+    Reads the manifest.json files that PowerBGInfo's Examples/Run.BGInfo.Showcase.ps1 (-RenderPath) and
+    Examples/Run.BGInfo.Features.ps1 (-FeaturePath) write next to their renders, copies the renders the page uses to
+    Website/static/powerbginfo/ and Website/static/powerbginfo/features/, and writes
+    Website/data/powerbginfo-showcase.json with each scenario's script, read from the PowerBGInfo repository at the
+    commit that produced the renders. The commit is recorded in the data file, so the page can link every script to
+    the exact source it shows.
 
-    The script owns static/powerbginfo/ and clears its PNG files on each run. It never changes the PowerBGInfo
-    repository; it only reads files with git show.
+    From the feature renders the page uses the 1920 x 1080 render of each widget in both themes, every theme preset,
+    and the region example at 1920 x 1080, 3440 x 1440 and 1080 x 1920.
+
+    The script owns the PNG files in static/powerbginfo/ and static/powerbginfo/features/ and clears them on each
+    run. It never changes the PowerBGInfo repository; it only reads files with git show.
 
 .EXAMPLE
     pwsh ./Website/build/Sync-PowerBGInfo.ps1 -RepositoryPath C:\Support\GitHub\PowerBGInfo `
-        -Ref 4016776e2c2d7e4b381c7b057cd190fc16afa572 -RenderPath C:\Temp\Showcase
+        -Ref cd0c215997fc4c9dcd170d6b49d79edd2d27b74e -RenderPath C:\Temp\Showcase -FeaturePath C:\Temp\Features
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)] [string] $RepositoryPath,
     [Parameter(Mandatory)] [string] $Ref,
-    [Parameter(Mandatory)] [string] $RenderPath
+    [Parameter(Mandatory)] [string] $RenderPath,
+    [Parameter(Mandatory)] [string] $FeaturePath
 )
 
 $ErrorActionPreference = 'Stop'
 $website = Split-Path -Parent $PSScriptRoot
 $repository = 'EvotecIT/PowerBGInfo'
+# Widgets shown in the capabilities grid, plus the examples the logic section uses.
+$widgetIds = 'metrics', 'tables', 'lists', 'calendar-heatmap', 'timeline', 'treemap', 'mermaid', 'qrcode', 'system-info'
+$regionSizes = '1920x1080', '3440x1440', '1080x1920'
 
 $commit = (git -C $RepositoryPath rev-parse --verify "$Ref^{commit}").Trim()
 if ($LASTEXITCODE -ne 0 -or -not $commit) { throw "Cannot resolve '$Ref' in $RepositoryPath." }
@@ -44,28 +53,44 @@ function Get-PngSize([string] $Path) {
     return @{ Width = & $read 16; Height = & $read 20; Bytes = $bytes.Length }
 }
 
-$manifest = Get-Content -LiteralPath (Join-Path $RenderPath 'manifest.json') -Raw | ConvertFrom-Json
-if ($manifest.generator -ne 'PowerBGInfo') { throw "$RenderPath/manifest.json was not written by the PowerBGInfo showcase." }
+function Read-Manifest([string] $Path) {
+    $manifest = Get-Content -LiteralPath (Join-Path $Path 'manifest.json') -Raw | ConvertFrom-Json
+    if ($manifest.generator -ne 'PowerBGInfo') { throw "$Path/manifest.json was not written by a PowerBGInfo runner." }
+    return $manifest
+}
 
+# Copies one render after checking its size against the manifest, and returns what the page needs to show it.
+function Copy-Render($Render, [string] $From, [string] $To, [string] $Url) {
+    $source = Join-Path $From $Render.file
+    $size = Get-PngSize $source
+    if ($size.Width -ne $Render.width -or $size.Height -ne $Render.height) {
+        throw "$($Render.file) is $($size.Width)x$($size.Height); the manifest says $($Render.width)x$($Render.height)."
+    }
+    Copy-Item -LiteralPath $source -Destination (Join-Path $To $Render.file) -Force
+    return [ordered] @{ url = "$Url/$($Render.file)"; file = $Render.file; width = $size.Width; height = $size.Height; kb = [math]::Round($size.Bytes / 1KB) }
+}
+
+function Clear-Renders([string] $Path) {
+    New-Item -ItemType Directory -Force -Path $Path | Out-Null
+    Get-ChildItem -LiteralPath $Path -Filter '*.png' -File | Remove-Item -Force
+}
+
+$manifest = Read-Manifest $RenderPath
 $target = Join-Path $website 'static/powerbginfo'
-New-Item -ItemType Directory -Force -Path $target | Out-Null
-Get-ChildItem -LiteralPath $target -Filter '*.png' -File | Remove-Item -Force
+Clear-Renders $target
 
 $scenarios = [ordered]@{}
 foreach ($render in $manifest.renders) {
-    $source = Join-Path $RenderPath $render.file
-    $size = Get-PngSize $source
-    if ($size.Width -ne $render.width -or $size.Height -ne $render.height) {
-        throw "$($render.file) is $($size.Width)x$($size.Height); the manifest says $($render.width)x$($render.height)."
-    }
-    Copy-Item -LiteralPath $source -Destination (Join-Path $target $render.file) -Force
-
+    $copied = Copy-Render $render $RenderPath $target '/powerbginfo'
     if (-not $scenarios.Contains($render.scenario)) {
         $script = Get-SourceText $render.script
         $lines = $script.TrimEnd().Split("`n")
         # The excerpt is the New-BGInfo call: the part of the script that places what the wallpaper shows.
         $start = [array]::FindIndex($lines, [Predicate[string]] { param($line) $line -match '^New-BGInfo\b' })
         if ($start -lt 0) { throw "$($render.script) has no top-level New-BGInfo call." }
+        # The data block is the part a reader replaces with their own sources.
+        $data = [regex]::Match($script, '(?ms)^#region Data.*?^#endregion')
+        $preset = [regex]::Match($script, 'New-BGInfoTheme\s+(?:-Preset\s+)?(\w+)')
         $scenarios[$render.scenario] = [ordered]@{
             id          = $render.scenario
             title       = $render.title
@@ -74,49 +99,92 @@ foreach ($render in $manifest.renders) {
             file        = Split-Path -Leaf $render.script
             url         = "https://github.com/$repository/blob/$commit/$($render.script)"
             lines       = $lines.Count
+            theme       = if ($preset.Success) { $preset.Groups[1].Value } else { $null }
             excerptFrom = $start + 1
             excerpt     = ($lines[$start..($lines.Count - 1)] -join "`n") + "`n"
+            data        = if ($data.Success) { $data.Value + "`n" } else { $null }
             source      = $script
             features    = @($render.chartForgeXFeatures)
             renders     = [ordered]@{}
         }
     }
-    $scenarios[$render.scenario].renders[$render.theme] = [ordered]@{
-        url    = "/powerbginfo/$($render.file)"
-        file   = $render.file
-        width  = $size.Width
-        height = $size.Height
-        kb     = [math]::Round($size.Bytes / 1KB)
-    }
+    $scenarios[$render.scenario].renders[$render.theme] = $copied
 }
+
+$featureManifest = Read-Manifest $FeaturePath
+$featureTarget = Join-Path $target 'features'
+Clear-Renders $featureTarget
+$widgets = [ordered] @{}
+$themes = [ordered] @{}
+$regions = [ordered] @{}
+foreach ($render in $featureManifest.renders) {
+    $size = "$($render.width)x$($render.height)"
+    $entry = $null
+    if ($render.feature -in $widgetIds -and $size -eq '1920x1080') {
+        if (-not $widgets.Contains($render.feature)) {
+            $widgets[$render.feature] = [ordered] @{
+                id = $render.feature; script = $render.script; file = Split-Path -Leaf $render.script
+                url = "https://github.com/$repository/blob/$commit/$($render.script)"; renders = [ordered] @{}
+            }
+        }
+        $entry = $widgets[$render.feature]
+    } elseif ($render.feature -eq 'themes' -and $size -eq '1920x1080') {
+        # Theme renders are named themes-<preset>-<mode>-<width>.png.
+        $preset = [regex]::Match($render.file, '^themes-([a-z]+)-').Groups[1].Value
+        if (-not $themes.Contains($preset)) {
+            $themes[$preset] = [ordered] @{ id = $preset; name = (Get-Culture).TextInfo.ToTitleCase($preset); renders = [ordered] @{} }
+        }
+        $entry = $themes[$preset]
+    } elseif ($render.feature -eq 'regions' -and $size -in $regionSizes) {
+        if (-not $regions.Contains($size)) {
+            $regions[$size] = [ordered] @{ id = $size; width = $render.width; height = $render.height; renders = [ordered] @{} }
+        }
+        $entry = $regions[$size]
+    }
+    if ($entry) { $entry.renders[$render.theme] = Copy-Render $render $FeaturePath $featureTarget '/powerbginfo/features' }
+}
+foreach ($id in $widgetIds) { if (-not $widgets.Contains($id)) { throw "$FeaturePath has no 1920x1080 render of '$id'." } }
+foreach ($id in $regionSizes) { if (-not $regions.Contains($id)) { throw "$FeaturePath has no $id region render." } }
+$regionScript = 'Examples/Features/Feature.Regions.ps1'
+$themeScript = 'Examples/Features/Feature.Themes.ps1'
 
 # Import-PowerShellDataFile reads the manifest as data only; it needs a file, so stage the committed text in TEMP.
 $manifestCopy = Join-Path ([System.IO.Path]::GetTempPath()) "PowerBGInfo-$($commit.Substring(0, 7)).psd1"
 Set-Content -LiteralPath $manifestCopy -Value (Get-SourceText 'PowerBGInfo.psd1') -Encoding utf8NoBOM
 try { $module = Import-PowerShellDataFile -LiteralPath $manifestCopy } finally { Remove-Item -LiteralPath $manifestCopy -Force }
-$theme = Get-SourceText 'Examples/Showcase/HudTheme.ps1'
 
 $data = [ordered]@{
     generatedBy = 'Website/build/Sync-PowerBGInfo.ps1'
     source      = [ordered]@{
-        repository = $repository
-        url        = "https://github.com/$repository"
-        commit     = $commit
-        short      = $commit.Substring(0, 7)
-        runner     = 'Examples/Run.BGInfo.Showcase.ps1'
-        theme      = 'Examples/Showcase/HudTheme.ps1'
-        themeUrl   = "https://github.com/$repository/blob/$commit/Examples/Showcase/HudTheme.ps1"
-        themeLines = $theme.TrimEnd().Split("`n").Count
+        repository  = $repository
+        url         = "https://github.com/$repository"
+        commit      = $commit
+        short       = $commit.Substring(0, 7)
+        runner      = 'Examples/Run.BGInfo.Showcase.ps1'
+        features    = 'Examples/Run.BGInfo.Features.ps1'
+        featuresUrl = "https://github.com/$repository/tree/$commit/Examples/Features"
     }
     module      = [ordered]@{
+        version           = "$($module.ModuleVersion)"
         cmdletCount       = @($module.CmdletsToExport).Count
         powerShellVersion = $module.PowerShellVersion
         dotNetFramework   = $module.DotNetFrameworkVersion
     }
     scenarios   = @($scenarios.Values)
+    themes      = [ordered] @{
+        script  = $themeScript
+        url     = "https://github.com/$repository/blob/$commit/$themeScript"
+        presets = @($themes.Values)
+    }
+    regions     = [ordered] @{
+        script = $regionScript
+        url    = "https://github.com/$repository/blob/$commit/$regionScript"
+        sizes  = @($regionSizes | ForEach-Object { $regions[$_] })
+    }
+    widgets     = $widgets
 }
 
 $dataPath = Join-Path $website 'data/powerbginfo-showcase.json'
 Set-Content -LiteralPath $dataPath -Value (($data | ConvertTo-Json -Depth 8).Replace("`r`n", "`n") + "`n") -NoNewline -Encoding utf8NoBOM
-$total = (Get-ChildItem -LiteralPath $target -Filter '*.png' -File | Measure-Object Length -Sum).Sum
-Write-Host "PowerBGInfo $($commit.Substring(0, 7)): $($scenarios.Count) scenarios, $($manifest.renders.Count) renders, $([math]::Round($total / 1KB)) KB -> $dataPath"
+$total = (@(Get-ChildItem -LiteralPath $target -Filter '*.png' -File) + @(Get-ChildItem -LiteralPath $featureTarget -Filter '*.png' -File) | Measure-Object Length -Sum).Sum
+Write-Host "PowerBGInfo $($commit.Substring(0, 7)): $($scenarios.Count) scenarios, $($widgets.Count) widgets, $($themes.Count) themes, $($regions.Count) region sizes, $([math]::Round($total / 1KB)) KB -> $dataPath"

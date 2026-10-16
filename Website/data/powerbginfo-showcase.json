@@ -3,15 +3,15 @@
   "source": {
     "repository": "EvotecIT/PowerBGInfo",
     "url": "https://github.com/EvotecIT/PowerBGInfo",
-    "commit": "4016776e2c2d7e4b381c7b057cd190fc16afa572",
-    "short": "4016776",
+    "commit": "cd0c215997fc4c9dcd170d6b49d79edd2d27b74e",
+    "short": "cd0c215",
     "runner": "Examples/Run.BGInfo.Showcase.ps1",
-    "theme": "Examples/Showcase/HudTheme.ps1",
-    "themeUrl": "https://github.com/EvotecIT/PowerBGInfo/blob/4016776e2c2d7e4b381c7b057cd190fc16afa572/Examples/Showcase/HudTheme.ps1",
-    "themeLines": 97
+    "features": "Examples/Run.BGInfo.Features.ps1",
+    "featuresUrl": "https://github.com/EvotecIT/PowerBGInfo/tree/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features"
   },
   "module": {
-    "cmdletCount": 18,
+    "version": "2.0.3",
+    "cmdletCount": 31,
     "powerShellVersion": "5.1",
     "dotNetFramework": "4.7.2"
   },
@@ -22,11 +22,13 @@
       "purpose": "Uptime, disks, services and network of a production server.",
       "script": "Examples/Run.BGInfo.ServerStatus.ps1",
       "file": "Run.BGInfo.ServerStatus.ps1",
-      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/4016776e2c2d7e4b381c7b057cd190fc16afa572/Examples/Run.BGInfo.ServerStatus.ps1",
-      "lines": 106,
-      "excerptFrom": 72,
-      "excerpt": "New-BGInfo -Target File {\n    New-BGInfoBackground @background -Glow @(\n        New-BGInfoBackgroundGlow -X 0.9 -Y 0.05 -Radius 0.55 -Color $glow\n        New-BGInfoBackgroundGlow -X 0.05 -Y 1 -Radius 0.5 -Color $glow\n    )\n\n    New-BGInfoLabel -Name 'PRODUCTION  ·  SQL SERVER 2022' -Color $accent `\n        -FontSize 15 -FontWeight 700\n    New-BGInfoLabel -Name 'SQL-PROD-01' -Color $hud.Ink -FontSize 72 `\n        -FontWeight 600\n    New-BGInfoLabel -Name '●  1 warning · D: Data is 88 % full' `\n        -Color $warn -FontSize 17 -FontWeight 600\n    New-BGInfoValue -Name 'Role' -Value 'Primary replica · AG-FINANCE'\n    New-BGInfoValue -Name 'Owner' -Value 'Data Platform team'\n    New-BGInfoValue -Name 'Maintenance' -Value 'Sunday 02:00–04:00 UTC'\n    New-BGInfoValue -Name 'On call' -Value 'dba-oncall@contoso.com'\n\n    New-BGInfoVisualCanvas @canvas -Tile $tiles -RightTileWidth 440\n\n    New-BGInfoChart @panel @bottom -Id 'volumes' -Title 'Volumes used' `\n        -Kind ProgressBar -Values @($volumes.Values) `\n        -Labels @($volumes.Keys) -Palette $ok, $warn, $ok -Maximum 100 `\n        -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false `\n        -Anchor BottomLeft -OffsetX $hud.MarginX\n    New-BGInfoChart @panel @bottom -Id 'network' -Title 'Network' `\n        -Kind Area -Values $network -LineColor $accent -ShowGrid `\n        -GridLineCount 4 -ValueSuffix ' Mbps' `\n        -Anchor BottomCenter -OffsetX 0\n    New-BGInfoChart @panel @bottom -Id 'services' -Title 'Critical services' `\n        -Kind Pictorial -Values 11, 1 -Labels 'Running', 'Stopped' `\n        -Palette $ok, $bad -PictorialSymbol Circle -PictorialColumns 12 `\n        -Maximum 12 -ShowDataLabels -ShowLatestValue:$false `\n        -Anchor BottomRight -OffsetX $hud.MarginX\n} @text -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"server-status-$($Theme.ToLower()).png\"\n",
-      "source": "<#\n    Server status wallpaper: who the server is, how long it has been up,\n    and whether disks, services and the network need attention.\n\n    Sample values keep the render reproducible. Each one notes the command\n    that supplies it on a real server.\n#>\nparam(\n    [ValidateSet('Light', 'Dark')]\n    [string] $Theme = 'Dark',\n    [int] $Width = 1920,\n    [int] $Height = 1080,\n    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')\n)\n\nImport-Module (Join-Path $PSScriptRoot '..\\PowerBGInfo.psd1') -Force\n$hudTheme = Join-Path $PSScriptRoot 'Showcase\\HudTheme.ps1'\n$hud = & $hudTheme -Theme $Theme -Width $Width -Height $Height\n$dark = $Theme -eq 'Dark'\n$ok, $warn, $bad = $hud.Status.Ok, $hud.Status.Warn, $hud.Status.Bad\n$accent = if ($dark) { '#2DD4BF' } else { '#0D9488' }\n\n# (Get-CimInstance Win32_OperatingSystem).LastBootUpTime\n$uptime = New-TimeSpan -Days 41 -Hours 6\n\n# Get-Volume | Where-Object DriveLetter\n$volumes = [ordered]@{ 'C: System' = 61; 'D: Data' = 88; 'L: Logs' = 47 }\n\n# Get-Counter '\\Processor(_Total)\\% Processor Time'\n$cpu = 12, 28, 19, 44, 31, 38, 27, 23\n\n# Get-Counter '\\Network Interface(*)\\Bytes Total/sec'\n$network = 180, 210, 260, 240, 310, 420, 380, 350, 300, 312\n\n$background = @{\n    Width          = $Width\n    Height         = $Height\n    Color          = if ($dark) { '#04101A' } else { '#EAF4F4' }\n    Gradient       = if ($dark) { '#062A33', '#050A14' } else {\n        '#F7FBFB', '#DCEBEF'\n    }\n    Pattern        = 'Grid'\n    PatternColor   = if ($dark) { '#FFFFFF0A' } else { '#0F172A0D' }\n    PatternSpacing = 64\n}\n$glow = if ($dark) { '#14B8A655' } else { '#5EEAD480' }\n\n$tile = @{ Side = 'Right'; SurfaceStyle = 'Glass' }\n$tiles = @(\n    New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'UPTIME' `\n        -Value \"$($uptime.Days) days $($uptime.Hours) h\" `\n        -Detail 'Since the September patch window' -Accent $ok\n    New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' `\n        -Value \"$($cpu[-1]) %\" -Detail '16 cores · 2.9 GHz' `\n        -Accent $accent -MiniChartKind Area -MiniChartValues $cpu `\n        -MiniChartMaximum 100\n    New-BGInfoVisualCanvasTile @tile -IconKind Memory -Label 'MEMORY' `\n        -Value '100 of 128 GB' -Detail 'SQL Server buffer pool' `\n        -Progress 0.78 -Accent $warn\n    New-BGInfoVisualCanvasTile @tile -IconKind Network -Label 'NETWORK' `\n        -Value \"$($network[-1]) Mbps\" -Detail '10.40.12.21 · 10 GbE' `\n        -Accent $accent -MiniChartKind Sparkline -MiniChartValues $network\n)\n\n$text = $hud.Text\n$canvas = $hud.Canvas\n$panel = $hud.Panel\n# Three equal panels share the bottom row with 24 px gutters.\n$third = [int](($Width - 2 * $hud.MarginX - 48) / 3)\n$bottom = @{ Width = $third; Height = 300; OffsetY = $hud.MarginY }\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @background -Glow @(\n        New-BGInfoBackgroundGlow -X 0.9 -Y 0.05 -Radius 0.55 -Color $glow\n        New-BGInfoBackgroundGlow -X 0.05 -Y 1 -Radius 0.5 -Color $glow\n    )\n\n    New-BGInfoLabel -Name 'PRODUCTION  ·  SQL SERVER 2022' -Color $accent `\n        -FontSize 15 -FontWeight 700\n    New-BGInfoLabel -Name 'SQL-PROD-01' -Color $hud.Ink -FontSize 72 `\n        -FontWeight 600\n    New-BGInfoLabel -Name '●  1 warning · D: Data is 88 % full' `\n        -Color $warn -FontSize 17 -FontWeight 600\n    New-BGInfoValue -Name 'Role' -Value 'Primary replica · AG-FINANCE'\n    New-BGInfoValue -Name 'Owner' -Value 'Data Platform team'\n    New-BGInfoValue -Name 'Maintenance' -Value 'Sunday 02:00–04:00 UTC'\n    New-BGInfoValue -Name 'On call' -Value 'dba-oncall@contoso.com'\n\n    New-BGInfoVisualCanvas @canvas -Tile $tiles -RightTileWidth 440\n\n    New-BGInfoChart @panel @bottom -Id 'volumes' -Title 'Volumes used' `\n        -Kind ProgressBar -Values @($volumes.Values) `\n        -Labels @($volumes.Keys) -Palette $ok, $warn, $ok -Maximum 100 `\n        -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false `\n        -Anchor BottomLeft -OffsetX $hud.MarginX\n    New-BGInfoChart @panel @bottom -Id 'network' -Title 'Network' `\n        -Kind Area -Values $network -LineColor $accent -ShowGrid `\n        -GridLineCount 4 -ValueSuffix ' Mbps' `\n        -Anchor BottomCenter -OffsetX 0\n    New-BGInfoChart @panel @bottom -Id 'services' -Title 'Critical services' `\n        -Kind Pictorial -Values 11, 1 -Labels 'Running', 'Stopped' `\n        -Palette $ok, $bad -PictorialSymbol Circle -PictorialColumns 12 `\n        -Maximum 12 -ShowDataLabels -ShowLatestValue:$false `\n        -Anchor BottomRight -OffsetX $hud.MarginX\n} @text -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"server-status-$($Theme.ToLower()).png\"\n",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Run.BGInfo.ServerStatus.ps1",
+      "lines": 99,
+      "theme": "Aurora",
+      "excerptFrom": 71,
+      "excerpt": "New-BGInfo -Theme $look -Target File {\n    New-BGInfoBackground -Width $Width -Height $Height\n\n    New-BGInfoLabel -Name 'PRODUCTION  ·  SQL SERVER 2022' -Accent -FontWeight 700 -FontSize ([int](15 * $scale))\n    New-BGInfoLabel -Name $server.Name -FontSize ([int](72 * $scale)) -FontWeight 600\n    if ($fullest.Value -ge 80) {\n        New-BGInfoLabel -Name \"●  1 warning · $($fullest.Key) is $($fullest.Value) % full\" -Status Warning -FontWeight 600\n    }\n    New-BGInfoValue -Name 'Role' -Value $server.Role\n    New-BGInfoValue -Name 'Owner' -Value $server.Owner\n    New-BGInfoValue -Name 'Maintenance' -Value $server.Maintenance\n    New-BGInfoValue -Name 'On call' -Value $server.OnCall\n\n    # The tiles stack in the right column; three panels share the bottom band.\n    New-BGInfoVisualCanvas -Region Right -Tile $tiles\n\n    $band = @{ Region = 'Bottom'; Height = [int](300 * $scale); NoHistory = $true }\n    New-BGInfoChart @band -Id 'volumes' -Title 'Volumes used' -Kind ProgressBar `\n        -Values @($server.Volumes.Values) -Labels @($server.Volumes.Keys) -Maximum 100 `\n        -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false -WarningThreshold 80 -CriticalThreshold 90\n    New-BGInfoChart @band -Id 'network' -Title 'Network' -Kind Area -Values $server.Network `\n        -ShowGrid -GridLineCount 4 -ValueSuffix ' Mbps'\n    New-BGInfoChart @band -Id 'services' -Title 'Critical services' -Kind Pictorial `\n        -Values $server.Services.Running, $server.Services.Stopped -Labels 'Running', 'Stopped' `\n        -Palette $look.Ok, $look.Critical -PictorialSymbol Circle -PictorialColumns 12 `\n        -Maximum ($server.Services.Running + $server.Services.Stopped) -ShowDataLabels -ShowLatestValue:$false\n} -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"server-status-$($Theme.ToLower()).png\"\n#endregion\n",
+      "data": "#region Data: your logic goes here\nfunction Get-ServerStatus {\n    [pscustomobject] @{\n        Name        = 'SQL-PROD-01'\n        Role        = 'Primary replica · AG-FINANCE'\n        Owner       = 'Data Platform team'\n        Maintenance = 'Sunday 02:00–04:00 UTC'\n        OnCall      = 'dba-oncall@contoso.com'\n        # (Get-CimInstance Win32_OperatingSystem).LastBootUpTime\n        Uptime      = New-TimeSpan -Days 41 -Hours 6\n        # Get-Volume | Where-Object DriveLetter\n        Volumes     = [ordered] @{ 'C: System' = 61; 'D: Data' = 88; 'L: Logs' = 47 }\n        # Get-Counter '\\Processor(_Total)\\% Processor Time'\n        Cpu         = @(12, 28, 19, 44, 31, 38, 27, 23)\n        Memory      = @{ UsedGB = 100; TotalGB = 128 }\n        # Get-Counter '\\Network Interface(*)\\Bytes Total/sec'\n        Network     = @(180, 210, 260, 240, 310, 420, 380, 350, 300, 312)\n        # Get-Service for the services that matter on this server\n        Services    = @{ Running = 11; Stopped = 1 }\n    }\n}\n\n# A slow or broken source must not block logon: time-box it and fall back.\n$server = Invoke-BGInfoDataSource -Name 'Server status' -TimeoutSeconds 15 -ScriptBlock ${function:Get-ServerStatus} -Default ([pscustomobject] @{\n        Name = $env:COMPUTERNAME; Role = 'unknown'; Owner = 'unknown'; Maintenance = 'unknown'; OnCall = 'unknown'\n        Uptime = [timespan]::Zero; Volumes = @{ 'C:' = 0 }; Cpu = @(0); Memory = @{ UsedGB = 0; TotalGB = 1 }; Network = @(0)\n        Services = @{ Running = 0; Stopped = 0 }\n    })\n#endregion\n",
+      "source": "<#\n    Server status wallpaper: who the server is, how long it has been up,\n    and whether disks, services and the network need attention.\n\n    The data block returns plain values; the presentation block only reads\n    them. Sample values keep the render reproducible, and each one notes the\n    command that supplies it on a real server.\n#>\nparam(\n    [ValidateSet('Light', 'Dark')]\n    [string] $Theme = 'Dark',\n    [int] $Width = 1920,\n    [int] $Height = 1080,\n    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')\n)\n\nImport-Module (Join-Path $PSScriptRoot '..\\PowerBGInfo.psd1') -Force\n\n#region Data: your logic goes here\nfunction Get-ServerStatus {\n    [pscustomobject] @{\n        Name        = 'SQL-PROD-01'\n        Role        = 'Primary replica · AG-FINANCE'\n        Owner       = 'Data Platform team'\n        Maintenance = 'Sunday 02:00–04:00 UTC'\n        OnCall      = 'dba-oncall@contoso.com'\n        # (Get-CimInstance Win32_OperatingSystem).LastBootUpTime\n        Uptime      = New-TimeSpan -Days 41 -Hours 6\n        # Get-Volume | Where-Object DriveLetter\n        Volumes     = [ordered] @{ 'C: System' = 61; 'D: Data' = 88; 'L: Logs' = 47 }\n        # Get-Counter '\\Processor(_Total)\\% Processor Time'\n        Cpu         = @(12, 28, 19, 44, 31, 38, 27, 23)\n        Memory      = @{ UsedGB = 100; TotalGB = 128 }\n        # Get-Counter '\\Network Interface(*)\\Bytes Total/sec'\n        Network     = @(180, 210, 260, 240, 310, 420, 380, 350, 300, 312)\n        # Get-Service for the services that matter on this server\n        Services    = @{ Running = 11; Stopped = 1 }\n    }\n}\n\n# A slow or broken source must not block logon: time-box it and fall back.\n$server = Invoke-BGInfoDataSource -Name 'Server status' -TimeoutSeconds 15 -ScriptBlock ${function:Get-ServerStatus} -Default ([pscustomobject] @{\n        Name = $env:COMPUTERNAME; Role = 'unknown'; Owner = 'unknown'; Maintenance = 'unknown'; OnCall = 'unknown'\n        Uptime = [timespan]::Zero; Volumes = @{ 'C:' = 0 }; Cpu = @(0); Memory = @{ UsedGB = 0; TotalGB = 1 }; Network = @(0)\n        Services = @{ Running = 0; Stopped = 0 }\n    })\n#endregion\n\n#region Presentation: reads only $server\n$scale = [Math]::Round($Height / 1080, 2)\n$look = New-BGInfoTheme Aurora -Mode $Theme -Scale $scale\n$fullest = $server.Volumes.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 1\n$memory = $server.Memory.UsedGB / $server.Memory.TotalGB\n\n$tile = @{ SurfaceStyle = 'Glass' }\n$tiles = @(\n    New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'UPTIME' `\n        -Value \"$($server.Uptime.Days) days $($server.Uptime.Hours) h\" `\n        -Detail 'Since the September patch window' -Status Ok\n    New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' `\n        -Value \"$($server.Cpu[-1]) %\" -Detail '16 cores · 2.9 GHz' `\n        -MiniChartKind Area -MiniChartValues $server.Cpu -MiniChartMaximum 100\n    New-BGInfoVisualCanvasTile @tile -IconKind Memory -Label 'MEMORY' `\n        -Value \"$($server.Memory.UsedGB) of $($server.Memory.TotalGB) GB\" -Detail 'SQL Server buffer pool' `\n        -Progress $memory -StatusValue ($memory * 100) -WarningThreshold 75 -CriticalThreshold 90\n    New-BGInfoVisualCanvasTile @tile -IconKind Network -Label 'NETWORK' `\n        -Value \"$($server.Network[-1]) Mbps\" -Detail '10.40.12.21 · 10 GbE' `\n        -MiniChartKind Sparkline -MiniChartValues $server.Network\n)\n\nNew-BGInfo -Theme $look -Target File {\n    New-BGInfoBackground -Width $Width -Height $Height\n\n    New-BGInfoLabel -Name 'PRODUCTION  ·  SQL SERVER 2022' -Accent -FontWeight 700 -FontSize ([int](15 * $scale))\n    New-BGInfoLabel -Name $server.Name -FontSize ([int](72 * $scale)) -FontWeight 600\n    if ($fullest.Value -ge 80) {\n        New-BGInfoLabel -Name \"●  1 warning · $($fullest.Key) is $($fullest.Value) % full\" -Status Warning -FontWeight 600\n    }\n    New-BGInfoValue -Name 'Role' -Value $server.Role\n    New-BGInfoValue -Name 'Owner' -Value $server.Owner\n    New-BGInfoValue -Name 'Maintenance' -Value $server.Maintenance\n    New-BGInfoValue -Name 'On call' -Value $server.OnCall\n\n    # The tiles stack in the right column; three panels share the bottom band.\n    New-BGInfoVisualCanvas -Region Right -Tile $tiles\n\n    $band = @{ Region = 'Bottom'; Height = [int](300 * $scale); NoHistory = $true }\n    New-BGInfoChart @band -Id 'volumes' -Title 'Volumes used' -Kind ProgressBar `\n        -Values @($server.Volumes.Values) -Labels @($server.Volumes.Keys) -Maximum 100 `\n        -ValueSuffix ' %' -NoProgressHandles -ShowLatestValue:$false -WarningThreshold 80 -CriticalThreshold 90\n    New-BGInfoChart @band -Id 'network' -Title 'Network' -Kind Area -Values $server.Network `\n        -ShowGrid -GridLineCount 4 -ValueSuffix ' Mbps'\n    New-BGInfoChart @band -Id 'services' -Title 'Critical services' -Kind Pictorial `\n        -Values $server.Services.Running, $server.Services.Stopped -Labels 'Running', 'Stopped' `\n        -Palette $look.Ok, $look.Critical -PictorialSymbol Circle -PictorialColumns 12 `\n        -Maximum ($server.Services.Running + $server.Services.Stopped) -ShowDataLabels -ShowLatestValue:$false\n} -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"server-status-$($Theme.ToLower()).png\"\n#endregion\n",
       "features": [
         "Generated gradient background with glows and a grid",
         "Visual canvas info tiles with mini charts",
@@ -38,14 +40,14 @@
           "file": "server-status-light.png",
           "width": 1920,
           "height": 1080,
-          "kb": 274.0
+          "kb": 273.0
         },
         "dark": {
           "url": "/powerbginfo/server-status-dark.png",
           "file": "server-status-dark.png",
           "width": 1920,
           "height": 1080,
-          "kb": 282.0
+          "kb": 283.0
         }
       }
     },
@@ -55,11 +57,13 @@
       "purpose": "How to get help, plus the details support asks for.",
       "script": "Examples/Run.BGInfo.HelpDesk.ps1",
       "file": "Run.BGInfo.HelpDesk.ps1",
-      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/4016776e2c2d7e4b381c7b057cd190fc16afa572/Examples/Run.BGInfo.HelpDesk.ps1",
-      "lines": 93,
-      "excerptFrom": 62,
-      "excerpt": "New-BGInfo -Target File {\n    New-BGInfoBackground @background -Glow @(\n        New-BGInfoBackgroundGlow -X 0 -Y 0 -Radius 0.6 -Color $glows[0]\n        New-BGInfoBackgroundGlow -X 0.75 -Y 1.05 -Radius 0.55 -Color $glows[1]\n    )\n\n    New-BGInfoLabel -Name 'IT SERVICE DESK' -Color $accent -FontSize 16 `\n        -FontWeight 700\n    New-BGInfoLabel -Name 'Need help?' -Color $hud.Ink -FontSize 88 `\n        -FontWeight 600\n    New-BGInfoLabel -Name 'Call 555-0100, extension 4357' `\n        -Color $accent -FontSize 40 -FontWeight 600\n    New-BGInfoLabel -Name 'Have the asset tag on the right ready.' `\n        -Color $hud.Muted -FontSize 22\n    New-BGInfoValue -Name 'Portal' -Value 'help.contoso.com'\n    New-BGInfoValue -Name 'Teams' -Value '#it-help'\n    New-BGInfoValue -Name 'Walk-in' -Value 'Building B, room 012'\n    New-BGInfoValue -Name 'Hours' -Value 'Monday–Friday, 07:00–19:00'\n\n    # Health from your monitoring or status page API.\n    New-BGInfoLabel -Name ' ' -FontSize 12\n    New-BGInfoLabel -Name 'SERVICE STATUS' -Color $accent -FontSize 16 `\n        -FontWeight 700\n    New-BGInfoLabel -Name '●  Email, Teams, Wi-Fi and VPN are working' `\n        -Color $ok -FontSize 19 -FontWeight 600\n    New-BGInfoLabel -Name '●  Floor 2 printers are offline until 14:00' `\n        -Color $warn -FontSize 19 -FontWeight 600\n\n    New-BGInfoVisualCanvas @canvas -Tile $tiles -RightTileWidth 460\n} @text -TextPosition MiddleLeft `\n    -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"helpdesk-$($Theme.ToLower()).png\"\n",
-      "source": "<#\n    Help-desk wallpaper for shared or front-desk PCs. It tells people how\n    to get help and shows the details the service desk asks for first.\n\n    Sample values keep the render reproducible. Each one notes the command\n    that supplies it on a real machine.\n#>\nparam(\n    [ValidateSet('Light', 'Dark')]\n    [string] $Theme = 'Light',\n    [int] $Width = 1920,\n    [int] $Height = 1080,\n    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')\n)\n\nImport-Module (Join-Path $PSScriptRoot '..\\PowerBGInfo.psd1') -Force\n$hudTheme = Join-Path $PSScriptRoot 'Showcase\\HudTheme.ps1'\n$hud = & $hudTheme -Theme $Theme -Width $Width -Height $Height\n$dark = $Theme -eq 'Dark'\n$ok, $warn = $hud.Status.Ok, $hud.Status.Warn\n$accent = if ($dark) { '#A78BFA' } else { '#7C3AED' }\n\n$background = @{\n    Width    = $Width\n    Height   = $Height\n    Color    = if ($dark) { '#0E0A1A' } else { '#FBF7FF' }\n    Gradient = if ($dark) { '#1E1438', '#0A0712' } else {\n        '#FFFFFF', '#F1E9FF'\n    }\n    GradientAngle = 160\n    Pattern  = 'Dots'\n    PatternColor = if ($dark) { '#FFFFFF12' } else { '#4C1D9512' }\n    PatternSpacing = 36\n}\n$glows = if ($dark) { '#7C3AED55', '#EC489940' } else {\n    '#C4B5FD99', '#FBCFE899'\n}\n\n$tile = @{ Side = 'Right'; SurfaceStyle = 'Glass'; Accent = $accent }\n$tiles = @(\n    # Asset tags usually come from the BIOS:\n    # (Get-CimInstance Win32_SystemEnclosure).SMBIOSAssetTag\n    New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'ASSET TAG' `\n        -Value 'CT-04217' -Detail 'Sticker under the keyboard'\n    New-BGInfoVisualCanvasTile @tile -IconKind Computer `\n        -Label 'COMPUTER NAME' -Value 'FRONTDESK-07' -Detail 'Reception, B1'\n    New-BGInfoVisualCanvasTile @tile -IconKind Network -Label 'IP ADDRESS' `\n        -Value '10.20.4.37' -Detail 'Wired · VLAN 120'\n    New-BGInfoVisualCanvasTile @tile -IconKind User -Label 'SIGNED IN AS' `\n        -Value 'Reception (shared)' -Detail 'Resets at sign-out'\n    New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem `\n        -Label 'WINDOWS' -Value '11 Enterprise 24H2' -Detail 'Build 26100'\n)\n\n$text = $hud.Text\n$canvas = $hud.Canvas.Clone()\n# Center the tile column beside the vertically centered text.\n$step = $canvas.TileHeight + $canvas.TileGap\n$column = $tiles.Count * $step - $canvas.TileGap\n$canvas.RightTileOffsetY += ($Height - $column) / 2 - $hud.MarginY\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @background -Glow @(\n        New-BGInfoBackgroundGlow -X 0 -Y 0 -Radius 0.6 -Color $glows[0]\n        New-BGInfoBackgroundGlow -X 0.75 -Y 1.05 -Radius 0.55 -Color $glows[1]\n    )\n\n    New-BGInfoLabel -Name 'IT SERVICE DESK' -Color $accent -FontSize 16 `\n        -FontWeight 700\n    New-BGInfoLabel -Name 'Need help?' -Color $hud.Ink -FontSize 88 `\n        -FontWeight 600\n    New-BGInfoLabel -Name 'Call 555-0100, extension 4357' `\n        -Color $accent -FontSize 40 -FontWeight 600\n    New-BGInfoLabel -Name 'Have the asset tag on the right ready.' `\n        -Color $hud.Muted -FontSize 22\n    New-BGInfoValue -Name 'Portal' -Value 'help.contoso.com'\n    New-BGInfoValue -Name 'Teams' -Value '#it-help'\n    New-BGInfoValue -Name 'Walk-in' -Value 'Building B, room 012'\n    New-BGInfoValue -Name 'Hours' -Value 'Monday–Friday, 07:00–19:00'\n\n    # Health from your monitoring or status page API.\n    New-BGInfoLabel -Name ' ' -FontSize 12\n    New-BGInfoLabel -Name 'SERVICE STATUS' -Color $accent -FontSize 16 `\n        -FontWeight 700\n    New-BGInfoLabel -Name '●  Email, Teams, Wi-Fi and VPN are working' `\n        -Color $ok -FontSize 19 -FontWeight 600\n    New-BGInfoLabel -Name '●  Floor 2 printers are offline until 14:00' `\n        -Color $warn -FontSize 19 -FontWeight 600\n\n    New-BGInfoVisualCanvas @canvas -Tile $tiles -RightTileWidth 460\n} @text -TextPosition MiddleLeft `\n    -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"helpdesk-$($Theme.ToLower()).png\"\n",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Run.BGInfo.HelpDesk.ps1",
+      "lines": 81,
+      "theme": "Orchid",
+      "excerptFrom": 58,
+      "excerpt": "New-BGInfo -Theme (New-BGInfoTheme Orchid -Mode $Theme -Scale $scale) -TextPosition MiddleLeft -Target File {\n    New-BGInfoBackground -Width $Width -Height $Height\n    # The tile column sits vertically centered beside the centered text.\n    New-BGInfoLayout -ColumnAlignment Center\n\n    New-BGInfoLabel -Name 'IT SERVICE DESK' -Accent -FontSize ([int](16 * $scale)) -FontWeight 700\n    New-BGInfoLabel -Name 'Need help?' -FontSize ([int](88 * $scale)) -FontWeight 600\n    New-BGInfoLabel -Name 'Call 555-0100, extension 4357' -Accent -FontSize ([int](40 * $scale)) -FontWeight 600\n    New-BGInfoLabel -Name 'Have the asset tag on the right ready.' -Muted -FontSize ([int](22 * $scale))\n    New-BGInfoValue -Name 'Portal' -Value 'help.contoso.com'\n    New-BGInfoValue -Name 'Teams' -Value '#it-help'\n    New-BGInfoValue -Name 'Walk-in' -Value 'Building B, room 012'\n    New-BGInfoValue -Name 'Hours' -Value 'Monday–Friday, 07:00–19:00'\n\n    New-BGInfoLabel -Name ' ' -FontSize ([int](12 * $scale))\n    New-BGInfoLabel -Name 'SERVICE STATUS' -Accent -FontSize ([int](16 * $scale)) -FontWeight 700\n    foreach ($service in $facts.Services) {\n        New-BGInfoLabel -Name \"●  $($service.Text)\" -Status $service.Status -FontSize ([int](19 * $scale)) -FontWeight 600\n    }\n\n    New-BGInfoVisualCanvas -Region Right -Tile $tiles\n} -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"helpdesk-$($Theme.ToLower()).png\"\n#endregion\n",
+      "data": "#region Data: your logic goes here\nfunction Get-HelpDeskFacts {\n    [pscustomobject] @{\n        # (Get-CimInstance Win32_SystemEnclosure).SMBIOSAssetTag\n        AssetTag     = 'CT-04217'\n        ComputerName = 'FRONTDESK-07'\n        Location     = 'Reception, B1'\n        # (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv4Address.IPAddress\n        IPAddress    = '10.20.4.37'\n        Network      = 'Wired · VLAN 120'\n        SignedInAs   = 'Reception (shared)'\n        # (Get-CimInstance Win32_OperatingSystem).Caption and .BuildNumber\n        Windows      = '11 Enterprise 24H2'\n        Build        = '26100'\n        # Your monitoring or status-page API\n        Services     = @(\n            @{ Text = 'Email, Teams, Wi-Fi and VPN are working'; Status = 'Ok' }\n            @{ Text = 'Floor 2 printers are offline until 14:00'; Status = 'Warning' }\n        )\n    }\n}\n\n$facts = Invoke-BGInfoDataSource -Name 'Help-desk facts' -TimeoutSeconds 10 -ScriptBlock ${function:Get-HelpDeskFacts} -Default ([pscustomobject] @{\n        AssetTag = 'unknown'; ComputerName = $env:COMPUTERNAME; Location = 'unknown'; IPAddress = 'unknown'; Network = ''\n        SignedInAs = 'unknown'; Windows = 'unknown'; Build = ''; Services = @(@{ Text = 'Service status is unavailable'; Status = 'Info' })\n    })\n#endregion\n",
+      "source": "<#\n    Help-desk wallpaper for shared or front-desk PCs. It tells people how\n    to get help and shows the details the service desk asks for first.\n\n    The data block returns plain values; the presentation block only reads\n    them. Sample values keep the render reproducible, and each one notes the\n    command that supplies it on a real machine.\n#>\nparam(\n    [ValidateSet('Light', 'Dark')]\n    [string] $Theme = 'Light',\n    [int] $Width = 1920,\n    [int] $Height = 1080,\n    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')\n)\n\nImport-Module (Join-Path $PSScriptRoot '..\\PowerBGInfo.psd1') -Force\n\n#region Data: your logic goes here\nfunction Get-HelpDeskFacts {\n    [pscustomobject] @{\n        # (Get-CimInstance Win32_SystemEnclosure).SMBIOSAssetTag\n        AssetTag     = 'CT-04217'\n        ComputerName = 'FRONTDESK-07'\n        Location     = 'Reception, B1'\n        # (Get-NetIPConfiguration | Where-Object IPv4DefaultGateway).IPv4Address.IPAddress\n        IPAddress    = '10.20.4.37'\n        Network      = 'Wired · VLAN 120'\n        SignedInAs   = 'Reception (shared)'\n        # (Get-CimInstance Win32_OperatingSystem).Caption and .BuildNumber\n        Windows      = '11 Enterprise 24H2'\n        Build        = '26100'\n        # Your monitoring or status-page API\n        Services     = @(\n            @{ Text = 'Email, Teams, Wi-Fi and VPN are working'; Status = 'Ok' }\n            @{ Text = 'Floor 2 printers are offline until 14:00'; Status = 'Warning' }\n        )\n    }\n}\n\n$facts = Invoke-BGInfoDataSource -Name 'Help-desk facts' -TimeoutSeconds 10 -ScriptBlock ${function:Get-HelpDeskFacts} -Default ([pscustomobject] @{\n        AssetTag = 'unknown'; ComputerName = $env:COMPUTERNAME; Location = 'unknown'; IPAddress = 'unknown'; Network = ''\n        SignedInAs = 'unknown'; Windows = 'unknown'; Build = ''; Services = @(@{ Text = 'Service status is unavailable'; Status = 'Info' })\n    })\n#endregion\n\n#region Presentation: reads only $facts\n$scale = [Math]::Round($Height / 1080, 2)\n$tile = @{ SurfaceStyle = 'Glass' }\n$tiles = @(\n    New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'ASSET TAG' -Value $facts.AssetTag -Detail 'Sticker under the keyboard'\n    New-BGInfoVisualCanvasTile @tile -IconKind Computer -Label 'COMPUTER NAME' -Value $facts.ComputerName -Detail $facts.Location\n    New-BGInfoVisualCanvasTile @tile -IconKind Network -Label 'IP ADDRESS' -Value $facts.IPAddress -Detail $facts.Network\n    New-BGInfoVisualCanvasTile @tile -IconKind User -Label 'SIGNED IN AS' -Value $facts.SignedInAs -Detail 'Resets at sign-out'\n    New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem -Label 'WINDOWS' -Value $facts.Windows -Detail \"Build $($facts.Build)\"\n)\n\nNew-BGInfo -Theme (New-BGInfoTheme Orchid -Mode $Theme -Scale $scale) -TextPosition MiddleLeft -Target File {\n    New-BGInfoBackground -Width $Width -Height $Height\n    # The tile column sits vertically centered beside the centered text.\n    New-BGInfoLayout -ColumnAlignment Center\n\n    New-BGInfoLabel -Name 'IT SERVICE DESK' -Accent -FontSize ([int](16 * $scale)) -FontWeight 700\n    New-BGInfoLabel -Name 'Need help?' -FontSize ([int](88 * $scale)) -FontWeight 600\n    New-BGInfoLabel -Name 'Call 555-0100, extension 4357' -Accent -FontSize ([int](40 * $scale)) -FontWeight 600\n    New-BGInfoLabel -Name 'Have the asset tag on the right ready.' -Muted -FontSize ([int](22 * $scale))\n    New-BGInfoValue -Name 'Portal' -Value 'help.contoso.com'\n    New-BGInfoValue -Name 'Teams' -Value '#it-help'\n    New-BGInfoValue -Name 'Walk-in' -Value 'Building B, room 012'\n    New-BGInfoValue -Name 'Hours' -Value 'Monday–Friday, 07:00–19:00'\n\n    New-BGInfoLabel -Name ' ' -FontSize ([int](12 * $scale))\n    New-BGInfoLabel -Name 'SERVICE STATUS' -Accent -FontSize ([int](16 * $scale)) -FontWeight 700\n    foreach ($service in $facts.Services) {\n        New-BGInfoLabel -Name \"●  $($service.Text)\" -Status $service.Status -FontSize ([int](19 * $scale)) -FontWeight 600\n    }\n\n    New-BGInfoVisualCanvas -Region Right -Tile $tiles\n} -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"helpdesk-$($Theme.ToLower()).png\"\n#endregion\n",
       "features": [
         "Generated gradient background with glows and dots",
         "Visual canvas info tiles with built-in icons",
@@ -88,11 +92,13 @@
       "purpose": "Seat name, reset schedule and lab progress for students.",
       "script": "Examples/Run.BGInfo.Classroom.ps1",
       "file": "Run.BGInfo.Classroom.ps1",
-      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/4016776e2c2d7e4b381c7b057cd190fc16afa572/Examples/Run.BGInfo.Classroom.ps1",
-      "lines": 78,
-      "excerptFrom": 42,
-      "excerpt": "New-BGInfo -Target File {\n    New-BGInfoBackground @background -Glow @(\n        New-BGInfoBackgroundGlow -X 0.1 -Y 0.1 -Radius 0.5 -Color $glows[0]\n        New-BGInfoBackgroundGlow -X 0.95 -Y 0.3 -Radius 0.45 -Color $glows[1]\n        New-BGInfoBackgroundGlow -X 0.5 -Y 1.1 -Radius 0.6 -Color $glows[2]\n    )\n\n    New-BGInfoLabel -Name 'LAB B  ·  INTRODUCTION TO POWERSHELL' `\n        -Color $accent -FontSize 18 -FontWeight 700\n    New-BGInfoLabel -Name 'LAB-B-14' -Color $hud.Ink -FontSize 150 `\n        -FontWeight 700\n    New-BGInfoLabel -Name 'This PC resets every night at 02:00.' `\n        -Color $hud.Ink -FontSize 30 -FontWeight 600\n    New-BGInfoLabel -Name 'Save your work to OneDrive before you leave.' `\n        -Color $hud.Muted -FontSize 24\n    New-BGInfoLabel -Name ' ' -FontSize 10\n    New-BGInfoValue -Name 'Instructor' -Value 'Anna Novak'\n    New-BGInfoValue -Name 'Wi-Fi' -Value 'CAMPUS-LAB, sign in with your ID'\n    New-BGInfoValue -Name 'Need a hand?' -Value 'Raise your hand or call 4357'\n\n    New-BGInfoChart @panel @row -Id 'time' -Title 'Session time left' `\n        -Kind Gauge -Values 35 -Maximum 90 -ValueSuffix ' min' `\n        -LineColor $accent -ShowLatestValue:$false `\n        -Width 360 -OffsetX -416\n    New-BGInfoChart @panel @row -Id 'exercises' -Title 'Your exercises' `\n        -Kind Pictorial -Values 3 -Labels 'Completed' -Palette $second `\n        -PictorialSymbol Star -PictorialColumns 5 -Maximum 5 `\n        -ShowDataLabels -ShowLatestValue:$false `\n        -Width 420 -OffsetX 0\n    # Students who finished each exercise, from the LMS gradebook.\n    New-BGInfoChart @panel @row -Id 'class' -Title 'Class · exercises 1–5' `\n        -Kind Bar -Values 26, 24, 19, 9, 2 -LineColor $second `\n        -ShowGrid -GridLineCount 3 -ShowLatestValue:$false `\n        -Width 360 -OffsetX 416\n} @text -TextPosition TopCenter `\n    -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"classroom-$($Theme.ToLower()).png\"\n",
-      "source": "<#\n    Lab or classroom wallpaper. The seat name is readable from the back of\n    the room, students see when the machine resets, and the instructor sees\n    lab progress at a glance.\n\n    Sample values keep the render reproducible. Replace them with your\n    lab schedule, timetable or LMS data.\n#>\nparam(\n    [ValidateSet('Light', 'Dark')]\n    [string] $Theme = 'Light',\n    [int] $Width = 1920,\n    [int] $Height = 1080,\n    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')\n)\n\nImport-Module (Join-Path $PSScriptRoot '..\\PowerBGInfo.psd1') -Force\n$hudTheme = Join-Path $PSScriptRoot 'Showcase\\HudTheme.ps1'\n$hud = & $hudTheme -Theme $Theme -Width $Width -Height $Height\n$dark = $Theme -eq 'Dark'\n$accent = if ($dark) { '#FB923C' } else { '#EA580C' }\n$second = if ($dark) { '#F472B6' } else { '#DB2777' }\n\n$background = @{\n    Width         = $Width\n    Height        = $Height\n    Color         = if ($dark) { '#120A0A' } else { '#FFF7F0' }\n    Gradient      = if ($dark) { '#2A1208', '#0B0710' } else {\n        '#FFFBF5', '#FFE4E1'\n    }\n    GradientAngle = 120\n}\n$glows = if ($dark) { '#F9731655', '#DB277740', '#7C3AED33' } else {\n    '#FDBA7499', '#F9A8D488', '#C4B5FD66'\n}\n\n$text = $hud.Text.Clone()\n$text.SpaceY = 120\n$panel = $hud.Panel\n$row = @{ Height = 250; Anchor = 'BottomCenter'; OffsetY = $hud.MarginY }\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @background -Glow @(\n        New-BGInfoBackgroundGlow -X 0.1 -Y 0.1 -Radius 0.5 -Color $glows[0]\n        New-BGInfoBackgroundGlow -X 0.95 -Y 0.3 -Radius 0.45 -Color $glows[1]\n        New-BGInfoBackgroundGlow -X 0.5 -Y 1.1 -Radius 0.6 -Color $glows[2]\n    )\n\n    New-BGInfoLabel -Name 'LAB B  ·  INTRODUCTION TO POWERSHELL' `\n        -Color $accent -FontSize 18 -FontWeight 700\n    New-BGInfoLabel -Name 'LAB-B-14' -Color $hud.Ink -FontSize 150 `\n        -FontWeight 700\n    New-BGInfoLabel -Name 'This PC resets every night at 02:00.' `\n        -Color $hud.Ink -FontSize 30 -FontWeight 600\n    New-BGInfoLabel -Name 'Save your work to OneDrive before you leave.' `\n        -Color $hud.Muted -FontSize 24\n    New-BGInfoLabel -Name ' ' -FontSize 10\n    New-BGInfoValue -Name 'Instructor' -Value 'Anna Novak'\n    New-BGInfoValue -Name 'Wi-Fi' -Value 'CAMPUS-LAB, sign in with your ID'\n    New-BGInfoValue -Name 'Need a hand?' -Value 'Raise your hand or call 4357'\n\n    New-BGInfoChart @panel @row -Id 'time' -Title 'Session time left' `\n        -Kind Gauge -Values 35 -Maximum 90 -ValueSuffix ' min' `\n        -LineColor $accent -ShowLatestValue:$false `\n        -Width 360 -OffsetX -416\n    New-BGInfoChart @panel @row -Id 'exercises' -Title 'Your exercises' `\n        -Kind Pictorial -Values 3 -Labels 'Completed' -Palette $second `\n        -PictorialSymbol Star -PictorialColumns 5 -Maximum 5 `\n        -ShowDataLabels -ShowLatestValue:$false `\n        -Width 420 -OffsetX 0\n    # Students who finished each exercise, from the LMS gradebook.\n    New-BGInfoChart @panel @row -Id 'class' -Title 'Class · exercises 1–5' `\n        -Kind Bar -Values 26, 24, 19, 9, 2 -LineColor $second `\n        -ShowGrid -GridLineCount 3 -ShowLatestValue:$false `\n        -Width 360 -OffsetX 416\n} @text -TextPosition TopCenter `\n    -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"classroom-$($Theme.ToLower()).png\"\n",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Run.BGInfo.Classroom.ps1",
+      "lines": 69,
+      "theme": "Ember",
+      "excerptFrom": 45,
+      "excerpt": "New-BGInfo -Theme (New-BGInfoTheme Ember -Mode $Theme -Scale $scale) -TextPosition TopCenter -SpaceY ([int](120 * $scale)) -Target File {\n    New-BGInfoBackground -Width $Width -Height $Height\n\n    New-BGInfoLabel -Name $lab.Course -Accent -FontSize ([int](18 * $scale)) -FontWeight 700\n    New-BGInfoLabel -Name $lab.Seat -FontSize ([int](150 * $scale)) -FontWeight 700\n    New-BGInfoLabel -Name 'This PC resets every night at 02:00.' -FontSize ([int](30 * $scale)) -FontWeight 600\n    New-BGInfoLabel -Name 'Save your work to OneDrive before you leave.' -Muted -FontSize ([int](24 * $scale))\n    New-BGInfoLabel -Name ' ' -FontSize ([int](10 * $scale))\n    New-BGInfoValue -Name 'Instructor' -Value $lab.Instructor\n    New-BGInfoValue -Name 'Wi-Fi' -Value $lab.Wifi\n    New-BGInfoValue -Name 'Need a hand?' -Value 'Raise your hand or call 4357'\n\n    # Three fixed-width panels sit centered in the bottom band; the gauge turns amber in the last 15 minutes.\n    $band = @{ Region = 'Bottom'; Height = [int](250 * $scale); NoHistory = $true }\n    New-BGInfoChart @band -Id 'time' -Width ([int](360 * $scale)) -Title 'Session time left' -Kind Gauge -Values $lab.MinutesLeft `\n        -Maximum $lab.SessionTotal -ValueSuffix ' min' -ShowLatestValue:$false `\n        -WarningThreshold 15 -CriticalThreshold 5 -ThresholdDirection Below\n    New-BGInfoChart @band -Id 'exercises' -Width ([int](420 * $scale)) -Title 'Your exercises' -Kind Pictorial -Values $lab.Completed `\n        -Labels 'Completed' -Palette $second -PictorialSymbol Star -PictorialColumns $lab.Exercises `\n        -Maximum $lab.Exercises -ShowDataLabels -ShowLatestValue:$false\n    New-BGInfoChart @band -Id 'class' -Width ([int](360 * $scale)) -Title \"Class · exercises 1–$($lab.Exercises)\" -Kind Bar -Values $lab.ClassDone `\n        -LineColor $second -ShowGrid -GridLineCount 3 -ShowLatestValue:$false\n} -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"classroom-$($Theme.ToLower()).png\"\n#endregion\n",
+      "data": "#region Data: your logic goes here\nfunction Get-ClassroomData {\n    [pscustomobject] @{\n        Course       = 'LAB B  ·  INTRODUCTION TO POWERSHELL'\n        Seat         = 'LAB-B-14'\n        Instructor   = 'Anna Novak'\n        Wifi         = 'CAMPUS-LAB, sign in with your ID'\n        MinutesLeft  = 35\n        SessionTotal = 90\n        Completed    = 3\n        Exercises    = 5\n        # Students who finished each exercise, from the LMS gradebook.\n        ClassDone    = @(26, 24, 19, 9, 2)\n    }\n}\n\n$lab = Invoke-BGInfoDataSource -Name 'Classroom data' -TimeoutSeconds 10 -ScriptBlock ${function:Get-ClassroomData} -Default ([pscustomobject] @{\n        Course = 'LAB'; Seat = $env:COMPUTERNAME; Instructor = 'unknown'; Wifi = 'unknown'\n        MinutesLeft = 0; SessionTotal = 90; Completed = 0; Exercises = 5; ClassDone = @(0)\n    })\n#endregion\n",
+      "source": "<#\n    Lab or classroom wallpaper. The seat name is readable from the back of\n    the room, students see when the machine resets, and the instructor sees\n    lab progress at a glance.\n\n    The data block returns plain values; the presentation block only reads\n    them. Replace the samples with your lab schedule, timetable or LMS data.\n#>\nparam(\n    [ValidateSet('Light', 'Dark')]\n    [string] $Theme = 'Light',\n    [int] $Width = 1920,\n    [int] $Height = 1080,\n    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')\n)\n\nImport-Module (Join-Path $PSScriptRoot '..\\PowerBGInfo.psd1') -Force\n\n#region Data: your logic goes here\nfunction Get-ClassroomData {\n    [pscustomobject] @{\n        Course       = 'LAB B  ·  INTRODUCTION TO POWERSHELL'\n        Seat         = 'LAB-B-14'\n        Instructor   = 'Anna Novak'\n        Wifi         = 'CAMPUS-LAB, sign in with your ID'\n        MinutesLeft  = 35\n        SessionTotal = 90\n        Completed    = 3\n        Exercises    = 5\n        # Students who finished each exercise, from the LMS gradebook.\n        ClassDone    = @(26, 24, 19, 9, 2)\n    }\n}\n\n$lab = Invoke-BGInfoDataSource -Name 'Classroom data' -TimeoutSeconds 10 -ScriptBlock ${function:Get-ClassroomData} -Default ([pscustomobject] @{\n        Course = 'LAB'; Seat = $env:COMPUTERNAME; Instructor = 'unknown'; Wifi = 'unknown'\n        MinutesLeft = 0; SessionTotal = 90; Completed = 0; Exercises = 5; ClassDone = @(0)\n    })\n#endregion\n\n#region Presentation: reads only $lab\n$scale = [Math]::Round($Height / 1080, 2)\n$second = (New-BGInfoTheme Ember -Mode $Theme).SecondaryAccent\n\nNew-BGInfo -Theme (New-BGInfoTheme Ember -Mode $Theme -Scale $scale) -TextPosition TopCenter -SpaceY ([int](120 * $scale)) -Target File {\n    New-BGInfoBackground -Width $Width -Height $Height\n\n    New-BGInfoLabel -Name $lab.Course -Accent -FontSize ([int](18 * $scale)) -FontWeight 700\n    New-BGInfoLabel -Name $lab.Seat -FontSize ([int](150 * $scale)) -FontWeight 700\n    New-BGInfoLabel -Name 'This PC resets every night at 02:00.' -FontSize ([int](30 * $scale)) -FontWeight 600\n    New-BGInfoLabel -Name 'Save your work to OneDrive before you leave.' -Muted -FontSize ([int](24 * $scale))\n    New-BGInfoLabel -Name ' ' -FontSize ([int](10 * $scale))\n    New-BGInfoValue -Name 'Instructor' -Value $lab.Instructor\n    New-BGInfoValue -Name 'Wi-Fi' -Value $lab.Wifi\n    New-BGInfoValue -Name 'Need a hand?' -Value 'Raise your hand or call 4357'\n\n    # Three fixed-width panels sit centered in the bottom band; the gauge turns amber in the last 15 minutes.\n    $band = @{ Region = 'Bottom'; Height = [int](250 * $scale); NoHistory = $true }\n    New-BGInfoChart @band -Id 'time' -Width ([int](360 * $scale)) -Title 'Session time left' -Kind Gauge -Values $lab.MinutesLeft `\n        -Maximum $lab.SessionTotal -ValueSuffix ' min' -ShowLatestValue:$false `\n        -WarningThreshold 15 -CriticalThreshold 5 -ThresholdDirection Below\n    New-BGInfoChart @band -Id 'exercises' -Width ([int](420 * $scale)) -Title 'Your exercises' -Kind Pictorial -Values $lab.Completed `\n        -Labels 'Completed' -Palette $second -PictorialSymbol Star -PictorialColumns $lab.Exercises `\n        -Maximum $lab.Exercises -ShowDataLabels -ShowLatestValue:$false\n    New-BGInfoChart @band -Id 'class' -Width ([int](360 * $scale)) -Title \"Class · exercises 1–$($lab.Exercises)\" -Kind Bar -Values $lab.ClassDone `\n        -LineColor $second -ShowGrid -GridLineCount 3 -ShowLatestValue:$false\n} -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"classroom-$($Theme.ToLower()).png\"\n#endregion\n",
       "features": [
         "Generated gradient background with three glows",
         "Gauge, pictorial and bar charts on shared panels",
@@ -121,11 +127,13 @@
       "purpose": "Dense privileged-access HUD with the allowed admin path.",
       "script": "Examples/Run.BGInfo.AdminWorkstation.ps1",
       "file": "Run.BGInfo.AdminWorkstation.ps1",
-      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/4016776e2c2d7e4b381c7b057cd190fc16afa572/Examples/Run.BGInfo.AdminWorkstation.ps1",
-      "lines": 153,
-      "excerptFrom": 88,
-      "excerpt": "New-BGInfo -Target File {\n    New-BGInfoBackground @background -Glow @(\n        New-BGInfoBackgroundGlow -X 0.65 -Y 0.25 -Radius 0.6 -Color $glows[0]\n        New-BGInfoBackgroundGlow -X 1 -Y 0 -Radius 0.3 -Color $glows[1]\n    )\n\n    New-BGInfoLabel -Name 'TIER 0  ·  PRIVILEGED ACCESS WORKSTATION' `\n        -Color $bad -FontSize 15 -FontWeight 700\n    New-BGInfoLabel -Name 'PAW-T0-03' -Color $hud.Ink -FontSize 64 `\n        -FontWeight 600\n    New-BGInfoLabel -Name 'No email, no browsing, no personal accounts.' `\n        -Color $hud.Ink -FontSize 19 -FontWeight 600\n    New-BGInfoValue -Name 'Operator' -Value 'adm.jsmith'\n    New-BGInfoValue -Name 'Domain' -Value 'corp.contoso.com'\n    New-BGInfoValue -Name 'Reachable' -Value 'Jump host → tier 0 only'\n\n    New-BGInfoVisualCanvas @canvas -Tile $tiles -LeftTileWidth 460\n\n    # Last 7 days from the Security log, event 4672.\n    New-BGInfoChart @panel -Id 'signins' -Title 'Privileged sign-ins' `\n        -Kind Bar -Values 4, 6, 3, 9, 5, 2, 7 -LineColor $accent `\n        -ShowGrid -GridLineCount 3 -ValueSuffix ' today' `\n        -Width 560 -Height 270 -Anchor TopRight `\n        -OffsetX $hud.MarginX -OffsetY $hud.MarginY\n\n    $diagram = $hud.Diagram\n    New-BGInfoTopology @diagram -Title 'Allowed admin path' `\n        -Subtitle '2 hops to tier 0' -Layout DenseGrouped -Scale $diagramScale `\n        -NodeDisplayMode Card -Width $column -Height $diagramHeight `\n        -Anchor TopRight -OffsetX $hud.MarginX -OffsetY $diagramTop `\n        -TopologyDefinition {\n        $node = @{ Status = 'Healthy' }\n        New-BGInfoTopologyGroup -Id 'paw' -Label 'This workstation'\n        New-BGInfoTopologyGroup -Id 'jump' -Label 'Jump hosts'\n        New-BGInfoTopologyGroup -Id 't0' -Label 'Tier 0'\n        New-BGInfoTopologyNode @node -Id 'paw' -Label 'PAW-T0-03' `\n            -Subtitle 'Windows 11' -Kind Endpoint -GroupId 'paw'\n        New-BGInfoTopologyNode @node -Id 'jmp' -Label 'JMP-T0-01' `\n            -Subtitle 'Server 2025' -Kind Gateway -GroupId 'jump'\n        New-BGInfoTopologyNode @node -Id 'dc1' -Label 'DC01' `\n            -Subtitle 'PDC emulator' -Kind Server -GroupId 't0'\n        New-BGInfoTopologyNode @node -Id 'ca' -Label 'CA01' `\n            -Subtitle 'Enterprise CA' -Kind Certificate -GroupId 't0'\n        New-BGInfoTopologyNode -Id 'dc2' -Label 'DC02' -Subtitle 'Replica' `\n            -Kind Server -GroupId 't0' -Status Warning\n        $link = @{ Kind = 'Connectivity'; Status = 'Healthy' }\n        New-BGInfoTopologyEdge @link -SourceNodeId 'paw' -TargetNodeId 'jmp' `\n            -Label 'RDP + MFA' -Direction Forward\n        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'dc1' `\n            -Direction Forward\n        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'ca' `\n            -Direction Forward\n        New-BGInfoTopologyEdge -SourceNodeId 'dc1' -TargetNodeId 'dc2' `\n            -Label '14 min lag' -Kind Replication -Status Warning\n    }\n    New-BGInfoChart @panel @bottom -Id 'changes' -Title 'Tier 0 changes' `\n        -Kind Area -Values 2, 1, 4, 3, 8, 5, 3, 2, 6, 4 -LineColor $accent `\n        -ShowGrid -GridLineCount 3 -ValueSuffix ' this hour' `\n        -OffsetX ($hud.MarginX + $half + 24) -OffsetY $hud.MarginY\n    New-BGInfoChart @panel @bottom -Id 'alerts' -Title 'Open security alerts' `\n        -Kind ProgressBar -Values 1, 3, 6 -Labels 'High', 'Medium', 'Low' `\n        -Palette $bad, $warn, $accent -Maximum 10 -NoProgressHandles `\n        -ShowLatestValue:$false `\n        -OffsetX $hud.MarginX -OffsetY $hud.MarginY\n} @text -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"admin-workstation-$($Theme.ToLower()).png\"\n",
-      "source": "<#\n    Privileged access workstation. A dense, dark HUD for administrators:\n    health tiles with recent trends, the tier 0 path this machine is allowed\n    to reach, and the privileged activity worth a second look.\n\n    Sample values keep the render reproducible. Comments name the command\n    or source that supplies each value in a real environment.\n#>\nparam(\n    [ValidateSet('Light', 'Dark')]\n    [string] $Theme = 'Dark',\n    [int] $Width = 1920,\n    [int] $Height = 1080,\n    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')\n)\n\nImport-Module (Join-Path $PSScriptRoot '..\\PowerBGInfo.psd1') -Force\n$hudTheme = Join-Path $PSScriptRoot 'Showcase\\HudTheme.ps1'\n$hud = & $hudTheme -Theme $Theme -Width $Width -Height $Height\n$dark = $Theme -eq 'Dark'\n$ok, $warn, $bad = $hud.Status.Ok, $hud.Status.Warn, $hud.Status.Bad\n$accent = if ($dark) { '#818CF8' } else { '#4F46E5' }\n\n$background = @{\n    Width          = $Width\n    Height         = $Height\n    Color          = if ($dark) { '#05060B' } else { '#F3F4F8' }\n    Gradient       = if ($dark) { '#0D1020', '#05060B' } else {\n        '#FAFAFD', '#E4E7F1'\n    }\n    GradientAngle  = 100\n    Pattern        = 'Grid'\n    PatternColor   = if ($dark) { '#FFFFFF08' } else { '#1E1B4B0C' }\n    PatternSpacing = 32\n}\n$glows = if ($dark) { '#4F46E544', '#DC262622' } else {\n    '#A5B4FC80', '#FCA5A555'\n}\n\n# Seven tiles fill the left rail from the top margin to the bottom margin.\n$canvas = $hud.Canvas.Clone()\n$rail = $Height - 2 * $hud.MarginY - 6 * $canvas.TileGap\n$canvas.TileHeight = [Math]::Floor($rail / 7)\n$tile = @{ Side = 'Left'; SurfaceStyle = 'Glass'; Accent = $accent }\n$tiles = @(\n    # Get-Counter '\\Processor(_Total)\\% Processor Time'\n    New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' `\n        -Value '18 %' -Detail '8 cores · Credential Guard on' `\n        -MiniChartKind Area -MiniChartValues 9, 14, 31, 22, 12, 18 `\n        -MiniChartMaximum 100\n    New-BGInfoVisualCanvasTile @tile -IconKind Memory -Label 'MEMORY' `\n        -Value '9.6 of 32 GB' -Detail 'Hyper-V isolation' `\n        -MiniChartKind Bars -MiniChartValues 28, 30, 29, 31, 30, 30 `\n        -MiniChartMaximum 100\n    New-BGInfoVisualCanvasTile @tile -IconKind Storage -Label 'SYSTEM DRIVE' `\n        -Value '212 GB free' -Detail 'BitLocker · TPM + PIN' `\n        -Progress 0.41\n    # Get-MpComputerStatus\n    New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'DEFENDER' `\n        -Value 'Protected' -Detail 'Signatures 2 h old' -Accent $ok\n    # Get-HotFix | Sort-Object InstalledOn | Select-Object -Last 1\n    New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem `\n        -Label 'PATCH LEVEL' -Value 'October 2026' -Detail 'Ring 0 · pilot' `\n        -Accent $ok\n    # Get-ChildItem Cert:\\CurrentUser\\My | Sort-Object NotAfter\n    New-BGInfoVisualCanvasTile @tile -IconKind Domain -Label 'SMART CARD' `\n        -Value 'Expires in 27 days' -Detail 'Renew before 11 Nov' `\n        -Accent $warn\n    New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'ELEVATION' `\n        -Value 'JIT until 16:40' -Detail 'Approved by S. Ortiz' `\n        -Accent $warn\n)\n\n$text = $hud.Text.Clone()\n$text.SpaceX = 2 * $hud.MarginX + 460\n$panel = $hud.Panel\n\n# The content column runs from the text block to the right margin.\n$column = $Width - $text.SpaceX - $hud.MarginX\n$half = ($column - 24) / 2\n$bottom = @{ Anchor = 'BottomRight'; Width = $half; Height = 210 }\n# The diagram fills the space between the top row and the bottom row.\n$diagramTop = 360\n$diagramHeight = $Height - $diagramTop - $hud.MarginY - 210 - 32\n# Render nodes and labels twice as large on 1440p and bigger screens.\n$diagramScale = if ($Height -ge 1440) { 2 } else { 1 }\n\nNew-BGInfo -Target File {\n    New-BGInfoBackground @background -Glow @(\n        New-BGInfoBackgroundGlow -X 0.65 -Y 0.25 -Radius 0.6 -Color $glows[0]\n        New-BGInfoBackgroundGlow -X 1 -Y 0 -Radius 0.3 -Color $glows[1]\n    )\n\n    New-BGInfoLabel -Name 'TIER 0  ·  PRIVILEGED ACCESS WORKSTATION' `\n        -Color $bad -FontSize 15 -FontWeight 700\n    New-BGInfoLabel -Name 'PAW-T0-03' -Color $hud.Ink -FontSize 64 `\n        -FontWeight 600\n    New-BGInfoLabel -Name 'No email, no browsing, no personal accounts.' `\n        -Color $hud.Ink -FontSize 19 -FontWeight 600\n    New-BGInfoValue -Name 'Operator' -Value 'adm.jsmith'\n    New-BGInfoValue -Name 'Domain' -Value 'corp.contoso.com'\n    New-BGInfoValue -Name 'Reachable' -Value 'Jump host → tier 0 only'\n\n    New-BGInfoVisualCanvas @canvas -Tile $tiles -LeftTileWidth 460\n\n    # Last 7 days from the Security log, event 4672.\n    New-BGInfoChart @panel -Id 'signins' -Title 'Privileged sign-ins' `\n        -Kind Bar -Values 4, 6, 3, 9, 5, 2, 7 -LineColor $accent `\n        -ShowGrid -GridLineCount 3 -ValueSuffix ' today' `\n        -Width 560 -Height 270 -Anchor TopRight `\n        -OffsetX $hud.MarginX -OffsetY $hud.MarginY\n\n    $diagram = $hud.Diagram\n    New-BGInfoTopology @diagram -Title 'Allowed admin path' `\n        -Subtitle '2 hops to tier 0' -Layout DenseGrouped -Scale $diagramScale `\n        -NodeDisplayMode Card -Width $column -Height $diagramHeight `\n        -Anchor TopRight -OffsetX $hud.MarginX -OffsetY $diagramTop `\n        -TopologyDefinition {\n        $node = @{ Status = 'Healthy' }\n        New-BGInfoTopologyGroup -Id 'paw' -Label 'This workstation'\n        New-BGInfoTopologyGroup -Id 'jump' -Label 'Jump hosts'\n        New-BGInfoTopologyGroup -Id 't0' -Label 'Tier 0'\n        New-BGInfoTopologyNode @node -Id 'paw' -Label 'PAW-T0-03' `\n            -Subtitle 'Windows 11' -Kind Endpoint -GroupId 'paw'\n        New-BGInfoTopologyNode @node -Id 'jmp' -Label 'JMP-T0-01' `\n            -Subtitle 'Server 2025' -Kind Gateway -GroupId 'jump'\n        New-BGInfoTopologyNode @node -Id 'dc1' -Label 'DC01' `\n            -Subtitle 'PDC emulator' -Kind Server -GroupId 't0'\n        New-BGInfoTopologyNode @node -Id 'ca' -Label 'CA01' `\n            -Subtitle 'Enterprise CA' -Kind Certificate -GroupId 't0'\n        New-BGInfoTopologyNode -Id 'dc2' -Label 'DC02' -Subtitle 'Replica' `\n            -Kind Server -GroupId 't0' -Status Warning\n        $link = @{ Kind = 'Connectivity'; Status = 'Healthy' }\n        New-BGInfoTopologyEdge @link -SourceNodeId 'paw' -TargetNodeId 'jmp' `\n            -Label 'RDP + MFA' -Direction Forward\n        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'dc1' `\n            -Direction Forward\n        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'ca' `\n            -Direction Forward\n        New-BGInfoTopologyEdge -SourceNodeId 'dc1' -TargetNodeId 'dc2' `\n            -Label '14 min lag' -Kind Replication -Status Warning\n    }\n    New-BGInfoChart @panel @bottom -Id 'changes' -Title 'Tier 0 changes' `\n        -Kind Area -Values 2, 1, 4, 3, 8, 5, 3, 2, 6, 4 -LineColor $accent `\n        -ShowGrid -GridLineCount 3 -ValueSuffix ' this hour' `\n        -OffsetX ($hud.MarginX + $half + 24) -OffsetY $hud.MarginY\n    New-BGInfoChart @panel @bottom -Id 'alerts' -Title 'Open security alerts' `\n        -Kind ProgressBar -Values 1, 3, 6 -Labels 'High', 'Medium', 'Low' `\n        -Palette $bad, $warn, $accent -Maximum 10 -NoProgressHandles `\n        -ShowLatestValue:$false `\n        -OffsetX $hud.MarginX -OffsetY $hud.MarginY\n} @text -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"admin-workstation-$($Theme.ToLower()).png\"\n",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Run.BGInfo.AdminWorkstation.ps1",
+      "lines": 130,
+      "theme": "Midnight",
+      "excerptFrom": 86,
+      "excerpt": "New-BGInfo -Theme $look -SpaceX $textX -Target File {\n    New-BGInfoBackground -Width $Width -Height $Height\n\n    New-BGInfoLabel -Name 'TIER 0  ·  PRIVILEGED ACCESS WORKSTATION' -Status Critical -FontSize ([int](15 * $scale)) -FontWeight 700\n    New-BGInfoLabel -Name $paw.Name -FontSize ([int](64 * $scale)) -FontWeight 600\n    New-BGInfoLabel -Name 'No email, no browsing, no personal accounts.' -FontSize ([int](19 * $scale)) -FontWeight 600\n    New-BGInfoValue -Name 'Operator' -Value $paw.Operator\n    New-BGInfoValue -Name 'Domain' -Value $paw.Domain\n    New-BGInfoValue -Name 'Reachable' -Value 'Jump host → tier 0 only'\n\n    # The theme puts the canvas rails on its margins; only the tile size is set here.\n    New-BGInfoVisualCanvas -Tile ($tiles | ForEach-Object { $_.Side = 'Left'; $_ }) -LeftTileWidth $railWidth -TileHeight $tileHeight\n\n    New-BGInfoChart -Id 'signins' -Title 'Privileged sign-ins' -Kind Bar -Values $paw.SignIns `\n        -ShowGrid -GridLineCount 3 -ValueSuffix ' today' -NoHistory `\n        -Width ([int](560 * $scale)) -Height ([int](270 * $scale)) -Anchor TopRight -OffsetX $look.MarginX -OffsetY $look.MarginY\n\n    New-BGInfoTopology -Title 'Allowed admin path' -Subtitle '2 hops to tier 0' -Layout DenseGrouped `\n        -Scale ($(if ($Height -ge 1440) { 2 } else { 1 })) -NodeDisplayMode Card -Width $column -Height $diagramHeight `\n        -Anchor TopRight -OffsetX $look.MarginX -OffsetY $diagramTop -TopologyDefinition {\n        $node = @{ Status = 'Healthy' }\n        New-BGInfoTopologyGroup -Id 'paw' -Label 'This workstation'\n        New-BGInfoTopologyGroup -Id 'jump' -Label 'Jump hosts'\n        New-BGInfoTopologyGroup -Id 't0' -Label 'Tier 0'\n        New-BGInfoTopologyNode @node -Id 'paw' -Label $paw.Name -Subtitle 'Windows 11' -Kind Endpoint -GroupId 'paw'\n        New-BGInfoTopologyNode @node -Id 'jmp' -Label 'JMP-T0-01' -Subtitle 'Server 2025' -Kind Gateway -GroupId 'jump'\n        New-BGInfoTopologyNode @node -Id 'dc1' -Label 'DC01' -Subtitle 'PDC emulator' -Kind Server -GroupId 't0'\n        New-BGInfoTopologyNode @node -Id 'ca' -Label 'CA01' -Subtitle 'Enterprise CA' -Kind Certificate -GroupId 't0'\n        New-BGInfoTopologyNode -Id 'dc2' -Label 'DC02' -Subtitle 'Replica' -Kind Server -GroupId 't0' -Status Warning\n        $link = @{ Kind = 'Connectivity'; Status = 'Healthy' }\n        New-BGInfoTopologyEdge @link -SourceNodeId 'paw' -TargetNodeId 'jmp' -Label 'RDP + MFA' -Direction Forward\n        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'dc1' -Direction Forward\n        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'ca' -Direction Forward\n        New-BGInfoTopologyEdge -SourceNodeId 'dc1' -TargetNodeId 'dc2' -Label $paw.ReplicaLag -Kind Replication -Status Warning\n    }\n\n    $bottom = @{ Anchor = 'BottomRight'; Width = $half; Height = $bottomHeight; OffsetY = $look.MarginY; NoHistory = $true }\n    New-BGInfoChart @bottom -Id 'changes' -Title 'Tier 0 changes' -Kind Area -Values $paw.Changes `\n        -ShowGrid -GridLineCount 3 -ValueSuffix ' this hour' -OffsetX ($look.MarginX + $half + $look.Gap)\n    New-BGInfoChart @bottom -Id 'alerts' -Title 'Open security alerts' -Kind ProgressBar -Values @($paw.Alerts.Values) `\n        -Labels @($paw.Alerts.Keys) -Palette $look.Critical, $look.Warning, $look.Accent -Maximum 10 `\n        -NoProgressHandles -ShowLatestValue:$false -OffsetX $look.MarginX\n} -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"admin-workstation-$($Theme.ToLower()).png\"\n#endregion\n",
+      "data": "#region Data: your logic goes here\nfunction Get-AdminWorkstationData {\n    [pscustomobject] @{\n        Name          = 'PAW-T0-03'\n        Operator      = 'adm.jsmith'\n        Domain        = 'corp.contoso.com'\n        # Get-Counter '\\Processor(_Total)\\% Processor Time'\n        Cpu           = @(9, 14, 31, 22, 12, 18)\n        Memory        = @(28, 30, 29, 31, 30, 30)\n        SystemFreeGB  = 212\n        SystemUsed    = 0.41\n        # Get-MpComputerStatus\n        Defender      = 'Protected'\n        # Get-HotFix | Sort-Object InstalledOn | Select-Object -Last 1\n        PatchLevel    = 'October 2026'\n        # Get-ChildItem Cert:\\CurrentUser\\My | Sort-Object NotAfter\n        SmartCardDays = 27\n        Elevation     = 'JIT until 16:40'\n        # Last 7 days from the Security log, event 4672.\n        SignIns       = @(4, 6, 3, 9, 5, 2, 7)\n        Changes       = @(2, 1, 4, 3, 8, 5, 3, 2, 6, 4)\n        Alerts        = [ordered] @{ High = 1; Medium = 3; Low = 6 }\n        ReplicaLag    = '14 min lag'\n    }\n}\n\n$paw = Invoke-BGInfoDataSource -Name 'Workstation data' -TimeoutSeconds 15 -ScriptBlock ${function:Get-AdminWorkstationData} -Default ([pscustomobject] @{\n        Name = $env:COMPUTERNAME; Operator = $env:USERNAME; Domain = 'unknown'; Cpu = @(0); Memory = @(0); SystemFreeGB = 0; SystemUsed = 0\n        Defender = 'unknown'; PatchLevel = 'unknown'; SmartCardDays = 0; Elevation = 'unknown'; SignIns = @(0); Changes = @(0)\n        Alerts = [ordered] @{ High = 0 }; ReplicaLag = ''\n    })\n#endregion\n",
+      "source": "<#\n    Privileged access workstation. A dense, dark HUD for administrators:\n    health tiles with recent trends, the tier 0 path this machine is allowed\n    to reach, and the privileged activity worth a second look.\n\n    The data block returns plain values; the presentation block only reads\n    them. Comments name the command or source that supplies each value.\n#>\nparam(\n    [ValidateSet('Light', 'Dark')]\n    [string] $Theme = 'Dark',\n    [int] $Width = 1920,\n    [int] $Height = 1080,\n    [string] $OutputDirectory = (Join-Path $PSScriptRoot 'Output')\n)\n\nImport-Module (Join-Path $PSScriptRoot '..\\PowerBGInfo.psd1') -Force\n\n#region Data: your logic goes here\nfunction Get-AdminWorkstationData {\n    [pscustomobject] @{\n        Name          = 'PAW-T0-03'\n        Operator      = 'adm.jsmith'\n        Domain        = 'corp.contoso.com'\n        # Get-Counter '\\Processor(_Total)\\% Processor Time'\n        Cpu           = @(9, 14, 31, 22, 12, 18)\n        Memory        = @(28, 30, 29, 31, 30, 30)\n        SystemFreeGB  = 212\n        SystemUsed    = 0.41\n        # Get-MpComputerStatus\n        Defender      = 'Protected'\n        # Get-HotFix | Sort-Object InstalledOn | Select-Object -Last 1\n        PatchLevel    = 'October 2026'\n        # Get-ChildItem Cert:\\CurrentUser\\My | Sort-Object NotAfter\n        SmartCardDays = 27\n        Elevation     = 'JIT until 16:40'\n        # Last 7 days from the Security log, event 4672.\n        SignIns       = @(4, 6, 3, 9, 5, 2, 7)\n        Changes       = @(2, 1, 4, 3, 8, 5, 3, 2, 6, 4)\n        Alerts        = [ordered] @{ High = 1; Medium = 3; Low = 6 }\n        ReplicaLag    = '14 min lag'\n    }\n}\n\n$paw = Invoke-BGInfoDataSource -Name 'Workstation data' -TimeoutSeconds 15 -ScriptBlock ${function:Get-AdminWorkstationData} -Default ([pscustomobject] @{\n        Name = $env:COMPUTERNAME; Operator = $env:USERNAME; Domain = 'unknown'; Cpu = @(0); Memory = @(0); SystemFreeGB = 0; SystemUsed = 0\n        Defender = 'unknown'; PatchLevel = 'unknown'; SmartCardDays = 0; Elevation = 'unknown'; SignIns = @(0); Changes = @(0)\n        Alerts = [ordered] @{ High = 0 }; ReplicaLag = ''\n    })\n#endregion\n\n#region Presentation: reads only $paw\n$scale = [Math]::Round($Height / 1080, 2)\n$look = New-BGInfoTheme Midnight -Mode $Theme -Scale $scale\n\n$tile = @{ SurfaceStyle = 'Glass' }\n$tiles = @(\n    New-BGInfoVisualCanvasTile @tile -IconKind Cpu -Label 'CPU' -Value \"$($paw.Cpu[-1]) %\" `\n        -Detail '8 cores · Credential Guard on' -MiniChartKind Area -MiniChartValues $paw.Cpu -MiniChartMaximum 100\n    New-BGInfoVisualCanvasTile @tile -IconKind Memory -Label 'MEMORY' -Value '9.6 of 32 GB' `\n        -Detail 'Hyper-V isolation' -MiniChartKind Bars -MiniChartValues $paw.Memory -MiniChartMaximum 100\n    New-BGInfoVisualCanvasTile @tile -IconKind Storage -Label 'SYSTEM DRIVE' -Value \"$($paw.SystemFreeGB) GB free\" `\n        -Detail 'BitLocker · TPM + PIN' -Progress $paw.SystemUsed\n    New-BGInfoVisualCanvasTile @tile -IconKind Shield -Label 'DEFENDER' -Value $paw.Defender `\n        -Detail 'Signatures 2 h old' -Status Ok\n    New-BGInfoVisualCanvasTile @tile -IconKind OperatingSystem -Label 'PATCH LEVEL' -Value $paw.PatchLevel `\n        -Detail 'Ring 0 · pilot' -Status Ok\n    # Fewer than 30 days left is a warning, fewer than 7 is critical.\n    New-BGInfoVisualCanvasTile @tile -IconKind Domain -Label 'SMART CARD' -Value \"Expires in $($paw.SmartCardDays) days\" `\n        -Detail 'Renew before 11 Nov' -StatusValue $paw.SmartCardDays -WarningThreshold 30 -CriticalThreshold 7 -ThresholdDirection Below\n    New-BGInfoVisualCanvasTile @tile -IconKind Terminal -Label 'ELEVATION' -Value $paw.Elevation `\n        -Detail 'Approved by S. Ortiz' -Status Warning\n)\n\n# Seven tiles fill the left rail from the top margin to the bottom margin.\n$railWidth = [int](460 * $scale)\n$tileHeight = [Math]::Floor(($Height - 2 * $look.MarginY - 6 * $look.TileGap) / 7)\n# The text block and the content column start right of the rail.\n$textX = 2 * $look.MarginX + $railWidth\n$column = $Width - $textX - $look.MarginX\n$half = [int](($column - $look.Gap) / 2)\n$bottomHeight = [int](210 * $scale)\n$diagramTop = [int](360 * $scale)\n$diagramHeight = $Height - $diagramTop - $look.MarginY - $bottomHeight - 32\n\nNew-BGInfo -Theme $look -SpaceX $textX -Target File {\n    New-BGInfoBackground -Width $Width -Height $Height\n\n    New-BGInfoLabel -Name 'TIER 0  ·  PRIVILEGED ACCESS WORKSTATION' -Status Critical -FontSize ([int](15 * $scale)) -FontWeight 700\n    New-BGInfoLabel -Name $paw.Name -FontSize ([int](64 * $scale)) -FontWeight 600\n    New-BGInfoLabel -Name 'No email, no browsing, no personal accounts.' -FontSize ([int](19 * $scale)) -FontWeight 600\n    New-BGInfoValue -Name 'Operator' -Value $paw.Operator\n    New-BGInfoValue -Name 'Domain' -Value $paw.Domain\n    New-BGInfoValue -Name 'Reachable' -Value 'Jump host → tier 0 only'\n\n    # The theme puts the canvas rails on its margins; only the tile size is set here.\n    New-BGInfoVisualCanvas -Tile ($tiles | ForEach-Object { $_.Side = 'Left'; $_ }) -LeftTileWidth $railWidth -TileHeight $tileHeight\n\n    New-BGInfoChart -Id 'signins' -Title 'Privileged sign-ins' -Kind Bar -Values $paw.SignIns `\n        -ShowGrid -GridLineCount 3 -ValueSuffix ' today' -NoHistory `\n        -Width ([int](560 * $scale)) -Height ([int](270 * $scale)) -Anchor TopRight -OffsetX $look.MarginX -OffsetY $look.MarginY\n\n    New-BGInfoTopology -Title 'Allowed admin path' -Subtitle '2 hops to tier 0' -Layout DenseGrouped `\n        -Scale ($(if ($Height -ge 1440) { 2 } else { 1 })) -NodeDisplayMode Card -Width $column -Height $diagramHeight `\n        -Anchor TopRight -OffsetX $look.MarginX -OffsetY $diagramTop -TopologyDefinition {\n        $node = @{ Status = 'Healthy' }\n        New-BGInfoTopologyGroup -Id 'paw' -Label 'This workstation'\n        New-BGInfoTopologyGroup -Id 'jump' -Label 'Jump hosts'\n        New-BGInfoTopologyGroup -Id 't0' -Label 'Tier 0'\n        New-BGInfoTopologyNode @node -Id 'paw' -Label $paw.Name -Subtitle 'Windows 11' -Kind Endpoint -GroupId 'paw'\n        New-BGInfoTopologyNode @node -Id 'jmp' -Label 'JMP-T0-01' -Subtitle 'Server 2025' -Kind Gateway -GroupId 'jump'\n        New-BGInfoTopologyNode @node -Id 'dc1' -Label 'DC01' -Subtitle 'PDC emulator' -Kind Server -GroupId 't0'\n        New-BGInfoTopologyNode @node -Id 'ca' -Label 'CA01' -Subtitle 'Enterprise CA' -Kind Certificate -GroupId 't0'\n        New-BGInfoTopologyNode -Id 'dc2' -Label 'DC02' -Subtitle 'Replica' -Kind Server -GroupId 't0' -Status Warning\n        $link = @{ Kind = 'Connectivity'; Status = 'Healthy' }\n        New-BGInfoTopologyEdge @link -SourceNodeId 'paw' -TargetNodeId 'jmp' -Label 'RDP + MFA' -Direction Forward\n        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'dc1' -Direction Forward\n        New-BGInfoTopologyEdge @link -SourceNodeId 'jmp' -TargetNodeId 'ca' -Direction Forward\n        New-BGInfoTopologyEdge -SourceNodeId 'dc1' -TargetNodeId 'dc2' -Label $paw.ReplicaLag -Kind Replication -Status Warning\n    }\n\n    $bottom = @{ Anchor = 'BottomRight'; Width = $half; Height = $bottomHeight; OffsetY = $look.MarginY; NoHistory = $true }\n    New-BGInfoChart @bottom -Id 'changes' -Title 'Tier 0 changes' -Kind Area -Values $paw.Changes `\n        -ShowGrid -GridLineCount 3 -ValueSuffix ' this hour' -OffsetX ($look.MarginX + $half + $look.Gap)\n    New-BGInfoChart @bottom -Id 'alerts' -Title 'Open security alerts' -Kind ProgressBar -Values @($paw.Alerts.Values) `\n        -Labels @($paw.Alerts.Keys) -Palette $look.Critical, $look.Warning, $look.Accent -Maximum 10 `\n        -NoProgressHandles -ShowLatestValue:$false -OffsetX $look.MarginX\n} -ConfigurationDirectory $OutputDirectory `\n    -OutputFileName \"admin-workstation-$($Theme.ToLower()).png\"\n#endregion\n",
       "features": [
         "Topology diagram with groups, status and replication",
         "Visual canvas info tiles with mini charts and progress",
@@ -137,7 +145,7 @@
           "file": "admin-workstation-light.png",
           "width": 1920,
           "height": 1080,
-          "kb": 293.0
+          "kb": 292.0
         },
         "dark": {
           "url": "/powerbginfo/admin-workstation-dark.png",
@@ -148,5 +156,400 @@
         }
       }
     }
-  ]
+  ],
+  "themes": {
+    "script": "Examples/Features/Feature.Themes.ps1",
+    "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.Themes.ps1",
+    "presets": [
+      {
+        "id": "aurora",
+        "name": "Aurora",
+        "renders": {
+          "light": {
+            "url": "/powerbginfo/features/themes-aurora-light-1920.png",
+            "file": "themes-aurora-light-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 228.0
+          },
+          "dark": {
+            "url": "/powerbginfo/features/themes-aurora-dark-1920.png",
+            "file": "themes-aurora-dark-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 232.0
+          }
+        }
+      },
+      {
+        "id": "graphite",
+        "name": "Graphite",
+        "renders": {
+          "light": {
+            "url": "/powerbginfo/features/themes-graphite-light-1920.png",
+            "file": "themes-graphite-light-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 191.0
+          },
+          "dark": {
+            "url": "/powerbginfo/features/themes-graphite-dark-1920.png",
+            "file": "themes-graphite-dark-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 190.0
+          }
+        }
+      },
+      {
+        "id": "midnight",
+        "name": "Midnight",
+        "renders": {
+          "light": {
+            "url": "/powerbginfo/features/themes-midnight-light-1920.png",
+            "file": "themes-midnight-light-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 240.0
+          },
+          "dark": {
+            "url": "/powerbginfo/features/themes-midnight-dark-1920.png",
+            "file": "themes-midnight-dark-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 246.0
+          }
+        }
+      },
+      {
+        "id": "ember",
+        "name": "Ember",
+        "renders": {
+          "light": {
+            "url": "/powerbginfo/features/themes-ember-light-1920.png",
+            "file": "themes-ember-light-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 214.0
+          },
+          "dark": {
+            "url": "/powerbginfo/features/themes-ember-dark-1920.png",
+            "file": "themes-ember-dark-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 230.0
+          }
+        }
+      },
+      {
+        "id": "orchid",
+        "name": "Orchid",
+        "renders": {
+          "light": {
+            "url": "/powerbginfo/features/themes-orchid-light-1920.png",
+            "file": "themes-orchid-light-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 164.0
+          },
+          "dark": {
+            "url": "/powerbginfo/features/themes-orchid-dark-1920.png",
+            "file": "themes-orchid-dark-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 228.0
+          }
+        }
+      },
+      {
+        "id": "corporate",
+        "name": "Corporate",
+        "renders": {
+          "light": {
+            "url": "/powerbginfo/features/themes-corporate-light-1920.png",
+            "file": "themes-corporate-light-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 133.0
+          },
+          "dark": {
+            "url": "/powerbginfo/features/themes-corporate-dark-1920.png",
+            "file": "themes-corporate-dark-1920.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 138.0
+          }
+        }
+      }
+    ]
+  },
+  "regions": {
+    "script": "Examples/Features/Feature.Regions.ps1",
+    "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.Regions.ps1",
+    "sizes": [
+      {
+        "id": "1920x1080",
+        "width": 1920,
+        "height": 1080,
+        "renders": {
+          "light": {
+            "url": "/powerbginfo/features/regions-light-1920x1080.png",
+            "file": "regions-light-1920x1080.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 215.0
+          },
+          "dark": {
+            "url": "/powerbginfo/features/regions-dark-1920x1080.png",
+            "file": "regions-dark-1920x1080.png",
+            "width": 1920,
+            "height": 1080,
+            "kb": 217.0
+          }
+        }
+      },
+      {
+        "id": "3440x1440",
+        "width": 3440,
+        "height": 1440,
+        "renders": {
+          "light": {
+            "url": "/powerbginfo/features/regions-light-3440x1440.png",
+            "file": "regions-light-3440x1440.png",
+            "width": 3440,
+            "height": 1440,
+            "kb": 391.0
+          },
+          "dark": {
+            "url": "/powerbginfo/features/regions-dark-3440x1440.png",
+            "file": "regions-dark-3440x1440.png",
+            "width": 3440,
+            "height": 1440,
+            "kb": 398.0
+          }
+        }
+      },
+      {
+        "id": "1080x1920",
+        "width": 1080,
+        "height": 1920,
+        "renders": {
+          "light": {
+            "url": "/powerbginfo/features/regions-light-1080x1920.png",
+            "file": "regions-light-1080x1920.png",
+            "width": 1080,
+            "height": 1920,
+            "kb": 212.0
+          },
+          "dark": {
+            "url": "/powerbginfo/features/regions-dark-1080x1920.png",
+            "file": "regions-dark-1080x1920.png",
+            "width": 1080,
+            "height": 1920,
+            "kb": 216.0
+          }
+        }
+      }
+    ]
+  },
+  "widgets": {
+    "metrics": {
+      "id": "metrics",
+      "script": "Examples/Features/Feature.Metrics.ps1",
+      "file": "Feature.Metrics.ps1",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.Metrics.ps1",
+      "renders": {
+        "light": {
+          "url": "/powerbginfo/features/metrics-light-1920.png",
+          "file": "metrics-light-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 234.0
+        },
+        "dark": {
+          "url": "/powerbginfo/features/metrics-dark-1920.png",
+          "file": "metrics-dark-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 241.0
+        }
+      }
+    },
+    "tables": {
+      "id": "tables",
+      "script": "Examples/Features/Feature.Tables.ps1",
+      "file": "Feature.Tables.ps1",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.Tables.ps1",
+      "renders": {
+        "light": {
+          "url": "/powerbginfo/features/tables-light-1920.png",
+          "file": "tables-light-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 213.0
+        },
+        "dark": {
+          "url": "/powerbginfo/features/tables-dark-1920.png",
+          "file": "tables-dark-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 212.0
+        }
+      }
+    },
+    "lists": {
+      "id": "lists",
+      "script": "Examples/Features/Feature.Lists.ps1",
+      "file": "Feature.Lists.ps1",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.Lists.ps1",
+      "renders": {
+        "light": {
+          "url": "/powerbginfo/features/lists-light-1920.png",
+          "file": "lists-light-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 188.0
+        },
+        "dark": {
+          "url": "/powerbginfo/features/lists-dark-1920.png",
+          "file": "lists-dark-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 250.0
+        }
+      }
+    },
+    "calendar-heatmap": {
+      "id": "calendar-heatmap",
+      "script": "Examples/Features/Feature.CalendarHeatmap.ps1",
+      "file": "Feature.CalendarHeatmap.ps1",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.CalendarHeatmap.ps1",
+      "renders": {
+        "light": {
+          "url": "/powerbginfo/features/calendar-heatmap-light-1920.png",
+          "file": "calendar-heatmap-light-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 250.0
+        },
+        "dark": {
+          "url": "/powerbginfo/features/calendar-heatmap-dark-1920.png",
+          "file": "calendar-heatmap-dark-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 249.0
+        }
+      }
+    },
+    "timeline": {
+      "id": "timeline",
+      "script": "Examples/Features/Feature.Timeline.ps1",
+      "file": "Feature.Timeline.ps1",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.Timeline.ps1",
+      "renders": {
+        "light": {
+          "url": "/powerbginfo/features/timeline-light-1920.png",
+          "file": "timeline-light-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 132.0
+        },
+        "dark": {
+          "url": "/powerbginfo/features/timeline-dark-1920.png",
+          "file": "timeline-dark-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 138.0
+        }
+      }
+    },
+    "treemap": {
+      "id": "treemap",
+      "script": "Examples/Features/Feature.Treemap.ps1",
+      "file": "Feature.Treemap.ps1",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.Treemap.ps1",
+      "renders": {
+        "light": {
+          "url": "/powerbginfo/features/treemap-light-1920.png",
+          "file": "treemap-light-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 186.0
+        },
+        "dark": {
+          "url": "/powerbginfo/features/treemap-dark-1920.png",
+          "file": "treemap-dark-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 185.0
+        }
+      }
+    },
+    "mermaid": {
+      "id": "mermaid",
+      "script": "Examples/Features/Feature.Mermaid.ps1",
+      "file": "Feature.Mermaid.ps1",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.Mermaid.ps1",
+      "renders": {
+        "light": {
+          "url": "/powerbginfo/features/mermaid-light-1920.png",
+          "file": "mermaid-light-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 240.0
+        },
+        "dark": {
+          "url": "/powerbginfo/features/mermaid-dark-1920.png",
+          "file": "mermaid-dark-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 241.0
+        }
+      }
+    },
+    "qrcode": {
+      "id": "qrcode",
+      "script": "Examples/Features/Feature.QRCode.ps1",
+      "file": "Feature.QRCode.ps1",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.QRCode.ps1",
+      "renders": {
+        "light": {
+          "url": "/powerbginfo/features/qrcode-light-1920.png",
+          "file": "qrcode-light-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 168.0
+        },
+        "dark": {
+          "url": "/powerbginfo/features/qrcode-dark-1920.png",
+          "file": "qrcode-dark-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 232.0
+        }
+      }
+    },
+    "system-info": {
+      "id": "system-info",
+      "script": "Examples/Features/Feature.SystemInfo.ps1",
+      "file": "Feature.SystemInfo.ps1",
+      "url": "https://github.com/EvotecIT/PowerBGInfo/blob/cd0c215997fc4c9dcd170d6b49d79edd2d27b74e/Examples/Features/Feature.SystemInfo.ps1",
+      "renders": {
+        "light": {
+          "url": "/powerbginfo/features/system-info-light-1920.png",
+          "file": "system-info-light-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 157.0
+        },
+        "dark": {
+          "url": "/powerbginfo/features/system-info-dark-1920.png",
+          "file": "system-info-dark-1920.png",
+          "width": 1920,
+          "height": 1080,
+          "kb": 161.0
+        }
+      }
+    }
+  }
 }
