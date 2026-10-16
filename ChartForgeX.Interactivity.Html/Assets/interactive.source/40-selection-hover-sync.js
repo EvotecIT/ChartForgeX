@@ -184,23 +184,51 @@
     // Reset clears the group's data selection even when the compare tray is disabled.
     emitSync(root, { action: 'compare', count: 0, targets: [] });
   };
+  const selectionTargetBatch = root => {
+    const nodes = dataTargets(root), identities = new Map();
+    for (const node of nodes) {
+      const kind = renderedTargetKind(node), key = JSON.stringify([kind, renderedTargetId(node, kind)]);
+      const matches = identities.get(key) || [];
+      matches.push(node); identities.set(key, matches);
+    }
+    return { nodes, resolve: target => {
+      if (!target) return [];
+      const candidates = target.targetKind && target.targetId
+        ? identities.get(JSON.stringify([target.targetKind, target.targetId])) || [] : nodes.filter(node => matchesTargetIdentity(node, target));
+      return target.seriesKey ? candidates.filter(node => seriesKey(node) === target.seriesKey) : candidates;
+    } };
+  };
   const applySelectionSetByTargets = (root, targets, replace) => {
     const single = root.dataset.cfxSelectionMode === 'single';
+    const batch = selectionTargetBatch(root);
     if (replace !== false || single) clearSelections(root);
     let count = 0;
     for (const target of targets || []) {
-      if (applySelectionByTarget(root, target, true)) count++;
+      const matches = batch.resolve(target);
+      if (matches.length) {
+        (single ? matches.slice(0, 1) : matches).forEach(node => setNodeSelected(node, true));
+        count++;
+      }
       if (single && count) break;
     }
+    syncResetControl(root);
     return count;
   };
   const reconcileSourceSelection = (root, previous, targets) => {
     // One chart can share raw observations with one peer and derived summaries with another.
     // Reconcile only this gesture's represented identities; an unrelated peer fact stays selected.
-    for (const target of previous) applySelectionByTarget(root, target, false);
+    const batch = selectionTargetBatch(root), before = new Set(), after = new Set();
+    for (const target of previous) batch.resolve(target).forEach(node => before.add(node));
     for (const target of targets) {
-      if (applySelectionByTarget(root, target, true) && root.dataset.cfxSelectionMode === 'single') break;
+      const matches = batch.resolve(target);
+      if (root.dataset.cfxSelectionMode === 'single' && matches.length) {
+        clearSelections(root); after.add(matches[0]); break;
+      }
+      matches.forEach(node => after.add(node));
     }
+    for (const node of before) if (!after.has(node) && node.classList.contains('cfx-selected')) setNodeSelected(node, false);
+    for (const node of after) setNodeSelected(node, true);
+    syncResetControl(root);
   };
   const nodeCenterInRect = (node, rect) => {
     const box = node.getBoundingClientRect();
@@ -238,7 +266,8 @@
       renderCompare(root);
       syncSelectionAppearance(root);
     } else if (detail.action === 'lasso') {
-      applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
+      if (Array.isArray(detail.previousTargets)) reconcileSourceSelection(root, detail.previousTargets, detail.targets || []);
+      else applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
       renderCompare(root);
       syncSelectionAppearance(root);
     } else if (detail.action === 'compare') {

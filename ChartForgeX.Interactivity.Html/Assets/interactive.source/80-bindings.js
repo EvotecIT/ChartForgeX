@@ -264,16 +264,17 @@
         } else if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           syncResetControl(root);
-          const previousSelection = selectionSignature(root);
-          const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
+          const previousTargets = selectedTargets(root), previousSelection = previousTargets.map(targetKey).join('\n');
+          const boxTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
           const replaceSelection = !event.shiftKey;
           const dataRange = brushDataSelection(root, brush.getBoundingClientRect());
           emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush, ...dataRange });
-          if (selectedTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets, ...dataRange });
+          if (boxTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: boxTargets.length, targets: boxTargets, ...dataRange });
           if (previousSelection !== selectionSignature(root)) publishSelectionChange(root, 'lasso');
           emitSync(root, { action: 'brush', bounds: root.dataset.cfxBrush });
-          if (selectedTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush, targets: selectedTargets, replace: replaceSelection });
-          publishCompare(root, true);
+          if (boxTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush,
+            targets: selectedTargets(root), previousTargets, replace: replaceSelection });
+          publishCompare(root, false);
         } else if (drag.mode === 'pan') {
           emitHostEvent(root, 'cfxviewport', { state: getState(root) });
           emitSync(root, { action: 'viewport', state: getState(root) });

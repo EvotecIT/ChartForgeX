@@ -143,6 +143,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var scope = narrow ? identityScope + "-narrow" : identityScope;
         var chartId = options.Interaction.ChartId ?? identityScope;
         var request = VisualExportRequest.ForChart(chart);
+        // The authored request remains the intrinsic host basis when a narrow drawing becomes active.
         var context = drawingContext ?? request.Context;
         var prepared = viewport == null ? chart.Prepare(context) : chart.Prepare(context, viewport);
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
@@ -187,7 +188,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-tooltip-offset-y", options.Tooltip.Position.OffsetY.ToString("R", CultureInfo.InvariantCulture))
             .Attribute("data-cfx-crosshair-label", options.Crosshair.ShowLabel ? "true" : "false")
             .Attribute("data-cfx-crosshair-styled", options.Crosshair.HasLineOverrides ? "true" : null)
-            .Attribute("style", "--cfx-native-width:" + context.Layout.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;--cfx-native-height:" + context.Layout.Size.Height.ToString(CultureInfo.InvariantCulture) + "px" + GraphiteInteractionTokens(chart) + CrosshairInteractionTokens(options.Crosshair));
+            .Attribute("style", "--cfx-intrinsic-width:" + request.Context.Layout.Size.Width.ToString(CultureInfo.InvariantCulture)
+                + "px;--cfx-native-width:" + context.Layout.Size.Width.ToString(CultureInfo.InvariantCulture)
+                + "px;--cfx-native-height:" + context.Layout.Size.Height.ToString(CultureInfo.InvariantCulture)
+                + "px" + GraphiteInteractionTokens(chart) + CrosshairInteractionTokens(options.Crosshair));
         WriteHighlightOptions(writer, options.Highlight);
         writer.EndStartElement().Line();
         var toolbar = BuildToolbar(options);

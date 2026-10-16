@@ -98,6 +98,7 @@
     if (!hasFeature(root, 'Selection')) return [];
     const normalized = hostMatch(match), mode = options.mode || 'replace';
     if (!['replace', 'add', 'remove'].includes(mode)) throw new TypeError('Selection mode must be replace, add or remove.');
+    const previousTargets = selectedTargets(root);
     const nodes = dataTargets(root), matching = new Set(nodes.filter(node => matchesHostTarget(node, normalized)));
     const single = root.dataset.cfxSelectionMode === 'single', first = matching.values().next().value;
     const changed = [];
@@ -114,7 +115,8 @@
       publishSelectionChange(root, 'command'); publishCompare(root, false);
     }
     const targets = selectedTargets(root);
-    if (changed.length && options.sync === true) emitSync(root, { action: 'compare', count: targets.length, targets });
+    if (changed.length && options.sync === true) emitSync(root, { action: 'compare', count: targets.length, targets,
+      previousTargets: mode === 'replace' ? undefined : previousTargets });
     return targets;
   };
   const clearSelectionCommand = (root, options = {}) => runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });

@@ -1942,12 +1942,19 @@
       return;
     }
     payload = { ...payload };
+    if (Array.isArray(payload.previousTargets)) payload.previousTargets = payload.previousTargets.filter(sharedTarget);
     for (const field of ['targets', 'trail']) if (Array.isArray(payload[field])) {
       const shared = payload[field].filter(sharedTarget);
-      if (payload[field].length && !shared.length) return;
+      const replacedSelection = field === 'targets' && (payload.action === 'compare' || payload.action === 'lasso' && Array.isArray(payload.previousTargets));
+      if (payload[field].length && !shared.length && !replacedSelection) return;
       payload[field] = shared;
     }
-    if (Array.isArray(payload.previousTargets)) payload.previousTargets = payload.previousTargets.filter(sharedTarget);
+    if (['compare', 'lasso'].includes(payload.action) && Array.isArray(payload.targets)) {
+      // A local-only gesture stays local. Replacing a shared selection with a local one
+      // still retires the former shared identities, without exporting the local target.
+      if (Array.isArray(payload.previousTargets) && !payload.previousTargets.length && !payload.targets.length) return;
+      payload.count = payload.targets.length;
+    }
     if (payload.action === 'state' && payload.state) {
       const targets = payload.state.selectedTargets || [], shared = targets.filter(sharedTarget);
       if (targets.length && !shared.length) return;
@@ -2663,23 +2670,51 @@
     // Reset clears the group's data selection even when the compare tray is disabled.
     emitSync(root, { action: 'compare', count: 0, targets: [] });
   };
+  const selectionTargetBatch = root => {
+    const nodes = dataTargets(root), identities = new Map();
+    for (const node of nodes) {
+      const kind = renderedTargetKind(node), key = JSON.stringify([kind, renderedTargetId(node, kind)]);
+      const matches = identities.get(key) || [];
+      matches.push(node); identities.set(key, matches);
+    }
+    return { nodes, resolve: target => {
+      if (!target) return [];
+      const candidates = target.targetKind && target.targetId
+        ? identities.get(JSON.stringify([target.targetKind, target.targetId])) || [] : nodes.filter(node => matchesTargetIdentity(node, target));
+      return target.seriesKey ? candidates.filter(node => seriesKey(node) === target.seriesKey) : candidates;
+    } };
+  };
   const applySelectionSetByTargets = (root, targets, replace) => {
     const single = root.dataset.cfxSelectionMode === 'single';
+    const batch = selectionTargetBatch(root);
     if (replace !== false || single) clearSelections(root);
     let count = 0;
     for (const target of targets || []) {
-      if (applySelectionByTarget(root, target, true)) count++;
+      const matches = batch.resolve(target);
+      if (matches.length) {
+        (single ? matches.slice(0, 1) : matches).forEach(node => setNodeSelected(node, true));
+        count++;
+      }
       if (single && count) break;
     }
+    syncResetControl(root);
     return count;
   };
   const reconcileSourceSelection = (root, previous, targets) => {
     // One chart can share raw observations with one peer and derived summaries with another.
     // Reconcile only this gesture's represented identities; an unrelated peer fact stays selected.
-    for (const target of previous) applySelectionByTarget(root, target, false);
+    const batch = selectionTargetBatch(root), before = new Set(), after = new Set();
+    for (const target of previous) batch.resolve(target).forEach(node => before.add(node));
     for (const target of targets) {
-      if (applySelectionByTarget(root, target, true) && root.dataset.cfxSelectionMode === 'single') break;
+      const matches = batch.resolve(target);
+      if (root.dataset.cfxSelectionMode === 'single' && matches.length) {
+        clearSelections(root); after.add(matches[0]); break;
+      }
+      matches.forEach(node => after.add(node));
     }
+    for (const node of before) if (!after.has(node) && node.classList.contains('cfx-selected')) setNodeSelected(node, false);
+    for (const node of after) setNodeSelected(node, true);
+    syncResetControl(root);
   };
   const nodeCenterInRect = (node, rect) => {
     const box = node.getBoundingClientRect();
@@ -2717,7 +2752,8 @@
       renderCompare(root);
       syncSelectionAppearance(root);
     } else if (detail.action === 'lasso') {
-      applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
+      if (Array.isArray(detail.previousTargets)) reconcileSourceSelection(root, detail.previousTargets, detail.targets || []);
+      else applySelectionSetByTargets(root, detail.targets || [], detail.replace !== false);
       renderCompare(root);
       syncSelectionAppearance(root);
     } else if (detail.action === 'compare') {
@@ -2854,6 +2890,7 @@
     if (!hasFeature(root, 'Selection')) return [];
     const normalized = hostMatch(match), mode = options.mode || 'replace';
     if (!['replace', 'add', 'remove'].includes(mode)) throw new TypeError('Selection mode must be replace, add or remove.');
+    const previousTargets = selectedTargets(root);
     const nodes = dataTargets(root), matching = new Set(nodes.filter(node => matchesHostTarget(node, normalized)));
     const single = root.dataset.cfxSelectionMode === 'single', first = matching.values().next().value;
     const changed = [];
@@ -2870,7 +2907,8 @@
       publishSelectionChange(root, 'command'); publishCompare(root, false);
     }
     const targets = selectedTargets(root);
-    if (changed.length && options.sync === true) emitSync(root, { action: 'compare', count: targets.length, targets });
+    if (changed.length && options.sync === true) emitSync(root, { action: 'compare', count: targets.length, targets,
+      previousTargets: mode === 'replace' ? undefined : previousTargets });
     return targets;
   };
   const clearSelectionCommand = (root, options = {}) => runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
@@ -3815,16 +3853,17 @@
         } else if (drag.mode === 'brush' && brush) {
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           syncResetControl(root);
-          const previousSelection = selectionSignature(root);
-          const selectedTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
+          const previousTargets = selectedTargets(root), previousSelection = previousTargets.map(targetKey).join('\n');
+          const boxTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
           const replaceSelection = !event.shiftKey;
           const dataRange = brushDataSelection(root, brush.getBoundingClientRect());
           emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush, ...dataRange });
-          if (selectedTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: selectedTargets.length, targets: selectedTargets, ...dataRange });
+          if (boxTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: boxTargets.length, targets: boxTargets, ...dataRange });
           if (previousSelection !== selectionSignature(root)) publishSelectionChange(root, 'lasso');
           emitSync(root, { action: 'brush', bounds: root.dataset.cfxBrush });
-          if (selectedTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush, targets: selectedTargets, replace: replaceSelection });
-          publishCompare(root, true);
+          if (boxTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush,
+            targets: selectedTargets(root), previousTargets, replace: replaceSelection });
+          publishCompare(root, false);
         } else if (drag.mode === 'pan') {
           emitHostEvent(root, 'cfxviewport', { state: getState(root) });
           emitSync(root, { action: 'viewport', state: getState(root) });

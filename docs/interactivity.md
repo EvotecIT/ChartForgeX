@@ -259,8 +259,12 @@ the value and series remain in readout rows and the target payload's source fiel
 Native activation reconciles the source chart's previous and current selected
 identities in synchronized peers. Unrelated raw observations or derived summaries
 stay selected. This uses the immediate gesture snapshot, without retaining another
-selection store. Explicit clear, Reset and replacement commands still replace or
-clear the intended group selection; Single mode retains at most one local mark.
+selection store. Chart-local automatic series never cross that transport boundary;
+moving from a shared target to a local target still retires the previous shared
+selection. Host commands are silent and local by default. With `sync: true`, `add`
+and `remove` reconcile represented identities, while `replace`, clear and Reset
+replace or clear the group's shared set. A replacement containing only local marks
+therefore sends an empty shared set. Single mode retains at most one local mark.
 
 Target identities retain their `targetKind`, `targetId`, `seriesKey`,
 `observationId`, `sourcePoint`, `sourcePoints`, `value` and `kind`. Additional facts

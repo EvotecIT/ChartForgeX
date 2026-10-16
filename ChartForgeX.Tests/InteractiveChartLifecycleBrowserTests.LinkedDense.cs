@@ -53,4 +53,72 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await CaptureAsync(page, "linked-dense-lasso", result);
         AssertNoConsoleErrors(session);
     }
+
+    [BrowserFact]
+    public async Task DenseSynchronizedToggleReconcilesOneChangedIdentityWithBoundedNativeQueries() {
+        if (!Enabled) return;
+        var observations = Enumerable.Range(0, 5000).Select(index => (point: new ChartPoint(index % 100 + 1, index / 100 + 1), id: new ChartObservationId("dense-" + index))).ToArray();
+        Chart Create(bool reverse) {
+            var ordered = reverse ? observations.AsEnumerable().Reverse().ToArray() : observations;
+            return Chart.Create().WithSize(800, 500).WithXAxisBounds(0, 101).WithYAxisBounds(0, 51).WithLegend(false)
+                .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("dense"), "Readings", ordered.Select(item => item.point))
+                    .WithObservationIds(ordered.Select(item => item.id)));
+        }
+        var html = new[] { Create(false), Create(true) }.ToInteractiveHtmlDashboardPage(options => {
+            options.Columns = 1; options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
+            options.Interaction.GroupName = "dense-scoped-selection";
+            options.Interaction.Features = ChartInteractionFeatures.Selection | ChartInteractionFeatures.KeyboardNavigation
+                | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.StateBookmarks;
+        });
+        await using var session = await OpenAsync(html, 900, 1300);
+        var page = session.Page;
+        var prepared = await page.EvaluateAsync<JsonElement>("""
+            ()=>{
+                window.densePeers=[...document.querySelectorAll('.cfx-interactive-chart')].map(root=>ChartForgeXCharts.get(root));
+                const peer=densePeers[1],first=peer.root.querySelector('[data-cfx-role=point]');
+                peer.select({seriesKeys:['dense']});const sample=peer.getSelection()[0];
+                const apply=targets=>peer.root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:{selectedTargets:targets},emit:false,sync:false}}));
+                apply([{...sample,seriesKey:'unrelated'},{targetKind:'point',targetId:'missing'}]);const rejected=peer.getSelection().length;
+                const second=peer.root.querySelector('[data-cfx-role=point][data-cfx-point="1"]');
+                apply([sample,sample,{seriesKey:'dense',point:second.dataset.cfxPoint}]);const duplicateAndLegacy=peer.getSelection().map(target=>target.observationId);
+                densePeers.forEach(controller=>controller.select({seriesKeys:['dense']}));
+                const counts=densePeers.map(controller=>controller.getSelection().length);
+                window.densePeerQueries=[0,0];window.densePeerChanges=[];window.densePeerSelections=[];
+                window.densePeerSvgs=densePeers.map(controller=>controller.root.querySelector('.cfx-stage svg'));
+                densePeers.forEach((controller,index)=>{
+                    const original=controller.root.querySelectorAll.bind(controller.root);
+                    controller.root.querySelectorAll=selector=>{const result=original(selector);if(result.length>=1000)densePeerQueries[index]++;return result};
+                });
+                document.body.addEventListener('cfxselectionchange',event=>densePeerChanges.push({root:event.target,detail:event.detail}));
+                document.body.addEventListener('cfxselect',event=>densePeerSelections.push(event.detail));
+                return {counts,rejected,duplicateAndLegacy,firstPeer:sample.observationId,firstSource:densePeers[0].getSelection()[0].observationId};
+            }
+            """);
+        Assert.Equal(new[] { 5000, 5000 }, prepared.GetProperty("counts").EnumerateArray().Select(item => item.GetInt32()));
+        Assert.Equal(0, prepared.GetProperty("rejected").GetInt32());
+        Assert.Equal(new[] { "dense-4999", "dense-4998" }, prepared.GetProperty("duplicateAndLegacy").EnumerateArray().Select(item => item.GetString()));
+        Assert.Equal("dense-4999", prepared.GetProperty("firstPeer").GetString());
+        Assert.Equal("dense-0", prepared.GetProperty("firstSource").GetString());
+        await page.Locator(Root).First.Locator("[data-cfx-observation-id=dense-0]").FocusAsync();
+        await page.Keyboard.PressAsync("Space");
+        var result = await page.EvaluateAsync<JsonElement>("""
+            ()=>({counts:densePeers.map(controller=>controller.getSelection().length),queries:densePeerQueries,
+                missing:densePeers.map(controller=>!controller.getSelection().some(target=>target.observationId==='dense-0')),
+                sameSvg:densePeers.every((controller,index)=>controller.root.querySelector('.cfx-stage svg')===densePeerSvgs[index]),
+                changes:densePeerChanges.length,selections:densePeerSelections.length,
+                sourceOnly:densePeerChanges.every(event=>event.root===densePeers[0].root),
+                targetCount:densePeerChanges.at(-1).detail.targets.length,readouts:document.querySelectorAll('.cfx-tooltip:not([hidden])').length})
+            """);
+        Assert.Equal(new[] { 4999, 4999 }, result.GetProperty("counts").EnumerateArray().Select(item => item.GetInt32()));
+        Assert.All(result.GetProperty("queries").EnumerateArray(), value => Assert.InRange(value.GetInt32(), 1, 100));
+        Assert.All(result.GetProperty("missing").EnumerateArray(), value => Assert.True(value.GetBoolean()));
+        Assert.True(result.GetProperty("sameSvg").GetBoolean());
+        Assert.Equal(1, result.GetProperty("changes").GetInt32());
+        Assert.Equal(1, result.GetProperty("selections").GetInt32());
+        Assert.True(result.GetProperty("sourceOnly").GetBoolean());
+        Assert.Equal(4999, result.GetProperty("targetCount").GetInt32());
+        Assert.Equal(0, result.GetProperty("readouts").GetInt32());
+        await CaptureAsync(page, "linked-dense-synchronized-toggle", new { prepared, result });
+        AssertNoConsoleErrors(session);
+    }
 }

@@ -52,12 +52,19 @@
       return;
     }
     payload = { ...payload };
+    if (Array.isArray(payload.previousTargets)) payload.previousTargets = payload.previousTargets.filter(sharedTarget);
     for (const field of ['targets', 'trail']) if (Array.isArray(payload[field])) {
       const shared = payload[field].filter(sharedTarget);
-      if (payload[field].length && !shared.length) return;
+      const replacedSelection = field === 'targets' && (payload.action === 'compare' || payload.action === 'lasso' && Array.isArray(payload.previousTargets));
+      if (payload[field].length && !shared.length && !replacedSelection) return;
       payload[field] = shared;
     }
-    if (Array.isArray(payload.previousTargets)) payload.previousTargets = payload.previousTargets.filter(sharedTarget);
+    if (['compare', 'lasso'].includes(payload.action) && Array.isArray(payload.targets)) {
+      // A local-only gesture stays local. Replacing a shared selection with a local one
+      // still retires the former shared identities, without exporting the local target.
+      if (Array.isArray(payload.previousTargets) && !payload.previousTargets.length && !payload.targets.length) return;
+      payload.count = payload.targets.length;
+    }
     if (payload.action === 'state' && payload.state) {
       const targets = payload.state.selectedTargets || [], shared = targets.filter(sharedTarget);
       if (targets.length && !shared.length) return;
