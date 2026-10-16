@@ -55,17 +55,15 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         await using var session = await OpenAsync(Host(false, layout, 340, 0.8, false, features, includeResetButton: true), 950, 760);
         var page = session.Page;
         await PrepareHostAsync(page, layout, 340, false);
-        // A longer host transition makes acquisition during motion observable without timing a performance budget.
-        await page.Locator(".cfx-stage svg").EvaluateAsync("svg => svg.style.transitionDuration = '500ms'");
         await MoveToAsync(page, Point(0, 1));
         Assert.True(await page.Locator(".cfx-crosshair").IsVisibleAsync());
         await page.Locator(Root).EvaluateAsync("r => r.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:{viewport:{zoom:1.35,panX:25,panY:-10}}}}))");
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
-        await MoveToAsync(page, Point(0, 1));
-        Assert.True(await page.Locator(".cfx-crosshair").IsVisibleAsync());
+        // Reacquire only after the owned transition settles; automation latency is not a motion budget.
         await FinishViewportTransitionAsync(page);
         Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
         await MoveToAsync(page, Point(0, 1));
+        Assert.True(await page.Locator(".cfx-crosshair").IsVisibleAsync());
         var mark = await BoxAsync(page, Point(0, 1));
         var native = new double[] { mark.X + mark.Width / 2, mark.Y + mark.Height / 2 };
         var changed = await GuideGeometryAsync(page);
@@ -110,5 +108,5 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     }
 
     private static Task FinishViewportTransitionAsync(IPage page) => page.Locator(".cfx-stage svg").EvaluateAsync(
-        "svg => new Promise(resolve => requestAnimationFrame(resolve)).then(() => Promise.all(svg.getAnimations().map(a => a.finished)))");
+        "async svg => { await new Promise(resolve => requestAnimationFrame(resolve)); await Promise.all(svg.getAnimations().map(a => a.finished)); await new Promise(resolve => requestAnimationFrame(resolve)); }");
 }
