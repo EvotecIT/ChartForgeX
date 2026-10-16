@@ -231,6 +231,110 @@ public sealed class ConsumerRenderingRegressionTests {
         }
     }
 
+    [Theory]
+    [InlineData(900, 340)]
+    [InlineData(600, 280)]
+    public void FittedTopologyRoutesPreserveNamedPortOffsets(int width, int height) {
+        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("source", "Source", 50, 70, width: 130, height: 72)
+            .AddNode("target", "Target", 390, 70, width: 130, height: 72)
+            .AddNodePort("source", "upper", TopologyEdgePort.Right, 0.2)
+            .AddNodePort("target", "lower", TopologyEdgePort.Left, 0.8)
+            .AddEdge("link", "source", "target", "HTTPS")
+            .WithEdgeNamedPorts("link", "upper", "lower");
+        var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false }));
+        var edge = svg.Descendants().Single(element => Role(element) == "topology-edge");
+        var surfaces = svg.Descendants().Where(element => Role(element) == "topology-node-surface")
+            .ToDictionary(element => (string)element.Parent!.Attribute("data-node-id")!, element =>
+                (X: N(element, "x"), Y: N(element, "y"), Width: N(element, "width"), Height: N(element, "height")), StringComparer.Ordinal);
+        var source = surfaces["source"];
+        var target = surfaces["target"];
+
+        Assert.Equal(source.X + source.Width, N(edge, "data-route-start-x"), 2);
+        Assert.Equal(source.Y + source.Height * 0.2, N(edge, "data-route-start-y"), 2);
+        Assert.Equal(target.X, N(edge, "data-route-end-x"), 2);
+        Assert.Equal(target.Y + target.Height * 0.8, N(edge, "data-route-end-y"), 2);
+        Assert.NotEmpty(chart.ToPng(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false }));
+    }
+
+    [Theory]
+    [InlineData(900, 400, 1)]
+    [InlineData(620, 300, 2)]
+    public void FittedTopologyRoutesPreservePortFanOutAtEveryScale(int width, int height, int outputScale) {
+        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("source", "Source", 50, 150, width: 120, height: 72)
+            .AddNode("upper", "Upper target", 420, 40, width: 120, height: 72)
+            .AddNode("lower", "Lower target", 420, 270, width: 120, height: 72)
+            .AddEdge("upper-link", "source", "upper", "Primary")
+            .AddEdge("lower-link", "source", "lower", "Backup");
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngSupersamplingScale = outputScale };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var sourceSurface = svg.Descendants().Single(element => Role(element) == "topology-node-surface"
+            && (string?)element.Parent?.Attribute("data-node-id") == "source");
+        var edges = svg.Descendants().Where(element => Role(element) == "topology-edge").ToArray();
+
+        Assert.Equal(2, edges.Length);
+        Assert.Equal(N(sourceSurface, "x") + N(sourceSurface, "width"), N(edges[0], "data-route-start-x"), 2);
+        Assert.Equal(N(sourceSurface, "x") + N(sourceSurface, "width"), N(edges[1], "data-route-start-x"), 2);
+        Assert.All(edges, edge => Assert.InRange(N(edge, "data-route-start-y"), N(sourceSurface, "y") - 1,
+            N(sourceSurface, "y") + N(sourceSurface, "height") + 1));
+        Assert.NotEqual(Math.Round(N(edges[0], "data-route-start-y"), 2), Math.Round(N(edges[1], "data-route-start-y"), 2));
+        var image = RasterImageDecoder.Decode(chart.ToPng(options));
+        Assert.Equal(width, image.Width);
+        Assert.Equal(height, image.Height);
+    }
+
+    [Fact]
+    public void FittedContentIgnoresGroupShellsThatAreNotRendered() {
+        TopologyChart Create(bool addOmittedGroup) {
+            var chart = TopologyChart.Create().WithViewport(1000, 420).WithLayout(TopologyLayoutMode.Manual)
+                .AddNode("visible", "Visible service", 40, 50, width: 110, height: 64);
+            if (addOmittedGroup) chart.AddGroup("omitted", "Omitted group", 12000, 12000, 1800, 1200);
+            return chart;
+        }
+        double FontSize(TopologyChart chart) => XDocument.Parse(chart.ToSvg(new TopologyRenderOptions {
+            FitContentToViewport = true, IncludeGroups = false, IncludeLegend = false
+        })).Descendants().Where(element => Role(element) == "topology-node-label")
+            .SelectMany(element => element.DescendantsAndSelf()).Where(element => element.Name.LocalName == "text")
+            .Select(element => N(element, "font-size")).DefaultIfEmpty(0).Max();
+
+        Assert.Equal(FontSize(Create(false)), FontSize(Create(true)), 2);
+    }
+
+    [Theory]
+    [InlineData(TopologyNodeDisplayMode.Tile, 720, 300)]
+    [InlineData(TopologyNodeDisplayMode.Tile, 440, 220)]
+    [InlineData(TopologyNodeDisplayMode.Icon, 720, 300)]
+    [InlineData(TopologyNodeDisplayMode.Icon, 440, 220)]
+    public void FittedTopologyKeepsExternalBadgesInsideTheContentClip(TopologyNodeDisplayMode mode, int width, int height) {
+        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.TopToBottom)
+            .AddAutoNode("one", "Database cluster")
+            .AddAutoNode("two", "Directory service")
+            .AddAutoNode("three", "Recovery controller")
+            .AddEdge("first", "one", "two").AddEdge("second", "two", "three");
+        foreach (var node in chart.Nodes) {
+            node.DisplayMode = mode;
+            node.Badge = "CRITICAL STATUS";
+        }
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeIconLabels = true };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var clipPath = svg.Descendants().Single(element => element.Name.LocalName == "clipPath");
+        var clip = clipPath.Elements().Single(element => element.Name.LocalName == "rect");
+        var badges = svg.Descendants().Where(element => Role(element) == "topology-node-badge-surface").ToArray();
+
+        Assert.Equal(3, badges.Length);
+        Assert.All(badges, badge => {
+            Assert.True(N(badge, "x") >= N(clip, "x") - 1, "The fitted badge must not cross the left content clip.");
+            Assert.True(N(badge, "y") >= N(clip, "y") - 1, "The fitted badge must not cross the top content clip.");
+            Assert.True(N(badge, "x") + N(badge, "width") <= N(clip, "x") + N(clip, "width") + 1,
+                "The fitted badge must not cross the right content clip.");
+            Assert.True(N(badge, "y") + N(badge, "height") <= N(clip, "y") + N(clip, "height") + 1,
+                "The fitted badge must not cross the bottom content clip.");
+        });
+        Assert.NotEmpty(chart.ToPng(options));
+    }
+
     [Fact]
     public void FittedContentIgnoresHiddenManualNodesWhenChoosingItsScale() {
         TopologyChart Create(bool addHidden) {
@@ -241,7 +345,7 @@ public sealed class ConsumerRenderingRegressionTests {
         }
         double FontSize(TopologyChart chart) => XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false }))
             .Descendants().Where(element => Role(element) == "topology-node-label").SelectMany(element => element.DescendantsAndSelf())
-            .Where(element => element.Name.LocalName == "text").Select(element => N(element, "font-size")).Single();
+            .Where(element => element.Name.LocalName == "text").Select(element => N(element, "font-size")).DefaultIfEmpty(0).Max();
 
         Assert.Equal(FontSize(Create(false)), FontSize(Create(true)), 2);
     }
@@ -375,11 +479,14 @@ public sealed class ConsumerRenderingRegressionTests {
         options.HighlightNodeIds.Add("peer");
         var svg = XDocument.Parse(chart.ToSvg(options));
         var label = svg.Descendants().Where(element => Role(element) == "topology-node-label")
-            .SelectMany(element => element.DescendantsAndSelf()).Single(element => element.Name.LocalName == "text" && element.Value == "Directory service");
-
-        var fill = (string?)label.Attribute("fill") ?? (string?)label.Attribute("style");
-        Assert.Contains("color-mix(in srgb, var(--host-label", fill, StringComparison.Ordinal);
-        Assert.Contains("50%", fill, StringComparison.Ordinal);
+            .Single(element => string.Concat(element.DescendantsAndSelf().Where(child => child.Name.LocalName == "text").Select(child => child.Value))
+                .Contains("Directory", StringComparison.Ordinal));
+        Assert.Contains("Directory", string.Join(" ", label.DescendantsAndSelf().Where(element => element.Name.LocalName == "text").Select(element => element.Value)), StringComparison.Ordinal);
+        var paint = string.Join(" ", label.DescendantsAndSelf().SelectMany(element => new[] {
+            (string?)element.Attribute("fill"), (string?)element.Attribute("style")
+        }).Where(value => !string.IsNullOrWhiteSpace(value)));
+        Assert.Contains("color-mix(in srgb, var(--host-label", paint, StringComparison.Ordinal);
+        Assert.Contains("50%", paint, StringComparison.Ordinal);
         Assert.NotEmpty(chart.ToPng(options));
     }
 

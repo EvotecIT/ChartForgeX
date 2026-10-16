@@ -104,11 +104,16 @@ internal sealed partial class VisualTopologyCompiler {
                 left = Math.Min(left, x1); top = Math.Min(top, y1);
                 right = Math.Max(right, x2); bottom = Math.Max(bottom, y2);
             }
-            foreach (var group in _chart.Groups) Include(group.X, group.Y, group.X + group.Width, group.Y + group.Height);
+            if (_options.IncludeGroups)
+                foreach (var group in _chart.Groups) Include(group.X, group.Y, group.X + group.Width, group.Y + group.Height);
             foreach (var node in _chart.Nodes) {
                 var mode = EffectiveNodeDisplayMode(node, _options);
                 if (mode == TopologyNodeDisplayMode.Hidden) continue;
                 Include(node.X, node.Y, node.X + node.Width, node.Y + node.Height);
+                if (!string.IsNullOrWhiteSpace(node.Badge)) {
+                    var badge = NodeBadgeBounds(node, mode, _options);
+                    Include(badge.X, badge.Y, badge.Right, badge.Bottom);
+                }
                 if (!_options.IncludeNodeLabels) continue;
                 if (mode == TopologyNodeDisplayMode.Tile) {
                     var caption = TopologyNodeFootprint.RenderedCaption(node, _options, _chart.TextMeasurement);

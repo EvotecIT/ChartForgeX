@@ -14,8 +14,31 @@ internal static partial class TopologyRenderPrimitives {
 
     internal static void AttachEndpointsToSurfaces(TopologyEdge edge, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
         if (points.Count < 2) return;
-        points[0] = BoundaryPoint(source, points[1].X, points[1].Y, edge.SourcePort, 0);
-        points[points.Count - 1] = BoundaryPoint(target, points[points.Count - 2].X, points[points.Count - 2].Y, edge.TargetPort, 0);
+        AttachEndpoint(source, edge.SourcePort, edge.SourcePortId, points, 0, 1);
+        AttachEndpoint(target, edge.TargetPort, edge.TargetPortId, points, points.Count - 1, points.Count - 2);
+    }
+
+    private static void AttachEndpoint(TopologyNode node, TopologyEdgePort port, string? portId, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {
+        if (node.Shape.HasValue) {
+            TopologyNodeShapeGeometry.AttachRoute(node, points, endpointIndex, adjacentIndex, 0);
+            return;
+        }
+        var point = points[endpointIndex];
+        var namedPort = string.IsNullOrWhiteSpace(portId) ? null : node.Ports.Find(candidate => string.Equals(candidate.Id, portId, StringComparison.Ordinal));
+        var side = namedPort?.Side ?? port;
+        if (side == TopologyEdgePort.Auto) {
+            var dx = point.X - CenterX(node); var dy = point.Y - CenterY(node);
+            side = Math.Abs(dx) / (node.Width / 2 + EdgeEndpointGap) >= Math.Abs(dy) / (node.Height / 2 + EdgeEndpointGap)
+                ? dx < 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right
+                : dy < 0 ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
+        }
+        points[endpointIndex] = side switch {
+            TopologyEdgePort.Top => new ChartPoint(Clamp(point.X, node.X, node.X + node.Width), node.Y),
+            TopologyEdgePort.Right => new ChartPoint(node.X + node.Width, Clamp(point.Y, node.Y, node.Y + node.Height)),
+            TopologyEdgePort.Bottom => new ChartPoint(Clamp(point.X, node.X, node.X + node.Width), node.Y + node.Height),
+            TopologyEdgePort.Left => new ChartPoint(node.X, Clamp(point.Y, node.Y, node.Y + node.Height)),
+            _ => point
+        };
     }
 
     private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port, double gap) {

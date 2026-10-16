@@ -62,12 +62,15 @@ public static class ConsumerRenderingExamples {
             .AddAutoNode("db", "SQL database", TopologyNodeKind.Database, groupId: "core")
             .AddEdge("gw-api", "gw", "api", "HTTPS").AddEdge("api-db", "api", "db", "SQL");
         SaveExample( "layered-groups", topology.ToSvg(), topology.ToPng());
+        var fittedTopologyOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        SaveExample("topology-fit-layered-groups", topology.ToSvg(fittedTopologyOptions), topology.ToPng(fittedTopologyOptions));
         var longRoute = TopologyChart.Create().WithViewport(1200, 800).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
             .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoGroup("a", "A").AddAutoGroup("b", "B")
             .AddAutoNode("one", "One", groupId: "a").AddAutoNode("middle", "Middle", groupId: "a")
             .AddAutoNode("last", "Last", groupId: "a").AddAutoNode("other", "Other", groupId: "b")
             .AddEdge("first", "one", "middle").AddEdge("second", "middle", "last").AddEdge("skip", "one", "last", "Bypass");
         SaveExample( "layered-group-long-edge", longRoute.ToSvg(), longRoute.ToPng());
+        SaveExample("topology-fit-layered-group-long-edge", longRoute.ToSvg(fittedTopologyOptions), longRoute.ToPng(fittedTopologyOptions));
         var reversedGroups = TopologyChart.Create().WithViewport(300, 330).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
             .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoGroup("b", "B").AddAutoGroup("a", "A")
             .AddAutoNode("source", "Source", groupId: "a").AddAutoNode("target", "Target", groupId: "b").AddEdge("link", "source", "target");
@@ -84,6 +87,25 @@ public static class ConsumerRenderingExamples {
             .AddAutoNode("identity", "Identity service").AddEdge("request", "gateway", "identity", "HTTPS");
         var growingOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
         SaveExample( "topology-fit-growth", growing.ToSvg(growingOptions), growing.ToPng(growingOptions));
+        var namedPorts = TopologyChart.Create().WithViewport(900, 340).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddNode("source", "Source", 50, 70, width: 130, height: 72).AddNode("target", "Target", 390, 70, width: 130, height: 72)
+            .AddNodePort("source", "upper", TopologyEdgePort.Right, 0.2).AddNodePort("target", "lower", TopologyEdgePort.Left, 0.8)
+            .AddEdge("link", "source", "target", "HTTPS").WithEdgeNamedPorts("link", "upper", "lower");
+        SaveExample("topology-fit-named-ports", namedPorts.ToSvg(fittedTopologyOptions), namedPorts.ToPng(fittedTopologyOptions));
+        var portFanOut = TopologyChart.Create().WithViewport(900, 400).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddNode("source", "Source", 50, 150, width: 120, height: 72)
+            .AddNode("upper", "Upper target", 420, 40, width: 120, height: 72)
+            .AddNode("lower", "Lower target", 420, 270, width: 120, height: 72)
+            .AddEdge("upper-link", "source", "upper", "Primary").AddEdge("lower-link", "source", "lower", "Backup");
+        SaveExample("topology-fit-port-fanout", portFanOut.ToSvg(fittedTopologyOptions), portFanOut.ToPng(fittedTopologyOptions));
+        foreach (var mode in new[] { TopologyNodeDisplayMode.Tile, TopologyNodeDisplayMode.Icon }) {
+            var badge = TopologyChart.Create().WithViewport(720, 300).WithLayout(TopologyLayoutMode.Layered)
+                .WithLayoutDirection(TopologyLayoutDirection.TopToBottom).WithLegend(null)
+                .AddAutoNode("one", "Database cluster").AddAutoNode("two", "Directory service")
+                .AddAutoNode("three", "Recovery controller").AddEdge("first", "one", "two").AddEdge("second", "two", "three");
+            foreach (var node in badge.Nodes) { node.DisplayMode = mode; node.Badge = "CRITICAL STATUS"; }
+            SaveExample("topology-fit-external-badge-" + mode.ToString().ToLowerInvariant(), badge.ToSvg(growingOptions), badge.ToPng(growingOptions));
+        }
         foreach (var mode in new[] { TopologyNodeDisplayMode.Tile, TopologyNodeDisplayMode.Icon }) {
             var captions = TopologyChart.Create().WithViewport(520, 150).WithLayout(TopologyLayoutMode.Layered)
                 .WithLayoutDirection(TopologyLayoutDirection.TopToBottom)
