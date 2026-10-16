@@ -15,6 +15,11 @@ internal static class TopologyLayoutNormalizer {
     private const double MinimumAutoGroupWidth = 190;
     private const double MinimumAutoGroupHeight = 170;
 
+    internal static void PrepareGroupShellsForPacking(TopologyChart chart, TopologyRenderOptions? options) {
+        ResolveGroupHeaderOverlaps(chart, options ?? new TopologyRenderOptions());
+        ExpandGroupsForNodes(chart);
+    }
+
     public static void Normalize(TopologyChart chart, TopologyRenderOptions? options = null) {
         options ??= new TopologyRenderOptions();
         ExpandGroupsForNodes(chart);

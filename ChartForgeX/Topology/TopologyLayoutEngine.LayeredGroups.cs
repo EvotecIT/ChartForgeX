@@ -34,8 +34,9 @@ internal static partial class TopologyLayoutEngine {
         IReadOnlyDictionary<TopologyEdge, TopologyEdge> authoredEdges) {
         if (options?.IncludeGroups == false) return;
         var automatic = new HashSet<string>(authored.Groups.Where(g => g.Width <= 0 && g.Height <= 0 && g.X == 0 && g.Y == 0).Select(g => g.Id), StringComparer.Ordinal);
-        if (automatic.Count < 2) return;
+        if (automatic.Count == 0) return;
         automatic.RemoveWhere(id => authored.Nodes.Any(n => n.GroupId == id && (!IsUnset(n.X) || !IsUnset(n.Y))));
+        if (automatic.Count == 0 || automatic.Count < 2 && authored.Groups.All(g => automatic.Contains(g.Id))) return;
         var authoredNodes = authored.Nodes.ToDictionary(n => n.Id, StringComparer.Ordinal);
         automatic.RemoveWhere(id => authored.Edges.Any(e => e.Waypoints.Count > 0 &&
             ((authoredNodes.TryGetValue(e.SourceNodeId, out var source) && source.GroupId == id)
@@ -72,19 +73,33 @@ internal static partial class TopologyLayoutEngine {
                 ? TopologyGroupHeader.ReservedBounds(chart, group, options ?? new TopologyRenderOptions()).Height + 12 : 0;
             group.Y -= header; group.Height += header;
         }
+        TopologyLayoutNormalizer.PrepareGroupShellsForPacking(chart, options);
         var placed = chart.Groups.Where(g => !automatic.Contains(g.Id)).ToList();
+        var packSingleGroupAlongFlow = groups.Count == 1;
         var shiftedGroupIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var group in groups.OrderBy(g => horizontal ? g.X : g.Y)) {
             var x = group.X; var y = group.Y;
-            // Separate shells across the flow axis' cross dimension. Moving them along the
-            // flow axis can put an interleaved rank (A0 -> B1 -> A2) after its successor.
+            // Keep one packed shell on the flow axis so a simple chain stays directional. With
+            // several automatic shells, separate them across the cross dimension because moving
+            // one along the flow axis can put an interleaved rank (A0 -> B1 -> A2) after its successor.
             while (true) {
                 var collision = placed.FirstOrDefault(other =>
                     group.X < other.X + other.Width + 24 && group.X + group.Width + 24 > other.X
                     && group.Y < other.Y + other.Height + 24 && group.Y + group.Height + 24 > other.Y);
                 if (collision == null) break;
-                if (horizontal) group.Y = collision.Y + collision.Height + 24;
-                else group.X = collision.X + collision.Width + 24;
+                if (horizontal) {
+                    if (packSingleGroupAlongFlow && chart.LayoutDirection == TopologyLayoutDirection.RightToLeft)
+                        group.X = collision.X - group.Width - 24;
+                    else if (packSingleGroupAlongFlow)
+                        group.X = collision.X + collision.Width + 24;
+                    else group.Y = collision.Y + collision.Height + 24;
+                } else {
+                    if (packSingleGroupAlongFlow && chart.LayoutDirection == TopologyLayoutDirection.BottomToTop)
+                        group.Y = collision.Y - group.Height - 24;
+                    else if (packSingleGroupAlongFlow)
+                        group.Y = collision.Y + collision.Height + 24;
+                    else group.X = collision.X + collision.Width + 24;
+                }
             }
             var delta = new PlacementDelta(group.X - x, group.Y - y);
             if (Math.Abs(delta.Dx) > .001 || Math.Abs(delta.Dy) > .001) shiftedGroupIds.Add(group.Id);

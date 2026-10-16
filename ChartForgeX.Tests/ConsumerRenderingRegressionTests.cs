@@ -192,10 +192,13 @@ public sealed class ConsumerRenderingRegressionTests {
     }
 
     [Theory]
-    [InlineData(1300, 560)]
-    [InlineData(900, 400)]
-    [InlineData(520, 260)]
-    public void FittedTopologyRoutesMeetNodeBordersAtEveryScale(int width, int height) {
+    [InlineData(1300, 560, 1)]
+    [InlineData(900, 400, 1)]
+    [InlineData(520, 260, 1)]
+    [InlineData(1300, 560, 2)]
+    [InlineData(900, 400, 2)]
+    [InlineData(520, 260, 2)]
+    public void FittedTopologyRoutesMeetNodeBordersAtEveryScale(int width, int height, int pngOutputScale) {
         var chart = TopologyChart.Create().WithViewport(width, height).WithLegend(null)
             .WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("edge", "Edge").AddAutoGroup("core", "Core")
@@ -204,7 +207,7 @@ public sealed class ConsumerRenderingRegressionTests {
             .AddAutoNode("database", "Directory database", groupId: "core")
             .AddEdge("https", "gateway", "identity", "HTTPS")
             .AddEdge("long", "gateway", "database", "Long route");
-        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = pngOutputScale };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var surfaces = svg.Descendants().Where(element => Role(element) == "topology-node-surface")
             .Select(element => (Id: (string?)element.Parent?.Attribute("data-node-id") ?? "",
@@ -218,8 +221,14 @@ public sealed class ConsumerRenderingRegressionTests {
             AssertOnBorder(N(edge, "data-route-end-x"), N(edge, "data-route-end-y"), target);
         }
         var png = RasterImageDecoder.Decode(chart.ToPng(options));
-        Assert.Equal(width, png.Width);
-        Assert.Equal(height, png.Height);
+        Assert.Equal(width * pngOutputScale, png.Width);
+        Assert.Equal(height * pngOutputScale, png.Height);
+        foreach (var edge in svg.Descendants().Where(element => Role(element) == "topology-edge")) {
+            var source = surfaces[(string)edge.Attribute("data-source-node-id")!];
+            var target = surfaces[(string)edge.Attribute("data-target-node-id")!];
+            AssertRasterEndpoint(png, N(edge, "data-route-start-x"), N(edge, "data-route-start-y"), source, pngOutputScale);
+            AssertRasterEndpoint(png, N(edge, "data-route-end-x"), N(edge, "data-route-end-y"), target, pngOutputScale);
+        }
 
         static void AssertOnBorder(double x, double y, (string Id, double X, double Y, double Width, double Height) node) {
             const double tolerance = 1.5;
@@ -228,6 +237,29 @@ public sealed class ConsumerRenderingRegressionTests {
             var onVertical = y >= node.Y - tolerance && y <= node.Y + node.Height + tolerance &&
                 (Math.Abs(x - node.X) <= tolerance || Math.Abs(x - (node.X + node.Width)) <= tolerance);
             Assert.True(onHorizontal || onVertical, $"Route endpoint ({x:0.##}, {y:0.##}) misses node '{node.Id}' border.");
+        }
+
+        static void AssertRasterEndpoint(ChartForgeX.Raster.RgbaImage image, double x, double y,
+            (string Id, double X, double Y, double Width, double Height) node, int scale) {
+            var side = Math.Abs(x - node.X) <= 1.5 ? -1
+                : Math.Abs(x - (node.X + node.Width)) <= 1.5 ? 1
+                : Math.Abs(y - node.Y) <= 1.5 ? -2 : 2;
+            var background = new[] { image.Pixels[0], image.Pixels[1], image.Pixels[2] };
+            for (var distance = 1; distance <= 8; distance++) {
+                for (var tangent = -3; tangent <= 3; tangent++) {
+                    var px = (int)Math.Round((x + (side == -1 ? -distance : side == 1 ? distance : 0)) * scale);
+                    var py = (int)Math.Round((y + (side == -2 ? -distance : side == 2 ? distance : 0)) * scale);
+                    if (side is -1 or 1) py += tangent * scale;
+                    else px += tangent * scale;
+                    if (px < 0 || py < 0 || px >= image.Width || py >= image.Height) continue;
+                    var offset = (py * image.Width + px) * 4;
+                    var difference = Math.Abs(image.Pixels[offset] - background[0])
+                        + Math.Abs(image.Pixels[offset + 1] - background[1])
+                        + Math.Abs(image.Pixels[offset + 2] - background[2]);
+                    if (difference > 36) return;
+                }
+            }
+            Assert.Fail($"The raster route from '{node.Id}' has no visible ink just outside its border at ({x:0.##}, {y:0.##}).");
         }
     }
 
@@ -333,6 +365,56 @@ public sealed class ConsumerRenderingRegressionTests {
                 "The fitted badge must not cross the bottom content clip.");
         });
         Assert.NotEmpty(chart.ToPng(options));
+    }
+
+    [Theory]
+    [InlineData(900, 360, 1)]
+    [InlineData(560, 260, 1)]
+    [InlineData(900, 360, 2)]
+    [InlineData(560, 260, 2)]
+    public void FittedTopologyKeepsLongEndpointLabelsInsideTheContentClip(int width, int height, int pngScale) {
+        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("source", "Source", 120, 100, width: 80, height: 60)
+            .AddNode("target", "Target", 330, 100, width: 80, height: 60)
+            .AddEdge("link", "source", "target")
+            .WithEdgeEndpointLabels("link", "Long source relationship label", "Long target relationship label");
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = pngScale };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var clipPath = svg.Descendants().Single(element => element.Name.LocalName == "clipPath");
+        var clip = clipPath.Elements().Single(element => element.Name.LocalName == "rect");
+        var labels = svg.Descendants().Where(element => Role(element) == "topology-endpoint-label-surface").ToArray();
+
+        Assert.Equal(2, labels.Length);
+        Assert.All(labels, label => {
+            Assert.True(N(label, "x") >= N(clip, "x") - 1, "The fitted endpoint label must remain inside the left clip edge.");
+            Assert.True(N(label, "y") >= N(clip, "y") - 1, "The fitted endpoint label must remain inside the top clip edge.");
+            Assert.True(N(label, "x") + N(label, "width") <= N(clip, "x") + N(clip, "width") + 1,
+                "The fitted endpoint label must remain inside the right clip edge.");
+            Assert.True(N(label, "y") + N(label, "height") <= N(clip, "y") + N(clip, "height") + 1,
+                "The fitted endpoint label must remain inside the bottom clip edge.");
+        });
+        Assert.NotEmpty(chart.ToPng(options));
+    }
+
+    [Fact]
+    public void LayeredLayoutPacksOneAutomaticGroupAgainstAnExplicitShell() {
+        var chart = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddGroup("fixed", "Fixed shell", 0, 0, 520, 360)
+            .AddAutoGroup("automatic", "Automatic shell")
+            .AddAutoNode("fixed-node", "Fixed member", groupId: "fixed")
+            .AddAutoNode("automatic-node", "Automatic member", groupId: "automatic")
+            .AddEdge("link", "fixed-node", "automatic-node");
+        var prepared = TopologyLayoutEngine.Prepare(chart);
+        var groups = prepared.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal);
+        var fixedGroup = groups["fixed"];
+        var automatic = groups["automatic"];
+        var nodes = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+
+        Assert.True(automatic.X >= fixedGroup.X + fixedGroup.Width,
+            $"The single automatic shell must follow the explicit shell along the left-to-right flow axis. fixed=({fixedGroup.X},{fixedGroup.Y},{fixedGroup.Width},{fixedGroup.Height}), automatic=({automatic.X},{automatic.Y},{automatic.Width},{automatic.Height}).");
+        Assert.True(nodes["automatic-node"].X > nodes["fixed-node"].X,
+            "Group packing must preserve the authored left-to-right node order.");
     }
 
     [Fact]
@@ -468,26 +550,38 @@ public sealed class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void CardLabelPaintPreservesHostColorVariablesAndHighlightDimming() {
-        var chart = TopologyChart.Create().WithViewport(520, 240).WithLayout(TopologyLayoutMode.Manual)
-            .AddNode("service", "Directory service", 30, 50, width: 130, height: 70)
-            .AddNode("peer", "Peer", 250, 50, width: 130, height: 70);
-        chart.Nodes[0].LabelColor = "var(--host-label)";
+        var chart = TopologyChart.Create().WithViewport(1120, 260).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("card", "Card label", 20, 60, width: 150, height: 70)
+            .AddNode("shape", "Shape label", 230, 60, width: 150, height: 70)
+            .AddNode("icon", "Icon label", 440, 60, width: 150, height: 70)
+            .AddNode("tile", "Tile label", 650, 60, width: 150, height: 70)
+            .AddNode("diagram", "Diagram label", 860, 60, width: 150, height: 70);
+        chart.Nodes[1].Shape = TopologyNodeShape.Diamond;
+        chart.Nodes[2].DisplayMode = TopologyNodeDisplayMode.Icon;
+        chart.Nodes[3].DisplayMode = TopologyNodeDisplayMode.Tile;
+        chart.Nodes[4].Shape = TopologyNodeShape.Actor;
+        foreach (var node in chart.Nodes) node.LabelColor = "var(--host-label, #ef4444)";
         var options = new TopologyRenderOptions {
-            IncludeLegend = false, DimmedOpacity = .5,
+            IncludeLegend = false, IncludeIconLabels = true, DimmedOpacity = .5,
             SvgColorVariables = new SvgColorVariables().Add("--host-label", ChartColor.FromHex("#ef4444"), SvgColorRole.Text)
         };
-        options.HighlightNodeIds.Add("peer");
+        options.HighlightNodeIds.Add("card");
         var svg = XDocument.Parse(chart.ToSvg(options));
-        var label = svg.Descendants().Where(element => Role(element) == "topology-node-label")
-            .Single(element => string.Concat(element.DescendantsAndSelf().Where(child => child.Name.LocalName == "text").Select(child => child.Value))
-                .Contains("Directory", StringComparison.Ordinal));
-        Assert.Contains("Directory", string.Join(" ", label.DescendantsAndSelf().Where(element => element.Name.LocalName == "text").Select(element => element.Value)), StringComparison.Ordinal);
-        var paint = string.Join(" ", label.DescendantsAndSelf().SelectMany(element => new[] {
-            (string?)element.Attribute("fill"), (string?)element.Attribute("style")
-        }).Where(value => !string.IsNullOrWhiteSpace(value)));
-        Assert.Contains("color-mix(in srgb, var(--host-label", paint, StringComparison.Ordinal);
-        Assert.Contains("50%", paint, StringComparison.Ordinal);
-        Assert.NotEmpty(chart.ToPng(options));
+        foreach (var (nodeId, text) in new[] { ("card", "Card label"), ("shape", "Shape label"), ("icon", "Icon label"), ("tile", "Tile label"), ("diagram", "Diagram label") }) {
+            var label = svg.Descendants().Single(element => element.Name.LocalName == "text" && element.Value.Contains(text, StringComparison.Ordinal));
+            var labelElements = label.AncestorsAndSelf().TakeWhile(element => element.Name.LocalName != "svg");
+            var paint = string.Join(" ", labelElements.SelectMany(element => new[] {
+                (string?)element.Attribute("fill"), (string?)element.Attribute("style")
+            }).Where(value => !string.IsNullOrWhiteSpace(value)));
+            Assert.Contains("var(--host-label", paint, StringComparison.Ordinal);
+            if (nodeId != "card") Assert.Contains("color-mix(in srgb, var(--host-label", paint, StringComparison.Ordinal);
+        }
+        var raster = chart.ToRgbaImage(options);
+        var mappedLabelInk = Enumerable.Range(0, raster.Width * raster.Height).Any(index => {
+            var offset = index * 4;
+            return raster.Pixels[offset] > 200 && raster.Pixels[offset + 1] < 150 && raster.Pixels[offset + 2] < 150;
+        });
+        Assert.True(mappedLabelInk, "Native PNG captions must use the explicit CSS-variable fallback color.");
     }
 
     [Fact]

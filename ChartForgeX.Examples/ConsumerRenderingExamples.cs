@@ -106,6 +106,30 @@ public static class ConsumerRenderingExamples {
             foreach (var node in badge.Nodes) { node.DisplayMode = mode; node.Badge = "CRITICAL STATUS"; }
             SaveExample("topology-fit-external-badge-" + mode.ToString().ToLowerInvariant(), badge.ToSvg(growingOptions), badge.ToPng(growingOptions));
         }
+        var endpointLabels = TopologyChart.Create().WithViewport(900, 360).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddNode("source", "Source", 120, 100, width: 80, height: 60).AddNode("target", "Target", 330, 100, width: 80, height: 60)
+            .AddEdge("link", "source", "target").WithEdgeEndpointLabels("link", "Long source relationship label", "Long target relationship label");
+        SaveExample("topology-fit-endpoint-labels", endpointLabels.ToSvg(fittedTopologyOptions), endpointLabels.ToPng(fittedTopologyOptions));
+        var packedGroup = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddGroup("fixed", "Fixed shell", 0, 0, 520, 360)
+            .AddAutoGroup("automatic", "Automatic shell").AddAutoNode("fixed-node", "Fixed member", groupId: "fixed")
+            .AddAutoNode("automatic-node", "Automatic member", groupId: "automatic").AddEdge("link", "fixed-node", "automatic-node");
+        SaveExample("topology-layered-single-automatic-group", packedGroup.ToSvg(), packedGroup.ToPng());
+        var labelColorModes = TopologyChart.Create().WithViewport(1120, 260).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddNode("card", "Card label", 20, 60, width: 150, height: 70).AddNode("shape", "Shape label", 230, 60, width: 150, height: 70)
+            .AddNode("icon", "Icon label", 440, 60, width: 150, height: 70).AddNode("tile", "Tile label", 650, 60, width: 150, height: 70)
+            .AddNode("diagram", "Diagram label", 860, 60, width: 150, height: 70);
+        labelColorModes.Nodes[1].Shape = TopologyNodeShape.Diamond;
+        labelColorModes.Nodes[2].DisplayMode = TopologyNodeDisplayMode.Icon;
+        labelColorModes.Nodes[3].DisplayMode = TopologyNodeDisplayMode.Tile;
+        labelColorModes.Nodes[4].Shape = TopologyNodeShape.Actor;
+        foreach (var node in labelColorModes.Nodes) node.LabelColor = "var(--host-label, #ef4444)";
+        var labelColorOptions = new TopologyRenderOptions {
+            IncludeLegend = false, IncludeIconLabels = true,
+            SvgColorVariables = new SvgColorVariables().Add("--host-label", ChartColor.FromHex("#ef4444"), ChartForgeX.Themes.SvgColorRole.Text)
+        };
+        labelColorOptions.HighlightNodeIds.Add("card");
+        SaveExample("topology-label-colors-all-modes", labelColorModes.ToSvg(labelColorOptions), labelColorModes.ToPng(labelColorOptions));
         foreach (var mode in new[] { TopologyNodeDisplayMode.Tile, TopologyNodeDisplayMode.Icon }) {
             var captions = TopologyChart.Create().WithViewport(520, 150).WithLayout(TopologyLayoutMode.Layered)
                 .WithLayoutDirection(TopologyLayoutDirection.TopToBottom)

@@ -131,8 +131,21 @@ internal sealed partial class VisualTopologyCompiler {
             foreach (var point in _routes.Values.SelectMany(route => route)) Include(point.X, point.Y, point.X, point.Y);
             foreach (var label in _edgeLabels) Include(label.CenterX - label.Width / 2, label.CenterY - label.Height / 2,
                 label.CenterX + label.Width / 2, label.CenterY + label.Height / 2);
+            if (_options.IncludeEndpointLabels) {
+                foreach (var edge in _chart.Edges) {
+                    if (!_routes.TryGetValue(edge, out var route) || route.Count < 2) continue;
+                    IncludeEndpoint(edge.SourceLabel, route[0], route[1]);
+                    IncludeEndpoint(edge.TargetLabel, route[route.Count - 1], route[route.Count - 2]);
+                }
+            }
             return double.IsPositiveInfinity(left) ? new ChartRect(fallbackX, fallbackY, fallbackWidth, fallbackHeight)
                 : new ChartRect(left, top, Math.Max(1, right - left), Math.Max(1, bottom - top));
+
+            void IncludeEndpoint(string? text, ChartPoint endpoint, ChartPoint adjacent) {
+                if (string.IsNullOrWhiteSpace(text)) return;
+                var label = EdgeEndpointLabelLayout(_chart, _options, endpoint, adjacent, text!);
+                Include(label.Bounds.Left, label.Bounds.Top, label.Bounds.Right, label.Bounds.Bottom);
+            }
         }
     }
 }
