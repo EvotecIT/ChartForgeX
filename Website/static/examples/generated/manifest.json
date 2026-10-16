@@ -15780,7 +15780,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 12
+      "semanticRegions": 15
     },
     {
       "id": "family-timeline-wide-dark",
@@ -15848,7 +15848,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 12
+      "semanticRegions": 15
     },
     {
       "id": "family-gantt-wide-light",
@@ -15916,7 +15916,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 20
     },
     {
       "id": "family-gantt-wide-dark",
@@ -15984,7 +15984,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 20
     },
     {
       "id": "family-sankey-wide-light",
@@ -19744,7 +19744,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 21
     },
     {
       "id": "family-state-timeline-wide-dark",
@@ -19812,7 +19812,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 21
     },
     {
       "id": "family-gantt-lane-wide-light",
@@ -19880,7 +19880,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 21
     },
     {
       "id": "family-gantt-lane-wide-dark",
@@ -19948,7 +19948,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 21
     },
     {
       "id": "family-pyramid-wide-light",
@@ -22362,7 +22362,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-difference-area-step-start-light",
@@ -22636,7 +22636,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 26
+      "semanticRegions": 27
     },
     {
       "id": "family-difference-area-step-start-dark",
