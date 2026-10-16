@@ -105,6 +105,7 @@ internal static class VisualCanvasInfoTileTextLayout {
         var textX = iconX + iconBox + textGap;
         var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartSampleCount > 0;
         var chartWidth = hasMiniChart ? Math.Min(Math.Min(width * 0.24, Math.Max(82 * scale, width * 0.20)), Math.Max(0, x + width - padX - textX - 16 * scale - minTextWidth)) : 0;
+        if (chartWidth <= 0) hasMiniChart = false;
         var chartX = x + width - padX - chartWidth;
         var chartY = y + Math.Min(Math.Max(24 * scale, height * 0.30), Math.Max(0, height - 1));
         var chartHeight = Math.Min(Math.Max(28 * scale, Math.Min(46 * scale, height * 0.42)), Math.Max(1, y + height - chartY));
@@ -142,6 +143,12 @@ internal static class VisualCanvasInfoTileTextLayout {
             best = next;
             scale = nextScale;
             if (!RequiresFitAdjustment(next)) break;
+        }
+
+        if (RequiresFitAdjustment(best) && scale > minimumScale) {
+            best = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine,
+                minimumScale, false, faces, theme);
+            scale = minimumScale;
         }
 
         if (best.HasVerticalOverflow && tile.Detail.Length > 0) {

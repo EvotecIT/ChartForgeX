@@ -135,8 +135,8 @@ var theme = VisualTheme.Graphite().WithTypography(
         tileDetailSize: 14));
 var canvas = VisualCanvas.Create(1200, 630).WithTheme(theme)
     .ConfigureStyle(style => style.TileTextScale = 1.15)
-    .AddInfoTile(48, 80, 520, 150, "PC", "HOST", "DEV-WKS-01",
-        detail: null, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 1.25,
+    .AddInfoTileWithTextOptions(48, 80, 520, 150, "PC", "HOST", "DEV-WKS-01",
+        new VisualCanvasInfoTileTextOptions(textScale: 1.25,
             valueFontSize: 28));
 ```
 

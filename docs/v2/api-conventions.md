@@ -31,7 +31,7 @@ HTML interaction presentation stays in the optional adapter. `HtmlChartInteracti
 | --- | --- |
 | `IVisualRenderable` | A core static compilation boundary returning `PreparedVisual`. Optional producers implement the same boundary without making core reference their concrete types. |
 | `VisualSize` | Finite positive logical width and height. A default zero-valued struct is rejected when used in a layout. |
-| `VisualTypography` tile sizes and `VisualCanvasInfoTileTextOptions` | Theme defaults provide tile label/value/detail sizes; optional per-role sizes override a role, while `TextScale` multiplies the effective sizes. `VisualCanvasStyleOptions.TileTextScale` supplies the canvas default. The `AddInfoTile` options object keeps the existing builder overloads binary-compatible. |
+| `VisualTypography` tile sizes and `VisualCanvasInfoTileTextOptions` | Theme defaults provide tile label/value/detail sizes; optional per-role sizes override a role, while `TextScale` multiplies the effective sizes. `VisualCanvasStyleOptions.TileTextScale` supplies the canvas default. `AddInfoTileWithTextOptions` keeps the legacy `AddInfoTile` overloads unambiguous and binary-compatible. |
 | `VisualLayoutOptions` | A resolved fixed size and finite non-negative outer padding. Padding must leave a positive interior. |
 | `VisualFrame` | Title, subtitle, optional measured legend title, visibility/position and density budgets; separate card/content surfaces and optional transparent canvas. |
 | `VisualTheme` | Immutable light/dark colors, typography, geometry and card-shadow settings. Card and mark radii are independent. Graphite is a preset. |

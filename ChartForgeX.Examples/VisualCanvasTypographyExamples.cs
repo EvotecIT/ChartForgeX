@@ -22,9 +22,10 @@ internal static class VisualCanvasTypographyExamples {
         }
 
         var tooSmall = CreateCanvas(1920, 1080, VisualThemeMode.Dark)
-            .AddInfoTile(48, 64, 320, 72, "PC", "HOSTNAME", "A very long workstation name",
-                "Windows 11 Enterprise workstation",
-                new VisualCanvasInfoTileTextOptions(textScale: 1.5));
+            .AddInfoTileWithTextOptions(48, 64, 320, 72, "PC", "HOSTNAME",
+                "A very long workstation name",
+                new VisualCanvasInfoTileTextOptions(textScale: 1.5),
+                "Windows 11 Enterprise workstation");
         tooSmall.SavePng(Path.Combine(output, "tile-text-too-small-1.5-dark.png"));
         tooSmall.SaveSvg(Path.Combine(output, "tile-text-too-small-1.5-dark.svg"));
     }
@@ -33,8 +34,9 @@ internal static class VisualCanvasTypographyExamples {
         var canvas = CreateCanvas(1200, 630, mode)
             .AddInfoTile(48, 100, 520, 164, "PC", "WORKSTATION", "DEV-WKS-01", "Windows 11 Enterprise",
                 ChartColor.FromHex("#2F80FF"), surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised)
-            .AddInfoTile(632, 100, 520, 164, "CPU", "PROCESSOR", "Intel Core i7",
-                "Average load 23%", new VisualCanvasInfoTileTextOptions(textScale: 1.25),
+            .AddInfoTileWithTextOptions(632, 100, 520, 164, "CPU", "PROCESSOR",
+                "Intel Core i7", new VisualCanvasInfoTileTextOptions(textScale: 1.25),
+                "Average load 23%",
                 ChartColor.FromHex("#22A7FF"),
                 surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised,
                 miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
@@ -48,9 +50,10 @@ internal static class VisualCanvasTypographyExamples {
     private static void SaveProof(string output, int width, int height, VisualThemeMode mode,
         double scale) {
         var canvas = CreateCanvas(width, height, mode)
-            .AddInfoTile(48, 64, 680, 168, "CPU", "PROCESSOR", "Intel Core i7 14700K",
-                "20 cores, average load 23%",
+            .AddInfoTileWithTextOptions(48, 64, 680, 168, "CPU", "PROCESSOR",
+                "Intel Core i7 14700K",
                 new VisualCanvasInfoTileTextOptions(textScale: scale),
+                "20 cores, average load 23%",
                 ChartColor.FromHex("#2F80FF"), 0.23,
                 surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised,
                 miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
