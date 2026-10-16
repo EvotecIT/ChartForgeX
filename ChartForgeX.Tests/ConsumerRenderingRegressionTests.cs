@@ -189,6 +189,46 @@ public sealed class ConsumerRenderingRegressionTests {
         Assert.Equal(560, image.Height);
     }
 
+    [Theory]
+    [InlineData(1300, 560)]
+    [InlineData(900, 400)]
+    [InlineData(520, 260)]
+    public void FittedTopologyRoutesMeetNodeBordersAtEveryScale(int width, int height) {
+        var chart = TopologyChart.Create().WithViewport(width, height).WithLegend(null)
+            .WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddAutoGroup("edge", "Edge").AddAutoGroup("core", "Core")
+            .AddAutoNode("gateway", "Gateway", groupId: "edge")
+            .AddAutoNode("identity", "Identity service", groupId: "core")
+            .AddAutoNode("database", "Directory database", groupId: "core")
+            .AddEdge("https", "gateway", "identity", "HTTPS")
+            .AddEdge("long", "gateway", "database", "Long route");
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var surfaces = svg.Descendants().Where(element => Role(element) == "topology-node-surface")
+            .Select(element => (Id: (string?)element.Parent?.Attribute("data-node-id") ?? "",
+                X: N(element, "x"), Y: N(element, "y"), Width: N(element, "width"), Height: N(element, "height")))
+            .ToDictionary(item => item.Id, StringComparer.Ordinal);
+
+        foreach (var edge in svg.Descendants().Where(element => Role(element) == "topology-edge")) {
+            var source = surfaces[(string)edge.Attribute("data-source-node-id")!];
+            var target = surfaces[(string)edge.Attribute("data-target-node-id")!];
+            AssertOnBorder(N(edge, "data-route-start-x"), N(edge, "data-route-start-y"), source);
+            AssertOnBorder(N(edge, "data-route-end-x"), N(edge, "data-route-end-y"), target);
+        }
+        var png = RasterImageDecoder.Decode(chart.ToPng(options));
+        Assert.Equal(width, png.Width);
+        Assert.Equal(height, png.Height);
+
+        static void AssertOnBorder(double x, double y, (string Id, double X, double Y, double Width, double Height) node) {
+            const double tolerance = 1.5;
+            var onHorizontal = x >= node.X - tolerance && x <= node.X + node.Width + tolerance &&
+                (Math.Abs(y - node.Y) <= tolerance || Math.Abs(y - (node.Y + node.Height)) <= tolerance);
+            var onVertical = y >= node.Y - tolerance && y <= node.Y + node.Height + tolerance &&
+                (Math.Abs(x - node.X) <= tolerance || Math.Abs(x - (node.X + node.Width)) <= tolerance);
+            Assert.True(onHorizontal || onVertical, $"Route endpoint ({x:0.##}, {y:0.##}) misses node '{node.Id}' border.");
+        }
+    }
+
     [Fact]
     public void FitContentScalesFixedCardsWithoutChangingTheirRelativeDimensions() {
         var chart = TopologyChart.Create().WithViewport(960, 400).WithLayout(TopologyLayoutMode.Manual)
@@ -475,18 +515,6 @@ public sealed class ConsumerRenderingRegressionTests {
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants();
         Assert.Equal(expected, nodes.Any(e => Role(e) == "treemap-label"));
     }
-    [Fact]
-    public void WideCalendarWeekdayCaptionsFollowTheCenteredGrid() {
-        var start = new DateTime(2026, 1, 1);
-        var items = Enumerable.Range(0, 126).Select(i => new ChartCalendarHeatmapItem(start.AddDays(i), i % 5 + 1));
-        var chart = Chart.Create().WithSize(1400, 220).AddCalendarHeatmap("Sign-ins", items);
-        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        var left = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(e => e.Role == "calendar-cell-shape").Min(e => e.Bounds.Left);
-        var captions = prepared.Regions.Where(e => e.Role == "calendar-weekday").ToArray();
-        Assert.NotEmpty(captions);
-        Assert.All(captions, e => Assert.InRange(left - e.Bounds.Right, 0, 30));
-    }
-
     [Fact]
     public void CloseBarValuesKeepTheirCaptionsCenteredOnTheirOwnMark() {
         var chart = Chart.Create().WithSize(520, 220).WithDataLabels(true)

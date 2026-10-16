@@ -119,6 +119,8 @@ internal sealed partial class VisualTopologyCompiler {
         _edgeRenderOrders = EdgeRenderOrderMap(_chart, _options);
         foreach (var edge in _chart.Edges) {
             var route = EdgePoints(_chart, edge, nodes);
+            if (_options.FitContentToViewport)
+                TopologyRenderPrimitives.AttachEndpointsToSurfaces(edge, nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], route);
             _routes.Add(edge, SampleRoute(route));
             _paintRoutes.Add(edge, SampleRoute(TopologyDenseRoutePlanner.PaintPoints(_chart, edge, route, includeOwner: true)));
             var trunk = TopologyDenseRoutePlanner.SharedTrunk(_chart, edge);

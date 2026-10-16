@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Topology;
@@ -8,16 +9,25 @@ internal static partial class TopologyRenderPrimitives {
         return BoundaryPoint(node, towardX, towardY, TopologyEdgePort.Auto);
     }
 
-    private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port) {
-        if (node.Shape.HasValue) return TopologyNodeShapeGeometry.BoundaryPoint(node, towardX, towardY, port, EdgeEndpointGap);
+    private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port) =>
+        BoundaryPoint(node, towardX, towardY, port, EdgeEndpointGap);
+
+    internal static void AttachEndpointsToSurfaces(TopologyEdge edge, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
+        if (points.Count < 2) return;
+        points[0] = BoundaryPoint(source, points[1].X, points[1].Y, edge.SourcePort, 0);
+        points[points.Count - 1] = BoundaryPoint(target, points[points.Count - 2].X, points[points.Count - 2].Y, edge.TargetPort, 0);
+    }
+
+    private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port, double gap) {
+        if (node.Shape.HasValue) return TopologyNodeShapeGeometry.BoundaryPoint(node, towardX, towardY, port, gap);
         var centerX = CenterX(node);
         var centerY = CenterY(node);
         if (port != TopologyEdgePort.Auto) {
             return port switch {
-                TopologyEdgePort.Top => new ChartPoint(centerX, node.Y - EdgeEndpointGap),
-                TopologyEdgePort.Right => new ChartPoint(node.X + node.Width + EdgeEndpointGap, centerY),
-                TopologyEdgePort.Bottom => new ChartPoint(centerX, node.Y + node.Height + EdgeEndpointGap),
-                TopologyEdgePort.Left => new ChartPoint(node.X - EdgeEndpointGap, centerY),
+                TopologyEdgePort.Top => new ChartPoint(centerX, node.Y - gap),
+                TopologyEdgePort.Right => new ChartPoint(node.X + node.Width + gap, centerY),
+                TopologyEdgePort.Bottom => new ChartPoint(centerX, node.Y + node.Height + gap),
+                TopologyEdgePort.Left => new ChartPoint(node.X - gap, centerY),
                 _ => new ChartPoint(centerX, centerY)
             };
         }
@@ -26,8 +36,8 @@ internal static partial class TopologyRenderPrimitives {
         var dy = towardY - centerY;
         if (Math.Abs(dx) < 0.000001 && Math.Abs(dy) < 0.000001) return new ChartPoint(centerX, centerY);
 
-        var scaleX = Math.Abs(dx) < 0.000001 ? double.PositiveInfinity : (node.Width / 2 + EdgeEndpointGap) / Math.Abs(dx);
-        var scaleY = Math.Abs(dy) < 0.000001 ? double.PositiveInfinity : (node.Height / 2 + EdgeEndpointGap) / Math.Abs(dy);
+        var scaleX = Math.Abs(dx) < 0.000001 ? double.PositiveInfinity : (node.Width / 2 + gap) / Math.Abs(dx);
+        var scaleY = Math.Abs(dy) < 0.000001 ? double.PositiveInfinity : (node.Height / 2 + gap) / Math.Abs(dy);
         var scale = Math.Min(scaleX, scaleY);
         return new ChartPoint(centerX + dx * scale, centerY + dy * scale);
     }
