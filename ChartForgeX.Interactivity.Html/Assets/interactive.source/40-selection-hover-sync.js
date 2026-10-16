@@ -33,7 +33,7 @@
     if (target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
     return false;
   };
-  const clearHover = (root, emit, sync) => {
+  const clearHover = (root, emit, sync, preservePaint = false) => {
     clearRootBranchHighlight(root);
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
@@ -43,7 +43,10 @@
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
-    root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column,.cfx-hover-series').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series'));
+    // A following target transition updates each class to its new state. Keep unchanged
+    // series paint instead of removing and restoring thousands of related observations.
+    if (!preservePaint || root._cfxBranchHighlights)
+      root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column,.cfx-hover-series').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series'));
     // A published hover change supersedes the peer's guide emphasis; the next guide must restore it.
     if (emit !== false || sync !== false) delete root._cfxCrosshairMode;
     if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
@@ -76,10 +79,10 @@
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
-    if (!target) return false;
+    if (!target) { clearHover(root, false, false); return false; }
     const nodes = interactiveTargets(root);
     const localNode = nodes.find((node) => matchesTargetIdentity(node, target));
-    if (!localNode && target.targetKind && target.targetId) return false;
+    if (!localNode && target.targetKind && target.targetId) { clearHover(root, false, false); return false; }
     // A peer's equivalent mark may have a different local point ordinal or series position.
     const localTarget = localNode ? targetIdentity(localNode) : target;
     const hoverMode = hoverModeForTarget(root, localNode, mode);
@@ -257,8 +260,8 @@
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
     if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
     else if (detail.action === 'brush') {
-      root.dataset.cfxBrush = detail.bounds || '';
-      syncResetControl(root);
+      if (detail.clear) clearBrush(root);
+      else { root.dataset.cfxBrush = detail.bounds || ''; syncResetControl(root); }
     }
     else if (detail.action === 'highlight') applyHostHighlight(root, detail.state || null);
     else if (detail.action === 'selection') {
@@ -277,12 +280,12 @@
       syncSelectionAppearance(root);
     }
     else if (detail.action === 'hover') {
-      clearHover(root, false, false);
+      clearHover(root, false, false, true);
       applyHoverByTarget(root, detail.target);
       revealTargets(root, [detail.target], false, false, detail.source || 'hover');
     } else if (detail.action === 'hover-clear') clearHover(root, false, false);
     else if (detail.action === 'crosshair' || detail.action === 'navigate') {
-      clearHover(root, false, false);
+      clearHover(root, false, false, true);
       applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series');
       revealTargets(root, [detail.target], false, false, detail.action);
     }

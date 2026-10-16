@@ -17,6 +17,7 @@
       get sceneRevision() { return lifetime.sceneRevision; },
       select: (match, options) => { requireMounted(); runSelectionCommand(root, match, options); return controller; },
       clearSelection: options => { requireMounted(); clearSelectionCommand(root, options); return controller; },
+      clearBrush: options => { requireMounted(); clearBrushCommand(root, options); return controller; },
       getSelection: () => { requireMounted(); return copyHostValue(selectedTargets(root)); },
       highlight: (match, options) => { requireMounted(); runHighlightCommand(root, match, options); return controller; },
       clearHighlight: options => { requireMounted(); clearHighlightCommand(root, options); return controller; },

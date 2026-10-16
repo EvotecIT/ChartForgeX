@@ -177,7 +177,7 @@
     const data = node.dataset || {};
     if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
       return [seriesLabel(node), data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxLabel].filter(Boolean).join(': ');
-    if (isDataTarget(node)) return data.cfxAuthoredLabel ?? targetCategory(node) ?? (data.cfxLabel || data.cfxText || seriesLabel(node) || data.cfxRole || '');
+    if (isDataTarget(node)) return data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxDisplayLabel ?? (data.cfxLabel || data.cfxText || seriesLabel(node) || data.cfxRole || '');
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
     const label = data.cfxLabel || data.cfxText || '';
@@ -193,12 +193,15 @@
   const targetIdentity = (node) => {
     const data = node.dataset || {};
     const targetKind = renderedTargetKind(node);
+    const state = (data.cfxKind || '').toLowerCase() === 'statetimeline';
+    const rawValue = (data.cfxKind || '').toLowerCase() === 'boxplot' ? data.cfxMedian : data.cfxValue ?? data.cfxY ?? data.cfxEnd;
     return {
       targetKind,
       targetId: renderedTargetId(node, targetKind),
       id: data.cfxId || node.id || '',
       role: data.cfxRole || '',
-      label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
+      label: data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxDisplayLabel ?? (data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || ''),
+      rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
       seriesScope: data.cfxSeriesScope,
@@ -206,14 +209,14 @@
       observationIds: contributorObservationIds(node),
       category: targetCategory(node),
       x: targetRawX(node),
-      numericValue: tooltipNumber(data.cfxValue || data.cfxY || data.cfxEnd) ? Number(data.cfxValue || data.cfxY || data.cfxEnd) : undefined,
+      numericValue: !state && tooltipNumber(rawValue) ? Number(rawValue) : undefined,
       range: targetDataRange(node),
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
       sourcePoints: sourcePointCollection(node),
       legendTargetKind: data.cfxLegendTargetKind,
       legendTargetId: data.cfxLegendTargetId,
-      value: data.cfxValue || data.cfxY || data.cfxEnd || '',
+      value: state ? data.cfxStateLabel ?? data.cfxLabel ?? '' : rawValue ?? '',
       kind: data.cfxKind || ''
     };
   };
@@ -257,8 +260,8 @@
     const data = node.dataset || {};
     if (!data.cfxWaterfallKind) return [];
     const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
-    return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
-      { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
+    return [{ name: rowName(node, 'waterfall-value', fallback), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
+      { name: 'Start', value: capturedText(data, 'cfxFormattedStart', data.cfxStart) }, { name: 'End', value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }]
       .filter((row) => row.value !== undefined && row.value !== '');
   };
   const boxPlotTooltipRows = (node) => {
@@ -273,7 +276,8 @@
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
     return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
-      { name: rowName(node, 'start', ''), value: data.cfxStart }, { name: rowName(node, 'end', ''), value: data.cfxEnd }]
+      { name: rowName(node, 'start', ''), value: capturedText(data, 'cfxFormattedStart', data.cfxStart) },
+      { name: rowName(node, 'end', ''), value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }]
       .filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
   };
   const differenceTooltipRows = (node) => {
@@ -291,8 +295,8 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     const pushX = () => {
-      const value = capturedText(data, 'cfxXLabel', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || data.cfxStart);
-      if (data.cfxXLabel !== undefined) rows.push({ name: 'X', value });
+      const value = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || capturedText(data, 'cfxFormattedStart', data.cfxStart)));
+      if (data.cfxXLabel !== undefined || data.cfxFormattedX !== undefined) rows.push({ name: 'X', value });
       else push('X', value);
     };
     push('Series', seriesLabel(node));
@@ -317,7 +321,7 @@
       const value = capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue !== undefined ? data.cfxValue : data.cfxY));
       if (data.cfxFormattedValue !== undefined) rows.push({ name, value });
       else push(name, value);
-      push('End', data.cfxEnd);
+      push('End', capturedText(data, 'cfxFormattedEnd', data.cfxEnd));
     }
     sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Target', data.cfxTarget);
@@ -402,7 +406,10 @@
       const key = targetKey(target);
       if (!key || seen.has(key)) return;
       seen.add(key);
-      items.push({ label: text(node) || target.label || target.role || target.id || 'Target', target });
+      const data = node.dataset || {};
+      const label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
+        ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
+      items.push({ label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target });
     });
     return items;
   };
@@ -948,7 +955,7 @@
     if (!rows.length) return false;
     tip.replaceChildren();
     const header = document.createElement('div');
-    header.className = 'cfx-tooltip__title'; header.textContent = capturedText(data, 'cfxXLabel', numericDisplayText(data.cfxX)); tip.appendChild(header);
+    header.className = 'cfx-tooltip__title'; header.textContent = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX))); tip.appendChild(header);
     const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
     rows.forEach((row) => {
       const name = document.createElement('dt'); const value = document.createElement('dd');
@@ -1538,6 +1545,41 @@
     root.setAttribute('data-cfx-highlight-probe', '');
     try { return read(); } finally { root.removeAttribute('data-cfx-highlight-probe'); }
   };
+  // Prepared point targets own selection. Every Cartesian legend follows that state;
+  // only connected geometry also carries it to its line/fill owner.
+  const syncCartesianLinkedPaint = (root, nodes) => {
+    const owners = new Map();
+    for (const owner of root.querySelectorAll('[data-cfx-role="series"][data-cfx-coordinate-system="cartesian"]')) {
+      const connected = ['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes((owner.dataset.cfxKind || '').toLowerCase());
+      owners.set(owner, { active: false, dim: false, connected, isolated: owner.classList.contains('cfx-series-isolated-out') });
+    }
+    const observations = new Map();
+    for (const node of nodes) {
+      const owner = node.closest('[data-cfx-role="series"]');
+      const state = owners.get(owner);
+      if (!state) continue;
+      const active = node.classList.contains('cfx-selected') || node.classList.contains('cfx-highlighted');
+      const dim = node.classList.contains('cfx-selection-dim') || node.classList.contains('cfx-linked-dim');
+      state.active ||= active;
+      state.dim ||= dim;
+      if (node.dataset.cfxPoint !== undefined) observations.set(owner.dataset.cfxSeries + ':' + node.dataset.cfxPoint,
+        { active, dim, isolated: node.classList.contains('cfx-series-isolated-out') });
+    }
+    for (const [owner, state] of owners) {
+      owner.classList.toggle('cfx-linked-series-active', state.connected && state.active);
+      owner.classList.toggle('cfx-linked-series-dim', state.connected && state.dim && !state.active);
+    }
+    // Legends live outside the series group. Match their local source ordinal, so
+    // their swatch and caption retain the same foreground even over a peer's mark.
+    const series = new Map(Array.from(owners, ([owner, state]) => [owner.dataset.cfxSeries, state]));
+    for (const legend of root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]')) {
+      const state = legend.dataset.cfxPoint === undefined ? series.get(legend.dataset.cfxSeries)
+        : observations.get(legend.dataset.cfxSeries + ':' + legend.dataset.cfxPoint);
+      legend.classList.toggle('cfx-linked-series-active', state?.active === true);
+      legend.classList.toggle('cfx-linked-series-dim', state?.dim === true && !state.active);
+      if (state) legend.classList.toggle('cfx-series-isolated-out', state.isolated);
+    }
+  };
   const prepareRootBranchHighlights = (root) => {
     if (root.dataset.cfxHighlightMode !== 'root-branch') return;
     // Prepared targets normalize family names; native metadata also accepts the enum spelling.
@@ -1742,8 +1784,8 @@
     if (!['dumbbell', 'errorbar'].includes(kind)) return null;
     const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX;
     const rows = [{ name: rowName(node, 'category', 'Category'), value: category }];
-    if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: data.cfxStart },
-      { name: rowName(node, 'end', 'End'), value: data.cfxEnd }, { name: rowName(node, 'delta', 'Delta'), value: data.cfxDelta });
+    if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: capturedText(data, 'cfxFormattedStart', data.cfxStart) },
+      { name: rowName(node, 'end', 'End'), value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }, { name: rowName(node, 'delta', 'Delta'), value: data.cfxDelta });
     else rows.push({ name: rowName(node, 'value', 'Value'), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
       { name: rowName(node, 'lower', 'Lower'), value: data.cfxLower }, { name: rowName(node, 'upper', 'Upper'), value: data.cfxUpper });
     return rows.filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
@@ -1977,13 +2019,24 @@
     });
   };
   const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
+  // Clearing a host range also cancels its provisional gesture so pointerup cannot recommit it.
+  const clearBrush = root => {
+    const brush = root.querySelector('.cfx-brush-box');
+    const changed = Boolean(root.dataset.cfxBrush || root.dataset.cfxMode === 'brush' || brush && !brush.hidden);
+    root._cfxCancelBrushDrag?.();
+    root.removeAttribute('data-cfx-brush');
+    if (brush) {
+      brush.hidden = true;
+      for (const name of ['left', 'top', 'width', 'height']) brush.style.removeProperty(name);
+    }
+    if (root.dataset.cfxMode === 'brush') applyMode(root, '');
+    syncResetControl(root);
+    return changed;
+  };
   const resetViewport = (root) => {
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
-    root.dataset.cfxBrush = '';
-    const brush = root.querySelector('.cfx-brush-box');
-    if (brush) brush.hidden = true;
-    root.dataset.cfxMode = '';
-    root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+    clearBrush(root);
+    applyMode(root, '');
     syncResetControl(root);
   };
   const storeInteractionState = (root, snapshot) => {
@@ -2125,6 +2178,29 @@
     image.onerror = release;
     image.src = sourceUrl;
   };
+  // Adapter emphasis changes paint, never membership in the roving component. Host/native
+  // class changes still invalidate availability, including a class changed in the same batch.
+  const keyboardPaintClasses = new Set(['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series',
+    'cfx-selected', 'cfx-highlighted', 'cfx-linked-dim', 'cfx-selection-dim', 'cfx-linked-series-active',
+    'cfx-linked-series-dim', 'cfx-trail']);
+  const keyboardNativeClasses = value => (value || '').split(/\s+/).filter(value => value && !keyboardPaintClasses.has(value)).sort().join(' ');
+  const keyboardNativeStyle = value => (value || '').replace(/--cfx-highlight-(?:opacity|stroke|stroke-width)\s*:[^;]*(?:;|$)/g, '').trim();
+  const keyboardAvailabilityMutation = (record, stage, ancestry) => {
+    if (record.type === 'attributes' && record.attributeName === 'class'
+      && keyboardNativeClasses(record.oldValue) === keyboardNativeClasses(record.target.getAttribute('class'))) return false;
+    if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline]')) return false;
+    if (record.type === 'attributes' && record.attributeName === 'style' && record.target.matches('[data-cfx-highlight-paint]')
+      && keyboardNativeStyle(record.oldValue) === keyboardNativeStyle(record.target.getAttribute('style'))) return false;
+    // Tooltip, brush, guide and compare UI repaint while the pointer moves. They are not SVG
+    // navigation targets; ResizeObserver covers any resulting change to the stage's size.
+    const svg = stage.querySelector('svg');
+    if (record.type === 'attributes') return record.target === stage || !!svg?.contains(record.target) || ancestry.nodes.includes(record.target);
+    const changes = [...record.addedNodes, ...record.removedNodes];
+    const adapterPaint = node => node.nodeType === 1 && node.matches('[data-cfx-highlight-outline],.cfx-prepared-point-marker,[data-cfx-browser-hit-area]');
+    if (changes.length && changes.every(adapterPaint)) return false;
+    return !!svg?.contains(record.target) || changes.some(node => node.contains(stage) || svg && node.contains(svg)
+      || ancestry.nodes.some(boundary => node.contains(boundary)));
+  };
   // Data and legend are separate roving components. Source identities stay on the actual rendered marks.
   const keyboardTargetAvailable = (node) => {
     if (node.dataset.cfxVisible === 'false') return false;
@@ -2239,16 +2315,16 @@
       const next = composedAncestry(root);
       if (next.nodes.length === ancestry.nodes.length && next.nodes.every((node, index) => node === ancestry.nodes[index])) return;
       paintObserver.disconnect(); unwatchSlots(); ancestry = next;
-      paintObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: paintAvailabilityAttributes });
+      paintObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: paintAvailabilityAttributes });
       for (const node of new Set([...ancestry.nodes.slice(1), ...ancestry.trees])) {
         paintObserver.observe(node, { childList: true,
-          ...(node instanceof Element ? { attributes: true, attributeFilter: paintAvailabilityAttributes } : {}) });
+          ...(node instanceof Element ? { attributes: true, attributeOldValue: true, attributeFilter: paintAvailabilityAttributes } : {}) });
       }
       ancestry.trees.forEach(tree => tree.addEventListener('slotchange', queueRefresh, true));
     };
     const queueRefresh = () => {
       if (chartLifetimes.get(root)?.disposed !== false) return;
-      if (frame) cancelAnimationFrame(frame);
+      if (frame) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
         if (!root.isConnected) {
@@ -2271,10 +2347,8 @@
     paintObserver = new MutationObserver(records => {
       if (chartLifetimes.get(root)?.disposed !== false) return;
       if (!root.isConnected) { queueRefresh(); return; }
-      if (!records.some(record => root.contains(record.target) || record.type === 'attributes' && ancestry.nodes.includes(record.target)
-        || record.type === 'childList' && Array.from(record.removedNodes).some(node => ancestry.nodes.some(boundary => node.contains(boundary))))) return;
-      watchAncestry();
-      refreshKeyboardNavigation(root);
+      if (!records.some(record => keyboardAvailabilityMutation(record, stage, ancestry))) return;
+      queueRefresh();
     });
     watchAncestry();
     ownChartWork(root, () => {
@@ -2521,7 +2595,7 @@
     if (target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
     return false;
   };
-  const clearHover = (root, emit, sync) => {
+  const clearHover = (root, emit, sync, preservePaint = false) => {
     clearRootBranchHighlight(root);
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
@@ -2531,7 +2605,10 @@
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
-    root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column,.cfx-hover-series').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series'));
+    // A following target transition updates each class to its new state. Keep unchanged
+    // series paint instead of removing and restoring thousands of related observations.
+    if (!preservePaint || root._cfxBranchHighlights)
+      root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column,.cfx-hover-series').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series'));
     // A published hover change supersedes the peer's guide emphasis; the next guide must restore it.
     if (emit !== false || sync !== false) delete root._cfxCrosshairMode;
     if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
@@ -2564,10 +2641,10 @@
   // 'series' keeps the pointed series at full strength while other series recede;
   // 'shared' (crosshair over the plot background) keeps every series at full strength.
   const applyHoverByTarget = (root, target, mode) => {
-    if (!target) return false;
+    if (!target) { clearHover(root, false, false); return false; }
     const nodes = interactiveTargets(root);
     const localNode = nodes.find((node) => matchesTargetIdentity(node, target));
-    if (!localNode && target.targetKind && target.targetId) return false;
+    if (!localNode && target.targetKind && target.targetId) { clearHover(root, false, false); return false; }
     // A peer's equivalent mark may have a different local point ordinal or series position.
     const localTarget = localNode ? targetIdentity(localNode) : target;
     const hoverMode = hoverModeForTarget(root, localNode, mode);
@@ -2745,8 +2822,8 @@
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
     if (detail.action === 'viewport' && detail.state) applyViewport(root, detail.state);
     else if (detail.action === 'brush') {
-      root.dataset.cfxBrush = detail.bounds || '';
-      syncResetControl(root);
+      if (detail.clear) clearBrush(root);
+      else { root.dataset.cfxBrush = detail.bounds || ''; syncResetControl(root); }
     }
     else if (detail.action === 'highlight') applyHostHighlight(root, detail.state || null);
     else if (detail.action === 'selection') {
@@ -2765,12 +2842,12 @@
       syncSelectionAppearance(root);
     }
     else if (detail.action === 'hover') {
-      clearHover(root, false, false);
+      clearHover(root, false, false, true);
       applyHoverByTarget(root, detail.target);
       revealTargets(root, [detail.target], false, false, detail.source || 'hover');
     } else if (detail.action === 'hover-clear') clearHover(root, false, false);
     else if (detail.action === 'crosshair' || detail.action === 'navigate') {
-      clearHover(root, false, false);
+      clearHover(root, false, false, true);
       applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series');
       revealTargets(root, [detail.target], false, false, detail.action);
     }
@@ -2847,6 +2924,7 @@
       node.classList.toggle('cfx-selection-dim', selectionForeground && root.dataset.cfxDimOthersSelected === 'true' && !active);
       node.classList.toggle('cfx-linked-dim', highlightForeground && root._cfxHostHighlight?.dim === true && !active);
     });
+    syncCartesianLinkedPaint(root, nodes);
   };
   const selectionSignature = root => selectedTargets(root).map(targetKey).join('\n');
   const publishSelectionChange = (root, reason, sync = false, previousTargets) => {
@@ -2925,7 +3003,17 @@
       previousTargets: mode === 'replace' ? undefined : previousTargets });
     return targets;
   };
-  const clearSelectionCommand = (root, options = {}) => runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
+  const clearBrushCommand = (root, options = {}) => {
+    if (!hasFeature(root, 'Brush')) return false;
+    const changed = clearBrush(root);
+    if (changed && options.emit === true) emitHostEvent(root, 'cfxbrushclear', {});
+    if (changed && options.sync === true) emitSync(root, { action: 'brush', bounds: '', clear: true });
+    return changed;
+  };
+  const clearSelectionCommand = (root, options = {}) => {
+    clearBrushCommand(root, options);
+    return runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
+  };
   const captureHostHighlight = (root, sameSource = false) => {
     const state = copyHostValue(root._cfxHostHighlight || null);
     if (!state || sameSource) return state;
@@ -2991,17 +3079,20 @@
       region.className = 'cfx-visually-hidden'; root.appendChild(region);
     }
     listenChart(root, root, 'cfx-unpin-tooltip', () => unpinTooltip(root));
+    listenChart(root, root, 'cfx-clear-brush', event => clearBrushCommand(root, event.detail || {}));
+    listenChart(root, root, 'cfx-clear-selection', event => clearSelectionCommand(root, event.detail || {}));
     if (!hasFeature(root, 'Selection')) return;
     for (const [name, execute] of [['cfx-select', runSelectionCommand], ['cfx-highlight', runHighlightCommand]])
       listenChart(root, root, name, event => { const detail = event.detail || {}; execute(root, detail.match, detail); });
-    listenChart(root, root, 'cfx-clear-selection', event => clearSelectionCommand(root, event.detail || {}));
     listenChart(root, root, 'cfx-clear-highlight', event => clearHighlightCommand(root, event.detail || {}));
   };
   const validDataProjection = projection => {
     const plot = projection?.plotBounds;
     const axis = value => !!value && [value.minimum, value.maximum, value.transformedMinimum, value.transformedMaximum, value.threshold].every(Number.isFinite)
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
-      && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale);
+      && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
+      && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
+        tick && Number.isFinite(tick.value) && typeof tick.text === 'string'));
     return !!plot && [plot.x, plot.y, plot.width, plot.height].every(Number.isFinite) && plot.width > 0 && plot.height > 0
       && typeof projection.horizontal === 'boolean' && axis(projection.x) && (projection.y === undefined || axis(projection.y));
   };
@@ -3036,14 +3127,29 @@
     const plot = projection.plotBounds;
     const x = points.map(point => clamp((point.x - plot.x) / plot.width, 0, 1));
     const y = points.map(point => clamp(1 - (point.y - plot.y) / plot.height, 0, 1));
+    const orderedValues = (axis, ratios) => ratios.map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => left - right);
     const ordered = (axis, ratios) => {
-      const values = ratios.map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => left - right);
+      const values = orderedValues(axis, ratios);
       return values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
     };
     const range = { x: ordered(projection.x, x) };
     if (root.dataset.cfxBrushAxis !== 'x' && projection.y) range.y = ordered(projection.y, y);
     const categoryRange = projection.horizontal ? range.y : range.x;
     const data = categoryRange ? { range, categoryRange } : { range };
+    const displayAxis = (axis, ratios) => {
+      if (!axis?.displayTicks?.length) return undefined;
+      const raw = orderedValues(axis, ratios);
+      const ticks = raw.map(value => axis.displayTicks.reduce((nearest, tick) =>
+        Math.abs(tick.value - value) < Math.abs(nearest.value - value) ? tick : nearest));
+      return { range: ticks.map(tick => dataValue(tick.value, axis.scale === 'time' && axis.minimum >= 0)),
+        label: ticks.every(tick => tick.text === '') ? '' : ticks.map(tick => tick.text).join(' – ') };
+    };
+    const displayX = displayAxis(projection.x, x), displayY = range.y && displayAxis(projection.y, y);
+    if (displayX || displayY) {
+      data.displayRange = { ...(displayX ? { x: displayX.range } : {}), ...(displayY ? { y: displayY.range } : {}) };
+      const categoryDisplay = projection.horizontal ? displayY || displayX : displayX;
+      if (categoryDisplay) data.label = data.rangeLabel = categoryDisplay.label;
+    }
     let metadata;
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return data; }
     const categories = categoryRange && (metadata.xLabels || []).filter(item => item.value >= categoryRange[0] && item.value <= categoryRange[1]).map(item => item.text);
@@ -3158,7 +3264,7 @@
   };
   const setHover = (root, node, emit, sync, mode) => {
     const target = targetIdentity(node);
-    clearHover(root, false, false);
+    clearHover(root, false, false, true);
     applyHoverByTarget(root, target, mode);
     root.dataset.cfxHoverKey = targetKey(target);
     recordFocusTrail(root, target, emit, sync);
@@ -3628,7 +3734,9 @@
     renderCompare(root);
     syncSelectionAppearance(root);
     listenChart(root, root, 'keydown', event => {
-      if (event.key !== 'Escape' || !hasFeature(root, 'Selection') || !selectedTargets(root).length) return;
+      if (event.key !== 'Escape') return;
+      clearBrushCommand(root, { emit: true, sync: true });
+      if (!hasFeature(root, 'Selection') || !selectedTargets(root).length) return;
       clearSelections(root);
       publishSelectionChange(root, 'clear', true);
       publishCompare(root, false);
@@ -3815,12 +3923,44 @@
         zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92);
       }, { passive: false });
       let drag = null;
+      let pointerFrame = 0, pendingPointerMove = null;
+      const cancelPointerMove = () => {
+        if (pointerFrame) cancelAnimationFrame(pointerFrame);
+        pointerFrame = 0; pendingPointerMove = null;
+      };
+      const applyPointerMove = event => {
+        if (!drag || drag.id !== event.pointerId) {
+          if (!ownsTooltipPointer(root, event)) return;
+          updateNearestPoint(root, crosshair, tip, event);
+          return;
+        }
+        if (drag.mode === 'native-pan') {
+          const x = logicalXPointer(root, event);
+          if (x !== null) drag.delta = x - drag.x;
+        } else if (drag.mode === 'pan') {
+          const point = stagePointer(stage, event);
+          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
+        } else if (drag.mode === 'brush' && brush) {
+          setBrushBox(root, stage, brush, drag, brushPointer(root, stage, event));
+        }
+      };
+      // Keep the last sample in each display frame; pointerup commits its final position
+      // synchronously, so coalescing cannot omit the last drag segment or selection.
+      root._cfxCancelBrushDrag = () => {
+        if (drag?.mode !== 'brush') return false;
+        cancelPointerMove();
+        if (stage.hasPointerCapture(drag.id)) stage.releasePointerCapture(drag.id);
+        drag = null; return true;
+      };
       ownChartWork(root, () => {
+        cancelPointerMove();
         if (drag && stage.hasPointerCapture(drag.id)) stage.releasePointerCapture(drag.id);
         drag = null;
+        delete root._cfxCancelBrushDrag;
       });
       listenChart(root, stage, 'pointerdown', (event) => {
         if (event.button !== 0) return;
+        cancelPointerMove();
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           if (connectedXViewport(root)) {
             const x = logicalXPointer(root, event);
@@ -3847,23 +3987,19 @@
         }
       });
       listenChart(root, stage, 'pointermove', (event) => {
-        if (!drag || drag.id !== event.pointerId) {
-          if (!ownsTooltipPointer(root, event)) return;
-          updateNearestPoint(root, crosshair, tip, event);
-          return;
-        }
-        if (drag.mode === 'native-pan') {
-          const x = logicalXPointer(root, event);
-          if (x !== null) drag.delta = x - drag.x;
-        } else if (drag.mode === 'pan') {
-          const point = stagePointer(stage, event);
-          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
-        } else if (drag.mode === 'brush' && brush) {
-          setBrushBox(root, stage, brush, drag, brushPointer(root, stage, event));
-        }
+        if (drag ? drag.id !== event.pointerId : !ownsTooltipPointer(root, event)) return;
+        pendingPointerMove = event;
+        if (pointerFrame) return;
+        pointerFrame = requestAnimationFrame(() => {
+          pointerFrame = 0;
+          const pending = pendingPointerMove; pendingPointerMove = null;
+          if (pending && root.isConnected && chartLifetimes.get(root)?.disposed === false) applyPointerMove(pending);
+        });
       });
       listenChart(root, stage, 'pointerup', (event) => {
         if (!drag || drag.id !== event.pointerId) return;
+        cancelPointerMove();
+        applyPointerMove(event);
         if (drag.mode === 'native-pan') {
           const plot = chartXProjection(root)?.plotBounds;
           if (plot && Math.abs(drag.delta) > 0.5) requestXViewport(root, 'pan', plot.x - drag.delta, plot.x + plot.width - drag.delta);
@@ -3890,11 +4026,13 @@
       });
       listenChart(root, stage, 'pointerleave', (event) => {
         if (!ownsTooltipPointer(root, event)) return;
+        if (!drag) cancelPointerMove();
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
       listenChart(root, stage, 'pointercancel', (event) => {
+        if (drag?.id === event.pointerId || !drag && ownsTooltipPointer(root, event)) cancelPointerMove();
         if (drag && drag.id === event.pointerId) {
           // Cancel only the provisional gesture; a previously committed selection and box remain current.
           if (drag.mode === 'brush' && brush) {
@@ -4210,6 +4348,7 @@
       get sceneRevision() { return lifetime.sceneRevision; },
       select: (match, options) => { requireMounted(); runSelectionCommand(root, match, options); return controller; },
       clearSelection: options => { requireMounted(); clearSelectionCommand(root, options); return controller; },
+      clearBrush: options => { requireMounted(); clearBrushCommand(root, options); return controller; },
       getSelection: () => { requireMounted(); return copyHostValue(selectedTargets(root)); },
       highlight: (match, options) => { requireMounted(); runHighlightCommand(root, match, options); return controller; },
       clearHighlight: options => { requireMounted(); clearHighlightCommand(root, options); return controller; },

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
@@ -29,6 +31,8 @@ internal sealed class ChartDataProjection {
     internal ChartDataAxisProjection X { get; }
     internal ChartDataAxisProjection? Y { get; }
     internal bool Horizontal { get; }
+    internal ChartDataProjection WithDisplayTicks(IReadOnlyList<ChartAxisLabel> x, IReadOnlyList<ChartAxisLabel>? y = null) =>
+        new(Plot, X.WithDisplayTicks(x), Y == null ? null : Y.WithDisplayTicks(y ?? System.Array.Empty<ChartAxisLabel>()), Horizontal);
 }
 
 internal sealed class ChartDataAxisProjection {
@@ -52,4 +56,10 @@ internal sealed class ChartDataAxisProjection {
     internal ChartScaleKind Scale { get; }
     internal double Threshold { get; }
     internal bool Reversed { get; }
+    internal IReadOnlyList<ChartAxisLabel> DisplayTicks { get; private set; } = System.Array.Empty<ChartAxisLabel>();
+    internal ChartDataAxisProjection WithDisplayTicks(IReadOnlyList<ChartAxisLabel> ticks) {
+        var copy = (ChartDataAxisProjection)MemberwiseClone();
+        copy.DisplayTicks = System.Array.AsReadOnly(ticks.ToArray());
+        return copy;
+    }
 }

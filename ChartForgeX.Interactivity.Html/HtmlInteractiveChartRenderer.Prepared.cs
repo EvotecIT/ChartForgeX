@@ -96,12 +96,21 @@ public sealed partial class HtmlInteractiveChartRenderer {
         return json.Append('}').ToString();
     }
 
-    private static void AppendDataAxis(StringBuilder json, ChartDataAxisProjection axis) => json.Append("{\"minimum\":")
+    private static void AppendDataAxis(StringBuilder json, ChartDataAxisProjection axis) {
+        json.Append("{\"minimum\":")
         .Append(axis.Minimum.ToString("R", CultureInfo.InvariantCulture))
         .Append(",\"maximum\":").Append(axis.Maximum.ToString("R", CultureInfo.InvariantCulture))
         .Append(",\"transformedMinimum\":").Append(axis.TransformedMinimum.ToString("R", CultureInfo.InvariantCulture))
         .Append(",\"transformedMaximum\":").Append(axis.TransformedMaximum.ToString("R", CultureInfo.InvariantCulture))
         .Append(",\"scale\":").Append(HtmlJsonString.Encode(axis.Scale.ToString().ToLowerInvariant()))
         .Append(",\"threshold\":").Append(axis.Threshold.ToString("R", CultureInfo.InvariantCulture))
-        .Append(",\"reversed\":").Append(axis.Reversed ? "true" : "false").Append('}');
+        .Append(",\"reversed\":").Append(axis.Reversed ? "true" : "false").Append(",\"displayTicks\":[");
+        for (var index = 0; index < axis.DisplayTicks.Count; index++) {
+            if (index > 0) json.Append(',');
+            var tick = axis.DisplayTicks[index];
+            json.Append("{\"value\":").Append(tick.Value.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"text\":").Append(HtmlJsonString.Encode(tick.Text)).Append('}');
+        }
+        json.Append("]}");
+    }
 }

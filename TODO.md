@@ -89,6 +89,7 @@ Connected applications can request native X windows for supported vertical numer
 - [ ] Exercise actual assistive technologies and complete control/legend/series navigation on representative supported platforms. Accessible SVG names and keyboard contracts are foundations; they do not establish screen-reader behavior alone.
 - [ ] Separate UI localization from data number/date formatting and font shaping. Add translated controls, no-data/error text, and deliberate RTL layout where required; test long labels, mirrored controls, focus order, and compact hosts.
 - [ ] Measure small, ordinary, and dense Cartesian workloads separately from large topology scenes. Record preparation/update latency, allocation, output size, hit lookup, viewport response, and browser frame behavior before making scale claims.
+- [ ] Reduce remaining pointer acquisition and bulk-selection cost on dense charts, including 5,000-mark scatter scenes. Keep equivalent-work timing comparisons in optional measurements; ordinary correctness CI should verify interaction and lifecycle contracts without shared-runner latency thresholds.
 
 Completion: interaction changes data views predictably, controls and targets remain usable after updates, lifecycle is bounded, and accessibility/localization claims have observed evidence.
 

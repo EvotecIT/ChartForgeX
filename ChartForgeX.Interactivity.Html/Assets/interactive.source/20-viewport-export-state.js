@@ -87,13 +87,24 @@
     });
   };
   const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
+  // Clearing a host range also cancels its provisional gesture so pointerup cannot recommit it.
+  const clearBrush = root => {
+    const brush = root.querySelector('.cfx-brush-box');
+    const changed = Boolean(root.dataset.cfxBrush || root.dataset.cfxMode === 'brush' || brush && !brush.hidden);
+    root._cfxCancelBrushDrag?.();
+    root.removeAttribute('data-cfx-brush');
+    if (brush) {
+      brush.hidden = true;
+      for (const name of ['left', 'top', 'width', 'height']) brush.style.removeProperty(name);
+    }
+    if (root.dataset.cfxMode === 'brush') applyMode(root, '');
+    syncResetControl(root);
+    return changed;
+  };
   const resetViewport = (root) => {
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
-    root.dataset.cfxBrush = '';
-    const brush = root.querySelector('.cfx-brush-box');
-    if (brush) brush.hidden = true;
-    root.dataset.cfxMode = '';
-    root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+    clearBrush(root);
+    applyMode(root, '');
     syncResetControl(root);
   };
   const storeInteractionState = (root, snapshot) => {

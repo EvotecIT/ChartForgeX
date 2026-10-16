@@ -53,6 +53,7 @@
       node.classList.toggle('cfx-selection-dim', selectionForeground && root.dataset.cfxDimOthersSelected === 'true' && !active);
       node.classList.toggle('cfx-linked-dim', highlightForeground && root._cfxHostHighlight?.dim === true && !active);
     });
+    syncCartesianLinkedPaint(root, nodes);
   };
   const selectionSignature = root => selectedTargets(root).map(targetKey).join('\n');
   const publishSelectionChange = (root, reason, sync = false, previousTargets) => {
@@ -131,7 +132,17 @@
       previousTargets: mode === 'replace' ? undefined : previousTargets });
     return targets;
   };
-  const clearSelectionCommand = (root, options = {}) => runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
+  const clearBrushCommand = (root, options = {}) => {
+    if (!hasFeature(root, 'Brush')) return false;
+    const changed = clearBrush(root);
+    if (changed && options.emit === true) emitHostEvent(root, 'cfxbrushclear', {});
+    if (changed && options.sync === true) emitSync(root, { action: 'brush', bounds: '', clear: true });
+    return changed;
+  };
+  const clearSelectionCommand = (root, options = {}) => {
+    clearBrushCommand(root, options);
+    return runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
+  };
   const captureHostHighlight = (root, sameSource = false) => {
     const state = copyHostValue(root._cfxHostHighlight || null);
     if (!state || sameSource) return state;
@@ -197,9 +208,10 @@
       region.className = 'cfx-visually-hidden'; root.appendChild(region);
     }
     listenChart(root, root, 'cfx-unpin-tooltip', () => unpinTooltip(root));
+    listenChart(root, root, 'cfx-clear-brush', event => clearBrushCommand(root, event.detail || {}));
+    listenChart(root, root, 'cfx-clear-selection', event => clearSelectionCommand(root, event.detail || {}));
     if (!hasFeature(root, 'Selection')) return;
     for (const [name, execute] of [['cfx-select', runSelectionCommand], ['cfx-highlight', runHighlightCommand]])
       listenChart(root, root, name, event => { const detail = event.detail || {}; execute(root, detail.match, detail); });
-    listenChart(root, root, 'cfx-clear-selection', event => clearSelectionCommand(root, event.detail || {}));
     listenChart(root, root, 'cfx-clear-highlight', event => clearHighlightCommand(root, event.detail || {}));
   };

@@ -36,7 +36,7 @@ Legend tooltips summarize the series for readers: the name with its colour swatc
 
 Muting a series retains it at 30% opacity and strikes through its legend label. Keyboard targets use a 2 px focus outline in the host accent.
 
-There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `IncludeResetButton` (on by default) adds a 28 px "Reset view" ghost button below the chart, keeping titles and marks clear. It appears only while the view differs from its initial state (zoomed, panned, brushed, a point selected, or a series muted or isolated) and hides again after reset, returning keyboard focus to the chart. Resetting also clears selections, focus trails, and pinned tooltips. Hosts can set `--cfx-host-accent` on the interactive container to align that outline with their own controls. Static exports retain the same flat marks and colour roles without browser behavior.
+There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `IncludeResetButton` (on by default) adds a 28 px "Reset view" ghost button below the chart, keeping titles and marks clear. Its row is reserved so selecting a mark does not move the report content below it. The button appears only while the view differs from its initial state (zoomed, panned, brushed, a point selected, or a series muted or isolated) and hides again after reset, returning keyboard focus to the chart. The optional compare tray also reserves one row; its chips scroll horizontally, including when reached by keyboard. Hosts that supply their own controls can disable `IncludeResetButton` and `CompareMarkers`. Resetting also clears selections, focus trails, and pinned tooltips. Hosts can set `--cfx-host-accent` on the interactive container to align that outline with their own controls. Static exports retain the same flat marks and colour roles without browser behavior.
 
 A cancelled brush gesture restores the previous brush presentation without committing new bounds or changing the existing selection.
 
@@ -239,14 +239,16 @@ Linked highlights follow the same replacement boundary. Category and unscoped ra
 
 Listen on the chart root or a containing element. Chart host events bubble from
 their root, including `cfxselect`, `cfxselectionchange`, `cfxhover`, `cfxcompare`,
-`cfxbrush`, `cfxlasso`, `cfxtooltip`, `cfxreset` and state notifications. A host can
+`cfxbrush`, `cfxbrushclear`, `cfxlasso`, `cfxhighlight`, `cfxhighlightclear`,
+`cfxtooltip`, `cfxreset` and state notifications. A host can
 map their facts into another chart, a table, a tree or its own application state.
 ChartForgeX does not require another view library.
 
 `cfxselectionchange` reports the complete selected mark set, independently of
 `CompareMarkers`. Its detail contains `chartId`, `targets` and `reason`: `click`,
 `keyboard`, `lasso`, `reset`, `clear` or `command`. Series wrapper groups are not
-selected marks. Escape clears the selection. `cfxselect` remains the individual
+selected marks. Escape clears the selection, the brush rectangle and its range,
+and exits Brush mode. `cfxselect` remains the individual
 mark notification; `cfxcompare` remains the optional compare-tray notification.
 The selected set includes native points, nodes, regions, links, annotations and
 value-bearing scalar series such as bullets and circles. A gauge exposes its
@@ -277,6 +279,8 @@ are present when the source supports them:
 | `category` | The authored category or x-axis label. |
 | `x` | The numeric x value, or an ISO date with a time zone. |
 | `numericValue` | The numeric value, separately from its formatted text. |
+| `label` | Reader-facing text captured from the authored label, category or axis formatter. |
+| `rangeLabel` | Reader-facing bounds for a bin, bucket or duration, using the prepared axis formatter. |
 | `observationIds` | Authored contributor IDs of an aggregate, in source-point order. |
 | `range` | The inclusive numeric or ISO date interval represented by a bin, bucket or duration mark. |
 
@@ -291,6 +295,11 @@ Adjacent runs therefore keep their boundary observations separate. A time-axis b
 bucket interval through `ChartSeries.WithTimeBuckets(...)`. Each bucket includes its start and excludes
 the next bucket's start; its public inclusive ISO range ends one DateTime tick before that boundary.
 Range matching preserves fractional seconds beyond milliseconds, including equivalent instants with different time zone offsets.
+Use `label` and `rangeLabel` for chips and captions. For example, a histogram's
+display label can read `40 – 60` while its exact inclusive filter endpoint is
+`59.99999999999999`. BoxPlot targets report the median as `numericValue` and
+`value`. State-timeline targets report the named state as `value`; their time
+bounds remain in `range`.
 On a legacy numeric time domain, the inclusive end is the representable number immediately below the boundary.
 Assign matching row
 and observation IDs with `WithObservationIds(...)` when another view shares those
@@ -313,6 +322,7 @@ const controller = ChartForgeXCharts.get(chartRoot);
 
 controller.select({ observationIds: ['reading-42'] }, { mode: 'replace' });
 controller.clearSelection();
+controller.clearBrush();
 controller.highlight({ categories: ['API'] }, { dim: true, source: 'service-list' });
 controller.clearHighlight();
 const selectedMarks = controller.getSelection();
@@ -326,6 +336,7 @@ chartRoot.dispatchEvent(new CustomEvent('cfx-select', {
   detail: { match: { observationIds: ['reading-42'] }, mode: 'add' }
 }));
 chartRoot.dispatchEvent(new CustomEvent('cfx-clear-selection'));
+chartRoot.dispatchEvent(new CustomEvent('cfx-clear-brush'));
 chartRoot.dispatchEvent(new CustomEvent('cfx-highlight', {
   detail: { match: { categories: ['API'] }, dim: true, source: 'service-list' }
 }));
@@ -341,6 +352,20 @@ overlapping ranges. Highlighting is separate from selection. Matching marks
 expose `cfx-highlighted` and `data-cfx-highlighted="true"`; `dim: true` dims the
 other marks, and the live region announces the highlighted count. Clearing
 highlight restores the ordinary presentation.
+
+`highlight(match, { emit: true })` emits `cfxhighlight` with `chartId`, `count`,
+`targets` and the supplied `source`. `clearHighlight({ emit: true })` emits
+`cfxhighlightclear` with `chartId`. Both remain silent by default.
+
+`clearBrush()` removes the committed range and rectangle, cancels an active brush
+gesture and exits Brush mode. It keeps selected marks, zoom, pan and highlights.
+Use it when the host removes a range chip while keeping other selections.
+`clearSelection()` clears both selected marks and the brush, matching Escape.
+Brush commands require `Brush`, independently of `Selection` or state bookmarks.
+They default to `emit: false` and `sync: false`; `emit: true` sends
+`cfxbrushclear` with `chartId` only when a brush or Brush mode was present.
+`sync: true` also clears the brush in synchronized peers. Escape emits the clear
+notification for an existing brush and the selection notification when needed.
 
 Set `emit: true` when a host deliberately wants a selection notification, or
 `sync: true` to opt into synchronized chart events. Normal user interaction still
@@ -371,6 +396,20 @@ the default `XY` retains a rectangular brush. Timeline, Gantt, Gantt-lane
 and state-timeline drawings report their horizontal data interval; their rows
 do not acquire a numeric Y range. This projection contract
 does not expand the separate connected native X-window capabilities.
+
+For readable range chips, both events also provide `label`, `rangeLabel` and
+`displayRange` when the prepared axes have captions. Display bounds snap to the
+nearest prepared axis ticks and retain those ticks' exact formatter output,
+including culture and deliberately empty captions. Raw `range` and
+`categoryRange` remain the precise filtering bounds. Choose the raw interval
+for filtering and the display label for the reader:
+
+```js
+chartRoot.addEventListener('cfxbrush', ({ detail }) => {
+  filterRows(detail.categoryRange);
+  rangeChip.textContent = detail.rangeLabel;
+});
+```
 
 The [two-chart example](../ChartForgeX.Examples/LinkedChartViewsExamples.cs) uses
 these public contracts to update prepared service totals from a date brush and

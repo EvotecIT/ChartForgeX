@@ -6,6 +6,41 @@
     root.setAttribute('data-cfx-highlight-probe', '');
     try { return read(); } finally { root.removeAttribute('data-cfx-highlight-probe'); }
   };
+  // Prepared point targets own selection. Every Cartesian legend follows that state;
+  // only connected geometry also carries it to its line/fill owner.
+  const syncCartesianLinkedPaint = (root, nodes) => {
+    const owners = new Map();
+    for (const owner of root.querySelectorAll('[data-cfx-role="series"][data-cfx-coordinate-system="cartesian"]')) {
+      const connected = ['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes((owner.dataset.cfxKind || '').toLowerCase());
+      owners.set(owner, { active: false, dim: false, connected, isolated: owner.classList.contains('cfx-series-isolated-out') });
+    }
+    const observations = new Map();
+    for (const node of nodes) {
+      const owner = node.closest('[data-cfx-role="series"]');
+      const state = owners.get(owner);
+      if (!state) continue;
+      const active = node.classList.contains('cfx-selected') || node.classList.contains('cfx-highlighted');
+      const dim = node.classList.contains('cfx-selection-dim') || node.classList.contains('cfx-linked-dim');
+      state.active ||= active;
+      state.dim ||= dim;
+      if (node.dataset.cfxPoint !== undefined) observations.set(owner.dataset.cfxSeries + ':' + node.dataset.cfxPoint,
+        { active, dim, isolated: node.classList.contains('cfx-series-isolated-out') });
+    }
+    for (const [owner, state] of owners) {
+      owner.classList.toggle('cfx-linked-series-active', state.connected && state.active);
+      owner.classList.toggle('cfx-linked-series-dim', state.connected && state.dim && !state.active);
+    }
+    // Legends live outside the series group. Match their local source ordinal, so
+    // their swatch and caption retain the same foreground even over a peer's mark.
+    const series = new Map(Array.from(owners, ([owner, state]) => [owner.dataset.cfxSeries, state]));
+    for (const legend of root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]')) {
+      const state = legend.dataset.cfxPoint === undefined ? series.get(legend.dataset.cfxSeries)
+        : observations.get(legend.dataset.cfxSeries + ':' + legend.dataset.cfxPoint);
+      legend.classList.toggle('cfx-linked-series-active', state?.active === true);
+      legend.classList.toggle('cfx-linked-series-dim', state?.dim === true && !state.active);
+      if (state) legend.classList.toggle('cfx-series-isolated-out', state.isolated);
+    }
+  };
   const prepareRootBranchHighlights = (root) => {
     if (root.dataset.cfxHighlightMode !== 'root-branch') return;
     // Prepared targets normalize family names; native metadata also accepts the enum spelling.

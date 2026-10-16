@@ -107,7 +107,7 @@
   };
   const setHover = (root, node, emit, sync, mode) => {
     const target = targetIdentity(node);
-    clearHover(root, false, false);
+    clearHover(root, false, false, true);
     applyHoverByTarget(root, target, mode);
     root.dataset.cfxHoverKey = targetKey(target);
     recordFocusTrail(root, target, emit, sync);

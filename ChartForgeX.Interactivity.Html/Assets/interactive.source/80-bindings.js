@@ -22,7 +22,9 @@
     renderCompare(root);
     syncSelectionAppearance(root);
     listenChart(root, root, 'keydown', event => {
-      if (event.key !== 'Escape' || !hasFeature(root, 'Selection') || !selectedTargets(root).length) return;
+      if (event.key !== 'Escape') return;
+      clearBrushCommand(root, { emit: true, sync: true });
+      if (!hasFeature(root, 'Selection') || !selectedTargets(root).length) return;
       clearSelections(root);
       publishSelectionChange(root, 'clear', true);
       publishCompare(root, false);
@@ -209,12 +211,44 @@
         zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92);
       }, { passive: false });
       let drag = null;
+      let pointerFrame = 0, pendingPointerMove = null;
+      const cancelPointerMove = () => {
+        if (pointerFrame) cancelAnimationFrame(pointerFrame);
+        pointerFrame = 0; pendingPointerMove = null;
+      };
+      const applyPointerMove = event => {
+        if (!drag || drag.id !== event.pointerId) {
+          if (!ownsTooltipPointer(root, event)) return;
+          updateNearestPoint(root, crosshair, tip, event);
+          return;
+        }
+        if (drag.mode === 'native-pan') {
+          const x = logicalXPointer(root, event);
+          if (x !== null) drag.delta = x - drag.x;
+        } else if (drag.mode === 'pan') {
+          const point = stagePointer(stage, event);
+          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
+        } else if (drag.mode === 'brush' && brush) {
+          setBrushBox(root, stage, brush, drag, brushPointer(root, stage, event));
+        }
+      };
+      // Keep the last sample in each display frame; pointerup commits its final position
+      // synchronously, so coalescing cannot omit the last drag segment or selection.
+      root._cfxCancelBrushDrag = () => {
+        if (drag?.mode !== 'brush') return false;
+        cancelPointerMove();
+        if (stage.hasPointerCapture(drag.id)) stage.releasePointerCapture(drag.id);
+        drag = null; return true;
+      };
       ownChartWork(root, () => {
+        cancelPointerMove();
         if (drag && stage.hasPointerCapture(drag.id)) stage.releasePointerCapture(drag.id);
         drag = null;
+        delete root._cfxCancelBrushDrag;
       });
       listenChart(root, stage, 'pointerdown', (event) => {
         if (event.button !== 0) return;
+        cancelPointerMove();
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           if (connectedXViewport(root)) {
             const x = logicalXPointer(root, event);
@@ -241,23 +275,19 @@
         }
       });
       listenChart(root, stage, 'pointermove', (event) => {
-        if (!drag || drag.id !== event.pointerId) {
-          if (!ownsTooltipPointer(root, event)) return;
-          updateNearestPoint(root, crosshair, tip, event);
-          return;
-        }
-        if (drag.mode === 'native-pan') {
-          const x = logicalXPointer(root, event);
-          if (x !== null) drag.delta = x - drag.x;
-        } else if (drag.mode === 'pan') {
-          const point = stagePointer(stage, event);
-          applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
-        } else if (drag.mode === 'brush' && brush) {
-          setBrushBox(root, stage, brush, drag, brushPointer(root, stage, event));
-        }
+        if (drag ? drag.id !== event.pointerId : !ownsTooltipPointer(root, event)) return;
+        pendingPointerMove = event;
+        if (pointerFrame) return;
+        pointerFrame = requestAnimationFrame(() => {
+          pointerFrame = 0;
+          const pending = pendingPointerMove; pendingPointerMove = null;
+          if (pending && root.isConnected && chartLifetimes.get(root)?.disposed === false) applyPointerMove(pending);
+        });
       });
       listenChart(root, stage, 'pointerup', (event) => {
         if (!drag || drag.id !== event.pointerId) return;
+        cancelPointerMove();
+        applyPointerMove(event);
         if (drag.mode === 'native-pan') {
           const plot = chartXProjection(root)?.plotBounds;
           if (plot && Math.abs(drag.delta) > 0.5) requestXViewport(root, 'pan', plot.x - drag.delta, plot.x + plot.width - drag.delta);
@@ -284,11 +314,13 @@
       });
       listenChart(root, stage, 'pointerleave', (event) => {
         if (!ownsTooltipPointer(root, event)) return;
+        if (!drag) cancelPointerMove();
         hideCrosshair(root, crosshair);
         clearHover(root, true, true);
         hideTip(root, tip, false);
       });
       listenChart(root, stage, 'pointercancel', (event) => {
+        if (drag?.id === event.pointerId || !drag && ownsTooltipPointer(root, event)) cancelPointerMove();
         if (drag && drag.id === event.pointerId) {
           // Cancel only the provisional gesture; a previously committed selection and box remain current.
           if (drag.mode === 'brush' && brush) {

@@ -24,8 +24,8 @@
     if (!['dumbbell', 'errorbar'].includes(kind)) return null;
     const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX;
     const rows = [{ name: rowName(node, 'category', 'Category'), value: category }];
-    if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: data.cfxStart },
-      { name: rowName(node, 'end', 'End'), value: data.cfxEnd }, { name: rowName(node, 'delta', 'Delta'), value: data.cfxDelta });
+    if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: capturedText(data, 'cfxFormattedStart', data.cfxStart) },
+      { name: rowName(node, 'end', 'End'), value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }, { name: rowName(node, 'delta', 'Delta'), value: data.cfxDelta });
     else rows.push({ name: rowName(node, 'value', 'Value'), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
       { name: rowName(node, 'lower', 'Lower'), value: data.cfxLower }, { name: rowName(node, 'upper', 'Upper'), value: data.cfxUpper });
     return rows.filter((row) => row.value !== undefined && row.value !== null && row.value !== '');

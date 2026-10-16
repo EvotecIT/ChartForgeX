@@ -2,7 +2,9 @@
     const plot = projection?.plotBounds;
     const axis = value => !!value && [value.minimum, value.maximum, value.transformedMinimum, value.transformedMaximum, value.threshold].every(Number.isFinite)
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
-      && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale);
+      && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
+      && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
+        tick && Number.isFinite(tick.value) && typeof tick.text === 'string'));
     return !!plot && [plot.x, plot.y, plot.width, plot.height].every(Number.isFinite) && plot.width > 0 && plot.height > 0
       && typeof projection.horizontal === 'boolean' && axis(projection.x) && (projection.y === undefined || axis(projection.y));
   };
@@ -37,14 +39,29 @@
     const plot = projection.plotBounds;
     const x = points.map(point => clamp((point.x - plot.x) / plot.width, 0, 1));
     const y = points.map(point => clamp(1 - (point.y - plot.y) / plot.height, 0, 1));
+    const orderedValues = (axis, ratios) => ratios.map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => left - right);
     const ordered = (axis, ratios) => {
-      const values = ratios.map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => left - right);
+      const values = orderedValues(axis, ratios);
       return values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
     };
     const range = { x: ordered(projection.x, x) };
     if (root.dataset.cfxBrushAxis !== 'x' && projection.y) range.y = ordered(projection.y, y);
     const categoryRange = projection.horizontal ? range.y : range.x;
     const data = categoryRange ? { range, categoryRange } : { range };
+    const displayAxis = (axis, ratios) => {
+      if (!axis?.displayTicks?.length) return undefined;
+      const raw = orderedValues(axis, ratios);
+      const ticks = raw.map(value => axis.displayTicks.reduce((nearest, tick) =>
+        Math.abs(tick.value - value) < Math.abs(nearest.value - value) ? tick : nearest));
+      return { range: ticks.map(tick => dataValue(tick.value, axis.scale === 'time' && axis.minimum >= 0)),
+        label: ticks.every(tick => tick.text === '') ? '' : ticks.map(tick => tick.text).join(' – ') };
+    };
+    const displayX = displayAxis(projection.x, x), displayY = range.y && displayAxis(projection.y, y);
+    if (displayX || displayY) {
+      data.displayRange = { ...(displayX ? { x: displayX.range } : {}), ...(displayY ? { y: displayY.range } : {}) };
+      const categoryDisplay = projection.horizontal ? displayY || displayX : displayX;
+      if (categoryDisplay) data.label = data.rangeLabel = categoryDisplay.label;
+    }
     let metadata;
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return data; }
     const categories = categoryRange && (metadata.xLabels || []).filter(item => item.value >= categoryRange[0] && item.value <= categoryRange[1]).map(item => item.text);

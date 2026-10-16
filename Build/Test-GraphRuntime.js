@@ -10,6 +10,8 @@ const tests = [
   'tests/graph-explorer-runtime/webgl.test.js',
   'tests/graph-explorer-runtime/images.test.js',
   'tests/graph-explorer-runtime/linked-commands.test.js',
+  'tests/interactive-runtime/linked-paint.test.js',
+  'tests/chart-runtime/readable-values.test.js',
   'tests/graph-neighborhood/planner.test.js',
   'tests/graph-neighborhood/navigation.test.js',
   'tests/graph-quality/overlaps.test.js',

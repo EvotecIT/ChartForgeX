@@ -117,10 +117,10 @@ internal static partial class VisualCartesianCompiler {
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
-        var hasPrimaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Primary && series.RenderPoints.Count > 0)
+        var hasPrimaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Primary && series.HasSourceData)
             || chart.Annotations.Any(annotation => ChartCartesianOrientation.AnnotationKind(annotation, horizontal) is ChartAnnotationKind.HorizontalLine or ChartAnnotationKind.HorizontalBand)
             || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Primary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
-        var hasSecondaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary && series.RenderPoints.Count > 0)
+        var hasSecondaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary && series.HasSourceData)
             || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Secondary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
         var secondaryOnly = hasSecondaryDomain && !hasPrimaryDomain;
         // A screen coordinate has no single value-domain meaning when both Y axes contain observations.
@@ -182,6 +182,7 @@ internal static partial class VisualCartesianCompiler {
         DrawPlotRegionLabels(context, builder, plotRegions, colors, obstacles);
         using (xViewport != null ? builder.PushClip(plot) : null)
             DrawDataLabels(context, builder, labelBounds, labels, obstacles);
+        CaptureReadouts(chart, builder, range, secondaryRange, axisLabels, horizontal, secondaryOnly);
         return hasProjection
             ? new ChartXProjection(fullMinimum, fullMaximum, range.MinX, range.MaxX, plot, chart.Options.XAxis.Reversed) : null;
     }

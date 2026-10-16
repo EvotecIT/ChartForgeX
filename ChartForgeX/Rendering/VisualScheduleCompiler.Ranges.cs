@@ -144,6 +144,7 @@ internal static partial class VisualScheduleCompiler {
             // Links are foreground annotations: successor fills must not cover their arrowheads.
             if (gantt) Dependencies(chart, context, builder, plot, bySeries, renderedLinks, Project, slot, height, min, max);
         }
+        builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value) => layout.FormatTick(value));
     }
 
     /// <summary>Shares the exact task/diamond surface between painting, semantics and dependency anchoring.</summary>

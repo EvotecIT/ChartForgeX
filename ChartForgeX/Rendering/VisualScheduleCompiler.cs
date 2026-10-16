@@ -77,6 +77,7 @@ internal static partial class VisualScheduleCompiler {
                 }
             }
         }
+        builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value) => layout.FormatTick(value));
     }
 
     private static void GanttLanes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport) {
@@ -143,6 +144,7 @@ internal static partial class VisualScheduleCompiler {
             }
             if (model.NowVisible) Now(chart, context, builder, layout, model.X(model.Now!.Value, projection), model.Now.Value);
         }
+        builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value) => layout.FormatTick(value));
     }
 
     private static Dictionary<string, string> Window(double min, double max) => new() {

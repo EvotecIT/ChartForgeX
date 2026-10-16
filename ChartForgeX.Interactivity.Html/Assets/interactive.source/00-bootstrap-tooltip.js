@@ -7,7 +7,7 @@
     const data = node.dataset || {};
     if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
       return [seriesLabel(node), data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxLabel].filter(Boolean).join(': ');
-    if (isDataTarget(node)) return data.cfxAuthoredLabel ?? targetCategory(node) ?? (data.cfxLabel || data.cfxText || seriesLabel(node) || data.cfxRole || '');
+    if (isDataTarget(node)) return data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxDisplayLabel ?? (data.cfxLabel || data.cfxText || seriesLabel(node) || data.cfxRole || '');
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
     const label = data.cfxLabel || data.cfxText || '';
@@ -23,12 +23,15 @@
   const targetIdentity = (node) => {
     const data = node.dataset || {};
     const targetKind = renderedTargetKind(node);
+    const state = (data.cfxKind || '').toLowerCase() === 'statetimeline';
+    const rawValue = (data.cfxKind || '').toLowerCase() === 'boxplot' ? data.cfxMedian : data.cfxValue ?? data.cfxY ?? data.cfxEnd;
     return {
       targetKind,
       targetId: renderedTargetId(node, targetKind),
       id: data.cfxId || node.id || '',
       role: data.cfxRole || '',
-      label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
+      label: data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxDisplayLabel ?? (data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || ''),
+      rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
       seriesScope: data.cfxSeriesScope,
@@ -36,14 +39,14 @@
       observationIds: contributorObservationIds(node),
       category: targetCategory(node),
       x: targetRawX(node),
-      numericValue: tooltipNumber(data.cfxValue || data.cfxY || data.cfxEnd) ? Number(data.cfxValue || data.cfxY || data.cfxEnd) : undefined,
+      numericValue: !state && tooltipNumber(rawValue) ? Number(rawValue) : undefined,
       range: targetDataRange(node),
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
       sourcePoints: sourcePointCollection(node),
       legendTargetKind: data.cfxLegendTargetKind,
       legendTargetId: data.cfxLegendTargetId,
-      value: data.cfxValue || data.cfxY || data.cfxEnd || '',
+      value: state ? data.cfxStateLabel ?? data.cfxLabel ?? '' : rawValue ?? '',
       kind: data.cfxKind || ''
     };
   };
@@ -87,8 +90,8 @@
     const data = node.dataset || {};
     if (!data.cfxWaterfallKind) return [];
     const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
-    return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
-      { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
+    return [{ name: rowName(node, 'waterfall-value', fallback), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
+      { name: 'Start', value: capturedText(data, 'cfxFormattedStart', data.cfxStart) }, { name: 'End', value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }]
       .filter((row) => row.value !== undefined && row.value !== '');
   };
   const boxPlotTooltipRows = (node) => {
@@ -103,7 +106,8 @@
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
     return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
-      { name: rowName(node, 'start', ''), value: data.cfxStart }, { name: rowName(node, 'end', ''), value: data.cfxEnd }]
+      { name: rowName(node, 'start', ''), value: capturedText(data, 'cfxFormattedStart', data.cfxStart) },
+      { name: rowName(node, 'end', ''), value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }]
       .filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
   };
   const differenceTooltipRows = (node) => {
@@ -121,8 +125,8 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     const pushX = () => {
-      const value = capturedText(data, 'cfxXLabel', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || data.cfxStart);
-      if (data.cfxXLabel !== undefined) rows.push({ name: 'X', value });
+      const value = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || capturedText(data, 'cfxFormattedStart', data.cfxStart)));
+      if (data.cfxXLabel !== undefined || data.cfxFormattedX !== undefined) rows.push({ name: 'X', value });
       else push('X', value);
     };
     push('Series', seriesLabel(node));
@@ -147,7 +151,7 @@
       const value = capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue !== undefined ? data.cfxValue : data.cfxY));
       if (data.cfxFormattedValue !== undefined) rows.push({ name, value });
       else push(name, value);
-      push('End', data.cfxEnd);
+      push('End', capturedText(data, 'cfxFormattedEnd', data.cfxEnd));
     }
     sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Target', data.cfxTarget);
@@ -232,7 +236,10 @@
       const key = targetKey(target);
       if (!key || seen.has(key)) return;
       seen.add(key);
-      items.push({ label: text(node) || target.label || target.role || target.id || 'Target', target });
+      const data = node.dataset || {};
+      const label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
+        ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
+      items.push({ label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target });
     });
     return items;
   };
