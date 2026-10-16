@@ -147,7 +147,8 @@ function start(root) {
     state.language = language;
     selectLanguageTab();
     if (state.sources[language]) setSource(state.sources[language]);
-    else loadFirstSample(language);
+    else if (state.samples.length) loadFirstSample(language);
+    else setSource('');
     writeStorage();
   }
 
@@ -556,7 +557,15 @@ function start(root) {
 
 // Helpers.
 function readStorage() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; } catch { return {}; }
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
+    const sources = stored.sources && typeof stored.sources === 'object' && !Array.isArray(stored.sources)
+      ? Object.fromEntries(Object.entries(stored.sources).filter(([language, source]) =>
+        (language === 'mermaid' || language === 'chartforgex') && typeof source === 'string'))
+      : {};
+    return { language: stored.language, sources };
+  } catch { return {}; }
 }
 
 function siteTheme() {

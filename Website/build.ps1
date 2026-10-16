@@ -113,7 +113,7 @@ function Resolve-PowerForgeRoot {
             continue
         }
 
-        $cliProject = Join-Path $root 'PowerForge.Web.Cli\PowerForge.Web.Cli.csproj'
+        $cliProject = Join-Path $root (Join-Path 'PowerForge.Web.Cli' 'PowerForge.Web.Cli.csproj')
         if (Test-Path -LiteralPath $cliProject -PathType Leaf) {
             return $root
         }
@@ -127,17 +127,27 @@ $PowerForge = $null
 $PowerForgeArgs = @()
 $PowerForgeRoot = Resolve-PowerForgeRoot -RequestedRoot $PowerForgeRoot
 if (-not [string]::IsNullOrWhiteSpace($PowerForgeRoot)) {
-    $PowerForgeCliProject = Join-Path $PowerForgeRoot 'PowerForge.Web.Cli\PowerForge.Web.Cli.csproj'
+    $PowerForgeCliProject = Join-Path $PowerForgeRoot (Join-Path 'PowerForge.Web.Cli' 'PowerForge.Web.Cli.csproj')
+    $cliRoot = Join-Path $PowerForgeRoot 'PowerForge.Web.Cli'
 
     $tfms = @('net10.0', 'net8.0')
     foreach ($tfm in $tfms) {
-        if (-not $PowerForgeReleaseExe) { $PowerForgeReleaseExe = Join-Path $PowerForgeRoot "PowerForge.Web.Cli\\bin\\Release\\$tfm\\PowerForge.Web.Cli.exe" }
-        if (-not $PowerForgeReleaseAppHost) { $PowerForgeReleaseAppHost = Join-Path $PowerForgeRoot "PowerForge.Web.Cli\\bin\\Release\\$tfm\\PowerForge.Web.Cli" }
-        if (-not $PowerForgeReleaseDll) { $PowerForgeReleaseDll = Join-Path $PowerForgeRoot "PowerForge.Web.Cli\\bin\\Release\\$tfm\\PowerForge.Web.Cli.dll" }
+        $releaseFramework = Join-Path (Join-Path (Join-Path $cliRoot 'bin') 'Release') $tfm
+        $debugFramework = Join-Path (Join-Path (Join-Path $cliRoot 'bin') 'Debug') $tfm
 
-        if (-not $PowerForgeDebugExe) { $PowerForgeDebugExe = Join-Path $PowerForgeRoot "PowerForge.Web.Cli\\bin\\Debug\\$tfm\\PowerForge.Web.Cli.exe" }
-        if (-not $PowerForgeDebugAppHost) { $PowerForgeDebugAppHost = Join-Path $PowerForgeRoot "PowerForge.Web.Cli\\bin\\Debug\\$tfm\\PowerForge.Web.Cli" }
-        if (-not $PowerForgeDebugDll) { $PowerForgeDebugDll = Join-Path $PowerForgeRoot "PowerForge.Web.Cli\\bin\\Debug\\$tfm\\PowerForge.Web.Cli.dll" }
+        $candidate = Join-Path $releaseFramework 'PowerForge.Web.Cli.exe'
+        if (-not $PowerForgeReleaseExe -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeReleaseExe = $candidate }
+        $candidate = Join-Path $releaseFramework 'PowerForge.Web.Cli'
+        if (-not $PowerForgeReleaseAppHost -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeReleaseAppHost = $candidate }
+        $candidate = Join-Path $releaseFramework 'PowerForge.Web.Cli.dll'
+        if (-not $PowerForgeReleaseDll -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeReleaseDll = $candidate }
+
+        $candidate = Join-Path $debugFramework 'PowerForge.Web.Cli.exe'
+        if (-not $PowerForgeDebugExe -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeDebugExe = $candidate }
+        $candidate = Join-Path $debugFramework 'PowerForge.Web.Cli'
+        if (-not $PowerForgeDebugAppHost -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeDebugAppHost = $candidate }
+        $candidate = Join-Path $debugFramework 'PowerForge.Web.Cli.dll'
+        if (-not $PowerForgeDebugDll -and (Test-Path -LiteralPath $candidate -PathType Leaf)) { $PowerForgeDebugDll = $candidate }
     }
 }
 

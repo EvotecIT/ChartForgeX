@@ -1,10 +1,12 @@
-name: Website Deploy
+name: Validate Website and Apply Cloudflare Policy
 
 on:
   push:
     branches: [main]
     paths:
       - "Website/**"
+      - "Directory.Build.props"
+      - "ChartForgeX.sln"
       - "ChartForgeX/**"
       - "ChartForgeX.Visuals/**"
       - "ChartForgeX.Stories/**"
@@ -13,6 +15,8 @@ on:
       - "ChartForgeX.Markup/**"
       - "ChartForgeX.Mermaid/**"
       - "ChartForgeX.Markup.Mermaid/**"
+      - "ChartForgeX.Examples/**"
+      - "docs/**"
       - ".github/workflows/website-deploy.yml"
   workflow_dispatch:
 
@@ -20,26 +24,49 @@ permissions:
   contents: read
 
 concurrency:
-  group: website-deploy
+  group: chartforgex-website-production
   cancel-in-progress: false
 
 jobs:
-  website-deploy:
+  build:
     permissions:
       actions: write
       contents: read
-      deployments: read
       packages: read
-      pages: write
-      id-token: write
-    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-deploy.yml@a0ccc28293a517e6236f79e8332ed26d6012649e
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-run.yml@9f2d36a18c8334d9a27587f04b38ad0dc9bd515d
     with:
       website_root: Website
-      source_ref: ${{ github.sha }}
       pipeline_config: Website/pipeline.json
-      site_output_path: Website/_site
-      powerforge_lock_path: ./Website/.powerforge/engine-lock.json
-      powerforge_repository_override: ${{ vars.POWERFORGE_REPOSITORY }}
-      powerforge_ref_override: ${{ vars.POWERFORGE_REF }}
+      source_ref: ${{ github.sha }}
+      engine_mode: source
+      runner_labels_json: '["ubuntu-latest"]'
+      timeout_minutes: 60
+      powerforge_repository: EvotecIT/PSPublishModule
+      powerforge_ref: b7aa23e7d7d89e7b50372f5286ce6e21ad7acfa4
+      report_artifact_name: chartforgex-website-deploy-reports
+      site_artifact_name: powerforge-site-chartforgex.com
+      site_artifact_retention_days: 7
     secrets:
       indexnow_key: ${{ secrets.INDEXNOW_KEY }}
+
+  site-policy:
+    needs: build
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.build.outputs.source_sha }}
+
+      - name: Apply managed Cloudflare site policy
+        uses: EvotecIT/PSPublishModule/.github/actions/powerforge-cloudflare-site-policy@9f2d36a18c8334d9a27587f04b38ad0dc9bd515d
+        with:
+          site-config: Website/site.json
+          checkout-caller: "false"
+          zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}

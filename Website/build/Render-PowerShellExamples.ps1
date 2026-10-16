@@ -68,14 +68,27 @@ function Get-ImageSize([string] $path) {
 }
 
 $previous = @{}
+$previousVersion = $null
 if (Test-Path -LiteralPath $dataPath) {
-    foreach ($entry in (Get-Content -LiteralPath $dataPath -Raw | ConvertFrom-Json).examples) { $previous[$entry.id] = $entry }
+    $previousDocument = Get-Content -LiteralPath $dataPath -Raw | ConvertFrom-Json
+    $previousVersion = [string]$previousDocument.module.version
+    foreach ($entry in $previousDocument.examples) { $previous[$entry.id] = $entry }
+}
+if ($Id -and -not $previous.Count) {
+    throw 'A partial render requires an existing complete examples snapshot. Run without -Id first.'
+}
+if ($Id -and $previousVersion -ne $moduleVersion) {
+    throw "A partial render cannot mix module versions. Existing snapshot is '$previousVersion'; requested version is '$moduleVersion'. Run without -Id to refresh every example."
 }
 
 $results = foreach ($example in $manifest.examples) {
     if ($Id -and $example.id -notin $Id) {
         if ($previous.ContainsKey($example.id)) { $previous[$example.id] }
         continue
+    }
+
+    if ($example.id -notmatch '^[a-z0-9][a-z0-9-]*$') {
+        throw "Invalid example id '$($example.id)'. Example IDs must be lowercase slugs."
     }
 
     $scriptPath = Join-Path $sourceRoot "$($example.id).ps1"
