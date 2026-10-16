@@ -40,6 +40,8 @@ public sealed class GraphSceneStaticThemeTests {
 
         Assert.True(Luminance(light, 2, 2) > 240, "The light static graph should keep its white paper.");
         Assert.True(Luminance(dark, 2, 2) < 40, "The dark static graph should paint the dark paper in PNG as well as SVG.");
+        Assert.True(Luminance(light, 160, 90) > 240, "The light static graph should use the light theme inside its canvas.");
+        Assert.True(Luminance(dark, 160, 90) < 80, "The dark static graph should use the dark theme inside its canvas.");
         Assert.NotEqual(light.Pixels, dark.Pixels);
     }
 

@@ -65,7 +65,14 @@
     {
       "task": "apidocs",
       "id": "build-apidocs",
-      "dependsOn": "build-site",
+      "dependsOn": [
+        "build-site",
+        "api-chrome",
+        "api-build-chartforgex-visuals",
+        "api-build-chartforgex-stories",
+        "api-build-chartforgex-interactivity-html",
+        "api-build-chartforgex-markup-mermaid"
+      ],
       "config": "./site.json",
       "assemblies": [
         "../ChartForgeX/bin/Release/net10.0/ChartForgeX.dll",
