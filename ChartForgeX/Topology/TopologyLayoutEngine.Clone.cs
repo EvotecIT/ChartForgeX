@@ -82,6 +82,7 @@ internal static partial class TopologyLayoutEngine {
             Tooltip = node.Tooltip,
             CssClass = node.CssClass,
             Color = node.Color,
+            LabelColor = node.LabelColor,
             PaletteIndex = node.PaletteIndex,
             BackgroundColor = node.BackgroundColor,
             ShowStatusBadge = node.ShowStatusBadge,

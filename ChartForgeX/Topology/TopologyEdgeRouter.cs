@@ -21,6 +21,12 @@ internal static partial class TopologyEdgeRouter {
 
         if (edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal) {
             var points = EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane);
+            if (chart.LayoutMode != TopologyLayoutMode.ForceDirected && edge.Routing == TopologyEdgeRouting.Orthogonal &&
+                RouteObstacleHits(points, RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true)) > 0) {
+                var obstacleAware = TopologyLayoutEngine.Clone(edge);
+                obstacleAware.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
+                return Route(chart, obstacleAware, source, target, routeLane);
+            }
             return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels, chart.RenderOptions?.ResolvedEdgeLabelScale ?? 1);
         }
 

@@ -86,14 +86,19 @@ internal static partial class TopologyLayoutEngine {
             placed.Add(group);
         }
         var nodesById = chart.Nodes.ToDictionary(n => n.Id, StringComparer.Ordinal);
-        var originalEdges = authored.Edges.ToDictionary(e => e.Id, StringComparer.Ordinal);
+        var originalsById = authored.Edges.GroupBy(edge => edge.Id, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => new Queue<TopologyEdge>(group), StringComparer.Ordinal);
+        var originalEdges = new Dictionary<TopologyEdge, TopologyEdge>();
+        foreach (var edge in chart.Edges) {
+            if (originalsById.TryGetValue(edge.Id, out var candidates) && candidates.Count > 0) originalEdges[edge] = candidates.Dequeue();
+        }
         foreach (var edge in chart.Edges) {
             if (!nodesById.TryGetValue(edge.SourceNodeId, out var source) || !nodesById.TryGetValue(edge.TargetNodeId, out var target)) continue;
             var moved = shifts.ContainsKey(source.GroupId ?? "") || shifts.ContainsKey(target.GroupId ?? "");
             if (!moved || !edge.Metadata.TryGetValue("layout.route", out var route) || route != "long-edge-lane") continue;
             // These corridors were inferred before packing. Replan against the final node and header
             // obstacles through the shared obstacle-aware router instead of retaining stale coordinates.
-            var original = originalEdges[edge.Id];
+            if (!originalEdges.TryGetValue(edge, out var original)) continue;
             edge.Waypoints.Clear(); edge.Waypoints.AddRange(original.Waypoints);
             edge.SourcePort = original.SourcePort; edge.TargetPort = original.TargetPort;
             edge.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;

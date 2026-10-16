@@ -141,6 +141,164 @@ public sealed class ConsumerRenderingRegressionTests {
         Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Foreground.ToCss(), (string?)symbol.Attribute("fill"));
         Assert.Contains(nodes, e => Role(e) == "metric-value" && e.Value == "38" && (string?)e.Attribute("display") != "none");
     }
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void MetricRoundBadgeStaysInsideCardPaddingAtEveryOutputScale(int scale) {
+        var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithSize(330, 150)
+            .WithCard(true).WithPadding(0).WithMetric("CPU", "38").WithSymbol("CPU").WithPngOutputScale(scale);
+        var nodes = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
+        var badge = nodes.Single(e => Role(e) == "metric-symbol-badge");
+        Assert.True(N(badge, "cx") + N(badge, "r") <= 314);
+        var image = card.ToPng();
+        Assert.NotEmpty(image);
+    }
+    [Fact]
+    public void ConsumerExampleIndexOmitsArtifactsFromEarlierWrites() {
+        var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-consumer-index-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(output);
+        try {
+            File.WriteAllText(Path.Combine(output, "stale.svg"), "<svg/>");
+            ConsumerRenderingExamples.Write(output);
+            var index = File.ReadAllText(Path.Combine(output, "index.html"));
+            Assert.DoesNotContain("stale.svg", index, StringComparison.Ordinal);
+            Assert.Contains("sequence.svg", index, StringComparison.Ordinal);
+            Assert.Contains("sequence.png", index, StringComparison.Ordinal);
+        } finally {
+            Directory.Delete(output, recursive: true);
+        }
+    }
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void FitContentToViewportExpandsSmallTopologyAndKeepsOutputScale(int scale) {
+        var chart = TopologyChart.Create().WithViewport(1300, 560).WithLayout(TopologyLayoutMode.Manual)
+            .AddNode("gateway", "Gateway", 30, 40, width: 90, height: 52).AddNode("identity", "Identity service", 180, 40, width: 90, height: 52)
+            .AddEdge("request", "gateway", "identity", "HTTPS");
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, PngSupersamplingScale = scale };
+        var original = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false }));
+        var fitted = XDocument.Parse(chart.ToSvg(options));
+        double LargestNodeLabel(XDocument document) => document.Descendants()
+            .Where(e => Role(e) == "topology-node-label").SelectMany(e => e.DescendantsAndSelf())
+            .Where(e => e.Name.LocalName == "text" && e.Attribute("font-size") != null)
+            .Select(e => N(e, "font-size")).DefaultIfEmpty(0).Max();
+
+        Assert.True(LargestNodeLabel(fitted) > LargestNodeLabel(original));
+        var image = RasterImageDecoder.Decode(chart.ToPng(options));
+        Assert.Equal(1300, image.Width);
+        Assert.Equal(560, image.Height);
+    }
+
+    [Fact]
+    public void HubAndSpokeContentUsesAvailablePanelSizeWhenFittingIsEnabled() {
+        var chart = TopologyChart.Create().WithViewport(1300, 560).WithLayout(TopologyLayoutMode.HubAndSpoke)
+            .AddAutoNode("site", "AMS-HQ", TopologyNodeKind.Hub)
+            .AddAutoNode("dc", "DC01", TopologyNodeKind.Server)
+            .AddAutoNode("branch", "Branch office", TopologyNodeKind.Server)
+            .AddAutoNode("wan", "WAN edge", TopologyNodeKind.Network)
+            .AddEdge("site-dc", "site", "dc").AddEdge("site-branch", "site", "branch").AddEdge("site-wan", "site", "wan");
+        var fixedSvg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }));
+        var fittedOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        var fittedSvg = XDocument.Parse(chart.ToSvg(fittedOptions));
+        var arrangedNodes = TopologyLayoutEngine.Prepare(chart, options: fittedOptions).Nodes;
+        for (var first = 0; first < arrangedNodes.Count; first++) for (var second = first + 1; second < arrangedNodes.Count; second++) {
+            var a = arrangedNodes[first]; var b = arrangedNodes[second];
+            Assert.True(a.X + a.Width <= b.X || b.X + b.Width <= a.X || a.Y + a.Height <= b.Y || b.Y + b.Height <= a.Y,
+                $"Fitted matrix nodes '{a.Id}' and '{b.Id}' overlap.");
+        }
+        double LargestNodeFont(XDocument document) => document.Descendants()
+            .Where(element => Role(element) == "topology-node-label").SelectMany(element => element.DescendantsAndSelf())
+            .Where(element => element.Name.LocalName == "text" && element.Attribute("font-size") != null)
+            .Select(element => N(element, "font-size")).DefaultIfEmpty(0).Max();
+
+        Assert.True(LargestNodeFont(fittedSvg) > LargestNodeFont(fixedSvg));
+        Assert.NotEmpty(chart.ToPng(fittedOptions));
+    }
+
+    [Fact]
+    public void FitContentToViewportKeepsLongTopologyCardCaptionsWhole() {
+        var chart = TopologyChart.Create().WithViewport(1200, 260).WithLayout(TopologyLayoutMode.GroupGrid)
+            .AddAutoGroup("site-a", "Primary authentication and directory services")
+            .AddAutoGroup("site-b", "Secondary recovery services")
+            .AddAutoNode("dc1", "DC01", groupId: "site-a")
+            .AddAutoNode("dns1", "DNS and catalog", groupId: "site-a")
+            .AddAutoNode("dc2", "DC02", groupId: "site-b")
+            .AddAutoNode("backup", "Recovery coordinator", groupId: "site-b");
+        var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
+        var svg = XDocument.Parse(chart.ToSvg(options));
+        var labels = svg.Descendants().Where(element => Role(element) == "topology-node-label")
+            .SelectMany(element => element.DescendantsAndSelf()).Where(element => element.Name.LocalName == "text")
+            .Select(element => element.Value).ToArray();
+
+        Assert.Contains("Recovery coordinator", labels);
+        Assert.NotEmpty(chart.ToPng(options));
+    }
+
+    [Fact]
+    public void MermaidClassDefColorSetsNodeLabelInk() {
+        var result = MermaidRenderer.Render("flowchart LR\n A[Escalation]\n classDef oncall color:#ef4444,fill:#111827,stroke:#64748b\n class A oncall");
+        Assert.False(result.HasErrors);
+        var node = Assert.IsType<TopologyChart>(result.Artifact!.Model).Nodes.Single(item => item.Id == "A");
+        Assert.Equal("#ef4444", node.LabelColor);
+        var svg = XDocument.Parse(result.Artifact!.ToSvg());
+        var label = svg.Descendants().Where(element => Role(element) == "topology-node-label")
+            .SelectMany(element => element.DescendantsAndSelf()).First(element => element.Name.LocalName == "text");
+        Assert.Equal("#EF4444", (string?)label.Attribute("fill"));
+        var envelope = result.Artifact.ToInterchangeEnvelope();
+        Assert.Equal("#ef4444", envelope.Nodes.Single(item => item.Label == "Escalation").LabelColor);
+        var roundTrip = VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson());
+        Assert.Equal("#ef4444", roundTrip.Nodes.Single(item => item.Label == "Escalation").LabelColor);
+        Assert.NotEmpty(result.Artifact.ToPng());
+    }
+    [Fact]
+    public void WideMermaidFlowchartsScaleToTheirExplicitViewport() {
+        const string source = "flowchart LR\n alert[On-call alert] --> triage{Known issue?}\n triage -->|yes| runbook[Use recovery runbook]\n triage -->|no| owner[Page service owner]\n runbook --> verify[Verify recovery]\n owner --> verify";
+        var result = MermaidRenderer.Render(source);
+        Assert.False(result.HasErrors);
+        var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
+        TopologyRenderOptions RenderOptions(bool fit) => new() { FitContentToViewport = fit, IncludeLegend = false, IncludeTitle = false };
+        string Render(bool fit) {
+            chart.WithViewport(2400, 1000, 32);
+            return chart.ToSvg(RenderOptions(fit));
+        }
+        double LargestNodeFont(string svg) => XDocument.Parse(svg).Descendants()
+            .Where(element => Role(element) == "topology-node-label").SelectMany(element => element.DescendantsAndSelf())
+            .Where(element => element.Name.LocalName == "text" && element.Attribute("font-size") != null)
+            .Select(element => N(element, "font-size")).DefaultIfEmpty(0).Max();
+
+        var fixedSvg = Render(false);
+        var fitSvg = Render(true);
+        Assert.True(LargestNodeFont(fitSvg) > LargestNodeFont(fixedSvg));
+        Assert.NotEmpty(chart.ToPng(RenderOptions(true)));
+    }
+    [Fact]
+    public void GroupGridKeepsEveryGroupShellSeparateInWideShortViewports() {
+        var chart = TopologyChart.Create().WithViewport(1000, 180).WithLayout(TopologyLayoutMode.GroupGrid)
+            .AddAutoGroup("one", "One").AddAutoGroup("two", "Two").AddAutoGroup("three", "Three").AddAutoGroup("four", "Four")
+            .AddAutoNode("a", "A", groupId: "one").AddAutoNode("b", "B", groupId: "two")
+            .AddAutoNode("c", "C", groupId: "three").AddAutoNode("d", "D", groupId: "four");
+        var groups = TopologyLayoutEngine.Prepare(chart).Groups;
+
+        for (var first = 0; first < groups.Count; first++) for (var second = first + 1; second < groups.Count; second++) {
+            var a = groups[first]; var b = groups[second];
+            Assert.True(a.X + a.Width <= b.X || b.X + b.Width <= a.X || a.Y + a.Height <= b.Y || b.Y + b.Height <= a.Y,
+                $"Group shells '{a.Id}' and '{b.Id}' overlap.");
+        }
+    }
+    [Fact]
+    public void InfoStatusUsesThemeInfoAndListMarkersUseOnePaletteColor() {
+        var theme = VisualTheme.Graphite().WithPalette(ChartColor.FromRgb(210, 30, 45), ChartColor.FromRgb(20, 170, 90), ChartColor.FromRgb(40, 90, 220));
+        var status = MetricCard.Create().WithTheme(theme).WithSize(260, 120).WithStatus(VisualStatus.Info).WithMetric("Replication", "Pending");
+        var statusBar = XDocument.Parse(status.ToSvg()).Descendants().Single(e => Role(e) == "metric-status-bar");
+        Assert.Equal(theme.Resolve(VisualThemeMode.Light).Info.ToCss(), (string?)statusBar.Attribute("fill"));
+
+        var list = ChartList.Create().WithTheme(theme).WithSize(360, 160)
+            .AddItem("First").AddItem("Second").AddItem("Third");
+        var markers = XDocument.Parse(list.ToSvg()).Descendants().Where(e => Role(e) == "list-marker")
+            .Select(e => (string?)e.Attribute("fill")).Where(color => color != null).Distinct().ToArray();
+        Assert.Single(markers);
+        Assert.Equal(theme.Resolve(VisualThemeMode.Light).Palette[0].ToCss(), markers[0]);
+    }
     [Fact]
     public void HorizontalBarsHonorPointColorsAndCategoryCaptions() {
         var chart = Chart.Create().WithSize(520, 220).WithXLabels("Alpha", "Beta", "Gamma")

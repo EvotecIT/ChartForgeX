@@ -6,6 +6,22 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class LayeredGroupRegressionTests {
+    [Fact]
+    public void AutomaticLeftToRightChainFollowsEdgesAcrossNodeKinds() {
+        var chart = TopologyChart.Create().WithViewport(1100, 260).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddAutoNode("client", "Client", TopologyNodeKind.Endpoint)
+            .AddAutoNode("api", "Application API", TopologyNodeKind.Service)
+            .AddAutoNode("cluster", "Database cluster", TopologyNodeKind.Group)
+            .AddEdge("call", "client", "api").AddEdge("store", "api", "cluster");
+
+        var prepared = TopologyLayoutEngine.Prepare(chart);
+        var nodes = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+
+        Assert.True(nodes["client"].X < nodes["api"].X);
+        Assert.True(nodes["api"].X < nodes["cluster"].X);
+    }
+
     [Theory]
     [InlineData(TopologyLayoutDirection.LeftToRight)]
     [InlineData(TopologyLayoutDirection.RightToLeft)]
@@ -68,6 +84,38 @@ public sealed class LayeredGroupRegressionTests {
                 : a.Y > middle.Y && a.Y < middle.Y + middle.Height && Math.Max(a.X, b.X) > middle.X && Math.Min(a.X, b.X) < middle.X + middle.Width;
             Assert.False(crosses, "The rank-skipping route must avoid the middle card.");
         }
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Fact]
+    public void PackedGroupRouteRepairPreservesSupportedDuplicateEdgeIds() {
+        var chart = TopologyChart.Create().WithViewport(1200, 800).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddAutoGroup("a", "A").AddAutoGroup("b", "B")
+            .AddAutoNode("one", "One", groupId: "a").AddAutoNode("middle", "Middle", groupId: "a")
+            .AddAutoNode("last", "Last", groupId: "a").AddAutoNode("other", "Other", groupId: "b")
+            .AddEdge("shared", "one", "middle").AddEdge("shared", "middle", "last")
+            .AddEdge("skip", "one", "last");
+
+        var prepared = TopologyLayoutEngine.Prepare(chart);
+
+        Assert.Equal(3, prepared.Edges.Count);
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Fact]
+    public void OrthogonalSkipEdgesRouteAroundIntermediateCards() {
+        var chart = TopologyChart.Create().WithViewport(900, 300, 0).WithLegend(null)
+            .AddNode("source", "Source", 30, 110, width: 110, height: 64)
+            .AddNode("middle", "Intermediate", 380, 92, width: 150, height: 100)
+            .AddNode("target", "Target", 740, 110, width: 110, height: 64)
+            .AddEdge("skip", "source", "target", routing: TopologyEdgeRouting.Orthogonal);
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+
+        var route = TopologyEdgeRouter.Route(chart, chart.Edges[0], nodes["source"], nodes["target"]);
+
+        Assert.Equal("ObstacleAvoidingOrthogonal", route.Diagnostics.Strategy);
+        Assert.True(route.Diagnostics.ObstacleHits == 0);
         Assert.NotEmpty(chart.ToPng());
     }
 }

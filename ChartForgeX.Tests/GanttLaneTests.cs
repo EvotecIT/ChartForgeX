@@ -305,6 +305,19 @@ public sealed class GanttLaneTests {
     }
 
     [Fact]
+    public void DenseLanesRetainLabelsAndThinItemsRetainCaptions() {
+        var chart = CreateChart().WithSize(900, 300).WithAxes(true).WithYAxisVisible(true)
+            .AddGanttLane("Escalation lane", new[] { new ChartGanttLaneItem(Start, Start.AddMinutes(1), "high", "Investigate") });
+        chart.AddGanttLane("Service A", new[] { new ChartGanttLaneItem(Start, Start.AddHours(1), "low") });
+
+        var svg = XDocument.Parse(chart.ToSvg());
+        Assert.Equal(5, ByRole(svg, "schedule-row-label").Length);
+        Assert.Contains("Escalation lane", Texts(svg, "schedule-row-label"));
+        Assert.Contains("Investigate", Texts(svg, "data-label"));
+        Assert.NotEmpty(chart.ToPng());
+    }
+
+    [Fact]
     public void Render_AxisVisibilityDensityAndGridStyle_FollowSharedAxisControls() {
         var chart = CreateChart().WithSize(390, 300);
         var all = CreateChart().WithSize(390, 300);

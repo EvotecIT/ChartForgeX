@@ -87,9 +87,14 @@ internal static partial class VisualScheduleCompiler {
                 paint: VisualChartPaint.Stroke(SvgPaint.Of(context.Theme.Resolve(context.ThemeMode).Border, SvgColorRole.Grid)
                     .WithOpacity(context.Theme.Resolve(context.ThemeMode).Border.WithOpacity(grid.HorizontalOpacity), grid.HorizontalOpacity)));
         }
-        if (chart.Options.ShowAxes && chart.Options.YAxis.Visible)
-            VisualStateSceneTools.Text(builder, name, new ChartRect(viewport.Left, top, Math.Max(0, plot.Left - viewport.Left - gap), height), style,
+        if (chart.Options.ShowAxes && chart.Options.YAxis.Visible) {
+            var labelWidth = Math.Max(0, plot.Left - viewport.Left - gap);
+            var fittedName = ChartTextFitting.TrimEnd(name, style.EffectiveFontSize, labelWidth,
+                (text, _) => builder.MeasureText(text, style).Width);
+            if (fittedName.Length == 0) fittedName = name;
+            VisualStateSceneTools.Text(builder, fittedName, new ChartRect(viewport.Left, top, labelWidth, height), LaneLabelStyle(builder, style, fittedName, height, labelWidth),
                 "schedule-row-label", "schedule-row-" + index, TextAlignment.Right);
+        }
         if (layout.HasSummary && summary != null)
             VisualStateSceneTools.Text(builder, summary, new ChartRect(layout.SummaryLeft, top, Math.Max(0, viewport.Right - layout.SummaryLeft), height), style,
                 "lane-summary", "schedule-summary-" + index, TextAlignment.Right);
@@ -125,10 +130,15 @@ internal static partial class VisualScheduleCompiler {
                 var metrics = builder.MeasureText(text, fitted); return metrics.Width <= inner.Width && metrics.Height <= inner.Height;
             });
             measured = builder.MeasureText(text, style);
-            if (measured.Width > inner.Width || measured.Height > inner.Height) return;
-            VisualStateSceneTools.Text(builder, text, inner, style, "data-label", VisualStateSceneTools.SourceId(chart.IndexOfSeries(series), index) + "-label", TextAlignment.Center,
-                paint: VisualStateSceneTools.DataPaint(chart, series, index, style, ink?.Paint));
-            return;
+            if (measured.Width <= inner.Width && measured.Height <= inner.Height) {
+                VisualStateSceneTools.Text(builder, text, inner, style, "data-label", VisualStateSceneTools.SourceId(chart.IndexOfSeries(series), index) + "-label", TextAlignment.Center,
+                    paint: VisualStateSceneTools.DataPaint(chart, series, index, style, ink?.Paint));
+                return;
+            }
+            if (series.Kind != ChartSeriesKind.GanttLane) return;
+            // Thin schedule bars still carry meaningful labels. Place them above the mark
+            // when their complete text cannot fit inside the bar instead of dropping them.
+            placement = ChartDataLabelPlacement.Above;
         }
         var width = Math.Min(viewport.Width, measured.Width); var height = Math.Min(viewport.Height, measured.Height);
         var left = bounds.Left + (bounds.Width - width) / 2; var top = bounds.Top - gap - height;
@@ -141,6 +151,18 @@ internal static partial class VisualScheduleCompiler {
                 new ChartPoint(left + width / 2, top + height / 2), colors.MutedForeground);
         VisualStateSceneTools.Text(builder, text, new ChartRect(left, top, width, height), style, "data-label",
             VisualStateSceneTools.SourceId(chart.IndexOfSeries(series), index) + "-label", TextAlignment.Center, paint: VisualStateSceneTools.DataPaint(chart, series, index, style, ink?.Paint));
+    }
+
+    private static TextStyle LaneLabelStyle(VisualSceneBuilder builder, TextStyle style, string text, double height, double width) {
+        if (height <= 0 || width <= 0) return style;
+        var fitted = style.Clone();
+        while (fitted.EffectiveFontSize > 1) {
+            var metrics = builder.MeasureText(text, fitted);
+            if (metrics.Height <= height + .001 && metrics.Width <= width + .001) break;
+            var ratio = Math.Min(height / Math.Max(.001, metrics.Height), width / Math.Max(.001, metrics.Width));
+            fitted.FontSize = Math.Max(1, Math.Min(fitted.EffectiveFontSize - .1, fitted.EffectiveFontSize * Math.Min(.9, ratio * .95)));
+        }
+        return fitted;
     }
 
     private sealed class ScheduleLayout {

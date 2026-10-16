@@ -136,7 +136,7 @@ public sealed partial class SvgFactBlockRenderer {
             var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
             var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));
             var leftBadge = card.BadgePlacement == MetricCardBadgePlacement.TopLeft;
-            var cx = leftBadge ? content.X + badgeRadius : options.Size.Width - options.Padding.Right - badgeRadius;
+            var cx = leftBadge ? content.X + badgeRadius : options.Size.Width - options.Padding.Right - badgeRadius - 16;
             var cy = options.Padding.Top + badgeRadius;
             badgeBottom = cy + badgeRadius + 8;
             if (!leftBadge) labelWidth = Math.Max(1, cx - badgeRadius - 10 - labelX);
@@ -414,7 +414,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void WriteMarker(SvgMarkupWriter writer, ChartList list, ChartListItem item, int index, double x, double y) {
         var theme = list.Options.ResolvedTheme;
-        var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, index) : VisualBlockRendering.StatusColor(theme, item.Status);
+        var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : VisualBlockRendering.StatusColor(theme, item.Status);
         if (list.Marker == VisualListMarker.None) return;
         if (list.Marker == VisualListMarker.Number) {
             writer.StartElement("text").Attribute("data-cfx-role", "list-marker").Attribute("x", x - 5).Attribute("y", y + 4).Attribute("fill", color.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 11).Attribute("font-weight", "800").Text((index + 1).ToString(CultureInfo.InvariantCulture)).EndElement().Line();

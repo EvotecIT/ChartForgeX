@@ -25,14 +25,14 @@ internal sealed partial class VisualTopologyCompiler {
             var opacity = EdgeOpacity(edge, _options);
             color = color.WithOpacity(color.A / 255d * opacity); paintOpacity *= opacity;
         }
-        var width = (edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth) * _scale;
+        var width = (edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth) * (_options.UseForceGraphPresentation ? 1 : _scale);
         if (edge.Emphasis == TopologyEdgeEmphasis.Strong) width *= 1.6;
         if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !_options.UseForceGraphPresentation && !IsMonitoringDashboardStyle(_options)) { width *= .7; color = color.WithOpacity(color.A / 255d * .5); paintOpacity *= .5; }
         var edgePaint = usePalette ? PalettePaint(edge.PaletteIndex!.Value, color, paintOpacity)
             : cssVariable ? paintOpacity >= 1 ? sourcePaint : sourcePaint.WithOpacity(color, paintOpacity)
             : SvgPaint.Of(color, colorRole);
         if (_options.SelectedEdgeIds.Contains(edge.Id)) width *= 1.5;
-        if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options)) width = EdgeStrokeWidth(edge, _options.SelectedEdgeIds.Contains(edge.Id), _options) * _scale;
+        if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options)) width = EdgeStrokeWidth(edge, _options.SelectedEdgeIds.Contains(edge.Id), _options) * (_options.UseForceGraphPresentation ? 1 : _scale);
         var paintPoints = _paintRoutes[edge].Select(Point).ToArray();
         var hasTrunk = _trunks.TryGetValue(edge, out var trunk);
         using (Host(edge.Href, edge.Tooltip, edge.Id, "topology-edge-host"))

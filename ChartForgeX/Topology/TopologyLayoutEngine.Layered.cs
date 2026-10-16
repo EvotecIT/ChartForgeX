@@ -10,9 +10,13 @@ internal static partial class TopologyLayoutEngine {
     private static void ApplyLayered(TopologyChart chart, TopologyRenderOptions? options) {
         // Fully automatic grouped diagrams follow their dependency graph before shells are packed;
         // otherwise unrelated kind defaults can put a database before the service that calls it.
-        var automaticGroups = chart.Groups.Count >= 2 && chart.Groups.All(g => g.X == 0 && g.Y == 0 && g.Width <= 0 && g.Height <= 0)
-            && chart.Nodes.All(n => IsUnset(n.X) && IsUnset(n.Y));
-        ApplyEdgeRankHints(chart, force: automaticGroups);
+        var automaticGroups = chart.Groups.Count >= 2 && chart.Groups.All(group => group.X == 0 && group.Y == 0 && group.Width <= 0 && group.Height <= 0)
+            && chart.Nodes.All(node => IsUnset(node.X) && IsUnset(node.Y));
+        var automaticLayout = chart.Groups.All(group => group.X == 0 && group.Y == 0 && group.Width <= 0 && group.Height <= 0)
+            && chart.Nodes.All(node => IsUnset(node.X) && IsUnset(node.Y));
+        var horizontalAutomaticLayout = automaticLayout
+            && (chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft);
+        ApplyEdgeRankHints(chart, force: automaticGroups || horizontalAutomaticLayout);
         var nodes = chart.Nodes;
         var layers = OrderLayeredGroups(nodes.GroupBy(node => GetLayer(node)).OrderBy(group => group.Key));
         var pad = Math.Max(24, chart.Viewport.Padding);
@@ -41,7 +45,9 @@ internal static partial class TopologyLayoutEngine {
             return new LayerPlacement(group.Index, group.Layer, group.Nodes, columns, rows, maxWidth, maxHeight, height);
         }).ToList();
         var totalHeight = prepared.Sum(layer => layer.BlockSize);
-        var layerGap = prepared.Count <= 1 ? 0 : Math.Max(rankSpacing, (availableH - totalHeight) / (prepared.Count - 1));
+        var layerGap = prepared.Count <= 1 ? 0 : options?.FitContentToViewport == true
+            ? rankSpacing
+            : Math.Max(rankSpacing, (availableH - totalHeight) / (prepared.Count - 1));
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var lanes = LongEdgeLanePlan.Create(chart, prepared, false, availableW, nodeSpacing + 18);
         var y = top;
@@ -98,7 +104,9 @@ internal static partial class TopologyLayoutEngine {
         }).ToList();
         var totalWidth = prepared.Sum(layer => layer.BlockSize);
         var minimumGap = options?.LayeredRankSpacing.HasValue == true ? rankSpacing + 14 : Math.Max(56, rankSpacing);
-        var layerGap = prepared.Count <= 1 ? 0 : Math.Max(minimumGap, (availableW - totalWidth) / (prepared.Count - 1));
+        var layerGap = prepared.Count <= 1 ? 0 : options?.FitContentToViewport == true
+            ? minimumGap
+            : Math.Max(minimumGap, (availableW - totalWidth) / (prepared.Count - 1));
         var nodesById = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var lanes = LongEdgeLanePlan.Create(chart, prepared, true, availableH, nodeSpacing + 6);
         var x = pad;

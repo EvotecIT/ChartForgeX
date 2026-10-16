@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Topology;
@@ -80,14 +81,35 @@ internal sealed partial class VisualTopologyCompiler {
         var width = Math.Max(1, _chart.Viewport.Width - padding * 2);
         var height = Math.Max(1, _chart.Viewport.Height - padding * 2);
         _offsetX = _plot.X - padding; _offsetY = _plot.Y - padding;
-        // Output preservation may leave unused space. Fitting never enlarges or recenters an
-        // already fitting diagram: its source coordinates remain the semantic coordinates.
-        if (width <= _plot.Width + .001 && height <= _plot.Height + .001) return;
+        var canFitManualCards = _chart.Nodes.All(node => node.Kind == TopologyNodeKind.Generic && !node.Shape.HasValue
+            && node.DisplayMode is not (TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Dot)
+            && string.IsNullOrWhiteSpace(node.IconId) && string.IsNullOrWhiteSpace(node.Symbol));
+        var fitResolvedLayout = _options.FitContentToViewport
+            && (_chart.LayoutMode != TopologyLayoutMode.Manual || canFitManualCards);
+        var content = fitResolvedLayout ? MeasureFittedContent(padding, padding, width, height) : new ChartRect(padding, padding, width, height);
+        if (!fitResolvedLayout
+            && content.Width <= _plot.Width + .001 && content.Height <= _plot.Height + .001) return;
         if (!_resolvedLayout && !_options.FitContentToViewport)
-            throw new NotSupportedException($"Prepared topology exceeds its fixed viewport: requires {width:0.##} x {height:0.##}, available {_plot.Width:0.##} x {_plot.Height:0.##}. Enlarge the common size or enable FitContentToViewport.");
-        _scale = Math.Min(_plot.Width / width, _plot.Height / height);
-        _offsetX = _plot.X + (_plot.Width - width * _scale) / 2 - padding * _scale;
-        _offsetY = _plot.Y + (_plot.Height - height * _scale) / 2 - padding * _scale;
+            throw new NotSupportedException($"Prepared topology exceeds its fixed viewport: requires {content.Width:0.##} x {content.Height:0.##}, available {_plot.Width:0.##} x {_plot.Height:0.##}. Enlarge the common size or enable FitContentToViewport.");
+        _scale = Math.Min(_plot.Width / content.Width, _plot.Height / content.Height);
+        _offsetX = _plot.X + (_plot.Width - content.Width * _scale) / 2 - content.X * _scale;
+        _offsetY = _plot.Y + (_plot.Height - content.Height * _scale) / 2 - content.Y * _scale;
         _builder.AddDiagnostic(new VisualDiagnostic("topology.content-fitted", "The complete topology, including text and native semantic geometry, was uniformly fitted into the common content viewport."));
+
+        ChartRect MeasureFittedContent(double fallbackX, double fallbackY, double fallbackWidth, double fallbackHeight) {
+            var left = double.PositiveInfinity; var top = double.PositiveInfinity;
+            var right = double.NegativeInfinity; var bottom = double.NegativeInfinity;
+            void Include(double x1, double y1, double x2, double y2) {
+                left = Math.Min(left, x1); top = Math.Min(top, y1);
+                right = Math.Max(right, x2); bottom = Math.Max(bottom, y2);
+            }
+            foreach (var group in _chart.Groups) Include(group.X, group.Y, group.X + group.Width, group.Y + group.Height);
+            foreach (var node in _chart.Nodes) Include(node.X, node.Y, node.X + node.Width, node.Y + node.Height);
+            foreach (var point in _routes.Values.SelectMany(route => route)) Include(point.X, point.Y, point.X, point.Y);
+            foreach (var label in _edgeLabels) Include(label.CenterX - label.Width / 2, label.CenterY - label.Height / 2,
+                label.CenterX + label.Width / 2, label.CenterY + label.Height / 2);
+            return double.IsPositiveInfinity(left) ? new ChartRect(fallbackX, fallbackY, fallbackWidth, fallbackHeight)
+                : new ChartRect(left, top, Math.Max(1, right - left), Math.Max(1, bottom - top));
+        }
     }
 }

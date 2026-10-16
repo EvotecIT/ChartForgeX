@@ -17,8 +17,10 @@ internal sealed partial class VisualTopologyCompiler {
             return Bounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
         });
         var content = ShapeCaptionBounds(node, label, size);
-        Text(label, Bounds(content.X, content.Y, content.Width, content.Height), size, Highlight(_colors.Foreground, active), 600,
-            "topology-node-label", _options.MaxNodeLabelLines, centered: true, id: node.Id + "-label", opacity: HighlightFactor(active), verticallyCentered: true);
+        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        Text(label, Bounds(content.X, content.Y, content.Width, content.Height), size, Highlight(labelColor, active), 600,
+            "topology-node-label", _options.MaxNodeLabelLines, centered: true, id: node.Id + "-label", opacity: HighlightFactor(active),
+            paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SvgPaint.Of(labelColor, SvgColorRole.Any), fitSingleLine: true, verticallyCentered: true);
     }
 
     private ChartRect ShapeCaptionBounds(TopologyNode node, string label, double size) {

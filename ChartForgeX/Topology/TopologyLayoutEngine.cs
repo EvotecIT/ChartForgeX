@@ -29,7 +29,7 @@ internal static partial class TopologyLayoutEngine {
                 ApplyGroupGrid(copy);
                 break;
             case TopologyLayoutMode.HubAndSpoke:
-                ApplyHubAndSpoke(copy);
+                ApplyHubAndSpoke(copy, options);
                 break;
             case TopologyLayoutMode.Swimlane:
                 ApplySwimlane(copy, options);
@@ -38,7 +38,7 @@ internal static partial class TopologyLayoutEngine {
                 ApplyLayered(copy, options);
                 break;
             case TopologyLayoutMode.Matrix:
-                ApplyMatrix(copy);
+                ApplyMatrix(copy, options);
                 break;
             case TopologyLayoutMode.DenseGrouped:
                 ApplyDenseGrouped(copy);
@@ -228,10 +228,11 @@ internal static partial class TopologyLayoutEngine {
         var pad = Math.Max(16, chart.Viewport.Padding);
         var titleOffset = string.IsNullOrWhiteSpace(chart.Title) ? 0 : 64;
         var legendOffset = LegendReservedHeight(chart.Legend, chart.Viewport);
-        var columns = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(chart.Groups.Count)));
+        var maximumColumns = Math.Max(1, (int)Math.Floor((chart.Viewport.Width - pad * 2 + 28) / (220 + 28)));
+        var columns = Math.Max(1, Math.Min(chart.Groups.Count, Math.Min(maximumColumns, (int)Math.Ceiling(Math.Sqrt(chart.Groups.Count)) + 1)));
         var rows = (int)Math.Ceiling(chart.Groups.Count / (double)columns);
-        var cellW = (chart.Viewport.Width - pad * 2 - (columns - 1) * 28) / columns;
-        var cellH = (chart.Viewport.Height - pad * 2 - titleOffset - legendOffset - (rows - 1) * 28) / rows;
+        var cellW = Math.Max(220, (chart.Viewport.Width - pad * 2 - (columns - 1) * 28) / columns);
+        var cellH = Math.Max(180, (chart.Viewport.Height - pad * 2 - titleOffset - legendOffset - (rows - 1) * 28) / rows);
 
         for (var i = 0; i < chart.Groups.Count; i++) {
             var group = chart.Groups[i];
@@ -248,7 +249,7 @@ internal static partial class TopologyLayoutEngine {
         }
     }
 
-    private static void ApplyHubAndSpoke(TopologyChart chart) {
+    private static void ApplyHubAndSpoke(TopologyChart chart, TopologyRenderOptions? options) {
         foreach (var group in chart.Groups) {
             var nodes = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).ToList();
             if (nodes.Count == 0) continue;
@@ -271,15 +272,18 @@ internal static partial class TopologyLayoutEngine {
             }
         }
 
-        if (chart.Groups.Count == 0) ApplyMatrix(chart);
+        if (chart.Groups.Count == 0) ApplyMatrix(chart, options);
     }
 
-    private static void ApplyMatrix(TopologyChart chart) {
+    private static void ApplyMatrix(TopologyChart chart, TopologyRenderOptions? options = null) {
         var pad = Math.Max(24, chart.Viewport.Padding);
         var nodes = chart.Nodes.OrderBy(node => node.GroupId ?? string.Empty, StringComparer.Ordinal).ThenBy(node => node.Id, StringComparer.Ordinal).ToList();
         var columns = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(nodes.Count)));
         var top = pad + (string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72);
-        var cellW = (chart.Viewport.Width - pad * 2) / columns;
+        var naturalCellWidth = options?.FitContentToViewport == true
+            ? (nodes.Select(node => node.Width).DefaultIfEmpty(120).Max() + 42) * columns
+            : chart.Viewport.Width - pad * 2;
+        var cellW = naturalCellWidth / columns;
 
         for (var i = 0; i < nodes.Count; i++) {
             var node = nodes[i];
