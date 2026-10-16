@@ -96,7 +96,7 @@ internal static partial class VisualHierarchyCompiler {
                 builder.Rect(b, color, colors.Surface, context.Theme.AxisStrokeWidth, Math.Min(context.Theme.BarRadius, model.NodeHeight / 2), "tree-node-mark",
                     paint: new VisualScenePaintBinding(ChartRelationshipPaint.Paint(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 Pattern(builder, Rectangle(b), series, node.Index, color, "tree-node-pattern");
-                if (series.ShowDataLabels ?? chart.Options.ShowDataLabels) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
+                if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
             }
             builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", b, node.Label + ": level " + N(node.Depth)));
         }

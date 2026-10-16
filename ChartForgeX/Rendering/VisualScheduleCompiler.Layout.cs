@@ -119,7 +119,7 @@ internal static partial class VisualScheduleCompiler {
 
     private static void DataLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series, int index,
         string text, ChartRect bounds, ChartRect viewport, VisualThemeColors colors, ChartColor? fillOverride = null, ChartColorBlend? ink = null) {
-        if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) && series.Kind != ChartSeriesKind.GanttLane) return;
+        if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) && series.Kind != ChartSeriesKind.GanttLane) return;
         var fill = fillOverride ?? VisualStateSceneTools.SeriesColor(series, chart.IndexOfSeries(series), colors);
         var style = VisualStateSceneTools.DataStyle(chart, context, series, index, ink?.Color ?? ChartColorMath.AccessibleTextOnBackground(fill));
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;

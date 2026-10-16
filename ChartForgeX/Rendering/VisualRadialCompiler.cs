@@ -70,7 +70,7 @@ internal static partial class VisualRadialCompiler {
                 var sliceY = cy + Math.Sin(mid) * offset;
                 var role = inner > 0 ? "donut-slice" : "pie-slice";
                 var formattedValue = ChartNumericFormatter.FormatValue(chart.Options, slice.Value);
-                var resolvedLabel = (series.ShowDataLabels ?? chart.Options.ShowDataLabels) ? FormatLabel(chart, slice, total, formattedValue) : null;
+                var resolvedLabel = (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) ? FormatLabel(chart, slice, total, formattedValue) : null;
                 using (builder.PushGroup(null, "radial-point", Metadata(chart, slice, percent, resolvedLabel))) {
                     builder.Slice(sliceX, sliceY, radius, inner, start, sweep, slice.Color, colors.Surface, 2, role, SliceId(slice),
                         paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, slice.Color, slice.PointIndex), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
