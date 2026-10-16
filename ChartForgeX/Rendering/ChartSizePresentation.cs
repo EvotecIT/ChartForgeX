@@ -30,7 +30,7 @@ internal sealed class ChartSizePresentation {
 
     internal string AddFacts(Dictionary<string, string> metadata, double value, string description) {
         metadata["data-cfx-label-size"] = Name;
-        if (HasFormat) metadata["data-cfx-formatted-size"] = Value(value);
+        metadata["data-cfx-formatted-size"] = Value(value);
         return HasName || HasFormat ? description + "; " + Name + ": " + Value(value) : description;
     }
 }

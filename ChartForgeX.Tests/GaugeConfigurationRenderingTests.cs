@@ -149,6 +149,28 @@ public sealed class GaugeConfigurationRenderingTests {
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
     }
 
+    [Fact]
+    public void DefaultLinearTicksKeepCompleteFormattedCaptionsAtCompactWidth() {
+        var culture = CultureInfo.GetCultureInfo("fr-FR");
+        var chart = Chart.Create().WithSize(340, 360).WithLegend(false).AddLinearGauge("Readiness", 81.75)
+            .WithValueFormatter(value => "Reading " + value.ToString("0.00", culture));
+        Assert.Null(chart.Options.Gauge.TickCount);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var ticks = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "gauge-tick").ToArray();
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role is "gauge-min-label" or "gauge-max-label"
+            || node.Role?.StartsWith("gauge-tick-label-", StringComparison.Ordinal) == true).ToArray();
+        Assert.InRange(ticks.Length, 2, 3); Assert.Equal(ticks.Length, labels.Length);
+        var expected = new[] { 0d, 25, 50, 75, 100 }.Select(value => "Reading " + value.ToString("0.00", culture)).ToArray();
+        var captions = labels.Select(label => string.Join("\n", label.Text.Lines.Select(line => line.Text))).ToArray();
+        Assert.All(captions, caption => Assert.Contains(caption, expected));
+        Assert.Equal(expected[0], captions[0]); Assert.Equal(expected[4], captions[captions.Length - 1]);
+        Assert.All(labels, label => Assert.True(label.Text.Style.EffectiveFontSize >= chart.Options.Theme.Typography.AxisSize));
+        var coordinates = ticks.Select(tick => tick.Start.X).ToArray();
+        var steps = coordinates.Zip(coordinates.Skip(1), (left, right) => right - left).ToArray();
+        Assert.All(steps, step => Assert.Equal(steps[0], step, 7));
+        Capture(prepared, "default-linear-long-format-compact");
+    }
+
     internal static Chart Create(string layout, bool dark, bool compact) {
         var reading = new ChartGaugeValue(30, -20, 80, new[] { new ChartGaugeTarget(10, "Baseline"), new ChartGaugeTarget(60, "Goal") });
         return Chart.Create().WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend(false)

@@ -330,7 +330,7 @@
       else push(name, value);
       push('End', capturedText(data, 'cfxFormattedEnd', data.cfxEnd));
     }
-    sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
+    rows.push(...sizeTooltipRows(node));
     rows.push(...gaugeTargetTooltipRows(node));
     push(rowName(node, 'target', 'Target'), data.cfxTarget);
     push('Status', data.cfxStatus);

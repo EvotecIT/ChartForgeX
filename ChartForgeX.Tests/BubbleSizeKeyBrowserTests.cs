@@ -49,7 +49,7 @@ public sealed class BubbleSizeKeyBrowserTests {
         var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         Assert.Equal(1, await page.Locator("[data-cfx-role='bubble-size-key']").CountAsync());
         Assert.Equal(0, await page.Locator("[data-cfx-role='bubble-size-key'] [data-cfx-target-kind], [data-cfx-role='bubble-size-key'][data-cfx-target-kind]").CountAsync());
-        Assert.Equal("Requests", await page.Locator("[data-cfx-role='bubble-size-key-title']").InnerTextAsync());
+        Assert.Equal("Requests", await page.Locator("[data-cfx-role='bubble-size-key-title']").TextContentAsync());
         var target = page.Locator(Point(0, 1));
         await MoveToAsync(page, Point(0, 1));
         Assert.Equal("50 req", await Row(page, "Requests"));
@@ -64,7 +64,9 @@ public sealed class BubbleSizeKeyBrowserTests {
         var selected = await page.EvaluateAsync<JsonElement>("() => window.bubbleKeySelections.at(-1).targets");
         var identity = Assert.Single(selected.EnumerateArray());
         Assert.Equal("requests", identity.GetProperty("seriesKey").GetString());
-        Assert.Contains("batch-two", identity.GetProperty("observationIds").EnumerateArray().Select(value => value.GetString()));
+        Assert.Equal("batch-two", identity.GetProperty("observationId").GetString());
+        Assert.Equal("1", identity.GetProperty("sourcePoint").GetString());
+        Assert.Equal("30", identity.GetProperty("value").GetString());
         var keyRadii = await page.Locator("[data-cfx-role='bubble-size-key-sample']").EvaluateAllAsync<double[]>("nodes => nodes.map(node => Number(node.dataset.cfxRadius))");
         Assert.Contains(18, keyRadii); Assert.Equal("18", await page.Locator(Point(0, 2) + " [data-cfx-role='bubble']").GetAttributeAsync("rx"));
         var keyBounds = await page.Locator("[data-cfx-role='bubble-size-key']").EvaluateAsync<double[]>("node => { const r=node.getBoundingClientRect(); return [r.left,r.right,r.top,r.bottom]; }");
@@ -80,6 +82,49 @@ public sealed class BubbleSizeKeyBrowserTests {
         Assert.Equal(0, await page.EvaluateAsync<int>("() => ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getSelection().length"));
         Assert.Equal(1, await page.EvaluateAsync<int>("() => window.bubbleKeySelections.length"));
         Assert.Empty(errors); AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
+    [InlineData(HtmlChartTooltipMode.Single, false)]
+    [InlineData(HtmlChartTooltipMode.SharedX, false)]
+    [InlineData(HtmlChartTooltipMode.Single, true)]
+    [InlineData(HtmlChartTooltipMode.SharedX, true)]
+    public async Task ChartFormatFallbackIncludingEmptySizeCaptionsOwnsPointerAndKeyboardReadouts(HtmlChartTooltipMode mode, bool empty) {
+        if (!Enabled) return;
+        var caption = empty ? "" : "25.00 items";
+        var chart = Chart.Create().WithSize(596, 338).WithLegend(false)
+            .WithValueFormat(empty ? ChartValueFormat.Custom(_ => "") : ChartValueFormat.Number("0.00 'items'"))
+            .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("requests"), "Recorded requests", new[] { new ChartBubble(2, 20, 25) })
+                .WithObservationId(0, new ChartObservationId("batch-one")))
+            .ConfigureBubble(options => options.SizeDimension.Name = "Requests");
+        Assert.Null(chart.Options.Bubble.SizeDimension.ValueFormat);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            options.Tooltip.Mode = mode; options.Tooltip.PinOnSelect = false;
+        }));
+        var page = session.Page;
+        var target = page.Locator(Point(0, 0));
+        var rowName = mode == HtmlChartTooltipMode.SharedX ? "Recorded requests · Requests" : "Requests";
+        Assert.Equal(caption, await target.GetAttributeAsync("data-cfx-formatted-size"));
+        await MoveToAsync(page, Point(0, 0));
+        Assert.Equal(caption, await Row(page, rowName));
+        await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, target);
+        Assert.Equal(caption, await Row(page, rowName));
+        Assert.Equal("25", await target.GetAttributeAsync("data-cfx-size"));
+        Assert.Equal("20", await target.GetAttributeAsync("data-cfx-y"));
+        Assert.Equal("requests", await target.GetAttributeAsync("data-cfx-series-key"));
+        Assert.Equal("batch-one", await target.GetAttributeAsync("data-cfx-observation-id"));
+        var directory = Environment.GetEnvironmentVariable("CFX_BUBBLE_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            Directory.CreateDirectory(directory);
+            var name = "size-fallback-" + mode + "-" + (empty ? "empty" : "formatted");
+            await page.ScreenshotAsync(new() { Path = Path.Combine(directory, name + ".browser.png") });
+            await File.WriteAllTextAsync(Path.Combine(directory, name + ".runtime.json"), JsonSerializer.Serialize(new {
+                mode, empty, caption, readout = await TooltipTextAsync(page),
+                rawSize = await target.GetAttributeAsync("data-cfx-size"),
+                observationId = await target.GetAttributeAsync("data-cfx-observation-id")
+            }, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        AssertNoConsoleErrors(session);
     }
 
     private static Task<string> Row(IPage page, string name) => page.Locator(".cfx-tooltip dt")

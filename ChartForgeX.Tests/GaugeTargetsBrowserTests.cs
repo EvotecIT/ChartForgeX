@@ -72,6 +72,20 @@ public sealed class GaugeTargetsBrowserTests {
         Assert.Equal(keyboardRows.SelectMany(row => row), (await TargetRowsAsync(page)).SelectMany(row => row));
         Assert.Equal(1, await page.EvaluateAsync<int>("() => window.gaugeSelections.length"));
         Assert.Equal(0, await page.Locator(".cfx-tooltip a").CountAsync());
+        if (form == ChartGaugeForm.Linear && customFormatter) {
+            var scale = page.Locator("[data-cfx-role='gauge-min-label'],[data-cfx-role='gauge-max-label'],[data-cfx-role^='gauge-tick-label-']:not([data-cfx-role$='-source'])");
+            var expectedScale = new[] { 0d, 25, 50, 75, 100 }.Select(number => "Reading " + number.ToString("0.00", culture));
+            var scaleCaptions = await scale.AllTextContentsAsync();
+            Assert.InRange(scaleCaptions.Count, 2, 3);
+            Assert.All(scaleCaptions, text => Assert.Contains(text, expectedScale));
+            Assert.True(await scale.EvaluateAllAsync<bool>("""
+                nodes => {
+                  const boxes=nodes.map(node=>node.getBoundingClientRect()), outer=nodes[0].closest('svg').getBoundingClientRect();
+                  return boxes.every(box=>box.left>=outer.left-.5&&box.right<=outer.right+.5&&box.top>=outer.top-.5&&box.bottom<=outer.bottom+.5)
+                    && boxes.every((box,index)=>boxes.slice(index+1).every(peer=>box.right<=peer.left||peer.right<=box.left||box.bottom<=peer.top||peer.bottom<=box.top));
+                }
+                """));
+        }
         await CaptureAsync(page, "gauge-targets-" + form.ToString().ToLowerInvariant() + (customFormatter ? "-custom-compact-dark" : "-culture-wide-light"), selected);
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }

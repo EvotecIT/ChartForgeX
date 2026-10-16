@@ -23,7 +23,7 @@ public sealed class GaugeConfigurationBrowserTests {
             .WithTheme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito"), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithPngFont(fontPath);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = "<!doctype html><html><head><style>@font-face{font-family:'CFX Gauge Carlito';src:url(data:font/ttf;base64,"
-            + Convert.ToBase64String(File.ReadAllBytes(fontPath)) + ") format('truetype');font-weight:100 900}body{margin:12px;background:"
+            + Convert.ToBase64String(File.ReadAllBytes(fontPath)) + ") format('truetype');font-weight:400}body{margin:12px;background:"
             + (dark ? "#17191d" : "#fff") + "}svg,img{display:block;max-width:100%;height:auto}</style></head><body>" + prepared.ToSvg()
             + "<img src='data:image/png;base64," + Convert.ToBase64String(prepared.ToPng()) + "'></body></html>";
         await using var session = await OpenAsync(html, viewportWidth, viewportWidth == 390 ? 780 : 960);

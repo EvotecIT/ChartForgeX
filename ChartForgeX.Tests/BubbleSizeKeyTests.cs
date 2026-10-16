@@ -110,6 +110,7 @@ public sealed class BubbleSizeKeyTests {
         var point = Assert.Single(Groups(prepared, "point"));
         Assert.Equal("Wielkość", point.Metadata["data-cfx-label-size"]);
         Assert.Equal("25.00 items", point.Metadata["data-cfx-label"]);
+        Assert.Equal("25.00 items", point.Metadata["data-cfx-formatted-size"]);
         Assert.Equal("25", point.Metadata["data-cfx-size"]);
     }
 

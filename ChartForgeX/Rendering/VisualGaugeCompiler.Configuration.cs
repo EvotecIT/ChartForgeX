@@ -33,7 +33,7 @@ internal static partial class VisualGaugeCompiler {
     private static void FitGeneratedScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ref double[] values, ref string[] captions) {
         var options = chart.Options.Gauge;
-        if (!options.TickCount.HasValue || options.TickLabels.Count > 0 || values.Length < 3) return;
+        if (options.TickLabels.Count > 0 || values.Length < 3) return;
         var style = VisualRadialPrimitives.Style(chart, context, context.Theme.Resolve(context.ThemeMode).MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
         var vertical = options.Form == ChartGaugeForm.Linear && options.Orientation == ChartOrientation.Vertical;
         var extent = vertical ? captions.Max(text => builder.MeasureText(text, style).Height) : captions.Max(text => builder.MeasureText(text, style).Width);
