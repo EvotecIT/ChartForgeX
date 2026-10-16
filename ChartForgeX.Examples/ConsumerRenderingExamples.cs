@@ -40,6 +40,16 @@ public static class ConsumerRenderingExamples {
             .AddAutoNode("db", "SQL database", TopologyNodeKind.Database, groupId: "core")
             .AddEdge("gw-api", "gw", "api", "HTTPS").AddEdge("api-db", "api", "db", "SQL");
         Save(output, "layered-groups", topology.ToSvg(), topology.ToPng());
+        var longRoute = TopologyChart.Create().WithViewport(1200, 800).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoGroup("a", "A").AddAutoGroup("b", "B")
+            .AddAutoNode("one", "One", groupId: "a").AddAutoNode("middle", "Middle", groupId: "a")
+            .AddAutoNode("last", "Last", groupId: "a").AddAutoNode("other", "Other", groupId: "b")
+            .AddEdge("first", "one", "middle").AddEdge("second", "middle", "last").AddEdge("skip", "one", "last", "Bypass");
+        Save(output, "layered-group-long-edge", longRoute.ToSvg(), longRoute.ToPng());
+        var reversedGroups = TopologyChart.Create().WithViewport(300, 330).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoGroup("b", "B").AddAutoGroup("a", "A")
+            .AddAutoNode("source", "Source", groupId: "a").AddAutoNode("target", "Target", groupId: "b").AddEdge("link", "source", "target");
+        Save(output, "layered-group-declaration-order", reversedGroups.ToSvg(), reversedGroups.ToPng());
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var suffix = mode.ToString().ToLowerInvariant();
             var radar = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(520, 320)

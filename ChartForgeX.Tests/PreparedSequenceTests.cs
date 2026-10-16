@@ -97,6 +97,9 @@ public sealed class PreparedSequenceTests {
         Assert.Equal(2, prepared.Regions.Count(r => r.Role == "sequence-note"));
         Assert.Equal(2, prepared.Regions.Count(r => r.Role == "sequence-block"));
         Assert.Equal(2, prepared.Regions.Count(r => r.Role == "sequence-branch"));
+        var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().SelectMany(t => t.Text.Lines).Select(l => l.Text).ToArray();
+        Assert.Contains(captions, text => text.Contains("Success"));
+        Assert.DoesNotContain(captions, text => text.Contains("primary", StringComparison.OrdinalIgnoreCase));
         var bars = prepared.Regions.Where(r => r.Role == "sequence-activation" && r.Bounds.Height > 4).OrderBy(r => r.Bounds.Y).ToArray();
         Assert.Equal(2, bars.Length); Assert.True(bars[1].Bounds.X > bars[0].Bounds.X);
         var envelope = prepared.ToArtifact("fragments", VisualArtifactKind.Sequence).ToInterchangeEnvelope();

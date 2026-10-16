@@ -36,6 +36,8 @@ internal static partial class TopologyLayoutEngine {
         automatic.RemoveWhere(id => authored.Edges.Any(e => e.Waypoints.Count > 0 &&
             (authoredNodes[e.SourceNodeId].GroupId == id || authoredNodes[e.TargetNodeId].GroupId == id)));
         var horizontal = chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft;
+        var nodeSpacing = options?.LayeredNodeSpacing ?? (horizontal ? 24 : 28);
+        var rankSpacing = LayeredRankGap(chart, options, horizontal);
         var members = chart.Nodes.Where(n => n.GroupId != null).GroupBy(n => n.GroupId!, StringComparer.Ordinal)
             .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
         var groups = chart.Groups.Where(g => automatic.Contains(g.Id) && members.ContainsKey(g.Id)).ToList();
@@ -43,18 +45,20 @@ internal static partial class TopologyLayoutEngine {
             var nodes = members[group.Id];
             // Global rank spacing belongs to the viewport; compact it inside an automatic shell.
             var ranks = nodes.GroupBy(GetLayer).OrderBy(g => g.Average(n => horizontal ? n.X : n.Y)).ToList();
-            var crossSize = ranks.Max(g => g.Sum(n => horizontal ? n.Height : n.Width) + Math.Max(0, g.Count() - 1) * 24);
+            var crossSize = ranks.Max(g => g.Sum(n => horizontal ? n.Height : n.Width) + Math.Max(0, g.Count() - 1) * nodeSpacing);
             var main = horizontal ? nodes.Min(n => n.X) : nodes.Min(n => n.Y);
             var cross = horizontal ? nodes.Min(n => n.Y) : nodes.Min(n => n.X);
-            foreach (var rank in ranks) {
+            for (var rankIndex = 0; rankIndex < ranks.Count; rankIndex++) {
+                var rank = ranks[rankIndex];
                 var ordered = rank.OrderBy(n => horizontal ? n.Y : n.X).ToArray();
-                var length = ordered.Sum(n => horizontal ? n.Height : n.Width) + Math.Max(0, ordered.Length - 1) * 24;
+                var length = ordered.Sum(n => horizontal ? n.Height : n.Width) + Math.Max(0, ordered.Length - 1) * nodeSpacing;
                 var cursor = cross + (crossSize - length) / 2;
                 foreach (var node in ordered) {
                     if (horizontal) { node.X = main; node.Y = cursor; } else { node.X = cursor; node.Y = main; }
-                    cursor += (horizontal ? node.Height : node.Width) + 24;
+                    cursor += (horizontal ? node.Height : node.Width) + nodeSpacing;
                 }
-                main += ordered.Max(n => horizontal ? n.Width : n.Height) + LayeredRankGap(chart, options, horizontal);
+                var rankDelta = rankIndex + 1 < ranks.Count ? Math.Abs(ranks[rankIndex + 1].Key - rank.Key) : 1;
+                main += ordered.Max(n => horizontal ? n.Width : n.Height) + rankSpacing * Math.Max(1, rankDelta);
             }
             group.X = nodes.Min(n => n.X) - 24;
             group.Width = Math.Max(190, nodes.Max(n => n.X + n.Width) - group.X + 24);
@@ -66,7 +70,7 @@ internal static partial class TopologyLayoutEngine {
         }
         var placed = chart.Groups.Where(g => !automatic.Contains(g.Id)).ToList();
         var shifts = new Dictionary<string, PlacementDelta>(StringComparer.Ordinal);
-        foreach (var group in chart.LayoutDirection is TopologyLayoutDirection.RightToLeft or TopologyLayoutDirection.BottomToTop ? groups.AsEnumerable().Reverse() : groups) {
+        foreach (var group in groups.OrderBy(g => horizontal ? g.X : g.Y)) {
             var x = group.X; var y = group.Y;
             // Moving only along the flow axis preserves each group's internal layered order.
             foreach (var other in placed.OrderBy(g => horizontal ? g.X : g.Y)) {
@@ -87,12 +91,13 @@ internal static partial class TopologyLayoutEngine {
             if (!nodesById.TryGetValue(edge.SourceNodeId, out var source) || !nodesById.TryGetValue(edge.TargetNodeId, out var target)) continue;
             var moved = shifts.ContainsKey(source.GroupId ?? "") || shifts.ContainsKey(target.GroupId ?? "");
             if (!moved || !edge.Metadata.TryGetValue("layout.route", out var route) || route != "long-edge-lane") continue;
-            // These corridors were inferred before group packing. Restore authored routing inputs;
-            // never shift a cross-group corridor by an averaged displacement.
+            // These corridors were inferred before packing. Replan against the final node and header
+            // obstacles through the shared obstacle-aware router instead of retaining stale coordinates.
             var original = originalEdges[edge.Id];
             edge.Waypoints.Clear(); edge.Waypoints.AddRange(original.Waypoints);
             edge.SourcePort = original.SourcePort; edge.TargetPort = original.TargetPort;
-            edge.Metadata.Remove("layout.route");
+            edge.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
+            edge.Metadata["layout.route"] = "packed-group-obstacle-route";
         }
     }
 }
