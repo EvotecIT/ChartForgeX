@@ -279,4 +279,16 @@ public sealed class VisualCanvasTileTypographyTests {
         Assert.InRange(changedRows[^1], (int)metrics.Y, (int)tileBottom - 1);
         Assert.InRange(Math.Abs(changedRows.Count - metrics.ProgressRailHeight), 0, 2);
     }
+
+    [Fact]
+    public void DefaultProgressRailKeepsItsExistingGeometryOnShortTiles() {
+        var canvas = VisualCanvas.Create(320, 80)
+            .AddInfoTile(8, 8, 304, 56, "PC", "HOST", "WORKSTATION", progress: 0.45);
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile,
+            canvas.ResolveStyle());
+
+        Assert.Equal(8, metrics.ProgressRailHeight);
+        Assert.Equal(metrics.Y + metrics.Height - 16, metrics.ProgressRailY);
+    }
 }

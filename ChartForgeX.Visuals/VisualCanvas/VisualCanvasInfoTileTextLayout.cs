@@ -121,8 +121,12 @@ internal static class VisualCanvasInfoTileTextLayout {
         var textMax = hasMiniChart
             ? Math.Max(0, chartX - textX - 16 * scale)
             : Math.Max(0, x + width - padX - textX);
-        var railSize = Math.Min(8 * scale, Math.Max(1, height * 0.12));
-        var railY = y + height - 2 * railSize;
+        var railSize = 8 * scale;
+        var railY = y + height - 16 * scale;
+        if (railY < y || railY + railSize > y + height) {
+            railSize = Math.Min(railSize, Math.Max(1, height * 0.12));
+            railY = y + height - 2 * railSize;
+        }
         return new VisualCanvasInfoTileMetrics(x, y, width, height, padX, iconBox, iconX, iconY, textX, textMax, hasMiniChart, chartX, chartY, chartWidth, chartHeight, railY, railSize);
     }
 
