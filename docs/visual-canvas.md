@@ -136,7 +136,8 @@ var theme = VisualTheme.Graphite().WithTypography(
 var canvas = VisualCanvas.Create(1200, 630).WithTheme(theme)
     .ConfigureStyle(style => style.TileTextScale = 1.15)
     .AddInfoTile(48, 80, 520, 150, "PC", "HOST", "DEV-WKS-01",
-        textScale: 1.25, valueFontSize: 28);
+        detail: null, textOptions: new VisualCanvasInfoTileTextOptions(textScale: 1.25,
+            valueFontSize: 28));
 ```
 
 The scale multiplies each role size and grows the icon area, padding, and

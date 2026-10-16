@@ -177,15 +177,18 @@ public sealed class PngVisualCanvasRenderer {
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
-        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme).Lines) {
+        var textLayout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme);
+        foreach (var line in textLayout.Lines) {
             VisualCanvasTextFace.Resolve(theme.FontFamily, line.Weight, theme.TextMeasurementMode).Draw(canvas, line.X, line.Y, line.Text, TileTextColor(line.Role, theme), line.FontSize);
         }
         if (tile.Progress.HasValue) {
             var railX = textX;
-            var railY = y + height - 16;
-            var railW = metrics.HasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
-            canvas.FillRoundedRect(railX, railY, railW, 8, 4, theme.TileProgressTrackColor);
-            canvas.FillRoundedRect(railX, railY, railW * tile.Progress.Value, 8, 4, accent);
+            var railScale = tile.TextScale ?? theme.TileTextScale;
+            var railY = y + height - 16 * railScale;
+            var railHeight = 8 * railScale;
+            var railW = metrics.TextMax;
+            canvas.FillRoundedRect(railX, railY, railW, railHeight, railHeight / 2, theme.TileProgressTrackColor);
+            canvas.FillRoundedRect(railX, railY, railW * tile.Progress.Value, railHeight, railHeight / 2, accent);
         }
         if (metrics.HasMiniChart) {
             DrawTileMiniChart(canvas, tile, theme, accent, chartX, metrics.ChartY, chartW, metrics.ChartHeight);

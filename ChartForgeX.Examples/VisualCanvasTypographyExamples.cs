@@ -23,7 +23,8 @@ internal static class VisualCanvasTypographyExamples {
 
         var tooSmall = CreateCanvas(1920, 1080, VisualThemeMode.Dark)
             .AddInfoTile(48, 64, 320, 72, "PC", "HOSTNAME", "A very long workstation name",
-                "Windows 11 Enterprise workstation", textScale: 1.5);
+                "Windows 11 Enterprise workstation",
+                new VisualCanvasInfoTileTextOptions(textScale: 1.5));
         tooSmall.SavePng(Path.Combine(output, "tile-text-too-small-1.5-dark.png"));
         tooSmall.SaveSvg(Path.Combine(output, "tile-text-too-small-1.5-dark.svg"));
     }
@@ -32,8 +33,9 @@ internal static class VisualCanvasTypographyExamples {
         var canvas = CreateCanvas(1200, 630, mode)
             .AddInfoTile(48, 100, 520, 164, "PC", "WORKSTATION", "DEV-WKS-01", "Windows 11 Enterprise",
                 ChartColor.FromHex("#2F80FF"), surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised)
-            .AddInfoTile(632, 100, 520, 164, "CPU", "PROCESSOR", "Intel Core i7", "Average load 23%",
-                ChartColor.FromHex("#22A7FF"), textScale: 1.25,
+            .AddInfoTile(632, 100, 520, 164, "CPU", "PROCESSOR", "Intel Core i7",
+                "Average load 23%", new VisualCanvasInfoTileTextOptions(textScale: 1.25),
+                ChartColor.FromHex("#22A7FF"),
                 surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised,
                 miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
                 miniChartValues: new[] { 18d, 26d, 22d, 37d, 29d, 23d });
@@ -47,11 +49,12 @@ internal static class VisualCanvasTypographyExamples {
         double scale) {
         var canvas = CreateCanvas(width, height, mode)
             .AddInfoTile(48, 64, 680, 168, "CPU", "PROCESSOR", "Intel Core i7 14700K",
-                "20 cores, average load 23%", ChartColor.FromHex("#2F80FF"), 0.23,
+                "20 cores, average load 23%",
+                new VisualCanvasInfoTileTextOptions(textScale: scale),
+                ChartColor.FromHex("#2F80FF"), 0.23,
                 surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised,
                 miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
-                miniChartValues: new[] { 18d, 26d, 22d, 37d, 29d, 23d },
-                textScale: scale);
+                miniChartValues: new[] { 18d, 26d, 22d, 37d, 29d, 23d });
         var suffix = mode == VisualThemeMode.Dark ? "dark" : "light";
         var name = "tile-text-" + scale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             + "-" + width + "x" + height + "-" + suffix;

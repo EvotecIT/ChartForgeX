@@ -69,12 +69,13 @@ internal sealed class VisualCanvasInfoTileTextLine {
 }
 
 internal sealed class VisualCanvasInfoTileTextLayoutResult {
-    public VisualCanvasInfoTileTextLayoutResult(IReadOnlyList<VisualCanvasInfoTileTextLine> lines, bool hasTruncatedText, bool hasVerticalOverflow, double textWidth, double textHeight) {
+    public VisualCanvasInfoTileTextLayoutResult(IReadOnlyList<VisualCanvasInfoTileTextLine> lines, bool hasTruncatedText, bool hasVerticalOverflow, double textWidth, double textHeight, double scale) {
         Lines = lines;
         HasTruncatedText = hasTruncatedText;
         HasVerticalOverflow = hasVerticalOverflow;
         TextWidth = textWidth;
         TextHeight = textHeight;
+        Scale = scale;
     }
 
     public IReadOnlyList<VisualCanvasInfoTileTextLine> Lines { get; }
@@ -83,6 +84,7 @@ internal sealed class VisualCanvasInfoTileTextLayoutResult {
     public bool WasScaledDown { get; set; }
     public double TextWidth { get; }
     public double TextHeight { get; }
+    public double Scale { get; }
 }
 
 internal static class VisualCanvasInfoTileTextLayout {
@@ -92,20 +94,23 @@ internal static class VisualCanvasInfoTileTextLayout {
         var width = Math.Round(tile.Width);
         var height = Math.Round(tile.Height);
         var scale = tile.TextScale ?? theme.TileTextScale;
-        var padX = Math.Max(20 * scale, Math.Min(28 * scale, width * 0.06));
-        var iconBox = Math.Max(44 * scale, Math.Min(54 * scale, height - 34 * scale));
-        if (scale > 1) iconBox = Math.Min(iconBox, Math.Max(1, height - 12 * (scale - 1)));
+        var padX = Math.Min(Math.Max(20 * scale, Math.Min(28 * scale, width * 0.06)), width * 0.25);
+        var iconBox = Math.Max(1, Math.Min(Math.Max(44 * scale, Math.Min(54 * scale, height - 34 * scale)), height - 12 * (scale - 1)));
+        var innerWidth = Math.Max(0, width - 2 * padX);
+        var textGap = Math.Min(22 * scale, innerWidth * 0.2);
+        var minTextWidth = Math.Min(24 * scale, innerWidth * 0.25);
+        iconBox = Math.Min(iconBox, Math.Max(1, innerWidth - textGap - minTextWidth));
         var iconX = x + padX;
         var iconY = y + (height - iconBox) / 2;
-        var textX = iconX + iconBox + 22 * scale;
+        var textX = iconX + iconBox + textGap;
         var hasMiniChart = tile.MiniChartKind != VisualCanvasInfoTileMiniChartKind.None && tile.MiniChartSampleCount > 0;
-        var chartWidth = hasMiniChart ? Math.Min(width * 0.24, Math.Max(82 * scale, width * 0.20)) : 0;
+        var chartWidth = hasMiniChart ? Math.Min(Math.Min(width * 0.24, Math.Max(82 * scale, width * 0.20)), Math.Max(0, x + width - padX - textX - 16 * scale - minTextWidth)) : 0;
         var chartX = x + width - padX - chartWidth;
-        var chartY = y + Math.Max(24 * scale, height * 0.30);
-        var chartHeight = Math.Max(28 * scale, Math.Min(46 * scale, height * 0.42));
+        var chartY = y + Math.Min(Math.Max(24 * scale, height * 0.30), Math.Max(0, height - 1));
+        var chartHeight = Math.Min(Math.Max(28 * scale, Math.Min(46 * scale, height * 0.42)), Math.Max(1, y + height - chartY));
         var textMax = hasMiniChart
-            ? Math.Max(24 * scale, chartX - textX - 16 * scale)
-            : Math.Max(24 * scale, width - (textX - x) - padX);
+            ? Math.Max(0, chartX - textX - 16 * scale)
+            : Math.Max(0, x + width - padX - textX);
         return new VisualCanvasInfoTileMetrics(x, y, width, height, padX, iconBox, iconX, iconY, textX, textMax, hasMiniChart, chartX, chartY, chartWidth, chartHeight);
     }
 
@@ -129,12 +134,13 @@ internal static class VisualCanvasInfoTileTextLayout {
         var best = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false, faces, theme);
         if (policy != VisualCanvasTextFitPolicy.ShrinkToFit && policy != VisualCanvasTextFitPolicy.WrapThenShrink) return best;
 
-        var minimumScale = customized ? Math.Max(0.4, requestedScale * 0.45) : 0.72;
+        var minimumScale = Math.Min(requestedScale, customized ? Math.Max(0.4, requestedScale * 0.45) : 0.72);
         for (var i = 0; i < 24 && RequiresFitAdjustment(best); i++) {
-            scale -= 0.04;
-            if (scale < minimumScale) break;
-            var next = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, scale, false, faces, theme);
+            var nextScale = Math.Max(minimumScale, scale - 0.04);
+            if (nextScale >= scale) break;
+            var next = BuildCore(tile, tileY, tileHeight, textX, maxWidth, singleLine, nextScale, false, faces, theme);
             best = next;
+            scale = nextScale;
             if (!RequiresFitAdjustment(next)) break;
         }
 
@@ -143,7 +149,7 @@ internal static class VisualCanvasInfoTileTextLayout {
             if (withoutDetail.TextHeight < best.TextHeight || !withoutDetail.HasVerticalOverflow) best = withoutDetail;
         }
 
-        best.WasScaledDown = scale < requestedScale - 0.001;
+        best.WasScaledDown = best.Scale < requestedScale - 0.001;
         return best;
     }
 
@@ -213,7 +219,7 @@ internal static class VisualCanvasInfoTileTextLayout {
         var textBottom = tileY + Math.Max(topPadding, (tileHeight - bottomPadding - totalHeight) / 2) + totalHeight;
         var hasVerticalOverflow = textBottom > tileY + tileHeight - bottomPadding + 0.5;
         var detailOmitted = hasDetail && detailLineLimit == 0;
-        return new VisualCanvasInfoTileTextLayoutResult(lines, labelLines.Truncated || valueLines.Truncated || detailLines.Truncated || detailOmitted, hasVerticalOverflow, textWidth, totalHeight);
+        return new VisualCanvasInfoTileTextLayoutResult(lines, labelLines.Truncated || valueLines.Truncated || detailLines.Truncated || detailOmitted, hasVerticalOverflow, textWidth, totalHeight, scale);
     }
 
     private static WrapResult Wrap(string value, double fontSize, double maxWidth, VisualCanvasTextFace face, int maxLines) {
