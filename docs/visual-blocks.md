@@ -24,6 +24,8 @@ Visual blocks render structured facts with a bounded layout:
 - shared `VisualTheme`, explicit light/dark mode, `ChartColor`, `ChartPalettes`, transparent background, and PNG density concepts
 - Wardley component outlines, evolution arrows, accelerator markers and icon curves share their geometry between SVG and PNG. Theme colours and authored transparency apply to both outputs; font coverage and curved-edge antialiasing can still differ.
 
+Table and list body text and row heights scale with `VisualTheme.Typography.DataLabelSize`; dense mode keeps its smaller proportions. Their title and subtitle sizes remain independent. Compact lists and metric cards keep the positions assigned by their own row and card layouts, including when padding is zero. A metric symbol badge reserves space above inline history and uses the selected theme's foreground ink.
+
 Packet, block-layout, Git graph, Wardley, Venn and fishbone body text follows `VisualTheme.Typography.DataLabelSize`. Each native text role retains its proportion to the default body size; title and subtitle sizes control headings independently. Set the body size to change node labels, relationship labels and small annotations together in SVG and PNG. Existing fixed layout bounds can shorten long text at larger sizes.
 
 Example:

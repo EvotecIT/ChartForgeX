@@ -149,6 +149,7 @@ internal static partial class VisualArtifactInterchangeJson {
             OptionalString(writer, "badge", node.Badge);
             OptionalString(writer, "color", node.Color);
             OptionalString(writer, "backgroundColor", node.BackgroundColor);
+            OptionalString(writer, "labelColor", node.LabelColor);
             OptionalString(writer, "href", node.Href);
             OptionalString(writer, "tooltip", node.Tooltip);
             OptionalNumber(writer, "x", node.X);
@@ -340,7 +341,7 @@ internal static partial class VisualArtifactInterchangeJson {
             var node = new VisualArtifactInterchangeNode {
                 Id = RequiredString(item, "id"), Role = OptionalEnum<VisualArtifactInterchangeNodeRole>(item, "role") ?? VisualArtifactInterchangeNodeRole.Unspecified, Kind = OptionalString(item, "kind") ?? string.Empty, Label = OptionalString(item, "label") ?? string.Empty,
                 Subtitle = OptionalString(item, "subtitle"), GroupId = OptionalString(item, "groupId"), Status = OptionalString(item, "status"), IconId = OptionalString(item, "iconId"), Symbol = OptionalString(item, "symbol"), Badge = OptionalString(item, "badge"),
-                Color = OptionalString(item, "color"), BackgroundColor = OptionalString(item, "backgroundColor"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"),
+                Color = OptionalString(item, "color"), BackgroundColor = OptionalString(item, "backgroundColor"), LabelColor = OptionalString(item, "labelColor"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"),
                 X = OptionalNumber(item, "x"), Y = OptionalNumber(item, "y"), Width = OptionalNumber(item, "width"), Height = OptionalNumber(item, "height")
             };
             node.Topology = ReadTopologyNode(item);

@@ -109,7 +109,7 @@ internal static partial class SequencePreparedCompiler {
             Region(builder, item, "sequence-block", model.Blocks[item.Index].Text); AnnotationBounds(semantics, item);
         }
         foreach (var item in layout.Branches) {
-            using (Group(builder, item, "sequence-branch", model.Branches[item.Index].Text)) {
+            if (item.Y > 0) using (Group(builder, item, "sequence-branch", model.Branches[item.Index].Text)) {
                 builder.Line(item.Bounds.X, item.Bounds.Y, item.Bounds.Right, item.Bounds.Y, colors.Border, stroke, dash: new[] { 5d, 4d });
                 builder.Rect(new ChartRect(item.Bounds.X, item.Bounds.Y + 1, item.Bounds.Width, item.Y - 2), colors.Surface);
                 Text(builder, item.Text, new ChartRect(item.Bounds.X + 6, item.Bounds.Y + 5, item.Bounds.Width - 12, item.Y - 8), size, colors.Foreground);

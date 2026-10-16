@@ -584,7 +584,7 @@ options:
         var chart = result.Document!.Chart;
         Assert(chart.Series[0].Kind == ChartSeriesKind.Line && chart.Series[0].Smooth, "Chart markup should map richer ChartForgeX chart type aliases.");
         Assert(!chart.Options.ShowLegend, "Chart markup options should map ShowLegend.");
-        Assert(chart.Options.ShowDataLabels, "Chart markup options should map ShowDataLabels.");
+        Assert(chart.Options.ShowDataLabels == true, "Chart markup options should map ShowDataLabels.");
         Assert(chart.Options.LegendPosition == ChartLegendPosition.TopRight, "Chart markup options should map enum values.");
         Assert(chart.XAxisTitle == "Month" && chart.YAxisTitle == "Count", "Chart markup options should map axis titles.");
         Assert(chart.Options.YAxisMinimum == 0 && chart.Options.YAxisMaximum == 20, "Chart markup options should map axis bounds.");

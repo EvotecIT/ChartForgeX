@@ -136,6 +136,22 @@ public sealed class MermaidFlowchartLengthTests {
     }
 
     [Fact]
+    public void BranchingFlowchartKeepsTheBranchAndMergeOnSeparateRanks() {
+        var parsed = new MermaidParser().ParseFlowchart("flowchart TD\nStart --> Choice{Choose}\nChoice -->|yes| Fast\nChoice -->|no| Careful\nFast --> Merge\nCareful --> Merge");
+        Assert.Empty(parsed.Diagnostics);
+        var chart = TopologyLayoutEngine.Prepare(parsed.Document!.ToTopologyChart());
+        var start = chart.Nodes.Single(node => node.Id == "Start");
+        var choice = chart.Nodes.Single(node => node.Id == "Choice");
+        var fast = chart.Nodes.Single(node => node.Id == "Fast");
+        var careful = chart.Nodes.Single(node => node.Id == "Careful");
+        var merge = chart.Nodes.Single(node => node.Id == "Merge");
+        Assert.True(Rank(choice) > Rank(start));
+        Assert.True(Rank(fast) > Rank(choice));
+        Assert.Equal(Rank(fast), Rank(careful));
+        Assert.True(Rank(merge) > Rank(fast));
+    }
+
+    [Fact]
     public void UseCaseStereotypesKeepTheirOwnSpacingPolicy() {
         var parsed = new MermaidParser().ParseFlowchart("usecase-beta\nA ----> B\nB ..> : include C");
         Assert.Empty(parsed.Diagnostics);

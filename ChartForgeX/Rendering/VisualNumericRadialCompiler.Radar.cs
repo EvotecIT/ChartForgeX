@@ -66,7 +66,7 @@ internal static partial class VisualNumericRadialCompiler {
                                     true, VisualMarkerScene.StrokeWidth(series, true), plot)));
                         }
                     }
-                    if (geometry.Outer > 0 && (series.ShowDataLabels ?? chart.Options.ShowDataLabels))
+                    if (geometry.Outer > 0 && (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)))
                         RadarDataLabel(chart, context, builder, plot, series, source, id, text, mapped[category], angle, labels);
                 }
             }

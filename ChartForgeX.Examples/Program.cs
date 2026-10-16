@@ -38,6 +38,7 @@ dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.htm
 });
 
 MermaidExamples.Write(output);
+ConsumerRenderingExamples.Write(Path.Combine(output, "consumer-regressions"));
 DenseSignalExamples.Write(output, DemoPngOutputScale);
 CartesianCategoryExamples.Write(output, DemoPngOutputScale);
 ReportingExamples.Write(output, DemoPngOutputScale);

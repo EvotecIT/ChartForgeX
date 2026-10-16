@@ -40,6 +40,9 @@ internal static partial class JpegReader {
             if (marker == 0xD9) break;
             if (marker == 0xDA) {
                 var scan = ParseScanHeader(data, ref offset, state);
+                scan.DcTables = (JpegHuffmanTable?[])state.DcTables.Clone();
+                scan.AcTables = (JpegHuffmanTable?[])state.AcTables.Clone();
+                scan.RestartInterval = state.RestartInterval;
                 scan.DataOffset = offset;
                 scan.DataEnd = FindEntropyEnd(data, offset);
                 state.Scans.Add(scan);
@@ -116,8 +119,12 @@ internal static partial class JpegReader {
 
         if (frame.MaxH <= 0 || frame.MaxV <= 0) throw new InvalidDataException("JPEG frame has invalid sampling factors.");
         foreach (var component in frame.Components) {
-            component.WidthInBlocks = DivideRoundUp(DivideRoundUp(width * component.H, frame.MaxH), 8);
-            component.HeightInBlocks = DivideRoundUp(DivideRoundUp(height * component.V, frame.MaxV), 8);
+            component.ScanWidthInBlocks = DivideRoundUp(DivideRoundUp(width * component.H, frame.MaxH), 8);
+            component.ScanHeightInBlocks = DivideRoundUp(DivideRoundUp(height * component.V, frame.MaxV), 8);
+            // Interleaved scans encode whole MCUs, including the dummy edge blocks. Single-component
+            // scans visit only real blocks, but use the same padded storage stride.
+            component.WidthInBlocks = DivideRoundUp(width, frame.MaxH * 8) * component.H;
+            component.HeightInBlocks = DivideRoundUp(height, frame.MaxV * 8) * component.V;
             var sampleCount = checked(component.WidthInBlocks * component.HeightInBlocks * 64);
             component.Coefficients = new int[sampleCount];
             component.Samples = new byte[sampleCount];
@@ -241,7 +248,10 @@ internal static partial class JpegReader {
     }
 
     private static void DecodeSequentialScans(byte[] data, JpegState state) {
-        foreach (var scan in state.Scans) DecodeSequentialScan(data, state, scan);
+        foreach (var scan in state.Scans) {
+            scan.RestoreTables(state);
+            DecodeSequentialScan(data, state, scan);
+        }
     }
 
     private static void DecodeSequentialScan(byte[] data, JpegState state, JpegScan scan) {
@@ -343,6 +353,7 @@ internal static partial class JpegReader {
     private static void DecodeProgressiveScans(byte[] data, JpegState state) {
         var frame = state.Frame!;
         foreach (var scan in state.Scans) {
+            scan.RestoreTables(state);
             if (scan.SpectralStart == 0 && scan.SpectralEnd == 0) {
                 if (scan.SuccessiveHigh == 0) DecodeProgressiveDcFirst(data, state, scan);
                 else DecodeProgressiveDcRefine(data, state, scan);
@@ -478,6 +489,11 @@ internal static partial class JpegReader {
                         }
 
                         run = 16;
+                        while (k <= scan.SpectralEnd && run > 0) {
+                            var index = offset + ZigZag[k++];
+                            if (component.Coefficients[index] != 0) RefineCoefficient(reader, component.Coefficients, index, bit);
+                            else run--;
+                        }
                     } else if (size == 1) {
                         var newCoefficient = reader.ReadBit() == 1 ? bit : -bit;
                         while (k <= scan.SpectralEnd) {
@@ -519,7 +535,8 @@ internal static partial class JpegReader {
 
     private static void RefineCoefficient(JpegBitReader reader, int[] coefficients, int index, int bit) {
         var coefficient = coefficients[index];
-        if ((Math.Abs(coefficient) & bit) == 0 && reader.ReadBit() != 0) coefficients[index] += coefficient > 0 ? bit : -bit;
+        var refine = reader.ReadBit();
+        if ((Math.Abs(coefficient) & bit) == 0 && refine != 0) coefficients[index] += coefficient > 0 ? bit : -bit;
     }
 
     private static void ForEachScanBlock(JpegFrame frame, JpegScan scan, Action<JpegComponent, bool, bool> visit) {
@@ -574,8 +591,8 @@ internal static partial class JpegReader {
     }
 
     private static void ForEachComponentBlock(JpegComponent component, Action<int, int> visit) {
-        for (var blockY = 0; blockY < component.HeightInBlocks; blockY++) {
-            for (var blockX = 0; blockX < component.WidthInBlocks; blockX++) visit(blockX, blockY);
+        for (var blockY = 0; blockY < component.ScanHeightInBlocks; blockY++) {
+            for (var blockX = 0; blockX < component.ScanWidthInBlocks; blockX++) visit(blockX, blockY);
         }
     }
 

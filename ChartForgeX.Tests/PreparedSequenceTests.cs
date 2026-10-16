@@ -36,6 +36,24 @@ public sealed class PreparedSequenceTests {
     }
 
     [Theory]
+    [InlineData("primary")]
+    [InlineData("PRIMARY")]
+    [InlineData("PrImArY")]
+    public void PrimaryBranchTokensAreCaseInsensitiveAndDoNotRepeatBlockCaption(string branchKind) {
+        var model = SequenceArtifact.Create("primary-case")
+            .AddParticipant("source", "Source").AddParticipant("target", "Target")
+            .AddMessage("source", "target", "Request")
+            .AddBlock(SequenceArtifactBlockKind.Alt, "Success", 0, 1)
+            .AddBranch(SequenceArtifactBlockKind.Alt, branchKind, "Success", 0, 1);
+
+        var labels = XDocument.Parse(model.Prepare(Context()).ToSvg()).Descendants()
+            .Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
+        Assert.Contains(labels, label => label.Contains("Success", StringComparison.Ordinal));
+        Assert.DoesNotContain(labels, label => label.Contains("primary", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(1, labels.Count(label => label.Contains("Success", StringComparison.Ordinal)));
+    }
+
+    [Theory]
     [InlineData(SequenceArtifactMessageKind.Call, "sequence-call-arrow")]
     [InlineData(SequenceArtifactMessageKind.Return, "sequence-return-arrow")]
     [InlineData(SequenceArtifactMessageKind.Async, "sequence-async-arrow")]
@@ -97,6 +115,9 @@ public sealed class PreparedSequenceTests {
         Assert.Equal(2, prepared.Regions.Count(r => r.Role == "sequence-note"));
         Assert.Equal(2, prepared.Regions.Count(r => r.Role == "sequence-block"));
         Assert.Equal(2, prepared.Regions.Count(r => r.Role == "sequence-branch"));
+        var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().SelectMany(t => t.Text.Lines).Select(l => l.Text).ToArray();
+        Assert.Contains(captions, text => text.Contains("Success"));
+        Assert.DoesNotContain(captions, text => text.Contains("primary", StringComparison.OrdinalIgnoreCase));
         var bars = prepared.Regions.Where(r => r.Role == "sequence-activation" && r.Bounds.Height > 4).OrderBy(r => r.Bounds.Y).ToArray();
         Assert.Equal(2, bars.Length); Assert.True(bars[1].Bounds.X > bars[0].Bounds.X);
         var envelope = prepared.ToArtifact("fragments", VisualArtifactKind.Sequence).ToInterchangeEnvelope();

@@ -67,8 +67,13 @@ internal sealed partial class SequencePreparedLayout {
             }
             foreach (var branch in model.Branches.Select((value, index) => new { value, index }).Where(b => Step(b.value.StartStepIndex) == step).OrderBy(b => b.value.Depth)) {
                 var bounds = new ChartRect(plot.X + gap + branch.value.Depth * 10 + 8, y, plot.Width - gap * 2 - branch.value.Depth * 20 - 16, 0);
-                string text = Wrap(branch.value.Kind.ToLowerInvariant() + (branch.value.Text.Length == 0 ? "" : "  [" + branch.value.Text + "]"), bounds.Width - 16, builder, size);
-                double header = builder.MeasureText(text, size).Height + 12;
+                bool primary = string.Equals(branch.value.Kind, "Primary", StringComparison.OrdinalIgnoreCase);
+                bool implicitCaption = primary && model.Blocks.Any(b => b.Kind == branch.value.ParentKind && b.Depth == branch.value.Depth
+                    && b.StartStepIndex == branch.value.StartStepIndex && b.Text == branch.value.Text);
+                string caption = primary ? (implicitCaption || branch.value.Text.Length == 0 ? "" : "[" + branch.value.Text + "]")
+                    : branch.value.Kind.ToLowerInvariant() + (branch.value.Text.Length == 0 ? "" : "  [" + branch.value.Text + "]");
+                string text = Wrap(caption, bounds.Width - 16, builder, size);
+                double header = text.Length == 0 ? 0 : builder.MeasureText(text, size).Height + 12;
                 layout.Branches.Add(new Item { Id = Annotation(semantics, VisualArtifactInterchangeAnnotationRole.SequenceBranch, branch.index), Index = branch.index, Text = text, Bounds = bounds, Y = header });
                 y += header + (branch.value.IsEmpty ? gap : 0);
             }

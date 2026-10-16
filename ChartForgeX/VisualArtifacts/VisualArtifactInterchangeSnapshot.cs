@@ -75,6 +75,7 @@ internal static class VisualArtifactInterchangeSnapshot {
             Badge = source.Badge,
             Color = source.Color,
             BackgroundColor = source.BackgroundColor,
+            LabelColor = source.LabelColor,
             Href = source.Href,
             Tooltip = source.Tooltip,
             X = source.X,
