@@ -9,7 +9,7 @@ internal sealed partial class VisualSceneBuilder {
     // Capture display text while the renderer's final axis formatter/cache is available.
     // Exporters and browser hosts never re-run user callbacks or guess a culture/date format.
     internal void CaptureChartReadouts(Chart chart, Func<ChartSeries, double, string> category,
-        Func<ChartSeries, double, string> value) {
+        Func<ChartSeries, double, string?, string> value) {
         for (var index = 0; index < _nodes.Count; index++) {
             if (_nodes[index] is not VisualSceneGroup group || !group.Metadata.ContainsKey("data-cfx-point")
                 || !group.Metadata.TryGetValue("data-cfx-series", out var ordinal)
@@ -23,21 +23,23 @@ internal sealed partial class VisualSceneBuilder {
                 return metadata.TryGetValue(key, out var text) && double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out number)
                     && !double.IsNaN(number) && !double.IsInfinity(number);
             }
+            string Value(string key, double number) => value(series, number,
+                metadata.TryGetValue(key.Replace("data-cfx-", "data-cfx-formatted-"), out var captured) ? captured : null);
             if (Number("data-cfx-x", out var x)) {
                 var formatted = category(series, x);
                 metadata["data-cfx-formatted-x"] = formatted;
                 metadata["data-cfx-display-label"] = metadata.TryGetValue("data-cfx-category-label", out var label) ? label : formatted;
             }
-            if (Number(series.Kind == ChartSeriesKind.BoxPlot ? "data-cfx-median" : metadata.ContainsKey("data-cfx-value") ? "data-cfx-value" : "data-cfx-y", out var y))
-                metadata["data-cfx-formatted-value"] = value(series, y);
+            var valueKey = series.Kind == ChartSeriesKind.BoxPlot ? "data-cfx-median" : metadata.ContainsKey("data-cfx-value") ? "data-cfx-value" : "data-cfx-y";
+            if (Number(valueKey, out var y)) metadata["data-cfx-formatted-value"] = Value(valueKey, y);
             // Bin display uses the actual upper boundary; its closed logic endpoint remains exact.
             var lowerKey = series.HistogramBinLayout != null ? "data-cfx-bin-lower" : "data-cfx-start";
             var upperKey = series.HistogramBinLayout != null ? "data-cfx-bin-upper" : "data-cfx-end";
             if (Number(lowerKey, out var start) && Number(upperKey, out var end)) {
                 // Cartesian comparison bounds are values, while schedule and bin bounds are X/category coordinates.
-                var endpoint = series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.Waterfall or ChartSeriesKind.Dumbbell ? value : category;
-                metadata["data-cfx-formatted-start"] = endpoint(series, start);
-                metadata["data-cfx-formatted-end"] = endpoint(series, end);
+                var valueEndpoints = series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.Waterfall or ChartSeriesKind.Dumbbell;
+                metadata["data-cfx-formatted-start"] = valueEndpoints ? Value(lowerKey, start) : category(series, start);
+                metadata["data-cfx-formatted-end"] = valueEndpoints ? Value(upperKey, end) : category(series, end);
                 metadata["data-cfx-range-label"] = RangeLabel(metadata["data-cfx-formatted-start"], metadata["data-cfx-formatted-end"]);
                 if (series.HistogramBinLayout != null) metadata["data-cfx-display-label"] = metadata["data-cfx-range-label"];
             } else if (series.TimeBucketInterval != null && Number("data-cfx-x", out var bucketStart)) {

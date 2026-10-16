@@ -19,7 +19,7 @@ internal static partial class VisualCartesianCompiler {
             var highY = map.Y(high); var lowY = map.Y(low); var openY = map.Y(open); var closeY = map.Y(close);
             var body = FinancialBody(x, width, openY, closeY);
             var bounds = FinancialBounds(candle, body, highY, lowY, openY, closeY, style);
-            var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, close));
+            var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("close", close));
             using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label,
                 ("x", xValue), ("open", open), ("high", high), ("low", low), ("close", close))) {
                 DrawFinancialMark(builder, candle, body, highY, lowY, openY, closeY, style,

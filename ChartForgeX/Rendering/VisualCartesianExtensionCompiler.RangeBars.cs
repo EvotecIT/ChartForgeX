@@ -36,6 +36,11 @@ internal static partial class VisualCartesianCompiler {
             var metadata = RangeBarMetadata(chart, categories[first.X]);
             if (captions.Start != null) metadata["data-cfx-start-label"] = captions.Start;
             if (captions.End != null) metadata["data-cfx-end-label"] = captions.End;
+            if (captions.NumericStart != null) {
+                metadata["data-cfx-formatted-start"] = captions.NumericStart;
+                metadata["data-cfx-formatted-y"] = captions.NumericStart;
+            }
+            if (captions.NumericEnd != null) metadata["data-cfx-formatted-end"] = captions.NumericEnd;
             using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, metadata,
                 ("x", first.X), ("start", first.Y), ("end", second.Y))) {
                 DrawBarSurface(chart, context, builder, series, item, bounds, color, colors, "range-bar", range: true, horizontal: horizontal);

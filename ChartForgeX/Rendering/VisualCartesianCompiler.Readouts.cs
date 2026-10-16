@@ -13,9 +13,9 @@ internal static partial class VisualCartesianCompiler {
         var yTicks = horizontal ? HorizontalCategoryTicks(chart, range, y) : cache.Ticks(y, range.MinY, range.MaxY);
         var secondaryTicks = secondaryRange == null ? Array.Empty<double>()
             : cache.Ticks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-        string X(double number) => cache.Format(x, number, horizontal ? chart.Options.ValueFormatter : null, xTicks);
-        string Y(double number) => cache.Format(y, number, horizontal ? null : chart.Options.ValueFormatter, yTicks);
-        string Secondary(double number) => cache.Format(chart.Options.SecondaryYAxis, number, chart.Options.ValueFormatter, secondaryTicks);
+        string X(double number, string? numericCaption = null) => cache.FormatReadout(x, number, xTicks, numericCaption);
+        string Y(double number, string? numericCaption = null) => cache.FormatReadout(y, number, yTicks, numericCaption);
+        string Secondary(double number, string? numericCaption = null) => cache.FormatReadout(chart.Options.SecondaryYAxis, number, secondaryTicks, numericCaption);
         if (builder.DataProjection != null) {
             // Use the same observed-axis ownership decision that created the projection.
             // Equal numeric ranges do not establish ownership of their display format.
@@ -24,6 +24,7 @@ internal static partial class VisualCartesianCompiler {
                 (useSecondary ? secondaryTicks : yTicks).Select(number => new ChartAxisLabel(number, useSecondary ? Secondary(number) : Y(number))).ToArray());
         }
         builder.CaptureChartReadouts(chart, (_, number) => horizontal ? Y(number) : X(number),
-            (series, number) => horizontal ? X(number) : series.YAxis == ChartAxisSide.Secondary ? Secondary(number) : Y(number));
+            (series, number, numericCaption) => horizontal ? X(number, numericCaption)
+                : series.YAxis == ChartAxisSide.Secondary ? Secondary(number, numericCaption) : Y(number, numericCaption));
     }
 }

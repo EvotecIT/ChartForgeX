@@ -247,6 +247,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         };
+        if (resolvedLabel.NumericCaption("y") is { } numericCaption) metadata["data-cfx-formatted-y"] = numericCaption;
         // Retained off-window facts must not acquire browser hit areas. Marker-free in-window points remain targets.
         if (!visible) metadata["data-cfx-visible"] = "false";
         if (colorSurface != null) label = colorSurface.AddFacts(metadata, pointIndex, label);

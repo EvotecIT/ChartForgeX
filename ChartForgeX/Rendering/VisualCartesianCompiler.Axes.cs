@@ -17,6 +17,7 @@ internal static partial class VisualCartesianCompiler {
         private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _fittedTicks = new();
         private readonly Dictionary<ChartAxis, IReadOnlyList<double>> _captionTicks = new();
         private readonly Dictionary<ChartAxis, Func<double, string>> _formatters = new();
+        private readonly Dictionary<ChartAxis, Func<double, string>> _readoutFormatters = new();
         private readonly Dictionary<ChartAxis, HashSet<double>> _formattedValues = new();
         internal ChartAxis? HorizontalValueAxis { get; set; }
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
@@ -42,6 +43,7 @@ internal static partial class VisualCartesianCompiler {
                 || ChartTicks.IsNumericTimeFallback(previous) != ChartTicks.IsNumericTimeFallback(ticks)) {
                 _captionTicks[axis] = ticks;
                 _formatters.Remove(axis);
+                _readoutFormatters.Remove(axis);
             }
         }
         internal string Format(ChartAxis axis, double value, Func<double, string>? fallback, IReadOnlyList<double> ticks) {
@@ -52,6 +54,16 @@ internal static partial class VisualCartesianCompiler {
             }
             if (!_formatters.TryGetValue(axis, out var formatter)) _formatters.Add(axis, formatter = ChartAxisValueFormatter.Create(axis, ticks, fallback));
             return _labels.Format(axis, value, formatter, axis.LabelFormatter != null || fallback != null);
+        }
+        // Readouts reuse painted axis captions, but must not materialize a data-label fallback
+        // for an unpainted tick or an observation whose authored caption kept that callback lazy.
+        internal string FormatReadout(ChartAxis axis, double value, IReadOnlyList<double> ticks, string? numericCaption = null) {
+            if (numericCaption != null && axis.LabelFormatter == null && axis.Scale != ChartScaleKind.Time
+                && ChartAxisValueFormatter.FindExplicitLabel(axis.Labels, value) == null) return numericCaption;
+            RefreshFormatter(axis, ticks);
+            if (!_readoutFormatters.TryGetValue(axis, out var formatter))
+                _readoutFormatters.Add(axis, formatter = ChartAxisValueFormatter.Create(axis, ticks));
+            return _labels.Format(axis, value, formatter);
         }
         internal IReadOnlyList<double> SemanticTicks(ChartAxis axis, IReadOnlyList<double> ticks) =>
             _formattedValues.TryGetValue(axis, out var values) ? values.Concat(ticks).Distinct().OrderBy(value => value).ToArray() : ticks;
