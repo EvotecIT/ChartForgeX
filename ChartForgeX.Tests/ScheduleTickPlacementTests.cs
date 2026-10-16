@@ -216,12 +216,14 @@ public sealed class ScheduleTickPlacementTests {
         ScatterBubbleColorRenderingTests.Capture(prepared, "schedule-fixed-budget-fallback");
         var labels = TickLabels(prepared);
         var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "schedule-grid").OrderBy(line => line.Start.X).ToArray();
-        Assert.InRange(labels.Length, 2, 3);
+        Assert.InRange(labels.Length, 1, 3);
         Assert.Equal(labels.Length, grid.Length);
         for (var index = 0; index < labels.Length; index++) {
             Assert.Equal(grid[index].Start.X, labels[index].X, 7);
-            Assert.DoesNotContain("…", labels[index].Text.Lines.Single().Text, StringComparison.Ordinal);
+            Assert.Matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", labels[index].Text.Lines.Single().Text);
         }
+        Assert.Equal(Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), labels[0].Text.Lines.Single().Text);
+        Assert.Equal(labels.Length, labels.Select(label => label.Text.Lines.Single().Text).Distinct(StringComparer.Ordinal).Count());
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "schedule.axis-label-overflow");
         Assert.Equal(ChartTimeTickUnit.Millisecond, chart.Options.GanttTickInterval!.Unit);
         Assert.Equal(100, chart.Options.GanttTickInterval.Count);

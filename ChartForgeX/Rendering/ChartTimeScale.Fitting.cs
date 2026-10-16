@@ -27,10 +27,18 @@ internal static partial class ChartTimeScale {
             }
             if (selectTicks != null) ticks = selectTicks(ticks);
             if (ticks.Count > 0 && ticks.Count <= limit) {
-                if (fits(ticks) && ticks.Count > 1) return ticks;
+                if (fits(ticks)) {
+                    if (ticks.Count > 1) return ticks;
+                    sparse = ticks;
+                }
                 if (compactFit == null && ticks.Count > 1 && allowCompactDates && interval.Unit >= TimeUnit.Day
                     && TryCompactDates(ticks, axis, min, max) is { } compact && fits(compact)) compactFit = compact;
-                sparse = ticks;
+                // A coarse authored formatter may not distinguish this interval.
+                // Preserve a real accepted caption, never the rejected sequence.
+                if (sparse == null) {
+                    var first = PreserveFormatting(ticks, new[] { ticks[0] });
+                    if (fits(first)) sparse = first;
+                }
             }
             // No boundary at this interval means coarser steps cannot restore a useful
             // sequence. Keep the last real calendar boundary; never invent padded instants.
@@ -41,7 +49,7 @@ internal static partial class ChartTimeScale {
             return FitObservationCadence(regularObservations, axis, min, max, limit, fits, allowCompactDates)
                 ?? GenerateFitting(axis, min, max, fits, allowCompactDates, minimumStepDays: minimumStepDays,
                     automaticTickCount: automaticTickCount, selectTicks: selectTicks);
-        return compactFit ?? sparse ?? TryGenerateFittingInterval(axis, min, max, ChooseInterval(max - min));
+        return compactFit ?? sparse;
     }
 
     /// <summary>Uses a comfortable default pitch while keeping an authored count as a ceiling and dense labels opt-in.</summary>

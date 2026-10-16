@@ -46,10 +46,14 @@ internal static partial class VisualScheduleCompiler {
             ticks = ScheduleProjectWindowTicks(ticks, min, max);
         var milliseconds = fixedTicks != null && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
         var effectiveInterval = fixedTicks == null ? (ChartTimeTickUnit?)null : chart.Options.GanttTickInterval?.Unit;
+        var projectDates = gantt && axis.Scale == ChartScaleKind.Time && fixedTicks == null && axis.Labels.Count == 0
+            && axis.ValueFormat == null && axis.LabelDensity != ChartLabelDensity.All && max - min >= 1;
         var formatTick = ChartAxisValueFormatter.Create(axis, ticks,
             axis.Scale == ChartScaleKind.Time ? tick => gantt && axis.TimeTickLabelFormatter != null
                 ? axis.TimeTickLabelFormatter(tick, effectiveInterval)
-                : ChartTimeScale.Format(axis, tick, milliseconds) : chart.Options.ValueFormatter, chart.Options);
+                : projectDates && ChartTimeScale.ToDisplayTime(axis, tick) is { } date
+                    ? date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                    : ChartTimeScale.Format(axis, tick, milliseconds) : chart.Options.ValueFormatter, chart.Options);
         var tickLabels = ticks.ToDictionary(value => value, formatTick);
         string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : formatTick(value);
         var layout = LaneLayout(chart, context, builder, viewport, items.Where(item => !item.Marker).Select(item => chart.Series[item.Index].Name), Array.Empty<string>(), false,

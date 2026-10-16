@@ -26,13 +26,13 @@ internal static partial class VisualScheduleCompiler {
         bool Fits(IReadOnlyList<double> candidates) => ScheduleCaptionsFit(chart, context, builder, candidates, project, format,
             GeneratedScheduleTickStyle(chart, context, builder, candidates, project, format, style),
             comfortable: axis.LabelDensity != ChartLabelDensity.Dense && !axis.HasExplicitTickCount);
+        bool Accepts(IReadOnlyList<double> candidates) => ChartTimeScale.HasDistinctAdjacentLabels(candidates.Select(format)) && Fits(candidates);
         // A rejected authored interval still expresses a dense-step preference.
         // Formatting alone never changes the automatic density policy.
         var automaticCount = chart.Options.GanttTickInterval != null ? 100
             : ChartTimeScale.AutomaticTickCount(axis, Math.Abs(project(max) - project(min)));
         if (policy.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(policy, min, max,
-            candidates => ChartTimeScale.HasDistinctAdjacentLabels(candidates.Select(format))
-                && Fits(candidates), allowCompactDates: false, minimumStepDays: minimumStepDays,
+            Accepts, allowCompactDates: false, minimumStepDays: minimumStepDays,
             automaticTickCount: automaticCount,
             selectTicks: minimum.HasValue && maximum.HasValue ? candidates => ScheduleProjectEndpoints(candidates, min, max, Fits) : null) is { } calendarTicks)
             return calendarTicks;

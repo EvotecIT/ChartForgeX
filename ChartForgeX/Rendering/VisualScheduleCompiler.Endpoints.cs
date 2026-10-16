@@ -19,8 +19,8 @@ internal static partial class VisualScheduleCompiler {
         var result = new List<double>(ticks.Count + 2) { min };
         foreach (var tick in ticks) {
             if (tick <= min || tick >= max) continue;
-            // Only near-edge conflicts are removed here. Interior density is still
-            // evaluated as a whole by the shared calendar fitting callback.
+            // Reserve endpoint geometry only. The shared calendar fitter validates
+            // adjacent caption precision and density for the complete sequence.
             if (fits(new[] { min, tick }) && fits(new[] { tick, max })) result.Add(tick);
         }
         result.Add(max);
