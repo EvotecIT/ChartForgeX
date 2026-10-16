@@ -8786,6 +8786,54 @@
       }
     },
     {
+      "name": "visual-canvas-tile-text-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1200,
+      "height": 630,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 630.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 378000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1353,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-canvas-tile-text-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1200,
+      "height": 630,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 630.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 378000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1264,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "visual-dc-connectivity-map",
       "layout": {
         "heightMode": "fixed",
