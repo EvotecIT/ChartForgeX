@@ -107,6 +107,44 @@ public sealed class LayeredGroupRegressionTests {
     }
 
     [Fact]
+    public void AutomaticGroupPackingFindsAFreeIntervalBetweenReversedExplicitShells() {
+        var chart = TopologyChart.Create().WithViewport(1200, 620).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddGroup("before", "Explicit before", 300, 0, 220, 300)
+            .AddAutoGroup("middle", "Automatic middle")
+            .AddGroup("after", "Explicit after", 0, 0, 220, 300)
+            .AddNode("before-node", "Before", 350, 90, width: 120, height: 64, groupId: "before")
+            .AddAutoNode("middle-node", "Middle", groupId: "middle")
+            .AddNode("after-node", "After", 50, 90, width: 120, height: 64, groupId: "after")
+            .AddEdge("first", "before-node", "middle-node")
+            .AddEdge("second", "middle-node", "after-node");
+
+        var prepared = TopologyLayoutEngine.Prepare(chart);
+        var groups = prepared.Groups.ToDictionary(group => group.Id, StringComparer.Ordinal);
+
+        Assert.DoesNotContain(new[] { groups["before"], groups["after"] }, fixedGroup =>
+            groups["middle"].X < fixedGroup.X + fixedGroup.Width && groups["middle"].X + groups["middle"].Width > fixedGroup.X
+            && groups["middle"].Y < fixedGroup.Y + fixedGroup.Height && groups["middle"].Y + groups["middle"].Height > fixedGroup.Y);
+    }
+
+    [Fact]
+    public void AutomaticGroupRankOriginIgnoresExplicitNodeCoordinates() {
+        var chart = TopologyChart.Create().WithViewport(1000, 500).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddAutoGroup("automatic", "Automatic group")
+            .AddAutoNode("member", "Automatic member", groupId: "automatic")
+            .AddAutoNode("fixed", "Explicit node");
+        chart.Nodes.Single(node => node.Id == "fixed").X = -200;
+        chart.Nodes.Single(node => node.Id == "fixed").Y = 40;
+
+        var prepared = TopologyLayoutEngine.Prepare(chart);
+        var nodes = prepared.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+
+        Assert.True(nodes["member"].X > nodes["fixed"].X + nodes["fixed"].Width,
+            "Automatic group compaction must not overwrite or overlap a separately positioned node.");
+    }
+
+    [Fact]
     public void SameRankRelationshipLabelDoesNotWidenLayeredRankGaps() {
         static TopologyChart Create(bool longSameRankLabel) {
             var chart = TopologyChart.Create().WithViewport(900, 320).WithLayout(TopologyLayoutMode.Layered)

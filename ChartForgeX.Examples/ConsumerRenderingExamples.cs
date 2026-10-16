@@ -87,6 +87,16 @@ public static class ConsumerRenderingExamples {
             .AddAutoNode("identity", "Identity service").AddEdge("request", "gateway", "identity", "HTTPS");
         var growingOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
         SaveExample( "topology-fit-growth", growing.ToSvg(growingOptions), growing.ToPng(growingOptions));
+        var sharedTrunk = TopologyChart.Create().WithViewport(900, 460).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+            .AddNode("target", "Service", 700, 180, width: 100, height: 44)
+            .AddNode("north", "North input", 100, 60, width: 100, height: 44)
+            .AddNode("middle", "Middle input", 100, 180, width: 100, height: 44)
+            .AddNode("south", "South input", 100, 300, width: 100, height: 44)
+            .AddEdge("north-link", "north", "target", "HTTPS").AddEdge("middle-link", "middle", "target", "HTTPS")
+            .AddEdge("south-link", "south", "target", "HTTPS");
+        foreach (var edge in sharedTrunk.Edges) edge.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
+        var sharedTrunkOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, ShareIncomingTrunks = true };
+        SaveExample("topology-fit-shared-trunk", sharedTrunk.ToSvg(sharedTrunkOptions), sharedTrunk.ToPng(sharedTrunkOptions));
         var selectedRoute = TopologyChart.Create().WithViewport(560, 320).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
             .AddNode("source", "Source", 70, 130, width: 100, height: 64).AddNode("target", "Target", 390, 130, width: 100, height: 64)
             .AddEdge("link", "source", "target", "Selected route").WithEdgeWaypoints("link", new ChartPoint(260, 18));
@@ -142,6 +152,14 @@ public static class ConsumerRenderingExamples {
             .AddGroup("fixed", "Fixed shell", 0, 0, 520, 360).AddAutoGroup("automatic", "Automatic shell")
             .AddAutoNode("fixed-node", "Fixed member", groupId: "fixed").AddAutoNode("automatic-node", "Automatic member", groupId: "automatic");
         SaveExample("topology-layered-rtl-automatic-group", reverseFlowGroup.ToSvg(), reverseFlowGroup.ToPng());
+        var interleavedGroup = TopologyChart.Create().WithViewport(1200, 620).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
+            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .AddGroup("before", "Explicit before", 300, 0, 220, 300).AddAutoGroup("middle", "Automatic middle")
+            .AddGroup("after", "Explicit after", 0, 0, 220, 300)
+            .AddNode("before-node", "Before", 350, 90, width: 120, height: 64, groupId: "before").AddAutoNode("middle-node", "Middle", groupId: "middle")
+            .AddNode("after-node", "After", 50, 90, width: 120, height: 64, groupId: "after")
+            .AddEdge("first", "before-node", "middle-node").AddEdge("second", "middle-node", "after-node");
+        SaveExample("topology-layered-interleaved-explicit-groups", interleavedGroup.ToSvg(), interleavedGroup.ToPng());
         var labelColorModes = TopologyChart.Create().WithViewport(1120, 260).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
             .AddNode("card", "Card label", 20, 60, width: 150, height: 70).AddNode("shape", "Shape label", 230, 60, width: 150, height: 70)
             .AddNode("icon", "Icon label", 440, 60, width: 150, height: 70).AddNode("tile", "Tile label", 650, 60, width: 150, height: 70)

@@ -46,7 +46,9 @@ internal static partial class TopologyLayoutEngine {
         var members = chart.Nodes.Where(n => n.GroupId != null).GroupBy(n => n.GroupId!, StringComparer.Ordinal)
             .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
         var groups = chart.Groups.Where(g => automatic.Contains(g.Id) && members.ContainsKey(g.Id)).ToList();
-        var rankPositions = chart.Nodes.GroupBy(GetLayer).ToDictionary(group => group.Key,
+        var automaticNodeIds = new HashSet<string>(authored.Nodes.Where(node => IsUnset(node.X) && IsUnset(node.Y)).Select(node => node.Id), StringComparer.Ordinal);
+        var rankPositions = chart.Nodes.Where(node => automaticNodeIds.Contains(node.Id)
+            && (node.GroupId == null || automatic.Contains(node.GroupId))).GroupBy(GetLayer).ToDictionary(group => group.Key,
             group => group.Min(node => horizontal ? node.X : node.Y));
         foreach (var group in groups) {
             var nodes = members[group.Id];
@@ -59,7 +61,8 @@ internal static partial class TopologyLayoutEngine {
                 var ordered = rank.OrderBy(n => horizontal ? n.Y : n.X).ToArray();
                 var length = ordered.Sum(n => horizontal ? n.Height : n.Width) + Math.Max(0, ordered.Length - 1) * nodeSpacing;
                 var cursor = cross + (crossSize - length) / 2;
-                var main = rankPositions[rank.Key];
+                var main = rankPositions.TryGetValue(rank.Key, out var automaticRankOrigin)
+                    ? automaticRankOrigin : rank.Min(node => horizontal ? node.X : node.Y);
                 foreach (var node in ordered) {
                     if (horizontal) { node.X = main; node.Y = cursor; } else { node.X = cursor; node.Y = main; }
                     cursor += (horizontal ? node.Height : node.Width) + nodeSpacing;
@@ -82,26 +85,33 @@ internal static partial class TopologyLayoutEngine {
             // Keep one packed shell on the flow axis so a simple chain stays directional. With
             // several automatic shells, separate them across the cross dimension because moving
             // one along the flow axis can put an interleaved rank (A0 -> B1 -> A2) after its successor.
-            while (true) {
-                var collision = placed.FirstOrDefault(other =>
-                    group.X < other.X + other.Width + 24 && group.X + group.Width + 24 > other.X
-                    && group.Y < other.Y + other.Height + 24 && group.Y + group.Height + 24 > other.Y);
-                if (collision == null) break;
-                if (horizontal) {
-                    if (packSingleGroupAlongFlow) {
-                        var precedes = LayeredGroupPrecedes(group, collision, members, chart.Edges);
-                        group.X = precedes == (chart.LayoutDirection == TopologyLayoutDirection.LeftToRight)
-                            ? collision.X - group.Width - 24
-                            : collision.X + collision.Width + 24;
-                    } else group.Y = collision.Y + collision.Height + 24;
-                } else {
-                    if (packSingleGroupAlongFlow) {
-                        var precedes = LayeredGroupPrecedes(group, collision, members, chart.Edges);
-                        group.Y = precedes == (chart.LayoutDirection == TopologyLayoutDirection.TopToBottom)
-                            ? collision.Y - group.Height - 24
-                            : collision.Y + collision.Height + 24;
-                    } else group.X = collision.X + collision.Width + 24;
+            var collision = placed.FirstOrDefault(other => GroupShellsOverlap(group, other));
+            if (collision != null && packSingleGroupAlongFlow) {
+                var positiveFlow = chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.TopToBottom;
+                var precedes = LayeredGroupPrecedes(group, collision, members, chart.Edges);
+                var preferBefore = precedes == positiveFlow;
+                var origin = horizontal ? x : y;
+                var candidates = placed.SelectMany(other => horizontal
+                        ? new[] { other.X - group.Width - 24, other.X + other.Width + 24 }
+                        : new[] { other.Y - group.Height - 24, other.Y + other.Height + 24 })
+                    .Append(origin).Distinct().OrderBy(value => preferBefore == (value < origin) ? 0 : 1)
+                    .ThenBy(value => Math.Abs(value - origin)).ToArray();
+                var candidate = candidates.Where(value => !placed.Any(other => GroupShellsOverlap(group, other, value, horizontal)))
+                    .Select(value => (double?)value).FirstOrDefault();
+                var coordinate = candidate ?? double.NaN;
+                if (!candidate.HasValue) {
+                    var extreme = horizontal
+                        ? (preferBefore ? placed.Min(other => other.X) - group.Width - 24 : placed.Max(other => other.X + other.Width) + 24)
+                        : (preferBefore ? placed.Min(other => other.Y) - group.Height - 24 : placed.Max(other => other.Y + other.Height) + 24);
+                    coordinate = extreme;
                 }
+                if (horizontal) group.X = coordinate; else group.Y = coordinate;
+            } else if (collision != null) {
+                var before = placed.Where(other => horizontal
+                        ? group.Y < other.Y + other.Height + 24 && group.Y + group.Height + 24 > other.Y
+                        : group.X < other.X + other.Width + 24 && group.X + group.Width + 24 > other.X)
+                    .Select(other => horizontal ? other.Y + other.Height + 24 : other.X + other.Width + 24).DefaultIfEmpty(0).Max();
+                if (horizontal) group.Y = Math.Max(group.Y, before); else group.X = Math.Max(group.X, before);
             }
             var delta = new PlacementDelta(group.X - x, group.Y - y);
             if (Math.Abs(delta.Dx) > .001 || Math.Abs(delta.Dy) > .001) shiftedGroupIds.Add(group.Id);
@@ -137,6 +147,13 @@ internal static partial class TopologyLayoutEngine {
                 edge.Metadata.Remove("hierarchy.route.busX"); edge.Metadata.Remove("hierarchy.route.busY");
             }
         }
+    }
+
+    private static bool GroupShellsOverlap(TopologyGroup first, TopologyGroup second, double? flowCoordinate = null, bool horizontal = true) {
+        var x = horizontal && flowCoordinate.HasValue ? flowCoordinate.Value : first.X;
+        var y = !horizontal && flowCoordinate.HasValue ? flowCoordinate.Value : first.Y;
+        return x < second.X + second.Width + 24 && x + first.Width + 24 > second.X
+            && y < second.Y + second.Height + 24 && y + first.Height + 24 > second.Y;
     }
 
     private static bool LayeredGroupPrecedes(TopologyGroup group, TopologyGroup other,

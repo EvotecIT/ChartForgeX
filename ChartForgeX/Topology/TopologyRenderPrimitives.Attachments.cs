@@ -18,7 +18,7 @@ internal static partial class TopologyRenderPrimitives {
         AttachEndpoint(target, edge.TargetPort, edge.TargetPortId, points, points.Count - 1, points.Count - 2);
     }
 
-    private static void AttachEndpoint(TopologyNode node, TopologyEdgePort port, string? portId, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {
+    internal static void AttachEndpoint(TopologyNode node, TopologyEdgePort port, string? portId, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {
         if (node.Shape.HasValue) {
             TopologyNodeShapeGeometry.AttachRoute(node, points, endpointIndex, adjacentIndex, 0);
             return;
