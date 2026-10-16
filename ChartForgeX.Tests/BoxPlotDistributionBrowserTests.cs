@@ -149,16 +149,8 @@ public sealed class BoxPlotDistributionBrowserTests {
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png") });
         var modules = new[] { typeof(Chart).Assembly, typeof(HtmlChartInteractionOptions).Assembly, typeof(HtmlTinkerX.HtmlBrowser).Assembly, typeof(BoxPlotDistributionBrowserTests).Assembly }
             .Select(assembly => new { path = assembly.Location, sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(assembly.Location))) }).ToArray();
-        var browsers = new List<object>();
-        foreach (var process in System.Diagnostics.Process.GetProcessesByName("chrome-headless-shell")) {
-            using (process) {
-                var path = process.MainModule!.FileName;
-                browsers.Add(new { pid = process.Id, startedUtc = process.StartTime.ToUniversalTime(), path,
-                    sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))) });
-            }
-        }
         File.WriteAllText(Path.Combine(directory, name + ".runtime.json"), JsonSerializer.Serialize(new {
-            pid = Environment.ProcessId, modules, browsers, browserVersion = page.Context.Browser!.Version
+            pid = Environment.ProcessId, modules, browserVersion = page.Context.Browser!.Version
         }));
     }
 }

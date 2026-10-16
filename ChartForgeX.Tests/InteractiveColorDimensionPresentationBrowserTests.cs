@@ -31,6 +31,8 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
     public async Task CapturedPresentationSurvivesPointerFocusPinAndLegendSummaryWithRawIdentities(ChartSeriesKind kind, int width, bool dark, bool shared) {
         if (!Enabled) return;
         var chart = ColorDimensionPresentationFixtures.Create(kind, width == 800 ? "discrete" : "positioned", width, dark);
+        if (kind == ChartSeriesKind.Bubble) chart.ConfigureBubble(options =>
+            options.SizeDimension.ValueFormat = ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
         var sameValue = kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap;
         const string name = "Temperature (°C)";
         var format = width == 800 ? ChartValueFormat.Number("0.00 '°C'", CultureInfo.GetCultureInfo("pl-PL"))
