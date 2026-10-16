@@ -19,9 +19,9 @@
   },
   "powerbginfo": {
     "title": "Desktop wallpapers with PowerBGInfo",
-    "body": "PowerBGInfo is a separate Evotec module built on the same engine. Its scripts put machine details, charts and topology on Windows desktop and lock-screen wallpapers, and ChartForgeX draws the whole image.",
+    "body": "PowerBGInfo is a separate Evotec module built on the same engine. Its scripts put machine details, charts, tables and diagrams on Windows desktop and lock-screen wallpapers, and ChartForgeX draws the whole image.",
     "show": "admin-workstation",
-    "link": "See the four wallpapers and their scripts"
+    "link": "See the wallpapers and build one yourself"
   },
   "about": {
     "title": "One module, three libraries",

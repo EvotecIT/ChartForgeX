@@ -176,6 +176,12 @@
         ]
       },
       {
+        "Name": "powerbginfo",
+        "Css": [
+          "/themes/chartforgex/assets/powerbginfo.css"
+        ]
+      },
+      {
         "Name": "playground",
         "Css": [
           "/themes/chartforgex/assets/playground.css"
@@ -234,7 +240,8 @@
         "Match": "/powerbginfo/**",
         "Bundles": [
           "docs",
-          "pages"
+          "pages",
+          "powerbginfo"
         ]
       },
       {
