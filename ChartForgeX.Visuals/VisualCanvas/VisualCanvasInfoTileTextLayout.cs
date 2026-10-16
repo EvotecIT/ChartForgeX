@@ -130,6 +130,9 @@ internal static class VisualCanvasInfoTileTextLayout {
         if (preserveFallbackIcon) {
             var minIconBox = Math.Min(24, Math.Max(1, height - 12));
             iconBox = Math.Max(iconBox, minIconBox);
+            textGap = Math.Min(textGap, Math.Max(0, innerWidth - iconBox));
+            minTextWidth = Math.Min(minTextWidth,
+                Math.Max(0, innerWidth - textGap - iconBox));
         }
         iconBox = Math.Min(iconBox, Math.Max(1, innerWidth - textGap - minTextWidth));
         textGap = Math.Min(textGap, iconBox * (22d / 54));

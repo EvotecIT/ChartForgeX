@@ -137,6 +137,23 @@ public sealed class VisualCanvasTileTypographyTests {
     }
 
     [Fact]
+    public void NarrowFallbackKeepsTheIconFloorAtNormalPadding() {
+        var canvas = VisualCanvas.Create(64, 72).AddInfoTileWithTextOptions(
+            8, 8, 48, 56, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            new VisualCanvasInfoTileTextOptions(textScale: 4),
+            iconKind: VisualCanvasInfoTileIconKind.Computer);
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
+            canvas.ResolveStyle());
+        var metrics = layout.Metrics;
+
+        Assert.True(layout.Text.WasScaledDown);
+        Assert.Equal(24, metrics.IconBox, 6);
+        Assert.Equal(12, metrics.IconX - metrics.X, 6);
+        Assert.Equal(metrics.IconX + metrics.IconBox, metrics.TextX, 6);
+    }
+
+    [Fact]
     public void SmallRequestedScaleKeepsTheSmallIconBoxWithoutFallback() {
         var canvas = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
             8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
