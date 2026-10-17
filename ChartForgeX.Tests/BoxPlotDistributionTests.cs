@@ -148,4 +148,3 @@ public sealed class BoxPlotDistributionTests {
         .WithObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("sample-" + index)));
     private static double[] Values(ChartBoxPlot value) => new[] { value.Minimum, value.Q1, value.Median, value.Q3, value.Maximum };
 }
-
