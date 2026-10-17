@@ -2980,7 +2980,7 @@ body {
   };
   const sameGroup = (root, peer) => root !== peer && root.dataset.cfxInteractionGroup && root.dataset.cfxInteractionGroup === peer.dataset.cfxInteractionGroup;
   const emitHostEvent = (root, name, detail) => {
-    root.dispatchEvent(new CustomEvent(name, { bubbles: true, detail: Object.assign({ chartId: root.dataset.cfxChartId || '' }, detail || {}) }));
+    root.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, detail: Object.assign({ chartId: root.dataset.cfxChartId || '' }, detail || {}) }));
   };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
@@ -3014,7 +3014,7 @@ body {
       delete root._cfxSharedHover;
     } else if (['hover', 'crosshair', 'navigate'].includes(payload.action)) root._cfxSharedHover = true;
     const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
-    root.dispatchEvent(new CustomEvent('cfxsync', { bubbles: true, detail }));
+    root.dispatchEvent(new CustomEvent('cfxsync', { bubbles: true, composed: true, detail }));
     document.querySelectorAll('.cfx-interactive-chart').forEach((peer) => {
       if (chartLifetimes.get(peer)?.disposed === false && sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
     });
