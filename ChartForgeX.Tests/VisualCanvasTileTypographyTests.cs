@@ -76,6 +76,111 @@ public sealed class VisualCanvasTileTypographyTests {
             diagnostic => diagnostic.Code == "InfoTileTextScaleReduced");
     }
 
+    [Fact]
+    public void FixedSizeFallbackKeepsTheIconVisibleAndTextAfterItsBox() {
+        var accent = ChartColor.FromHex("#38BDF8");
+        var withIcon = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
+            8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            new VisualCanvasInfoTileTextOptions(textScale: 4),
+            "Windows desktop", accent,
+            surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline,
+            iconKind: VisualCanvasInfoTileIconKind.Computer);
+        var withoutIcon = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
+            8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            new VisualCanvasInfoTileTextOptions(textScale: 4),
+            "Windows desktop", accent,
+            surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline);
+        var tile = (VisualCanvasInfoTileLayer)withIcon.Layers[0];
+        var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
+            withIcon.ResolveStyle());
+        var metrics = layout.Metrics;
+        XNamespace svgNamespace = "http://www.w3.org/2000/svg";
+        var svg = XDocument.Parse(withIcon.ToSvg());
+        var svgIconBox = svg.Descendants(svgNamespace + "rect").Single(rect =>
+            (double?)rect.Attribute("x") == metrics.IconX &&
+            (double?)rect.Attribute("y") == metrics.IconY);
+        var svgLabel = svg.Descendants(svgNamespace + "text").Single(text =>
+            text.Value == "HOSTNAME");
+        var withIconPixels = withIcon.ToRgbaImage();
+        var withoutIconPixels = withoutIcon.ToRgbaImage();
+        var changedPixels = 0;
+        var left = Math.Max(0, (int)Math.Floor(metrics.IconX));
+        var right = Math.Min(withIconPixels.Width,
+            (int)Math.Ceiling(metrics.IconX + metrics.IconBox));
+        var top = Math.Max(0, (int)Math.Floor(metrics.IconY));
+        var bottom = Math.Min(withIconPixels.Height,
+            (int)Math.Ceiling(metrics.IconY + metrics.IconBox));
+
+        for (var y = top; y < bottom; y++) {
+            for (var x = left; x < right; x++) {
+                var offset = (y * withIconPixels.Width + x) * 4;
+                if (withIconPixels.Pixels[offset] != withoutIconPixels.Pixels[offset] ||
+                    withIconPixels.Pixels[offset + 1] != withoutIconPixels.Pixels[offset + 1] ||
+                    withIconPixels.Pixels[offset + 2] != withoutIconPixels.Pixels[offset + 2] ||
+                    withIconPixels.Pixels[offset + 3] != withoutIconPixels.Pixels[offset + 3]) {
+                    changedPixels++;
+                }
+            }
+        }
+
+        Assert.True(metrics.IconBox >= 24);
+        Assert.True(layout.Text.WasScaledDown);
+        Assert.True(metrics.TextX >= metrics.IconX + metrics.IconBox);
+        Assert.Equal(metrics.IconBox * (22d / 54),
+            metrics.TextX - metrics.IconX - metrics.IconBox, 6);
+        Assert.Equal(metrics.IconBox, (double)svgIconBox.Attribute("width")!, 6);
+        Assert.Equal(metrics.IconBox, (double)svgIconBox.Attribute("height")!, 6);
+        Assert.Equal(metrics.TextX, (double)svgLabel.Attribute("x")!, 3);
+        Assert.True(changedPixels > 0);
+        Assert.Contains(withIcon.AnalyzeLayout().Diagnostics,
+            diagnostic => diagnostic.Code == "InfoTileTextScaleReduced");
+    }
+
+    [Fact]
+    public void NarrowFallbackKeepsTheIconFloorAtNormalPadding() {
+        var canvas = VisualCanvas.Create(64, 72).AddInfoTileWithTextOptions(
+            8, 8, 48, 56, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            new VisualCanvasInfoTileTextOptions(textScale: 4),
+            iconKind: VisualCanvasInfoTileIconKind.Computer);
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
+            canvas.ResolveStyle());
+        var metrics = layout.Metrics;
+
+        Assert.True(layout.Text.WasScaledDown);
+        Assert.Equal(24, metrics.IconBox, 6);
+        Assert.Equal(12, metrics.IconX - metrics.X, 6);
+        Assert.Equal(metrics.IconX + metrics.IconBox, metrics.TextX, 6);
+    }
+
+    [Fact]
+    public void SmallRequestedScaleKeepsTheSmallIconBoxWithoutFallback() {
+        var canvas = VisualCanvas.Create(320, 100).AddInfoTileWithTextOptions(
+            8, 8, 304, 48, string.Empty, "HOSTNAME", "WORKSTATION-01",
+            new VisualCanvasInfoTileTextOptions(textScale: 0.2), "Windows desktop");
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
+            canvas.ResolveStyle());
+
+        Assert.False(layout.Text.WasScaledDown);
+        Assert.True(layout.Metrics.IconBox < 24);
+    }
+
+    [Fact]
+    public void SmallRequestedScaleKeepsItsIconSizeWhenTextMustShrink() {
+        var canvas = VisualCanvas.Create(320, 80).AddInfoTileWithTextOptions(
+            8, 8, 304, 36, string.Empty, "HOSTNAME",
+            "A long host value that needs extra room to fit in the tile",
+            new VisualCanvasInfoTileTextOptions(textScale: 0.5),
+            "Windows workstation");
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
+            canvas.ResolveStyle());
+
+        Assert.True(layout.Text.WasScaledDown);
+        Assert.True(layout.Metrics.IconBox < 24);
+    }
+
     [Theory]
     [InlineData(1.5)]
     [InlineData(4)]
