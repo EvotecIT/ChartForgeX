@@ -83,7 +83,8 @@ ChartGrid HeroDashboard(VisualThemeMode mode) {
     var heat = Chart.Create().WithThemeMode(mode).WithTitle("Sign-ins by hour").WithSubtitle("Weekday working hours stand out")
         .WithXLabels(hours).AddHeatmapRows(days, activity);
     var coverage = Chart.Create().WithThemeMode(mode).WithTitle("MFA coverage").WithSubtitle("Accounts with a strong method")
-        .AddGauge("Coverage", 87).ConfigureGauge(options => options.Target = 95);
+        .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("coverage"), "Coverage",
+            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(95) })));
     foreach (var panel in new[] { methods, posture, heat, coverage }) {
         panel.WithSize(520, 320);
     }
