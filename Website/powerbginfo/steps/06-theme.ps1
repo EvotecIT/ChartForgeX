@@ -1,4 +1,4 @@
-param([string] $OutputDirectory = "$env:TEMP\PowerBGInfo")
+﻿param([string] $OutputDirectory = "$env:TEMP\PowerBGInfo")
 
 $backdrop = @{
     Width = 1920

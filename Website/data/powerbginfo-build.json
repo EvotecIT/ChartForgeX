@@ -3,11 +3,11 @@
   "source": {
     "repository": "EvotecIT/PowerBGInfo",
     "url": "https://github.com/EvotecIT/PowerBGInfo",
-    "commit": "190da09c2729b0f8d10f9d897ad84a7083b3bdf7",
-    "short": "190da09",
+    "commit": "021b596689310803f89c4f911fc6e16a930c937d",
+    "short": "021b596",
     "version": "2.0.3",
     "template": "Examples/Run.BGInfo.Template.ps1",
-    "templateUrl": "https://github.com/EvotecIT/PowerBGInfo/blob/190da09c2729b0f8d10f9d897ad84a7083b3bdf7/Examples/Run.BGInfo.Template.ps1"
+    "templateUrl": "https://github.com/EvotecIT/PowerBGInfo/blob/021b596689310803f89c4f911fc6e16a930c937d/Examples/Run.BGInfo.Template.ps1"
   },
   "steps": [
     {

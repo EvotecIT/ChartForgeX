@@ -1,4 +1,4 @@
-function Get-MyWallpaperData {
+﻿function Get-MyWallpaperData {
     # Needs the RSAT ActiveDirectory module and a domain controller in reach.
     Import-Module ActiveDirectory -ErrorAction Stop
     $user = Get-ADUser -Identity $env:USERNAME -Properties Department, Title

@@ -1,4 +1,4 @@
-param([string] $OutputDirectory = "$env:TEMP\PowerBGInfo")
+﻿param([string] $OutputDirectory = "$env:TEMP\PowerBGInfo")
 
 #region Data: your logic goes here
 function Get-MyWallpaperData {

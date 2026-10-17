@@ -20,8 +20,8 @@
     from rendering steps while the data file claims a newer source commit. Each run uses the en-US culture and sets
     COMPUTERNAME to the sample name the steps use, so a render never carries the name of the machine that produced it.
 
-    The script owns static/powerbginfo/build/ and clears its PNG files on each run. It never changes the PowerBGInfo
-    repository.
+    The script owns static/powerbginfo/build/ and stages new PNG and JSON output before promoting both together.
+    On failure it restores the previous output. It never changes the PowerBGInfo repository.
 
 .EXAMPLE
     pwsh ./Website/build/Render-PowerBGInfoSteps.ps1 -ModulePath D:\Scratch\PowerBGInfo\PowerBGInfo.psd1 `
@@ -64,7 +64,7 @@ $moduleVersion = (Import-PowerShellDataFile -LiteralPath $ModulePath).ModuleVers
 
 $trackedFiles = @(git -C $RepositoryPath ls-tree -r --name-only $commit)
 if ($LASTEXITCODE -ne 0 -or -not $trackedFiles.Count) { throw "Cannot list build inputs at $commit." }
-$buildInputPattern = '(?i)(\.(cs|csproj|props|targets|resx|razor|xaml|vb|fs|json)$|(^|/)(global\.json|NuGet\.Config|Directory\.Build\.[^/]+|Directory\.Packages\.props|packages\.lock\.json|MSBuild\.rsp)$)'
+$buildInputPattern = '(?i)(\.(cs|csproj|props|targets|resx|razor|xaml|vb|fs|json)$|(^|/)(Public|Private|Classes|Enums)/.*\.ps1$|(^|/)(global\.json|NuGet\.Config|Directory\.Build\.[^/]+|Directory\.Packages\.props|packages\.lock\.json|MSBuild\.rsp)$)'
 $expectedInputs = @($trackedFiles | Where-Object { $_ -match $buildInputPattern })
 $excludedOutput = '(^|/)(\.git|bin|obj|artifacts|TestResults|\.vs)(/|$)'
 $actualInputs = @(Get-ChildItem -LiteralPath $moduleRoot -File -Recurse -Force | ForEach-Object {
@@ -180,8 +180,12 @@ function Get-PngSize([string] $Path) {
 }
 
 $manifest = Get-Content -LiteralPath (Join-Path $sourceRoot 'steps.json') -Raw | ConvertFrom-Json
-New-Item -ItemType Directory -Force -Path $target | Out-Null
-Get-ChildItem -LiteralPath $target -Filter '*.png' -File | Remove-Item -Force
+$stagingRoot = Join-Path $website ".powerbginfo-steps-$([guid]::NewGuid().ToString('N'))"
+$stagedTarget = Join-Path $stagingRoot 'build'
+$stagedDataPath = Join-Path $stagingRoot 'powerbginfo-build.json'
+$keepStaging = $false
+New-Item -ItemType Directory -Force -Path $stagedTarget | Out-Null
+try {
 $work = Join-Path ([System.IO.Path]::GetTempPath()) "PowerBGInfo-steps-$PID"
 
 $scripts = @{}
@@ -213,7 +217,7 @@ Import-Module '$($ModulePath.Replace("'", "''"))' -WarningAction SilentlyContinu
         if ($LASTEXITCODE -ne 0) { throw "Step '$($step.id)' failed:`n$console" }
         $png = Join-Path $output 'wallpaper.png'
         if (-not (Test-Path -LiteralPath $png)) { throw "Step '$($step.id)' wrote no wallpaper.png:`n$console" }
-        Copy-Item -LiteralPath $png -Destination (Join-Path $target "$($step.id).png") -Force
+        Copy-Item -LiteralPath $png -Destination (Join-Path $stagedTarget "$($step.id).png")
         $size = Get-PngSize $png
 
         # The data region, when the step has one: the part the reader replaces with their own logic.
@@ -270,6 +274,36 @@ $data = [ordered] @{
     steps       = @($steps)
     sources     = @($sources)
 }
-Set-Content -LiteralPath $dataPath -Value (($data | ConvertTo-Json -Depth 8).Replace("`r`n", "`n") + "`n") -NoNewline -Encoding utf8NoBOM
+Set-Content -LiteralPath $stagedDataPath -Value (($data | ConvertTo-Json -Depth 8).Replace("`r`n", "`n") + "`n") -NoNewline -Encoding utf8NoBOM
+
+$targetBackup = Join-Path $stagingRoot 'previous-build'
+$dataBackup = Join-Path $stagingRoot 'previous-build.json'
+$targetMoved = $false
+$targetPromoted = $false
+$dataMoved = $false
+$dataPromoted = $false
+try {
+    if (Test-Path -LiteralPath $target -PathType Container) { Move-Item -LiteralPath $target -Destination $targetBackup; $targetMoved = $true }
+    Move-Item -LiteralPath $stagedTarget -Destination $target; $targetPromoted = $true
+    if (Test-Path -LiteralPath $dataPath -PathType Leaf) { Move-Item -LiteralPath $dataPath -Destination $dataBackup; $dataMoved = $true }
+    Move-Item -LiteralPath $stagedDataPath -Destination $dataPath; $dataPromoted = $true
+} catch {
+    $promotionError = $_
+    $rollbackErrors = [System.Collections.Generic.List[string]]::new()
+    if ($dataPromoted) { try { Remove-Item -LiteralPath $dataPath } catch { $rollbackErrors.Add("remove promoted data: $($_.Exception.Message)") } }
+    if ($dataMoved) { try { Move-Item -LiteralPath $dataBackup -Destination $dataPath } catch { $rollbackErrors.Add("restore previous data: $($_.Exception.Message)") } }
+    if ($targetPromoted) { try { [System.IO.Directory]::Delete($target, $true) } catch { $rollbackErrors.Add("remove promoted renders: $($_.Exception.Message)") } }
+    if ($targetMoved) { try { Move-Item -LiteralPath $targetBackup -Destination $target } catch { $rollbackErrors.Add("restore previous renders: $($_.Exception.Message)") } }
+    if ($rollbackErrors.Count) {
+        $keepStaging = $true
+        throw "Promotion failed: $($promotionError.Exception.Message) Rollback also failed: $($rollbackErrors -join '; '). Backups remain under '$stagingRoot'."
+    }
+    throw $promotionError
+}
 $total = (Get-ChildItem -LiteralPath $target -Filter '*.png' -File | Measure-Object Length -Sum).Sum
 Write-Host "PowerBGInfo $($commit.Substring(0, 7)): $(@($steps).Count) steps, $(@($sources).Count) snippets, $([math]::Round($total / 1KB)) KB -> $dataPath"
+} finally {
+    if (-not $keepStaging -and (Test-Path -LiteralPath $stagingRoot -PathType Container)) {
+        [System.IO.Directory]::Delete($stagingRoot, $true)
+    }
+}

@@ -520,7 +520,7 @@
         "ext": "png",
         "w": 480,
         "h": 300,
-        "kb": 38.5
+        "kb": 38.3
       },
       "powershell": {
         "base": "/site/nav/powershell",

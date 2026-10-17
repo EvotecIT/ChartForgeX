@@ -21,8 +21,8 @@
     and the region example at 1920 x 1080, 3440 x 1440 and 1080 x 1920.
 
     The script owns the PNG files in static/powerbginfo/ and static/powerbginfo/features/ and the scripts in
-    static/powerbginfo/scripts/, and clears them on each run. It never changes the PowerBGInfo repository; it only
-    reads files with git show.
+    static/powerbginfo/scripts/. It stages the complete snapshot and promotes it after validation, restoring the
+    previous files on failure. It never changes the PowerBGInfo repository; it only reads files with git show.
 
 .EXAMPLE
     pwsh ./Website/build/Sync-PowerBGInfo.ps1 -RepositoryPath C:\Support\GitHub\PowerBGInfo `
@@ -42,8 +42,8 @@ $ErrorActionPreference = 'Stop'
 $website = Split-Path -Parent $PSScriptRoot
 $repository = 'EvotecIT/PowerBGInfo'
 # Widgets shown in the capabilities grid, plus the examples the logic section uses.
-$widgetIds = 'metrics', 'tables', 'lists', 'calendar-heatmap', 'timeline', 'treemap', 'mermaid', 'qrcode', 'system-info'
 $scenarioConfig = Get-Content -LiteralPath (Join-Path $website 'data/powerbginfo.json') -Raw | ConvertFrom-Json
+$widgetIds = @($scenarioConfig.capabilities.widgets.items | ForEach-Object -MemberName id) + @('system-info')
 $scenarioIds = @($scenarioConfig.scenarios.featured + ($scenarioConfig.scenarios.uses | ForEach-Object { $_.scenarios }) | Sort-Object -Unique)
 $requiredScreens = @($scenarioConfig.scenarios.screens.items)
 $missingScreenSizes = @($requiredScreens.size | Sort-Object -Unique | Where-Object { $_ -notin $ScreenSizes })
@@ -57,8 +57,14 @@ $commit = (git -C $RepositoryPath rev-parse --verify "$Ref^{commit}").Trim()
 if ($LASTEXITCODE -ne 0 -or -not $commit) { throw "Cannot resolve '$Ref' in $RepositoryPath." }
 
 function Get-SourceText([string] $Path) {
-    $text = git -C $RepositoryPath show "${commit}:$Path"
-    if ($LASTEXITCODE -ne 0) { throw "$Path does not exist at $commit." }
+    $previousEncoding = [Console]::OutputEncoding
+    [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+    try {
+        $text = git -C $RepositoryPath show "${commit}:$Path"
+        if ($LASTEXITCODE -ne 0) { throw "$Path does not exist at $commit." }
+    } finally {
+        [Console]::OutputEncoding = $previousEncoding
+    }
     # git returns lines; rejoin them with LF and drop a leading byte-order mark.
     return (($text -join "`n").TrimStart([char] 0xFEFF)).TrimEnd() + "`n"
 }
@@ -124,6 +130,8 @@ $target = Join-Path $website 'static/powerbginfo'
 $stagingRoot = Join-Path $website ".powerbginfo-sync-$([guid]::NewGuid().ToString('N'))"
 $stagedTarget = Join-Path $stagingRoot 'powerbginfo'
 $stagedDataPath = Join-Path $stagingRoot 'powerbginfo-showcase.json'
+$keepStaging = $false
+try {
 New-Item -ItemType Directory -Force -Path $stagedTarget | Out-Null
 if (Test-Path -LiteralPath $target -PathType Container) {
     Get-ChildItem -LiteralPath $target | Copy-Item -Destination $stagedTarget -Recurse -Force
@@ -234,6 +242,7 @@ foreach ($id in $widgetIds) {
 foreach ($preset in $themes.Values) {
     foreach ($mode in 'light', 'dark') { if (-not $preset.renders.Contains($mode)) { throw "$FeaturePath has no 1920x1080 $mode render of theme preset '$($preset.id)'." } }
 }
+foreach ($id in $themes.Keys) { if ($id -notin $themePresetIds) { throw "$FeaturePath has unexpected theme preset '$id'." } }
 foreach ($id in $themePresetIds) { if (-not $themes.Contains($id)) { throw "$FeaturePath has no 1920x1080 renders of theme preset '$id'." } }
 foreach ($id in $regionSizes) {
     if (-not $regions.Contains($id)) { throw "$FeaturePath has no $id region render." }
@@ -308,11 +317,16 @@ try {
         catch { $rollbackErrors.Add("$($rollback.Name): $($_.Exception.Message)") }
     }
     if ($rollbackErrors.Count) {
+        $keepStaging = $true
         throw "Promotion failed: $($promotionError.Exception.Message) Rollback also failed: $($rollbackErrors -join '; '). Backups remain under '$stagingRoot'."
     }
     throw $promotionError
 }
 if (Test-Path -LiteralPath $targetBackup -PathType Container) { [System.IO.Directory]::Delete($targetBackup, $true) }
 if (Test-Path -LiteralPath $dataBackup -PathType Leaf) { Remove-Item -LiteralPath $dataBackup }
-if (Test-Path -LiteralPath $stagingRoot -PathType Container) { [System.IO.Directory]::Delete($stagingRoot, $true) }
 Write-Host "PowerBGInfo $($commit.Substring(0, 7)): $($scenarios.Count) scenarios ($screens extra screen sizes), $($widgets.Count) widgets, $($themes.Count) themes, $($regions.Count) region sizes, $([math]::Round($total / 1KB)) KB -> $dataPath"
+} finally {
+    if (-not $keepStaging -and (Test-Path -LiteralPath $stagingRoot -PathType Container)) {
+        [System.IO.Directory]::Delete($stagingRoot, $true)
+    }
+}
