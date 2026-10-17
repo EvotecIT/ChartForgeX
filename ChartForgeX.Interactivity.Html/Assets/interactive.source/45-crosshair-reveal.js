@@ -222,9 +222,20 @@
     if (event instanceof PointerEvent && pointerReadoutSuspended(root)) return;
     const guideEnabled = hasFeature(root, 'Crosshair');
     if (!guideEnabled && !hasFeature(root, 'Tooltips')) return;
-    if (nativeTarget instanceof Element && nativeTarget.closest('[data-cfx-role="legend-item"]')) {
-      // Legend items own their hover summary; inferred observations must not replace it.
+    const legend = nativeTarget instanceof Element && nativeTarget.closest('[data-cfx-role="legend-item"]');
+    if (legend && root.contains(legend)) {
+      // A reset can suppress native entry before this fresh, coalesced move resumes acquisition.
+      // Keep the legend's own live painted summary; never search the plot for a replacement.
       hideCrosshair(root, crosshair);
+      const available = hasFeature(root, 'Tooltips') ? currentPointerTooltip(root, event) === legend : pointerTargetPaint(legend);
+      if (available) {
+        const key = targetKey(targetIdentity(legend));
+        if (root.dataset.cfxHoverKey !== key) setHover(root, legend, true, true);
+        showTip(root, tip, legend, event);
+      } else {
+        clearHover(root, true, true);
+        hideTip(root, tip, false);
+      }
       return;
     }
     const searchNearest = guideEnabled || root.dataset.cfxTooltipRange !== 'exact';

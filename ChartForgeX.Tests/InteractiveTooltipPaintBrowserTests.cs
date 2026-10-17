@@ -185,7 +185,30 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         await page.Locator("[data-cfx-reset]").ClickAsync();
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = Legend(0) + " :is(rect,circle,ellipse,line,polyline,path,polygon) { opacity:0!important; }" });
         await MoveToNativeTextAsync(page, Legend(0));
+        try {
+            await page.WaitForFunctionAsync("""
+                text => {
+                    const tip = document.querySelector('.cfx-interactive-chart .cfx-tooltip');
+                    return !tip.hidden && tip.innerText.includes(text);
+                }
+                """, arg: "Measured", options: new PageWaitForFunctionOptions { Timeout = 5000 });
+        } catch {
+            await CaptureContractAsync(page, "paint-caption-only-legend-after-reset-failure-" + layout + "-compact-dark", new {
+                Layout = layout.ToString(), Stage = "Fresh native caption move after reset; requested legend tooltip did not settle",
+                NativeCaption = await page.Locator(Legend(0)).EvaluateAsync<JsonElement>("""
+                    n => {
+                        const t = n.querySelector('text'), b = t.getExtentOfChar(Math.floor(t.textContent.length / 2)), p = new DOMPoint(b.x + b.width / 2, b.y + b.height / 2).matrixTransform(t.getScreenCTM());
+                        const hit = document.elementFromPoint(p.x, p.y), root = n.closest('.cfx-interactive-chart');
+                        return { targetId:n.dataset.cfxTargetId, text:t.textContent, position:[p.x,p.y], hitInside:n.contains(hit), hitRole:hit?.dataset.cfxRole || hit?.tagName,
+                            pointerReadoutSuspended:root._cfxPointerReadoutSuspended === true, activeTarget:document.activeElement?.dataset?.cfxTargetId || null };
+                    }
+                    """)
+            });
+            throw;
+        }
         Assert.Contains("Measured", await TooltipTextAsync(page), StringComparison.Ordinal);
+        await CaptureContractAsync(page, "paint-caption-only-legend-after-reset-" + layout + "-compact-dark", new {
+            Layout = layout.ToString(), FreshNativeCaptionMove = true, KeyboardFocusNotYetApplied = true });
         await page.Locator(Legend(0)).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
         // Let layout dispatch its real pointer exit while keyboard focus stays on the legend.
