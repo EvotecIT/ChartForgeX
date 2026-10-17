@@ -45,7 +45,7 @@ public sealed class RuntimeValueEndpointBrowserTests {
         await page.Mouse.DownAsync();
         await page.Mouse.MoveAsync((float)points.GetProperty("to").GetProperty("x").GetDouble(), (float)points.GetProperty("to").GetProperty("y").GetDouble(), new Microsoft.Playwright.MouseMoveOptions { Steps = 4 });
         await page.Mouse.UpAsync();
-        var brush = await page.EvaluateAsync<JsonElement>("() => waterfallBrush");
+        var brush = await page.EvaluateAsync<JsonElement>("() => JSON.parse(JSON.stringify(waterfallBrush))");
         var range = brush.GetProperty("range");
         Assert.Equal(!primaryReference, range.TryGetProperty("y", out var rawY));
         if (!primaryReference) {

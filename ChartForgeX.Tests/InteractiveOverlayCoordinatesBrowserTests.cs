@@ -98,7 +98,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         await page.Mouse.UpAsync();
         var textSelection = (During: during, After: await page.EvaluateAsync<string>("() => window.getSelection()?.toString() || ''"));
         var brush = await BoxAsync(page, ".cfx-brush-box");
-        var events = await EventsAsync(page);
+        var events = await page.EvaluateAsync<JsonElement>("() => JSON.parse(JSON.stringify(window.overlayCoordinateEvents))");
         var selected = await page.Locator("g[data-cfx-role=point][aria-selected=true]").EvaluateAllAsync<string[]>("nodes => nodes.map(n => n.dataset.cfxTargetId)");
         var after = await ScrollExtentAsync(page);
         await CaptureAsync(session, "overlay-brush-" + Variant(graphite, layout, width, scale, pageScroll), new {

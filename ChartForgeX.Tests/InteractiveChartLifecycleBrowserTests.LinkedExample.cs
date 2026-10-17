@@ -46,7 +46,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             (float)positions.GetProperty("to").GetProperty("y").GetDouble(), new MouseMoveOptions { Steps = 5 });
         await page.Mouse.UpAsync();
         Assert.False(await page.Locator(timeSelector + " .cfx-brush-box").EvaluateAsync<bool>("node=>node.hidden"));
-        var brush = await page.EvaluateAsync<JsonElement>("() => linkedBrushEvents[0]");
+        var brush = await page.EvaluateAsync<JsonElement>("() => JSON.parse(JSON.stringify(linkedBrushEvents[0]))");
         var expectedRange = positions.GetProperty("expectedRange").EnumerateArray().Select(endpoint => endpoint.GetString()!).ToArray();
         Assert.Equal(expectedRange, brush.GetProperty("range").GetProperty("x").EnumerateArray().Select(endpoint => endpoint.GetString()));
         Assert.Equal(brush.GetProperty("range").GetProperty("x").GetRawText(), brush.GetProperty("displayRange").GetProperty("x").GetRawText());
