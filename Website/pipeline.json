@@ -13,25 +13,6 @@
       "targets": ".NET Framework 4.7.2, .NET Standard 2.0, .NET 8, .NET 10"
     },
     {
-      "task": "optimize",
-      "id": "optimize-site",
-      "dependsOn": [
-        "build-site",
-        "build-llms",
-        "build-apidocs",
-        "build-powershell-commands",
-        "sitemap",
-        "playground-engine-overlay"
-      ],
-      "modes": ["ci"],
-      "siteRoot": "./_site",
-      "config": "./site.json",
-      "criticalCss": "./themes/chartforgex/critical.css",
-      "minifyHtml": true,
-      "minifyCss": true,
-      "minifyJs": true
-    },
-    {
       "task": "exec",
       "id": "playground-samples-check",
       "command": "dotnet",
@@ -56,6 +37,25 @@
       "destination": "./_site/playground/engine",
       "include": "_framework/**",
       "clean": true
+    },
+    {
+      "task": "optimize",
+      "id": "optimize-site",
+      "dependsOn": [
+        "build-site",
+        "build-llms",
+        "build-apidocs",
+        "build-powershell-commands",
+        "sitemap",
+        "playground-engine-overlay"
+      ],
+      "modes": ["ci"],
+      "siteRoot": "./_site",
+      "config": "./site.json",
+      "criticalCss": "./themes/chartforgex/critical.css",
+      "minifyHtml": true,
+      "minifyCss": true,
+      "minifyJs": true
     }
   ]
 }
