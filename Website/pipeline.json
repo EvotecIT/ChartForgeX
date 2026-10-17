@@ -15,6 +15,7 @@
     {
       "task": "exec",
       "id": "playground-samples-check",
+      "dependsOn": "api-build-chartforgex-markup-mermaid",
       "command": "dotnet",
       "argsList": ["run", "--project", "./tools/PlaygroundCheck/PlaygroundCheck.csproj", "-c", "Release"],
       "workingDirectory": ".",
@@ -23,6 +24,7 @@
     {
       "task": "dotnet-publish",
       "id": "playground-engine-publish",
+      "dependsOn": "playground-samples-check",
       "project": "./tools/Playground/ChartForgeX.Playground.Engine.csproj",
       "out": "./_temp/playground-engine",
       "configuration": "Release",

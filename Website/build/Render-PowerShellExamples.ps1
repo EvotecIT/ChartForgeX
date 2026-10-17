@@ -151,7 +151,7 @@ Set-Location -LiteralPath '$($outputDirectory.Replace("'", "''"))'
     }
     $outputNames = @($outputs | ForEach-Object { $_.file })
     foreach ($showFile in @($example.show)) {
-        if ($showFile -and $showFile -notin $outputNames) {
+        if ($showFile -and $showFile -cnotin $outputNames) {
             throw "Example '$($example.id)' requested preview '$showFile', but the renderer did not produce it."
         }
     }

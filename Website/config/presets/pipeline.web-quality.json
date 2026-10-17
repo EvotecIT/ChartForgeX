@@ -44,6 +44,7 @@
     {
       "task": "dotnet-build",
       "id": "api-build-chartforgex-stories",
+      "dependsOn": "api-build-chartforgex-visuals",
       "project": "../ChartForgeX.Stories/ChartForgeX.Stories.csproj",
       "configuration": "Release",
       "framework": "net10.0"
@@ -51,6 +52,7 @@
     {
       "task": "dotnet-build",
       "id": "api-build-chartforgex-interactivity-html",
+      "dependsOn": "api-build-chartforgex-stories",
       "project": "../ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj",
       "configuration": "Release",
       "framework": "net10.0"
@@ -58,6 +60,7 @@
     {
       "task": "dotnet-build",
       "id": "api-build-chartforgex-markup-mermaid",
+      "dependsOn": "api-build-chartforgex-interactivity-html",
       "project": "../ChartForgeX.Markup.Mermaid/ChartForgeX.Markup.Mermaid.csproj",
       "configuration": "Release",
       "framework": "net10.0"
