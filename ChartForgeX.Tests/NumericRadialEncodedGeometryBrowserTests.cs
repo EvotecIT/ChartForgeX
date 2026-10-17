@@ -21,7 +21,8 @@ public sealed class NumericRadialEncodedGeometryBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
         var page = session.Page;
         await RecordEventsAsync(page);
-        var small = page.Locator("[data-cfx-point='1'][data-cfx-target-kind='point']");
+        const string smallSelector = "[data-cfx-point='1'][data-cfx-target-kind='point']";
+        var small = page.Locator(smallSelector);
         var id = await small.GetAttributeAsync("data-cfx-target-id");
         Assert.Equal("false", await small.Locator("path").GetAttributeAsync("data-cfx-fill-area"));
         var radius = (mark.Inner + mark.Outer) / 2;
@@ -34,6 +35,8 @@ public sealed class NumericRadialEncodedGeometryBrowserTests {
         await CaptureAsync(page, stem + "-stroke-pointer", source, 1);
         await page.Locator("[data-cfx-reset]").ClickAsync(); await MoveAwayAsync(page);
         await small.Locator("path").EvaluateAsync("node=>node.style.stroke='none'");
+        await page.WaitForFunctionAsync("selector => document.querySelector(selector)?.getAttribute('tabindex') === '-1'", smallSelector,
+            new PageWaitForFunctionOptions { Timeout = 5000 });
         Assert.Equal("-1", await small.GetAttributeAsync("tabindex"));
         await page.EvaluateAsync("()=>window.cfxEncodedEvents=[]");
         var label = await page.Locator("[data-cfx-label-for='series-0-point-1'] text").BoundingBoxAsync()

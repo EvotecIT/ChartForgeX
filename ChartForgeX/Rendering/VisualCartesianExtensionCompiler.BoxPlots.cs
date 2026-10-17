@@ -41,7 +41,7 @@ internal static partial class VisualCartesianCompiler {
             var bounds = horizontal ? Extents(Math.Min(Math.Min(min.X, max.X), box.Left), box.Top, Math.Max(Math.Max(min.X, max.X), box.Right), box.Bottom)
                 : Extents(box.Left, Math.Min(Math.Min(min.Y, max.Y), box.Top), box.Right, Math.Max(Math.Max(min.Y, max.Y), box.Bottom));
             var color = PointColor(series, index, item, colors); var sourcePaint = VisualChartPaint.Series(series, color, item);
-            var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, median));
+            var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("median", median));
             using (ObservationGroup(builder, series, index, item, raw, 5, bounds, label, BoxPlotMetadata(chart, categories[x]),
                 ("x", x), ("minimum", minimum), ("q1", q1), ("median", median), ("q3", q3), ("maximum", maximum))) {
                 var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;

@@ -35,24 +35,37 @@
     const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
     return Number.isFinite(point.x) ? point.x : null;
   };
-  const replaceChartSection = (root, lifetime, next, nativeKind = '') => {
-    const state = chartUpdateState(root);
+  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '') => {
+    // Validate every alternate before releasing the working scene, preserving atomic host updates.
+    const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
+    const state = chartUpdateState(root, !!adaptiveDrawing);
+    const suspended = nativeKind === 'reset' || !!adaptiveDrawing && pointerReadoutSuspended(root);
+    // Keep the request current through validation so a rejected alternate reports its failure.
+    if (nativeKind) lifetime.xViewportPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
     releaseChartLifetime(root);
     installChartSection(root, next);
     // The application owns the root and connection; each installed scene owns fresh browser work.
     lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();
+    lifetime.adaptive = adaptive;
+    if (adaptiveDrawing) adaptive.current = adaptiveDrawing;
     chartLifetimes.set(root, lifetime); mountedCharts.add(root);
+    // Same-source redraws retain explicit reset dismissal before any fresh scene can acquire input.
+    if (suspended) suspendPointerReadout(root);
+    prepareAdaptiveRoot(root, lifetime);
     bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind);
+    bindAdaptiveLayout(root);
     syncXViewportControls(root);
   };
   const requestXViewport = (root, kind, left, right) => {
     const lifetime = chartLifetimes.get(root), connection = lifetime?.xViewportConnection;
     if (!connection || lifetime.disposed || !root.isConnected || !chartXProjection(root)) return;
     if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return;
+    if (kind === 'reset') suspendPointerReadout(root);
     cancelXViewportRequest(lifetime);
     const request = Object.freeze({ chartId: root.dataset.cfxChartId, requestId: 'cfx-request-' + (++chartViewportRequestSequence),
-      sceneRevision: lifetime.sceneRevision, kind, ...(kind === 'reset' ? {} : { left, right }) });
+      sceneRevision: lifetime.sceneRevision, kind, ...(lifetime.adaptive ? { drawing: lifetime.adaptive.current } : {}),
+      ...(kind === 'reset' ? {} : { left, right }) });
     const pending = { request, abort: new AbortController() }; lifetime.xViewportPending = pending;
     const current = () => root.isConnected && chartLifetimes.get(root) === lifetime && !lifetime.disposed
       && lifetime.xViewportConnection === connection && lifetime.xViewportPending === pending
@@ -67,8 +80,13 @@
       const next = readChartSection(html, true).cloneNode(true);
       if (next.dataset.cfxChartId !== request.chartId || !chartXProjection(next))
         throw new TypeError('The viewport reply must retain the chart identity and a supported X projection.');
-      lifetime.xViewportPending = null;
+      const previousSelection = kind === 'reset' ? selectionSignature(root) : '';
       replaceChartSection(root, lifetime, next, kind);
+      if (kind === 'reset') {
+        emitHostEvent(root, 'cfxreset', {});
+        publishResetSelection(root, previousSelection);
+        emitSync(root, { action: 'viewport', state: getState(root) });
+      }
       emitHostEvent(root, 'cfxviewportchange', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind });
     }).catch(error => {
       if (!current()) return;

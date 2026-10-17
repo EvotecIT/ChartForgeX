@@ -117,6 +117,16 @@ internal static partial class VisualCartesianCompiler {
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart.Options.YAxis) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
+        var hasPrimaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Primary && series.HasSourceData)
+            || chart.Annotations.Any(annotation => ChartCartesianOrientation.AnnotationKind(annotation, horizontal) is ChartAnnotationKind.HorizontalLine or ChartAnnotationKind.HorizontalBand)
+            || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Primary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
+        var hasSecondaryDomain = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary && series.HasSourceData)
+            || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Secondary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
+        var secondaryOnly = hasSecondaryDomain && !hasPrimaryDomain;
+        // A screen coordinate has no single value-domain meaning when both Y axes contain observations.
+        builder.DataProjection = ChartDataProjection.TryCreate(plot, secondaryOnly ? secondaryRange! : range,
+            chart.Options.XAxis, secondaryOnly ? chart.Options.SecondaryYAxis : chart.Options.YAxis, horizontal,
+            includeY: !(hasPrimaryDomain && hasSecondaryDomain));
         var secondaryMap = secondaryRange == null ? null : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
         if (xViewport != null && chart.Series.Any(series => series.RenderPoints.Any(point => !ChartMath.IsFinite(map.X(point.X)))))
             throw new ArgumentOutOfRangeException("viewport", "The X viewport cannot project the source coordinates into finite logical units.");
@@ -183,6 +193,7 @@ internal static partial class VisualCartesianCompiler {
         DrawPlotRegionLabels(context, builder, plotRegions, colors, obstacles);
         using (xViewport != null ? builder.PushClip(plot) : null)
             DrawDataLabels(context, builder, labelBounds, labels, obstacles);
+        CaptureReadouts(chart, builder, range, secondaryRange, axisLabels, horizontal, secondaryOnly);
         return hasProjection
             ? new ChartXProjection(fullMinimum, fullMaximum, range.MinX, range.MaxX, plot, chart.Options.XAxis.Reversed) : null;
     }
@@ -201,6 +212,8 @@ internal static partial class VisualCartesianCompiler {
             && chart.Options.YAxis.Scale != ChartScaleKind.Linear && chart.Options.YAxis.Scale != ChartScaleKind.Time)
             throw new NotSupportedException("Horizontal line charts require a linear or time category axis.");
         foreach (var series in chart.Series) {
+            if (series.TimeBucketInterval != null && chart.Options.XAxis.Scale != ChartScaleKind.Time)
+                throw new InvalidOperationException("Time buckets require a time X axis.");
             if (!Supports(series.Kind)) throw Unsupported("series kind " + series.Kind);
             if (series.RenderPoints.Count % ObservationStride(series.Kind) != 0)
                 throw new InvalidOperationException(series.Kind + " requires complete observation tuples.");
@@ -245,6 +258,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
             ["data-cfx-label"] = resolvedLabel.DisplayedText, ["aria-label"] = label
         };
+        if (resolvedLabel.NumericCaption("y") is { } numericCaption) metadata["data-cfx-formatted-y"] = numericCaption;
         // Retained off-window facts must not acquire browser hit areas. Marker-free in-window points remain targets.
         if (!visible) metadata["data-cfx-visible"] = "false";
         if (colorSurface != null) label = colorSurface.AddFacts(metadata, pointIndex, label);

@@ -1,14 +1,15 @@
-  const graphNodeMarkPaint = (node, selected, compact) => ({
-    fill: node.backgroundColor || '#2563eb', stroke: selected ? '#f59e0b' : node.borderColor || '#eff6ff',
-    width: selected ? 5 : compact ? 1.5 : 3
+  const graphNodeMarkWidth = (selected, compact) => selected ? 5 : compact ? 1.5 : 3;
+  const graphNodeMarkPaint = (node, selected, compact, selectedColor) => ({
+    fill: node.backgroundColor || '#2563eb', stroke: selected ? selectedColor : node.borderColor || '#eff6ff',
+    width: graphNodeMarkWidth(selected, compact)
   });
   let graphNodeMeasureContext = null;
   const graphNodeMarkBounds = (node, compact, moving, margin) => {
-    const extents = nodeShapeExtents(node), paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
+    const extents = nodeShapeExtents(node), width = graphNodeMarkWidth(node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact);
     // Canvas's default miter limit is 10; angular strokes can extend beyond
     // half the width at star/triangle tips and rectangle corners.
     const angular = ['box', 'imageRect', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database'].includes(node.shape);
-    const padding = paint.width * (angular ? 5 : .5) + margin + (node.shape === 'image' ? 3 : 0) + (node.shadow && !moving ? 32 : 0);
+    const padding = width * (angular ? 5 : .5) + margin + (node.shape === 'image' ? 3 : 0) + (node.shadow && !moving ? 32 : 0);
     const bounds = { node, minX: node.x - extents.x - padding, maxX: node.x + extents.x + padding, minY: node.y - extents.y - padding, maxY: node.y + extents.y + padding };
     const include = (x, y, halfWidth, halfHeight) => {
       bounds.minX = Math.min(bounds.minX, x - halfWidth - margin); bounds.maxX = Math.max(bounds.maxX, x + halfWidth + margin);
@@ -26,8 +27,8 @@
     if (status && status !== 'unknown') include(node.card ? node.x + extents.x - 15 : node.x - node.size * .8, node.card ? node.y + extents.y - 14 : node.y - node.size * .8, 5.5, 5.5);
     return bounds;
   };
-  const drawNodeMark = (context, node, selected, compact, root, moving) => {
-    const paint = graphNodeMarkPaint(node, selected, compact);
+  const drawNodeMark = (context, node, selected, compact, root, moving, selectedColor) => {
+    const paint = graphNodeMarkPaint(node, selected, compact, selectedColor);
     context.fillStyle = paint.fill;
     context.strokeStyle = paint.stroke;
     context.lineWidth = paint.width;

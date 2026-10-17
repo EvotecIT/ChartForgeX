@@ -1,3 +1,26 @@
+  // Adapter emphasis changes paint, never membership in the roving component. Host/native
+  // class changes still invalidate availability, including a class changed in the same batch.
+  const keyboardPaintClasses = new Set(['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series',
+    'cfx-selected', 'cfx-highlighted', 'cfx-linked-dim', 'cfx-selection-dim', 'cfx-linked-series-active',
+    'cfx-linked-series-dim', 'cfx-trail']);
+  const keyboardNativeClasses = value => (value || '').split(/\s+/).filter(value => value && !keyboardPaintClasses.has(value)).sort().join(' ');
+  const keyboardNativeStyle = value => (value || '').replace(/--cfx-highlight-(?:opacity|stroke|stroke-width)\s*:[^;]*(?:;|$)/g, '').trim();
+  const keyboardAvailabilityMutation = (record, stage, ancestry) => {
+    if (record.type === 'attributes' && record.attributeName === 'class'
+      && keyboardNativeClasses(record.oldValue) === keyboardNativeClasses(record.target.getAttribute('class'))) return false;
+    if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline]')) return false;
+    if (record.type === 'attributes' && record.attributeName === 'style' && record.target.matches('[data-cfx-highlight-paint]')
+      && keyboardNativeStyle(record.oldValue) === keyboardNativeStyle(record.target.getAttribute('style'))) return false;
+    // Tooltip, brush, guide and compare UI repaint while the pointer moves. They are not SVG
+    // navigation targets; ResizeObserver covers any resulting change to the stage's size.
+    const svg = stage.querySelector('svg');
+    if (record.type === 'attributes') return record.target === stage || !!svg?.contains(record.target) || ancestry.nodes.includes(record.target);
+    const changes = [...record.addedNodes, ...record.removedNodes];
+    const adapterPaint = node => node.nodeType === 1 && node.matches('[data-cfx-highlight-outline],.cfx-prepared-point-marker,[data-cfx-browser-hit-area]');
+    if (changes.length && changes.every(adapterPaint)) return false;
+    return !!svg?.contains(record.target) || changes.some(node => node.contains(stage) || svg && node.contains(svg)
+      || ancestry.nodes.some(boundary => node.contains(boundary)));
+  };
   // Data and legend are separate roving components. Source identities stay on the actual rendered marks.
   const keyboardTargetAvailable = (node) => {
     if (node.dataset.cfxVisible === 'false') return false;
@@ -67,7 +90,7 @@
     });
     branches.forEach((branch) => svg.appendChild(branch));
   };
-  const refreshKeyboardNavigation = (root, focused) => {
+  const refreshKeyboardNavigation = (root, focused, passive = false) => {
     refreshRootBranchHighlightAvailability(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
@@ -96,7 +119,12 @@
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
       // Local and synchronized state changes must not strand focus on a datum that just left the component.
       const replacement = state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
-      if (replacement) focusKeyboardTarget(root, replacement);
+      if (replacement) {
+        // Host paint changes recover a usable focus position without opening a new
+        // readout in the same update that dismisses the unavailable source or pin.
+        if (passive) { clearHover(root, true, true); hideTip(root, root.querySelector('.cfx-tooltip'), true); }
+        focusKeyboardTarget(root, replacement, passive);
+      }
     }
     return state;
   };
@@ -112,16 +140,16 @@
       const next = composedAncestry(root);
       if (next.nodes.length === ancestry.nodes.length && next.nodes.every((node, index) => node === ancestry.nodes[index])) return;
       paintObserver.disconnect(); unwatchSlots(); ancestry = next;
-      paintObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: paintAvailabilityAttributes });
+      paintObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: paintAvailabilityAttributes });
       for (const node of new Set([...ancestry.nodes.slice(1), ...ancestry.trees])) {
         paintObserver.observe(node, { childList: true,
-          ...(node instanceof Element ? { attributes: true, attributeFilter: paintAvailabilityAttributes } : {}) });
+          ...(node instanceof Element ? { attributes: true, attributeOldValue: true, attributeFilter: paintAvailabilityAttributes } : {}) });
       }
       ancestry.trees.forEach(tree => tree.addEventListener('slotchange', queueRefresh, true));
     };
     const queueRefresh = () => {
       if (chartLifetimes.get(root)?.disposed !== false) return;
-      if (frame) cancelAnimationFrame(frame);
+      if (frame) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
         if (!root.isConnected) {
@@ -131,7 +159,7 @@
           window.removeEventListener('resize', queueRefresh);
           return;
         }
-        watchAncestry(); refreshKeyboardNavigation(root);
+        watchAncestry(); refreshKeyboardNavigation(root, undefined, true);
       });
     };
     listenChart(root, window, 'resize', queueRefresh);
@@ -144,10 +172,8 @@
     paintObserver = new MutationObserver(records => {
       if (chartLifetimes.get(root)?.disposed !== false) return;
       if (!root.isConnected) { queueRefresh(); return; }
-      if (!records.some(record => root.contains(record.target) || record.type === 'attributes' && ancestry.nodes.includes(record.target)
-        || record.type === 'childList' && Array.from(record.removedNodes).some(node => ancestry.nodes.some(boundary => node.contains(boundary))))) return;
-      watchAncestry();
-      refreshKeyboardNavigation(root);
+      if (!records.some(record => keyboardAvailabilityMutation(record, stage, ancestry))) return;
+      queueRefresh();
     });
     watchAncestry();
     ownChartWork(root, () => {
@@ -200,15 +226,21 @@
     if (!preserveVisiblePortion && box.width <= viewport.width - 16 && box.height <= viewport.height - 16)
       node.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
   };
-  const focusKeyboardTarget = (root, node) => {
+  const focusKeyboardTarget = (root, node, passive = false) => {
     const focusNode = targetFocusNode(node);
-    scrollKeyboardTargetIntoView(root, focusNode);
-    if (focusNode.focus) {
-      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
-    }
+    // Native links also recover focus when adapter keyboard navigation is disabled.
+    const recovering = root._cfxRecoveringFocus === true;
+    if (passive) root._cfxRecoveringFocus = true;
+    try {
+      scrollKeyboardTargetIntoView(root, focusNode);
+      if (focusNode.focus) {
+        try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
+      }
+    } finally { if (passive && !recovering) delete root._cfxRecoveringFocus; }
   };
   const focusAdjacentTarget = (root, node, key) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(key)) return false;
+    resumePointerReadout(root);
     const state = refreshKeyboardNavigation(root, node);
     if (!state) return false;
     const legend = state.legends.includes(node);
@@ -234,7 +266,12 @@
       const direction = key === 'ArrowLeft' || key === 'ArrowUp' ? -1 : 1;
       next = targets[clamp(current + direction, 0, targets.length - 1)];
     }
-    if (next === node) return true;
+    if (next === node) {
+      // An explicit boundary arrow still resumes the readout after passive recovery.
+      const tip = root.querySelector('.cfx-tooltip');
+      if (tip?.hidden && tooltipReadoutAvailable(node)) { setHover(root, node, true, true); showTip(root, tip, node); }
+      return true;
+    }
     refreshKeyboardNavigation(root, next);
     focusKeyboardTarget(root, next);
     const target = targetIdentity(next);

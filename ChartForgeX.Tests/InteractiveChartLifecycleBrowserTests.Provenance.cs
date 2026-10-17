@@ -29,19 +29,24 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.True(await peer.EvaluateAsync<bool>("""
             root=>{
                 const fresh=ChartForgeXCharts.mount(root);
-                window.peerSelectionWrites=0;
-                const target=root.querySelector('g[data-cfx-role=point][data-cfx-observation-id=south]');
-                window.peerSelectionObserver=new MutationObserver(records=>peerSelectionWrites+=records.length);
-                peerSelectionObserver.observe(target,{attributes:true,attributeFilter:['aria-selected']});
+                window.peerSelectionEvents=[];
+                root.addEventListener('cfxselect',event=>peerSelectionEvents.push(event.detail));
                 return fresh!==disposedPeerController;
             }
             """));
         const string south = "g[data-cfx-role=point][data-cfx-observation-id=south]";
         await source.Locator(south).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await peer.Locator(south).GetAttributeAsync("aria-selected"));
-        Assert.NotEqual("true", await peer.Locator(North).GetAttributeAsync("aria-selected"));
-        Assert.Equal(1, await page.EvaluateAsync<int>("()=>peerSelectionWrites"));
-        await page.EvaluateAsync("()=>peerSelectionObserver.disconnect()");
+        // A fresh mount receives the current whole set, including the selection made while it was disposed.
+        Assert.Equal("true", await peer.Locator(North).GetAttributeAsync("aria-selected"));
+        Assert.Equal(new[] { "north", "south" }, await peer.EvaluateAsync<string[]>(
+            "root=>ChartForgeXCharts.get(root).getSelection().map(target=>target.observationId)"));
+        Assert.Equal(0, await page.EvaluateAsync<int>("()=>peerSelectionEvents.length"));
+        await peer.Locator(south).FocusAsync(); await page.Keyboard.PressAsync("Space");
+        Assert.Equal(1, await page.EvaluateAsync<int>("()=>peerSelectionEvents.length"));
+        Assert.Equal("south", await page.EvaluateAsync<string>("()=>peerSelectionEvents[0].target.observationId"));
+        Assert.Equal(new[] { "north" }, await peer.EvaluateAsync<string[]>(
+            "root=>ChartForgeXCharts.get(root).getSelection().map(target=>target.observationId)"));
         await CaptureAsync(page, "synchronized-peer-remounted");
         AssertNoConsoleErrors(session);
     }

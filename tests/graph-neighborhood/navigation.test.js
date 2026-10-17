@@ -72,22 +72,31 @@ test('filter refresh keeps the root and resets a page that no longer has eligibl
   assert.equal(root.__cfxGraphNeighborhood.neighborOffset,0);
   assert.deepEqual([...root.__cfxGraphNeighborhoodView.nodeIds],['n00','n01']);
 });
-test('bounded focus labels survive compact rendering but omitted nodes draw no labels', () => {
-  const details = fs.readFileSync(path.join(assets,'graph-explorer.03-canvas-details.js'),'utf8');
+test('bounded focus labels compose linked and neighborhood dimming and omit hidden nodes', () => {
+  const paintSource = ['00-core', '03-canvas-details'].map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
   const draw = new Function(`
-    const visible = element => !element.classList.contains('cfx-graph-neighborhood-hidden');
-    const attr = (element,name) => element.attributes[name] || '';
     const graphThemePalette = () => ({}), graphReadableNodeColors = () => ({halo:'white',label:'black'});
-    ${details}\nreturn drawCanvasNodeDetails;
+    ${paintSource}\nreturn drawCanvasNodeDetails;
   `)();
-  const text=[], context={save(){},restore(){},strokeText(){},fillText(label){text.push(label);}};
+  const paint=[], alphaStack=[], context={
+    globalAlpha:1,
+    save(){alphaStack.push(this.globalAlpha);},
+    restore(){this.globalAlpha=alphaStack.pop();},
+    strokeText(){},
+    fillText(label){paint.push({label,alpha:this.globalAlpha});}
+  };
   const node={id:'a',label:'Neighbor',x:20,y:20,size:10,shape:'circle',el:element()};
   const root=element();
-  draw(context,root,node,true,false); assert.deepEqual(text,[]);
+  draw(context,root,node,true,false); assert.deepEqual(paint,[]);
   node.el.classList.add('cfx-graph-neighborhood-related');
-  draw(context,root,node,true,false); assert.deepEqual(text,['Neighbor']);
+  draw(context,root,node,true,false); assert.deepEqual(paint,[{label:'Neighbor',alpha:1}]);
+  node.el.classList.add('cfx-graph-link-dim');
+  draw(context,root,node,true,false); assert.deepEqual(paint.at(-1),{label:'Neighbor',alpha:.3});
+  node.el.classList.add('cfx-graph-neighborhood-dim');
+  draw(context,root,node,true,false); assert.deepEqual(paint.at(-1),{label:'Neighbor',alpha:.054});
   node.el.classList.add('cfx-graph-neighborhood-hidden');
-  draw(context,root,node,true,false); assert.deepEqual(text,['Neighbor']);
+  const paintedCount=paint.length;
+  draw(context,root,node,true,false); assert.equal(paint.length,paintedCount);
 });
 
 test('restored focus pauses active physics even when navigation history is retained', () => {

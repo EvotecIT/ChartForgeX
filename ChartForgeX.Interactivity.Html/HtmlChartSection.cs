@@ -6,9 +6,10 @@ namespace ChartForgeX.Interactivity.Html;
 /// <remarks>The section and prepared visual are captured together by one preparation. They do not retain
 /// the mutable chart or configuration callback. Register the shared HTML assets once in the host document.</remarks>
 public sealed class HtmlChartSection {
-    internal HtmlChartSection(string html, PreparedVisual preparedVisual) {
+    internal HtmlChartSection(string html, PreparedVisual preparedVisual, PreparedVisual? narrowPreparedVisual = null) {
         Html = html;
         PreparedVisual = preparedVisual;
+        NarrowPreparedVisual = narrowPreparedVisual;
     }
 
     /// <summary>Gets the interactive section markup, without stylesheet or script assets.</summary>
@@ -16,4 +17,7 @@ public sealed class HtmlChartSection {
 
     /// <summary>Gets the detached native scene and X projection matching the section markup.</summary>
     public PreparedVisual PreparedVisual { get; }
+
+    /// <summary>Gets the detached narrow scene embedded by adaptive layout, or null for a single drawing.</summary>
+    public PreparedVisual? NarrowPreparedVisual { get; }
 }

@@ -54,6 +54,7 @@ internal static partial class VisualScheduleCompiler {
         ticks = ScheduleTicks(chart, context, builder, ticks, project, format, style, layout.HasFixedTicks, minimum, maximum, calendarAnchor);
         if (!layout.HasFixedTicks && chart.Options.XAxis.Labels.Count == 0 && chart.Options.XAxis.LabelDensity != ChartLabelDensity.All)
             style = GeneratedScheduleTickStyle(chart, context, builder, ticks, project, format, style);
+        builder.DataProjection = builder.DataProjection?.WithDisplayTicks(ticks.Select(value => new ChartAxisLabel(value, format(value))).ToArray(), formatX: format);
         var grid = chart.Options.ResolvePreparedGridLineStyle();
         var gridWidth = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
         var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;

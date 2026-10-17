@@ -11,6 +11,9 @@ public sealed class HtmlChartHighlightOptions {
     /// </summary>
     public HtmlChartHighlightMode Mode { get; set; }
 
+    /// <summary>Gets or sets whether unselected data marks recede while the chart has selected marks.</summary>
+    public bool DimOthersWhileSelected { get; set; }
+
     /// <summary>Gets overrides for the active item, applied after its branch style.</summary>
     public HtmlChartHighlightStyle HighlightedItem { get; } = new HtmlChartHighlightStyle();
 
@@ -25,6 +28,7 @@ public sealed class HtmlChartHighlightOptions {
 
     internal void CopyTo(HtmlChartHighlightOptions destination) {
         destination.Mode = Mode;
+        destination.DimOthersWhileSelected = DimOthersWhileSelected;
         HighlightedItem.CopyTo(destination.HighlightedItem);
         HighlightedBranch.CopyTo(destination.HighlightedBranch);
         UnhighlightedItem.CopyTo(destination.UnhighlightedItem);

@@ -31,7 +31,7 @@ internal static partial class VisualCartesianCompiler {
                 var size = series.RenderPoints[raw + 1].Y;
                 radius = VisualMarkerScene.Enabled(series) ? bubbleScale!.Radius(size, plot) : 0;
                 var bounds = Extents(x, y, x, y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
-                var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, size));
+                var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("size", size));
                 var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleFillOpacity);
                 var fillPaint = sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BubbleFillOpacity);
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, colorSurface!, ("x", point.X), ("y", point.Y), ("size", size))) {
@@ -52,7 +52,7 @@ internal static partial class VisualCartesianCompiler {
                 var extent = Math.Max(radius, VisualMarkerScene.Extent(series, radius));
                 var bounds = Extents(x - Math.Max(cap / 2, extent), Math.Min(y - extent, Math.Min(lowerY, upperY)),
                     x + Math.Max(cap / 2, extent), Math.Max(y + extent, Math.Max(lowerY, upperY)));
-                var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y));
+                var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("value", point.Y));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("value", point.Y), ("lower", lower), ("upper", upper))) {
                     var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.ErrorBarStrokeWidth;
                     var paint = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.ErrorBarRangeOpacity);
@@ -66,7 +66,7 @@ internal static partial class VisualCartesianCompiler {
             } else if (series.Kind == ChartSeriesKind.Dumbbell) {
                 var end = series.RenderPoints[raw + 1].Y; var endY = map.Y(end);
                 var bounds = Extents(x, y, x, endY, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
-                var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y) + "–" + Value(chart, end));
+                var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("start", point.Y) + "–" + format("end", end));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("start", point.Y), ("end", end), ("delta", end - point.Y))) {
                     builder.Line(x, y, x, endY, ChartColorMath.WithOpacity(color, ChartVisualPrimitives.DumbbellConnectorOpacity),
                         series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.DumbbellConnectorStrokeWidth, role: "dumbbell-connector",
@@ -78,7 +78,7 @@ internal static partial class VisualCartesianCompiler {
                 ObservationLabel(chart, context, series, index, item, new ChartPoint(x, endY), bounds, end, label, labels, obstacles);
             } else if (series.Kind == ChartSeriesKind.Lollipop) {
                 var baseline = map.YBaseline(); var bounds = Extents(x, baseline, x, y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
-                var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y));
+                var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("value", point.Y));
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, ("x", point.X), ("value", point.Y))) {
                     builder.Line(x, baseline, x, y, ChartColorMath.WithOpacity(color, ChartVisualPrimitives.LollipopStemOpacity),
                         Math.Max(ChartVisualPrimitives.LollipopStemMinStrokeWidth, SeriesStroke(series, context) * .62), role: "lollipop-stem",
@@ -117,7 +117,7 @@ internal static partial class VisualCartesianCompiler {
         for (var endpoint = 0; endpoint < 2; endpoint++) {
             var raw = endpoint == 0 ? 0 : series.RenderPoints.Count - 1; var source = series.RenderPoints[raw]; var point = points[endpoint];
             var bounds = Extents(point.X, point.Y, point.X, point.Y, trend ? 0 : Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
-            var label = ResolveObservationLabel(chart, context, series, endpoint, colors, () => Value(chart, source.Y));
+            var label = ResolveObservationLabel(chart, context, series, endpoint, colors, format => format("value", source.Y));
             using (ObservationGroup(builder, series, index, endpoint, raw, 1, bounds, label, ("x", source.X), ("value", source.Y))) {
                 if (!trend) {
                     var color = PointColor(series, index, endpoint, colors);

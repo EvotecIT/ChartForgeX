@@ -3,6 +3,14 @@
   const pendingTooltips = new Set();
   let tooltipObserver = null;
   const tooltipObservedNodes = new Map();
+  const pointerReadoutSuspended = root => root._cfxPointerReadoutSuspended === true;
+  const resumePointerReadout = root => { delete root._cfxPointerReadoutSuspended; };
+  const suspendPointerReadout = root => {
+    // Reset can animate native marks beneath a stationary pointer. Passive entry
+    // must not undo its dismissal; only fresh pointer or keyboard input resumes it.
+    root._cfxPointerReadoutSuspended = true;
+    hideTip(root, root.querySelector('.cfx-tooltip'), true);
+  };
   // A closed shadow tree is still reachable from its chart. Keep every enclosing tree in the lifetime boundary.
   const tooltipRootTrees = (root) => {
     const trees = [];
@@ -32,6 +40,9 @@
     }
   };
   const cancelTooltipRequest = (root) => {
+    // A host may restore paint before a staged move runs. Retire that old sample
+    // with its request so it cannot acquire a new deadline without fresh input.
+    root._cfxCancelPointerHover?.();
     const request = tooltipRequests.get(root);
     if (!request) return;
     if (request.timer !== undefined) window.clearTimeout(request.timer);
@@ -85,6 +96,7 @@
     }
   };
   const requestPointerTip = (root, tip, node, event) => {
+    if (pointerReadoutSuspended(root)) return;
     const key = targetKey(targetIdentity(node));
     const previous = tooltipRequests.get(root);
     if (previous && previous.key === key && (previous.pointerId === undefined || previous.pointerId === event.pointerId)) {

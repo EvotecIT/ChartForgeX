@@ -67,6 +67,12 @@ public sealed class HtmlChartInteractionOptions {
     /// <summary>Gets or sets how the adapter protects chart readability in narrow containers.</summary>
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
+    /// <summary>Gets the native narrow drawing and container breakpoint used by <see cref="HtmlChartResponsiveLayout.Adaptive"/>.</summary>
+    public HtmlChartAdaptiveLayoutOptions Adaptive { get; } = new HtmlChartAdaptiveLayoutOptions();
+
+    /// <summary>Gets or sets the toolbar presentation. The default is the framed <see cref="HtmlChartToolbarLayout.Band"/>.</summary>
+    public HtmlChartToolbarLayout Toolbar { get; set; } = HtmlChartToolbarLayout.Band;
+
     /// <summary>
     /// Gets the tooltip content, acquisition, timing and position options.
     /// </summary>
@@ -91,5 +97,15 @@ public enum HtmlChartResponsiveLayout {
     /// <summary>Always scales the full chart to the available width.</summary>
     Fit,
     /// <summary>Preserves a readable minimum chart width inside a contained horizontal viewport on narrow screens.</summary>
-    Readable
+    Readable,
+    /// <summary>Uses a separately prepared native drawing in narrow containers, retaining interaction state.</summary>
+    Adaptive
+}
+
+/// <summary>Controls the chart toolbar's frame and button density.</summary>
+public enum HtmlChartToolbarLayout {
+    /// <summary>Uses right-aligned compact buttons without a surrounding band.</summary>
+    Compact,
+    /// <summary>Uses the framed toolbar band.</summary>
+    Band
 }

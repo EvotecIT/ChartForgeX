@@ -9,22 +9,23 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
-    private static (ResolvedPointLabel Observation, string? Start, string? End) ResolveRangeBarLabels(Chart chart,
+    private static (ResolvedPointLabel Observation, string? Start, string? End, string? NumericStart, string? NumericEnd) ResolveRangeBarLabels(Chart chart,
         VisualRenderContext context, ChartSeries series, int item, VisualThemeColors colors, string category,
         ChartInterval interval, bool endpoints, Func<ChartRangeBarEndpointLabelContext, string?>? formatter) {
         // Preserve the existing lazy formatter and custom-point-label precedence for combined captions.
         if (!endpoints) return (ResolveObservationLabel(chart, context, series, item, colors,
-            () => Value(chart, Math.Min(interval.Start, interval.End)) + "–" + Value(chart, Math.Max(interval.Start, interval.End))), null, null);
+            format => format(interval.Start <= interval.End ? "start" : "end", Math.Min(interval.Start, interval.End))
+                + "–" + format(interval.Start <= interval.End ? "end" : "start", Math.Max(interval.Start, interval.End))), null, null, null, null);
 
         // Format the pair once in the existing numeric order, then reuse it for heading and endpoint contexts.
         var low = Value(chart, Math.Min(interval.Start, interval.End));
         var high = Value(chart, Math.Max(interval.Start, interval.End));
         var startValue = interval.Start <= interval.End ? low : high;
         var endValue = interval.Start <= interval.End ? high : low;
-        var observation = ResolveObservationLabel(chart, context, series, item, colors, () => low + "–" + high);
+        var observation = ResolveObservationLabel(chart, context, series, item, colors, _ => low + "–" + high);
         var start = Format(ChartRangeBarEndpoint.Start, startValue);
         var end = Format(ChartRangeBarEndpoint.End, endValue);
-        return (observation, start, end);
+        return (observation, start, end, startValue, endValue);
 
         string? Format(ChartRangeBarEndpoint endpoint, string value) {
             var text = formatter == null ? value : formatter(new ChartRangeBarEndpointLabelContext(series.Name, item, category, interval, endpoint, value));

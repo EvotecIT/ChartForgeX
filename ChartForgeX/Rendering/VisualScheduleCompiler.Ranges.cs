@@ -93,6 +93,7 @@ internal static partial class VisualScheduleCompiler {
             maximumExtent = Math.Max(maximumExtent, milestoneExtent + clearance + DependencyStubLength(context, arrow) + context.Theme.AxisStrokeWidth / 2);
         }
         var projection = GuideProjection(chart, context, plot, min, max, minimumExtent, maximumExtent, now);
+        builder.DataProjection = ChartDataProjection.TryCreate(projection, min, max, axis);
         double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
             var obstacles = new List<LabelObstacle>();
@@ -164,6 +165,7 @@ internal static partial class VisualScheduleCompiler {
             // Links are foreground annotations: successor fills must not cover their arrowheads.
             if (gantt) Dependencies(chart, context, builder, plot, bySeries, renderedLinks, Project, slot, height, min, max);
         }
+        builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value, _) => layout.FormatTick(value));
     }
 
     /// <summary>Shares the exact task/diamond surface between painting, semantics and dependency anchoring.</summary>

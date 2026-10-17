@@ -243,6 +243,8 @@ public static partial class GalleryWriter {
             "Host-side HTML adapter demos for interactive chart review and synchronized dashboard exploration.",
             "graphite-light-line-interactive",
             "graphite-dark-line-interactive",
+            "graphite-light-linked-chart-views",
+            "graphite-dark-linked-chart-views",
             "sunburst-branch-highlight-light",
             "sunburst-branch-highlight-dark",
             "domain-security-interactive",

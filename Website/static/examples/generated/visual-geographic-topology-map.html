@@ -104,6 +104,10 @@
 @media (max-width:720px){.cfx-topology-force-controls__row{grid-template-columns:1fr}.cfx-topology-force-controls{padding:9px}.cfx-topology-selection-panel{top:auto;left:12px;max-height:42%;width:auto}}
 .cfx-topology-scenario-panel__scrubber{width:100%;min-height:24px;margin:0;accent-color:var(--cfx-topology-scenario-color,#2563eb);cursor:pointer}.cfx-topology-scenario-panel__scrubber:disabled{cursor:default;opacity:.45}
 @media (prefers-reduced-motion:reduce){.cfx-topology-wrapper svg,.cfx-topology-wrapper [data-cfx-role='topology-node'],.cfx-topology-wrapper [data-cfx-role='topology-edge']{transition:none!important}}
+
+.cfx-topology-wrapper[data-cfx-narrow-minimum-height]{container-type:inline-size}
+@container (max-width:640px){.cfx-topology-wrapper[data-cfx-narrow-minimum-height] .cfx-topology-viewport>svg{width:max(100%,calc(var(--cfx-topology-narrow-minimum-height) * var(--cfx-topology-aspect,1)));max-width:none!important;height:auto}}
+.cfx-topology-html-highlighted{filter:drop-shadow(0 0 3px var(--cfx-topology-accent,#2563eb))}
 @media(max-width:680px){body{padding:16px;place-items:start center}}@media print{body{min-height:auto;padding:0;background:transparent}.cfx-topology-wrapper{width:100%;max-width:none}.cfx-topology-wrapper svg{width:100%;height:auto}.cfx-topology-scenarios,.cfx-topology-scenario-panel{display:none}}</style>
 </head>
 <body>

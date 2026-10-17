@@ -73,6 +73,7 @@
       });
       setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
       syncTopologyGroupVisibility();
+      syncTopologyHighlightAppearance();
       const detail = publishTopologyFilterSummary();
       if (active && detail.nodes) fitVisibleTopology(false);
       restoreForceFocusLabels();

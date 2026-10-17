@@ -70,7 +70,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         await MoveToNative(page, Node("operations-support"));
         await WaitState(page, "operations-support", "item");
         Assert.Equal("0", (await PaintOpacities(page, "engineering-support")).Single());
-        await page.Locator(Node("engineering-support")).FocusAsync();
+        await FocusWithKeyboardAsync(page, page.Locator(Node("engineering-support")));
         await WaitState(page, "engineering-support", "item");
         await page.Keyboard.PressAsync("Enter");
         Assert.Equal("true", await page.Locator(Node("engineering-support")).GetAttributeAsync("aria-selected"));
@@ -83,12 +83,45 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         if (width == 360 && dark && !graphite || width == 800 && !dark && graphite)
             await Capture(session, html, $"branch-selected-pinned-{width}-{(dark ? "dark-report" : "light-graphite")}{composition}");
         await page.Keyboard.PressAsync("Escape");
+        await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
         Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-hovering"));
         Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("node => node.hidden"));
+        Assert.Equal(0, await page.Locator(".cfx-selected").CountAsync());
+        Assert.True(await page.Locator("[data-cfx-reset]").IsHiddenAsync());
+        await page.Keyboard.PressAsync("Home");
+        await WaitState(page, "platform", "item");
+        Assert.Contains("Platform", await TooltipTextAsync(page), StringComparison.Ordinal);
+        // Escape clears the selection; select again so Reset has a real changed view to clear.
+        await FocusWithKeyboardAsync(page, page.Locator(Node("engineering-support")));
+        await page.Keyboard.PressAsync("Enter");
+        Assert.Equal("true", await page.Locator(Node("engineering-support")).GetAttributeAsync("aria-selected"));
+        Assert.True(await page.Locator("[data-cfx-reset]").IsVisibleAsync());
         await page.Locator("[data-cfx-reset]").ClickAsync();
         Assert.Equal(0, await page.Locator(".cfx-selected,[data-cfx-highlight-state],[data-cfx-highlight-outline]").CountAsync());
         Assert.Equal(ink, await NativeInk(page, "engineering-support"));
         Assert.Empty(errors); AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task PendingPointerExitRestoresTheExistingKeyboardReadoutWithoutWaitingForPointerDelay() {
+        if (!Enabled) return;
+        var html = SunburstBranchHighlightExamples.CreateChart().ToInteractiveHtmlPage(options => {
+            Configure(options);
+            options.Tooltip.DelayMilliseconds = 1000;
+        });
+        await using var session = await OpenAsync(html, 850, 650);
+        var page = session.Page;
+        await FocusWithKeyboardAsync(page, page.Locator(Node("engineering-support")));
+        await WaitState(page, "engineering-support", "item");
+        Assert.Contains("25", await TooltipTextAsync(page), StringComparison.Ordinal);
+        await MoveToNative(page, Node("operations-support"));
+        Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("node => node.hidden"));
+        await MoveAwayAsync(page);
+        await WaitState(page, "engineering-support", "item");
+        Assert.False(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("node => node.hidden"));
+        Assert.Contains("25", await TooltipTextAsync(page), StringComparison.Ordinal);
+        Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
+        AssertNoConsoleErrors(session);
     }
 
     [BrowserTheory]

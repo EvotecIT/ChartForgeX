@@ -281,6 +281,28 @@ test('homogeneous compact GPU marks retain node fill, border and status dots', (
   a.icon = 'X'; assert.ok(!api.webGlNodePoints(state, palette, true, false, 1, 1024).nodes.has(a));
   assert.equal(api.webGlNodePoints(state, palette, true, true, 1, 1024).nodes.size, 2);
 });
+test('selected and highlighted node rings follow the frame palette across Canvas and GPU batches', () => {
+  const { api, root, state, a, b, palette } = runtime();
+  a.el.classList.add('cfx-graph-selected');
+  b.el.classList.add('cfx-graph-highlighted');
+  for (const [selected, channels] of [['#ec4899', [236, 72, 153]], ['#16a34a', [22, 163, 74]]]) {
+    const framePalette = { ...palette, selected };
+    const points = api.webGlNodePoints(state, framePalette, true, false, 1, 1024);
+    assert.equal(points.nodes.size, 2);
+    for (let node = 0; node < 2; node++) {
+      channels.forEach((channel, index) => close(points.strokes[node * 4 + index], channel / 255));
+      close(points.strokes[node * 4 + 3], 1);
+      close(points.sizes[node * 2], 29);
+    }
+    const strokes = [];
+    const context = new Proxy({}, {
+      get(target, key) { return target[key] || (() => { if (key === 'stroke') strokes.push({ color: target.strokeStyle, width: target.lineWidth }); }); },
+      set(target, key, value) { target[key] = value; return true; }
+    });
+    api.drawCanvasNodes(context, root, state.nodes, true, false, undefined, framePalette);
+    assert.deepEqual(strokes, [{ color: selected, width: 5 }, { color: selected, width: 5 }]);
+  }
+});
 test('transitive mixed overlaps share one ordered pass while distant circles retain GPU batching', () => {
   const { api, root, state, a, b, palette } = runtime();
   a.shape = 'box'; a.x = 100; b.x = 125;
@@ -367,7 +389,7 @@ test('Canvas and GPU draw both directed arrowheads and retain explicit edge pain
   assert.equal(withArrows - withoutArrows, 12);
 });
 test('Canvas marks render serialized fills, borders and selected emphasis', () => {
-  const { api, root, a } = runtime(), paints = [];
+  const { api, root, a, palette } = runtime(), paints = [];
   a.backgroundColor = '#7c3aed'; a.borderColor = '#c4b5fd';
   const context = new Proxy({}, {
     get(target, key) { return target[key] || (() => {
@@ -379,8 +401,8 @@ test('Canvas marks render serialized fills, borders and selected emphasis', () =
   api.drawNodeMark(context, a, false, false, root, false);
   assert.deepEqual(paints, ['#7c3aed', ['#c4b5fd', 3]]);
   paints.length = 0;
-  api.drawNodeMark(context, a, true, true, root, false);
-  assert.deepEqual(paints, ['#7c3aed', ['#f59e0b', 5]]);
+  api.drawNodeMark(context, a, true, true, root, false, palette.selected);
+  assert.deepEqual(paints, ['#7c3aed', [palette.selected, 5]]);
 });
 
 test('theme defaults stay derived while generic authored card colours survive theme changes', () => {
@@ -458,4 +480,23 @@ test('dense motion retains subpixel stroke coverage and restores precise ribbons
   root.setAttribute('data-cfx-viewport-scale', '1');
   const settled = api.webGlEdgeMesh(root, state, state.byId, palette, true, false, .1);
   assert.ok(settled.positions.length > moving.positions.length);
+});
+
+test('linked dim and emphasis share CPU and GPU paint without changing selection', () => {
+  const { api, root, a, b, edge, state, palette } = runtime();
+  const baseline = api.graphEdgePaint(root, edge, state.byId, palette, false, false);
+  a.el.classList.add('cfx-graph-link-dim');
+  b.el.classList.add('cfx-graph-highlighted');
+  edge.el.classList.add('cfx-graph-link-dim');
+  const dimmed = api.graphEdgePaint(root, edge, state.byId, palette, false, false);
+  close(dimmed.alpha, baseline.alpha * .3); close(dimmed.arrowAlpha, baseline.arrowAlpha * .3);
+  const points = api.webGlNodePoints(state, palette, true, false, 1, 4096);
+  close(points.colors[3], .3); close(points.colors[7], 1);
+  assert.equal(a.el.classList.contains('cfx-graph-selected'), false);
+  assert.equal(b.el.classList.contains('cfx-graph-selected'), false);
+  const alpha = [], context = new Proxy({ fill() { alpha.push(this.globalAlpha); } }, {
+    get: (target, key) => target[key] || (() => {}), set: (target, key, value) => (target[key] = value, true)
+  });
+  api.drawCanvasNodes(context, root, state.nodes, true, false);
+  close(alpha[0], .3); close(alpha[1], 1);
 });

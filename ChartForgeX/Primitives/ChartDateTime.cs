@@ -48,17 +48,22 @@ internal static class ChartDateTime {
         return new DateTime(RoundToDisplayResolution(ticks), DateTimeKind.Utc);
     }
 
+    /// <summary>Decodes a nonnegative representable instant, retaining the canonical time-axis resolution.</summary>
+    public static bool TryFromOrderedOaDate(double value, out DateTime instant) {
+        instant = default;
+        if (value < 0) return false;
+        try {
+            instant = FromOrderedOaDate(value);
+            return true;
+        } catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) {
+            return false;
+        }
+    }
+
     /// <summary>Whether two representable double instants have identical time-axis metadata.</summary>
     public static bool CollapsesAtDisplayResolution(double start, double end) {
         // Negative or out-of-range OLE values use numeric metadata instead of formatted instants.
-        if (start < 0 || end < 0) return false;
-        try {
-            return FromOrderedOaDate(start) == FromOrderedOaDate(end);
-        } catch (ArgumentException) {
-            return false;
-        } catch (OverflowException) {
-            return false;
-        }
+        return TryFromOrderedOaDate(start, out var first) && TryFromOrderedOaDate(end, out var last) && first == last;
     }
 
     private static long RoundToDisplayResolution(long ticks) {

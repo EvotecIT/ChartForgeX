@@ -161,20 +161,27 @@ internal static partial class VisualCartesianCompiler {
 
     private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle) {
         var value = series.RenderPoints[pointIndex].Y;
+        var numeric = !(pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null)
+            && !(series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue);
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
             ? series.PointLabels[pointIndex]! : series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
                 ? chart.Options.Labels.NoData : ChartNumericFormatter.FormatValue(chart.Options, value);
         var style = seriesStyle;
         if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
             style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
-        return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, System.Globalization.CultureInfo.InvariantCulture), style);
+        return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, System.Globalization.CultureInfo.InvariantCulture), style,
+            numeric && chart.Options.ValueFormatter != null ? new Dictionary<string, string> { ["y"] = text } : null);
     }
 
     private readonly struct ResolvedPointLabel {
-        internal ResolvedPointLabel(string text, string displayedText, TextStyle style) { Text = text; DisplayedText = displayedText; Style = style; }
+        internal ResolvedPointLabel(string text, string displayedText, TextStyle style, IReadOnlyDictionary<string, string>? numericCaptions = null) {
+            Text = text; DisplayedText = displayedText; Style = style; NumericCaptions = numericCaptions;
+        }
         internal string Text { get; }
         internal string DisplayedText { get; }
         internal TextStyle Style { get; }
+        private IReadOnlyDictionary<string, string>? NumericCaptions { get; }
+        internal string? NumericCaption(string member) => NumericCaptions != null && NumericCaptions.TryGetValue(member, out var text) ? text : null;
     }
 
     private static void AddLabel(Chart chart, VisualRenderContext context, ChartSeries series, int seriesIndex, int pointIndex,

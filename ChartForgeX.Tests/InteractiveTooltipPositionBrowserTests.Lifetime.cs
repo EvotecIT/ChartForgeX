@@ -26,12 +26,14 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         // Stay in plot background so acquisition switches without a native mark's pointerleave hide path.
         await PointerAsync(page, offsetY: 24);
         await WaitForTipAsync(page);
+        await ArmDelayedAcquisitionAsync(page, Point(0, 1));
         var pointer = await PointerAsync(page, Point(0, 1), offsetY: 24);
-        Assert.True(await TipHiddenAsync(page));
+        var acquisition = await DelayedAcquisitionAsync(page);
+        Assert.True(acquisition.GetProperty("hidden").GetBoolean());
         await WaitForTipAsync(page);
         Assert.Contains("6", await TooltipTextAsync(page), StringComparison.Ordinal);
         var geometry = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, pointer: pointer, selector: Point(0, 1));
-        await CaptureAsync(page, "position-delay-switch-" + anchor, geometry);
+        await CaptureAsync(page, "position-delay-switch-" + anchor, new { acquisition, geometry });
         AssertNoConsoleErrors(session);
     }
 
@@ -50,28 +52,82 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             options.Tooltip.Position.Placements = placements;
         }), 950, 760);
         var page = session.Page;
+        await ArmDelayedAcquisitionAsync(page, Reading);
         await PointerAsync(page);
-        Assert.True(await TipHiddenAsync(page));
+        var firstAcquisition = await DelayedAcquisitionAsync(page);
+        Assert.True(firstAcquisition.GetProperty("hidden").GetBoolean());
         await Task.Delay(80);
-        await page.Locator(".cfx-interactive-chart").EvaluateAsync("root=>root.style.transform='translate(16px,7px)'");
+        await page.Locator(".cfx-interactive-chart").EvaluateAsync("root=>{root.style.transform='translate(16px,7px)';window.positionHostTransformAt=performance.now();}");
         var pointer = await PointerAsync(page, offsetY: 24);
         await WaitForTipAsync(page);
         var shown = await AssertPositionAsync(page, anchor, placements, pointer: pointer);
+        await ArmDelayedAcquisitionAsync(page, Point(0, 1));
         await PointerAsync(page, Point(0, 1));
-        Assert.True(await TipHiddenAsync(page));
+        var changedAcquisition = await DelayedAcquisitionAsync(page);
+        Assert.True(changedAcquisition.GetProperty("hidden").GetBoolean());
+        await ArmImmediateTooltipAsync(page, Point(0, 1), "focus");
         await page.Locator(Point(0, 1)).FocusAsync();
-        Assert.False(await TipHiddenAsync(page));
+        var immediateFocus = await ImmediateTooltipAsync(page);
+        Assert.False(immediateFocus.GetProperty("hidden").GetBoolean());
         var focus = await AssertPositionAsync(page, anchor, placements, selector: Point(0, 1));
+        await ArmImmediateTooltipAsync(page, Point(0, 1), "keydown");
         await page.Keyboard.PressAsync("Space");
-        Assert.False(await TipHiddenAsync(page));
-        Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
+        var immediatePin = await ImmediateTooltipAsync(page);
+        Assert.False(immediatePin.GetProperty("hidden").GetBoolean());
+        Assert.True(immediatePin.GetProperty("pinned").GetBoolean());
         pointer = await PointerAsync(page);
         var pin = await AssertPositionAsync(page, anchor, placements, pointer: pointer, selector: Point(0, 1));
         Assert.Contains("6", await TooltipTextAsync(page), StringComparison.Ordinal);
         await Task.Delay(420);
         Assert.False(await TipHiddenAsync(page));
-        await CaptureAsync(page, "position-delay-focus-pin-" + anchor, new { shown, focus, pin });
+        var timing = await page.EvaluateAsync<JsonElement>("()=>({shown:window.positionTooltipShows,pointer:window.positionPointerSamples,hostTransformAt:window.positionHostTransformAt})");
+        var firstShownAt = timing.GetProperty("shown")[0].GetProperty("at").GetDouble();
+        Assert.True(firstShownAt - firstAcquisition.GetProperty("eventAt").GetDouble() >= 356);
+        await CaptureAsync(page, "position-delay-focus-pin-" + anchor, new { firstAcquisition, changedAcquisition, immediateFocus, immediatePin, shown, focus, pin, timing });
         AssertNoConsoleErrors(session);
+    }
+
+    // Observe after the acquisition handler, before its timer can run. A later protocol command may arrive after the delay.
+    private static Task ArmDelayedAcquisitionAsync(IPage page, string selector) => page.EvaluateAsync("""
+        selector => {
+            const node=document.querySelector(selector), root=node.closest('.cfx-interactive-chart'), tip=root.querySelector('.cfx-tooltip');
+            const expected=node.dataset.cfxTargetId;
+            if(!window.positionTooltipShows){
+                window.positionTooltipShows=[];window.positionPointerSamples=[];
+                new MutationObserver(()=>{if(!tip.hidden)positionTooltipShows.push({at:performance.now(),text:tip.innerText});})
+                    .observe(tip,{attributes:true,attributeFilter:['hidden']});
+                root.addEventListener('pointermove',event=>positionPointerSamples.push({at:performance.now(),x:event.clientX,y:event.clientY}));
+            }
+            window.positionDelayedAcquisition=null;
+            const observe=event=>{
+                if(event.detail.target?.targetId!==expected)return;
+                root.removeEventListener('cfxhover',observe);
+                const eventAt=performance.now();
+                queueMicrotask(()=>window.positionDelayedAcquisition={targetId:expected,eventAt,observedAt:performance.now(),hidden:tip.hidden});
+            };
+            root.addEventListener('cfxhover',observe);
+        }
+        """, selector);
+
+    private static async Task<JsonElement> DelayedAcquisitionAsync(IPage page) {
+        await page.WaitForFunctionAsync("()=>window.positionDelayedAcquisition!==null", null, new PageWaitForFunctionOptions { Timeout = 5000 });
+        return await page.EvaluateAsync<JsonElement>("()=>window.positionDelayedAcquisition");
+    }
+
+    private static Task ArmImmediateTooltipAsync(IPage page, string selector, string type) => page.EvaluateAsync("""
+        ({selector,type}) => {
+            const node=document.querySelector(selector), root=node.closest('.cfx-interactive-chart'), tip=root.querySelector('.cfx-tooltip');
+            window.positionImmediateTooltip=null;
+            node.addEventListener(type,()=>{
+                const eventAt=performance.now();
+                queueMicrotask(()=>window.positionImmediateTooltip={eventAt,observedAt:performance.now(),hidden:tip.hidden,pinned:root.dataset.cfxTooltipPinned==='true'});
+            },{once:true});
+        }
+        """, new { selector, type });
+
+    private static async Task<JsonElement> ImmediateTooltipAsync(IPage page) {
+        await page.WaitForFunctionAsync("()=>window.positionImmediateTooltip!==null", null, new PageWaitForFunctionOptions { Timeout = 5000 });
+        return await page.EvaluateAsync<JsonElement>("()=>window.positionImmediateTooltip");
     }
 
     [BrowserTheory]

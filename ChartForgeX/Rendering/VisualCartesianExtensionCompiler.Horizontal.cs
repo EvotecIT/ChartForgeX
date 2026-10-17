@@ -20,7 +20,7 @@ internal static partial class VisualCartesianCompiler {
             var y = map.Y(point.X) + offset;
             var direction = MappedBarDirection(chart.Options.XAxis, stack.Value, startX, endX, horizontal: true);
             var bounds = VisibleSegmentBounds(chart, new ChartRect(Math.Min(startX, endX), y - height / 2, Math.Abs(endX - startX), height), direction, horizontal: true);
-            var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y));
+            var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("value", point.Y));
             using (ObservationGroup(builder, series, index, item, item, 1, bounds, label, stack, ("category", point.X), ("value", point.Y), ("base", stack.Base)))
                 DrawBarSurface(chart, context, builder, series, item, bounds, PointColor(series, index, item, colors), colors, "horizontal-bar", horizontal: true, direction: direction);
             obstacles.Add(new LabelObstacle(PointId(index, item), bounds));
@@ -54,8 +54,9 @@ internal static partial class VisualCartesianCompiler {
         var x = chart.Options.XAxis; var y = chart.Options.YAxis;
         var valueAxis = x.Clone();
         valueAxis.Labels.Clear();
-        if (x.ValueFormat == null && !ReferenceEquals(chart.Options.ValueFormat, ChartValueFormat.ExistingValue))
-            valueAxis.ValueFormat = chart.Options.ValueFormat;
+        // Chart-wide numeric formatting is passed as the native axis fallback.
+        // Keep it distinct from an authored axis policy so readouts can reuse
+        // captured values without eagerly invoking a lazy data-label callback.
         var waterfall = chart.Series.Any(series => series.Kind == ChartSeriesKind.Waterfall);
         var legacyCategories = ChartCartesianOrientation.UsesLegacyCategoryLabels(chart);
         var categoryAxis = y.Clone();
