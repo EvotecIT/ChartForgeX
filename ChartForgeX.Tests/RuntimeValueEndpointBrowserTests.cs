@@ -49,8 +49,12 @@ public sealed class RuntimeValueEndpointBrowserTests {
         var range = brush.GetProperty("range");
         Assert.Equal(!primaryReference, range.TryGetProperty("y", out var rawY));
         if (!primaryReference) {
-            Assert.InRange(rawY[0].GetDouble(), 2.5, 3.5);
-            Assert.InRange(rawY[1].GetDouble(), 26.5, 27.5);
+            var ticks = y.GetProperty("displayTicks").EnumerateArray().Concat(y.GetProperty("displayBounds").EnumerateArray()).ToArray();
+            var lower = ticks.Where(tick => tick.GetProperty("value").GetDouble() <= 3).Max(tick => tick.GetProperty("value").GetDouble());
+            var upper = ticks.Where(tick => tick.GetProperty("value").GetDouble() >= 27).Min(tick => tick.GetProperty("value").GetDouble());
+            Assert.Equal(0, lower); Assert.Equal(30, upper);
+            Assert.Equal(new[] { lower, upper }, rawY.EnumerateArray().Select(value => value.GetDouble()));
+            Assert.Equal(rawY.GetRawText(), brush.GetProperty("displayRange").GetProperty("y").GetRawText());
         }
         var output = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");
         if (!string.IsNullOrWhiteSpace(output)) {

@@ -41,7 +41,8 @@ public sealed class InteractiveColorLegendPresentationBrowserTests {
         var selected = await page.EvaluateAsync<JsonElement>("() => window.legendSelection");
         Assert.Equal(kind == ChartSeriesKind.TileMap ? "region" : "point", selected.GetProperty("targetKind").GetString());
         Assert.Equal(kind == ChartSeriesKind.TileMap ? "TX" : "samples:1", selected.GetProperty("targetId").GetString());
-        Assert.Equal(sameValue ? "0" : "30", selected.GetProperty("value").GetString());
+        Assert.Equal(sameValue ? "0.000 °C" : "30.0 units", selected.GetProperty("value").GetString());
+        Assert.Equal(sameValue ? 0 : 30, selected.GetProperty("numericValue").GetDouble());
         Assert.Equal("true", await page.Locator(zero).GetAttributeAsync("aria-selected"));
         Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
         await CaptureAsync("zero-selected");

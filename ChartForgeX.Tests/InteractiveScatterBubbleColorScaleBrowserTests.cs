@@ -83,7 +83,8 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
         Assert.Equal("thermal-source:2", selected.GetProperty("targetId").GetString());
         Assert.Equal("thermal-source", selected.GetProperty("seriesKey").GetString());
         Assert.Equal("2", selected.GetProperty("point").GetString()); Assert.Equal("2", selected.GetProperty("sourcePoint").GetString());
-        Assert.Equal("24", selected.GetProperty("value").GetString());
+        Assert.Equal(kind == ChartSeriesKind.Scatter ? "24.0 kWh" : "24", selected.GetProperty("value").GetString());
+        Assert.Equal(24, selected.GetProperty("numericValue").GetDouble());
         Assert.Equal("true", await missing.GetAttributeAsync("aria-selected"));
         Assert.Equal("true", await root.GetAttributeAsync("data-cfx-tooltip-pinned"));
         if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Volume (m³)", "81");

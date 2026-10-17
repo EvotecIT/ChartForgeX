@@ -64,7 +64,8 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
         var selected = await page.EvaluateAsync<JsonElement>("() => window.dimensionSelection");
         Assert.Equal(kind is ChartSeriesKind.TileMap or ChartSeriesKind.CalendarHeatmap ? "region" : kind == ChartSeriesKind.Treemap ? "node" : "point", selected.GetProperty("targetKind").GetString());
         Assert.Equal(kind == ChartSeriesKind.TileMap ? "TX" : kind == ChartSeriesKind.CalendarHeatmap ? "2026-01-07" : kind == ChartSeriesKind.Treemap ? "zero" : "samples:1", selected.GetProperty("targetId").GetString());
-        Assert.Equal(sameValue ? "0" : kind == ChartSeriesKind.Treemap ? "4" : "30", selected.GetProperty("value").GetString());
+        Assert.Equal(sameValue ? format.Format(0) : kind == ChartSeriesKind.Treemap ? "4.0 units" : "30.0 units", selected.GetProperty("value").GetString());
+        Assert.Equal(sameValue ? 0 : kind == ChartSeriesKind.Treemap ? 4 : 30, selected.GetProperty("numericValue").GetDouble());
         Assert.Equal("true", await root.GetAttributeAsync("data-cfx-tooltip-pinned"));
         await AssertRowAsync(name, format.Format(0)); await CaptureAsync("zero-selected");
         await page.Keyboard.PressAsync("Space"); Assert.Null(await root.GetAttributeAsync("data-cfx-tooltip-pinned"));

@@ -113,14 +113,16 @@ public sealed class InteractiveTooltipModeBrowserTests {
         var page = session.Page;
         await page.Locator(Point(0, 3)).FocusAsync();
         Assert.Equal(new[] { dangerName, "Latency" }, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
-        Assert.Equal(precise.ToString("R", CultureInfo.InvariantCulture), await page.Locator(".cfx-tooltip dd").First.InnerTextAsync());
+        var alert = page.Locator(Point(1, 0));
+        Assert.Equal(precise, double.Parse((await alert.GetAttributeAsync("data-cfx-y"))!, CultureInfo.InvariantCulture));
+        Assert.Equal(await alert.GetAttributeAsync("data-cfx-formatted-value"), await page.Locator(".cfx-tooltip dd").First.InnerTextAsync());
         var latency = page.Locator(".cfx-tooltip dt[data-cfx-tooltip-series-key='latency-source']");
         Assert.Equal("0", await latency.GetAttributeAsync("data-cfx-tooltip-series"));
         Assert.Equal("3", await latency.GetAttributeAsync("data-cfx-tooltip-point"));
         Assert.Equal(chart.Series[0].SourcePointIndices[3].ToString(CultureInfo.InvariantCulture), await latency.GetAttributeAsync("data-cfx-tooltip-source-point"));
         var rawLatency = await page.Locator(Point(0, 3)).GetAttributeAsync("data-cfx-y");
         Assert.Equal(chart.Series[0].Points[3].Y, double.Parse(rawLatency!, CultureInfo.InvariantCulture));
-        Assert.Equal(chart.Series[0].Points[3].Y.ToString("R", CultureInfo.InvariantCulture), await latency.Locator("+ dd").InnerTextAsync());
+        Assert.Equal(await page.Locator(Point(0, 3)).GetAttributeAsync("data-cfx-formatted-value"), await latency.Locator("+ dd").InnerTextAsync());
         Assert.Equal(0, await page.Locator(".cfx-tooltip img").CountAsync());
         AssertNoConsoleErrors(session);
     }

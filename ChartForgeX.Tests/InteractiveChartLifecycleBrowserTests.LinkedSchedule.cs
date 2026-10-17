@@ -36,12 +36,29 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await page.Mouse.MoveAsync((float)positions.GetProperty("from").GetProperty("x").GetDouble(), (float)positions.GetProperty("from").GetProperty("y").GetDouble());
         await page.Mouse.DownAsync();
         await page.Mouse.MoveAsync((float)positions.GetProperty("to").GetProperty("x").GetDouble(), (float)positions.GetProperty("to").GetProperty("y").GetDouble(), new MouseMoveOptions { Steps = 4 });
+        await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(resolve))");
+        var expected = await page.Locator(Root).EvaluateAsync<JsonElement>("""
+            root=>{
+                const projection=JSON.parse(root.dataset.cfxPreparedChart).dataProjection,axis=projection.x,p=projection.plotBounds;
+                const inverse=root.querySelector('.cfx-stage svg').getScreenCTM().inverse(),rect=root.querySelector('.cfx-brush-box').getBoundingClientRect();
+                const raw=[new DOMPoint(rect.left,rect.top),new DOMPoint(rect.right,rect.bottom)]
+                    .map(point=>axis.minimum+(point.matrixTransform(inverse).x-p.x)/p.width*(axis.maximum-axis.minimum)).sort((a,b)=>a-b);
+                const ticks=[...axis.displayTicks,...axis.displayBounds].filter(tick=>tick.value>=axis.minimum&&tick.value<=axis.maximum).sort((a,b)=>a.value-b.value);
+                const enclosing=[ticks.filter(tick=>tick.value<=raw[0]).at(-1),ticks.find(tick=>tick.value>=raw[1])];
+                return {range:enclosing.map(tick=>tick.instant),captions:enclosing.map(tick=>tick.text)};
+            }
+            """);
         await page.Mouse.UpAsync();
         var result = await page.EvaluateAsync<JsonElement>("()=>JSON.parse(JSON.stringify({brush:scheduleBrush[0],selection:chartController.getSelection()}))");
-        var range = result.GetProperty("brush").GetProperty("range");
+        var brush = result.GetProperty("brush");
+        var range = brush.GetProperty("range");
         Assert.False(range.TryGetProperty("y", out _));
-        Assert.InRange(DateTimeOffset.Parse(range.GetProperty("x")[0].GetString()!).UtcDateTime.Subtract(start.AddDays(2)).TotalMinutes, -1, 1);
-        Assert.InRange(DateTimeOffset.Parse(range.GetProperty("x")[1].GetString()!).UtcDateTime.Subtract(start.AddDays(8)).TotalMinutes, -1, 1);
+        Assert.Equal(expected.GetProperty("range").EnumerateArray().Select(endpoint => endpoint.GetString()),
+            range.GetProperty("x").EnumerateArray().Select(endpoint => endpoint.GetString()));
+        Assert.Equal(range.GetProperty("x").GetRawText(), brush.GetProperty("displayRange").GetProperty("x").GetRawText());
+        Assert.Equal(string.Join(" – ", expected.GetProperty("captions").EnumerateArray().Select(caption => caption.GetString())), brush.GetProperty("rangeLabel").GetString());
+        Assert.InRange(DateTimeOffset.Parse(range.GetProperty("x")[0].GetString()!).UtcDateTime, start, start.AddDays(2).AddMinutes(1));
+        Assert.InRange(DateTimeOffset.Parse(range.GetProperty("x")[1].GetString()!).UtcDateTime, start.AddDays(8).AddMinutes(-1), end);
         var selected = Assert.Single(result.GetProperty("selection").EnumerateArray());
         Assert.Equal("point", selected.GetProperty("targetKind").GetString());
         Assert.Equal(start, DateTimeOffset.Parse(selected.GetProperty("range")[0].GetString()!).UtcDateTime);

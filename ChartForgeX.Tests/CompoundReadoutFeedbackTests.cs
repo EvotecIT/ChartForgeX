@@ -148,7 +148,8 @@ public sealed class CompoundReadoutFeedbackTests {
         await page.Keyboard.PressAsync("Space");
         var selected = await page.EvaluateAsync<JsonElement>("() => window.compoundSelection");
         Assert.Equal("compound:0", selected.GetProperty("targetId").GetString());
-        Assert.Equal(rawValue, selected.GetProperty("value").GetString());
+        Assert.Equal(AxisCaption(family, IsBoxPlot(family) ? 3.15 : 2.05), selected.GetProperty("value").GetString());
+        Assert.Equal(IsBoxPlot(family) ? 3.15 : 2.05, double.Parse(rawValue!, CultureInfo.InvariantCulture));
         Assert.Equal(IsBoxPlot(family) ? 3.15 : 2.05, selected.GetProperty("numericValue").GetDouble());
         Assert.Equal(.025, selected.GetProperty("x").GetDouble());
         await CaptureAsync(page, family, "keyboard", new { keyboardRows, selected, errors });

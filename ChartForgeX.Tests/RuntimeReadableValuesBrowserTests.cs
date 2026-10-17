@@ -28,7 +28,7 @@ public sealed class RuntimeReadableValuesBrowserTests {
         var time = await ReadAsync(page, 1, "time-middle", "[data-cfx-observation-id=time-middle]");
         Assert.Equal("2026-09-06", time.GetProperty("target").GetProperty("label").GetString());
         Assert.Equal("2026-09-06", time.GetProperty("title").GetString());
-        Assert.Equal("2026-09-06", time.GetProperty("chip").GetString());
+        Assert.Equal("Requests · 2026-09-06", time.GetProperty("chip").GetString());
         Assert.Equal(First.AddDays(5), DateTimeOffset.Parse(time.GetProperty("target").GetProperty("x").GetString()!, CultureInfo.InvariantCulture).UtcDateTime);
         readings.Add("time", time);
         await CaptureAsync(page, "time", dark, width, time);
@@ -57,7 +57,7 @@ public sealed class RuntimeReadableValuesBrowserTests {
 
         var state = await ReadAsync(page, 4, "state-run", "[data-cfx-observation-id=state-run]");
         Assert.Equal("Service · Available", state.GetProperty("title").GetString());
-        Assert.Equal("2026-09-01 00:00 – 2026-09-01 06:00", state.GetProperty("chip").GetString());
+        Assert.Equal("Service · 2026-09-01 00:00 – 2026-09-01 06:00", state.GetProperty("chip").GetString());
         Assert.Equal("Available", state.GetProperty("target").GetProperty("value").GetString());
         Assert.False(state.GetProperty("target").TryGetProperty("numericValue", out _));
         Assert.Equal("2026-09-01 00:00 – 2026-09-01 06:00", state.GetProperty("target").GetProperty("rangeLabel").GetString());
@@ -79,16 +79,23 @@ public sealed class RuntimeReadableValuesBrowserTests {
         var raw = detail.GetProperty("range").GetProperty("x");
         var display = detail.GetProperty("displayRange").GetProperty("x");
         Assert.Equal(raw.GetRawText(), detail.GetProperty("categoryRange").GetRawText());
-        Assert.NotEqual(raw.GetRawText(), display.GetRawText());
+        Assert.Equal(raw.GetRawText(), display.GetRawText());
         var ticks = brush.GetProperty("ticks").EnumerateArray().ToArray();
-        var expected = raw.EnumerateArray().Select(bound => {
-            var instant = DateTimeOffset.Parse(bound.GetString()!, CultureInfo.InvariantCulture).UtcDateTime.ToOADate();
-            return ticks.OrderBy(tick => Math.Abs(tick.GetProperty("value").GetDouble() - instant)).First();
-        }).ToArray();
+        // Commit encloses the pointer gesture in the prepared axis's native tick or edge bounds.
+        var gesture = new[] { First.AddDays(1.4).ToOADate(), First.AddDays(7.6).ToOADate() };
+        var expected = new[] {
+            ticks.Where(tick => tick.GetProperty("value").GetDouble() <= gesture[0]).OrderByDescending(tick => tick.GetProperty("value").GetDouble()).First(),
+            ticks.Where(tick => tick.GetProperty("value").GetDouble() >= gesture[1]).OrderBy(tick => tick.GetProperty("value").GetDouble()).First()
+        };
         Assert.Equal(string.Join(" – ", expected.Select(tick => tick.GetProperty("text").GetString())), detail.GetProperty("rangeLabel").GetString());
         Assert.Equal(detail.GetProperty("rangeLabel").GetString(), detail.GetProperty("label").GetString());
         for (var index = 0; index < expected.Length; index++)
             Assert.Equal(DateTime.FromOADate(expected[index].GetProperty("value").GetDouble()), DateTimeOffset.Parse(display[index].GetString()!, CultureInfo.InvariantCulture).UtcDateTime);
+        var lower = DateTimeOffset.Parse(raw[0].GetString()!, CultureInfo.InvariantCulture).UtcDateTime;
+        var upper = DateTimeOffset.Parse(raw[1].GetString()!, CultureInfo.InvariantCulture).UtcDateTime;
+        var expectedIds = new[] { (First, "time-first"), (First.AddDays(5), "time-middle"), (First.AddDays(10), "time-last") }
+            .Where(point => point.Item1 >= lower && point.Item1 <= upper).Select(point => point.Item2).OrderBy(id => id);
+        Assert.Equal(expectedIds, brush.GetProperty("selection").EnumerateArray().Select(target => target.GetProperty("observationId").GetString()!).OrderBy(id => id));
         Assert.Equal(detail.GetProperty("rangeLabel").GetString(), brush.GetProperty("lasso").GetProperty("rangeLabel").GetString());
         Assert.True(brush.GetProperty("shown").GetBoolean());
         readings.Add("brush", brush);
@@ -136,7 +143,8 @@ public sealed class RuntimeReadableValuesBrowserTests {
         await page.Mouse.UpAsync();
         return await root.EvaluateAsync<JsonElement>("""
             root => JSON.parse(JSON.stringify({detail:readableBrush,lasso:readableLasso,
-              ticks:JSON.parse(root.dataset.cfxPreparedChart).dataProjection.x.displayTicks,
+              ticks:[...JSON.parse(root.dataset.cfxPreparedChart).dataProjection.x.displayTicks,...JSON.parse(root.dataset.cfxPreparedChart).dataProjection.x.displayBounds],
+              selection:ChartForgeXCharts.get(root).getSelection(),
               shown:!root.querySelector('.cfx-brush-box').hidden}))
             """);
     }
