@@ -40,14 +40,13 @@ public sealed class InteractivePolarIdentityBrowserTests {
         await MoveToAsync(page, targetPointSelector);
         await page.WaitForFunctionAsync("() => window.polarIdentityEvents.hover.some(event => event.target.targetKind === 'point')");
         using (var hover = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.polarIdentityEvents.hover.filter(event => event.target.targetKind === 'point').at(-1))")))
-            AssertTargetEvent(hover.RootElement);
+            AssertTargetEvent(hover.RootElement, radar);
         Assert.Contains("Target", await TooltipTextAsync(page));
         var title = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
-        if (radar) Assert.Equal("Target, Latency: 7", title);
-        else Assert.Matches("^Target, [0-9.]+: 7$", title);
+        Assert.Equal(radar ? "Latency" : "1.57", title);
         await targetPoint.ClickAsync();
         using (var selection = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.polarIdentityEvents.selection.at(-1))")))
-            AssertTargetEvent(selection.RootElement);
+            AssertTargetEvent(selection.RootElement, radar);
         Assert.Equal("true", await targetPoint.GetAttributeAsync("aria-selected"));
         Assert.Equal(1, await page.Locator(pointSelector + "[aria-selected='true']").CountAsync());
         Assert.Equal(0, await page.Locator(actualSelector + "[aria-selected='true']").CountAsync());
@@ -65,7 +64,7 @@ public sealed class InteractivePolarIdentityBrowserTests {
         await targetPoint.ClickAsync();
         Assert.Equal("false", await targetPoint.GetAttributeAsync("aria-selected"));
         using (var selection = JsonDocument.Parse(await page.EvaluateAsync<string>("() => JSON.stringify(window.polarIdentityEvents.selection.at(-1))")))
-            AssertTargetEvent(selection.RootElement);
+            AssertTargetEvent(selection.RootElement, radar);
         await CaptureAsync(page, radar, compactDark, "actual-muted");
         AssertNoConsoleErrors(session);
     }
@@ -78,9 +77,9 @@ public sealed class InteractivePolarIdentityBrowserTests {
         Assert.Equal(key + ":" + sourcePoint, await point.GetAttributeAsync("data-cfx-target-id"));
     }
 
-    private static void AssertTargetEvent(JsonElement detail) {
+    private static void AssertTargetEvent(JsonElement detail, bool radar) {
         var target = detail.GetProperty("target");
-        Assert.Contains("Target", detail.GetProperty("label").GetString());
+        Assert.Equal(radar ? "Latency" : "1.57", detail.GetProperty("label").GetString());
         Assert.Equal("point", target.GetProperty("targetKind").GetString());
         Assert.Equal("1", target.GetProperty("series").GetString());
         Assert.Equal("target-source", target.GetProperty("seriesKey").GetString());

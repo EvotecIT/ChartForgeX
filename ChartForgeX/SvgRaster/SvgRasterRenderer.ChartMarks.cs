@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.SvgRaster;
 
@@ -22,6 +23,16 @@ internal static partial class SvgRasterRenderer {
         var matrix = parentMatrix.Multiply(SvgRasterMatrix.ParseTransform(element.Get("transform")));
         var group = element.Name is "svg" or "g" or "a";
         var simpleClip = TryChartClip(style.ClipPath, matrix, definitions, out var bounds);
+        if (!group && simpleClip && style.Opacity >= .999 && element.Get("mask") == null) {
+            using var markClip = canvas.PushClipBounds(bounds);
+            var clipRect = definitions.TryGetClipPath(ParseReference(style.ClipPath), out var markDefinition)
+                ? markDefinition.Element.Children[0] : null;
+            var radius = clipRect == null ? 0 : Math.Max(LabelCoordinate(clipRect, "rx"), LabelCoordinate(clipRect, "ry"));
+            using var rounded = radius > 0 ? canvas.PushPolygonClip(ChartPathBuilder.RoundedRectangle(bounds,
+                Math.Min(radius * Math.Min(Math.Abs(matrix.A), Math.Abs(matrix.D)), Math.Min(bounds.Width, bounds.Height) / 2)).Flatten(.25)) : null;
+            RenderElementCore(canvas, element, style, matrix, definitions, canvas.Width, canvas.Height, 0, ancestors, viewport);
+            return;
+        }
         if (!group || style.Opacity < .999 || element.Get("mask") != null || style.ClipPath != null && !simpleClip) {
             RenderElement(canvas, element, parent, parentMatrix, definitions, canvas.Width, canvas.Height, 0, ancestors, viewport);
             return;

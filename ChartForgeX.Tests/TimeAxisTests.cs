@@ -208,10 +208,12 @@ public sealed class TimeAxisTests {
     }
 
     [Fact]
-    public void GenerateInside_TwoWeeks_UsesAnAdequateWeeklyInterval() {
+    public void GenerateInside_TwoWeeks_UsesAnIntermediateDayInterval() {
         var axis = new ChartAxis().WithTimeScale();
-        var labels = Labels(axis, ChartTicks.GenerateInside(axis, new DateTime(2026, 7, 25).ToOADate(), new DateTime(2026, 8, 6).ToOADate()));
-        Assert.Equal(new[] { "2026-07-27", "2026-08-03" }, labels);
+        var ticks = ChartTicks.GenerateInside(axis, new DateTime(2026, 7, 25).ToOADate(), new DateTime(2026, 8, 6).ToOADate());
+        Assert.InRange(ticks.Count, 4, axis.TickCount);
+        Assert.All(ticks, tick => Assert.Equal(TimeSpan.Zero, DateTime.FromOADate(tick).TimeOfDay));
+        for (var index = 1; index < ticks.Count; index++) Assert.Equal(3, ticks[index] - ticks[index - 1]);
     }
 
     [Fact]
@@ -425,7 +427,7 @@ public sealed class TimeAxisTests {
         var chart = Chart.Create().WithSize(640, 300).WithXAxisTimeScale(zone).AddLine("UTC", utcPoints).AddLine("Local", localPoints);
         var labels = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "axis-x-label").Select(element => element.Value).ToArray();
         Assert.Contains("06:00", labels);
-        Assert.DoesNotContain(labels, label => label.EndsWith(":30", StringComparison.Ordinal));
+        Assert.All(labels, label => Assert.Matches(@"^\d{2}:(00|30)$", label));
     }
 
     private static ChartPoint[] HourlyPoints(int count) =>

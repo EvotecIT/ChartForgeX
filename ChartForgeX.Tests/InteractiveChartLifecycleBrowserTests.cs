@@ -84,7 +84,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await SelectAsync(page, North);
         await CaptureAsync(page, "typed-before-" + width + "-" + (dark ? "dark" : "light"));
         await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=reference]").ClickAsync();
-        await page.Locator(North).FocusAsync();
+        await FocusWithKeyboardAsync(page, page.Locator(North));
         await UpdateAsync(page, Readings(dark, updated: true).ToInteractiveHtmlFragmentWithoutAssets(Fit));
         var north = page.Locator(North);
         Assert.Equal("1", await north.GetAttributeAsync("data-cfx-series"));
@@ -100,7 +100,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await UpdateAsync(page, Readings(dark, updated: true).ToInteractiveHtmlFragmentWithoutAssets(Fit), element: true);
         Assert.Equal("true", await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=samples]").GetAttributeAsync("data-cfx-isolated"));
         Assert.True(await page.Locator("[data-cfx-role=series][data-cfx-series-key=reference]").EvaluateAsync<bool>("node=>node.classList.contains('cfx-series-isolated-out')"));
-        await page.Locator(North).FocusAsync();
+        await FocusWithKeyboardAsync(page, page.Locator(North));
         Assert.Contains("17", await TooltipTextAsync(page));
         Assert.Contains("64", await TooltipTextAsync(page));
         await page.Locator(North).PressAsync("Space");

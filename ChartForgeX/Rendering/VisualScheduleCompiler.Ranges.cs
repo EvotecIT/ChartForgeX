@@ -42,14 +42,34 @@ internal static partial class VisualScheduleCompiler {
         var fixedTicks = axis.Labels.Count == 0 && gantt && axis.Scale == ChartScaleKind.Time && chart.Options.GanttTickInterval != null
             ? ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval) : null;
         var ticks = fixedTicks ?? ChartTicks.ForAxis(axis, min, max);
+        if (gantt && axis.Scale == ChartScaleKind.Time && axis.Labels.Count == 0 && fixedTicks == null
+            && (max - min < 1 || axis.LabelDensity == ChartLabelDensity.All))
+            ticks = ScheduleProjectWindowTicks(ticks, min, max);
         var milliseconds = fixedTicks != null && chart.Options.GanttTickInterval?.Unit == ChartTimeTickUnit.Millisecond;
         var effectiveInterval = fixedTicks == null ? (ChartTimeTickUnit?)null : chart.Options.GanttTickInterval?.Unit;
+        var projectDates = gantt && axis.Scale == ChartScaleKind.Time && (fixedTicks == null || effectiveInterval >= ChartTimeTickUnit.Day) && axis.Labels.Count == 0
+            && axis.ValueFormat == null && axis.LabelDensity != ChartLabelDensity.All && max - min >= 1;
         var formatTick = ChartAxisValueFormatter.Create(axis, ticks,
             axis.Scale == ChartScaleKind.Time ? tick => gantt && axis.TimeTickLabelFormatter != null
                 ? axis.TimeTickLabelFormatter(tick, effectiveInterval)
-                : ChartTimeScale.Format(axis, tick, milliseconds) : chart.Options.ValueFormatter, chart.Options);
-        var tickLabels = ticks.ToDictionary(value => value, formatTick);
-        string Format(double value) => tickLabels.TryGetValue(value, out var text) ? text : formatTick(value);
+                : projectDates && ChartTimeScale.ToDisplayTime(axis, tick) is { } date
+                    ? date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                    : ChartTimeScale.Format(axis, tick, milliseconds) : chart.Options.ValueFormatter, chart.Options);
+        var formatCache = new ChartAxisValueFormatter.Cache();
+        string Format(double value) => formatCache.Format(axis, value, formatTick);
+        // A date caption identifies the day's calendar line, rather than a
+        // task's arbitrary clock time. An automatic window includes that first
+        // midnight; exact task instants and authored clipping bounds are retained.
+        if (gantt && axis.Scale == ChartScaleKind.Time && axis.Labels.Count == 0 && !axis.Minimum.HasValue
+            && max - min >= 1 && axis.LabelDensity != ChartLabelDensity.All
+            && (fixedTicks == null || effectiveInterval >= ChartTimeTickUnit.Day)
+            && ChartTimeScale.HasDayCaptionPrecision(axis, Format, min)
+            && ChartTimeScale.DisplayDayStart(axis, min) is { } dayStart && dayStart < min) {
+            min = dayStart;
+            if (fixedTicks != null && chart.Options.GanttTickInterval != null)
+                fixedTicks = ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval);
+            ticks = fixedTicks ?? ChartTicks.ForAxis(axis, min, max);
+        }
         var layout = LaneLayout(chart, context, builder, viewport, items.Where(item => !item.Marker).Select(item => chart.Series[item.Index].Name), Array.Empty<string>(), false,
             now.HasValue && now.Value >= min && now.Value <= max, ticks, Format, hasFixedTicks: fixedTicks != null);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);
@@ -73,10 +93,12 @@ internal static partial class VisualScheduleCompiler {
             maximumExtent = Math.Max(maximumExtent, milestoneExtent + clearance + DependencyStubLength(context, arrow) + context.Theme.AxisStrokeWidth / 2);
         }
         var projection = GuideProjection(chart, context, plot, min, max, minimumExtent, maximumExtent, now);
+        builder.DataProjection = ChartDataProjection.TryCreate(projection, min, max, axis);
         double Project(double value) => projection.Left + ChartScaleTransform.Normalize(Math.Max(min, Math.Min(max, value)), min, max, axis) * projection.Width;
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
             var obstacles = new List<LabelObstacle>();
-            Axis(chart, context, builder, viewport, layout, ticks, Project, Format);
+            Axis(chart, context, builder, viewport, layout, ticks, Project, Format,
+                minimum: gantt ? min : null, maximum: gantt ? max : null, calendarAnchor: gantt ? items.Min(item => item.Start) : null);
             foreach (var item in items) {
                 if (item.Marker) continue;
                 var center = plot.Top + (item.Row + .5) * slot;
@@ -143,6 +165,7 @@ internal static partial class VisualScheduleCompiler {
             // Links are foreground annotations: successor fills must not cover their arrowheads.
             if (gantt) Dependencies(chart, context, builder, plot, bySeries, renderedLinks, Project, slot, height, min, max);
         }
+        builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value, _) => layout.FormatTick(value));
     }
 
     /// <summary>Shares the exact task/diamond surface between painting, semantics and dependency anchoring.</summary>

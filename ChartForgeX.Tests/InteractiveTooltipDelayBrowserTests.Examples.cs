@@ -18,6 +18,8 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         var html = await File.ReadAllTextAsync(Path.Combine(repository.FullName, "Website", "static", "examples", "generated", file));
         await using var session = await OpenAsync(html, width, 760);
         var page = session.Page;
+        var pageErrors = new List<string>();
+        page.PageError += (_, error) => pageErrors.Add(error);
         var served = Environment.GetEnvironmentVariable("CFX_TOOLTIP_DELAY_EXAMPLE_URL");
         if (!string.IsNullOrWhiteSpace(served)) {
             Assert.True(Uri.TryCreate(served, UriKind.Absolute, out var uri) && uri.IsLoopback && uri.Scheme == "http");
@@ -35,9 +37,17 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.All(trace.GetProperty("entry").EnumerateArray(), entry => Assert.True(entry.GetProperty("hidden").GetBoolean()));
         AssertDelay(trace);
         await MoveAwayAsync(page);
-        await page.Locator(Point(0, 4)).FocusAsync();
+        var target = page.Locator(Point(0, 4));
+        await target.FocusAsync();
         Assert.False(await TipHiddenAsync(page));
-        Assert.Contains("1120", (await TooltipTextAsync(page)).Replace(",", string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
+        Assert.Equal("passed", await target.GetAttributeAsync("data-cfx-series-key"));
+        Assert.Equal("4", await target.GetAttributeAsync("data-cfx-source-point"));
+        Assert.Equal("1120", await target.GetAttributeAsync("data-cfx-y"));
+        var caption = await target.GetAttributeAsync("data-cfx-formatted-value");
+        Assert.Equal("1.1k", caption);
+        Assert.Equal(caption, await page.Locator(".cfx-tooltip [data-cfx-tooltip-series-key='passed'] + dd").InnerTextAsync());
+        await CaptureDelayAsync(page, "delay-example-" + theme + "-" + width + "-keyboard", new { trace = await TraceStateAsync(page), caption, pageErrors }, session);
+        Assert.Empty(pageErrors);
         AssertNoConsoleErrors(session);
     }
 }

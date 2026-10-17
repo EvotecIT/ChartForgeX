@@ -71,7 +71,7 @@ public sealed class RadialLabelEligibilityBrowserTests {
         await legend.Locator("text").First.ClickAsync();
         await MoveAwayAsync(page);
         await ResetEventsAsync(page);
-        await native.FocusAsync();
+        await FocusWithKeyboardAsync(page, native);
         Assert.NotEqual(string.Empty, await TooltipTextAsync(page));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await native.GetAttributeAsync("aria-selected"));
@@ -158,7 +158,7 @@ public sealed class RadialLabelEligibilityBrowserTests {
         if (await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned") == "true")
             await page.Locator("[data-cfx-reset]").ClickAsync();
         await ResetEventsAsync(page);
-        await native.FocusAsync();
+        await FocusWithKeyboardAsync(page, native);
         Assert.Contains("Retained", await TooltipTextAsync(page));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await native.GetAttributeAsync("aria-selected"));

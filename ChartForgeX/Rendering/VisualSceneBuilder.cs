@@ -16,6 +16,7 @@ internal sealed partial class VisualSceneBuilder {
     private readonly Dictionary<int, VisualSceneTextFace> _faces = new();
     private readonly List<VisualDiagnostic> _diagnostics = new();
     private readonly List<VisualSemanticRegion> _regions = new();
+    internal ChartDataProjection? DataProjection { get; set; }
 
     internal VisualSceneBuilder(VisualSize size, FontSpec font) {
         VisualSize.Positive(size.Width, nameof(size)); VisualSize.Positive(size.Height, nameof(size));
@@ -133,7 +134,7 @@ internal sealed partial class VisualSceneBuilder {
 
     internal VisualScene Build() {
         if (_groups.Count != 0) throw new InvalidOperationException("Close all scene group scopes before preparing the scene.");
-        return new VisualScene(_size, _nodes, _diagnostics, _regions);
+        return new VisualScene(_size, _nodes, _diagnostics, _regions, DataProjection);
     }
 
     private VisualSceneTextFace Face(int weight) {

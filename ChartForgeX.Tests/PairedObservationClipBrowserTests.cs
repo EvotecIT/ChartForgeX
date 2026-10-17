@@ -90,7 +90,9 @@ public sealed class PairedObservationClipBrowserTests {
         await CaptureAsync(page, "log-midline-keyboard", position);
         Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
         Assert.True(pointerReadout); Assert.True(keyboardReadout);
-        Assert.Contains("1 - 1800", await page.Locator(".cfx-tooltip dd").AllTextContentsAsync());
+        Assert.Equal("1", await point.GetAttributeAsync("data-cfx-lower"));
+        Assert.Equal("1800", await point.GetAttributeAsync("data-cfx-upper"));
+        Assert.Contains("1 - 1.8k", await page.Locator(".cfx-tooltip dd").AllTextContentsAsync());
         Assert.Equal("paired:0", await point.GetAttributeAsync("data-cfx-target-id"));
         Assert.Equal("1", await point.GetAttributeAsync("data-cfx-source-count"));
         await page.Keyboard.PressAsync("Space");

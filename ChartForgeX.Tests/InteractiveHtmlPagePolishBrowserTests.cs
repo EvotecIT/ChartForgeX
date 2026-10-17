@@ -74,11 +74,13 @@ public sealed class InteractiveHtmlPagePolishBrowserTests {
         Assert.False(printed.GetProperty("resetVisible").GetBoolean());
         Assert.True(pointerFocus.GetProperty("nativePointFocused").GetBoolean());
         Assert.True(pointerPrinted.GetProperty("nativePointFocused").GetBoolean());
-        Assert.NotEqual("none", pointerFocus.GetProperty("focusOutlineStyle").GetString());
+        Assert.False(pointerFocus.GetProperty("focusVisible").GetBoolean());
+        Assert.Equal("none", pointerFocus.GetProperty("focusOutlineStyle").GetString());
         Assert.Equal("none", pointerPrinted.GetProperty("focusOutlineStyle").GetString());
         Assert.Equal(pointerFocus.GetProperty("paint").GetRawText(), pointerPrinted.GetProperty("paint").GetRawText());
         Assert.True(screen.GetProperty("nativePointFocused").GetBoolean());
         Assert.True(printed.GetProperty("nativePointFocused").GetBoolean());
+        Assert.True(screen.GetProperty("focusVisible").GetBoolean());
         Assert.NotEqual("none", screen.GetProperty("focusOutlineStyle").GetString());
         Assert.Equal("none", printed.GetProperty("focusOutlineStyle").GetString());
         Assert.Equal(screen.GetProperty("focusOutlineStyle").GetString(), restored.GetProperty("focusOutlineStyle").GetString());
@@ -113,6 +115,7 @@ public sealed class InteractiveHtmlPagePolishBrowserTests {
                 stageOverflow:Math.max(0,stage.scrollWidth-stage.clientWidth),documentOverflow:Math.max(0,document.documentElement.scrollWidth-innerWidth),
                 nativeAspect:box.width/box.height,renderedAspect:bounds.width/bounds.height,renderedWidth:bounds.width,stageWidth:stage.getBoundingClientRect().width,
                 nativePointFocused:focused.matches('g[data-cfx-role="point"][data-cfx-series="0"][data-cfx-point="0"]'),
+                focusVisible:focused.matches(':focus-visible'),
                 focusOutlineStyle:focusStyle.outlineStyle,focusOutlineWidth:focusStyle.outlineWidth,focusOutlineColor:focusStyle.outlineColor,
                 mutedLegend:root.querySelector('[data-cfx-role="legend-item"][data-cfx-series="1"]').dataset.cfxMuted,
                 paint:[...svg.querySelectorAll('[stroke],[opacity]')].map(node=>[node.localName,node.getAttribute('data-cfx-role'),node.getAttribute('stroke'),node.getAttribute('opacity'),node.getAttribute('style'),getComputedStyle(node).stroke,getComputedStyle(node).opacity])

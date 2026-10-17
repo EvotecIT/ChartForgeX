@@ -43,7 +43,7 @@ public sealed class BoxPlotBrowserTests {
         var rawRows = await RowsAsync(page);
         Assert.Equal(new[] { "Series", "Observed", "Kategoria", "Express delivery", "Minimum lokalne", "8", "Dolny kwartyl", "12", "Mediana", "22", "Górny kwartyl", "30", "Maksimum", "42" }, rawRows);
         var defaultHeading = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
-        Assert.Equal("Observed: 22", defaultHeading);
+        Assert.Equal("Observed: Express delivery", defaultHeading);
         var rawAria = await page.Locator(neighbor).GetAttributeAsync("aria-label");
         Assert.Contains("x=2 minimum=8 q1=12 median=22 q3=30 maximum=42", rawAria);
         if (!string.IsNullOrWhiteSpace(directory))
@@ -94,7 +94,7 @@ public sealed class BoxPlotBrowserTests {
         var point = page.Locator(Point(0, 0));
         await point.FocusAsync();
         Assert.Equal(new[] { "Series", "Distribution", "Category", "Raw input", "Minimum", "0", "Q1", "7.5", "Median", "15", "Q3", "22.5", "Maximum", "30" }, await RowsAsync(page));
-        Assert.Equal("Distribution: 15", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal("Distribution: Raw input", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         Assert.Equal("five-number-summary", await point.GetAttributeAsync("data-cfx-derived"));
         Assert.Equal("4", await point.GetAttributeAsync("data-cfx-source-count"));
         Assert.Null(await point.GetAttributeAsync("data-cfx-source-point"));

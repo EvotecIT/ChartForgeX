@@ -8,8 +8,9 @@ namespace ChartForgeX.Rendering;
 /// <summary>A detached, ordered display list. Layout is complete before either backend reads it.</summary>
 internal sealed class VisualScene {
     internal VisualScene(VisualSize size, IReadOnlyList<VisualSceneNode> nodes,
-        IReadOnlyList<VisualDiagnostic> diagnostics, IReadOnlyList<VisualSemanticRegion> regions) {
+        IReadOnlyList<VisualDiagnostic> diagnostics, IReadOnlyList<VisualSemanticRegion> regions, ChartDataProjection? dataProjection = null) {
         Size = size;
+        DataProjection = dataProjection;
         var copy = new VisualSceneNode[nodes.Count];
         for (var i = 0; i < copy.Length; i++) copy[i] = nodes[i];
         Nodes = Array.AsReadOnly(copy);
@@ -22,6 +23,7 @@ internal sealed class VisualScene {
     }
 
     internal VisualSize Size { get; }
+    internal ChartDataProjection? DataProjection { get; }
     internal IReadOnlyList<VisualSceneNode> Nodes { get; }
     internal IReadOnlyList<VisualDiagnostic> Diagnostics { get; }
     internal IReadOnlyList<VisualSemanticRegion> Regions { get; }

@@ -56,6 +56,8 @@ public sealed class NumericRadialKeyboardBrowserTests {
         } else {
             await unavailable.EvaluateAsync("(node,state)=>{if(state==='hidden')node.style.visibility='hidden';else node.querySelectorAll('path').forEach(path=>{path.style.fill='none';path.style.stroke='none';});}", state);
         }
+        await page.WaitForFunctionAsync("selector => document.querySelector(selector)?.getAttribute('tabindex') === '-1'", Point(0, 0),
+            new PageWaitForFunctionOptions { Timeout = 5000 });
         Assert.Equal("-1", await unavailable.GetAttributeAsync("tabindex"));
         var available = page.Locator(Point(1, 0));
         await available.FocusAsync();

@@ -1275,3 +1275,14 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 
 .cfx-graph-underlay { pointer-events: none; z-index: 0; }
 .cfx-graph-render-webgl .cfx-graph-webgl { background: transparent; z-index: 0; }
+
+.cfx-graph-explorer .cfx-graph-link-dim{opacity:.3}
+.cfx-graph-explorer .cfx-graph-highlighted{filter:drop-shadow(0 0 3px var(--cfx-color-selected,#f59e0b))}
+
+.cfx-graph-highlighted.cfx-graph-node circle,
+.cfx-graph-highlighted.cfx-graph-node rect,
+.cfx-graph-highlighted.cfx-graph-node ellipse,
+.cfx-graph-highlighted.cfx-graph-node polygon,
+.cfx-graph-highlighted.cfx-graph-node path,
+.cfx-graph-highlighted.cfx-graph-edge,
+.cfx-graph-highlighted.cfx-graph-cluster circle { stroke: var(--cfx-color-selected); stroke-width: 4; }

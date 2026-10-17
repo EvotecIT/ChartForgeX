@@ -31,6 +31,7 @@ public sealed class ChartAxis {
     private bool _hasExplicitScale;
     private double _symmetricLogarithmThreshold = 1;
     private int _tickCount = 6;
+    private bool _hasExplicitTickCount;
     private ChartLabelDensity _labelDensity = ChartLabelDensity.Auto;
     private double _labelAngle;
     private bool _hasExplicitLabelAngle;
@@ -86,14 +87,21 @@ public sealed class ChartAxis {
         }
     }
 
-    /// <summary>Gets or sets the preferred number of generated ticks.</summary>
+    /// <summary>Gets or sets the preferred number of generated ticks. An explicit value also limits automatic time-axis density; the default lets measured time labels use the available room.</summary>
     public int TickCount {
         get => _tickCount;
         set {
             if (value < 2 || value > 100) throw new ArgumentOutOfRangeException(nameof(value), value, "Tick count must be from two through one hundred.");
             _tickCount = value;
+            _hasExplicitTickCount = true;
         }
     }
+
+    internal bool HasExplicitTickCount => _hasExplicitTickCount;
+
+    /// <summary>Restores automatic tick density, including measured time-axis spacing.</summary>
+    /// <returns>The current axis.</returns>
+    public ChartAxis WithAutomaticTickCount() { _tickCount = 6; _hasExplicitTickCount = false; return this; }
 
     /// <summary>Gets or sets label density.</summary>
     public ChartLabelDensity LabelDensity {

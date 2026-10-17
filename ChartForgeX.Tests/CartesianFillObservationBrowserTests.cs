@@ -268,7 +268,8 @@ public sealed partial class CartesianFillObservationBrowserTests {
         await page.Mouse.ClickAsync((float)position[0], (float)position[1]);
         var pointerSelected = await point.GetAttributeAsync("aria-selected");
         var reset = page.Locator("[data-cfx-reset]"); if (await reset.IsVisibleAsync()) await reset.ClickAsync();
-        await MoveAwayAsync(page); await point.FocusAsync();
+        await MoveAwayAsync(page);
+        if (available) await FocusWithKeyboardAsync(page, point); else await point.FocusAsync();
         var active = await page.EvaluateAsync<string>("()=>document.activeElement.dataset.cfxTargetId||''");
         var keyboard = await TooltipTextAsync(page);
         await page.Keyboard.PressAsync("Space");

@@ -31,7 +31,16 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         return position;
     }
 
-    private static Task CentreReadableTargetAsync(IPage page, string selector) => page.Locator(selector).EvaluateAsync("node => { const stage=node.closest('.cfx-stage'), b=node.getBoundingClientRect(), s=stage.getBoundingClientRect(); stage.scrollLeft += b.x+b.width/2-s.x-s.width/2; }");
+    private static Task CentreReadableTargetAsync(IPage page, string selector) => page.Locator(selector).EvaluateAsync("""
+        node => new Promise(resolve => {
+            const stage=node.closest('.cfx-stage'), b=node.getBoundingClientRect(), s=stage.getBoundingClientRect(), before=stage.scrollLeft;
+            // Settle this viewport operation before acquiring a guide; its scroll handler clears stale projections.
+            const finish=()=>requestAnimationFrame(()=>requestAnimationFrame(resolve));
+            stage.addEventListener('scroll',finish,{once:true});
+            stage.scrollLeft+=b.x+b.width/2-s.x-s.width/2;
+            if(stage.scrollLeft===before){stage.removeEventListener('scroll',finish);finish();}
+        })
+        """);
 
     private static Task TraceAsync(IPage page) => page.EvaluateAsync("""
         () => {

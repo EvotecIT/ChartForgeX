@@ -15,15 +15,14 @@ function fixture() {
       `<div data-cfx-role="topology-edge" data-edge-id="${group}" data-source-node-id="${group}1" data-target-node-id="${group}2"></div>
        <div data-cfx-role="topology-edge-label" data-edge-id="${group}"></div>`).join('')}</div>`);
   const wrapper = dom.window.document.querySelector('#chart'), forceGraphPanel = wrapper.querySelector('#controls');
-  let source = fs.readFileSync(path.join(assets, '70-topology-filters.js'), 'utf8');
-  source += fs.readFileSync(path.join(assets, '75-filter-summary.js'), 'utf8');
+  let source = ['40-viewport-export-and-scenarios.js', '60-selection-panel.js', '70-topology-filters.js', '75-filter-summary.js']
+    .map(name => fs.readFileSync(path.join(assets, name), 'utf8')).join('\n');
   source += fs.readFileSync(path.join(assets, '80-force-graph-and-bindings.js'), 'utf8').split('    const clearForceFocusLabels =')[0];
   const api = new Function('wrapper', 'forceGraphPanel', 'window', 'CustomEvent', `
-    const CSS = window.CSS;
-    const forceGraphControls = true, attr = (element, name) => element.getAttribute(name) || '';
-    const fitVisibleTopology = () => {}, restoreForceFocusLabels = () => {};
-    const isViewportVisible = element => !element.classList.contains('cfx-topology-html-filter-hidden') && !element.classList.contains('cfx-topology-html-force-hidden');
-    ${source}\nreturn { applyTopologyFilter, clearTopologyFilter, applyForceGraphFilters };`)(wrapper, forceGraphPanel, dom.window, dom.window.CustomEvent);
+    const CSS = window.CSS, Element = window.Element;
+    const forceGraphControls = true, viewportControls = false, attr = (element, name) => element.getAttribute(name) || '';
+    const restoreForceFocusLabels = () => {};
+    ${source}\nreturn { applyTopologyFilter, clearTopologyFilter, applyForceGraphFilters, highlight };`)(wrapper, forceGraphPanel, dom.window, dom.window.CustomEvent);
   const force = group => { forceGraphPanel.querySelector('[data-cfx-force-group]').value = group; api.applyForceGraphFilters(); };
   const forceSearch = query => { forceGraphPanel.querySelector('[data-cfx-force-search]').value = query; api.applyForceGraphFilters(); };
   const forceStatus = status => { forceGraphPanel.querySelector('[data-cfx-force-status]').value = status; api.applyForceGraphFilters(); };
@@ -67,5 +66,36 @@ test('filter intersection hides a group when each filter retains a different mem
     view.forceStatus('');
     assert.equal(group.classList.contains('cfx-topology-html-filter-hidden'), false);
     assert.equal(view.wrapper.getAttribute('data-cfx-visible-nodes'), '2');
+  } finally { view.close(); }
+});
+
+test('both filters refresh highlight dimming and hidden ancestors cannot retain its foreground', () => {
+  const view = fixture();
+  const peer = view.wrapper.querySelector('[data-node-id="a1"]');
+  const highlighted = view.wrapper.querySelector('[data-node-id="b1"]');
+  const highlight = () => view.api.highlight({ nodeIds: ['b1'], dim: true });
+  try {
+    highlight();
+    assert.equal(peer.getAttribute('data-cfx-highlight-muted'), 'true');
+    view.api.applyTopologyFilter({ group: 'a' });
+    assert.equal(peer.hasAttribute('data-cfx-highlight-muted'), false);
+    assert.equal(highlighted.getAttribute('data-cfx-highlighted'), 'true');
+    view.api.clearTopologyFilter();
+    assert.equal(peer.getAttribute('data-cfx-highlight-muted'), 'true');
+    view.force('a');
+    assert.equal(peer.hasAttribute('data-cfx-highlight-muted'), false);
+    view.force('');
+    assert.equal(peer.getAttribute('data-cfx-highlight-muted'), 'true');
+
+    const ancestor = view.wrapper.ownerDocument.createElement('div');
+    view.wrapper.appendChild(ancestor);
+    ancestor.appendChild(highlighted);
+    ancestor.classList.add('cfx-topology-html-filter-hidden');
+    highlight();
+    assert.equal(peer.hasAttribute('data-cfx-highlight-muted'), false);
+    assert.equal(highlighted.getAttribute('data-cfx-highlighted'), 'true');
+    ancestor.classList.remove('cfx-topology-html-filter-hidden');
+    highlight();
+    assert.equal(peer.getAttribute('data-cfx-highlight-muted'), 'true');
   } finally { view.close(); }
 });

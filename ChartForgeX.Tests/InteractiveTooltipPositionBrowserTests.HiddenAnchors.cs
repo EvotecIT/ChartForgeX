@@ -2,6 +2,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
 
@@ -57,6 +58,26 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         Assert.Equal(baseline.GetProperty("observed").GetInt32() + 1, active.GetProperty("observed").GetInt32());
         foreach (var name in new[] { "resize", "scroll", "transitionend", "observed" })
             Assert.Equal(baseline.GetProperty(name).GetInt32(), released.GetProperty(name).GetInt32());
+        if (pinned && subject == "target") {
+            const string replacement = PointTarget + "[data-cfx-series=\"0\"][data-cfx-point=\"1\"]";
+            await page.WaitForFunctionAsync("selector=>{const node=document.querySelector(selector);return node.getRootNode().activeElement===node && node.getAttribute('tabindex')==='0';}",
+                replacement, new PageWaitForFunctionOptions { Timeout = 5000 });
+            // Passive recovery keeps focus usable without acquiring the replacement's readout.
+            // A boundary arrow, re-entry with Tab and explicit pinning each resume that target normally.
+            await page.Keyboard.PressAsync("ArrowLeft");
+            var resumed = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, selector: replacement);
+            Assert.Contains("X\n7\nY\n6", resumed.GetProperty("text").GetString()!, StringComparison.Ordinal);
+            await page.Keyboard.PressAsync("Tab");
+            Assert.True(await page.Locator("[data-cfx-reset]").EvaluateAsync<bool>("node=>node===document.activeElement"));
+            Assert.True(await TipHiddenAsync(page));
+            await page.Keyboard.PressAsync("Shift+Tab");
+            Assert.True(await page.Locator(replacement).EvaluateAsync<bool>("node=>node===document.activeElement"));
+            await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, selector: replacement);
+            await page.Keyboard.PressAsync("Space");
+            Assert.True((await GeometryAsync(page, replacement)).GetProperty("pinned").GetBoolean());
+            await CaptureAsync(page, $"position-hidden-keyboard-resume-{anchor}", await GeometryAsync(page, replacement), session);
+            await page.Keyboard.PressAsync("Space");
+        }
         await page.EvaluateAsync("()=>window.hiddenPositionSubject.removeAttribute('hidden')");
         await page.Locator(Reading).EvaluateAsync("node=>{node.blur();node.focus();}");
         var recovered = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight });

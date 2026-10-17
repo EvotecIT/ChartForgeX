@@ -11,6 +11,7 @@
     <AssemblyMetadata Include="RepositoryRoot" Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/..'))" />
     <AssemblyMetadata Include="MarkupCliPath" Value="$(ArtifactsPath)/bin/ChartForgeX.Markup.Cli/$(ArtifactsPivots)/ChartForgeX.Markup.Cli.dll" Condition="'$(UseArtifactsOutput)' == 'true'" />
     <EmbeddedResource Include="Fixtures\OpenType\*.ttf" />
+    <EmbeddedResource Include="Fixtures\Raster\*" />
     <EmbeddedResource Include="Fixtures\OpenType\variable-compact.otf" />
     <EmbeddedResource Include="Fixtures\OpenType\variable-malformed.otf" />
     <EmbeddedResource Include="Fixtures\OpenType\stem-compact.otf" />
@@ -29,7 +30,7 @@
     <PackageReference Include="HtmlTinkerX" Version="3.0.5" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" PrivateAssets="all" />
     <PackageReference Include="xunit" Version="2.9.3" PrivateAssets="all" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0" PrivateAssets="all">
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" PrivateAssets="all">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>

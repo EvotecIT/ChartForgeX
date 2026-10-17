@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -28,21 +27,28 @@ internal static partial class VisualHierarchyCompiler {
         while (tangent < -90) tangent += 180;
         var horizontalShape = RoundedShape(0);
         var tangentShape = Math.Abs(tangent) < .001 ? horizontalShape : RoundedShape(tangent);
-        if (TryCaption(original, metrics)) return;
+        if (TryRadialPositions(original, metrics)) return;
         // Wrapping preserves a multiword caption before shortening. Geometry checks
         // still use the actual shaped width and combined line height of that result.
         var wrapped = ChartLabelWrapping.BalancedTwoLine(original, style.EffectiveFontSize, metrics.Width * .6,
             (value, _) => builder.MeasureText(value, style).Width);
         var twoLines = string.Join("\n", wrapped);
-        if (wrapped.Length > 1 && TryCaption(twoLines, builder.MeasureText(twoLines, style))) return;
-        var elements = StringInfo.ParseCombiningCharacters(original);
-        for (var count = elements.Length - 1; count > 0; count--) {
-            var shortened = original.Substring(0, elements[count]).TrimEnd() + "…";
-            if (!TryCaption(shortened, builder.MeasureText(shortened, style))) continue;
-            builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A sunburst label was shortened to fit its segment; complete text remains in source semantics."));
-            return;
-        }
+        if (wrapped.Length > 1 && TryRadialPositions(twoLines, builder.MeasureText(twoLines, style))) return;
         builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A sunburst label was omitted to fit its segment; complete text remains in source semantics."));
+
+        bool TryRadialPositions(string text, TextMetrics measured) {
+            var thickness = node.OuterRadius - node.InnerRadius;
+            var positions = node.Depth == 0 ? new[] { 0d }
+                : new[] { radius, node.InnerRadius + thickness * .35, node.InnerRadius + thickness * .65 };
+            foreach (var position in positions) {
+                x = model.CenterX + Math.Cos(mid) * position;
+                y = model.CenterY + Math.Sin(mid) * position;
+                horizontalShape = RoundedShape(0);
+                tangentShape = Math.Abs(tangent) < .001 ? horizontalShape : RoundedShape(tangent);
+                if (TryCaption(text, measured)) return true;
+            }
+            return false;
+        }
 
         bool TryCaption(string text, TextMetrics measured) {
             var orientations = node.Depth == 0 || Math.Abs(tangent) < .001 ? new[] { 0d } : new[] { 0d, tangent };

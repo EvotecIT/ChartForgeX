@@ -45,7 +45,7 @@ public sealed class InteractiveMissingCategoryBrowserTests {
         Assert.Equal(8, identities.Distinct().Count());
 
         await observedZero.FocusAsync();
-        Assert.Equal("Target, 1: 0", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal("1", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         foreach (var category in new[] { 2, 3 }) {
             var local = roots.Nth(0).Locator(Target(category));
             var peer = roots.Nth(1).Locator(Target(category));
@@ -65,7 +65,8 @@ public sealed class InteractiveMissingCategoryBrowserTests {
             Assert.Equal("target-source:category:" + category,
                 await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
             await page.Keyboard.PressAsync("Space");
-            Assert.Contains("No observation", await page.Locator(".cfx-tooltip__title").InnerTextAsync(), StringComparison.Ordinal);
+            Assert.Equal(category.ToString(), await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+            Assert.Equal("No observation", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Status" }).Locator("+ dd").InnerTextAsync());
             Assert.DoesNotContain("Value", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
             Assert.DoesNotContain("Y", await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
             foreach (var root in new[] { roots.Nth(0), roots.Nth(1) }) {

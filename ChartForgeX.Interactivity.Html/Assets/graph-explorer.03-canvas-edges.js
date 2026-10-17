@@ -3,15 +3,15 @@
     const rendered = visualEdge(edge, byId), control = edgeControl(rendered);
     const dimmed = edge.el.classList.contains('cfx-graph-neighborhood-dim');
     const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
-    const selected = edge.el.classList.contains('cfx-graph-selected');
+    const selected = edge.el.classList.contains('cfx-graph-selected') || edge.el.classList.contains('cfx-graph-highlighted');
     const baseWidth = dense ? Math.max(.65, Math.min(1.8, edge.weight * .55)) : edge.weight;
     const emphasis = selected ? 1.6 : related ? 1.2 : 0;
     const width = edge.strokeWidth > 0 ? Math.max(.65, edge.strokeWidth + emphasis)
       : Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, baseWidth + emphasis));
     return { rendered, control, width, dimmed,
       color: selected ? palette.selected : related ? '#14b8a6' : edge.strokeColor || palette.edge,
-      alpha: dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58,
-      arrowAlpha: dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1,
+      alpha: (dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58) * graphLinkOpacity(edge.el),
+      arrowAlpha: (dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1) * graphLinkOpacity(edge.el),
       arrows: !moving || selected || related,
       labels: (!moving || selected || related) && edge.label && edge.showLabel &&
         (!root.classList.contains('cfx-graph-lod-hide-edge-labels') || selected || related) &&
@@ -26,7 +26,7 @@
     context.lineWidth = 4;
     context.strokeStyle = palette.halo;
     context.fillStyle = graphAdaptiveTextColor(root, edge.labelColor, palette.edgeLabel);
-    context.globalAlpha = paint.dimmed ? .16 : 1;
+    context.globalAlpha = (paint.dimmed ? .16 : 1) * graphLinkOpacity(edge.el);
     context.strokeText(edge.label, label.x, label.y);
     context.fillText(edge.label, label.x, label.y);
     context.globalAlpha = 1;

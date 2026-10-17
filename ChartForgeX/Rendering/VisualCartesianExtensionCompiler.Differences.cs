@@ -36,10 +36,11 @@ internal static partial class VisualCartesianCompiler {
             var firstText = Value(chart, first.Y); var secondText = Value(chart, second.Y);
             var options = series.DifferenceArea;
             var label = ResolveObservationLabel(chart, context, series, item, colors,
-                () => options.FirstName + ": " + firstText + "; " + options.SecondName + ": " + secondText);
+                _ => options.FirstName + ": " + firstText + "; " + options.SecondName + ": " + secondText);
             var facts = new Dictionary<string, string> {
                 ["data-cfx-label-first"] = options.FirstName, ["data-cfx-label-second"] = options.SecondName,
-                ["data-cfx-formatted-first"] = firstText, ["data-cfx-formatted-second"] = secondText
+                ["data-cfx-formatted-first"] = firstText, ["data-cfx-formatted-second"] = secondText,
+                ["data-cfx-formatted-y"] = firstText
             };
             using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, facts,
                 ("x", first.X), ("first", first.Y), ("second", second.Y))) {

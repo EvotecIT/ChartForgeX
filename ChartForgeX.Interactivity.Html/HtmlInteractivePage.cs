@@ -1,15 +1,19 @@
 using ChartForgeX.Html;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Interactivity.Html;
 
 internal static class HtmlInteractivePage {
-    internal static HtmlMarkupWriter StartDocument(string title, HtmlAssetReferences? assets = null) {
+    internal static string ChartSurfaceStyle(Chart chart) => "background:" + chart.Options.ResolvedTheme.Background.ToCss()
+        + ";color:" + chart.Options.ResolvedTheme.Text.ToCss() + ";font-family:" + HtmlChartRenderer.CssFontFamily(chart.Options.ResolvedTheme.FontFamily);
+
+    internal static HtmlMarkupWriter StartDocument(string title, HtmlAssetReferences? assets = null, string? bodyStyle = null) {
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
         var pageStyle = "body{" + HtmlSurfacePolish.BrowserTextPolishCss + "}"
-            + HtmlSurfacePolish.PrintBodyCss("0", ".cfx-shell{min-height:auto;padding:0;background:transparent!important}");
+            + HtmlSurfacePolish.PrintBodyCss("0", "body{background:transparent!important}.cfx-shell{min-height:auto;padding:0;background:transparent!important}");
         HtmlChartRenderer.WriteDocumentHead(writer, title, assets == null ? HtmlInteractiveAssets.Style : null);
         if (assets != null) {
             HtmlInteractiveAssetFiles.WriteStylesheet(writer, assets, HtmlInteractiveAssetFiles.ChartStyle);
@@ -17,7 +21,7 @@ internal static class HtmlInteractivePage {
         writer.StartElement("style").EndStartElement().RawTrusted(pageStyle).EndElement().Line();
 
         writer.EndElement().Line()
-            .StartElement("body").EndStartElement().Line();
+            .StartElement("body").Attribute("style", bodyStyle).EndStartElement().Line();
         return writer;
     }
 

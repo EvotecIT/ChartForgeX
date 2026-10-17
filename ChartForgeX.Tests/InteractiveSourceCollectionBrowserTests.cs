@@ -35,7 +35,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         Assert.Equal(kind == ChartSeriesKind.TrendLine ? "regression-endpoint" : "five-number-summary", await point.GetAttributeAsync("data-cfx-derived"));
         Assert.Equal(observations.Length.ToString(), await point.GetAttributeAsync("data-cfx-source-count"));
         Assert.Null(await point.GetAttributeAsync("data-cfx-source-point"));
-        await point.FocusAsync();
+        await FocusWithKeyboardAsync(page, point);
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await point.GetAttributeAsync("aria-selected"));
         using (var events = await ReadEventsAsync(page)) {
@@ -47,6 +47,21 @@ public sealed class InteractiveSourceCollectionBrowserTests {
                 Assert.False(target.TryGetProperty("sourcePoint", out _));
                 Assert.False(target.TryGetProperty("sourcePoints", out _));
             }
+        }
+        if (kind == ChartSeriesKind.TrendLine) {
+            // The containing series owns line ink, but it is intentionally not an extra keyboard datum.
+            // Its similarly named metadata is a count, not an observation contributor collection.
+            await page.Locator("[data-cfx-reset]").ClickAsync();
+            await MoveAwayAsync(page);
+            var line = page.Locator("[data-cfx-role='series'] [data-cfx-role='trend-line']").First;
+            var position = await line.EvaluateAsync<double[]>("node => { const p = node.getPointAtLength(node.getTotalLength() / 2).matrixTransform(node.getScreenCTM()); return [p.x, p.y]; }");
+            await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
+            using var events = await ReadEventsAsync(page);
+            var seriesHover = events.RootElement.EnumerateArray().Last(item => item.GetProperty("type").GetString() == "cfxhover");
+            var target = seriesHover.GetProperty("target");
+            Assert.Equal("series", target.GetProperty("targetKind").GetString());
+            Assert.Equal("summary-source", target.GetProperty("seriesKey").GetString());
+            Assert.False(target.TryGetProperty("sourcePoints", out _));
         }
         await CaptureAsync(page, "raw-summary-" + kind.ToString().ToLowerInvariant());
         AssertNoConsoleErrors(session);
@@ -78,7 +93,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         var roots = page.Locator(".cfx-interactive-chart");
         await CaptureEventsAsync(page);
         var summary = roots.Nth(1).Locator(Point(0, 0));
-        await summary.FocusAsync();
+        await FocusWithKeyboardAsync(page, summary);
         await page.Keyboard.PressAsync("Space");
         foreach (var index in new[] { 0, 3, 4 })
             Assert.Null(await roots.Nth(index).Locator(Point(0, 0)).GetAttributeAsync("aria-selected"));
@@ -94,7 +109,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
             Assert.Equal("observations:derived:" + (kind == ChartSeriesKind.TrendLine ? "regression-endpoint" : "five-number-summary") + ":0", target.GetProperty("targetId").GetString());
             Assert.False(target.TryGetProperty("sourcePoint", out _));
         }
-        await roots.Nth(0).Locator(Point(0, 0)).FocusAsync();
+        await FocusWithKeyboardAsync(page, roots.Nth(0).Locator(Point(0, 0)));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await roots.Nth(0).Locator(Point(0, 0)).GetAttributeAsync("aria-selected"));
         foreach (var index in new[] { 1, 2 })
@@ -149,7 +164,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
             targetIds[bin] = (await point.GetAttributeAsync("data-cfx-target-id"))!;
             Assert.StartsWith("quantity-source:derived:histogram-bin:", targetIds[bin]);
             Assert.Equal(targetIds[bin], await roots.Nth(1).Locator(Point(0, bin)).GetAttributeAsync("data-cfx-target-id"));
-            await point.FocusAsync();
+            await FocusWithKeyboardAsync(page, point);
             await page.Keyboard.PressAsync("Space");
             foreach (var peer in new[] { 0, 1 })
                 Assert.Equal("true", await roots.Nth(peer).Locator(Point(0, bin)).GetAttributeAsync("aria-selected"));
@@ -163,21 +178,14 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         }
         var ids = await roots.Nth(0).Locator(PointTarget).EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.dataset.cfxTargetId)");
         Assert.Equal(4, ids.Distinct().Count());
-        await populated.FocusAsync();
+        await FocusWithKeyboardAsync(page, populated);
         await page.Keyboard.PressAsync("Space");
         foreach (var peer in new[] { 0, 1 }) {
             Assert.Equal("false", await roots.Nth(peer).Locator(Point(0, 1)).GetAttributeAsync("aria-selected"));
             Assert.Equal("true", await roots.Nth(peer).Locator(Point(0, 2)).GetAttributeAsync("aria-selected"));
         }
-        // The series group's similarly named metadata is a count, not a contributor collection.
-        await roots.Nth(0).Locator("[data-cfx-role='series'][data-cfx-series='0']").FocusAsync();
-        using (var events = await ReadEventsAsync(page)) {
-            var seriesHover = events.RootElement.EnumerateArray().Last(item => item.GetProperty("type").GetString() == "cfxhover");
-            var target = seriesHover.GetProperty("target");
-            Assert.Equal("series", target.GetProperty("targetKind").GetString());
-            Assert.False(target.TryGetProperty("sourcePoints", out _));
-        }
-        await empty.FocusAsync();
+
+        await FocusWithKeyboardAsync(page, empty);
         await CaptureAsync(page, "mean-source-collection-" + width + "-" + (dark ? "dark" : "light"));
         AssertNoConsoleErrors(session);
     }
@@ -202,9 +210,9 @@ public sealed class InteractiveSourceCollectionBrowserTests {
             Assert.Null(await target.GetAttributeAsync("data-cfx-source-point"));
             Assert.Null(await target.GetAttributeAsync("data-cfx-observation-id"));
             Assert.Equal(otherId, await target.GetAttributeAsync("data-cfx-target-id"));
-            await target.FocusAsync();
+            await FocusWithKeyboardAsync(page, target);
         }
-        await other.FocusAsync();
+        await FocusWithKeyboardAsync(page, other);
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await other.GetAttributeAsync("aria-selected"));
         Assert.Null(await page.Locator("[data-cfx-role='radial-point'][data-cfx-point='0']").GetAttributeAsync("aria-selected"));
@@ -231,7 +239,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         Assert.StartsWith("availability-source:derived:timeline-run:", runId);
         Assert.Equal("0,1,2,3", await run.GetAttributeAsync("data-cfx-source-points"));
         Assert.Null(await run.GetAttributeAsync("data-cfx-source-point"));
-        await run.FocusAsync();
+        await FocusWithKeyboardAsync(page, run);
         await page.Keyboard.PressAsync("Space");
         using var events = await ReadEventsAsync(page);
         AssertEvent(events, "cfxhover", "point", runId, new[] { 0, 1, 2, 3 });

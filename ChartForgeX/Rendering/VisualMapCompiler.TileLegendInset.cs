@@ -53,17 +53,18 @@ internal static partial class VisualMapCompiler {
         var gridHeight = tile * definition.RowCount + tileGap * (definition.RowCount - 1);
         var grid = new ChartRect(plot.Left + (plot.Width - gridWidth) / 2, plot.Top + (plot.Height - gridHeight) / 2, gridWidth, gridHeight);
         var missingWidth = row * .7 + 4 + builder.MeasureText(presentation.NoData, style).Width;
-        var keyWidth = 2 * Math.Max(builder.MeasureText(low, style).Width, builder.MeasureText(high, style).Width) + missingWidth + spacing * 2;
+        var keyWidth = 2 * Math.Max(builder.MeasureText(low, style).Width, builder.MeasureText(high, style).Width) + spacing * 2;
         var seriesWidth = builder.MeasureText(entries[0].Label, legendStyle).Width + 28;
         var inset = Math.Max(2, Math.Max(stroke / 2, separation));
-        var minimumWidth = Math.Max(keyWidth, seriesWidth) + inset * 2;
+        var minimumWidth = Math.Max(keyWidth, seriesWidth + missingWidth + spacing) + inset * 2;
         var minimumHeight = seriesRow + separation + keyHeight + inset * 2;
         var slot = EmptyTileLegendSlot(definition, grid, tile, tileGap, minimumWidth, minimumHeight);
         if (!slot.HasValue) return null;
         var area = slot.Value;
         var legend = new ChartRect(area.Left + inset, area.Top + inset, area.Width - inset * 2, seriesRow + separation + keyHeight);
         return new TileMapLegendInset(plot, grid, tile, tileGap, legend,
-            new ChartRect(legend.Left, legend.Top + seriesRow + separation, legend.Width, keyHeight));
+            new ChartRect(legend.Left, legend.Top + seriesRow + separation, legend.Width, keyHeight),
+            new ChartRect(legend.Right - missingWidth, legend.Top, missingWidth, Math.Min(row, seriesRow)));
     }
 
     private static ChartRect? EmptyTileLegendSlot(ChartTileMapDefinition definition, ChartRect grid,
@@ -93,8 +94,8 @@ internal static partial class VisualMapCompiler {
 
 /// <summary>One resolved map-owned placement for native tiles, their series identity and quantitative key.</summary>
 internal sealed class TileMapLegendInset {
-    internal TileMapLegendInset(ChartRect map, ChartRect grid, double tileSize, double tileGap, ChartRect legendArea, ChartRect colorKey) {
-        Map = map; Grid = grid; TileSize = tileSize; TileGap = tileGap; LegendArea = legendArea; ColorKey = colorKey;
+    internal TileMapLegendInset(ChartRect map, ChartRect grid, double tileSize, double tileGap, ChartRect legendArea, ChartRect colorKey, ChartRect missingDataKey) {
+        Map = map; Grid = grid; TileSize = tileSize; TileGap = tileGap; LegendArea = legendArea; ColorKey = colorKey; MissingDataKey = missingDataKey;
     }
     internal ChartRect Map { get; }
     internal ChartRect Grid { get; }
@@ -102,4 +103,5 @@ internal sealed class TileMapLegendInset {
     internal double TileGap { get; }
     internal ChartRect LegendArea { get; }
     internal ChartRect ColorKey { get; }
+    internal ChartRect MissingDataKey { get; }
 }

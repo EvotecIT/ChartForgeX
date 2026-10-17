@@ -31,6 +31,7 @@ public sealed class BubbleSizeScaleBrowserTests {
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single);
         await using var session = await OpenAsync(html, compact ? 340 : 740, 640);
         var page = session.Page;
+        var pageErrors = new List<string>(); page.PageError += (_, error) => pageErrors.Add(error);
         var equalRadii = await page.Locator("g[data-cfx-size='36'] [data-cfx-role='bubble']")
             .EvaluateAllAsync<double[]>("nodes => nodes.map(node => Number(node.getAttribute('rx')))");
         Assert.Equal(new[] { 15.6, 15.6 }, equalRadii);
@@ -38,7 +39,24 @@ public sealed class BubbleSizeScaleBrowserTests {
         Assert.Equal("200", await target.GetAttributeAsync("data-cfx-size"));
         Assert.Equal("24", await target.Locator("[data-cfx-role='bubble']").GetAttributeAsync("rx"));
         await MoveToAsync(page, Point(1, 2));
-        Assert.Contains("200", await TooltipTextAsync(page), StringComparison.Ordinal);
+        var pointerReadout = await TooltipTextAsync(page);
+        var pointerCaptures = Environment.GetEnvironmentVariable("CFX_BUBBLE_CAPTURE_DIRECTORY")
+            ?? Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(pointerCaptures)) {
+            Directory.CreateDirectory(pointerCaptures);
+            var name = "shared-capped-" + (dark ? "dark" : "light") + "-" + (compact ? "compact" : "wide") + "-pointer";
+            var state = await target.EvaluateAsync<JsonElement>("""
+                node => { const root = node.closest('.cfx-interactive-chart'), tip = root.querySelector('.cfx-tooltip');
+                  return { Target: {...node.dataset}, HoverKey: root.dataset.cfxHoverKey, HoverMode: root.dataset.cfxHoverMode,
+                    TooltipHidden: tip.hidden, TooltipHtml: tip.innerHTML }; }
+                """);
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(pointerCaptures, name + ".browser.png") });
+            await File.WriteAllTextAsync(Path.Combine(pointerCaptures, name + ".runtime.json"), JsonSerializer.Serialize(new {
+                Readout = pointerReadout, State = state, PageErrors = pageErrors,
+                ConsoleErrors = session.ConsoleLog.Where(entry => entry.Type == HtmlTinkerX.HtmlConsoleMessageType.Error).ToArray()
+            }, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        Assert.Contains("200", pointerReadout, StringComparison.Ordinal);
         Assert.Equal("35", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Y" }).Locator("+ dd").InnerTextAsync());
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.bubbleSelection = event.detail.target)");
         await target.FocusAsync();
@@ -46,11 +64,12 @@ public sealed class BubbleSizeScaleBrowserTests {
         var selected = await page.EvaluateAsync<JsonElement>("() => window.bubbleSelection");
         Assert.Equal("2", selected.GetProperty("point").GetString());
         Assert.Equal("35", selected.GetProperty("value").GetString());
-        Assert.Contains("200", selected.GetProperty("label").GetString(), StringComparison.Ordinal);
+        Assert.Equal("4.25", selected.GetProperty("label").GetString());
+        Assert.Equal(4.25, selected.GetProperty("x").GetDouble());
         Assert.Equal("200", await target.GetAttributeAsync("data-cfx-size"));
         Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("node => { const box = node.getBoundingClientRect(); return box.left >= 0 && box.right <= innerWidth && box.top >= 0 && box.bottom <= innerHeight; }"));
         Assert.True(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth + 1"));
-        AssertNoConsoleErrors(session);
+        Assert.Empty(pageErrors); AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_BUBBLE_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(captures)) {
             Directory.CreateDirectory(captures);

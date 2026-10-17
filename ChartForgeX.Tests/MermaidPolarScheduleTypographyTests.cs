@@ -31,6 +31,7 @@ public sealed class MermaidPolarScheduleTypographyTests {
         var authoredTickSize = chart.Options.Theme.Typography.AxisSize;
         chart.Options.XAxis.LabelAngle = angle;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"mermaid-font-ceiling-{family}-{width}-{dark}-{angle}");
         var svg = prepared.ToSvg(); var labels = Texts(svg);
         if (family == "radar") {
             Assert.Equal(3, labels.Count(element => Role(element) == "radar-axis-label"));

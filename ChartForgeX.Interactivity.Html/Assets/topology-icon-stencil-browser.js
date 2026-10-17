@@ -90,7 +90,7 @@
     setText('source', payload.sourcePath || payload.sourceUrl);
     setText('revision', payload.sourceRevision);
     setText('license', payload.sourceLicense);
-    root.dispatchEvent(new CustomEvent('cfx-icon-browser-select', { bubbles: true, detail: payload }));
+    root.dispatchEvent(new CustomEvent('cfx-icon-browser-select', { bubbles: true, composed: true, detail: payload }));
   };
   root.querySelectorAll('[data-cfx-icon-filter]').forEach(button => {
     button.addEventListener('click', () => {

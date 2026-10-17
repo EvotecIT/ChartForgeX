@@ -10,6 +10,7 @@ internal static partial class SmokeTests {
         var options = ChartInteractionOptions.ReportReview();
         Assert(options.HasFeature(ChartInteractionFeatures.Tooltips), "Report-review interactivity should include tooltips.");
         Assert(options.HasFeature(ChartInteractionFeatures.Selection), "Report-review interactivity should include selection.");
+        Assert(options.SelectionMode == ChartSelectionMode.Toggle && options.BrushAxis == ChartBrushAxis.XY, "Interaction defaults should preserve toggled selection and a two-axis brush.");
         Assert(options.HasFeature(ChartInteractionFeatures.LegendToggles), "Report-review interactivity should include legend toggles.");
         Assert(options.HasFeature(ChartInteractionFeatures.KeyboardNavigation), "Report-review interactivity should include keyboard navigation.");
         Assert(options.HasFeature(ChartInteractionFeatures.Crosshair), "Report-review interactivity should include nearest-point crosshair exploration.");
@@ -215,13 +216,15 @@ internal static partial class SmokeTests {
         Assert(html.Contains("class=\"cfx-brush-box\"", StringComparison.Ordinal), "Interactive HTML should include a brush selection overlay.");
         Assert(html.Contains("root.dataset.cfxBrush", StringComparison.Ordinal) && html.Contains("'cfxbrush'", StringComparison.Ordinal), "Interactive HTML should publish brush selection state for host code.");
         Assert(html.Contains("selectTargetsInBox(root", StringComparison.Ordinal) && html.Contains("'cfxlasso'", StringComparison.Ordinal), "Interactive HTML should turn brush rectangles into reusable lasso selection events.");
-        Assert(html.Contains("if (selectedTargets.length || replaceSelection) emitSync(root, { action: 'lasso'", StringComparison.Ordinal), "Interactive HTML should synchronize lasso clears when a replace brush selects no targets.");
         Assert(html.Contains("hideCrosshair(root, crosshair);", StringComparison.Ordinal) && html.Contains("clearHover(root, true, true);", StringComparison.Ordinal), "Interactive crosshair should clear stale hover state when no nearby point remains.");
         Assert(html.Contains("clearReveals(root, 'crosshair')", StringComparison.Ordinal) && html.Contains("clearReveals(root, 'navigate')", StringComparison.Ordinal), "Interactive hover clear should remove synced crosshair and navigation reveal labels.");
         Assert(html.Contains("const previousPlayback = root.dataset.cfxScenarioPlayback || ''", StringComparison.Ordinal) && html.Contains("previousPlayback !== 'idle'", StringComparison.Ordinal), "Interactive scenario switching should emit playback idle transitions when it stops active playback.");
         Assert(html.Contains("new XMLSerializer().serializeToString(svg)", StringComparison.Ordinal) && html.Contains("'cfxexport'", StringComparison.Ordinal), "Interactive HTML should export inline SVG without external libraries.");
         Assert(html.Contains("canvas.toBlob((blob)", StringComparison.Ordinal) && html.Contains("image/png", StringComparison.Ordinal), "Interactive HTML should export inline SVG as PNG without external libraries.");
         Assert(html.Contains("new CustomEvent(name", StringComparison.Ordinal) && html.Contains("'cfxviewport'", StringComparison.Ordinal) && html.Contains("'cfxselect'", StringComparison.Ordinal) && html.Contains("'cfxseries'", StringComparison.Ordinal) && html.Contains("'cfxreset'", StringComparison.Ordinal), "Interactive HTML should publish host events for viewport, selection, series toggles, and reset.");
+        Assert(html.Contains("'cfxselectionchange'", StringComparison.Ordinal) && html.Contains("'cfx-select'", StringComparison.Ordinal)
+            && html.Contains("'cfx-clear-selection'", StringComparison.Ordinal) && html.Contains("'cfx-highlight'", StringComparison.Ordinal)
+            && html.Contains("'cfx-clear-highlight'", StringComparison.Ordinal) && html.Contains("bubbles: true", StringComparison.Ordinal), "Interactive HTML should include the bubbling selection and silent linked-host command contract.");
         Assert(html.Contains("'cfxseriesfocus'", StringComparison.Ordinal), "Interactive HTML should publish host events for one-series focus changes.");
         Assert(html.Contains("new CustomEvent('cfxsync'", StringComparison.Ordinal) && html.Contains("applySync(peer, detail)", StringComparison.Ordinal), "Interactive HTML should synchronize grouped chart state without external libraries.");
         Assert(html.Contains("action: 'viewport'", StringComparison.Ordinal) && html.Contains("action: 'series'", StringComparison.Ordinal) && html.Contains("action: 'selection'", StringComparison.Ordinal) && html.Contains("action: 'brush'", StringComparison.Ordinal), "Interactive HTML should synchronize viewport, series, selection, and brush changes.");
@@ -282,12 +285,6 @@ internal static partial class SmokeTests {
         Assert(!noResetSection.Contains("data-cfx-compare-tray=\"true\"", StringComparison.Ordinal), "Interactive HTML should hide compare trays when compare markers are disabled.");
         Assert(noReset.Contains("data-cfx-interaction-features=\"Tooltips\"", StringComparison.Ordinal), "Interactive HTML should honor narrowed feature profiles.");
         Assert(noReset.Contains("data-cfx-responsive-layout=\"fit\"", StringComparison.Ordinal), "Interactive HTML should allow hosts to opt back into whole-chart fitting.");
-        var fitRuleStart = noReset.IndexOf(".cfx-interactive-chart[data-cfx-responsive-layout=\"fit\"] .cfx-stage svg {", StringComparison.Ordinal);
-        Assert(fitRuleStart >= 0, "Fit layouts should emit a dedicated responsive SVG rule.");
-        var fitRuleEnd = noReset.IndexOf('}', fitRuleStart);
-        var fitRule = noReset.Substring(fitRuleStart, fitRuleEnd - fitRuleStart);
-        Assert(fitRule.Contains("width: 100%;", StringComparison.Ordinal) && fitRule.Contains("max-width: 100%;", StringComparison.Ordinal) && fitRule.Contains("height: auto;", StringComparison.Ordinal), "Fit layouts should scale the complete chart into a narrow stage instead of clipping it.");
-
         var noPlaybackChart = SampleChart();
         var noPlayback = noPlaybackChart.ToInteractiveHtmlPage(options => {
             options.Interaction

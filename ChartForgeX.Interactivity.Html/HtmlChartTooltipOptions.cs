@@ -4,6 +4,10 @@ namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Configures HTML tooltip content, acquisition, timing and positioning without enabling interaction features.</summary>
 public sealed class HtmlChartTooltipOptions {
+    /// <summary>Gets or sets whether selecting a mark pins its readout. The default is true.
+    /// Disabling pinning retains ordinary pointer and keyboard tooltips.</summary>
+    public bool PinOnSelect { get; set; } = true;
+
     /// <summary>
     /// Gets or sets the readout mode. The default is <see cref="HtmlChartTooltipMode.SharedX"/>.
     /// Shared-x readouts fall back to one target when comparable observations are unavailable.

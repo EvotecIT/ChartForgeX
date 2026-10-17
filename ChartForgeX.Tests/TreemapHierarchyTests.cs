@@ -23,6 +23,17 @@ public sealed class TreemapHierarchyTests {
         .Where(element => (string?)element.Attribute("data-cfx-target-kind") == "node").ToArray();
     internal static double Number(XElement element, string name) => double.Parse(element.Attribute(name)!.Value, CultureInfo.InvariantCulture);
 
+    [Fact]
+    public void ReadingAndWritingDefaultLabelVisibilityPreservesTreemapCaptions() {
+        var chart = Chart.Create().WithSize(420, 280).AddTreemap("Work", new[] { new ChartHierarchyItem("web", "Web server", value: 4) });
+        var visibility = chart.Options.ShowDataLabels;
+        chart.Options.ShowDataLabels = visibility;
+
+        Assert.Null(chart.Options.ShowDataLabels);
+        var svg = XDocument.Parse(chart.ToSvg());
+        Assert.Contains("Web server", svg.ToString());
+    }
+
     [Theory]
     [InlineData(false, null, false)]
     [InlineData(true, null, true)]

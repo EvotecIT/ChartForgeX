@@ -86,7 +86,11 @@
   const bindGraphItemSelection = (root, item) => {
     if (attr(item, 'data-cfx-graph-selection-bound') === 'true') return;
     item.setAttribute('data-cfx-graph-selection-bound', 'true');
+    item.addEventListener('pointerenter', () => graphHover(root, item));
+    item.addEventListener('pointerleave', () => graphHover(root, null));
+    item.addEventListener('blur', () => graphHover(root, null));
     item.addEventListener('focus', () => {
+      graphHover(root, item);
       root.dataset.cfxGraphKeyboardItem = graphKeyboardItemKey(item);
       items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(candidate => {
         candidate.setAttribute('tabindex', candidate === item ? '0' : '-1');

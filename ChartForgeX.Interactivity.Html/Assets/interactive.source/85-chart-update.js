@@ -23,7 +23,10 @@
         || !Array.isArray(item.indices) || item.indices.some(index => !Number.isSafeInteger(index) || index < 0))
       || new Set(metadata.series.map(item => item.key)).size !== metadata.series.length
       || metadata.xProjection !== undefined && !validXProjection(metadata.xProjection)
+      || metadata.dataProjection !== undefined && !validDataProjection(metadata.dataProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
+      || metadata.categoryLabels !== undefined && (!Array.isArray(metadata.categoryLabels)
+        || metadata.categoryLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string'))
       || metadata.regions.some(item => !item || typeof item.id !== 'string' || typeof item.role !== 'string'
         || ![item.x, item.y, item.width, item.height].every(Number.isFinite) || item.width < 0 || item.height < 0
         || item.fillInteriors !== undefined && (!Array.isArray(item.fillInteriors)
@@ -38,15 +41,31 @@
   const durableChartTarget = target => !!target && target.seriesScope === 'shared' && !!target.seriesKey
     && (target.targetKind !== 'point' || target.observationId !== undefined)
     && (target.targetKind !== 'legend' || target.point === undefined || target.observationId !== undefined);
-  const chartUpdateState = root => {
+  const chartLegendStateTargets = (root, isolated) => {
+    // A narrow native legend may omit an entry while its data owner remains painted and muted.
+    // Capture that owner's identity too; presentation density must not erase reader state.
+    const attribute = isolated ? 'cfxIsolated' : 'cfxMuted';
+    const className = isolated ? 'cfx-series-isolated-in' : 'cfx-series-muted';
+    const targets = interactiveTargets(root, '[data-cfx-series]')
+      .filter(node => node.dataset[attribute] === 'true' || node.classList.contains(className)).map(seriesTarget);
+    const wholeSeries = new Set(targets.filter(target => target.targetKind === 'series').map(target => target.seriesKey));
+    const captured = new Set();
+    return targets.filter(target => {
+      if (target.targetKind !== 'series' && wholeSeries.has(target.seriesKey)) return false;
+      const key = JSON.stringify([target.seriesKey, target.targetKind, target.targetId]);
+      if (captured.has(key)) return false;
+      captured.add(key); return true;
+    });
+  };
+  const chartUpdateState = (root, sameSource = false) => {
     const active = root.getRootNode().activeElement;
     const focused = interactiveTargets(root).find(node => targetFocusNode(node) === active);
-    const legends = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"]'));
     return {
-      selected: selectedTargets(root).filter(durableChartTarget),
-      muted: legends.filter(node => node.dataset.cfxMuted === 'true').map(seriesTarget).filter(durableChartTarget),
-      isolated: legends.filter(node => node.dataset.cfxIsolated === 'true').map(seriesTarget).filter(durableChartTarget),
-      focused: focused && durableChartTarget(targetIdentity(focused)) ? targetIdentity(focused) : null,
+      selected: selectedTargets(root).filter(target => sameSource || durableChartTarget(target)),
+      muted: chartLegendStateTargets(root, false).filter(target => sameSource || durableChartTarget(target)),
+      isolated: chartLegendStateTargets(root, true).filter(target => sameSource || durableChartTarget(target)),
+      focused: focused && (sameSource || durableChartTarget(targetIdentity(focused))) ? targetIdentity(focused) : null,
+      highlight: captureHostHighlight(root, sameSource),
       ownedFocus: !!active && root.contains(active), viewport: getState(root)
     };
   };
@@ -64,16 +83,15 @@
   };
   const restoreChartUpdateState = (root, state, nativeCommit = false) => {
     // Explicit identity survives position changes; anonymous ordinal facts never inherit full-replacement state.
-    clearSelections(root);
-    for (const target of state.selected) interactiveTargets(root).forEach(node => {
-      if (seriesKey(node) === target.seriesKey && matchesTargetIdentity(node, target)) setNodeSelected(node, true);
-    });
+    applySelectionSetByTargets(root, state.selected, true);
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
     for (const target of state.isolated) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesIsolation(root, resolved, true); }
+    applyHostHighlight(root, state.highlight);
+    syncSelectionAppearance(root);
     applyViewport(root, nativeCommit ? { zoom: 1, panX: 0, panY: 0 } : state.viewport);
     renderCompare(root); refreshKeyboardNavigation(root); syncResetControl(root);
     const focused = state.focused && interactiveTargets(root).find(node => seriesKey(node) === state.focused.seriesKey && matchesTargetIdentity(node, state.focused));
-    if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused);
+    if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused, pointerReadoutSuspended(root));
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
     // Focus recovery must not resurrect a pinned or stale readout from the previous scene.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);

@@ -227,7 +227,7 @@ internal static class ReportingExamples {
 
         var zone = TimeZoneInfo.CreateCustomTimeZone("Example/Plus5", TimeSpan.FromHours(5), "UTC+05", "UTC+05");
         var schedule = Chart.Create().WithTitle("Classic wall-clock schedule")
-            .WithSubtitle("Date-based schedules retain wall-clock dates and do not advertise an unapplied display zone")
+            .WithSubtitle("Date inputs keep their fields; calendar ticks align to midnight in the UTC+05 display zone")
             .WithTheme(VisualTheme.Report()).WithSize(1000, 340).WithPngOutputScale(pngOutputScale)
             .WithXAxis("Window").WithXAxisTimeScale(zone, showTimeZone: true, label: "UTC+05")
             .WithTickCount(3)

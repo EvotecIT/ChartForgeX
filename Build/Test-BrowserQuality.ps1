@@ -93,7 +93,11 @@ try {
         'DottedMapPointLegendBrowserTests.UnweightedLocationAndZeroWeightHaveDistinctLegendReadouts',
         'MermaidMindMapColorModeTests.StaticMindmapHostsDisplaySvgAndNativePng',
         'TopologyPaletteTrunkTests.EqualRgbIncomingSlotsKeepIndependentHostColorsAndMarkers',
-        'InteractiveHtmlPagePolishBrowserTests.StandalonePagesPrintTheCompleteNativeChartAndRestoreTheScreenView'
+        'InteractiveHtmlPagePolishBrowserTests.StandalonePagesPrintTheCompleteNativeChartAndRestoreTheScreenView',
+        'ShadowHostEventsBrowserTests.NativeCommandsBrushAndUpdateReachOuterShadowHosts',
+        'ShadowHostEventsBrowserTests.GraphSelectionAndCancelableChangesReachOuterShadowHosts',
+        'ShadowHostLegacyEventsBrowserTests.TopologyPublicNotificationsCrossShadowHostWhilePeerSyncStaysLocal',
+        'ShadowHostLegacyEventsBrowserTests.IconBrowserSelectionCrossesShadowHostWithItsStableIconIdentity'
     )
     foreach ($contract in $requiredContracts) {
         $observed = @($report.TestRun.Results.UnitTestResult | Where-Object { $_.testName.Contains($contract) })

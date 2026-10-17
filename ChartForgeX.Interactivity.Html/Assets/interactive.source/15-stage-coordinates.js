@@ -16,8 +16,8 @@
   const stagePointer = (stage, event, bounded = false) => stagePoint(stage, { x: event.clientX, y: event.clientY }, bounded);
   // The core owns layout. Project its captured plot through the live SVG transform, including pan/zoom.
   // Intersect with the visible scroller so the overlay cannot create new scrollable content.
-  const visibleCartesianPlot = (root, stage) => {
-    const plot = root._cfxCartesianPlot, svg = stage.querySelector('svg');
+  const visibleCartesianPlot = (root, stage, plot = root._cfxCartesianPlot) => {
+    const svg = stage.querySelector('svg');
     if (!plot || !svg || stage.clientWidth <= 0 || stage.clientHeight <= 0) return null;
     const matrix = svg.getScreenCTM();
     // stagePoint supports positive axis-aligned host scaling, not rotated/skewed/perspective hosts.

@@ -23,6 +23,10 @@ internal static partial class VisualCartesianCompiler {
         metadata["data-cfx-bin-lower"] = Number(bin.LowerBound);
         metadata["data-cfx-bin-upper"] = Number(bin.UpperBound);
         metadata["data-cfx-bin-upper-inclusive"] = pointIndex == bin.Layout.Count - 1 ? "true" : "false";
+        metadata["data-cfx-range-start"] = Number(bin.LowerBound);
+        // Linked filters use closed intervals. Preserve [lower, upper) bin membership without
+        // including a sample exactly on the next bin's boundary; retain raw edges above for display.
+        metadata["data-cfx-range-end"] = (pointIndex == bin.Layout.Count - 1 ? bin.UpperBound : ChartMath.PreviousRepresentable(bin.UpperBound)).ToString("R", System.Globalization.CultureInfo.InvariantCulture);
         metadata["data-cfx-bin-width"] = Number(bin.Width);
         metadata["data-cfx-bin-count"] = Number(bin.Count);
         metadata["data-cfx-bin-has-value"] = bin.Value.HasValue ? "true" : "false";
@@ -32,6 +36,7 @@ internal static partial class VisualCartesianCompiler {
         if (bin.Value.HasValue) metadata["data-cfx-bin-value"] = Number(bin.Value.Value);
         if (series.IsHistogramDensity) metadata["data-cfx-rendered-y"] = Number(bin.RenderedValue);
     }
+
 
     private static void DrawDensityHistogramSurface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
         int index, int pointIndex, ChartRect bounds, VisualThemeColors colors) {

@@ -83,7 +83,8 @@ public sealed class AxisTickPlacementTests {
         }
         if (days == 18) {
             var ticks = ChartTicks.GenerateInside(axis, minimum, maximum);
-            Assert.All(ticks, tick => Assert.Equal(DayOfWeek.Monday, DateTime.FromOADate(tick).DayOfWeek));
+            Assert.InRange(ticks.Count, 4, 6);
+            for (var index = 1; index < ticks.Count; index++) Assert.Equal(4, ticks[index] - ticks[index - 1]);
         }
         if (days == 4200) {
             var ticks = ChartTicks.GenerateInside(axis, minimum, maximum);

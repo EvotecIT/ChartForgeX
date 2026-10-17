@@ -103,8 +103,9 @@ public sealed class VisualCanvasFontTests {
         var family = HasFace("Verdana", 700) ? "Verdana" : "sans-serif";
         var canvas = Canvas(family).AddInfoTile(10, 10, 360, 100, "CPU", "Processor", "Intel Xeon Platinum 8380 @ 2.30GHz", "40 cores, 80 threads", textFitPolicy: VisualCanvasTextFitPolicy.SingleLineEllipsis);
         var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
-        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile);
-        var layout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, family, TextMeasurementMode.InstalledFonts);
+        var style = canvas.ResolveStyle();
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, style);
+        var layout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, style);
         foreach (var line in layout.Lines) {
             var width = VisualCanvasTextFace.Resolve(family, line.Weight).Measure(line.Text, line.FontSize);
             Assert.True(width <= metrics.TextMax + 0.01, "Tile line '" + line.Text + "' is wider than the tile text area.");
