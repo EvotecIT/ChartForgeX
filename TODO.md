@@ -184,11 +184,11 @@ Completion: the documented support window is backed by source, artifacts, host w
 
 ## Visual effects
 
-The [visual effects design](docs/visual-effects.md) is the reference: shared effect definitions, theme tokens, output profiles, kernels, parity rules and phases. Nothing is implemented yet. PowerBGInfo and ImagePlayground currently hand-build glows, glass and blur, and five internal approximations already render differently in SVG and PNG.
+The [visual effects design](docs/visual-effects.md) proposes shared effect definitions, theme tokens, SVG profiles, host format policies, kernels, parity rules and phases. The proposed system is not implemented. PowerBGInfo and ImagePlayground hand-build glows, glass and blur; internal canvas glow and terminal shadow also have SVG/PNG differences.
 
 - [ ] Phase 0: benchmark an integer triple-box blur at 2560×1440 on net472 and net10, measure browser parity for blur, shadow and two blend modes, check Office, Safari and resvg with one blur each, and close the design's open decisions.
 - [ ] Phases 1–2: add the bounded premultiplied raster layer stack, the effect kernels, the sRGB blend engine and ordered dither; the internal scene layer and backdrop nodes; one `SvgEffectWriter`; and the matching `SvgRaster` primitives. Every existing output must stay byte-identical.
-- [ ] Phase 3: ship the public `ChartForgeX.Effects` presets, `VisualThemeEffects` with JSON round-trip and output profiles. Migrate the card shadow, the canvas glow and depth, and the terminal shadow onto them.
+- [ ] Phase 3: ship the public `ChartForgeX.Effects` presets, `VisualThemeEffects` with unambiguous JSON precedence, SVG lowering profiles and export diagnostics. Move the existing card shadow to the shared compatibility recipe without changing default output; add true blurred elevation as opt-in. Qualify canvas and terminal migrations through their actual SVG and PNG producers.
 - [ ] Phases 4–5: add frosted glass, bloom, gradient and tapered strokes, light streaks, grain, turbulence, particles, dot matrix, perspective grid, vignette and `VisualBackdrop`.
 - [ ] Phases 6–7: adopt effects in charts, Mermaid, topology, canvas, stories and `ImageComposition`, then move PowerBGInfo and ImagePlayground onto them.
 

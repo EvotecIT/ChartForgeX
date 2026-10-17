@@ -8,7 +8,7 @@ Wallpapers, social cards, report covers, dashboards, story frames and diagram hi
 
 - PowerBGInfo composes glows, grid and dot patterns, and glass tiles on `ImageComposition`/`VisualCanvas`, and turns card shadows off.
 - ImagePlayground blurs, vignettes and fades through OfficeIMO, copying pixels between `RgbaImage` and `OfficeRasterImage` in both directions.
-- Inside ChartForgeX itself, five unrelated approximations exist (see [Existing effects to migrate](#existing-effects-to-migrate)), and their SVG and PNG output already disagree.
+- Inside ChartForgeX itself, several separate approximations exist (see [Existing effects to migrate](#existing-effects-to-migrate)). Canvas glow and terminal shadow have known SVG/PNG differences; other inexpensive effects already have parity and should keep it.
 
 The goal is one vocabulary and one implementation:
 
@@ -46,7 +46,7 @@ The goal is one vocabulary and one implementation:
    - the library's own seeded generator (never `System.Random`);
    - no transcendental functions per pixel;
    - SIMD only where scalar and vector output hashes are proven equal.
-4. **Off by default.** Every existing default output stays byte-identical. Effects appear only when authored, or when a theme opts in. The unchanged-output benchmark rule therefore keeps holding.
+4. **Preserve defaults.** Every existing default output stays byte-identical, including presets with a nonzero card shadow. Their legacy shadow recipe remains the default when it moves to the shared owner. New blur, glow and glass effects require explicit authorship or a new opt-in theme; migrating the implementation does not opt an existing theme in.
 5. **Bounded cost.** Every effect declares its extent. Raster allocates only the region it needs, and the pixel budget (`RasterAllocationGuard`) covers effect buffers. Producers reserve room inside their padding, as the card shadow already does, and report a diagnostic instead of growing the viewport.
 6. **Theme-driven.** Colours can be literal or reference theme roles, so light and dark resolve correctly. Named theme effect tokens let one theme give every family the same elevation, glow and grain.
 7. **Accessible by construction.**
@@ -74,9 +74,9 @@ New namespace `ChartForgeX.Effects` in the core package. Every type is immutable
 | `VisualMask` | Alpha or luminance mask from a gradient, a shape or a nested layer. |
 | `VisualPaint` | Solid, linear, radial or conic gradient, noise (spec-exact turbulence) or grain. Usable as a fill and as a stroke paint. |
 | `VisualStrokeProfile` | A gradient along the path length, and a width profile (taper). Lowered to outline geometry. |
-| `VisualColorRef` | A literal colour, or a theme role with optional alpha, resolved at prepare time. |
+| `VisualColorRef` | A literal colour, or a theme role with optional alpha. Preparation captures both the resolved raster colour and its `SvgPaint` binding for SVG colour-variable export. |
 
-**Generators** are not pixel effects. They produce ordinary scene geometry, so they are exact in SVG and need no lowering:
+**Generators** produce ordinary scene geometry. That geometry needs no effect lowering; an attached glow, blur or blend still follows the effect profile:
 
 | Generator | Output |
 | --- | --- |
@@ -97,7 +97,7 @@ PowerBGInfo's `New-BGInfoBackground` becomes a thin mapping onto it.
 
 ### Internal primitive IR
 
-Every preset compiles into a small directed graph of primitives named after SVG filter primitives, so SVG lowering is one-to-one. The primitives are:
+Every preset compiles into a small directed graph of primitives named after SVG filter primitives. The core filter operations have direct SVG equivalents; non-native paint and engine operations require the lowering described below. The primitives are:
 
 - `Flood`, `Offset`, `GaussianBlur(σx, σy, edge)`, `Morphology`, `ColorMatrix`, `ComponentTransfer`;
 - `Composite(operator | arithmetic k1..k4)`, `Blend(mode)`, `Merge`, `Turbulence(seed, frequency, octaves, type, stitch)`;
@@ -154,7 +154,7 @@ Product-specific chrome stays in local style options. Only the reusable primitiv
 
 | Slot | Used by | Default |
 | --- | --- | --- |
-| `CardElevation` | Chart, grid and block frame cards. Replaces `CardShadowOpacity`/`CardShadowColor`. | Today's card shadow values, so output is unchanged. |
+| `CardElevation` | Chart, grid and block frame cards. Replaces `CardShadowOpacity`/`CardShadowColor`. | The existing stacked-rectangle recipe with today's values and serialization. True blurred elevation is opt-in. |
 | `TileElevation` | Canvas tiles, factual cards, topology node cards | None |
 | `RaisedGlow` | Canvas hero badges, emphasised marks that opt in | None |
 | `TextHalo` | Text drawn over imagery or backdrops (canvas, wallpaper, story titles) | None. Data-label halos keep their existing readability strokes. |
@@ -164,8 +164,8 @@ Product-specific chrome stays in local style options. Only the reusable primitiv
 Theme JSON:
 - New members are additive and optional under the existing `effects` object in schema version 1, following the backward-default rule.
 - Values that differ by mode go under optional `light.effects`/`dark.effects`, or use role references.
-- `cardShadowOpacity`/`cardShadowColor` stay readable and map onto `CardElevation`.
-- `FromJson`/`ToJson` round-trip every slot.
+- When `CardElevation` is absent, `cardShadowOpacity`/`cardShadowColor` map to the legacy rectangle recipe, including its existing no-room behavior. When both representations are authored, the explicit new slot wins, including an explicit `None`; property order never changes precedence.
+- `FromJson`/`ToJson` round-trip every slot. The canonical writer emits the new effect slots; it emits legacy shadow scalars only when they exactly represent the selected legacy recipe. A blurred or multi-effect stack is never flattened into those scalars. Existing JSON without effects retains its defaults and appearance.
 
 The built-in presets (`Graphite`, `Report` and the rest) keep their current effects. New opt-in looks ship as separate presets or as consumer themes, never as a change to an existing default.
 
@@ -185,7 +185,7 @@ The prepared scene (`ChartForgeX/Rendering/VisualScene.cs`) is a flat display li
    - Extend `VisualSceneGradient` from linear to linear, radial and conic. Raster already draws radial gradients.
    - Add a procedural paint for turbulence and grain.
    - Allow a gradient as stroke paint. Tapered strokes become filled outlines from `RasterStroker`; no new node is needed.
-4. **Resolution at prepare time.** Effects resolve to concrete values (resolved colours, logical-unit radii, seeds) on the scene. Export never consults the theme, which is the existing rule.
+4. **Resolution at prepare time.** Effects capture resolved raster colours, logical-unit radii and seeds on the scene, alongside the original `SvgPaint` binding or theme-role identity. `SvgColorVariables` maps effect paints, including `feFlood`, just as it maps ordinary marks, with resolved fallbacks. Export never consults a mutable theme.
 5. **Identity and splicing.**
    - Every new field joins `VisualSceneSvgRenderer.Identity()`, because ids are content hashes.
    - Every new field is carried through scene `Append()`, which grids and stories use.
@@ -207,7 +207,7 @@ The prepared scene (`ChartForgeX/Rendering/VisualScene.cs`) is a flat display li
   - Pixels are unpremultiplied only for blend-mode formulas and colour matrices.
   - The result is quantised to 8-bit once, at the end, with deterministic ordered dither (Bayer 8×8 or interleaved gradient noise) so glows and gradients do not band.
 - **Colour space.**
-  - Filters and blending run in gamma-encoded sRGB by default, because that is the only space in which browser SVG, CSS blending and native PNG agree. SVG output always sets `color-interpolation-filters="sRGB"`.
+  - Filters and blending use gamma-encoded sRGB as the proposed working policy. SVG output explicitly sets `color-interpolation-filters="sRGB"`; browser/native agreement is measured per primitive and blend mode rather than assumed from that setting.
   - A linear-light option may follow later for raster-only bloom.
   - `LinearRgba.Composite`, which implements all 28 COLR/W3C modes in linear light for colour fonts, generalises into a buffer-level blend engine with an enum and an sRGB variant. Colour fonts keep the linear variant.
 - **Kernels.**
@@ -215,8 +215,8 @@ The prepared scene (`ChartForgeX/Rendering/VisualScene.cs`) is a flat display li
 | Effect | Algorithm | Notes |
 | --- | --- | --- |
 | Blur, σ < 2 | Direct integer convolution, radius ⌈3σ⌉ | Exact enough; cheap at small radius |
-| Blur, σ ≥ 2 | Triple box blur with integer running sums and the W3C box-size formula | Matches browsers to about 3% of a true Gaussian; O(1) per pixel; bit-exact on every target framework. `RasterTextStroke`'s separable pass is the template. |
-| Blur, σ ≥ 8 | Downsample 2× (4× at σ ≥ 16), triple box, bilinear upsample | Visually identical; 4–16× fewer pixels |
+| Blur, σ ≥ 2 | Triple box blur with integer running sums and the W3C box-size formula | Approximation with constant work per pixel; phase 0 measures error and sets a tolerance. `RasterTextStroke`'s separable pass is the template. |
+| Blur, σ ≥ 8 | Downsample 2× (4× at σ ≥ 16), triple box, bilinear upsample | Candidate optimization; qualify edges, small sources and parity before enabling it |
 | Drop shadow, inner shadow, glow | Alpha → dilate (existing min/max) → blur → flood → composite | Lowers one-to-one to SVG |
 | Bloom | Soft threshold → half-resolution pyramid → tent upsample → additive | About 1.33× the cost of one large-radius pass |
 | Glass | Backdrop snapshot (bounds + 3σ) → downsampled blur → clip → tint → grain → highlight | One downsampled blur per panel |
@@ -233,30 +233,34 @@ The prepared scene (`ChartForgeX/Rendering/VisualScene.cs`) is a flat display li
 
 There is no central defs owner today. Scene SVG writes clips and gradients in a pre-pass (`WriteClips`), and legacy writers rebind ids by text.
 
-- **`SvgEffectWriter` (`ChartForgeX/Svg/`)** writes `<filter>`, `<mask>` and radial/conic gradient definitions from the IR. It:
+- **`SvgEffectWriter` (`ChartForgeX/Svg/`)** writes `<filter>`, `<mask>`, linear/radial gradient definitions and portable paint geometry from the IR. It:
   - deduplicates them by content key;
   - scopes ids with the caller's prefix;
   - returns `url(#...)` references.
 - `VisualSceneSvgRenderer.WriteClips` becomes a general `WriteDefinitions` pre-pass that calls it. Layers write `filter`, `mask`, `opacity` and `style="mix-blend-mode:...;isolation:isolate"`.
 - The `VisualCanvas`, terminal and block writers call the same helper with their provisional `SvgRenderedIdentity` ids. Their local `soft-glow`, `raised-depth` and shadow filters disappear.
-- **Backdrop emulation.** SVG has no portable backdrop: `BackgroundImage` is unsupported in browsers. A backdrop node therefore emits:
-  1. a clipped `<use>` of the sampled sibling range;
+- **Conic paint.** SVG has no native conic-gradient paint server. Lower it to bounded wedge geometry, sampled with the same stops, interpolation and seam rules as the native raster sampler. Qualification includes the wrap seam and translucent stops. If its geometry budget is exceeded, bake the affected paint or use the declared fallback and report that choice. `SvgRaster` consumes the resulting ordinary paths or embedded image; no invented `<conicGradient>` element is emitted.
+- **Backdrop emulation.** Do not rely on SVG `BackgroundImage`. The definitions pre-pass materializes the captured preceding content as one dedicated group (or a baked snapshot) before a backdrop node references it. Nested transforms, clips and layer order are preserved; copied IDs and references are rebound within the caller's scope. The capture is acyclic, contains no external references, and is decorative so it does not duplicate accessible names. A backdrop node then emits:
+  1. a clipped `<use>` of that single captured group, or the snapshot image;
   2. the blur and tint filter on that copy;
   3. the layer content.
+  An unsupported capture boundary requires an explicit bake or fallback with a diagnostic; `<use>` never refers to an arbitrary sibling range.
 - In HTML output, real CSS `backdrop-filter` may be used on HTML overlay panels.
 - Decorative layers get `aria-hidden="true"`. Titles, descriptions and data text stay as real text above effect layers.
 
 ### SVG rasteriser
 
-`SvgRaster` applies no filters today and reports `SFR002`. Block PNGs are produced by rasterising their own SVG, and parity tests rasterise chart SVG and expect no diagnostics. So `SvgRaster` **must** learn every primitive `SvgEffectWriter` emits, through `RasterEffects`, before any family emits filters:
-- `feGaussianBlur`, `feOffset`, `feFlood`, `feComposite`, `feMerge`, `feMorphology`, `feColorMatrix`, `feComponentTransfer`, `feDropShadow`, `feTurbulence`;
-- `mix-blend-mode`.
+`SvgRaster` reports `SFR002` for unsupported filters today. Block PNG rendering uses a captured label/mark scene whose mark painter invokes the SVG rasterizer; it is not a blanket `ToSvg`-then-rasterize route. Other producers also have direct native raster paths. Inventory those actual entry points before adoption, and route both SVG-import effects and native layer effects through `RasterEffects`.
+
+Before any family emits effects, `SvgRaster` must support every primitive emitted by `SvgEffectWriter`:
+- `feGaussianBlur`, `feOffset`, `feFlood`, `feComposite`, `feBlend`, `feMerge`, `feMorphology`, `feColorMatrix`, `feComponentTransfer`, `feDropShadow`, `feTurbulence`;
+- `mix-blend-mode` and `isolation:isolate`, including nested isolated group buffers so descendants cannot blend with content outside their layer.
 
 `SFR002` then shrinks to the primitives that remain genuinely unsupported.
 
 ### Producers outside the scene
 
-These families do not convert to native scenes: `VisualCanvas`, `VisualGrid`, factual blocks, terminal stories and `ImageComposition`. They use the same `SvgEffectWriter` and `RasterEffects` directly until they adopt scene layers. They never get private copies.
+Some canvas, grid, block, story and composition producers use family-specific or captured-mark paths rather than the native chart display list. Each SVG writer uses `SvgEffectWriter`; each native raster owner uses `RasterEffects`, directly or through its captured mark painter. Adoption must qualify the actual PNG producer as well as standalone SVG import. Families never get private kernel copies.
 
 ### HTML and interactivity
 
@@ -266,29 +270,30 @@ These families do not convert to native scenes: `VisualCanvas`, `VisualGrid`, fa
 
 ## Output profiles and degradation
 
-Support differs sharply by target:
-- Microsoft removed inline SVG from Outlook on the web and new Outlook in 2025.
-- Gmail rasterises SVG images.
-- GitHub strips inline SVG but renders SVG referenced as an image.
-- Office has no documented filter support.
-- No browser supports `BackgroundImage`.
+Target capabilities need qualification for the actual viewer and embedding mode. Email and Office hosts use conservative format policies; a successful browser render does not establish their support.
 
-Each export therefore takes an **effect profile** (`VisualSvgOptions.EffectProfile`, and a matching option on HTML exports). For every primitive the profile decides one of four outcomes:
+An SVG export takes an **effect profile** through proposed `VisualSvgOptions.EffectProfile`. It controls SVG lowering only and always returns SVG. Format selection belongs to the email, document or HTML host exporter; `Email` and `Raster` are not SVG effect-profile values. For every primitive an SVG profile decides one of four outcomes:
 - **Native:** emit it.
 - **Emulate:** rewrite it into portable primitives.
-- **Bake:** pre-rasterise **only the effect layer** to an embedded PNG `<image>`, keeping marks and text as vectors.
+- **Bake:** embed a PNG of the required compositing unit. An additive shadow or glow can be baked separately while retaining its vector source. Destructive blur, masks and composites bake the affected source together with the effect and replace its vector paint; retaining the sharp original would bypass the effect. Unaffected marks and text remain vectors.
 - **Fallback:** replace it, for example glass becomes an opaque tint and glow becomes a plain stroke.
 
-Every outcome other than native emits a located diagnostic.
+Every outcome other than native emits an export diagnostic. Proposed `ToSvgWithDiagnostics(options)` returns an immutable SVG result containing markup and export diagnostics; existing `ToSvg(options)` remains a string convenience over the same lowering. Neither mutates `PreparedVisual.Diagnostics`, which remains the preparation snapshot. Export diagnostics include a stable scene/layer locator when one exists (not a generated SVG ID); a document-wide fallback is explicitly unlocated. Semantic data and accessible names remain available separately when their paint is baked.
 
 | Profile | Use for | Policy |
 | --- | --- | --- |
 | `Browser` | Self-contained HTML, inline SVG on web pages | Native filters, masks and blending. Backdrop emulated in SVG; real `backdrop-filter` on HTML overlays. |
 | `SvgImage` (default for `ToSvg`) | Standalone SVG files, GitHub README images, documentation `<img>` | Native core filters and masks, emulated backdrop, baked bloom and dithered grain, no external references |
 | `SvgPortable` | resvg, librsvg, Inkscape, design tools | As `SvgImage`. Blend modes and `feTurbulence` are native only where each renderer is qualified. |
-| `Email` | HTML email | PNG only, at 2× density with explicit size and an effect-free text alternative. No inline SVG, CSS filters or blending. |
-| `Office` | Word, PowerPoint, PDF through Office | PNG at 2×, or SVG with every effect baked and a PNG fallback. Never live filters. |
-| `Raster` | PNG, wallpapers, PowerShell image generation | Full managed pipeline with dither: the reference output |
+| `OfficeSvg` | SVG chosen by an Office host exporter | Bake every effect using the compositing-unit rule above; no live filters. The host supplies a PNG fallback. |
+
+Host format policies sit outside `VisualSvgOptions`:
+
+| Host target | Policy |
+| --- | --- |
+| Email | PNG at 2× density with explicit size and an effect-free text alternative; no inline SVG, CSS filters or blending. |
+| Office | PNG at 2×, or `OfficeSvg` with a PNG fallback, after qualification in the receiving application. |
+| Raster | PNG through the managed pipeline with dither: the reference output. |
 
 ## Accessibility
 
@@ -324,18 +329,20 @@ Every phase follows [AGENTS.md](../AGENTS.md): smoke tests, generated examples f
   - Edge handling and extent.
   - Premultiplication round-trips.
   - Dither determinism.
-- **Determinism.** Output hashes are identical across net472, net8.0 and net10.0, and between scalar and vector paths.
+- **Determinism.** Fixed-input kernel hashes are identical across net472, netstandard2.0, net8.0 and net10.0, and between scalar and vector paths. A compatible-runtime harness directly loads the built netstandard2.0 asset; compiling it alone is insufficient. Whole-image comparisons also bind the selected font bytes, captured scene, scale and working format so host-font differences are not misclassified as kernel drift.
 - **Parity.**
   - Native PNG against browser rendering of the emitted SVG, in the required Chromium lane (`Build/Test-BrowserQuality.ps1`), with a stated per-effect tolerance. Pixel identity is not the contract.
   - `SvgRaster` against native PNG, with no unexpected diagnostics.
-- **Profiles.** Each profile's lowering is asserted on emitted markup:
-  - no inline SVG for `Email`;
-  - no live filters for `Office`;
-  - no external references for `SvgImage`.
+- **Profiles and hosts.** Assert each SVG profile's lowering, and test format selection separately in its owning host:
+  - email exports select PNG and contain no inline SVG;
+  - `OfficeSvg` has no live filters, with source-replacing effects baked together with their source;
+  - `SvgImage` has no external references;
+  - degradation is returned through export diagnostics without changing preparation diagnostics;
+  - nested isolation, captured backdrop IDs and colour-variable mappings retain their semantics.
 - **Visual baselines.** Effected examples get new entries. Existing entries change only through an intentional `-UpdateVisualBaseline` after gallery inspection.
-- **Existing assertions that will change deliberately:**
+- **Existing assertions:**
   - `TopologyTests` asserts no `filter=` in topology SVG; it gains an opt-in exception.
-  - Card-shadow rectangle-count tests are replaced by shadow-extent and parity tests.
+  - Existing card-shadow rectangle and byte-identity tests remain for the compatibility recipe. Opt-in blurred shadows gain extent and parity tests.
   - `SvgRasterizer`-based parity tests require the new primitives.
 - **Gallery.** Every preset has a compact/wide × light/dark example. One integrated acceptance example recreates a full "HUD wallpaper" (glass panels, glow, light streaks, dot-matrix map, perspective floor, grain, vignette) as both SVG and PNG.
 
@@ -343,7 +350,7 @@ Every phase follows [AGENTS.md](../AGENTS.md): smoke tests, generated examples f
 
 | Existing | Becomes | Notes |
 | --- | --- | --- |
-| Card shadow: 12 stacked rectangles in `VisualFrameSurface`, plus unused `Svg/PngCardShadow*` constants | `VisualDropShadow` on the card layer; theme `CardElevation` | Keep the padding-room rule and `frame.card-shadow-no-room`. A true blur in both backends. Delete the unused constants. |
+| Card shadow: 12 stacked rectangles in `VisualFrameSurface` | Shared compatibility recipe on the card layer; theme `CardElevation` | Preserve existing bytes, padding-room rule and `frame.card-shadow-no-room`. `VisualDropShadow` supplies a separate opt-in true blur in both backends. Remove obsolete constants only after checking actual callers. |
 | `VisualCanvas` `soft-glow`/`raised-depth` SVG filters, their PNG offset-rectangle approximations, `HeroBadgeGlowColor` | `VisualGlow`/`VisualDropShadow` stacks in `VisualCanvasStyleOptions`; glass tiles gain `VisualBackdropBlur` | Fixes today's SVG ≠ PNG mismatch |
 | Terminal story `feDropShadow` and its two-rectangle PNG version | `VisualDropShadow` | Same fix |
 | Line halo layers (`ChartLineVisualLayers`, `WithLuminousLineStyle`) | Optional `VisualGlow` behind the series line | The stroke stack stays as the low-cost mode |
@@ -357,20 +364,22 @@ Every phase follows [AGENTS.md](../AGENTS.md): smoke tests, generated examples f
 
 ## Delivery phases
 
-Each phase is one coherent, reviewable outcome. The first five are prerequisites for public effects; later phases can move in parallel once phase 2 lands.
+Each phase is one coherent outcome. Phases 0–2 precede public effects in phase 3. Phases 4–5 extend that foundation and can proceed independently where their required primitives exist. Family and consumer adoption in phases 6–7 depend on the specific effects they use, not on every generator being implemented. These are implementation stages, not a requirement to open a PR for each stage.
 
 | Phase | Outcome | Exit criteria |
 | --- | --- | --- |
 | 0. Spike and decisions | Integer triple-box blur prototype, benchmarked at 2560×1440 on net472 and net10. Browser parity measured for blur, shadow and two blend modes. Office, Safari and resvg behaviour checked with one blur each. The decisions below confirmed. | Benchmark numbers recorded; tolerance per effect agreed; open decisions closed |
 | 1. Raster foundation | Bounded premultiplied layer stack and pool; blur, morphology, flood, offset, composite and merge kernels; sRGB buffer-level blend engine; ordered dither; allocation guard coverage | Kernel and determinism tests; benchmark lane; no change to any existing output |
 | 2. Scene and SVG foundation | `VisualSceneLayer` and builder scopes; `SvgEffectWriter` and the `WriteDefinitions` pre-pass; identity and append support; `SvgRaster` primitives | Parity tests across scene SVG, browser and native PNG for internal fixtures; existing output byte-identical |
-| 3. Public effects and themes | `ChartForgeX.Effects` presets (drop and inner shadow, glow, layer blur, opacity, blend, mask); `VisualThemeEffects` and JSON; output profiles; migrations of the card shadow, canvas glow and terminal shadow | Gallery examples per preset; API conventions and migration notes; intentional baseline refresh |
+| 3. Public effects and themes | `ChartForgeX.Effects` presets (drop and inner shadow, glow, layer blur, opacity, blend, mask); `VisualThemeEffects` and JSON; SVG profiles and host policies; shared compatibility card shadow and opt-in blurred elevation | Gallery examples per preset; API conventions and migration notes; existing default baselines unchanged, new entries for opt-in effects |
 | 4. Glass, bloom and strokes | `VisualBackdropBlur` with SVG emulation and the HTML `backdrop-filter` path; `VisualBloom` (baked for SVG); gradient and tapered strokes; light streaks | Contrast check and scrim; parity per profile |
 | 5. Procedural and generators | Grain; spec-exact turbulence; particles; dot matrix; perspective grid; vignette; `VisualBackdrop` | Determinism across frameworks; gallery acceptance example |
 | 6. Family adoption | Chart series glow and card elevation; Mermaid highlight and shadow mapping; topology elevation and path glow; canvas glass tiles; story backgrounds; `ImageComposition` operations | Family examples, both themes, both outputs |
 | 7. Consumers and release | PowerBGInfo backgrounds and panels on `VisualBackdrop`, glass and glow; ImagePlayground effect commands on `ImageComposition`, removing its OfficeIMO pixel copies; coordinated package release | Consumer qualification through candidate packages, then public packages |
 
 ## Decisions to confirm
+
+Merging this proposal records its direction and acceptance criteria. It does not implement the effects or approve a new runtime dependency, maintained toolchain, or final public API. Resolve the following during phase 0 before committing the corresponding implementation boundary.
 
 1. **Layer node.** A separate `VisualSceneLayer` (recommended, keeping clip groups fast) or new fields on `VisualSceneGroup`.
 2. **Working precision.** 16-bit integer premultiplied buffers (recommended, deterministic on every framework), or float on net8.0/net10.0 if profiling favours it.
@@ -384,10 +393,9 @@ Each phase is one coherent, reviewable outcome. The first five are prerequisites
 
 - Skia layers and image filters: <https://skia.org/docs/user/api/skcanvas_overview/>, <https://api.skia.org/classSkImageFilters.html>
 - Filter Effects Module Level 1, including the `feTurbulence` reference code: <https://www.w3.org/TR/filter-effects-1/>
+- SVG 2 paint servers and reusable subtrees: <https://www.w3.org/TR/SVG2/pservers.html#Gradients>, <https://www.w3.org/TR/SVG2/struct.html#UseElement>
 - Compositing and Blending Level 1: <https://www.w3.org/TR/compositing-1/>
 - CSS `backdrop-filter` and `mix-blend-mode`: <https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter>, <https://developer.mozilla.org/en-US/docs/Web/CSS/mix-blend-mode>
 - librsvg feature list: <https://librsvg-b807a6.pages.gitlab.gnome.org/devel-docs/features.html>; resvg unsupported features: <https://github.com/linebender/resvg/blob/main/docs/unsupported.md>
-- SVG in email: <https://www.caniemail.com/features/image-svg>, <https://www.caniemail.com/features/html-svg/>; inline SVG removed from Outlook on the web: <https://blog-en.topedia.com/2025/08/microsoft-is-retiring-support-for-inline-svg-images-in-outlook/>
-- GitHub Markdown sanitisation: <https://github.com/github/markup>
 - Gaussian blur approximations: P. Getreuer, "A Survey of Gaussian Convolution Algorithms", IPOL 2013, <https://www.ipol.im/pub/art/2013/87/>
 - WCAG failure F83 (text over backgrounds): <https://www.w3.org/WAI/WCAG22/Techniques/failures/F83>; animation from interactions: <https://w3c.github.io/wcag/understanding/animation-from-interactions.html>
