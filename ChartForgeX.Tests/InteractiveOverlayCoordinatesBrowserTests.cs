@@ -65,23 +65,59 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         var mark = await BoxAsync(page, Point(0, 1));
         var start = new double[] { mark.X + mark.Width / 2 - 15, mark.Y + mark.Height / 2 - 15 };
         var end = new[] { start[0] + 30, start[1] + 30 };
-        var textSelection = await DragAsync(page, start, end);
+        await page.Mouse.MoveAsync((float)start[0], (float)start[1]);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync((float)end[0], (float)end[1], new MouseMoveOptions { Steps = 3 });
+        await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(resolve))");
+        var provisional = await BoxAsync(page, ".cfx-brush-box");
+        Assert.InRange(provisional.X - start[0], -1, 1);
+        Assert.InRange(provisional.Y - start[1], -1, 1);
+        Assert.InRange(provisional.Width - 30, -1, 1);
+        Assert.InRange(provisional.Height - 30, -1, 1);
+        var during = await page.EvaluateAsync<string>("() => window.getSelection()?.toString() || ''");
+        var expected = await page.Locator(Root).EvaluateAsync<JsonElement>("""
+            root => {
+                const projection=JSON.parse(root.dataset.cfxPreparedChart).dataProjection,p=projection.plotBounds;
+                const matrix=root.querySelector('.cfx-stage svg').getScreenCTM(),inverse=matrix.inverse();
+                const rect=root.querySelector('.cfx-brush-box').getBoundingClientRect();
+                const corners=[new DOMPoint(rect.left,rect.top),new DOMPoint(rect.right,rect.bottom)].map(point=>point.matrixTransform(inverse));
+                const raw={x:corners.map(point=>(point.x-p.x)/p.width*10).sort((a,b)=>a-b),
+                    y:corners.map(point=>(1-(point.y-p.y)/p.height)*10).sort((a,b)=>a-b)};
+                const range={};
+                for(const direction of ['x','y']) {
+                    const axis=projection[direction],ticks=[...axis.displayTicks,...axis.displayBounds]
+                        .filter(tick=>tick.value>=0&&tick.value<=10).sort((a,b)=>a.value-b.value);
+                    range[direction]=[ticks.filter(tick=>tick.value<=raw[direction][0]).at(-1).value,
+                        ticks.find(tick=>tick.value>=raw[direction][1]).value];
+                }
+                const a=new DOMPoint(p.x+range.x[0]/10*p.width,p.y+(1-range.y[1]/10)*p.height).matrixTransform(matrix);
+                const b=new DOMPoint(p.x+range.x[1]/10*p.width,p.y+(1-range.y[0]/10)*p.height).matrixTransform(matrix);
+                return {range,x:a.x,y:a.y,width:b.x-a.x,height:b.y-a.y};
+            }
+            """);
+        await page.Mouse.UpAsync();
+        var textSelection = (During: during, After: await page.EvaluateAsync<string>("() => window.getSelection()?.toString() || ''"));
         var brush = await BoxAsync(page, ".cfx-brush-box");
-        var events = await EventsAsync(page);
+        var events = await page.EvaluateAsync<JsonElement>("() => JSON.parse(JSON.stringify(window.overlayCoordinateEvents))");
         var selected = await page.Locator("g[data-cfx-role=point][aria-selected=true]").EvaluateAllAsync<string[]>("nodes => nodes.map(n => n.dataset.cfxTargetId)");
         var after = await ScrollExtentAsync(page);
         await CaptureAsync(session, "overlay-brush-" + Variant(graphite, layout, width, scale, pageScroll), new {
-            start, end, brush, selected, extent, after, events, TextSelectionDuring = textSelection.During, TextSelectionAfter = textSelection.After
+            start, end, provisional, expected, brush, selected, extent, after, events, TextSelectionDuring = textSelection.During, TextSelectionAfter = textSelection.After
         });
-        Assert.InRange(brush.X - start[0], -1, 1);
-        Assert.InRange(brush.Y - start[1], -1, 1);
-        Assert.InRange(brush.Width - 30, -1, 1);
-        Assert.InRange(brush.Height - 30, -1, 1);
+        Assert.InRange(brush.X - expected.GetProperty("x").GetDouble(), -1, 1);
+        Assert.InRange(brush.Y - expected.GetProperty("y").GetDouble(), -1, 1);
+        Assert.InRange(brush.Width - expected.GetProperty("width").GetDouble(), -1, 1);
+        Assert.InRange(brush.Height - expected.GetProperty("height").GetDouble(), -1, 1);
         Assert.Equal(new[] { "reading-source:1" }, selected);
         var lasso = Assert.Single(events.EnumerateArray(), e => e.GetProperty("name").GetString() == "cfxlasso");
         Assert.Contains(lasso.GetProperty("detail").GetProperty("targets").EnumerateArray(), t => t.GetProperty("targetId").GetString() == "reading-source:1");
         var notification = Assert.Single(events.EnumerateArray(), e => e.GetProperty("name").GetString() == "cfxbrush");
         Assert.Equal(await page.Locator(Root).GetAttributeAsync("data-cfx-brush"), notification.GetProperty("detail").GetProperty("bounds").GetString());
+        foreach (var direction in new[] { "x", "y" }) {
+            var range = notification.GetProperty("detail").GetProperty("range").GetProperty(direction);
+            Assert.Equal(expected.GetProperty("range").GetProperty(direction).GetRawText(), range.GetRawText());
+            Assert.Equal(range.GetRawText(), notification.GetProperty("detail").GetProperty("displayRange").GetProperty(direction).GetRawText());
+        }
         Assert.Equal(extent, after);
         Assert.Empty(textSelection.During);
         Assert.Empty(textSelection.After);

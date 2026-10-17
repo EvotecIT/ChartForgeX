@@ -241,7 +241,7 @@ internal static partial class TopologyRenderPrimitives {
             };
         }
 
-        var horizontal = ShouldRouteHorizontally(sourcePort, targetPort, Math.Abs(targetCenterX - sourceCenterX) >= Math.Abs(targetCenterY - sourceCenterY));
+        var horizontal = OrthogonalRouteIsHorizontal(source, target, sourcePort, targetPort);
         sourcePort = OrthogonalShapePort(source, sourcePort, horizontal, targetCenter);
         targetPort = OrthogonalShapePort(target, targetPort, horizontal, sourceCenter);
         var sourcePoint = BoundaryPoint(source, targetCenterX, targetCenterY, sourcePort);
@@ -462,7 +462,7 @@ internal static partial class TopologyRenderPrimitives {
 
     private static double Clamp(double value, double min, double max) => value < min ? min : value > max ? max : value;
 
-    private const double EdgeEndpointGap = 7;
+    internal const double EdgeEndpointGap = 7;
     private const double ParallelEdgeSpacing = 26;
     private const double EdgePortFanSpacing = 10;
     private const double EdgeEndpointSidePadding = 8;
@@ -524,11 +524,6 @@ internal static partial class TopologyRenderPrimitives {
 
         public static LabelBox FromGroup(TopologyGroup group, double padding) {
             return new LabelBox(group.X - padding, group.Y - padding, group.X + group.Width + padding, group.Y + group.Height + padding);
-        }
-
-        public static LabelBox FromGroupHeader(TopologyGroup group, double padding) {
-            var headerHeight = Math.Min(68, Math.Max(44, group.Height * 0.32));
-            return new LabelBox(group.X - padding, group.Y - padding, group.X + group.Width + padding, group.Y + headerHeight + padding);
         }
 
         public LabelBox Expand(double padding) {
@@ -638,3 +633,4 @@ internal sealed class TopologyEdgeLabelLayout {
 
     public double AnchorY { get; }
 }
+

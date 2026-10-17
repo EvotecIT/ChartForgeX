@@ -69,22 +69,24 @@ internal static partial class VisualMapCompiler {
         }
     }
 
-    private static void Tiles(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
+    private static void Tiles(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors, double min, double max,
+        ChartColorPresentation presentation, TileMapLegendInset? legendInset = null) {
         var definition = chart.Series[0].TileMapDefinition ?? throw new InvalidOperationException("A tile map requires a tile definition.");
         var values = Values(chart, key => definition.TryResolveRegion(key, out var code) ? code : null);
         var width = chart.Options.MapRegionStrokeWidth;
-        var gap = TileGap(chart, context, builder, definition, plot, width);
-        var size = Math.Max(0, Math.Min((plot.Width - width - gap * (definition.ColumnCount - 1)) / definition.ColumnCount,
+        var gap = legendInset?.TileGap ?? TileGap(chart, context, builder, definition, plot, width);
+        var size = legendInset?.TileSize ?? Math.Max(0, Math.Min((plot.Width - width - gap * (definition.ColumnCount - 1)) / definition.ColumnCount,
             (plot.Height - width - gap * (definition.RowCount - 1)) / definition.RowCount));
         var gridWidth = size * definition.ColumnCount + gap * (definition.ColumnCount - 1);
         var gridHeight = size * definition.RowCount + gap * (definition.RowCount - 1);
+        var grid = legendInset?.Grid ?? new ChartRect(plot.Left + (plot.Width - gridWidth) / 2, plot.Top + (plot.Height - gridHeight) / 2, gridWidth, gridHeight);
         using (builder.PushGroup("tile-map", "tile-map", new Dictionary<string, string> { ["data-cfx-map-id"] = definition.Id,
             ["role"] = "group", ["aria-label"] = chart.Options.Labels.Describe(DescriptionFacts(chart, true)),
             ["data-cfx-region-count"] = N(definition.Regions.Count), ["data-cfx-filled-region-count"] = N(values.Count), ["data-cfx-missing-region-count"] = N(definition.Regions.Count - values.Count) })) using (builder.PushClip(plot)) {
-            Surface(chart, context, builder, new ChartRect(plot.Left + (plot.Width - gridWidth) / 2, plot.Top + (plot.Height - gridHeight) / 2, gridWidth, gridHeight), colors, "tile-map-surface");
+            Surface(chart, context, builder, grid, colors, "tile-map-surface");
             foreach (var region in definition.Regions) {
-                var x = plot.Left + (plot.Width - gridWidth) / 2 + region.Column * (size + gap);
-                var y = plot.Top + (plot.Height - gridHeight) / 2 + region.Row * (size + gap);
+                var x = grid.Left + region.Column * (size + gap);
+                var y = grid.Top + region.Row * (size + gap);
                 var bounds = new ChartRect(x, y, size, size); var inset = size * TileHexInsetRatio;
                 var contour = new List<ChartPoint> { new ChartPoint(x + inset, y), new ChartPoint(x + size - inset, y),
                     new ChartPoint(x + size, y + size / 2), new ChartPoint(x + size - inset, y + size), new ChartPoint(x + inset, y + size), new ChartPoint(x, y + size / 2) };

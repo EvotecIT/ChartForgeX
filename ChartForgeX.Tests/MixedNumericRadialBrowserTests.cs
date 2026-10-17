@@ -52,7 +52,7 @@ public sealed class MixedNumericRadialBrowserTests {
         await MoveToAsync(page, targetSelector);
         Assert.Contains("Target", await TooltipTextAsync(page));
         Assert.Matches("1,?400", await TooltipTextAsync(page));
-        Assert.Matches("^Target, North: 1,?400$", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal("North", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         await CaptureAsync(page, compact, dark, "target-hover");
         Assert.Equal("target:0", await target.GetAttributeAsync("data-cfx-target-id"));
         Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node => node.hidden"));

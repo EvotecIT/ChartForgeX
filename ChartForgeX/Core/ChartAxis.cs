@@ -31,8 +31,10 @@ public sealed class ChartAxis {
     private bool _hasExplicitScale;
     private double _symmetricLogarithmThreshold = 1;
     private int _tickCount = 6;
+    private bool _hasExplicitTickCount;
     private ChartLabelDensity _labelDensity = ChartLabelDensity.Auto;
     private double _labelAngle;
+    private bool _hasExplicitLabelAngle;
     private ChartAxisLabelOrientation _labelOrientation;
 
     /// <summary>Gets or sets an explicit minimum. Null enables automatic bounds.</summary>
@@ -85,14 +87,21 @@ public sealed class ChartAxis {
         }
     }
 
-    /// <summary>Gets or sets the preferred number of generated ticks.</summary>
+    /// <summary>Gets or sets the preferred number of generated ticks. An explicit value also limits automatic time-axis density; the default lets measured time labels use the available room.</summary>
     public int TickCount {
         get => _tickCount;
         set {
             if (value < 2 || value > 100) throw new ArgumentOutOfRangeException(nameof(value), value, "Tick count must be from two through one hundred.");
             _tickCount = value;
+            _hasExplicitTickCount = true;
         }
     }
+
+    internal bool HasExplicitTickCount => _hasExplicitTickCount;
+
+    /// <summary>Restores automatic tick density, including measured time-axis spacing.</summary>
+    /// <returns>The current axis.</returns>
+    public ChartAxis WithAutomaticTickCount() { _tickCount = 6; _hasExplicitTickCount = false; return this; }
 
     /// <summary>Gets or sets label density.</summary>
     public ChartLabelDensity LabelDensity {
@@ -104,14 +113,21 @@ public sealed class ChartAxis {
     }
 
     /// <summary>Gets or sets label rotation in degrees, or an offset from the selected relative orientation.</summary>
-    /// <remarks>Fixed orientation uses screen degrees without an upright adjustment. Relative numeric radial labels add this offset to their local axis direction and keep the resulting baseline upright.</remarks>
+    /// <remarks>Fixed orientation uses screen degrees without an upright adjustment. Setting zero explicitly keeps matrix captions horizontal; an unauthored matrix angle may rotate crowded captions automatically. Relative numeric radial labels add this offset to their local axis direction and keep the resulting baseline upright.</remarks>
     public double LabelAngle {
         get => _labelAngle;
         set {
             if (!IsFinite(value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Axis label angle must be finite.");
             _labelAngle = value;
+            _hasExplicitLabelAngle = true;
         }
     }
+
+    internal bool HasExplicitLabelAngle => _hasExplicitLabelAngle;
+
+    /// <summary>Restores automatic label rotation for crowded matrices and the default zero angle for other axes.</summary>
+    /// <returns>The current axis.</returns>
+    public ChartAxis WithAutomaticLabelAngle() { _labelAngle = 0; _hasExplicitLabelAngle = false; return this; }
 
     /// <summary>Gets or sets how labels follow the axis. The default is a fixed screen orientation.</summary>
     /// <remarks>Relative orientations are supported by numeric radial bars and columns. Parallel follows the tangent of an angular axis or the spoke of a radius axis; perpendicular uses the other direction. The label angle is added before keeping the text upright. Other chart families reject a nonfixed orientation during preparation.</remarks>

@@ -13,7 +13,7 @@
     const nodeColors = labels ? graphReadableNodeColors(root, node.el, palette)
       : { halo: card ? node.backgroundColor || '#2563eb' : palette.paper };
     context.save();
-    context.globalAlpha = dimmed ? .18 : 1;
+    context.globalAlpha = (dimmed ? .18 : 1) * graphLinkOpacity(node.el);
     const status = attr(node.el, 'data-cfx-status').toLowerCase();
     if (status && status !== 'unknown' && !gpuNodes?.has(node)) {
       const statusColor = status === 'healthy' ? '#22c55e' : status === 'warning' ? '#f59e0b' : status === 'critical' ? '#ef4444' : '#94a3b8';
@@ -85,12 +85,12 @@
     }
     context.restore();
   };
-  const drawCanvasNodes = (context, root, nodes, compact, moving, gpuNodes) => {
+  const drawCanvasNodes = (context, root, nodes, compact, moving, gpuNodes, palette = graphThemePalette(root)) => {
     nodes.forEach(node => {
       if (!visible(node.el) || gpuNodes?.has(node)) return;
       context.save();
-      context.globalAlpha = node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1;
-      drawNodeMark(context, node, node.el.classList.contains('cfx-graph-selected'), compact, root, moving);
+      context.globalAlpha = (node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1) * graphLinkOpacity(node.el);
+      drawNodeMark(context, node, node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact, root, moving, palette.selected);
       context.restore();
     });
     nodes.forEach(node => drawCanvasNodeDetails(context, root, node, compact, moving, gpuNodes));

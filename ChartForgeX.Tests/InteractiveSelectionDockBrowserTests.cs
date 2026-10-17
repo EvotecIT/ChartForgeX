@@ -20,6 +20,7 @@ public sealed class InteractiveSelectionDockBrowserTests {
         await using var session = await OpenAsync(StatusLines(dark).ToInteractiveHtmlPage(options => options.ResponsiveLayout = layout), width, height);
         var page = session.Page;
         var before = await BoxAsync(page, ".cfx-stage svg");
+        var hostBefore = await BoxAsync(page, ".cfx-interactive-chart");
         Assert.False(await page.Locator("[data-cfx-compare-tray]").IsVisibleAsync());
 
         for (var point = 0; point < 7; point++) {
@@ -32,6 +33,7 @@ public sealed class InteractiveSelectionDockBrowserTests {
         var after = await BoxAsync(page, ".cfx-stage svg");
         Assert.Equal(before.Width, after.Width, 1);
         Assert.Equal(before.Height, after.Height, 1);
+        Assert.Equal(hostBefore.Height, (await BoxAsync(page, ".cfx-interactive-chart")).Height, 1);
         await CaptureAsync(page, "selection-dock-" + (dark ? "dark" : "light") + "-" + layout + "-" + width + "x" + height);
         await AssertDockBoundsAsync(page, ".cfx-interactive-chart");
 
@@ -102,8 +104,11 @@ public sealed class InteractiveSelectionDockBrowserTests {
         Assert.True(dock.X >= box.X - 1 && dock.X + dock.Width <= box.X + box.Width + 1, "The dock must remain inside its host width.");
         var controls = await root.Locator(".cfx-compare-chip,[data-cfx-compare-clear]").AllAsync();
         foreach (var control in controls) {
+            // The dock is one stable row; keyboard focus scrolls each complete control into view.
+            await control.FocusAsync();
+            dock = await root.Locator("[data-cfx-compare-tray]").BoundingBoxAsync() ?? throw new InvalidOperationException("No selection dock.");
             var bounds = await control.BoundingBoxAsync() ?? throw new InvalidOperationException("No compare control.");
-            Assert.True(bounds.X >= dock.X && bounds.X + bounds.Width <= dock.X + dock.Width + 1);
+            Assert.True(bounds.X >= dock.X - 1 && bounds.X + bounds.Width <= dock.X + dock.Width + 1);
             Assert.True(bounds.Y >= dock.Y && bounds.Y + bounds.Height <= dock.Y + dock.Height + 1);
         }
         Assert.True(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"), "Chart selection must not introduce horizontal page overflow.");

@@ -123,6 +123,8 @@ Gantt duration calculations apply `excludes`, `includes`, and Friday/Saturday we
 
 ## Flowcharts
 
+Flowchart nodes use the prepared context's resolved font to size enclosed captions before layout and routing. Font substitution and the bitmap fallback therefore use the same metrics for the box and its SVG/PNG text. `MermaidFlowchartRenderOptions.FitContent` enables this policy by default; disable it to retain fixed node sizes and their bounded text fitting. Actor captions keep their external placement. Native topology callers can opt a plain enclosed node into the same minimum-size policy with `TopologyNode.FitLabelToContent = true`.
+
 Supported flowchart parsing includes:
 
 - `flowchart`, `graph` and `flowchart-elk` headers. `flowchart-elk` retains flowchart semantics and emits `CFXM003` because the native static renderer uses ChartForgeX layout.

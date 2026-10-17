@@ -59,12 +59,22 @@ internal static partial class VisualCartesianCompiler {
 
     // Point customizations are indexed by observation, rather than by an encoded tuple member.
     private static ResolvedPointLabel ResolveObservationLabel(Chart chart, VisualRenderContext context, ChartSeries series,
-        int observation, VisualThemeColors colors, Func<string> fallback) {
+        int observation, VisualThemeColors colors, Func<Func<string, double, string>, string> fallback) {
         var style = SeriesLabelStyle(chart, context, series, colors);
         if (observation < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[observation] != null)
             style = series.PointDataLabelStyles[observation]!.Resolve(style);
-        var text = observation < series.PointLabels.Count && series.PointLabels[observation] != null ? series.PointLabels[observation]! : fallback();
-        return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture), style);
+        Dictionary<string, string>? numericCaptions = null;
+        string Format(string member, double value) {
+            var caption = Value(chart, value);
+            // Equal tuple values may have distinct authored callback results.
+            // Retain authored native invocations by member without memoizing them;
+            // automatic mark captions do not set observation-row precision.
+            if (chart.Options.ValueFormatter != null)
+                (numericCaptions ??= new Dictionary<string, string>())[member] = caption;
+            return caption;
+        }
+        var text = observation < series.PointLabels.Count && series.PointLabels[observation] != null ? series.PointLabels[observation]! : fallback(Format);
+        return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture), style, numericCaptions);
     }
 
     private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
@@ -98,12 +108,16 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-break-before"] = series.RenderPoints[rawStart].BreakBefore ? "true" : "false"
         };
         var sourceCount = series.TrendLineSourcePoints.Count > 0 ? series.TrendLineSourcePoints.Count : series.BoxPlotSourceSamples.Count;
+        var sourceValue = values.FirstOrDefault(value => value.Name != "x");
+        if (sourceValue.Value == series.RenderPoints[rawStart].Y && sourceValue.Name != null
+            && label.NumericCaption(sourceValue.Name) is { } numericCaption) metadata["data-cfx-formatted-y"] = numericCaption;
         if (sourceCount > 0) {
             metadata["data-cfx-derived"] = series.TrendLineSourcePoints.Count > 0 ? "regression-endpoint" : "five-number-summary";
             metadata["data-cfx-source-count"] = Number(sourceCount);
         } else metadata["data-cfx-source-point"] = Number(observation < series.SourcePointIndices.Count ? series.SourcePointIndices[observation] : observation);
         foreach (var value in values) {
             metadata["data-cfx-" + value.Name] = Number(value.Value);
+            if (value.Name != "x" && label.NumericCaption(value.Name) is { } caption) metadata["data-cfx-formatted-" + value.Name] = caption;
             description += " " + value.Name + "=" + Number(value.Value);
         }
         if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);

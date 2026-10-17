@@ -105,7 +105,7 @@ public static class PlaygroundEngine {
         }
 
         var dark = normalizedTheme == "dark";
-        var parseOptions = new MermaidParseOptions { GanttDateAnchor = DateTime.UtcNow.Date };
+        var parseOptions = new MermaidParseOptions { GanttDateAnchor = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc) };
         if (normalizedLanguage == MermaidLanguage) RenderMermaid(source, dark, parseOptions, outcome);
         else RenderMarkup(source, dark, parseOptions, outcome);
     }

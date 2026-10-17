@@ -43,7 +43,16 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         }
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', e => window.textSelection = e.detail.target)");
         await target.FocusAsync();
-        if (width < 400) Assert.True(await page.Locator(".cfx-stage").EvaluateAsync<double>("n => n.scrollLeft") > scrollLeft);
+        Assert.False(await target.EvaluateAsync<bool>("node => node.matches(':focus-visible')"));
+        Assert.True(await page.Locator(".cfx-tooltip").IsHiddenAsync(), "Programmatic focus after pointer input does not impersonate keyboard input.");
+        Assert.Equal(scrollLeft, await page.Locator(".cfx-stage").EvaluateAsync<double>("node => node.scrollLeft"));
+        await target.BlurAsync();
+        await TabToNativeTargetAsync(page, target);
+        Assert.True(await target.EvaluateAsync<bool>("node => node.matches(':focus-visible')"));
+        if (width < 400) {
+            Assert.True(await page.Locator(".cfx-stage").EvaluateAsync<double>("node => node.scrollLeft") > scrollLeft);
+            Assert.True(await target.EvaluateAsync<bool>("node => { const term = node.getBoundingClientRect(), stage = node.closest('.cfx-stage').getBoundingClientRect(); return term.left >= stage.left && term.right <= stage.right; }"), "Keyboard navigation reveals the full native term.");
+        }
         Assert.Contains("100", await TooltipTextAsync(page), StringComparison.Ordinal);
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
@@ -176,7 +185,30 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         await page.Locator("[data-cfx-reset]").ClickAsync();
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = Legend(0) + " :is(rect,circle,ellipse,line,polyline,path,polygon) { opacity:0!important; }" });
         await MoveToNativeTextAsync(page, Legend(0));
+        try {
+            await page.WaitForFunctionAsync("""
+                text => {
+                    const tip = document.querySelector('.cfx-interactive-chart .cfx-tooltip');
+                    return !tip.hidden && tip.innerText.includes(text);
+                }
+                """, arg: "Measured", options: new PageWaitForFunctionOptions { Timeout = 5000 });
+        } catch {
+            await CaptureContractAsync(page, "paint-caption-only-legend-after-reset-failure-" + layout + "-compact-dark", new {
+                Layout = layout.ToString(), Stage = "Fresh native caption move after reset; requested legend tooltip did not settle",
+                NativeCaption = await page.Locator(Legend(0)).EvaluateAsync<JsonElement>("""
+                    n => {
+                        const t = n.querySelector('text'), b = t.getExtentOfChar(Math.floor(t.textContent.length / 2)), p = new DOMPoint(b.x + b.width / 2, b.y + b.height / 2).matrixTransform(t.getScreenCTM());
+                        const hit = document.elementFromPoint(p.x, p.y), root = n.closest('.cfx-interactive-chart');
+                        return { targetId:n.dataset.cfxTargetId, text:t.textContent, position:[p.x,p.y], hitInside:n.contains(hit), hitRole:hit?.dataset.cfxRole || hit?.tagName,
+                            pointerReadoutSuspended:root._cfxPointerReadoutSuspended === true, activeTarget:document.activeElement?.dataset?.cfxTargetId || null };
+                    }
+                    """)
+            });
+            throw;
+        }
         Assert.Contains("Measured", await TooltipTextAsync(page), StringComparison.Ordinal);
+        await CaptureContractAsync(page, "paint-caption-only-legend-after-reset-" + layout + "-compact-dark", new {
+            Layout = layout.ToString(), FreshNativeCaptionMove = true, KeyboardFocusNotYetApplied = true });
         await page.Locator(Legend(0)).FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
         // Let layout dispatch its real pointer exit while keyboard focus stays on the legend.
@@ -202,6 +234,14 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     private static Chart Frame(bool dark) => Chart.Create().WithSize(800, 540).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
     private static Chart AnnotationChart(bool dark) => Frame(dark).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
         .AddLine("Measured", new[] { new ChartPoint(2, 2), new ChartPoint(8, 2) });
+
+    private static async Task TabToNativeTargetAsync(IPage page, ILocator target) {
+        for (var attempt = 0; attempt < 12; attempt++) {
+            await page.Keyboard.PressAsync("Tab");
+            if (await target.EvaluateAsync<bool>("node => node === document.activeElement")) return;
+        }
+        Assert.Fail("The native word-cloud target must be reachable through normal Tab navigation.");
+    }
 
     private static async Task MoveToNativeTextAsync(IPage page, string selector) {
         var position = await NativeTextPositionAsync(page, selector);

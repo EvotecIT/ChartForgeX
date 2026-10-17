@@ -9,7 +9,7 @@ internal static partial class SmokeTests {
     private static void FormattedNumericXAxisTicksThinWhenCrowded() {
         string Formatter(double value) => "Checkpoint " + value.ToString("00", CultureInfo.InvariantCulture);
 
-        var auto = Chart.Create()
+        var automatic = Chart.Create()
             .WithSize(360, 260)
             .WithXAxisBounds(0, 12)
             .WithTickCount(13)
@@ -18,12 +18,23 @@ internal static partial class SmokeTests {
                 new ChartPoint(0, 10),
                 new ChartPoint(6, 20),
                 new ChartPoint(12, 15)
-            })
-            .ToSvg();
+            });
+        var prepared = PreparedFamily(automatic);
+        var auto = prepared.ToSvg();
         Assert(auto.Contains(">Checkpoint 00</text>", System.StringComparison.Ordinal), "Generated x-axis tick thinning should preserve the first formatted tick.");
-        Assert(auto.Contains(">Checkpoint 12</text>", System.StringComparison.Ordinal), "Generated x-axis tick thinning should preserve the last formatted tick.");
+        Assert(prepared.Regions.Any(region => region.Role == "axis-x-label" && region.Label == "Checkpoint 12 (12)"),
+            "Coarser generated ticks should retain the complete captured endpoint fact.");
         Assert(!auto.Contains(">Checkpoint 01</text>", System.StringComparison.Ordinal), "Generated x-axis tick thinning should omit crowded intermediate formatted ticks.");
         Assert(CountOccurrences(auto, ">Checkpoint ") < 13, "Generated x-axis tick thinning should reduce crowded formatted tick count.");
+        var labels = FamilyLabels(prepared, "axis-x-label");
+        var values = labels.Select(label => int.Parse(label.Text.Lines.Single().Text[11..], CultureInfo.InvariantCulture)).ToArray();
+        for (var index = 2; index < values.Length; index++)
+            Assert(values[index] - values[index - 1] == values[1] - values[0], "Coarser numeric tick labels should keep an even value interval.");
+        foreach (var label in labels) {
+            var text = label.Text.Lines.Single().Text;
+            var source = prepared.Regions.Single(region => region.Role == "axis-x-label" && region.Label!.StartsWith(text + " (", System.StringComparison.Ordinal));
+            Assert(System.Math.Abs(label.X + label.Text.Metrics.Width / 2 - source.Bounds.Left) <= .5, "Every formatted label should remain centered on its own tick.");
+        }
 
         var all = Chart.Create()
             .WithSize(360, 260)
@@ -50,6 +61,8 @@ internal static partial class SmokeTests {
         var svg = chart.ToSvg();
         var labels = FamilyLabels(prepared, "axis-y-label");
         Assert(labels.Length == 2, "Horizontal categories should retain two readable labels in their bounded axis strip.");
+        Assert(labels.Any(label => label.Text.Lines.Count > 1 && string.Join(" ", label.Text.Lines.Select(line => line.Text)) == "Mail auth enforcement"),
+            "Long horizontal categories should wrap their complete words before shortening or omission.");
         Assert(prepared.Regions.Any(region => region.Role == "axis-y-label" && region.Label!.StartsWith("Mail auth enforcement", System.StringComparison.Ordinal)),
             "Fitting should preserve the complete source category in descriptive semantics.");
         Assert(labels.All(label => label.Text.Lines.All(line => label.LineLeft(line) >= 0 && label.LineLeft(line) + line.Width <= prepared.Size.Width)),

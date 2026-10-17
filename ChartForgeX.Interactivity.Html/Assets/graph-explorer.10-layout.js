@@ -148,10 +148,11 @@
       kind: attr(node, 'data-node-kind') || attr(node, 'data-edge-kind') || attr(node, 'data-cluster-kind'),
       status: attr(node, 'data-cfx-status'),
       role: attr(node, 'data-cfx-role'),
-      metadata: metadataDetail(node)
+      metadata: metadataDetail(node),
+      ...(attr(node, 'data-cfx-role') === 'graph-edge' ? { sourceNodeId: attr(node, 'data-source-node-id'), targetNodeId: attr(node, 'data-target-node-id') } : {})
     });
   const selectedItems = (root) => items(root, '[data-cfx-role="graph-node"].cfx-graph-selected,[data-cfx-role="graph-edge"].cfx-graph-selected,[data-cfx-role="graph-cluster"].cfx-graph-selected').map(node => selectionDetail(root, node));
-  const updateSelectionState = (root) => {
+  const updateSelectionState = (root, shouldEmit = true) => {
     syncSelectedEdgeLabels(root); const details = selectedItems(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => item.setAttribute('aria-pressed', item.classList.contains('cfx-graph-selected') ? 'true' : 'false'));
     const primaryNode = details.find(item => item.role === 'graph-node');
@@ -159,7 +160,7 @@
     root.dataset.cfxGraphSelectionIds = details.map(item => item.id).join(',');
     root.dataset.cfxGraphSelectionRoles = details.map(item => item.role).join(',');
     root.dataset.cfxGraphSelectionPrimary = primaryNode ? primaryNode.id : details[0]?.id || '';
-    emit(root, 'cfxgraphselection', { graphId: attr(root, 'data-cfx-graph-id'), count: details.length, items: details });
+    if (shouldEmit) emit(root, 'cfxgraphselection', { graphId: attr(root, 'data-cfx-graph-id'), count: details.length, items: details });
     return details;
   };
   const clearSelection = (root) => {

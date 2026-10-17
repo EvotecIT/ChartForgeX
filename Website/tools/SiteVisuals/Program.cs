@@ -114,7 +114,7 @@ var socialSvg = $"""
   <text x="64" y="200" font-family="Segoe UI, Arial, sans-serif" font-size="60" font-weight="800" fill="#16181c">Render charts in .NET.</text>
   <text x="64" y="270" font-family="Segoe UI, Arial, sans-serif" font-size="60" font-weight="800" fill="#626770">Ship them anywhere.</text>
   <text x="64" y="340" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#4d525b">SVG, PNG and HTML from one model. No browser, no dependencies.</text>
-  <svg x="560" y="360" width="600" height="338" viewBox="0 0 960 540">{heroInner}</svg>
+  <svg x="680" y="360" width="470" height="264" viewBox="0 0 960 540">{heroInner}</svg>
 </svg>
 """;
 File.WriteAllBytes(Path.Combine(output, "social-card.png"), SvgRasterizer.ToPng(socialSvg, 1200, 630));
@@ -148,10 +148,11 @@ var fenceLines = fenceText.Split('\n', StringSplitOptions.RemoveEmptyEntries).Le
 var fence = VisualMarkupScanner.ParseFenceBlock(fenceInfo, fenceText, fenceLine: 1, payloadStartLine: 2, payloadEndLine: 1 + fenceLines);
 var markup = new VisualMarkupParser().Parse(fence);
 Report("markdown fence", markup.Diagnostics.Select(d => d.ToString()));
-if (markup.Artifacts.FirstOrDefault()?.Model is Chart fenced) {
-    foreach (var (name, mode) in modes) {
-        Write($"hero-markdown-{name}.svg", fenced.WithThemeMode(mode).ToSvg($"cfx-md-{name}"));
-    }
+if (markup.HasErrors || markup.Artifacts.FirstOrDefault()?.Model is not Chart fenced) {
+    throw new InvalidOperationException("The ChartForgeX Markdown hero did not produce a chart artifact.");
+}
+foreach (var (name, mode) in modes) {
+    Write($"hero-markdown-{name}.svg", fenced.WithThemeMode(mode).ToSvg($"cfx-md-{name}"));
 }
 
 // Mermaid: source kept next to the native render.
@@ -195,9 +196,10 @@ foreach (var (name, source) in mermaid) {
             : "%%{init: {'theme':'dark'}}%%\n" + source;
         var result = MermaidRenderer.Render(themed);
         Report($"mermaid {name} ({mode})", result.Diagnostics.Select(d => $"{d.Severity} {d.Code}: {d.Message}"));
-        if (!result.HasErrors && result.Artifact != null) {
-            Write($"mermaid-{name}-{mode}.svg", result.Artifact.ToSvg());
+        if (result.HasErrors || result.Artifact == null) {
+            throw new InvalidOperationException($"Mermaid social asset '{name}' ({mode}) did not render.");
         }
+        Write($"mermaid-{name}-{mode}.svg", result.Artifact.ToSvg());
     }
 }
 

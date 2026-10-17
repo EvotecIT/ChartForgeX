@@ -47,7 +47,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var markerId = SafeId(scene.Id) + "-static-arrow";
         writer.Append("<style>");
         writer.Append(HtmlGraphExplorerAssets.Style);
-        writer.Append("</style><g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export\"");
+        writer.Append("</style><g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export");
+        if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-theme-dark");
+        writer.Append("\"");
         Attribute(writer, "data-cfx-graph-theme", StaticThemeName(options.Theme, rasterTheme));
         writer.Append("><title>");
         writer.Append(Text(scene.Title));

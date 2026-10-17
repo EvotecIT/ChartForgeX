@@ -114,16 +114,66 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         if (!Enabled) return;
         await using var session = await OpenAsync(Observations(false).ToInteractiveHtmlPage(options => { ConfigureDelay(options, "exact"); options.Interaction.Enable(ChartInteractionFeatures.Zoom); }), 950, 760);
         var page = session.Page;
+        var pageErrors = new List<string>();
+        page.PageError += (_, error) => pageErrors.Add(error);
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await TraceAsync(page);
+        await page.EvaluateAsync("""
+            delay => {
+                const root=document.querySelector('.cfx-interactive-chart');
+                window.resetKeyboardEvents=[];
+                const timers=window.resetKeyboardTimers={queued:[],canceled:[],fired:[]};
+                const schedule=window.setTimeout.bind(window),cancel=window.clearTimeout.bind(window);
+                window.setTimeout=(callback,milliseconds,...args)=>{
+                    if(milliseconds!==delay)return schedule(callback,milliseconds,...args);
+                    const id=schedule(()=>{timers.fired.push({id,t:performance.now()});callback(...args);},milliseconds);
+                    timers.queued.push({id,t:performance.now(),delay:milliseconds});return id;
+                };
+                window.clearTimeout=id=>{timers.canceled.push({id,t:performance.now()});cancel(id);};
+                for(const type of ['cfxreset','cfxviewport','focus','blur','pointerenter','pointermove','keydown','keyup','click'])
+                    root.addEventListener(type,event=>window.resetKeyboardEvents.push({type,t:performance.now(),trusted:event.isTrusted,
+                        role:event.target?.dataset?.cfxRole,target:event.target?.dataset?.cfxTargetId,
+                        reset:event.target?.matches?.('[data-cfx-reset]'),key:event.key,x:event.clientX,y:event.clientY}),true);
+            }
+            """, Delay);
+        const string resetState = """
+            () => {
+                const root=document.querySelector('.cfx-interactive-chart'),active=root.getRootNode().activeElement;
+                return {t:performance.now(),hidden:root.querySelector('.cfx-tooltip').hidden,zoom:root.dataset.cfxZoom,
+                    resetHidden:root.querySelector('[data-cfx-reset]').hidden,focusRole:active?.dataset?.cfxRole,
+                    focusTarget:active?.dataset?.cfxTargetId,focusReset:active===root.querySelector('[data-cfx-reset]'),
+                    focusRoot:active===root,hover:root.dataset.cfxHoverKey,trace:window.delayTrace,
+                    timers:window.resetKeyboardTimers,events:window.resetKeyboardEvents};
+            }
+            """;
         await PointerAsync(page, Point(0, 0));
         Assert.True(await TipHiddenAsync(page));
         await page.Locator("[data-cfx-reset]").FocusAsync();
+        var before = await page.EvaluateAsync<JsonElement>(resetState);
         await page.Keyboard.PressAsync("Enter");
+        var reset = await page.EvaluateAsync<JsonElement>(resetState);
         await Task.Delay(Delay + 80);
+        var deadline = await page.EvaluateAsync<JsonElement>(resetState);
+        await CaptureDelayAsync(page, "delay-reset-keyboard", new { before, reset, deadline, pageErrors }, session);
         Assert.True(await TipHiddenAsync(page));
         Assert.True(await page.Locator("[data-cfx-reset]").IsHiddenAsync());
         Assert.Empty((await TraceStateAsync(page)).GetProperty("shown").EnumerateArray());
+        await page.Locator(Point(0, 0)).FocusAsync();
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.True(await page.Locator(Point(0, 1)).EvaluateAsync<bool>("node=>node===document.activeElement"));
+        Assert.False(await TipHiddenAsync(page));
+        Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
+        var keyboard = await page.EvaluateAsync<JsonElement>(resetState);
+        // A second ordinary reset lets fresh pointer movement independently resume the delayed readout.
+        await page.Locator("[data-cfx-zoom=in]").ClickAsync();
+        await page.Locator("[data-cfx-reset]").FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
+        Assert.True(await TipHiddenAsync(page));
+        await PointerAsync(page, Point(0, 0));
+        Assert.True(await TipHiddenAsync(page));
+        await WaitForTipAsync(page);
+        Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
+        await CaptureDelayAsync(page, "delay-reset-keyboard-recovery", new { keyboard, pointer = await page.EvaluateAsync<JsonElement>(resetState), pageErrors }, session);
         AssertNoConsoleErrors(session);
     }
 

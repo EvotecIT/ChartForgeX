@@ -52,7 +52,7 @@ internal static partial class VisualCartesianCompiler {
             var showMarkers = VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue);
             var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;
             var bounds = Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius));
-            var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, low.Y) + "–" + Value(chart, high.Y));
+            var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("lower", low.Y) + "–" + format("upper", high.Y));
             var values = new[] { ("x", low.X), ("lower", low.Y), ("upper", high.Y) };
             // Adapters use the captured native midpoint; averaging mapped boundaries is wrong on nonlinear axes.
             using (area

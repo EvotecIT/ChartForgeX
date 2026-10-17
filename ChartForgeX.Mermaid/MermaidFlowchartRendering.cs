@@ -28,6 +28,7 @@ public static class MermaidFlowchartRendering {
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(document.Kind == MermaidDiagramKind.Swimlane || (document.Kind == MermaidDiagramKind.UseCase && document.Subgraphs.Count > 0) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered, ToVisualLinkDirection(document.Direction));
+        if (options.HasExplicitViewportSize) chart.DefaultRenderOptions = ToTopologyRenderOptions(options);
         var inferredLayers = MermaidFlowchartLayering.Infer(document);
         var fitViewport = options.FitContent && !options.HasExplicitViewportSize;
 
@@ -50,7 +51,7 @@ public static class MermaidFlowchartRendering {
             var node = document.Nodes[index];
             var sourceLabel = string.IsNullOrWhiteSpace(node.Text) ? node.Id : node.Text!;
             var label = MermaidFlowchartText.DisplayCaption(sourceLabel);
-            var nodeWidth = ToNodeWidth(node.Shape, label, options.FitContent);
+            var nodeWidth = options.FitContent && node.Shape == MermaidFlowchartNodeShape.Actor ? ActorNodeWidth(label) : BaseNodeWidth(node.Shape);
             // Mermaid shapes carry the node meaning; an implicit kind would add a glyph Mermaid never draws.
             chart.AddAutoNode(
                 node.Id,
@@ -72,7 +73,9 @@ public static class MermaidFlowchartRendering {
             target.ShowStatusBadge = false;
             target.DisplayMode = TopologyNodeDisplayMode.Card;
             target.PreserveDisplayModeSize = true;
+            target.FitLabelToContent = options.FitContent && node.Shape != MermaidFlowchartNodeShape.Actor;
             target.BackgroundColor = StyleValue(node.Styles, "fill");
+            target.LabelColor = StyleValue(node.Styles, "color");
             target.Metadata["mermaid.id"] = node.Id;
             target.Metadata["mermaid.label"] = sourceLabel;
             target.Metadata["mermaid.shape"] = node.Shape.ToString();
@@ -181,7 +184,7 @@ public static class MermaidFlowchartRendering {
     }
 
     private static TopologyRenderOptions ToTopologyRenderOptions(MermaidFlowchartRenderOptions options) =>
-        new TopologyRenderOptions { FitContentToViewport = options.HasExplicitViewportSize };
+        new TopologyRenderOptions { FitContentToViewport = options.FitContent && options.HasExplicitViewportSize };
 
     private static string ResolveTitle(MermaidFlowchartDocument document, MermaidFlowchartRenderOptions options) =>
         MermaidHeading.Title(document, options.Title, null, document.Kind == MermaidDiagramKind.Swimlane ? "Mermaid swimlane" : document.Kind == MermaidDiagramKind.UseCase ? "Mermaid use case" : "Mermaid flowchart");
@@ -215,13 +218,10 @@ public static class MermaidFlowchartRendering {
         foreach (var item in styles) metadata[prefix + item.Key] = item.Value;
     }
 
-    private static double ToNodeWidth(MermaidFlowchartNodeShape shape, string label, bool fitContent) {
-        var shapeWidth = BaseNodeWidth(shape);
-        if (!fitContent) return shapeWidth;
+    private static double ActorNodeWidth(string label) {
+        // Actors retain their external-caption policy; enclosed captions are sized by native preparation.
         var longestLine = label.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Max(line => line.Length);
-        var labelWidth = 24 + longestLine * 7.1;
-        if (shape == MermaidFlowchartNodeShape.Rhombus) labelWidth *= 1.5;
-        return Clamp(Math.Max(shapeWidth, labelWidth), shapeWidth, 560);
+        return Clamp(24 + longestLine * 7.1, BaseNodeWidth(MermaidFlowchartNodeShape.Actor), 560);
     }
 
     private static double BaseNodeWidth(MermaidFlowchartNodeShape shape) {
@@ -359,7 +359,7 @@ public sealed class MermaidFlowchartRenderOptions {
     /// <summary>Gets or sets an optional chart subtitle override.</summary>
     public string? Subtitle { get; set; }
 
-    /// <summary>Gets or sets whether the viewport and node widths should fit the parsed graph content.</summary>
+    /// <summary>Gets or sets whether the viewport and enclosed node dimensions should fit the parsed graph content and prepared font.</summary>
     public bool FitContent { get; set; } = true;
 
     /// <summary>Gets whether a caller explicitly assigned the viewport width or height.</summary>

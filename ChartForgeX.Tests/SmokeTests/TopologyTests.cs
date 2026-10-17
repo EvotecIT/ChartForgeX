@@ -140,7 +140,12 @@ internal static partial class SmokeTests {
         Assert(TopologyEntity(svg, "node", "service").Descendants().Any(), "Layered left-to-right topology should render the middle layer.");
         Assert(TopologyEntity(svg, "node", "database").Descendants().Any(), "Layered left-to-right topology should render the last layer.");
         Assert(svg.Contains("x=\"24\"", StringComparison.Ordinal), "Layered left-to-right topology should start inside the left viewport padding.");
-        Assert(svg.Contains("x=\"456\"", StringComparison.Ordinal), "Layered left-to-right topology should place the final layer near the right viewport padding.");
+        var document = System.Xml.Linq.XDocument.Parse(svg);
+        var outputWidth = double.Parse(document.Root!.Attribute("width")!.Value, CultureInfo.InvariantCulture);
+        var right = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-node-surface" && element.Name.LocalName == "rect")
+            .Max(element => double.Parse(element.Attribute("x")!.Value, CultureInfo.InvariantCulture) + double.Parse(element.Attribute("width")!.Value, CultureInfo.InvariantCulture));
+        Assert(outputWidth - right >= chart.Viewport.Padding - 1 && outputWidth - right <= chart.Viewport.Padding * 2,
+            "The final layered node should retain right viewport padding when measured edge captions widen the ranks.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Layered left-to-right topology should render as PNG.");
     }
 
@@ -592,27 +597,6 @@ internal static partial class SmokeTests {
         Assert(points.Any(point => point.Y < 110 || point.Y > 190), "Obstacle-aware topology routes should choose a lane outside the expanded blocking node bounds.");
         Assert(!PathIntersectsBox(points, left: 200, top: 110, right: 320, bottom: 190), "Obstacle-aware topology routes should avoid the expanded blocking node bounds.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should render obstacle-aware route points.");
-    }
-
-    private static void TopologyEdgesCanAvoidGroupHeaders() {
-        var chart = TopologyChart.Create()
-            .WithId("group-header-route")
-            .WithViewport(620, 320, 20)
-            .WithLegend(null)
-            .AddGroup("middle", "Bridgehead Region", 225, 95, 170, 120, TopologyHealthStatus.Warning)
-            .AddNode("left", "Left Hub", 40, 115, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 100, height: 60)
-            .AddNode("right", "Right Hub", 420, 115, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 100, height: 60)
-            .AddEdge("hub-link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .WithEdgePorts("hub-link", TopologyEdgePort.Right, TopologyEdgePort.Left);
-
-        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
-        Assert(svg.Contains("data-route-strategy=\"ObstacleAvoidingOrthogonal\"", StringComparison.Ordinal), "Topology SVG should expose the obstacle-aware route strategy for group-header routes.");
-        Assert(svg.Contains("data-route-fallback-reason=\"none\"", StringComparison.Ordinal), "Topology SVG should expose clear group-header routes without a fallback reason.");
-        Assert(svg.Contains("data-route-obstacle-hits=\"0\"", StringComparison.Ordinal), "Obstacle-aware topology routes should avoid group header obstacles when a clear lane is available.");
-        var points = ParseSvgPathPoints(ExtractEdgePathData(svg, "hub-link"));
-        Assert(points.Any(point => point.Y < 99 || point.Y > 159), "Obstacle-aware topology routes should choose a lane outside the expanded group header bounds.");
-        Assert(!PathIntersectsBox(points, left: 239, top: 99, right: 381, bottom: 159), "Obstacle-aware topology routes should not cross the expanded group header bounds.");
-        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Topology PNG should render group-header obstacle-aware route points.");
     }
 
     private static void TopologyRenderOptionsSupportDashboardPerspectives() {

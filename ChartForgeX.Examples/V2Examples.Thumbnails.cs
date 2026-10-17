@@ -24,13 +24,13 @@ public static partial class V2Examples {
                 .Add(Chart.Create().WithXLabels("Mon", "Tue", "Wed").AddBar("Capacity", new[] { new ChartPoint(1, 52), new ChartPoint(2, 64), new ChartPoint(3, 58) })),
             _ => model
         };
-        // Interval categories and map codes need the thumbnail's legend space. Full examples retain their keys.
+        // Horizontal interval categories use the thumbnail's ordinary legend space.
         var horizontalIntervals = family == "range-bar" && model is Chart chart
             && chart.Options.RangeBar.Orientation == ChartOrientation.Horizontal;
         // The twelve-column state map needs this content width for complete 13.5 px codes and their hexagon clearance.
         var padding = family == "tile-map" ? 14 : 16;
         var prepared = previewModel.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(ThumbnailWidth, ThumbnailHeight), padding),
-            ThumbnailTheme, mode, new VisualFrame("", "", showLegend: horizontalIntervals || family is "topology" or "sequence" or "flow" or "chart-grid" or "tile-map" ? false : legend),
+            ThumbnailTheme, mode, new VisualFrame("", "", showLegend: horizontalIntervals || family is "topology" or "sequence" or "flow" or "chart-grid" ? false : legend),
             FontSpec.FromFamily(ProofFont)));
         var kind = family switch {
             "topology" => VisualArtifactKind.Topology, "flow" => VisualArtifactKind.Flow,

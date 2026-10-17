@@ -3,9 +3,9 @@
   "width": 960,
   "height": 540,
   "sizes": {
-    "hero-light.html": "45 KB",
-    "hero-light.interactive.html": "318 KB",
+    "hero-light.html": "50 KB",
+    "hero-light.interactive.html": "380 KB",
     "hero-light.png": "48 KB",
-    "hero.svg": "46 KB"
+    "hero.svg": "50 KB"
   }
 }

@@ -11,24 +11,32 @@ internal static partial class TopologyEdgeRouter {
     /// <summary>Corridor token reported for routes found by the dense route planner's grid search.</summary>
     internal const string PlannedCorridor = "maze";
 
-    public static TopologyRoutePlan Route(TopologyChart chart, TopologyEdge edge, TopologyNode source, TopologyNode target, double? routeLaneOverride = null) {
+    public static TopologyRoutePlan Route(TopologyChart chart, TopologyEdge edge, TopologyNode source, TopologyNode target,
+        double? routeLaneOverride = null, TopologyEdge? routeIdentity = null) {
+        routeIdentity ??= edge;
         var routeLane = routeLaneOverride ?? edge.RouteLane;
         var includeLabels = chart.RenderOptions?.IncludeEdgeLabels != false;
         if (edge.Waypoints.Count > 0) {
             var points = EdgePoints(source, target, edge.Waypoints, edge.SourcePort, edge.TargetPort);
-            return BuildPlan("ManualWaypoints", "manual-waypoints", points, RouteObstacles(chart, source.Id, target.Id, edge), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels, chart.RenderOptions?.ResolvedEdgeLabelScale ?? 1);
+            return BuildPlan("ManualWaypoints", "manual-waypoints", points, RouteObstacles(chart, source.Id, target.Id, routeIdentity), RouteSegments(chart, routeIdentity), edge, 1, chart.TextMeasurement, includeLabels, chart.RenderOptions?.ResolvedEdgeLabelScale ?? 1);
         }
 
         if (edge.Routing != TopologyEdgeRouting.ObstacleAvoidingOrthogonal) {
             var points = EdgePoints(source, target, edge.Routing, edge.SourcePort, edge.TargetPort, routeLane);
-            return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, edge), RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels, chart.RenderOptions?.ResolvedEdgeLabelScale ?? 1);
+            if (chart.LayoutMode != TopologyLayoutMode.ForceDirected && edge.Routing == TopologyEdgeRouting.Orthogonal &&
+                RouteObstacleHits(points, RouteObstacles(chart, source.Id, target.Id, routeIdentity, includeCaptions: true)) > 0) {
+                var obstacleAware = TopologyLayoutEngine.Clone(edge);
+                obstacleAware.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
+                return Route(chart, obstacleAware, source, target, routeLane, routeIdentity);
+            }
+            return BuildPlan(edge.Routing.ToString(), "default", points, RouteObstacles(chart, source.Id, target.Id, routeIdentity), RouteSegments(chart, routeIdentity), edge, 1, chart.TextMeasurement, includeLabels, chart.RenderOptions?.ResolvedEdgeLabelScale ?? 1);
         }
 
         // Readable dense layouts route all obstacle-avoiding edges together; the corridor candidates below remain the
         // fallback for an edge the planner cannot connect inside the content area.
         if (TopologyDenseRoutePlanner.Route(chart, edge) is { } planned) {
-            return BuildPlan("ObstacleAvoidingOrthogonal", PlannedCorridor, planned, RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true, includeLabels: false),
-                RouteSegments(chart, edge), edge, 1, chart.TextMeasurement, includeLabels, chart.RenderOptions?.ResolvedEdgeLabelScale ?? 1);
+            return BuildPlan("ObstacleAvoidingOrthogonal", PlannedCorridor, planned, RouteObstacles(chart, source.Id, target.Id, routeIdentity, includeCaptions: true, includeLabels: false),
+                RouteSegments(chart, routeIdentity), edge, 1, chart.TextMeasurement, includeLabels, chart.RenderOptions?.ResolvedEdgeLabelScale ?? 1);
         }
 
         var sourcePoint = BoundaryPoint(source, CenterX(target), CenterY(target), edge.SourcePort);
@@ -36,8 +44,8 @@ internal static partial class TopologyEdgeRouter {
         var readable = TopologyLayoutEngine.UsesReadableDenseLayout(chart);
         var sourceCaption = CaptionBox(chart, source);
         var targetCaption = CaptionBox(chart, target);
-        var obstacles = RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true);
-        var existingSegments = RouteSegments(chart, edge);
+        var obstacles = RouteObstacles(chart, source.Id, target.Id, routeIdentity, includeCaptions: true);
+        var existingSegments = RouteSegments(chart, routeIdentity);
         var portedEdge = TopologyLayoutEngine.Clone(edge);
         if (portedEdge.SourcePort == TopologyEdgePort.Auto) portedEdge.SourcePort = BoundarySide(source, sourcePoint);
         if (portedEdge.TargetPort == TopologyEdgePort.Auto) portedEdge.TargetPort = BoundarySide(target, targetPoint);
@@ -329,8 +337,8 @@ internal static partial class TopologyEdgeRouter {
 
         const double groupPadding = 10;
         foreach (var group in chart.Groups) {
-            var header = GroupHeaderBox(chart, group);
-            if (header.Width > 0 && header.Height > 0) obstacles.Add(header.Expand(groupPadding));
+            foreach (var header in TopologyGroupHeader.LayoutParts(chart, group, chart.RenderOptions ?? new TopologyRenderOptions()))
+                if (header.Width > 0 && header.Height > 0) obstacles.Add(new RouteBox(header.Left, header.Top, header.Right, header.Bottom).Expand(groupPadding));
         }
 
         if (!includeLabels) return obstacles;
@@ -454,16 +462,6 @@ internal static partial class TopologyEdgeRouter {
     }
 
     private static string RouteKey(IReadOnlyList<ChartPoint> points) => string.Join(";", points.Select(point => F(point.X) + "," + F(point.Y)));
-
-    /// <summary>
-    /// All obstacle-aware routes use the same header block as SVG, PNG, normalization, and diagnostics.
-    /// </summary>
-    private static RouteBox GroupHeaderBox(TopologyChart chart, TopologyGroup group) {
-        var options = chart.RenderOptions ?? new TopologyRenderOptions();
-        if (!TopologyGroupHeader.IsDrawn(options)) return new RouteBox(0, 0, 0, 0);
-        var bounds = TopologyGroupHeader.Bounds(group, options, chart.TextMeasurement);
-        return new RouteBox(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
-    }
 
     private static ChartPoint BoundaryPoint(TopologyNode node, double towardX, double towardY, TopologyEdgePort port) {
         if (node.Shape.HasValue) return TopologyNodeShapeGeometry.BoundaryPoint(node, towardX, towardY, port, 7);

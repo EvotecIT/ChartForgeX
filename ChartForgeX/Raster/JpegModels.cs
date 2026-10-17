@@ -19,6 +19,17 @@ internal static partial class JpegReader {
     }
 
     private sealed class JpegScan {
+        // DHT and DRI may be redefined between scans, especially in progressive JPEGs.
+        public JpegHuffmanTable?[] DcTables = Array.Empty<JpegHuffmanTable?>();
+        public JpegHuffmanTable?[] AcTables = Array.Empty<JpegHuffmanTable?>();
+        public int RestartInterval;
+
+        public void RestoreTables(JpegState state) {
+            Array.Copy(DcTables, state.DcTables, DcTables.Length);
+            Array.Copy(AcTables, state.AcTables, AcTables.Length);
+            state.RestartInterval = RestartInterval;
+        }
+
         public readonly List<JpegScanComponent> Components = new();
         public int SpectralStart;
         public int SpectralEnd;
@@ -78,6 +89,8 @@ internal static partial class JpegReader {
         public int DcTable;
         public int AcTable;
         public int PreviousDc;
+        public int ScanWidthInBlocks;
+        public int ScanHeightInBlocks;
         public int WidthInBlocks;
         public int HeightInBlocks;
         public int CurrentBlockOffset;

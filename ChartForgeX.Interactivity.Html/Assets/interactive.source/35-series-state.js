@@ -60,6 +60,7 @@
       pointLabelSurfaces(root, node).forEach(label => label.classList.toggle('cfx-series-muted', muted));
     });
     refreshKeyboardNavigation(root);
+    syncSelectionAppearance(root);
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
@@ -91,6 +92,7 @@
     });
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
+    syncSelectionAppearance(root);
     syncResetControl(root);
   };
   const toggleSeriesFocus = (root, item, emit, sync) => {

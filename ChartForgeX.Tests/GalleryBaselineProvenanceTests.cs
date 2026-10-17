@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Xml.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
@@ -7,7 +8,58 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
+[Collection(nameof(FontRegistryCollection))]
 public sealed class GalleryBaselineProvenanceTests {
+    [Theory]
+    [InlineData("Arial")]
+    [InlineData("Missing CFX Provenance Font")]
+    [InlineData("CFX Provenance Carlito")]
+    public void HeadingProvenanceRetainsAuthoredIdentityAcrossFittingAndLegacyMetadata(string family) {
+        var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-gallery-fitted-font-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(output);
+        if (family == "CFX Provenance Carlito")
+            FontRegistry.Register(family, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Bold.ttf"), 700);
+        try {
+            var smaller = Render(120, Path.Combine(output, "smaller"));
+            var larger = Render(240, Path.Combine(output, "larger"));
+            Assert.NotEqual(smaller.PaintedSize, larger.PaintedSize);
+            Assert.Equal(family + "|700|normal|256|", smaller.Request);
+            Assert.Equal(smaller.Request, larger.Request);
+            Assert.NotEmpty(smaller.Fingerprint);
+            Assert.Equal(smaller.Fingerprint, larger.Fingerprint);
+            var ordinary = Render(120, Path.Combine(output, "ordinary"), 12);
+            var legacy = Render(120, Path.Combine(output, "legacy"), 12, stripAuthoredRequest: true);
+            Assert.Equal(12, ordinary.PaintedSize);
+            Assert.Equal(family + ", sans-serif|700|normal|12|", legacy.Request);
+            Assert.NotEqual(ordinary.Fingerprint, legacy.Fingerprint);
+        } finally { Directory.Delete(output, true); }
+
+        (double PaintedSize, string Request, string Fingerprint) Render(int height, string folder, double fontSize = 256, bool stripAuthoredRequest = false) {
+            Directory.CreateDirectory(folder);
+            var font = FontSpec.FromFamily(family); font.Weight = 700;
+            var size = new VisualSize(240, height);
+            var context = new VisualRenderContext(new VisualLayoutOptions(size, 16),
+                frame: new VisualFrame("Fitted request", showLegend: false, titleStyle: new TextStyle { Font = font, FontSize = fontSize }), font: font);
+            var builder = new VisualSceneBuilder(size, font);
+            VisualFrameLayout.Build(builder, context, Array.Empty<VisualLegendEntry>());
+            var scene = builder.Build();
+            const string name = "mermaid-source-font-size-group-header-fit";
+            var svg = VisualSceneSvgRenderer.Render(scene);
+            if (stripAuthoredRequest) {
+                var document = XDocument.Parse(svg);
+                foreach (var attribute in document.Descendants().Attributes("data-cfx-authored-font-request").ToArray()) attribute.Remove();
+                svg = document.ToString(SaveOptions.DisableFormatting);
+            }
+            File.WriteAllText(Path.Combine(folder, name + ".svg"), svg);
+            File.WriteAllBytes(Path.Combine(folder, name + ".png"), PngWriter.WriteRgba(VisualSceneRasterRenderer.Render(scene, 1, supersampling: 1)));
+            GalleryWriter.Write(folder);
+            using var comparison = JsonDocument.Parse(File.ReadAllText(Path.Combine(folder, "svg-png-comparison.json")));
+            var layout = comparison.RootElement.GetProperty("charts")[0].GetProperty("layout");
+            var painted = Assert.Single(XDocument.Parse(svg).Descendants(), element => element.Name.LocalName == "text");
+            return ((double)painted.Attribute("font-size")!, layout.GetProperty("frameFontRequest").GetString()!, layout.GetProperty("frameFontFingerprint").GetString()!);
+        }
+    }
+
     [Theory]
     [InlineData("advanced-topology", "different", false, false, true)]
     [InlineData("advanced-topology", "same", false, false, false)]
@@ -15,6 +67,12 @@ public sealed class GalleryBaselineProvenanceTests {
     [InlineData("mermaid-er-direction", "same", false, false, false)]
     [InlineData("mermaid-state-direction", "different", false, false, true)]
     [InlineData("mermaid-state-direction", "same", false, false, false)]
+    [InlineData("mermaid-source-font-size-group-header-fit", "different", false, false, true)]
+    [InlineData("mermaid-source-font-size-group-header-fit", "same", false, false, false)]
+    [InlineData("mermaid-source-font-size-group-header-fit", "missing", false, false, false)]
+    [InlineData("mermaid-source-font-size-group-header-fit", "request-changed", false, false, false)]
+    [InlineData("mermaid-source-font-size-group-header-fit", "different", true, false, false)]
+    [InlineData("mermaid-source-font-size-group-header-fit", "different", false, true, false)]
     [InlineData("advanced-topology", "missing", false, false, false)]
     [InlineData("advanced-topology", "request-changed", false, false, false)]
     [InlineData("fixed-canvas", "different", false, false, false)]

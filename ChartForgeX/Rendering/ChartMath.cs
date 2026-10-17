@@ -37,6 +37,9 @@ internal static class ChartMath {
     }
 
     internal static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
+    /// <summary>Gets the preceding finite-double boundary for a closed transport of a half-open interval.</summary>
+    internal static double PreviousRepresentable(double value) => value == 0 ? -double.Epsilon
+        : BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(value) + (value > 0 ? -1 : 1));
 
     internal static (double Minimum, double Maximum) ResolveFiniteLaneWindow(double minimum, double maximum, bool minimumExplicit, bool maximumExplicit) {
         if (IsFinite(minimum) && IsFinite(maximum) && maximum > minimum) return (minimum, maximum);

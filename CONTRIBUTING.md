@@ -69,7 +69,7 @@ If a runner is under heavy load, rerun with a larger timeout:
 
 `Build/Build-Project.ps1` delegates releases to PSPublishModule and PowerForge using
 `Build/project.build.json`. All nine ChartForgeX packages, including the markup CLI tool,
-share the `2.0.X` release lane. PowerForge resolves the next version from the highest published
+share the `3.0.X` release lane. PowerForge resolves the next version from the highest published
 version in that group and updates `ChartForgeXProductVersion` in `Directory.Build.props`.
 The projects keep their shared version references, so package and assembly metadata stay aligned.
 

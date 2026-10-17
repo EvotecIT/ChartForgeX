@@ -125,7 +125,7 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether the SVG should include responsive sizing style.</summary>
     public bool UseResponsiveSvg { get; set; } = true;
 
-    /// <summary>Gets or sets whether rendered topology content should scale down to remain inside the requested viewport instead of expanding it.</summary>
+    /// <summary>Gets or sets whether rendered topology content should be uniformly fitted to the requested viewport.</summary>
     public bool FitContentToViewport { get; set; }
 
     /// <summary>Gets or sets whether complete HTML pages should include lightweight selection interactions. Defaults to static, script-free HTML.</summary>
@@ -133,6 +133,17 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets whether interactive HTML pages should include lightweight zoom and pan controls.</summary>
     public bool EnableHtmlViewportControls { get; set; }
+
+    private double _htmlNarrowMinimumHeight;
+
+    /// <summary>Gets or sets the minimum drawing height in pixels for interactive viewports in containers up to 640 pixels wide. Zero preserves proportional sizing.</summary>
+    public double HtmlNarrowMinimumHeight {
+        get => _htmlNarrowMinimumHeight;
+        set {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+            _htmlNarrowMinimumHeight = value;
+        }
+    }
 
     /// <summary>Gets or sets whether interactive HTML pages should include lightweight SVG and PNG export controls.</summary>
     public bool EnableHtmlExportControls { get; set; }

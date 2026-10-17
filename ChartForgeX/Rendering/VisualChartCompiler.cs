@@ -52,7 +52,7 @@ internal static class VisualChartCompiler {
 
     internal static ChartXProjection? Build(VisualChartFamily family, Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content,
         ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartColorPresentationSet? colorScales = null, double legendHeight = 0,
-        ChartXViewport? xViewport = null) {
+        ChartXViewport? xViewport = null, TileMapLegendInset? mapLegendInset = null) {
         using var coordinateScope = family is VisualChartFamily.Radial or VisualChartFamily.RadialProgress or VisualChartFamily.Polar or VisualChartFamily.NumericRadial
             || family == VisualChartFamily.Gauge && chart.Options.Gauge.Form != ChartGaugeForm.Linear
             || family == VisualChartFamily.Hierarchy && chart.Series[0].Kind == ChartSeriesKind.Sunburst
@@ -67,7 +67,7 @@ internal static class VisualChartCompiler {
             case VisualChartFamily.Scalar: VisualScalarProgressCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Matrix: VisualMatrixCompiler.Build(chart, context, builder, content, colorScales?.Heatmap); break;
             case VisualChartFamily.Schedule: VisualScheduleCompiler.Build(chart, context, builder, content); break;
-            case VisualChartFamily.Map: VisualMapCompiler.Build(chart, context, builder, content, colorScales?.Map); break;
+            case VisualChartFamily.Map: VisualMapCompiler.Build(chart, context, builder, content, colorScales?.Map, mapLegendInset); break;
             case VisualChartFamily.Hierarchy: VisualHierarchyCompiler.Build(chart, context, builder, content, colorScales); break;
             case VisualChartFamily.Sankey: VisualSankeyCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Chord: VisualChordCompiler.Build(chart, context, builder, content); break;

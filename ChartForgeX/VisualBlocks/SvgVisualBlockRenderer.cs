@@ -24,13 +24,13 @@ public sealed partial class SvgVisualBlockRenderer {
     internal static bool IsNativeBlock(IVisualBlock block) => block is PacketLayoutBlock || block is BlockLayoutBlock || block is GitGraphBlock || block is VennDiagramBlock || block is FishboneDiagramBlock || block is WardleyMapBlock;
 
     /// <summary>Renders a visual block to SVG markup with a caller-provided ID scope.</summary>
-    internal static string RenderOwned(IVisualBlock block, string idScope, Func<IVisualBlock, string, string> render) {
+    internal static string RenderOwned(IVisualBlock block, string idScope, Func<IVisualBlock, string, string> render, bool layoutLabels = true) {
         var scope = idScope ?? string.Empty;
         var provisionalId = BuildProvisionalId(block, scope);
         var svg = render(block, provisionalId);
         var font = block.Options.Theme.Typography.ToFontSpec();
         using var measurement = ChartLabelScene.OpenFontScope(font);
-        svg = ChartLabelScene.Create(svg, font).ToSvg();
+        svg = ChartLabelScene.Create(svg, font, layoutLabels).ToSvg();
         return BindVisualIdentity(svg, provisionalId, scope);
     }
 

@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML, SVG, and graph explorer interaction adapter for ChartForgeX charts and graph scenes.</Description>
-    <PackageReleaseNotes>ChartForgeX 2.0.0 provides shared native chart and diagram rendering with independent Visuals and Stories packages. See the v2 migration guide for assembly and API changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.0.0 unifies paired themes, typed observations, stable series handles and atomic configuration callbacks. See the consumer migration guide for breaking API changes.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
@@ -95,6 +95,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.30-bindings.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js" />
     <EmbeddedResource Include="Assets\graph-explorer.31-physics-configurator.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js" />
     <EmbeddedResource Include="Assets\graph-explorer.32-manipulation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.36-host-commands.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.36-host-commands.js" />
     <EmbeddedResource Include="Assets\graph-explorer.39-patch-validation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.39-patch-validation.js" />
     <EmbeddedResource Include="Assets\graph-explorer.40-api.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.40-api.js" />
   </ItemGroup>

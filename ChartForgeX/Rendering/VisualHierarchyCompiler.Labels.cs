@@ -22,13 +22,20 @@ internal static partial class VisualHierarchyCompiler {
         int count = Math.Min(maximumLines, (int)Math.Floor(height / metrics.LineHeight));
         if (count < 1 || width < 6) { builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.")); return; }
         var paragraphs = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
-        var lines = paragraphs.Length == 1 && count > 1 ? ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, width,
-            (value, _) => builder.MeasureText(value, style).Width) : paragraphs;
+        var wrapped = new List<string>();
+        for (var i = 0; i < paragraphs.Length; i++) {
+            // Reserve one row for each following paragraph, including the leaf's factual value.
+            var spareRows = count - wrapped.Count - (paragraphs.Length - i - 1);
+            if (spareRows > 1) wrapped.AddRange(ChartLabelWrapping.BalancedTwoLine(paragraphs[i], style.EffectiveFontSize, width,
+                (value, _) => builder.MeasureText(value, style).Width));
+            else wrapped.Add(paragraphs[i]);
+        }
+        var lines = wrapped.ToArray();
         var fitted = new List<string>();
         bool shortened = lines.Length > count;
         for (int i = 0; i < Math.Min(count, lines.Length); i++) {
             string line = lines[i];
-            if (i == count - 1 && lines.Length > count) line += "...";
+            if (i == count - 1 && lines.Length > count) line += "…";
             string result = ChartTextFitting.TrimEnd(line, style.EffectiveFontSize, width, (value, _) => builder.MeasureText(value, style).Width);
             shortened |= result != line; fitted.Add(result);
         }

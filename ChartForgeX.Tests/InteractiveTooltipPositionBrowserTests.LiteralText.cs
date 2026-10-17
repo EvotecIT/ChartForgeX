@@ -48,7 +48,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             """);
         await CaptureAsync(page, $"position-literal-detail-{width}-{(dark ? "dark" : "light")}-{(keyboard ? "keyboard" : "pointer")}", new { detail, geometry, content }, session);
         Assert.Equal(detail, content.GetProperty("detail").GetString());
-        Assert.Contains(detail, content.GetProperty("title").GetString()!, StringComparison.Ordinal);
+        Assert.Equal("Worker", content.GetProperty("title").GetString());
         Assert.False(content.GetProperty("injected").GetBoolean());
         Assert.Equal(0, content.GetProperty("unexpectedElements").GetInt32());
         var tip = content.GetProperty("tip");

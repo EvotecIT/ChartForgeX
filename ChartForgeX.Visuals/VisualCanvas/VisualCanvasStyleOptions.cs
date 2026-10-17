@@ -5,17 +5,32 @@ using ChartForgeX.Themes;
 
 namespace ChartForgeX.Composition;
 
-/// <summary>Canvas-specific surface treatments. Common colors and fonts come from <see cref="VisualTheme"/>.</summary>
+/// <summary>Canvas-specific presentation overrides. Unassigned colors and fonts come from <see cref="VisualTheme"/>.</summary>
 public sealed class VisualCanvasStyleOptions {
     private TextMeasurementMode _textMeasurementMode;
+    private double _tileTextScale = 1;
     /// <summary>Chooses portable text measurement or an explicit host-font opt-in.</summary>
     public TextMeasurementMode TextMeasurementMode { get => _textMeasurementMode; set { VisualCanvas.ValidateEnum(value, nameof(value)); _textMeasurementMode = value; } }
+    /// <summary>Scales information-tile typography and its supporting layout when a tile has no explicit scale.</summary>
+    public double TileTextScale {
+        get => _tileTextScale;
+        set {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value));
+            _tileTextScale = value;
+        }
+    }
     /// <summary>Overrides the top glass-tile paint.</summary>
     public ChartColor? TileGlassTop { get; set; }
     /// <summary>Overrides the bottom glass-tile paint.</summary>
     public ChartColor? TileGlassBottom { get; set; }
     /// <summary>Overrides the glass-tile inner highlight.</summary>
     public ChartColor? TileInnerStroke { get; set; }
+    /// <summary>Overrides tile label text independently of the shared secondary foreground. Null inherits the selected theme mode.</summary>
+    public ChartColor? TileLabelColor { get; set; }
+    /// <summary>Overrides tile value text independently of the shared foreground. Null inherits the selected theme mode.</summary>
+    public ChartColor? TileValueColor { get; set; }
+    /// <summary>Overrides tile detail text independently of the shared secondary foreground. Null inherits the selected theme mode.</summary>
+    public ChartColor? TileDetailColor { get; set; }
     /// <summary>Overrides the progress rail paint.</summary>
     public ChartColor? TileProgressTrackColor { get; set; }
     /// <summary>Overrides the mini-chart fill treatment.</summary>
@@ -28,6 +43,8 @@ public sealed class VisualCanvasStyleOptions {
     public ChartColor? HeroBadgeTop { get; set; }
     /// <summary>Overrides the bottom hero-badge paint.</summary>
     public ChartColor? HeroBadgeBottom { get; set; }
+    /// <summary>Overrides hero-badge symbol text independently of the shared foreground. Null inherits the selected theme mode.</summary>
+    public ChartColor? HeroBadgeTextColor { get; set; }
     /// <summary>Overrides an image placeholder's surface.</summary>
     public ChartColor? ImagePlaceholderFill { get; set; }
     /// <summary>Overrides an image placeholder's border.</summary>
@@ -64,12 +81,14 @@ public sealed partial class VisualCanvas {
         style ??= new VisualCanvasStyleOptions();
         return new ResolvedVisualCanvasStyle {
             FontFamily = theme.Typography.Family, MonospaceFontFamily = theme.Typography.MonospaceFamily,
+            TileLabelSize = theme.Typography.TileLabelSize, TileValueSize = theme.Typography.TileValueSize,
+            TileDetailSize = theme.Typography.TileDetailSize, TileTextScale = style.TileTextScale,
             TextMeasurementMode = style.TextMeasurementMode,
             Accent = colors.Accent, SecondaryAccent = colors.SecondaryAccent,
             HeroTitleColor = colors.Foreground, HeroTitleAccentColor = colors.Accent,
-            SubtitleColor = colors.MutedForeground, TileLabelColor = colors.MutedForeground,
-            TileValueColor = colors.Foreground, TileDetailColor = colors.MutedForeground,
-            HeroBadgeTextColor = colors.Foreground, FeatureLabelColor = colors.Foreground,
+            SubtitleColor = colors.MutedForeground, TileLabelColor = style.TileLabelColor ?? colors.MutedForeground,
+            TileValueColor = style.TileValueColor ?? colors.Foreground, TileDetailColor = style.TileDetailColor ?? colors.MutedForeground,
+            HeroBadgeTextColor = style.HeroBadgeTextColor ?? colors.Foreground, FeatureLabelColor = colors.Foreground,
             TileGlassTop = style.TileGlassTop ?? colors.ElevatedSurface.WithOpacity(.96),
             TileGlassBottom = style.TileGlassBottom ?? colors.Surface.WithOpacity(.94),
             TileInnerStroke = style.TileInnerStroke ?? colors.Border.WithOpacity(.35),

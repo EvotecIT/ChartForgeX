@@ -171,6 +171,17 @@ internal static partial class SmokeTests {
     }
 
     private static void TimeAxesProvideDeterministicDefaultLabels() {
+        void AssertInvariantDateCaptions(Chart subject, string role, int month) {
+            var prepared = subject.Prepare(VisualExportRequest.ForChart(subject).Context);
+            var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == role)
+                .Select(node => node.Text.Lines.Single().Text).ToArray();
+            Assert(captions.Length >= 2, "A readable multi-day scale should retain at least two date captions.");
+            var dates = captions.Select(text => DateTime.TryParseExact(text, new[] { "yyyy-MM-dd", "MMM d", "MMM d, yyyy" },
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : (DateTime?)null).ToArray();
+            Assert(dates.All(date => date.HasValue) && dates.Any(date => date!.Value.Month == month),
+                "Automatic time captions should be complete invariant dates, including compact dates when they fit more ticks.");
+            Assert(prepared.ToSvg() == subject.ToSvg(), "Automatic date captions should be deterministic across preparations.");
+        }
         var chart = Chart.Create()
             .WithSize(620, 320)
             .WithXAxisScale(ChartScaleKind.Time)
@@ -179,7 +190,7 @@ internal static partial class SmokeTests {
                 new ChartPoint(new DateTime(2026, 7, 15), 18)
             });
 
-        Assert(chart.ToSvg().Contains("2026-07", StringComparison.Ordinal), "Time axes should provide deterministic invariant date labels when no formatter is supplied.");
+        AssertInvariantDateCaptions(chart, "axis-x-label", 7);
 
         var vertical = Chart.Create()
             .WithSize(620, 320)
@@ -188,8 +199,7 @@ internal static partial class SmokeTests {
                 new ChartPoint(0, new DateTime(2026, 7, 1).ToOADate()),
                 new ChartPoint(1, new DateTime(2026, 7, 15).ToOADate())
             });
-        var verticalSvg = vertical.ToSvg();
-        Assert(verticalSvg.Contains("2026-07", StringComparison.Ordinal), "Primary vertical time axes should use the same deterministic date fallback as horizontal time axes.");
+        AssertInvariantDateCaptions(vertical, "axis-y-label", 7);
         var verticalPng = vertical.ToPng();
         vertical.Options.YAxis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         Assert(verticalPng.SequenceEqual(vertical.ToPng()), "Primary vertical time axes should use the deterministic date fallback in PNG output.");
@@ -204,8 +214,7 @@ internal static partial class SmokeTests {
             });
         secondary.Series[1].UseSecondaryYAxis();
         secondary.Options.SecondaryYAxis.Scale = ChartScaleKind.Time;
-        var secondarySvg = secondary.ToSvg();
-        Assert(secondarySvg.Contains("2026-08", StringComparison.Ordinal), "Secondary vertical time axes should provide deterministic date labels without inheriting primary formatting.");
+        AssertInvariantDateCaptions(secondary, "axis-secondary-y-label", 8);
         var secondaryPng = secondary.ToPng();
         secondary.Options.SecondaryYAxis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         Assert(secondaryPng.SequenceEqual(secondary.ToPng()), "Secondary vertical time axes should use the deterministic date fallback in PNG output.");
@@ -219,7 +228,7 @@ internal static partial class SmokeTests {
             });
         var horizontalRange = ChartRange.FromChart(horizontal);
         Assert(horizontalRange.MinX > new DateTime(2026, 1, 1).ToOADate(), "Horizontal time axes should not inject the numeric zero baseline into date ranges.");
-        Assert(horizontal.ToSvg().Contains("2026-09", StringComparison.Ordinal), "Horizontal time bars should render deterministic date ticks without compressing data against the OLE epoch.");
+        AssertInvariantDateCaptions(horizontal, "axis-x-label", 9);
         Assert(horizontal.ToPng().Length > 200, "Horizontal time bars should preserve SVG and PNG rendering parity.");
 
         var waterfall = Chart.Create()

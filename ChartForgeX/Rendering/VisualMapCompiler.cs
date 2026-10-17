@@ -11,7 +11,8 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Compiles geographic points, reusable region geometry and categorical hex tiles into one numeric scene.</summary>
 internal static partial class VisualMapCompiler {
-    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartColorPresentation? presentation = null) {
+    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartColorPresentation? presentation = null,
+        TileMapLegendInset? legendInset = null) {
         if (chart.Series.Count != 1) throw new InvalidOperationException("Prepared map charts require one map series.");
         var series = chart.Series[0];
         presentation ??= new ChartColorPresentation(chart.Options.MapColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
@@ -23,7 +24,7 @@ internal static partial class VisualMapCompiler {
             throw new InvalidOperationException("Map values must be finite and non-negative.");
         var minimum = series.RenderPoints.Count == 0 ? 0 : series.RenderPoints.Min(point => point.Y);
         var maximum = series.RenderPoints.Count == 0 ? 0 : series.RenderPoints.Max(point => point.Y);
-        var layout = ScaleLayout(chart, context, builder, plot, minimum, maximum, presentation);
+        var layout = ScaleLayout(chart, context, builder, plot, minimum, maximum, presentation, legendInset);
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = "0", ["data-cfx-series-key"] = series.InteractionIdentityKey,
             ["data-cfx-label"] = series.Name
@@ -31,7 +32,7 @@ internal static partial class VisualMapCompiler {
         if (series.RenderPoints.Count > 0) { metadata["data-cfx-min-value"] = N(minimum); metadata["data-cfx-max-value"] = N(maximum); }
         using (builder.PushGroup("series-0", "map-series", metadata)) {
             if (series.Kind == ChartSeriesKind.RegionMap) Regions(chart, context, builder, layout.Map, colors, minimum, maximum, presentation);
-            else if (series.Kind == ChartSeriesKind.TileMap) Tiles(chart, context, builder, layout.Map, colors, minimum, maximum, presentation);
+            else if (series.Kind == ChartSeriesKind.TileMap) Tiles(chart, context, builder, layout.Map, colors, minimum, maximum, presentation, legendInset);
             else throw new InvalidOperationException("The series is not a map family.");
             DrawScale(chart, context, builder, layout, colors, minimum, maximum, presentation);
         }

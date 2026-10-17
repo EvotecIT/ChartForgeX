@@ -11,11 +11,17 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Per-series keys reuse the matrix scene while preserving independent color formatting and bounded layout.</summary>
 public sealed class ScatterBubbleColorLegendTests {
-    [Fact]
-    public void OffsetPlotKeepsItsMarksAndClippingAboveTheNumericKey() {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OffsetPlotKeepsFullEdgeMarkersAndClippedLineInkAboveTheNumericKey(bool withLine) {
         var chart = Chart.Create().WithXAxisBounds(0, 3).WithYAxisBounds(0, 100)
             .AddScatter("Samples", new[] { new ChartPoint(1, 0).WithColorValue(0), new ChartPoint(2, 100).WithColorValue(10) });
         chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
+        if (withLine) {
+            chart.AddLine("Outside", new[] { new ChartPoint(.5, -100), new ChartPoint(1.5, 200), new ChartPoint(2.5, -100) }, ChartColor.FromHex("#FF00FF"));
+            chart.Series[1].ConfigureMarkers(markers => markers.Enabled = false);
+        }
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 320)));
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var plot = new ChartRect(60, 80, 520, 180);
@@ -23,12 +29,31 @@ public sealed class ScatterBubbleColorLegendTests {
         var scene = builder.Build();
         var key = scene.Regions.Single(region => region.Id == "color-scale-0");
         var marks = scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker").ToArray();
+        var mappedPlot = scene.Regions.Single(region => region.Role == "cartesian-plot").Bounds;
         Assert.Equal(2, marks.Length);
-        Assert.All(marks, mark => Assert.True(mark.Cy <= key.Bounds.Top + .000001));
+        Assert.All(marks, mark => Assert.True(mark.Cy + mark.Ry <= key.Bounds.Top + .000001));
+        Assert.Equal(mappedPlot.Bottom, marks[0].Cy, 6);
+        Assert.True(marks[0].Cy + marks[0].Ry > mappedPlot.Bottom, "A marker centered on an authored edge retains its full radius.");
         var clips = scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Clip.HasValue)
             .Select(node => node.Clip!.Value).Where(bounds => bounds.Top == plot.Top && bounds.Width == plot.Width).ToArray();
-        Assert.NotEmpty(clips);
         Assert.All(clips, bounds => Assert.True(bounds.Bottom <= key.Bounds.Top + .000001));
+        var prepared = new PreparedVisual(scene);
+        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var edgePixel = ((int)(marks[0].Cy + Math.Max(1, marks[0].Ry / 2)) * image.Width + (int)marks[0].Cx) * 4;
+        Assert.Equal(marks[0].Fill!.Value, ChartColor.FromRgba(image.Pixels[edgePixel], image.Pixels[edgePixel + 1], image.Pixels[edgePixel + 2], image.Pixels[edgePixel + 3]));
+        if (withLine) {
+            Assert.Contains(clips, bounds => bounds.Equals(mappedPlot));
+            var line = Role(XDocument.Parse(prepared.ToSvg()), "line").Single();
+            Assert.Contains(line.Ancestors(), node => node.Attribute("clip-path") != null);
+            bool IsLineInk(int x, int y) {
+                var pixel = (y * image.Width + x) * 4;
+                return image.Pixels[pixel] > 240 && image.Pixels[pixel + 1] < 20 && image.Pixels[pixel + 2] > 240 && image.Pixels[pixel + 3] > 0;
+            }
+            Assert.Contains(Enumerable.Range(0, (int)Math.Ceiling(key.Bounds.Top)), y => Enumerable.Range(0, image.Width).Any(x => IsLineInk(x, y)));
+            Assert.DoesNotContain(Enumerable.Range((int)Math.Ceiling(key.Bounds.Top), image.Height - (int)Math.Ceiling(key.Bounds.Top)),
+                y => Enumerable.Range(0, image.Width).Any(x => IsLineInk(x, y)));
+        }
+        Capture(prepared, "offset-color-key-" + (withLine ? "clipped-line" : "edge-markers"));
     }
 
     [Theory]
@@ -158,8 +183,9 @@ public sealed class ScatterBubbleColorLegendTests {
         var chart = V2GalleryModels.Create(kind, "compact-color-scale", VisualThemeMode.Light);
         var subtitle = kind == ChartSeriesKind.Scatter ? "Temperature has its own fixed color domain; processing time stays independent"
             : "Size shows requests; named color bands show temperature";
-        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(),
-            frame: new VisualFrame(V2GalleryModels.Title(kind), subtitle), font: FontSpec.FromFamily(family)));
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(),
+            frame: new VisualFrame(V2GalleryModels.Title(kind), subtitle), font: FontSpec.FromFamily(family));
+        var prepared = chart.Prepare(context);
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "color-scale-0-swatch").ToArray();
         Assert.All(swatches, swatch => Assert.Equal(12, swatch.Bounds.Height));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "cartesian.color-scale-overflow" or "cartesian.axis-title-overflow");
@@ -170,7 +196,17 @@ public sealed class ScatterBubbleColorLegendTests {
         });
         var y = prepared.Scene.Nodes.OfType<VisualSceneLine>().Single(node => node.Role == "axis-y");
         Assert.True(Math.Abs(y.End.Y - y.Start.Y) >= 60);
-        Assert.True(prepared.Scene.Nodes.Count(node => node.Role == "axis-y-label") >= 3);
+        var valueLabels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-y-label").ToArray();
+        Assert.True(valueLabels.Length >= 2);
+        Assert.All(valueLabels, label => {
+            Assert.Equal(context.Theme.Typography.AxisSize, label.Text.Size);
+            var text = string.Join("\n", label.Text.Lines.Select(line => line.Text));
+            Assert.DoesNotContain("…", text, StringComparison.Ordinal);
+            var source = Assert.Single(prepared.Regions, region => region.Role == "axis-y-label" && region.Label!.StartsWith(text + " (", StringComparison.Ordinal));
+            var center = label.Baseline - label.Text.Ascent + label.Text.Metrics.Height / 2;
+            Assert.InRange(Math.Abs(center - source.Bounds.Top), 0, .5);
+            Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "grid-y" && Math.Abs(line.Start.Y - source.Bounds.Top) < .0001);
+        });
         var document = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(kind == ChartSeriesKind.Scatter ? "-15" : null, (string?)Role(document, "color-scale-0").Single().Attribute("data-cfx-min-value"));
         if (kind == ChartSeriesKind.Scatter) {

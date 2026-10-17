@@ -11,6 +11,13 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--tile-typography-only")) {
+            VisualCanvasTypographyExamples.Write(output);
+            GalleryWriter.Write(output);
+            Console.WriteLine("Generated tile typography examples in: " + output);
+            return true;
+        }
+        if (HasArg(args, "--consumer-rendering-only")) { ConsumerRenderingExamples.Write(output); return true; }
         if (HasArg(args, "--story-appearance-only")) {
             StoryAppearanceExamples.Write(output);
             Console.WriteLine("Generated desktop story examples in: " + output);
@@ -147,6 +154,11 @@ internal static class ExampleProgramOptions {
         if (HasArg(args, "--visual-canvas-only")) {
             WellnessDashboardExamples.WritePowerBgInfoSocialPreview(output, (int)pngOutputScale);
             Console.WriteLine("Generated visual canvas files in: " + output);
+            return true;
+        }
+        if (HasArg(args, "--tile-typography-proof-only")) {
+            VisualCanvasTypographyExamples.WriteProofMatrix(output);
+            Console.WriteLine("Generated tile typography proof matrix in: " + output);
             return true;
         }
 

@@ -71,7 +71,8 @@ public sealed class HtmlVisualGridRenderer {
             block.Options.Theme = originalTheme.Configure(builder => {
                 var font = originalTheme.Typography;
                 builder.Typography = new VisualTypography(font.Family, 15, font.SubtitleSize, font.AxisSize, font.LegendSize,
-                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily);
+                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily,
+                    font.TileLabelSize, font.TileValueSize, font.TileDetailSize);
             });
             return _blockRenderer.Render(block, childScope);
         }
@@ -87,7 +88,7 @@ public sealed class HtmlVisualGridRenderer {
         if (grid.Items.Count == 0) throw new InvalidOperationException("Visual grids must contain at least one item.");
         var theme = grid.ResolvedTheme;
         var background = HtmlSurfacePolish.PageBackground(theme.Background, theme.CardBackground);
-        var title = grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title;
+        var title = grid.ResolvedAccessibleName;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", "en").EndStartElement().Line()

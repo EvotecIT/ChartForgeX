@@ -71,6 +71,8 @@
       item.classList.remove('cfx-graph-selected');
       changed = true;
     });
+    // Filters, clustering, hierarchy and host patches share this logical visibility boundary.
+    if (root.__cfxGraphHighlight) syncGraphHighlightAppearance(root);
     if (!changed) return false;
     const details = updateSelectionState(root);
     syncSelectionTooltip(root, details);

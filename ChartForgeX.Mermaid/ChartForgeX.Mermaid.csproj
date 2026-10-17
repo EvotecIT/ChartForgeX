@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net472;netstandard2.0;net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PublishAot)' == 'true'">net8.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -20,7 +21,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Native Mermaid compatibility parsing foundations for ChartForgeX visual artifact pipelines.</Description>
-    <PackageReleaseNotes>ChartForgeX 2.0.0 provides shared native chart and diagram rendering with independent Visuals and Stories packages. See the v2 migration guide for assembly and API changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.0.0 unifies paired themes, typed observations, stable series handles and atomic configuration callbacks. See the consumer migration guide for breaking API changes.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>

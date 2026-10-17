@@ -18,7 +18,8 @@ internal static partial class TopologyRenderPrimitives {
             .Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
             .Select(node => EdgeLabelNodeObstacle(node, options, 8))
             .ToList();
-        var groupHeaderBoxes = chart.Groups.Select(group => LabelBox.FromGroupHeader(group, 8)).ToList();
+        var groupHeaderBoxes = chart.Groups.SelectMany(group => TopologyGroupHeader.PaintedParts(chart, group, options))
+            .Select(header => LabelBox.FromBounds(header.Left - 8, header.Top - 8, header.Right + 8, header.Bottom + 8)).ToList();
         var groupBoxes = chart.Groups.Select(group => LabelBox.FromGroup(group, 8)).ToList();
         List<EdgeSegment>? edgeSegments = null;
         var edgeRenderOrders = EdgeRenderOrderMap(chart, options);
@@ -44,11 +45,12 @@ internal static partial class TopologyRenderPrimitives {
             var width = EdgeLabelTextWidth(label, secondary, tertiary, options.TextMeasurement, options.ResolvedEdgeLabelScale);
             var avoidOwnRoute = IsMonitoringDashboardStyle(options) && lineCount > 0;
             var height = EdgeLabelHeight(lineCount, options);
-            if (PlacesLabelOnRoute(chart, options, edge)) {
+            if (PlacesLabelAlongRoute(chart, options, edge)) {
                 routeObstacles ??= RouteLabelObstacles(chart, options);
-                if (PlaceLabelOnRoute(chart, options, edge, points, width, height, routeObstacles, placed, edgeSegments) is { } onRoute) {
-                    placed.Add(LabelBox.FromCenter(onRoute.X, onRoute.Y, width, height));
-                    layouts.Add(new TopologyEdgeLabelLayout(edge, label, secondary, tertiary, onRoute.X, onRoute.Y, width, height, onRoute.X, onRoute.Y));
+                if (PlaceLabelAlongRoute(chart, options, edge, points, width, height, lineCount, routeObstacles, placed, edgeSegments) is { } alongRoute) {
+                    var alongCenter = alongRoute.Center; var alongAnchor = alongRoute.Anchor;
+                    placed.Add(LabelBox.FromCenter(alongCenter.X, alongCenter.Y, width, height));
+                    layouts.Add(new TopologyEdgeLabelLayout(edge, label, secondary, tertiary, alongCenter.X, alongCenter.Y, width, height, alongAnchor.X, alongAnchor.Y));
                     continue;
                 }
             }

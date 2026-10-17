@@ -42,7 +42,7 @@ public sealed class SvgVisualGridRenderer {
             .Attribute("style", "max-width:100%;height:auto;display:block")
             .EndStartElement()
             .Line()
-            .StartElement("title").Attribute("id", id + "-title").Text(grid.Title.Length == 0 ? "ChartForgeX visual grid" : grid.Title).EndElement()
+            .StartElement("title").Attribute("id", id + "-title").Text(grid.ResolvedAccessibleName).EndElement()
             .Line()
             .StartElement("desc").Attribute("id", id + "-desc").Text("Static visual grid containing charts and visual blocks.").EndElement()
             .Line();
@@ -110,7 +110,8 @@ public sealed class SvgVisualGridRenderer {
             block.Options.Theme = originalTheme.Configure(builder => {
                 var font = originalTheme.Typography;
                 builder.Typography = new VisualTypography(font.Family, 15, font.SubtitleSize, font.AxisSize, font.LegendSize,
-                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily);
+                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily,
+                    font.TileLabelSize, font.TileValueSize, font.TileDetailSize);
             });
             return _blockRenderer.Render(block, childScope);
         }

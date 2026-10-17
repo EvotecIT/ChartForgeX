@@ -77,10 +77,16 @@ function start(root) {
   const engine = loadPlaygroundEngine({ onProgress: showProgress });
 
   // Shared links and linked sample files win over the stored draft.
+  const initialLanguage = state.language;
+  const initialSource = ui.source.value;
   readLinkedSource().then((shared) => {
     if (shared) {
-      state.language = shared.language;
-      ui.source.value = shared.source;
+      // A linked sample can take a while to load. Keep anything the visitor
+      // typed or selected while the request was in flight.
+      if (state.language === initialLanguage && ui.source.value === initialSource) {
+        state.language = shared.language;
+        ui.source.value = shared.source;
+      }
     }
     selectLanguageTab();
     refreshEditor();
@@ -147,7 +153,8 @@ function start(root) {
     state.language = language;
     selectLanguageTab();
     if (state.sources[language]) setSource(state.sources[language]);
-    else loadFirstSample(language);
+    else if (state.samples.length) loadFirstSample(language);
+    else setSource('');
     writeStorage();
   }
 
@@ -294,18 +301,24 @@ function start(root) {
   // Rendering.
   function scheduleRender() {
     clearTimeout(state.timer);
+    state.token++;
+    setDownloads(false);
     state.timer = setTimeout(renderNow, RENDER_DELAY);
   }
 
   async function renderNow() {
     clearTimeout(state.timer);
+    setDownloads(false);
     if (engine.status !== 'ready') return;
+    const language = state.language;
+    const source = ui.source.value;
+    const theme = state.theme;
     const token = ++state.token;
-    const result = await engine.render(state.language, ui.source.value, state.theme);
-    if (token !== state.token) return;
+    const result = await engine.render(language, source, theme);
+    if (token !== state.token || language !== state.language || source !== ui.source.value || theme !== state.theme) return;
     state.result = result;
     if (result.ok && result.svg) {
-      state.lastGood = { language: state.language, source: ui.source.value, theme: state.theme };
+      state.lastGood = { language, source, theme };
       ui.canvas.replaceChildren(...sanitizeSvgs(result.svg));
       ui.canvas.style.opacity = '';
       applyZoom();
@@ -319,11 +332,11 @@ function start(root) {
     showError(result);
     // Keep the last good render visible, dimmed, in the current preview theme.
     const good = state.lastGood;
-    if (good && good.theme !== state.theme) {
-      const previous = await engine.render(good.language, good.source, state.theme);
+    if (good && good.theme !== theme) {
+      const previous = await engine.render(good.language, good.source, theme);
       if (token !== state.token) return;
       if (previous.ok && previous.svg) {
-        good.theme = state.theme;
+        good.theme = theme;
         ui.canvas.replaceChildren(...sanitizeSvgs(previous.svg));
         applyZoom();
       }
@@ -556,7 +569,15 @@ function start(root) {
 
 // Helpers.
 function readStorage() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; } catch { return {}; }
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
+    const sources = stored.sources && typeof stored.sources === 'object' && !Array.isArray(stored.sources)
+      ? Object.fromEntries(Object.entries(stored.sources).filter(([language, source]) =>
+        (language === 'mermaid' || language === 'chartforgex') && typeof source === 'string'))
+      : {};
+    return { language: stored.language, sources };
+  } catch { return {}; }
 }
 
 function siteTheme() {
@@ -573,13 +594,20 @@ function sanitizeSvgs(markup) {
     for (const node of [svg, ...svg.querySelectorAll('*')]) {
       for (const attribute of Array.from(node.attributes)) {
         const name = attribute.name.toLowerCase();
-        const value = attribute.value.trim().toLowerCase();
         if (name.startsWith('on')) node.removeAttribute(attribute.name);
-        else if ((name === 'href' || name === 'xlink:href') && !(value.startsWith('#') || value.startsWith('https:') || value.startsWith('http:'))) node.removeAttribute(attribute.name);
+        else if ((name === 'href' || name === 'xlink:href') && !isSafeHref(attribute.value)) node.removeAttribute(attribute.name);
       }
     }
   }
   return svgs.map((svg) => document.importNode(svg, true));
+}
+
+function isSafeHref(href) {
+  const value = href.trim();
+  if (!value || /[\u0000-\u001f\u007f]/.test(value)) return false;
+  const scheme = /^([a-z][a-z\d+.-]*):/i.exec(value);
+  if (!scheme) return true;
+  return ['http', 'https', 'mailto', 'tel'].includes(scheme[1].toLowerCase());
 }
 
 function naturalSize(svg) {

@@ -27,6 +27,6 @@
       setTopologyFilterAttributes(detail);
       const summary = forceGraphPanel?.querySelector('[data-cfx-force-summary]');
       if (summary) summary.textContent = detail.nodes + ' nodes / ' + detail.edges + ' edges visible';
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, detail }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, composed: true, detail }));
       return detail;
     };

@@ -20,7 +20,7 @@ internal sealed partial class VisualTopologyCompiler {
         var bounds = Bounds(node.X, node.Y, node.Width, node.Height);
         var active = _highlight.IsNodeHighlighted(node);
         var icon = ResolveNodeIcon(node, _options);
-        if (_options.RequireResolvedIcons && node.IconId != null && icon == null) throw new InvalidOperationException("Unresolved topology icon: " + node.IconId);
+        if (_options.RequireResolvedIcons && !string.IsNullOrWhiteSpace(node.IconId) && icon == null) throw new InvalidOperationException("Unresolved topology icon: " + node.IconId);
         var authoredAccent = node.Color ?? icon?.Color;
         var accentRole = node.PaletteIndex.HasValue && string.IsNullOrWhiteSpace(authoredAccent) ? SvgColorRole.Series : AccentRole(authoredAccent);
         var baseAccent = NodeAccent(node);
@@ -55,7 +55,7 @@ internal sealed partial class VisualTopologyCompiler {
                     foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) _builder.Path(Transform(part.Path), part.Fill ? fill : null, accent, strokeWidth, role: "topology-node-surface", close: part.Close, paint: surfacePaint);
                 } else _builder.Rect(bounds, fill, accent, strokeWidth, mode == TopologyNodeDisplayMode.Pill ? bounds.Height / 2 : _context.Theme.BarRadius * _scale, role: "topology-node-surface", paint: surfacePaint);
                 if (UseNodeAccentBand(mode, _options)) _builder.Rect(new ChartRect(bounds.X + strokeWidth / 2, bounds.Y + strokeWidth / 2, 4 * _scale, Math.Max(0, bounds.Height - strokeWidth)), accent, role: "topology-node-accent", paint: new VisualScenePaintBinding(accentPaint));
-                var hasGlyph = node.Kind != TopologyNodeKind.Generic || node.Symbol != null || node.IconId != null || ResolveRenderableNodeArtwork(node, _options) != null
+                var hasGlyph = node.Kind != TopologyNodeKind.Generic || !string.IsNullOrWhiteSpace(node.Symbol) || !string.IsNullOrWhiteSpace(node.IconId) || ResolveRenderableNodeArtwork(node, _options) != null
                     || node.Shape != TopologyNodeShape.Actor && (mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork);
                 if (hasGlyph && mode != TopologyNodeDisplayMode.Dot) {
                     var center = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork;
@@ -64,13 +64,19 @@ internal sealed partial class VisualTopologyCompiler {
                 if (_options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)) {
                     var caption = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
                     var left = hasGlyph && !caption ? mode == TopologyNodeDisplayMode.Pill ? 34 : 44 : 10;
-                    var textInset = mode == TopologyNodeDisplayMode.Pill && !string.IsNullOrEmpty(node.Subtitle) ? 4 : 6;
+                    // A label-only card's heading sits above its glyph, so it can use the full heading row.
+                    if (mode == TopologyNodeDisplayMode.Card && hasGlyph && node.Details.Count == 0
+                        && !node.Shape.HasValue && string.IsNullOrWhiteSpace(node.Symbol) && string.IsNullOrWhiteSpace(node.IconId)
+                        && ResolveRenderableNodeArtwork(node, _options) == null
+                        && string.IsNullOrWhiteSpace(node.Subtitle) && string.IsNullOrWhiteSpace(node.Badge)
+                        && _builder.MeasureText(node.Label, _context.Theme.Typography.DataLabelSize, 600).Width > node.Width - left - 12) left = 10;
+                    var textInset = mode == TopologyNodeDisplayMode.Pill && !string.IsNullOrWhiteSpace(node.Subtitle) ? 4 : 6;
                     var textBounds = caption ? Bounds(node.X - 17, node.Y + node.Height + 5, node.Width + 34, (_options.MaxNodeLabelLines + 1) * 18) : Bounds(node.X + left, node.Y + textInset, Math.Max(0, node.Width - left - 12), Math.Max(0, node.Height - textInset * 2));
                     if (mode == TopologyNodeDisplayMode.Tile) BuildTileCaption(node, accent, active);
                     else if (mode == TopologyNodeDisplayMode.Icon) BuildIconCaption(node, accent, active);
                     else if (node.Shape == TopologyNodeShape.Actor) BuildDiagramCaption(node, active);
                     else if (mode != TopologyNodeDisplayMode.Dot && node.Shape.HasValue && !hasGlyph && !caption
-                        && string.IsNullOrEmpty(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge))
+                        && string.IsNullOrWhiteSpace(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge))
                         BuildShapeCaption(node, active);
                     else if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
                 }
@@ -78,7 +84,10 @@ internal sealed partial class VisualTopologyCompiler {
             if (_options.IncludeStatusBadges && node.ShowStatusBadge && mode != TopologyNodeDisplayMode.Dot) {
                 var status = Highlight(Status(node.Status), active);
                 using var statusGroup = _builder.PushGroup(node.Id + "-status", "topology-node-status", new Dictionary<string, string> { ["data-node-id"] = node.Id });
-                using (PinnedState()) _builder.Ellipse(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: new VisualScenePaintBinding(StatusPaint(node.Status, status, HighlightFactor(active))));
+                var statusCenter = node.Shape == TopologyNodeShape.Cloud
+                    ? Point(new ChartPoint(node.X + node.Width * .78, node.Y + node.Height * .34))
+                    : new ChartPoint(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale);
+                using (PinnedState()) _builder.Ellipse(statusCenter.X, statusCenter.Y, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: new VisualScenePaintBinding(StatusPaint(node.Status, status, HighlightFactor(active))));
             }
             if (!string.IsNullOrWhiteSpace(node.Badge)) {
                 var reserved = NodeBadgeBounds(node, mode, _options);
@@ -93,14 +102,17 @@ internal sealed partial class VisualTopologyCompiler {
     private void BuildNodeText(TopologyNode node, ChartRect bounds, ChartColor accent, bool active, bool caption) {
         var size = _context.Theme.Typography.DataLabelSize;
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
-        if (node.Details.Count > 0 || !string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
+        if (node.Details.Count > 0 || !string.IsNullOrWhiteSpace(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
             size = FitNodeTextSize(node, label, bounds, size, caption);
+        else if (CanFitNodeLabelToContent(node)) size = FitMeasuredNodeLabelSize(label, size, _ => bounds);
         var titleLines = TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
         var height = Math.Min(bounds.Height, _builder.MeasureText("Ag", size * _scale, 600).LineHeight * titleLines);
-        var fitSingleLine = _builder.MeasureText("Ag", size * _scale, 600).LineHeight > height;
-        Text(label, new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(_colors.Foreground, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label", opacity: HighlightFactor(active), fitSingleLine: fitSingleLine);
+        var fitSingleLine = !_options.WrapNodeLabels && _options.FitContentToViewport
+            || _builder.MeasureText("Ag", size * _scale, 600).LineHeight > height;
+        var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
+        Text(label, new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(labelColor, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label", opacity: HighlightFactor(active), paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), fitSingleLine: fitSingleLine);
         var y = bounds.Y + height;
-        if (!string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles)) {
+        if (!string.IsNullOrWhiteSpace(node.Subtitle) && (!caption || _options.IncludeTileSubtitles)) {
             var subtitleHeight = _builder.MeasureText("Ag", size * .85 * _scale, 400).LineHeight * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
             var subtitle = new ChartRect(bounds.X, y, bounds.Width, Math.Min(Math.Max(0, bounds.Bottom - y), subtitleHeight));
             if (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) {
@@ -149,7 +161,7 @@ internal sealed partial class VisualTopologyCompiler {
         return ChartTextFitting.FitFontSize(Math.Min(8, preferred), preferred, size => {
             var height = _builder.MeasureText("Ag", size * _scale, 600).LineHeight
                 * TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
-            if (!string.IsNullOrEmpty(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
+            if (!string.IsNullOrWhiteSpace(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
                 height += _builder.MeasureText("Ag", size * .85 * _scale, 400).LineHeight
                     * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines);
             if (node.Details.Count == 0) return height <= bounds.Height;
@@ -172,33 +184,17 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private ChartRect? Text(string value, ChartRect bounds, double size, ChartColor color, int weight, string role, int maxLines = 1, bool centered = false, string? id = null, SvgPaint? paint = null, double opacity = 1, bool fitSingleLine = false, bool verticallyCentered = false) {
-        if (string.IsNullOrEmpty(value) || bounds.Width <= 0 || bounds.Height <= 0) return null;
-        size *= _scale;
-        if (fitSingleLine) {
-            var preferred = _builder.MeasureText(value, size, weight);
-            if (preferred.Width > bounds.Width || preferred.LineHeight > bounds.Height) {
-                var lower = Math.Min(size, DotNodeSymbolFontSize * _scale); var upper = size;
-                // Font metrics can be discrete for the built-in bitmap face. Search measured
-                // sizes without shrinking ordinary symbols below their readable 8px size.
-                // Explicit smaller dots retain their proportional size; a symbol that still
-                // cannot fit uses the measured prefix below instead of unreadable lettering.
-                for (var attempt = 0; attempt < 28 && upper > lower; attempt++) {
-                    var candidate = (lower + upper) / 2;
-                    var measured = _builder.MeasureText(value, candidate, weight);
-                    if (measured.Width <= bounds.Width && measured.LineHeight <= bounds.Height) lower = candidate;
-                    else upper = candidate;
-                }
-                if (lower > 0) size = lower;
-            }
-        }
-        var lineHeight = _builder.MeasureText("Ag", size, weight).LineHeight;
-        maxLines = Math.Min(Math.Max(1, maxLines), (int)Math.Floor(bounds.Height / lineHeight));
-        if (maxLines < 1) {
-            _builder.AddDiagnostic(new VisualDiagnostic("topology.label-height", "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."));
-            return null;
-        }
-        var lines = FitTextLines(value, bounds.Width, size, weight, maxLines, fitSingleLine, true, out _);
-        var textTop = bounds.Y + (verticallyCentered ? Math.Max(0, bounds.Height - lineHeight * lines.Count) / 2 : 0);
+        var minimumFontSize = role == "topology-node-label" && !_options.WrapNodeLabels && _options.FitContentToViewport
+            ? DotNodeSymbolFontSize * .9 * _scale
+            : DotNodeSymbolFontSize * _scale;
+        var layout = TopologyTextLayout.Prepare(value, bounds.Width, bounds.Height, size * _scale, weight, maxLines,
+            fitSingleLine, minimumFontSize, _options, _builder.MeasureText,
+            (code, message) => _builder.AddDiagnostic(new VisualDiagnostic(code, message)));
+        if (layout == null) return null;
+        size = layout.Size;
+        var lineHeight = layout.LineHeight;
+        var lines = layout.Lines;
+        var textTop = bounds.Y + (verticallyCentered ? Math.Max(0, bounds.Height - layout.Height) / 2 : 0);
         var baseline = textTop + _builder.TextAscent(size, weight);
         var halo = role == "topology-endpoint-label" || role == "topology-edge-label-text" && IsMonitoringDashboardStyle(_options) && !_options.IncludeEdgeLabelBackplates;
         var haloColor = ChartColorMath.WithOpacity(_colors.Background, opacity);
@@ -212,43 +208,12 @@ internal sealed partial class VisualTopologyCompiler {
             baseline += lineHeight;
         }
         if (lines.Count == 0) return null;
-        var width = lines.Max(line => _builder.MeasureText(line, size, weight).Width);
-        return new ChartRect(centered ? bounds.X + (bounds.Width - width) / 2 : bounds.X, textTop, width, lineHeight * lines.Count);
+        return new ChartRect(centered ? bounds.X + (bounds.Width - layout.Width) / 2 : bounds.X, textTop, layout.Width, layout.Height);
     }
 
     private List<string> FitTextLines(string value, double width, double size, int weight, int maxLines, bool fitSingleLine, bool report, out bool overflow) {
-        overflow = false;
-        void Report(string code, string message) { if (report) _builder.AddDiagnostic(new VisualDiagnostic(code, message)); }
-        var source = value.Replace("\r\n", "\n").Replace('\r', '\n');
-        if (!_options.AllowMultilineNodeLabels) source = source.Replace('\n', ' ');
-        var queue = new Queue<string>(source.Split('\n'));
-        var lines = new List<string>();
-        while (queue.Count > 0 && lines.Count < maxLines) {
-            var text = queue.Dequeue();
-            if (_builder.MeasureText(text, size, weight).Width <= width) { lines.Add(text); continue; }
-            if (fitSingleLine) {
-                // Broad faces and irreducible bitmap advances can exceed a tiny dot at its
-                // readable size. Retain a fitting text-element prefix and disclose the loss;
-                // appending an ellipsis must not erase the only glyph that could fit.
-                lines.Add(ChartTextFitting.FitEnd(text, width, probe => _builder.MeasureText(probe, size, weight).Width, string.Empty));
-                overflow = true;
-                Report("topology.label-truncated", "A topology label exceeds its measured bounds; complete source text remains in semantic interchange.");
-                continue;
-            }
-            var elements = StringInfo.ParseCombiningCharacters(text); var count = elements.Length;
-            while (count > 0 && _builder.MeasureText(text.Substring(0, count == elements.Length ? text.Length : elements[count]) + "…", size, weight).Width > width) count--;
-            var length = count == 0 ? 0 : count == elements.Length ? text.Length : elements[count];
-            if (_options.WrapNodeLabels && lines.Count + 1 < maxLines && length > 0) {
-                var separator = text.LastIndexOf(' ', length - 1, length); if (separator > 0) length = separator;
-                lines.Add(text.Substring(0, length));
-                queue = new Queue<string>(new[] { text.Substring(length).TrimStart() }.Concat(queue));
-            } else { lines.Add(length == 0 ? string.Empty : text.Substring(0, length) + "…"); overflow = true; Report("topology.label-truncated", "A topology label was shortened; complete source text remains in semantic interchange."); }
-        }
-        if (queue.Count > 0) {
-            overflow = true;
-            Report("topology.label-lines", "A topology label exceeds its configured line count; complete source text remains in semantic interchange.");
-        }
-        return lines;
+        Action<string, string>? diagnostic = report ? (code, message) => _builder.AddDiagnostic(new VisualDiagnostic(code, message)) : null;
+        return TopologyTextLayout.FitLines(value, width, size, weight, maxLines, fitSingleLine, _options, _builder.MeasureText, diagnostic, out overflow);
     }
 
     private ChartPath Transform(ChartPath path, Func<ChartPoint, ChartPoint>? projection = null) => new(path.Commands.Select(command => {

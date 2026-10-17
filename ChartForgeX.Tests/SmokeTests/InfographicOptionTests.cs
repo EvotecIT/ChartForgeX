@@ -190,7 +190,7 @@ internal static partial class SmokeTests {
             .WithXLabels("Extremely long returning audience segment with several words", "Short segment")
             .AddDonut("Audience", Points(64, 36));
         var longCalloutSvg = longCalloutDonut.ToSvg();
-        Assert(longCalloutSvg.Contains("...", StringComparison.Ordinal), "Outside pie and donut labels should trim long callouts to their side lanes.");
+        Assert(longCalloutSvg.Contains("…", StringComparison.Ordinal), "Outside pie and donut labels should trim long callouts to their side lanes.");
         Assert(!longCalloutSvg.Contains(">Extremely long returning audience segment with several words 64%</text>", StringComparison.Ordinal), "Outside pie and donut labels should not render untrimmed long callouts.");
         Assert(longCalloutDonut.ToPng().Length > 64, "Trimmed outside pie and donut labels should render PNG output.");
 

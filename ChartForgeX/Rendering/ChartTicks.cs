@@ -32,18 +32,22 @@ internal static class ChartTicks {
 
     public static IReadOnlyList<double> GenerateInside(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
-        if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Generate(axis, min, max, true) ?? new NumericTimeTicks(GenerateInside(min, max, axis.TickCount));
+        if (axis.Scale == ChartScaleKind.Time) return GenerateTimeInside(axis, min, max);
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(min, max, axis.TickCount, true);
         if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return GenerateInside(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, true);
     }
+
+    /// <summary>Uses a schedule axis's complete authored policy while retaining numeric time fallback identity.</summary>
+    internal static IReadOnlyList<double> GenerateTimeInside(ChartAxis axis, double min, double max) =>
+        ChartTimeScale.Generate(axis, min, max, true) ?? new NumericTimeTicks(GenerateInside(min, max, axis.TickCount));
 
     public static IReadOnlyList<double> Generate(double min, double max, int desiredCount) {
         desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));
         if (!TryNormalize(ref min, ref max, out var scale, out var normalizedMin, out var normalizedMax)) return new[] { 0d, 1d };
         if (min == max) return ExpandEqualValue(min);
 
-        var normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (desiredCount - 1), true);
+        var normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (desiredCount - 1));
         if ((normalizedMax - normalizedMin) / normalizedStep >= MaximumGeneratedTicks - 1)
             normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (MaximumGeneratedTicks - 1));
         var step = normalizedStep * scale;
@@ -51,14 +55,23 @@ internal static class ChartTicks {
 
         var niceMin = Math.Floor(normalizedMin / normalizedStep) * normalizedStep;
         var niceMax = Math.Ceiling(normalizedMax / normalizedStep) * normalizedStep;
+        // Rounding both ends outward can add another interval. Increase the shared
+        // step rather than clipping the envelope or drawing more ticks than asked.
+        for (var attempt = 0; (niceMax - niceMin) / normalizedStep > desiredCount - 1 + 1e-9; attempt++) {
+            if (attempt >= 32 || desiredCount == 2) return DistinctEndpoints(min, max);
+            normalizedStep = ChartNiceNumbers.Step(normalizedStep * 1.01);
+            if (!IsPositiveFinite(normalizedStep)) return DistinctEndpoints(min, max);
+            niceMin = Math.Floor(normalizedMin / normalizedStep) * normalizedStep;
+            niceMax = Math.Ceiling(normalizedMax / normalizedStep) * normalizedStep;
+        }
         var ticks = new List<double>();
-        for (var index = 0; index < MaximumGeneratedTicks; index++) {
+        for (var index = 0; index < desiredCount; index++) {
             var normalizedValue = niceMin + normalizedStep * index;
             if (normalizedValue > niceMax + normalizedStep * 0.5) break;
             AddFiniteDistinct(ticks, Denormalize(NormalizeZero(normalizedValue, normalizedStep), scale, min, max, normalizedMin, normalizedMax));
         }
 
-        PreserveUpperEndpoint(ticks, Denormalize(NormalizeZero(niceMax, normalizedStep), scale, min, max, normalizedMin, normalizedMax));
+        PreserveUpperEndpoint(ticks, Denormalize(NormalizeZero(niceMax, normalizedStep), scale, min, max, normalizedMin, normalizedMax), desiredCount);
 
         return ticks.Count >= 2 ? ticks : DistinctEndpoints(min, max);
     }
@@ -66,7 +79,7 @@ internal static class ChartTicks {
     internal static bool IsNumericTimeFallback(IReadOnlyList<double> ticks) => ticks is NumericTimeTicks;
 
     internal static IReadOnlyList<double> PreserveFormatting(IReadOnlyList<double> source, IReadOnlyList<double> selected) =>
-        IsNumericTimeFallback(source) ? new NumericTimeTicks(selected) : selected;
+        IsNumericTimeFallback(source) ? new NumericTimeTicks(selected) : ChartTimeScale.PreserveFormatting(source, selected);
 
     private sealed class NumericTimeTicks : List<double> {
         public NumericTimeTicks(IEnumerable<double> ticks) : base(ticks) { }
@@ -77,7 +90,7 @@ internal static class ChartTicks {
         if (!TryNormalize(ref min, ref max, out var scale, out var normalizedMin, out var normalizedMax)) return new[] { 0d, 1d };
         if (min == max) return new[] { min };
 
-        var normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (desiredCount - 1), true);
+        var normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (desiredCount - 1));
         if ((normalizedMax - normalizedMin) / normalizedStep >= MaximumGeneratedTicks - 1)
             normalizedStep = ChartNiceNumbers.Step((normalizedMax - normalizedMin) / (MaximumGeneratedTicks - 1));
         var step = normalizedStep * scale;
@@ -85,13 +98,22 @@ internal static class ChartTicks {
 
         var start = Math.Ceiling(normalizedMin / normalizedStep) * normalizedStep;
         var ticks = new List<double>();
-        for (var index = 0; index < MaximumGeneratedTicks; index++) {
+        for (var index = 0; index < desiredCount; index++) {
             var normalizedValue = start + normalizedStep * index;
-            if (normalizedValue > normalizedMax + normalizedStep * 0.001) break;
-            AddFiniteDistinct(ticks, Denormalize(NormalizeZero(normalizedValue, normalizedStep), scale, min, max, normalizedMin, normalizedMax));
+            if (normalizedValue > normalizedMax) {
+                // Only absorb arithmetic rounding at an exact upper boundary;
+                // a fraction of the tick step can include a genuinely out-of-range value.
+                var tolerance = Math.Max(Math.Abs(normalizedValue), Math.Abs(normalizedMax)) * 8 * 2.2204460492503131e-16;
+                if (normalizedValue - normalizedMax > tolerance) break;
+                normalizedValue = normalizedMax;
+            }
+            var value = Denormalize(NormalizeZero(normalizedValue, normalizedStep), scale, min, max, normalizedMin, normalizedMax);
+            // Multiplication by a large normalization scale can move an aligned
+            // endpoint outward by one ULP. Interior ticks retain strict bounds.
+            AddFiniteDistinct(ticks, Math.Max(min, Math.Min(max, value)));
         }
 
-        return ticks.Count > 0 ? ticks : DistinctEndpoints(min, max);
+        return ticks.Count >= 2 ? ticks : DistinctEndpoints(min, max);
     }
 
     private static IReadOnlyList<double> GenerateTransformed(ChartAxis axis, double min, double max, int desiredCount, bool inside) {
@@ -104,16 +126,26 @@ internal static class ChartTicks {
     }
 
     private static IReadOnlyList<double> GenerateLogarithmic(double min, double max, int desiredCount, bool inside) {
+        desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));
         if (!IsPositiveFinite(min) || !IsPositiveFinite(max)) throw new InvalidOperationException("Logarithmic axes require positive data and bounds.");
         if (min > max) (min, max) = (max, min);
         var firstExponent = (int)Math.Ceiling(Math.Log10(min));
         var lastExponent = (int)Math.Floor(Math.Log10(max));
         var ticks = new List<double>();
         var exponentCount = Math.Max(0, lastExponent - firstExponent + 1);
-        var stride = Math.Max(1, (int)Math.Ceiling(exponentCount / (double)Math.Max(2, desiredCount)));
-        for (var exponent = firstExponent; exponent <= lastExponent; exponent += stride) AddFiniteDistinct(ticks, Math.Pow(10, exponent));
-        if (!inside && (ticks.Count == 0 || ticks[0] > min)) ticks.Insert(0, min);
-        if (!inside && (ticks.Count == 0 || ticks[ticks.Count - 1] < max)) ticks.Add(max);
+        var outerCount = inside ? 0 : (exponentCount == 0 || Math.Pow(10, firstExponent) > min ? 1 : 0)
+            + (exponentCount == 0 || Math.Pow(10, lastExponent) < max ? 1 : 0);
+        if ((!inside && desiredCount == 2) || desiredCount <= outerCount) return DistinctEndpoints(min, max);
+        var stride = Math.Max(1, (int)Math.Ceiling(exponentCount / (double)(desiredCount - outerCount)));
+        do {
+            ticks.Clear();
+            for (var exponent = firstExponent; exponent <= lastExponent; exponent += stride) AddFiniteDistinct(ticks, Math.Pow(10, exponent));
+            if (!inside && (ticks.Count == 0 || ticks[0] > min)) ticks.Insert(0, min);
+            if (!inside && (ticks.Count == 0 || ticks[ticks.Count - 1] < max)) ticks.Add(max);
+            // A stride may skip an exact upper power that was already counted as
+            // an endpoint. Budget the actual completed envelope before returning.
+            stride++;
+        } while (ticks.Count > desiredCount);
         return ticks.Count > 0 ? ticks : DistinctEndpoints(min, max);
     }
 
@@ -169,7 +201,7 @@ internal static class ChartTicks {
         if (ticks.Count == 0 || ticks[ticks.Count - 1] != value) ticks.Add(value);
     }
 
-    private static void PreserveUpperEndpoint(List<double> ticks, double upperEndpoint) {
+    private static void PreserveUpperEndpoint(List<double> ticks, double upperEndpoint, int maximumCount) {
         if (!IsFinite(upperEndpoint)) return;
         if (ticks.Count == 0) {
             ticks.Add(upperEndpoint);
@@ -177,7 +209,7 @@ internal static class ChartTicks {
         }
 
         if (ticks[ticks.Count - 1] >= upperEndpoint) return;
-        if (ticks.Count >= MaximumGeneratedTicks) ticks[ticks.Count - 1] = upperEndpoint;
+        if (ticks.Count >= maximumCount) ticks[ticks.Count - 1] = upperEndpoint;
         else ticks.Add(upperEndpoint);
     }
 

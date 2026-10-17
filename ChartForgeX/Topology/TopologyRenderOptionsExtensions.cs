@@ -338,6 +338,16 @@ public static class TopologyRenderOptionsExtensions {
         return options;
     }
 
+    /// <summary>Sets a readable minimum drawing height in narrow interactive topology containers.</summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="height">The minimum drawing height in pixels. Zero preserves proportional sizing.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlNarrowMinimumHeight(this TopologyRenderOptions options, double height) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.HtmlNarrowMinimumHeight = height;
+        return options;
+    }
+
     /// <summary>
     /// Enables reusable multi-line node labels and optional word wrapping for dense relationship diagrams.
     /// </summary>

@@ -9,9 +9,120 @@
       "clean": true
     },
     {
+      "task": "exec",
+      "id": "baseline-api-chrome",
+      "dependsOn": "build-site",
+      "command": "pwsh",
+      "argsList": ["-NoProfile", "-File", "./build/Export-ApiChrome.ps1"],
+      "workingDirectory": ".",
+      "timeoutSeconds": 120
+    },
+    {
+      "task": "dotnet-build",
+      "id": "baseline-api-build-chartforgex-visuals",
+      "project": "../ChartForgeX.Visuals/ChartForgeX.Visuals.csproj",
+      "configuration": "Release",
+      "framework": "net10.0"
+    },
+    {
+      "task": "dotnet-build",
+      "id": "baseline-api-build-chartforgex-stories",
+      "dependsOn": "baseline-api-build-chartforgex-visuals",
+      "project": "../ChartForgeX.Stories/ChartForgeX.Stories.csproj",
+      "configuration": "Release",
+      "framework": "net10.0"
+    },
+    {
+      "task": "dotnet-build",
+      "id": "baseline-api-build-chartforgex-interactivity-html",
+      "dependsOn": "baseline-api-build-chartforgex-stories",
+      "project": "../ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj",
+      "configuration": "Release",
+      "framework": "net10.0"
+    },
+    {
+      "task": "dotnet-build",
+      "id": "baseline-api-build-chartforgex-markup-mermaid",
+      "dependsOn": "baseline-api-build-chartforgex-interactivity-html",
+      "project": "../ChartForgeX.Markup.Mermaid/ChartForgeX.Markup.Mermaid.csproj",
+      "configuration": "Release",
+      "framework": "net10.0"
+    },
+    {
+      "task": "apidocs",
+      "id": "baseline-build-apidocs",
+      "dependsOn": [
+        "build-site",
+        "baseline-api-chrome",
+        "baseline-api-build-chartforgex-visuals",
+        "baseline-api-build-chartforgex-stories",
+        "baseline-api-build-chartforgex-interactivity-html",
+        "baseline-api-build-chartforgex-markup-mermaid"
+      ],
+      "config": "./site.json",
+      "assemblies": [
+        "../ChartForgeX/bin/Release/net10.0/ChartForgeX.dll",
+        "../ChartForgeX.Visuals/bin/Release/net10.0/ChartForgeX.Visuals.dll",
+        "../ChartForgeX.Stories/bin/Release/net10.0/ChartForgeX.Stories.dll",
+        "../ChartForgeX.Interactivity/bin/Release/net10.0/ChartForgeX.Interactivity.dll",
+        "../ChartForgeX.Interactivity.Html/bin/Release/net10.0/ChartForgeX.Interactivity.Html.dll",
+        "../ChartForgeX.Markup/bin/Release/net10.0/ChartForgeX.Markup.dll",
+        "../ChartForgeX.Mermaid/bin/Release/net10.0/ChartForgeX.Mermaid.dll",
+        "../ChartForgeX.Markup.Mermaid/bin/Release/net10.0/ChartForgeX.Markup.Mermaid.dll"
+      ],
+      "xmls": [
+        "../ChartForgeX/bin/Release/net10.0/ChartForgeX.xml",
+        "../ChartForgeX.Visuals/bin/Release/net10.0/ChartForgeX.Visuals.xml",
+        "../ChartForgeX.Stories/bin/Release/net10.0/ChartForgeX.Stories.xml",
+        "../ChartForgeX.Interactivity/bin/Release/net10.0/ChartForgeX.Interactivity.xml",
+        "../ChartForgeX.Interactivity.Html/bin/Release/net10.0/ChartForgeX.Interactivity.Html.xml",
+        "../ChartForgeX.Markup/bin/Release/net10.0/ChartForgeX.Markup.xml",
+        "../ChartForgeX.Mermaid/bin/Release/net10.0/ChartForgeX.Mermaid.xml",
+        "../ChartForgeX.Markup.Mermaid/bin/Release/net10.0/ChartForgeX.Markup.Mermaid.xml"
+      ],
+      "out": "./_site/api",
+      "title": "ChartForgeX API reference",
+      "baseUrl": "/api",
+      "format": "both",
+      "template": "docs",
+      "css": "/themes/chartforgex/assets/tokens.css,/themes/chartforgex/assets/base.css,/themes/chartforgex/assets/nav.css,/themes/chartforgex/assets/api-base.css,/themes/chartforgex/assets/api.css",
+      "sourceRoot": "..",
+      "sourceUrl": "https://github.com/EvotecIT/ChartForgeX/blob/main/{root}/{pathNoRoot}#L{line}",
+      "includeNamespace": "ChartForgeX",
+      "quickStartTypes": "Chart,ChartGrid,ChartTable,TopologyChart,MermaidRenderer,VisualStory",
+      "relatedContentManifest": "./config/api-related-content.json",
+      "coverageReport": "./_reports/apidocs-coverage.json",
+      "injectCriticalCss": true,
+      "criticalCssPath": "./themes/chartforgex/critical.css",
+      "templateDocsIndex": "./themes/chartforgex/apidocs/docs-index.html",
+      "templateDocsType": "./themes/chartforgex/apidocs/docs-type.html",
+      "headerHtml": "./_temp/chrome/api-header.html",
+      "footerHtml": "./_temp/chrome/api-footer.html"
+    },
+    {
+      "task": "apidocs",
+      "id": "baseline-build-powershell-commands",
+      "dependsOn": ["build-site", "baseline-api-chrome"],
+      "type": "PowerShell",
+      "config": "./site.json",
+      "help": "./powershell/imageplayground-help.xml",
+      "out": "./_site/powershell/commands",
+      "baseUrl": "/powershell/commands",
+      "title": "ImagePlayground commands for ChartForgeX",
+      "format": "both",
+      "template": "docs",
+      "css": "/themes/chartforgex/assets/tokens.css,/themes/chartforgex/assets/base.css,/themes/chartforgex/assets/nav.css,/themes/chartforgex/assets/api-base.css,/themes/chartforgex/assets/api.css",
+      "injectCriticalCss": true,
+      "criticalCssPath": "./themes/chartforgex/critical.css",
+      "templateDocsIndex": "./themes/chartforgex/apidocs/docs-index.html",
+      "templateDocsType": "./themes/chartforgex/apidocs/docs-type.html",
+      "headerHtml": "./_temp/chrome/powershell-commands-header.html",
+      "footerHtml": "./_temp/chrome/powershell-commands-footer.html"
+    },
+    {
       "task": "sitemap",
       "id": "sitemap",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "baseline-build-apidocs", "baseline-build-powershell-commands"],
       "config": "./site.json",
       "siteRoot": "./_site",
       "baseUrl": "https://chartforgex.com",
@@ -22,7 +133,7 @@
     },
     {
       "task": "seo-doctor",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "baseline-build-apidocs", "baseline-build-powershell-commands"],
       "siteRoot": "./_site",
       "exclude": "examples/generated/**,site/**",
       "checkContentLeaks": true,
@@ -34,7 +145,7 @@
     },
     {
       "task": "verify",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "baseline-build-apidocs", "baseline-build-powershell-commands"],
       "config": "./site.json",
       "siteRoot": "./_site",
       "baseline": "./.powerforge/verify-baseline.json",
@@ -42,7 +153,7 @@
     },
     {
       "task": "audit",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "baseline-build-apidocs", "baseline-build-powershell-commands"],
       "siteRoot": "./_site",
       "exclude": "examples/generated/**,site/**",
       "requiredRoutes": "/404.html,/",

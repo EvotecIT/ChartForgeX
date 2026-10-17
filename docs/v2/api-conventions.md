@@ -31,6 +31,7 @@ HTML interaction presentation stays in the optional adapter. `HtmlChartInteracti
 | --- | --- |
 | `IVisualRenderable` | A core static compilation boundary returning `PreparedVisual`. Optional producers implement the same boundary without making core reference their concrete types. |
 | `VisualSize` | Finite positive logical width and height. A default zero-valued struct is rejected when used in a layout. |
+| `VisualTypography` tile sizes and `VisualCanvasInfoTileTextOptions` | Theme defaults provide tile label/value/detail sizes; optional per-role sizes override a role, while `TextScale` multiplies the effective sizes. `VisualCanvasStyleOptions.TileTextScale` supplies the canvas default. `AddInfoTileWithTextOptions` keeps the legacy `AddInfoTile` overloads unambiguous and binary-compatible. |
 | `VisualLayoutOptions` | A resolved fixed size and finite non-negative outer padding. Padding must leave a positive interior. |
 | `VisualFrame` | Title, subtitle, optional measured legend title, visibility/position and density budgets; separate card/content surfaces and optional transparent canvas. |
 | `VisualTheme` | Immutable light/dark colors, typography, geometry and card-shadow settings. Card and mark radii are independent. Graphite is a preset. |
@@ -106,10 +107,18 @@ Specialized observations remain in their typed collections: `Bubbles`, `Financia
 ```csharp
 var samples = ChartSeries.CreateBubble(new ChartSeriesId("batch-samples"), "Batches",
     new[] { new ChartBubble(10, 24, 8), new ChartBubble(20, 31, 12) });
-samples.WithObservationId(0, new ChartObservationId("batch-a"));
+samples.WithObservationIds(new[] {
+    new ChartObservationId("batch-a"), new ChartObservationId("batch-b")
+});
 chart.AddSeries(samples);
 samples.UpdateBubble(0, new ChartBubble(10, 26, 8));
 ```
+
+`WithObservationIds(...)` assigns one unique ID per authored source observation
+in a single validated replacement. Decimated and derived numeric series use
+their complete original input order. Invalid counts, duplicate IDs or a failing
+enumeration leave the installed identities intact. Use `WithObservationId(...)`
+to assign or replace one ID independently.
 
 `Update*` replaces one complete item and preserves its ordinal, explicit observation ID and point styling. `Replace*` validates and snapshots the complete sequence before installation, then clears per-observation IDs, labels and paint overrides; series configuration remains. An invalid replacement leaves existing data and metadata intact. Empty replacement creates a no-data series. Row selectors run once during ingestion and do not retain application records or delegates.
 
@@ -194,6 +203,12 @@ Visible Cartesian axes retain a descriptive region for each configured or genera
 
 Automatic numeric axes keep compact captions when they distinguish ticks, and increase precision when small nonzero values round to zero or distinct ticks share a caption. Default mark values also retain small nonzero observations instead of displaying zero. Authored labels and axis or chart value formats remain authoritative. Precision affects display text; numeric values and prepared SVG/PNG snapshots remain unchanged by later model edits.
 
+Automatic Cartesian and schedule time axes choose calendar intervals from measured label space, leaving a gap between complete captions instead of filling every available slot. The interval ladder includes three- and four-day steps and two-week steps; multi-day ticks keep the same spacing across month boundaries. Setting `TickCount` explicitly limits the generated count. Call `axis.WithAutomaticTickCount()` to restore automatic density. `ChartLabelDensity.Dense` requests closer spacing; authored formats alone do not change the density policy.
+
+Date captions prefer a coarser interval with full dates before using a compact form. The default compact form is culture-neutral `MM-dd`; ranges crossing a year retain `yyyy-MM-dd`. Explicit labels and formatters retain their text, including localized month names. Narrow axes keep real calendar boundaries instead of labelling marker-padded bounds with arbitrary times of day. Regularly sampled time bars retain their source cadence, so their automatic labels stay centred over observations; irregular time series retain ordinary calendar alignment. Tick labels stay anchored to their ticks in SVG and PNG.
+
+Automatic Gantt axes reserve room for the visible project's first and last dates and label both when their complete captions fit. Default day-scale captions identify dates even when task endpoints contain clock times; the exact instants remain unchanged. Authored formats retain their text. When a coarse format cannot distinguish adjacent dates, automatic selection keeps a meaningful caption instead of repeating the rejected sequence. An authored axis window limits those endpoints to the visible window. A successfully generated fixed interval keeps its authored grid and does not add off-interval endpoints; an interval that exceeds the bounded generation limit uses the automatic measured fallback.
+
 Frame headings and legends fit within the resolved size. Overflow is reported through diagnostics; a fixed render request never grows silently. Full textual values remain available through accessible metadata and descriptive regions where provided. A PNG requires concrete dimensions. Responsive hosts measure their viewport and prepare a new result; proportional SVG scaling does not claim compact-layout reflow.
 
 Ordinary axis and caption sizes remain as requested. Crowded placement can wrap, shorten, thin, or omit labels while retaining their complete descriptive facts; a small per-tick allocation does not shrink the whole axis. Oversized type still fits measured bounds. Numeric key captions fit down to a 10-pixel ordinary floor, and explicitly authored smaller sizes remain authoritative. Compact gallery overviews are prepared for their display size with their own useful label and legend budgets.
@@ -207,6 +222,8 @@ Set `legendTitle` in the `VisualFrame` constructor to give categorical legend en
 `VisualTheme.ToJson()` exports the complete paired theme, including typography, geometry and effects, using `schemaVersion: 1`. The independent card radius is `geometry.cardRadius`; shadow opacity and color are `effects.cardShadowOpacity` and `effects.cardShadowColor`. `VisualTheme.FromJson(json)` imports that versioned format. Version-1 inputs may omit these card fields and use their defaults. Keep these round-trip methods distinct from the generated color-token importer; unsupported versions, duplicate keys and missing required fields fail explicitly.
 
 ## Prepare once, export several ways
+
+Visuals-owned mixed grids expose `grid.ToVisualArtifact(id)` through the same artifact vocabulary as chart grids, canvases and factual blocks. Natural size comes from the grid's logical layout and remains independent of `PngOutputScale`. Artifact creation does not render children. The envelope borrows the grid model; recreate it after changing layout or headings, then use the shared SVG, PNG, HTML or Office handoff.
 
 ```csharp
 using ChartForgeX.Core;

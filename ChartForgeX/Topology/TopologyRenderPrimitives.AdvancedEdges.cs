@@ -33,7 +33,9 @@ internal static partial class TopologyRenderPrimitives {
         var normalOffset = Math.Max(14, Math.Abs(uy) * width / 2 + Math.Abs(ux) * height / 2 + 4);
         var obstacles = chart.Nodes.Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
             .Select(node => EdgeLabelNodeObstacle(node, options, 4)).ToList();
-        if (options.IncludeGroups && options.IncludeGroupLabels) obstacles.AddRange(chart.Groups.Select(group => LabelBox.FromGroupHeader(group, 4)));
+        if (options.IncludeGroups && options.IncludeGroupLabels)
+            obstacles.AddRange(chart.Groups.SelectMany(group => TopologyGroupHeader.PaintedParts(chart, group, options))
+                .Select(header => LabelBox.FromBounds(header.Left - 4, header.Top - 4, header.Right + 4, header.Bottom + 4)));
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var segments = new List<(ChartPoint Start, ChartPoint End)>();
         foreach (var edge in chart.Edges) {

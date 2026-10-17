@@ -60,7 +60,8 @@ internal static partial class TopologyDenseRoutePlanner {
 
         public bool IsBlocked(int cell) => (_flags[cell] & BlockedFlag) != 0;
 
-        public static Grid? Create(Scene scene, List<Request> requests, List<List<ChartPoint>> fixedRoutes, GridBuffers buffers) {
+        public static Grid? Create(Scene scene, List<Request> requests, List<List<ChartPoint>> fixedRoutes, GridBuffers buffers,
+            bool preserveRouteCoordinates = false) {
             var region = scene.Region;
             var xs = new SortedSet<double> { region.Left, region.Right };
             var ys = new SortedSet<double> { region.Top, region.Bottom };
@@ -110,6 +111,17 @@ internal static partial class TopologyDenseRoutePlanner {
             foreach (var request in requests) {
                 foreach (var terminal in request.Starts) { stubXs.Add(terminal.Stub.X); stubYs.Add(terminal.Stub.Y); }
                 foreach (var terminal in request.Ends) { stubXs.Add(terminal.Stub.X); stubYs.Add(terminal.Stub.Y); }
+            }
+
+            // Final refinement records lanes at their actual positions, including positions between half-pixel lines.
+            // Keep those axes through thinning; when they cannot fit the existing cap, refinement has no exact grid.
+            if (preserveRouteCoordinates) {
+                foreach (var route in fixedRoutes) {
+                    foreach (var point in route) {
+                        if (point.X >= region.Left && point.X <= region.Right) { xs.Add(point.X); stubXs.Add(point.X); }
+                        if (point.Y >= region.Top && point.Y <= region.Bottom) { ys.Add(point.Y); stubYs.Add(point.Y); }
+                    }
+                }
             }
 
             // Layouts whose cards do not share rows and columns produce many nearly identical lines. Merging lines that

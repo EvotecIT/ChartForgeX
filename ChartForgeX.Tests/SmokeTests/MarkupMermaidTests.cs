@@ -381,7 +381,7 @@ line [25, 50, 80]
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid XY chart artifacts should expose natural size.");
         Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid XY chart fence size attributes should map to artifact natural size.");
         var chart = result.Artifacts[0].Model as Chart ?? throw new InvalidOperationException("Mermaid XY chart artifact should carry a Chart model.");
-        Assert(chart.Options.ShowDataLabels, "Mermaid XY chart fence dataLabels attribute should map to chart rendering options.");
+        Assert(chart.Options.ShowDataLabels == true, "Mermaid XY chart fence dataLabels attribute should map to chart rendering options.");
     }
 
     private static void MermaidVisualMarkupParserMapsSankeyFencesToArtifacts() {

@@ -29,24 +29,25 @@ internal static class ChartAxisValueFormatter {
         return null;
     }
 
-    public static string Format(ChartAxis axis, double value, Func<double, string>? fallbackFormatter = null, IReadOnlyList<double>? ticks = null) {
+    public static string Format(ChartAxis axis, double value, Func<double, string>? fallbackFormatter = null, IReadOnlyList<double>? ticks = null,
+        bool retainTimeDateContext = false) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (FindExplicitLabel(axis.Labels, value) is { } label) return label;
 
         var formatter = axis.LabelFormatter ?? fallbackFormatter;
         if (formatter != null) return formatter(value) ?? string.Empty;
         if (axis.Scale == ChartScaleKind.Time && ticks != null && ChartTicks.IsNumericTimeFallback(ticks)) return value.ToString("G17", System.Globalization.CultureInfo.InvariantCulture);
-        if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Format(axis, value);
+        if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.FormatTick(axis, value, ticks, retainTimeDateContext);
         return ChartNumericFormatter.FormatCompactAxisValue(value);
     }
 
     /// <summary>Resolves one automatic caption set per preparation while keeping authored formatters lazy.</summary>
     internal static Func<double, string> Create(ChartAxis axis, IReadOnlyList<double> ticks,
-        Func<double, string>? fallbackFormatter = null, ChartOptions? valueDefaults = null) {
+        Func<double, string>? fallbackFormatter = null, ChartOptions? valueDefaults = null, bool retainTimeDateContext = false) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (ticks == null) throw new ArgumentNullException(nameof(ticks));
         if (axis.LabelFormatter != null || fallbackFormatter != null || axis.Scale == ChartScaleKind.Time)
-            return value => Format(axis, value, fallbackFormatter, ticks);
+            return value => Format(axis, value, fallbackFormatter, ticks, retainTimeDateContext);
         // Schedule axes retain their existing value notation; other numeric axes use compact notation.
         var captions = valueDefaults == null ? ChartNumericFormatter.FormatCompactScaleValues(ticks)
             : ChartNumericFormatter.FormatScaleValues(valueDefaults, ticks);

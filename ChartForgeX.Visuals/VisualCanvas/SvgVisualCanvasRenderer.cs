@@ -227,7 +227,8 @@ public sealed class SvgVisualCanvasRenderer {
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
-        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile);
+        var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile, theme);
+        var metrics = layout.Metrics;
         var x = metrics.X;
         var y = metrics.Y;
         var width = metrics.Width;
@@ -259,7 +260,8 @@ public sealed class SvgVisualCanvasRenderer {
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
-        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme.FontFamily, theme.TextMeasurementMode).Lines) {
+        var textLayout = layout.Text;
+        foreach (var line in textLayout.Lines) {
             writer.StartElement("text")
                 .Attribute("x", line.X)
                 .Attribute("y", line.Y + line.FontSize)
@@ -273,10 +275,11 @@ public sealed class SvgVisualCanvasRenderer {
         }
         if (tile.Progress.HasValue) {
             var railX = textX;
-            var railY = y + height - 16;
-            var railW = metrics.HasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
-            writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW).Attribute("height", 8).Attribute("rx", 4).Attribute("fill", theme.TileProgressTrackColor.ToCss()).EndEmptyElement().Line();
-            writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW * tile.Progress.Value).Attribute("height", 8).Attribute("rx", 4).Attribute("fill", accent.ToCss()).EndEmptyElement().Line();
+            var railY = metrics.ProgressRailY;
+            var railHeight = metrics.ProgressRailHeight;
+            var railW = metrics.TextMax;
+            writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW).Attribute("height", railHeight).Attribute("rx", railHeight / 2).Attribute("fill", theme.TileProgressTrackColor.ToCss()).EndEmptyElement().Line();
+            writer.StartElement("rect").Attribute("x", railX).Attribute("y", railY).Attribute("width", railW * tile.Progress.Value).Attribute("height", railHeight).Attribute("rx", railHeight / 2).Attribute("fill", accent.ToCss()).EndEmptyElement().Line();
         }
         if (metrics.HasMiniChart) {
             RenderTileMiniChart(writer, tile, theme, accent, chartX, metrics.ChartY, chartW, metrics.ChartHeight);
