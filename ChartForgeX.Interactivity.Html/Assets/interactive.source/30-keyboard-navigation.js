@@ -90,7 +90,7 @@
     });
     branches.forEach((branch) => svg.appendChild(branch));
   };
-  const refreshKeyboardNavigation = (root, focused) => {
+  const refreshKeyboardNavigation = (root, focused, passive = false) => {
     refreshRootBranchHighlightAvailability(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
@@ -119,7 +119,12 @@
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
       // Local and synchronized state changes must not strand focus on a datum that just left the component.
       const replacement = state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
-      if (replacement) focusKeyboardTarget(root, replacement);
+      if (replacement) {
+        // Host paint changes recover a usable focus position without opening a new
+        // readout in the same update that dismisses the unavailable source or pin.
+        if (passive) { clearHover(root, true, true); hideTip(root, root.querySelector('.cfx-tooltip'), true); }
+        focusKeyboardTarget(root, replacement, passive);
+      }
     }
     return state;
   };
@@ -154,7 +159,7 @@
           window.removeEventListener('resize', queueRefresh);
           return;
         }
-        watchAncestry(); refreshKeyboardNavigation(root);
+        watchAncestry(); refreshKeyboardNavigation(root, undefined, true);
       });
     };
     listenChart(root, window, 'resize', queueRefresh);
@@ -221,15 +226,21 @@
     if (!preserveVisiblePortion && box.width <= viewport.width - 16 && box.height <= viewport.height - 16)
       node.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
   };
-  const focusKeyboardTarget = (root, node) => {
+  const focusKeyboardTarget = (root, node, passive = false) => {
     const focusNode = targetFocusNode(node);
-    scrollKeyboardTargetIntoView(root, focusNode);
-    if (focusNode.focus) {
-      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
-    }
+    // Native links also recover focus when adapter keyboard navigation is disabled.
+    const recovering = root._cfxRecoveringFocus === true;
+    if (passive) root._cfxRecoveringFocus = true;
+    try {
+      scrollKeyboardTargetIntoView(root, focusNode);
+      if (focusNode.focus) {
+        try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
+      }
+    } finally { if (passive && !recovering) delete root._cfxRecoveringFocus; }
   };
   const focusAdjacentTarget = (root, node, key) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(key)) return false;
+    resumePointerReadout(root);
     const state = refreshKeyboardNavigation(root, node);
     if (!state) return false;
     const legend = state.legends.includes(node);
@@ -255,7 +266,12 @@
       const direction = key === 'ArrowLeft' || key === 'ArrowUp' ? -1 : 1;
       next = targets[clamp(current + direction, 0, targets.length - 1)];
     }
-    if (next === node) return true;
+    if (next === node) {
+      // An explicit boundary arrow still resumes the readout after passive recovery.
+      const tip = root.querySelector('.cfx-tooltip');
+      if (tip?.hidden && tooltipReadoutAvailable(node)) { setHover(root, node, true, true); showTip(root, tip, node); }
+      return true;
+    }
     refreshKeyboardNavigation(root, next);
     focusKeyboardTarget(root, next);
     const target = targetIdentity(next);

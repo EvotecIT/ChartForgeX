@@ -32,7 +32,7 @@ public sealed class InteractiveHoverEmphasisBrowserTests {
         Assert.Equal(new[] { "1", "1", "1" }, await OpacitiesAsync(page, Legends));
         Assert.Equal(new[] { "1", "1", "1" }, await OpacitiesAsync(page, "[data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker"));
         var tooltip = await TooltipTextAsync(page);
-        Assert.Matches("^Thu\\s+Failed\\s+31\\s+Warnings\\s+112\\s+Passed\\s+1k$", tooltip);
+        Assert.Matches("^Thu\\s+Failed\\s+31\\s+Warnings\\s+112\\s+Passed\\s+1041$", tooltip);
 
         await MoveAwayAsync(page);
         Assert.Equal(new[] { "1", "1", "1" }, await OpacitiesAsync(page, Lines));

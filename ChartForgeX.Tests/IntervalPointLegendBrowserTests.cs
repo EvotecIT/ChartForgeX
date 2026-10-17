@@ -81,11 +81,11 @@ public sealed class IntervalPointLegendBrowserTests {
     public async Task ComparisonPointLegendsRetainBothEndpointsOrUncertaintyBounds(bool errorBar) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(400, 360).WithXLabels("Express", "Standard").WithPointLegend().WithLegend();
-        if (errorBar) chart.AddErrorBar("Uncertainty", new[] { new ChartErrorBar(1, 15, 0, 35), new ChartErrorBar(2, 20, 10, 25) });
+        if (errorBar) chart.AddErrorBar("Uncertainty", new[] { new ChartErrorBar(1, 15, 0, 35.04), new ChartErrorBar(2, 20, 10, 25.04) });
         else chart.AddDumbbell("Change", new[] { new ChartDumbbell(1, 30, 0), new ChartDumbbell(2, 10, 35) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 450, 460);
         var page = session.Page;
-        var expected = errorBar ? new[] { "Category", "Express", "Value", "15", "Lower", "0", "Upper", "35" }
+        var expected = errorBar ? new[] { "Category", "Express", "Value", "15", "Lower", "0", "Upper", "35.04" }
             : new[] { "Category", "Express", "Start", "30", "End", "0", "Delta", "-30" };
         var legend = "[data-cfx-role='legend-item'][data-cfx-point='0']";
         await MoveToAsync(page, legend);
@@ -95,12 +95,33 @@ public sealed class IntervalPointLegendBrowserTests {
         Assert.Equal(expected, await RowsAsync(page));
         await page.Locator("[data-cfx-role='legend-item'][data-cfx-point='1']").FocusAsync();
         Assert.Equal("Standard", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
-        Assert.Equal(errorBar ? new[] { "Category", "Standard", "Value", "20", "Lower", "10", "Upper", "25" }
+        Assert.Equal(errorBar ? new[] { "Category", "Standard", "Value", "20", "Lower", "10", "Upper", "25.04" }
             : new[] { "Category", "Standard", "Start", "10", "End", "35", "Delta", "25" }, await RowsAsync(page));
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) await page.ScreenshotAsync(new PageScreenshotOptions {
             Path = Path.Combine(directory, "interval-point-legend-" + (errorBar ? "error" : "dumbbell") + ".png")
         });
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CapturedEmptyUncertaintyBoundsRemainBlankInMarkAndLegendReadouts(bool legend) {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(400, 360).WithXLabels("Express").WithPointLegend().WithLegend()
+            .AddErrorBar("Uncertainty", new[] { new ChartErrorBar(1, 15, 10.02, 20.04) });
+        chart.Options.YAxis.LabelFormatter = value => value == 10.02 || value == 20.04 ? string.Empty : "Observed " + value;
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), 450, 460);
+        var page = session.Page;
+        var point = page.Locator(Point(0, 0));
+        Assert.Equal(string.Empty, await point.GetAttributeAsync("data-cfx-formatted-lower"));
+        Assert.Equal(string.Empty, await point.GetAttributeAsync("data-cfx-formatted-upper"));
+        Assert.Equal(10.02, double.Parse((await point.GetAttributeAsync("data-cfx-lower"))!, System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(20.04, double.Parse((await point.GetAttributeAsync("data-cfx-upper"))!, System.Globalization.CultureInfo.InvariantCulture));
+        await page.Locator(legend ? "[data-cfx-role='legend-item'][data-cfx-point='0']" : Point(0, 0)).FocusAsync();
+        Assert.Equal(legend ? new[] { "Category", "Express", "Value", "Observed 15", "Lower", "", "Upper", "" }
+            : new[] { "Series", "Uncertainty", "X", "Express", "Value", "Observed 15", "Range", "" }, await RowsAsync(page));
         AssertNoConsoleErrors(session);
     }
 

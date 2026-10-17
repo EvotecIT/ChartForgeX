@@ -18,7 +18,8 @@ public sealed class InteractivePreparedIdentityBrowserTests {
         else { chart.AddRadar("Observed", points); chart.Series[0].MarkerRadius = 0; }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
         var page = session.Page;
-        var point = page.Locator("[data-cfx-target-kind='point'][data-cfx-series='0'][data-cfx-point='0']");
+        const string pointSelector = "[data-cfx-target-kind='point'][data-cfx-series='0'][data-cfx-point='0']";
+        var point = page.Locator(pointSelector);
         // A host can suppress markers while retaining the native line or polygon as the observation surface.
         await point.EvaluateAsync("node=>node.querySelectorAll('ellipse,circle').forEach(marker=>{marker.style.fill='none';marker.style.stroke='none';})");
         Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
@@ -35,10 +36,15 @@ public sealed class InteractivePreparedIdentityBrowserTests {
               owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"]').forEach(layer=>layer.setAttribute('clip-path','url(#source-location-clip)'));
             }
             """);
+        await page.WaitForFunctionAsync("selector => document.querySelector(selector)?.getAttribute('tabindex') === '-1'", pointSelector,
+            new Microsoft.Playwright.PageWaitForFunctionOptions { Timeout = 5000 });
         Assert.Equal("-1", await point.GetAttributeAsync("tabindex"));
         Assert.False(await point.EvaluateAsync<bool>("node=>document.activeElement===node"));
         await point.EvaluateAsync("node=>node.closest('[data-cfx-role=\"series\"],[data-cfx-role=\"radar-series\"]').querySelectorAll('[clip-path=\"url(#source-location-clip)\"]').forEach(layer=>layer.removeAttribute('clip-path'))");
-        await point.FocusAsync(); Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
+        await point.FocusAsync();
+        await page.WaitForFunctionAsync("selector => document.querySelector(selector)?.getAttribute('tabindex') === '0'", pointSelector,
+            new Microsoft.Playwright.PageWaitForFunctionOptions { Timeout = 5000 });
+        Assert.Equal("0", await point.GetAttributeAsync("tabindex"));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await point.GetAttributeAsync("aria-selected"));
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

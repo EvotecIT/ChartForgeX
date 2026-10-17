@@ -12,6 +12,19 @@ namespace ChartForgeX.Tests;
 
 public sealed class ChartLinkedReadableValueContractsTests {
     [Fact]
+    public void AutomaticCoordinateHeadingsDoNotRoundObservationBodyValues() {
+        const double x = .025, y = .12345678901234566;
+        var chart = Chart.Create().WithXAxisBounds(0, 1).WithYAxisBounds(0, 1)
+            .AddScatter("Samples", new[] { new ChartPoint(x, y) });
+        var point = Mark(chart.Prepare(new VisualRenderContext()).ToSvg());
+        Assert.Equal("0.03", point.Attribute("data-cfx-display-label")!.Value);
+        Assert.Equal("0.025", point.Attribute("data-cfx-formatted-x")!.Value);
+        Assert.Equal("0.12345678901234566", point.Attribute("data-cfx-formatted-value")!.Value);
+        Assert.Equal(x, double.Parse(point.Attribute("data-cfx-x")!.Value, CultureInfo.InvariantCulture));
+        Assert.Equal(y, double.Parse(point.Attribute("data-cfx-y")!.Value, CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
     public void PreparedReadoutsCaptureAxisCultureAndKeepSourceCoordinatesExact() {
         const double x = 4.242394913100822, y = 8.88888888888889;
         var culture = CultureInfo.GetCultureInfo("de-DE");

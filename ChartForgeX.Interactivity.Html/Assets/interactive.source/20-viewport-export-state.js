@@ -102,6 +102,7 @@
     return changed;
   };
   const resetViewport = (root) => {
+    suspendPointerReadout(root);
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
     clearBrush(root);
     applyMode(root, '');

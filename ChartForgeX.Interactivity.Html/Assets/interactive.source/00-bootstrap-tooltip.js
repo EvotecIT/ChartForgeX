@@ -3,6 +3,7 @@
   const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
   // Source metadata stays exact; fallback captions use the browser's shortest round-trip number.
   const numericDisplayText = (value) => tooltipNumber(value) ? String(Number(value)) : value;
+  const numericFactText = (data, member) => capturedText(data, 'cfxFormatted' + member, numericDisplayText(data['cfx' + member]));
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
@@ -84,38 +85,38 @@
     return ['Open', 'High', 'Low', 'Close'].filter((part) => {
       const value = data['cfx' + part];
       return value !== undefined && value !== null && value !== '';
-    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: String(data['cfx' + part]) }));
+    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: numericFactText(data, part) }));
   };
   const waterfallTooltipRows = (node) => {
     const data = node.dataset || {};
     if (!data.cfxWaterfallKind) return [];
     const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
-    return [{ name: rowName(node, 'waterfall-value', fallback), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
-      { name: 'Start', value: capturedText(data, 'cfxFormattedStart', data.cfxStart) }, { name: 'End', value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }]
-      .filter((row) => row.value !== undefined && row.value !== '');
+    return [{ name: rowName(node, 'waterfall-value', fallback), value: numericFactText(data, 'Value') },
+      { name: 'Start', value: numericFactText(data, 'Start') }, { name: 'End', value: numericFactText(data, 'End') }]
+      .filter((row) => row.value !== undefined && row.value !== null);
   };
   const boxPlotTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'boxplot') return null;
     return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX }]
       .concat(['minimum', 'q1', 'median', 'q3', 'maximum'].map((key) => ({
-        name: rowName(node, key, ''), value: data['cfx' + key.charAt(0).toUpperCase() + key.slice(1)]
-      }))).filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+        name: rowName(node, key, ''), value: numericFactText(data, key.charAt(0).toUpperCase() + key.slice(1))
+      }))).filter((row) => row.value !== undefined && row.value !== null);
   };
   const rangeBarTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
     return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
-      { name: rowName(node, 'start', ''), value: capturedText(data, 'cfxFormattedStart', data.cfxStart) },
-      { name: rowName(node, 'end', ''), value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }]
-      .filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+      { name: rowName(node, 'start', ''), value: numericFactText(data, 'Start') },
+      { name: rowName(node, 'end', ''), value: numericFactText(data, 'End') }]
+      .filter((row) => row.value !== undefined && row.value !== null);
   };
   const differenceTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'differencearea') return null;
     return ['First', 'Second'].map((part) => ({
       name: rowName(node, part.toLowerCase(), part),
-      value: capturedText(data, 'cfxFormatted' + part, data['cfx' + part])
+      value: numericFactText(data, part)
     }));
   };
   const tooltipRows = (node) => {
@@ -137,7 +138,7 @@
     const differenceRows = differenceTooltipRows(node);
     if (differenceRows) {
       pushX();
-      differenceRows.forEach((row) => push(row.name, row.value));
+      rows.push(...differenceRows);
       metadataRows(node).forEach((row) => push(row.name, row.value));
       return rows;
     }
@@ -145,7 +146,7 @@
     else pushX();
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
-    else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
+    else if (data.cfxWaterfallKind) rows.push(...waterfallTooltipRows(node));
     else if (data.cfxEmpty !== 'true') {
       const name = data.cfxValue !== undefined ? rowName(node, 'value', 'Value') : 'Y';
       const value = capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue !== undefined ? data.cfxValue : data.cfxY));
@@ -163,8 +164,11 @@
     if (Number(data.cfxRemainderValue) > 0)
       push(rowName(node, 'remainder', 'Remainder'), data.cfxRemainderValue);
     push('Percent', percentText(data.cfxPercent));
-    if (!data.cfxWaterfallKind) push('Delta', data.cfxDelta);
-    push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
+    if (!data.cfxWaterfallKind) push('Delta', numericFactText(data, 'Delta'));
+    if (tooltipNumber(data.cfxLower) && tooltipNumber(data.cfxUpper)) {
+      const lower = numericFactText(data, 'Lower'), upper = numericFactText(data, 'Upper');
+      rows.push({ name: 'Range', value: lower === '' && upper === '' ? '' : lower + ' - ' + upper });
+    }
     metadataRows(node).forEach((row) => push(row.name, row.value));
     return rows;
   };

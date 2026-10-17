@@ -170,7 +170,7 @@ internal static partial class VisualCartesianCompiler {
         if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
             style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
         return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, System.Globalization.CultureInfo.InvariantCulture), style,
-            numeric ? new Dictionary<string, string> { ["y"] = text } : null);
+            numeric && chart.Options.ValueFormatter != null ? new Dictionary<string, string> { ["y"] = text } : null);
     }
 
     private readonly struct ResolvedPointLabel {

@@ -89,7 +89,7 @@
     applyViewport(root, nativeCommit ? { zoom: 1, panX: 0, panY: 0 } : state.viewport);
     renderCompare(root); refreshKeyboardNavigation(root); syncResetControl(root);
     const focused = state.focused && interactiveTargets(root).find(node => seriesKey(node) === state.focused.seriesKey && matchesTargetIdentity(node, state.focused));
-    if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused);
+    if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused, pointerReadoutSuspended(root));
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
     // Focus recovery must not resurrect a pinned or stale readout from the previous scene.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);

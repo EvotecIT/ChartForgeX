@@ -54,7 +54,8 @@ public sealed class InteractiveColorDimensionPresentationBrowserTests {
         if (sameValue) {
             var terms = await page.Locator(".cfx-tooltip dt").AllTextContentsAsync();
             Assert.DoesNotContain("Color", terms); Assert.DoesNotContain("Default color", terms); Assert.DoesNotContain("Value", terms);
-        } else await AssertRowAsync(kind == ChartSeriesKind.Treemap ? "Value" : "Y", kind == ChartSeriesKind.Treemap ? "9.0 units" : "18");
+        } else await AssertRowAsync(kind == ChartSeriesKind.Treemap ? "Value" : "Y", kind == ChartSeriesKind.Treemap ? "9.0 units"
+            : kind == ChartSeriesKind.Scatter ? "18.0 units" : "18");
         if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Size", "9");
         await CaptureAsync("pointer");
         await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(zero)); await AssertRowAsync(name, format.Format(0));

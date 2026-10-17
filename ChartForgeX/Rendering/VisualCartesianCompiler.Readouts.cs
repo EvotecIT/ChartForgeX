@@ -20,11 +20,13 @@ internal static partial class VisualCartesianCompiler {
             // Use the same observed-axis ownership decision that created the projection.
             // Equal numeric ranges do not establish ownership of their display format.
             var useSecondary = !horizontal && secondaryOnly;
-            builder.DataProjection = builder.DataProjection.WithDisplayTicks(xTicks.Select(number => new ChartAxisLabel(number, X(number))).ToArray(),
-                (useSecondary ? secondaryTicks : yTicks).Select(number => new ChartAxisLabel(number, useSecondary ? Secondary(number) : Y(number))).ToArray());
+            builder.DataProjection = builder.DataProjection.WithDisplayTicks(xTicks.Select(number => new ChartAxisLabel(number, cache.FormatDisplay(x, number, xTicks))).ToArray(),
+                (useSecondary ? secondaryTicks : yTicks).Select(number => new ChartAxisLabel(number, useSecondary
+                    ? cache.FormatDisplay(chart.Options.SecondaryYAxis, number, secondaryTicks) : cache.FormatDisplay(y, number, yTicks))).ToArray());
         }
         builder.CaptureChartReadouts(chart, (_, number) => horizontal ? Y(number) : X(number),
             (series, number, numericCaption) => horizontal ? X(number, numericCaption)
-                : series.YAxis == ChartAxisSide.Secondary ? Secondary(number, numericCaption) : Y(number, numericCaption));
+                : series.YAxis == ChartAxisSide.Secondary ? Secondary(number, numericCaption) : Y(number, numericCaption),
+            (_, number) => horizontal ? cache.FormatDisplay(y, number, yTicks) : cache.FormatDisplay(x, number, xTicks));
     }
 }

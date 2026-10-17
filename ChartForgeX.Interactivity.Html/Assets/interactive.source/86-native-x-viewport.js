@@ -39,6 +39,7 @@
     // Validate every alternate before releasing the working scene, preserving atomic host updates.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
     const state = chartUpdateState(root, !!adaptiveDrawing);
+    const suspended = nativeKind === 'reset' || !!adaptiveDrawing && pointerReadoutSuspended(root);
     // Keep the request current through validation so a rejected alternate reports its failure.
     if (nativeKind) lifetime.xViewportPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
@@ -49,6 +50,8 @@
     lifetime.adaptive = adaptive;
     if (adaptiveDrawing) adaptive.current = adaptiveDrawing;
     chartLifetimes.set(root, lifetime); mountedCharts.add(root);
+    // Same-source redraws retain explicit reset dismissal before any fresh scene can acquire input.
+    if (suspended) suspendPointerReadout(root);
     prepareAdaptiveRoot(root, lifetime);
     bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind);
     bindAdaptiveLayout(root);
@@ -58,6 +61,7 @@
     const lifetime = chartLifetimes.get(root), connection = lifetime?.xViewportConnection;
     if (!connection || lifetime.disposed || !root.isConnected || !chartXProjection(root)) return;
     if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return;
+    if (kind === 'reset') suspendPointerReadout(root);
     cancelXViewportRequest(lifetime);
     const request = Object.freeze({ chartId: root.dataset.cfxChartId, requestId: 'cfx-request-' + (++chartViewportRequestSequence),
       sceneRevision: lifetime.sceneRevision, kind, ...(lifetime.adaptive ? { drawing: lifetime.adaptive.current } : {}),

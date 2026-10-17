@@ -23,6 +23,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         };
         var expectedX = new[] { "0.025", "1e-10", "0.10000000000000002" };
         var expectedY = new[] { "5.15", "-1e-12", "0.10000000000000003" };
+        var expectedTitles = new[] { "0.03", "1E-10", "0.1" };
         var compact = mode == HtmlChartTooltipMode.SharedX;
         var chart = Chart.Create().WithSize(compact ? 316 : 596, 338).WithLegend(false)
             .WithTheme(VisualTheme.Graphite(), compact ? VisualThemeMode.Dark : VisualThemeMode.Light)
@@ -42,17 +43,18 @@ public sealed class InteractiveNumericReadoutBrowserTests {
             Assert.Equal("observed:" + index, selected.GetProperty("targetId").GetString());
             Assert.Equal(index.ToString(CultureInfo.InvariantCulture), selected.GetProperty("sourcePoint").GetString());
             Assert.Equal(rawY, selected.GetProperty("value").GetString());
+            Assert.Equal(values[index].X, selected.GetProperty("x").GetDouble());
             if (index == 0) await CaptureAsync(page, "numeric-" + mode + "-keyboard", new { rawX, rawY, keyboard, selected, Errors = errors, ConsoleErrors = ErrorCount(session) });
             await page.Keyboard.PressAsync("Space"); await point.BlurAsync();
             await MoveAwayAsync(page); await MoveToAsync(page, selector);
             var pointer = await ReadoutAsync(page, mode);
             if (index == 0) await CaptureAsync(page, "numeric-" + mode + "-pointer", new { rawX, rawY, pointer, Errors = errors, ConsoleErrors = ErrorCount(session) });
             Assert.Equal(keyboard, pointer);
-            Assert.Equal(new[] { expectedX[index], expectedY[index] }, keyboard);
+            Assert.Equal(new[] { mode == HtmlChartTooltipMode.SharedX ? expectedTitles[index] : expectedX[index], expectedY[index] }, keyboard);
             Assert.Equal(rawX, await point.GetAttributeAsync("data-cfx-x"));
             Assert.Equal(rawY, await point.GetAttributeAsync("data-cfx-y"));
             Assert.Equal("observed:" + index, await point.GetAttributeAsync("data-cfx-target-id"));
-            Assert.Equal(values[index].X, double.Parse(keyboard[0], CultureInfo.InvariantCulture));
+            if (mode == HtmlChartTooltipMode.Single) Assert.Equal(values[index].X, double.Parse(keyboard[0], CultureInfo.InvariantCulture));
             Assert.Equal(values[index].Y, double.Parse(keyboard[1], CultureInfo.InvariantCulture));
         }
         Assert.Empty(errors); AssertNoConsoleErrors(session);
@@ -102,7 +104,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var equal = page.Locator(Point(0, 0)); await equal.FocusAsync();
         Assert.Equal(new[] { "Observed", "Peer" }, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
-        Assert.Equal("0.025", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal("0.03", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         await page.Keyboard.PressAsync("ArrowDown");
         Assert.Equal("peer:0", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));
         var distinct = page.Locator(Point(0, 1)); var rawX = await distinct.GetAttributeAsync("data-cfx-x");
@@ -110,7 +112,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         Assert.NotEqual(double.Parse(rawX!, CultureInfo.InvariantCulture), double.Parse(peerRawX!, CultureInfo.InvariantCulture));
         await distinct.FocusAsync();
         Assert.Equal(new[] { "Observed" }, await page.Locator(".cfx-tooltip dt").AllTextContentsAsync());
-        Assert.Equal("0.10000000000000002", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
+        Assert.Equal("0.1", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         await CaptureAsync(page, "numeric-distinct-x", new { rawX, peerRawX, Errors = errors, ConsoleErrors = ErrorCount(session) });
         await page.Keyboard.PressAsync("ArrowDown");
         Assert.Equal("peer:1", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId"));

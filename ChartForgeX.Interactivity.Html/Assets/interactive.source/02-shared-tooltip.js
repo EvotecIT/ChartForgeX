@@ -29,7 +29,7 @@
     if (!rows.length) return false;
     tip.replaceChildren();
     const header = document.createElement('div');
-    header.className = 'cfx-tooltip__title'; header.textContent = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX))); tip.appendChild(header);
+    header.className = 'cfx-tooltip__title'; header.textContent = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxDisplayLabel', numericFactText(data, 'X'))); tip.appendChild(header);
     const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
     rows.forEach((row) => {
       const name = document.createElement('dt'); const value = document.createElement('dd');

@@ -173,6 +173,7 @@
   const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
   // Source metadata stays exact; fallback captions use the browser's shortest round-trip number.
   const numericDisplayText = (value) => tooltipNumber(value) ? String(Number(value)) : value;
+  const numericFactText = (data, member) => capturedText(data, 'cfxFormatted' + member, numericDisplayText(data['cfx' + member]));
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
@@ -254,38 +255,38 @@
     return ['Open', 'High', 'Low', 'Close'].filter((part) => {
       const value = data['cfx' + part];
       return value !== undefined && value !== null && value !== '';
-    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: String(data['cfx' + part]) }));
+    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: numericFactText(data, part) }));
   };
   const waterfallTooltipRows = (node) => {
     const data = node.dataset || {};
     if (!data.cfxWaterfallKind) return [];
     const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
-    return [{ name: rowName(node, 'waterfall-value', fallback), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
-      { name: 'Start', value: capturedText(data, 'cfxFormattedStart', data.cfxStart) }, { name: 'End', value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }]
-      .filter((row) => row.value !== undefined && row.value !== '');
+    return [{ name: rowName(node, 'waterfall-value', fallback), value: numericFactText(data, 'Value') },
+      { name: 'Start', value: numericFactText(data, 'Start') }, { name: 'End', value: numericFactText(data, 'End') }]
+      .filter((row) => row.value !== undefined && row.value !== null);
   };
   const boxPlotTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'boxplot') return null;
     return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX }]
       .concat(['minimum', 'q1', 'median', 'q3', 'maximum'].map((key) => ({
-        name: rowName(node, key, ''), value: data['cfx' + key.charAt(0).toUpperCase() + key.slice(1)]
-      }))).filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+        name: rowName(node, key, ''), value: numericFactText(data, key.charAt(0).toUpperCase() + key.slice(1))
+      }))).filter((row) => row.value !== undefined && row.value !== null);
   };
   const rangeBarTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
     return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
-      { name: rowName(node, 'start', ''), value: capturedText(data, 'cfxFormattedStart', data.cfxStart) },
-      { name: rowName(node, 'end', ''), value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }]
-      .filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+      { name: rowName(node, 'start', ''), value: numericFactText(data, 'Start') },
+      { name: rowName(node, 'end', ''), value: numericFactText(data, 'End') }]
+      .filter((row) => row.value !== undefined && row.value !== null);
   };
   const differenceTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'differencearea') return null;
     return ['First', 'Second'].map((part) => ({
       name: rowName(node, part.toLowerCase(), part),
-      value: capturedText(data, 'cfxFormatted' + part, data['cfx' + part])
+      value: numericFactText(data, part)
     }));
   };
   const tooltipRows = (node) => {
@@ -307,7 +308,7 @@
     const differenceRows = differenceTooltipRows(node);
     if (differenceRows) {
       pushX();
-      differenceRows.forEach((row) => push(row.name, row.value));
+      rows.push(...differenceRows);
       metadataRows(node).forEach((row) => push(row.name, row.value));
       return rows;
     }
@@ -315,7 +316,7 @@
     else pushX();
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
-    else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
+    else if (data.cfxWaterfallKind) rows.push(...waterfallTooltipRows(node));
     else if (data.cfxEmpty !== 'true') {
       const name = data.cfxValue !== undefined ? rowName(node, 'value', 'Value') : 'Y';
       const value = capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue !== undefined ? data.cfxValue : data.cfxY));
@@ -333,8 +334,11 @@
     if (Number(data.cfxRemainderValue) > 0)
       push(rowName(node, 'remainder', 'Remainder'), data.cfxRemainderValue);
     push('Percent', percentText(data.cfxPercent));
-    if (!data.cfxWaterfallKind) push('Delta', data.cfxDelta);
-    push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
+    if (!data.cfxWaterfallKind) push('Delta', numericFactText(data, 'Delta'));
+    if (tooltipNumber(data.cfxLower) && tooltipNumber(data.cfxUpper)) {
+      const lower = numericFactText(data, 'Lower'), upper = numericFactText(data, 'Upper');
+      rows.push({ name: 'Range', value: lower === '' && upper === '' ? '' : lower + ' - ' + upper });
+    }
     metadataRows(node).forEach((row) => push(row.name, row.value));
     return rows;
   };
@@ -955,7 +959,7 @@
     if (!rows.length) return false;
     tip.replaceChildren();
     const header = document.createElement('div');
-    header.className = 'cfx-tooltip__title'; header.textContent = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX))); tip.appendChild(header);
+    header.className = 'cfx-tooltip__title'; header.textContent = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxDisplayLabel', numericFactText(data, 'X'))); tip.appendChild(header);
     const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
     rows.forEach((row) => {
       const name = document.createElement('dt'); const value = document.createElement('dd');
@@ -990,6 +994,14 @@
   const pendingTooltips = new Set();
   let tooltipObserver = null;
   const tooltipObservedNodes = new Map();
+  const pointerReadoutSuspended = root => root._cfxPointerReadoutSuspended === true;
+  const resumePointerReadout = root => { delete root._cfxPointerReadoutSuspended; };
+  const suspendPointerReadout = root => {
+    // Reset can animate native marks beneath a stationary pointer. Passive entry
+    // must not undo its dismissal; only fresh pointer or keyboard input resumes it.
+    root._cfxPointerReadoutSuspended = true;
+    hideTip(root, root.querySelector('.cfx-tooltip'), true);
+  };
   // A closed shadow tree is still reachable from its chart. Keep every enclosing tree in the lifetime boundary.
   const tooltipRootTrees = (root) => {
     const trees = [];
@@ -1019,6 +1031,9 @@
     }
   };
   const cancelTooltipRequest = (root) => {
+    // A host may restore paint before a staged move runs. Retire that old sample
+    // with its request so it cannot acquire a new deadline without fresh input.
+    root._cfxCancelPointerHover?.();
     const request = tooltipRequests.get(root);
     if (!request) return;
     if (request.timer !== undefined) window.clearTimeout(request.timer);
@@ -1072,6 +1087,7 @@
     }
   };
   const requestPointerTip = (root, tip, node, event) => {
+    if (pointerReadoutSuspended(root)) return;
     const key = targetKey(targetIdentity(node));
     const previous = tooltipRequests.get(root);
     if (previous && previous.key === key && (previous.pointerId === undefined || previous.pointerId === event.pointerId)) {
@@ -1784,11 +1800,11 @@
     if (!['dumbbell', 'errorbar'].includes(kind)) return null;
     const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX;
     const rows = [{ name: rowName(node, 'category', 'Category'), value: category }];
-    if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: capturedText(data, 'cfxFormattedStart', data.cfxStart) },
-      { name: rowName(node, 'end', 'End'), value: capturedText(data, 'cfxFormattedEnd', data.cfxEnd) }, { name: rowName(node, 'delta', 'Delta'), value: data.cfxDelta });
-    else rows.push({ name: rowName(node, 'value', 'Value'), value: capturedText(data, 'cfxFormattedValue', data.cfxValue) },
-      { name: rowName(node, 'lower', 'Lower'), value: data.cfxLower }, { name: rowName(node, 'upper', 'Upper'), value: data.cfxUpper });
-    return rows.filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+    if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: numericFactText(data, 'Start') },
+      { name: rowName(node, 'end', 'End'), value: numericFactText(data, 'End') }, { name: rowName(node, 'delta', 'Delta'), value: numericFactText(data, 'Delta') });
+    else rows.push({ name: rowName(node, 'value', 'Value'), value: numericFactText(data, 'Value') },
+      { name: rowName(node, 'lower', 'Lower'), value: numericFactText(data, 'Lower') }, { name: rowName(node, 'upper', 'Upper'), value: numericFactText(data, 'Upper') });
+    return rows.filter((row) => row.value !== undefined && row.value !== null);
   };
   const legendSummaryRows = (item) => {
     const data = item.dataset || {};
@@ -2034,6 +2050,7 @@
     return changed;
   };
   const resetViewport = (root) => {
+    suspendPointerReadout(root);
     applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
     clearBrush(root);
     applyMode(root, '');
@@ -2270,7 +2287,7 @@
     });
     branches.forEach((branch) => svg.appendChild(branch));
   };
-  const refreshKeyboardNavigation = (root, focused) => {
+  const refreshKeyboardNavigation = (root, focused, passive = false) => {
     refreshRootBranchHighlightAvailability(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
@@ -2299,7 +2316,12 @@
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
       // Local and synchronized state changes must not strand focus on a datum that just left the component.
       const replacement = state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
-      if (replacement) focusKeyboardTarget(root, replacement);
+      if (replacement) {
+        // Host paint changes recover a usable focus position without opening a new
+        // readout in the same update that dismisses the unavailable source or pin.
+        if (passive) { clearHover(root, true, true); hideTip(root, root.querySelector('.cfx-tooltip'), true); }
+        focusKeyboardTarget(root, replacement, passive);
+      }
     }
     return state;
   };
@@ -2334,7 +2356,7 @@
           window.removeEventListener('resize', queueRefresh);
           return;
         }
-        watchAncestry(); refreshKeyboardNavigation(root);
+        watchAncestry(); refreshKeyboardNavigation(root, undefined, true);
       });
     };
     listenChart(root, window, 'resize', queueRefresh);
@@ -2401,15 +2423,21 @@
     if (!preserveVisiblePortion && box.width <= viewport.width - 16 && box.height <= viewport.height - 16)
       node.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
   };
-  const focusKeyboardTarget = (root, node) => {
+  const focusKeyboardTarget = (root, node, passive = false) => {
     const focusNode = targetFocusNode(node);
-    scrollKeyboardTargetIntoView(root, focusNode);
-    if (focusNode.focus) {
-      try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
-    }
+    // Native links also recover focus when adapter keyboard navigation is disabled.
+    const recovering = root._cfxRecoveringFocus === true;
+    if (passive) root._cfxRecoveringFocus = true;
+    try {
+      scrollKeyboardTargetIntoView(root, focusNode);
+      if (focusNode.focus) {
+        try { focusNode.focus({ preventScroll: true }); } catch { focusNode.focus(); }
+      }
+    } finally { if (passive && !recovering) delete root._cfxRecoveringFocus; }
   };
   const focusAdjacentTarget = (root, node, key) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(key)) return false;
+    resumePointerReadout(root);
     const state = refreshKeyboardNavigation(root, node);
     if (!state) return false;
     const legend = state.legends.includes(node);
@@ -2435,7 +2463,12 @@
       const direction = key === 'ArrowLeft' || key === 'ArrowUp' ? -1 : 1;
       next = targets[clamp(current + direction, 0, targets.length - 1)];
     }
-    if (next === node) return true;
+    if (next === node) {
+      // An explicit boundary arrow still resumes the readout after passive recovery.
+      const tip = root.querySelector('.cfx-tooltip');
+      if (tip?.hidden && tooltipReadoutAvailable(node)) { setHover(root, node, true, true); showTip(root, tip, node); }
+      return true;
+    }
     refreshKeyboardNavigation(root, next);
     focusKeyboardTarget(root, next);
     const target = targetIdentity(next);
@@ -3284,13 +3317,13 @@
   const inferredPlotSurfaceRoles = new Set(['background', 'frame-card', 'frame-card-shadow', 'content-surface',
     'grid-x', 'grid-y', 'axis-x', 'axis-y', 'axis-secondary-y']);
   // Retain native summaries separately: an Exact line hit is not an inferred observation or crosshair.
-  const pointerCandidates = (root, event, searchNearest) => {
+  const pointerCandidates = (root, event, searchNearest, nativeTarget = event.target) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
     const styles = new Map();
-    let hit = pointLabelTarget(root, event.target) || (event.target instanceof Element ? event.target.closest(targetSelector) : null);
+    let hit = pointLabelTarget(root, nativeTarget) || (nativeTarget instanceof Element ? nativeTarget.closest(targetSelector) : null);
     // Native captions can repeat their owner's facts without becoming separate interactive targets.
     // Stop at the nearest independent identity before checking paint; unavailable marks never fall through.
     while (hit && root.contains(hit) && !isInteractiveTarget(hit)) {
@@ -3308,9 +3341,9 @@
     // Sparse-plot inference starts on the native stage surface, never on an unrelated host veil.
     // Explicit native targets and mapped captions retain their own acquisition contract.
     const svg = stage.querySelector('svg');
-    const plotSurface = event.target === stage || event.target === svg || event.target instanceof SVGElement
-      && svg?.contains(event.target) && !event.target.closest('foreignObject')
-      && (isPassiveTarget(event.target) || inferredPlotSurfaceRoles.has(event.target.dataset.cfxRole));
+    const plotSurface = nativeTarget === stage || nativeTarget === svg || nativeTarget instanceof SVGElement
+      && svg?.contains(nativeTarget) && !nativeTarget.closest('foreignObject')
+      && (isPassiveTarget(nativeTarget) || inferredPlotSurfaceRoles.has(nativeTarget.dataset.cfxRole));
     if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
@@ -3331,7 +3364,7 @@
   };
   const acquiredTooltipPoint = (root, candidates) => candidates && (tooltipAcquiresPoint(root, candidates.observation)
     ? candidates.observation : tooltipAcquiresPoint(root, candidates.native) ? candidates.native : null);
-  const showCrosshair = (root, crosshair, point, event) => {
+  const showCrosshair = (root, crosshair, point, event, nativeTarget = event.target) => {
     if (!crosshair || !point) return;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return;
@@ -3359,7 +3392,7 @@
       label.style.top = clamp(y - label.offsetHeight - 6, 0, Math.max(0, bounds.height - label.offsetHeight)) + 'px';
     }
     const target = targetIdentity(point.node);
-    const key = targetKey(target), mode = crosshairHoverMode(event, point.node);
+    const key = targetKey(target), mode = crosshairHoverMode(event, point.node, nativeTarget);
     // A native summary can stay unchanged while its independently inferred guide advances.
     const changed = root.dataset.cfxCrosshair !== key || root._cfxCrosshairMode !== mode;
     root.dataset.cfxCrosshair = key;
@@ -3371,20 +3404,21 @@
   };
   // A pointer resting on a mark of the nearest point's series emphasizes that series; anywhere else on the
   // plot the crosshair is a shared readout and no series recedes.
-  const crosshairHoverMode = (event, node) => {
-    const hit = event && event.target instanceof Element ? event.target.closest('[data-cfx-series]') : null;
+  const crosshairHoverMode = (event, node, nativeTarget = event && event.target) => {
+    const hit = nativeTarget instanceof Element ? nativeTarget.closest('[data-cfx-series]') : null;
     return hit && (hit.dataset || {}).cfxSeries === (node.dataset || {}).cfxSeries ? 'series' : 'shared';
   };
-  const updateNearestPoint = (root, crosshair, tip, event) => {
+  const updateNearestPoint = (root, crosshair, tip, event, nativeTarget = event.target) => {
+    if (event instanceof PointerEvent && pointerReadoutSuspended(root)) return;
     const guideEnabled = hasFeature(root, 'Crosshair');
     if (!guideEnabled && !hasFeature(root, 'Tooltips')) return;
-    if (event.target instanceof Element && event.target.closest('[data-cfx-role="legend-item"]')) {
+    if (nativeTarget instanceof Element && nativeTarget.closest('[data-cfx-role="legend-item"]')) {
       // Legend items own their hover summary; inferred observations must not replace it.
       hideCrosshair(root, crosshair);
       return;
     }
     const searchNearest = guideEnabled || root.dataset.cfxTooltipRange !== 'exact';
-    const candidates = pointerCandidates(root, event, searchNearest);
+    const candidates = pointerCandidates(root, event, searchNearest, nativeTarget);
     const observation = candidates && candidates.observation;
     // Nearest/bounded acquisition can refine a line summary to a real observation; Exact retains the summary.
     const tooltipPoint = acquiredTooltipPoint(root, candidates);
@@ -3398,10 +3432,10 @@
     const point = tooltipPoint || guidePoint;
     const key = targetKey(targetIdentity(point.node));
     const mode = hoverModeForTarget(root, point.node, point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
-      ? crosshairHoverMode(event, point.node) : 'series');
+      ? crosshairHoverMode(event, point.node, nativeTarget) : 'series');
     const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
     if (changed) setHover(root, point.node, true, true, mode);
-    if (guidePoint) showCrosshair(root, crosshair, guidePoint, event);
+    if (guidePoint) showCrosshair(root, crosshair, guidePoint, event, nativeTarget);
     else hideCrosshair(root, crosshair);
     // Recheck paint on each event: host CSS may change while the semantic target remains the same.
     if (tooltipPoint) showTip(root, tip, tooltipPoint.node, event);
@@ -3760,7 +3794,7 @@
       const labels = pointLabelSurfaces(root, node);
       [node, ...labels].forEach(surface => {
         listenChart(root, surface, 'pointerenter', (event) => {
-          if (!pointerTargetPaint(node)) return;
+          if (pointerReadoutSuspended(root) || !pointerTargetPaint(node)) return;
           if (!ownsTooltipPointer(root, event)) hideCrosshair(root, crosshair);
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
@@ -3786,7 +3820,8 @@
           const keyboardFocus = focusNode.matches(':focus-visible');
           if (hasFeature(root, 'KeyboardNavigation') && !pointerFocus && keyboardFocus) scrollKeyboardTargetIntoView(root, focusNode);
           pointerFocus = false;
-          if (!keyboardFocus) return;
+          if (!keyboardFocus || root._cfxRecoveringFocus) return;
+          resumePointerReadout(root);
           if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
@@ -3799,6 +3834,7 @@
       }
       const activateTarget = (event) => {
         event.stopPropagation();
+        if (event instanceof KeyboardEvent) resumePointerReadout(root);
         if (!tooltipReadoutAvailable(node, event)) return;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
           if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
@@ -3928,10 +3964,13 @@
         if (pointerFrame) cancelAnimationFrame(pointerFrame);
         pointerFrame = 0; pendingPointerMove = null;
       };
-      const applyPointerMove = event => {
+      // Tooltip cancellation owns queued hover work; an active gesture keeps its
+      // provisional movement and still commits its final sample on pointerup.
+      root._cfxCancelPointerHover = () => { if (!drag) cancelPointerMove(); };
+      const applyPointerMove = (event, nativeTarget = event.target) => {
         if (!drag || drag.id !== event.pointerId) {
           if (!ownsTooltipPointer(root, event)) return;
-          updateNearestPoint(root, crosshair, tip, event);
+          updateNearestPoint(root, crosshair, tip, event, nativeTarget);
           return;
         }
         if (drag.mode === 'native-pan') {
@@ -3957,9 +3996,11 @@
         if (drag && stage.hasPointerCapture(drag.id)) stage.releasePointerCapture(drag.id);
         drag = null;
         delete root._cfxCancelBrushDrag;
+        delete root._cfxCancelPointerHover;
       });
       listenChart(root, stage, 'pointerdown', (event) => {
         if (event.button !== 0) return;
+        resumePointerReadout(root);
         cancelPointerMove();
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           if (connectedXViewport(root)) {
@@ -3987,13 +4028,17 @@
         }
       });
       listenChart(root, stage, 'pointermove', (event) => {
+        resumePointerReadout(root);
         if (drag ? drag.id !== event.pointerId : !ownsTooltipPointer(root, event)) return;
-        pendingPointerMove = event;
+        // A shadow event is retargeted as dispatch leaves the chart. Capture its
+        // native surface now, while retaining the PointerEvent for timing and ownership.
+        const nativeTarget = event.composedPath().find(node => node instanceof Element && stage.contains(node)) || event.target;
+        pendingPointerMove = { event, nativeTarget };
         if (pointerFrame) return;
         pointerFrame = requestAnimationFrame(() => {
           pointerFrame = 0;
           const pending = pendingPointerMove; pendingPointerMove = null;
-          if (pending && root.isConnected && chartLifetimes.get(root)?.disposed === false) applyPointerMove(pending);
+          if (pending && root.isConnected && chartLifetimes.get(root)?.disposed === false) applyPointerMove(pending.event, pending.nativeTarget);
         });
       });
       listenChart(root, stage, 'pointerup', (event) => {
@@ -4164,7 +4209,7 @@
     applyViewport(root, nativeCommit ? { zoom: 1, panX: 0, panY: 0 } : state.viewport);
     renderCompare(root); refreshKeyboardNavigation(root); syncResetControl(root);
     const focused = state.focused && interactiveTargets(root).find(node => seriesKey(node) === state.focused.seriesKey && matchesTargetIdentity(node, state.focused));
-    if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused);
+    if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused, pointerReadoutSuspended(root));
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
     // Focus recovery must not resurrect a pinned or stale readout from the previous scene.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
@@ -4210,6 +4255,7 @@
     // Validate every alternate before releasing the working scene, preserving atomic host updates.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
     const state = chartUpdateState(root, !!adaptiveDrawing);
+    const suspended = nativeKind === 'reset' || !!adaptiveDrawing && pointerReadoutSuspended(root);
     // Keep the request current through validation so a rejected alternate reports its failure.
     if (nativeKind) lifetime.xViewportPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
@@ -4220,6 +4266,8 @@
     lifetime.adaptive = adaptive;
     if (adaptiveDrawing) adaptive.current = adaptiveDrawing;
     chartLifetimes.set(root, lifetime); mountedCharts.add(root);
+    // Same-source redraws retain explicit reset dismissal before any fresh scene can acquire input.
+    if (suspended) suspendPointerReadout(root);
     prepareAdaptiveRoot(root, lifetime);
     bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind);
     bindAdaptiveLayout(root);
@@ -4229,6 +4277,7 @@
     const lifetime = chartLifetimes.get(root), connection = lifetime?.xViewportConnection;
     if (!connection || lifetime.disposed || !root.isConnected || !chartXProjection(root)) return;
     if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return;
+    if (kind === 'reset') suspendPointerReadout(root);
     cancelXViewportRequest(lifetime);
     const request = Object.freeze({ chartId: root.dataset.cfxChartId, requestId: 'cfx-request-' + (++chartViewportRequestSequence),
       sceneRevision: lifetime.sceneRevision, kind, ...(lifetime.adaptive ? { drawing: lifetime.adaptive.current } : {}),

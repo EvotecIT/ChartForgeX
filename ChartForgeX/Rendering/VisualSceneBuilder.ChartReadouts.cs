@@ -6,10 +6,12 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 internal sealed partial class VisualSceneBuilder {
+    private static readonly string[] ValueReadoutMembers = { "lower", "upper", "first", "second" };
+
     // Capture display text while the renderer's final axis formatter/cache is available.
     // Exporters and browser hosts never re-run user callbacks or guess a culture/date format.
     internal void CaptureChartReadouts(Chart chart, Func<ChartSeries, double, string> category,
-        Func<ChartSeries, double, string?, string> value) {
+        Func<ChartSeries, double, string?, string> value, Func<ChartSeries, double, string>? displayCategory = null) {
         for (var index = 0; index < _nodes.Count; index++) {
             if (_nodes[index] is not VisualSceneGroup group || !group.Metadata.ContainsKey("data-cfx-point")
                 || !group.Metadata.TryGetValue("data-cfx-series", out var ordinal)
@@ -28,10 +30,15 @@ internal sealed partial class VisualSceneBuilder {
             if (Number("data-cfx-x", out var x)) {
                 var formatted = category(series, x);
                 metadata["data-cfx-formatted-x"] = formatted;
-                metadata["data-cfx-display-label"] = metadata.TryGetValue("data-cfx-category-label", out var label) ? label : formatted;
+                metadata["data-cfx-display-label"] = metadata.TryGetValue("data-cfx-category-label", out var label) ? label
+                    : displayCategory?.Invoke(series, x) ?? formatted;
             }
             var valueKey = series.Kind == ChartSeriesKind.BoxPlot ? "data-cfx-median" : metadata.ContainsKey("data-cfx-value") ? "data-cfx-value" : "data-cfx-y";
             if (Number(valueKey, out var y)) metadata["data-cfx-formatted-value"] = Value(valueKey, y);
+            foreach (var member in ValueReadoutMembers) {
+                var key = "data-cfx-" + member;
+                if (Number(key, out var number)) metadata["data-cfx-formatted-" + member] = Value(key, number);
+            }
             // Bin display uses the actual upper boundary; its closed logic endpoint remains exact.
             var lowerKey = series.HistogramBinLayout != null ? "data-cfx-bin-lower" : "data-cfx-start";
             var upperKey = series.HistogramBinLayout != null ? "data-cfx-bin-upper" : "data-cfx-end";

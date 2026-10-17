@@ -64,17 +64,17 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
         }
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.colorSelection = event.detail.target)");
         await MoveToAsync(page, Point(0, 0));
-        await AssertRowAsync("Temperature (°C)", "-12"); await AssertRowAsync("Y", "18");
+        await AssertRowAsync("Temperature (°C)", "-12"); await AssertRowAsync("Y", kind == ChartSeriesKind.Scatter ? "18.0 kWh" : "18");
         if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Volume (m³)", "9");
         await CaptureAsync("negative-pointer");
         await MoveAwayAsync(page); await page.Locator(Point(0, 1)).FocusAsync();
-        await AssertRowAsync("Temperature (°C)", "0"); await AssertRowAsync("Y", "30");
+        await AssertRowAsync("Temperature (°C)", "0"); await AssertRowAsync("Y", "30.0 kWh");
         if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Volume (m³)", "36");
         await CaptureAsync("zero-focus");
         await page.Keyboard.PressAsync("ArrowRight");
         var missing = page.Locator(Point(0, 2));
         Assert.True(await missing.EvaluateAsync<bool>("node => node === document.activeElement"));
-        await AssertRowAsync("Temperature (°C)", "Not sampled"); await AssertRowAsync("Y", "24");
+        await AssertRowAsync("Temperature (°C)", "Not sampled"); await AssertRowAsync("Y", kind == ChartSeriesKind.Scatter ? "24.0 kWh" : "24");
         if (kind == ChartSeriesKind.Bubble) await AssertRowAsync("Volume (m³)", "81");
         Assert.Null(await missing.GetAttributeAsync("data-cfx-color-value"));
         await page.Keyboard.PressAsync("Space");

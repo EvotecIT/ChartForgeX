@@ -67,8 +67,10 @@ internal static partial class VisualCartesianCompiler {
         string Format(string member, double value) {
             var caption = Value(chart, value);
             // Equal tuple values may have distinct authored callback results.
-            // Retain each native invocation by its member without memoizing it.
-            (numericCaptions ??= new Dictionary<string, string>())[member] = caption;
+            // Retain authored native invocations by member without memoizing them;
+            // automatic mark captions do not set observation-row precision.
+            if (chart.Options.ValueFormatter != null)
+                (numericCaptions ??= new Dictionary<string, string>())[member] = caption;
             return caption;
         }
         var text = observation < series.PointLabels.Count && series.PointLabels[observation] != null ? series.PointLabels[observation]! : fallback(Format);

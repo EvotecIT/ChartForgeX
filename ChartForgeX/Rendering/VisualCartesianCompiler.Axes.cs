@@ -58,8 +58,16 @@ internal static partial class VisualCartesianCompiler {
         // Readouts reuse painted axis captions, but must not materialize a data-label fallback
         // for an unpainted tick or an observation whose authored caption kept that callback lazy.
         internal string FormatReadout(ChartAxis axis, double value, IReadOnlyList<double> ticks, string? numericCaption = null) {
-            if (numericCaption != null && axis.LabelFormatter == null && axis.Scale != ChartScaleKind.Time
-                && ChartAxisValueFormatter.FindExplicitLabel(axis.Labels, value) == null) return numericCaption;
+            var authoredAxis = axis.LabelFormatter != null || axis.Scale == ChartScaleKind.Time
+                || ChartAxisValueFormatter.FindExplicitLabel(axis.Labels, value) != null;
+            if (!authoredAxis && numericCaption != null) return numericCaption;
+            // Automatic axis captions may round a coordinate for a heading. Observation
+            // rows retain the full number unless an authored formatter already supplied it.
+            if (!authoredAxis && (!_formattedValues.TryGetValue(axis, out var values) || !values.Contains(value)))
+                return ChartNumericFormatter.FormatCoordinate(value).ToLowerInvariant();
+            return FormatDisplay(axis, value, ticks);
+        }
+        internal string FormatDisplay(ChartAxis axis, double value, IReadOnlyList<double> ticks) {
             RefreshFormatter(axis, ticks);
             if (!_readoutFormatters.TryGetValue(axis, out var formatter))
                 _readoutFormatters.Add(axis, formatter = ChartAxisValueFormatter.Create(axis, ticks));
