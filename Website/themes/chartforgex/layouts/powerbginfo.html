@@ -400,7 +400,7 @@
             if i.wide; img_sizes = "(max-width: 1280px) 105vw, 1240px"; end ~}}
         <li class="cfx-pbg-widget{{ if i.wide }} cfx-pbg-widget--wide{{ end }}" style="--key: var(--cfx-s{{ (for.index % 6) + 1 }})">
           <div class="cfx-pbg-widget__head">
-            <h4><span class="cfx-key" aria-hidden="true"></span>{{ i.title }}</h4>
+            <h4><span class="cfx-key{{ if for.index >= 6 }} cfx-key--hollow{{ end }}" aria-hidden="true"></span>{{ i.title }}</h4>
             <p>{{ i.body }}</p>
           </div>
           <div class="cfx-pbg-crop" style="--x: {{ c.x }}; --y: {{ c.y }}; --w: {{ c.w }}; --h: {{ c.h }}">
