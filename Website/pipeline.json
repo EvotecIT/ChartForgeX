@@ -47,7 +47,10 @@
         "build-apidocs",
         "build-powershell-commands",
         "sitemap",
-        "playground-engine-overlay"
+        "playground-engine-overlay",
+        "seo-doctor-ci",
+        "verify-ci",
+        "audit-ci"
       ],
       "modes": ["ci"],
       "siteRoot": "./_site",
@@ -56,6 +59,61 @@
       "minifyHtml": true,
       "minifyCss": true,
       "minifyJs": true
+    },
+    {
+      "task": "seo-doctor",
+      "id": "seo-doctor-optimized-ci",
+      "dependsOn": "optimize-site",
+      "modes": ["ci"],
+      "siteRoot": "./_site",
+      "baseline": "./.powerforge/seo-baseline.json",
+      "failOnNewIssues": true,
+      "checkContentLeaks": true,
+      "requireCanonical": true,
+      "requireHreflang": false,
+      "requireHreflangXDefault": false,
+      "reportPath": "./_reports/seo-doctor-optimized.json",
+      "summaryPath": "./_reports/seo-doctor-optimized.md",
+      "exclude": "examples/generated/**,site/**,playground/engine/**,powershell/examples/**"
+    },
+    {
+      "task": "verify",
+      "id": "verify-optimized-ci",
+      "dependsOn": "optimize-site",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "modes": ["ci"],
+      "baseline": "./.powerforge/verify-baseline.json",
+      "failOnNewWarnings": true,
+      "failOnNavLint": true,
+      "failOnThemeContract": true,
+      "warningPreviewCount": 10,
+      "errorPreviewCount": 10
+    },
+    {
+      "task": "audit",
+      "id": "audit-optimized-ci",
+      "dependsOn": "optimize-site",
+      "siteRoot": "./_site",
+      "modes": ["ci"],
+      "summary": true,
+      "sarif": true,
+      "baseline": "./.powerforge/audit-baseline.json",
+      "failOnNewIssues": true,
+      "requiredRoutes": "/404.html,/",
+      "requireExplicitChecks": true,
+      "checkSeoMeta": false,
+      "checkNetworkHints": true,
+      "checkRenderBlockingResources": true,
+      "checkHeadingOrder": true,
+      "checkLinkPurposeConsistency": true,
+      "checkMediaEmbeds": true,
+      "checkAgentContentSecurity": false,
+      "rendered": false,
+      "renderedMaxPages": 2,
+      "renderedEnsureInstalled": true,
+      "renderedInclude": "index.html,404.html",
+      "exclude": "examples/generated/**,site/**,playground/engine/**,powershell/examples/**"
     }
   ]
 }

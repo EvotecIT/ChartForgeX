@@ -149,6 +149,12 @@ Set-Location -LiteralPath '$($outputDirectory.Replace("'", "''"))'
             height = $size[1]
         }
     }
+    $outputNames = @($outputs | ForEach-Object { $_.file })
+    foreach ($showFile in @($example.show)) {
+        if ($showFile -and $showFile -notin $outputNames) {
+            throw "Example '$($example.id)' requested preview '$showFile', but the renderer did not produce it."
+        }
+    }
     $lines = ($console -replace "`r", '') -split "`n" | ForEach-Object { $_.TrimEnd() }
     $text = (($lines -join "`n") -replace "^\n+", '' -replace "\n{3,}", "`n`n").TrimEnd()
 
