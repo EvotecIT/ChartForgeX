@@ -13,7 +13,7 @@ function readouts() {
     node => Number(node.dataset.cfxPoint), () => undefined, root => root.nodes, node => node.dataset.cfxXScale === 'time');
 }
 function mark(dataset, range) {
-  return {dataset, range, getAttribute: () => null, classList: {contains: name => name === 'cfx-selected'}};
+  return {dataset, range, attributes: [], getAttribute: () => null, classList: {contains: name => name === 'cfx-selected'}};
 }
 test('target readouts publish captured bin labels and retain exact closed logic endpoints', () => {
   const runtime = readouts();
@@ -31,9 +31,24 @@ test('time and numeric tooltip titles use captured axis text while compare chips
   const scatter = mark({cfxPoint:'1',cfxSeriesName:'Samples',cfxKind:'scatter',cfxX:'4.242394913100822',cfxY:'8.8888888888889',
     cfxDisplayLabel:'4,2',cfxFormattedX:'4,2'});
   assert.equal(runtime.text(time, true), '2026-03-05'); assert.equal(runtime.text(scatter, true), '4,2');
-  assert.deepEqual(runtime.compareItems({nodes:[time,scatter]}).map(item => item.label), ['2026-03-05','Samples']);
+  assert.deepEqual(runtime.compareItems({nodes:[time,scatter]}).map(item => item.label), ['Requests · 2026-03-05','Samples']);
   time.dataset.cfxAuthoredLabel = '';
   assert.equal(runtime.text(time, true), ''); assert.equal(runtime.compareItems({nodes:[time]})[0].label, '');
+});
+test('compare chips distinguish equal dates across series', () => {
+  const runtime = readouts();
+  const api = mark({cfxPoint:'0',cfxSeries:'0',cfxSeriesName:'API',cfxKind:'line',cfxXScale:'time',cfxDisplayLabel:'2026-03-04'});
+  const worker = mark({cfxPoint:'0',cfxSeries:'1',cfxSeriesName:'Worker',cfxKind:'line',cfxXScale:'time',cfxDisplayLabel:'2026-03-04'});
+  assert.deepEqual(runtime.compareItems({nodes:[api,worker]}).map(item => item.label), ['API · 2026-03-04','Worker · 2026-03-04']);
+});
+test('scatter tooltip and selection use captured display values while numericValue remains exact', () => {
+  const runtime = readouts(), value = 2.6130852767327268;
+  const scatter = mark({cfxPoint:'0',cfxSeriesName:'Samples',cfxKind:'scatter',cfxX:'66.09458950219',cfxY:String(value),
+    cfxFormattedX:'66.09',cfxFormattedValue:'2.61',cfxDisplayLabel:'66.09'});
+  assert.deepEqual(runtime.tooltipRows(scatter).map(row=>row.value), ['Samples','66.09','2.61']);
+  assert.equal(runtime.targetIdentity(scatter).value, '2.61');
+  assert.equal(runtime.targetIdentity(scatter).numericValue, value);
+  assert.equal(scatter.dataset.cfxY, String(value));
 });
 test('box plot targets expose their median and state timeline targets expose their named state', () => {
   const runtime = readouts();
@@ -62,7 +77,7 @@ function brushes() {
     constructor(x,y) { this.x=x;this.y=y; }
     matrixTransform() { return this; }
   }
-  return new Function('DOMPoint','dataValue','clamp', source('43-brush-projection') + '\nreturn {brushDataSelection,validDataProjection};')(
+  return new Function('DOMPoint','dataValue','clamp', source('43-brush-projection') + '\nreturn {projectBrushSelection,validDataProjection};')(
     Point, (value,time) => time ? new Date((value-25569)*86400000).toISOString() : value,
     (value,min,max) => Math.max(min,Math.min(max,value)));
 }
@@ -70,14 +85,14 @@ const axis = (minimum,maximum,scale,displayTicks) => ({minimum,maximum,transform
   scale,threshold:1,reversed:false,displayTicks});
 const root = projection => ({_cfxDataProjection:projection,dataset:{cfxBrushAxis:'x',cfxPreparedChart:'{"xLabels":[]}'},
   querySelector:()=>({getScreenCTM:()=>({a:1,d:1,is2D:true,inverse:()=>({})})})});
-test('brush labels snap only display bounds to prepared axis ticks and keep interpolated raw ranges', () => {
+test('brush labels and filtering bounds use the same enclosing prepared axis ticks', () => {
   const runtime = brushes(), minimum = 46266;
   const projection = {horizontal:false,plotBounds:{x:0,y:0,width:100,height:100},x:axis(minimum,minimum+10,'time',
     [0,2,4,6,8,10].map(value => ({value:minimum+value,text:'Date '+value})))};
-  const result = runtime.brushDataSelection(root(projection),{left:21,top:0,right:83,bottom:100});
-  assert.equal(result.rangeLabel,'Date 2 – Date 8'); assert.equal(result.label,result.rangeLabel);
-  assert.deepEqual(result.displayRange.x,[new Date((minimum+2-25569)*86400000).toISOString(),new Date((minimum+8-25569)*86400000).toISOString()]);
-  assert.notDeepEqual(result.range.x,result.displayRange.x); assert.deepEqual(result.categoryRange,result.range.x);
+  const result = runtime.projectBrushSelection(root(projection),{left:21,top:0,right:83,bottom:100}).data;
+  assert.equal(result.rangeLabel,'Date 2 – Date 10'); assert.equal(result.label,result.rangeLabel);
+  assert.deepEqual(result.displayRange.x,[new Date((minimum+2-25569)*86400000).toISOString(),new Date((minimum+10-25569)*86400000).toISOString()]);
+  assert.deepEqual(result.range.x,result.displayRange.x); assert.deepEqual(result.categoryRange,result.range.x);
 });
 test('horizontal brush display uses the category axis and accepts deliberately empty captured captions', () => {
   const runtime = brushes();
@@ -85,11 +100,11 @@ test('horizontal brush display uses the category axis and accepts deliberately e
     x:axis(0,100,'linear',[{value:0,text:'0 unités'},{value:100,text:'100 unités'}]),
     y:axis(0,10,'linear',[{value:0,text:''},{value:10,text:'End'}])};
   const host = root(projection); host.dataset.cfxBrushAxis = 'xy';
-  const result = runtime.brushDataSelection(host,{left:5,top:0,right:95,bottom:100});
+  const result = runtime.projectBrushSelection(host,{left:5,top:0,right:95,bottom:100}).data;
   assert.equal(result.rangeLabel,' – End'); assert.deepEqual(result.categoryRange,[0,10]);
   assert.equal(runtime.validDataProjection(projection),true);
   projection.y.displayTicks[1].text = '';
-  assert.equal(runtime.brushDataSelection(host,{left:5,top:0,right:95,bottom:100}).rangeLabel,'');
+  assert.equal(runtime.projectBrushSelection(host,{left:5,top:0,right:95,bottom:100}).data.rangeLabel,'');
   projection.y.displayTicks[0].text = null;
   assert.equal(runtime.validDataProjection(projection),false);
 });

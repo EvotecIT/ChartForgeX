@@ -89,14 +89,15 @@
       const activateTarget = (event) => {
         event.stopPropagation();
         if (event instanceof KeyboardEvent) resumePointerReadout(root);
-        if (!tooltipReadoutAvailable(node, event)) return;
-        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
-          if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
-          else toggleSeries(root, node);
+        const activated = pointerActivationTarget(root, node, event);
+        if (!tooltipReadoutAvailable(activated, event)) return;
+        if ((activated.dataset ? activated.dataset.cfxRole : '') === 'legend-item') {
+          if (event.shiftKey) toggleSeriesFocus(root, activated, true, true);
+          else toggleSeries(root, activated);
         }
         else {
-          toggleSelection(root, node, event);
-          pinTip(root, tip, node, event);
+          toggleSelection(root, activated, event);
+          pinTip(root, tip, activated, event);
         }
       };
       listenChart(root, focusNode, 'click', activateTarget);
@@ -303,12 +304,12 @@
           const plot = chartXProjection(root)?.plotBounds;
           if (plot && Math.abs(drag.delta) > 0.5) requestXViewport(root, 'pan', plot.x - drag.delta, plot.x + plot.width - drag.delta);
         } else if (drag.mode === 'brush' && brush) {
+          const dataRange = finishBrushSelection(root, stage, brush);
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           syncResetControl(root);
           const previousTargets = selectedTargets(root), previousSelection = previousTargets.map(targetKey).join('\n');
-          const boxTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
+          const boxTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey, dataRange);
           const replaceSelection = !event.shiftKey;
-          const dataRange = brushDataSelection(root, brush.getBoundingClientRect());
           emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush, ...dataRange });
           if (boxTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: boxTargets.length, targets: boxTargets, ...dataRange });
           if (previousSelection !== selectionSignature(root)) publishSelectionChange(root, 'lasso');

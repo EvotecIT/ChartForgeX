@@ -111,6 +111,13 @@ public sealed partial class HtmlInteractiveChartRenderer {
             json.Append("{\"value\":").Append(tick.Value.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"text\":").Append(HtmlJsonString.Encode(tick.Text)).Append('}');
         }
+        json.Append("],\"displayBounds\":[");
+        for (var index = 0; index < axis.DisplayBounds.Count; index++) {
+            if (index > 0) json.Append(',');
+            var bound = axis.DisplayBounds[index];
+            json.Append("{\"value\":").Append(bound.Value.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"text\":").Append(HtmlJsonString.Encode(bound.Text)).Append('}');
+        }
         json.Append("]}");
     }
 }

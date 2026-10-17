@@ -279,6 +279,7 @@ are present when the source supports them:
 | `category` | The authored category or x-axis label. |
 | `x` | The numeric x value, or an ISO date with a time zone. |
 | `numericValue` | The numeric value, separately from its formatted text. |
+| `value` | The prepared display value, or the named state for a state-timeline run. Use `numericValue` for numeric comparisons. |
 | `label` | Reader-facing text captured from the authored label, category or axis formatter. |
 | `rangeLabel` | Reader-facing bounds for a bin, bucket or duration, using the prepared axis formatter. |
 | `observationIds` | Authored contributor IDs of an aggregate, in source-point order. |
@@ -298,7 +299,7 @@ Range matching preserves fractional seconds beyond milliseconds, including equiv
 Use `label` and `rangeLabel` for chips and captions. For example, a histogram's
 display label can read `40 – 60` while its exact inclusive filter endpoint is
 `59.99999999999999`. BoxPlot targets report the median as `numericValue` and
-`value`. State-timeline targets report the named state as `value`; their time
+`value` (formatted for display). State-timeline targets report the named state as `value`; their time
 bounds remain in `range`.
 On a legacy numeric time domain, the inclusive end is the representable number immediately toward the start from the boundary.
 Negative OLE date buckets must stay within one UTC day and cannot use the epoch-day aliases between -1 and 0.
@@ -400,18 +401,25 @@ do not acquire a numeric Y range. This projection contract
 does not expand the separate connected native X-window capabilities.
 
 For readable range chips, both events also provide `label`, `rangeLabel` and
-`displayRange` when the prepared axes have captions. Display bounds snap to the
-nearest prepared axis ticks in screen space and retain those ticks' exact formatter output,
-including culture and deliberately empty captions. Raw `range` and
-`categoryRange` remain the precise filtering bounds. A snapped caption can change
-with the available ticks and should be presented as an approximate summary.
-Keep exact bounds available in accessible details, and use them for filtering:
+`displayRange` when the prepared axes have captions. Numeric and time brushes
+expand outward to prepared ticks or the plot boundaries. The visible brush,
+selected observations, `range` and `displayRange` use that committed interval,
+so a caption describes the same bounds used for filtering. This makes brushing
+tick-aligned; a coarser axis gives a coarser brush interval. Captions retain the
+native formatter's output, including display-zone dates and deliberately empty
+captions. Category brushes retain the dragged interval and report the actual
+included `categories`; their caption lists those names rather than neighbouring
+axis ticks. Use categories for a category filter and `categoryRange` for a
+numeric or time filter. Keep the exact bounds available in accessible details:
 
 ```js
 chartRoot.addEventListener('cfxbrush', ({ detail }) => {
-  filterRows(detail.categoryRange);
-  rangeChip.textContent = detail.rangeLabel ? `≈ ${detail.rangeLabel}` : '';
-  rangeChip.title = `Exact range: ${detail.categoryRange.join(' – ')}`;
+  if (detail.categories) filterCategories(detail.categories);
+  else filterRows(detail.categoryRange);
+  rangeChip.textContent = detail.rangeLabel ?? '';
+  rangeChip.title = detail.categories
+    ? detail.categories.join(', ')
+    : `Range: ${detail.categoryRange.join(' – ')}`;
   rangeChip.setAttribute('aria-label', rangeChip.title);
 });
 ```

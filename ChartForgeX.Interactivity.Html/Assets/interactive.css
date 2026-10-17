@@ -73,8 +73,8 @@ body {
 /* Readable sizing follows the chart's host, including narrow columns in a wide window. */
 .cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage {
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-inline: contain;
-  scrollbar-gutter: stable;
   touch-action: auto;
 }
 

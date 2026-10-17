@@ -73,6 +73,9 @@ Measured compact layouts select readable Cartesian and schedule ticks before pai
 - [ ] Extend the existing color-scale owner with arbitrary interior captions and independent Chord quantitative color where required. Preserve raw color facts, missing-value behavior, identity, and independent Bubble size.
 - [ ] Add deliberate Sankey tiny-flow and hierarchy fitting policies only when actual compact data requires them. Preserve proportional weights, conservation, authored parent totals, source identity, and readable captions.
 - [ ] Improve Sunburst inner-ring names with arc placement or wrapping before omission; anchor multi-day calendar steps to a fixed phase across linked windows; align map Less/More captions with the ramp endpoints.
+- [ ] Prefer calendar-friendly steps on narrow date axes and retain the final data-day caption when it fits without disturbing regular tick spacing. Qualify ranges that currently choose 6-, 8-, or 10-day intervals.
+- [ ] Improve tight caption gaps below 400 pixels wide, including compact Gantt layouts, while keeping complete captions anchored to their ticks in SVG and native PNG.
+- [ ] Qualify TileMap codes at the ordinary 10-pixel floor in compact and dense layouts, preserving explicit font choices and complete source facts when codes are omitted.
 - [ ] Keep chart look choices in shared geometry/paint/label/theme owners. Palette changes must not select different renderer implementations. Preserve explicit effect styles and qualify small-label contrast, theme switching, and mixed-grid export density.
 - [ ] Review complete report examples with chart grids and factual blocks, including host/embed frames and print. Keep page shells, collection, filters, and inspectors in consuming products; keep reusable block/composition behavior in Visuals and motion in Stories.
 

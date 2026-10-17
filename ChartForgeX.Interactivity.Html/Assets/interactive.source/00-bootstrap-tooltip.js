@@ -47,7 +47,7 @@
       sourcePoints: sourcePointCollection(node),
       legendTargetKind: data.cfxLegendTargetKind,
       legendTargetId: data.cfxLegendTargetId,
-      value: state ? data.cfxStateLabel ?? data.cfxLabel ?? '' : rawValue ?? '',
+      value: state ? data.cfxStateLabel ?? data.cfxLabel ?? '' : capturedText(data, 'cfxFormattedValue', rawValue ?? ''),
       kind: data.cfxKind || ''
     };
   };
@@ -241,8 +241,10 @@
       if (!key || seen.has(key)) return;
       seen.add(key);
       const data = node.dataset || {};
-      const label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
+      let label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
         ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
+      const series = seriesLabel(node);
+      if (timeTarget(node) && label && series && label !== series) label = series + ' · ' + label;
       items.push({ label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target });
     });
     return items;

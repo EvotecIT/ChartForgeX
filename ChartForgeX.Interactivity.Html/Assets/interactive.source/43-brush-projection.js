@@ -4,6 +4,8 @@
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
       && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
+        tick && Number.isFinite(tick.value) && typeof tick.text === 'string'))
+      && (value.displayBounds === undefined || Array.isArray(value.displayBounds) && value.displayBounds.every(tick =>
         tick && Number.isFinite(tick.value) && typeof tick.text === 'string'));
     return !!plot && [plot.x, plot.y, plot.width, plot.height].every(Number.isFinite) && plot.width > 0 && plot.height > 0
       && typeof projection.horizontal === 'boolean' && axis(projection.x) && (projection.y === undefined || axis(projection.y));
@@ -26,49 +28,78 @@
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
     const raw = axis.scale === 'logarithmic' ? Math.pow(10, value)
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
-    return raw;
+    return clamp(raw, axis.minimum, axis.maximum);
   };
   const transformedAxisValue = (axis, value) => axis.scale === 'logarithmic' ? Math.log10(value)
     : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * Math.log10(1 + Math.abs(value) / axis.threshold) : value;
-  const brushDataSelection = (root, rect) => {
+  const enclosingAxisTicks = (axis, values) => {
+    const ticks = [...(axis.displayTicks || []), ...(axis.displayBounds || [])]
+      .filter(tick => tick.value >= axis.minimum && tick.value <= axis.maximum);
+    const lower = ticks.filter(tick => tick.value <= values[0]).sort((a, b) => b.value - a.value)[0];
+    const upper = ticks.filter(tick => tick.value >= values[1]).sort((a, b) => a.value - b.value)[0];
+    return lower && upper ? [lower, upper] : undefined;
+  };
+  const projectedAxisRatio = (axis, value) => {
+    const transformed = transformedAxisValue(axis, value), span = axis.transformedMaximum - axis.transformedMinimum;
+    const ratio = Number.isFinite(span) ? (transformed - axis.transformedMinimum) / span
+      : (transformed / 2 - axis.transformedMinimum / 2) / (axis.transformedMaximum / 2 - axis.transformedMinimum / 2);
+    return axis.reversed ? 1 - ratio : ratio;
+  };
+  const projectBrushSelection = (root, rect) => {
     const projection = root._cfxDataProjection, svg = root.querySelector('.cfx-stage svg');
     const matrix = svg?.getScreenCTM();
-    if (!projection || !matrix || matrix.is2D === false || !matrix.a || !matrix.d) return {};
+    if (!projection || !matrix || matrix.is2D === false || !matrix.a || !matrix.d) return { data: {} };
     let inverse;
-    try { inverse = matrix.inverse(); } catch { return {}; }
+    try { inverse = matrix.inverse(); } catch { return { data: {} }; }
     const points = [new DOMPoint(rect.left, rect.top), new DOMPoint(rect.right, rect.bottom)].map(point => point.matrixTransform(inverse));
-    if (!points.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) return {};
+    if (!points.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) return { data: {} };
     const plot = projection.plotBounds;
     const x = points.map(point => clamp((point.x - plot.x) / plot.width, 0, 1));
     const y = points.map(point => clamp(1 - (point.y - plot.y) / plot.height, 0, 1));
-    const orderedValues = (axis, ratios) => ratios.map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => left - right);
-    const ordered = (axis, ratios) => {
-      const values = orderedValues(axis, ratios);
-      return values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
-    };
-    const range = { x: ordered(projection.x, x) };
-    if (root.dataset.cfxBrushAxis !== 'x' && projection.y) range.y = ordered(projection.y, y);
-    const categoryRange = projection.horizontal ? range.y : range.x;
-    const data = categoryRange ? { range, categoryRange } : { range };
-    const displayAxis = (axis, ratios) => {
-      if (!axis?.displayTicks?.length) return undefined;
-      const raw = orderedValues(axis, ratios);
-      const ticks = raw.map(value => {
-        const position = transformedAxisValue(axis, value);
-        return axis.displayTicks.reduce((nearest, tick) =>
-          Math.abs(transformedAxisValue(axis, tick.value) - position) < Math.abs(transformedAxisValue(axis, nearest.value) - position) ? tick : nearest);
-      });
-      return { range: ticks.map(tick => dataValue(tick.value, axis.scale === 'time' && axis.minimum >= 0)),
-        label: ticks.every(tick => tick.text === '') ? '' : ticks.map(tick => tick.text).join(' – ') };
-    };
-    const displayX = displayAxis(projection.x, x), displayY = range.y && displayAxis(projection.y, y);
-    if (displayX || displayY) {
-      data.displayRange = { ...(displayX ? { x: displayX.range } : {}), ...(displayY ? { y: displayY.range } : {}) };
-      const categoryDisplay = projection.horizontal ? displayY || displayX : displayX;
-      if (categoryDisplay) data.label = data.rangeLabel = categoryDisplay.label;
-    }
     let metadata;
-    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return data; }
-    const categories = categoryRange && (metadata.xLabels || []).filter(item => item.value >= categoryRange[0] && item.value <= categoryRange[1]).map(item => item.text);
-    return categories?.length ? { ...data, categories } : data;
+    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { metadata = {}; }
+    const categoryDirection = projection.horizontal ? 'y' : 'x';
+    const categoryAxis = projection[categoryDirection];
+    const categoryLabels = categoryAxis?.scale === 'linear' && metadata.xLabels?.length ? metadata.xLabels : undefined;
+    const selectedAxes = [['x', projection.x, x], ...(root.dataset.cfxBrushAxis !== 'x' && projection.y ? [['y', projection.y, y]] : [])];
+    const range = {}, displayRange = {}, ratios = { x, y }, captions = {};
+    for (const [direction, axis, endpoints] of selectedAxes) {
+      const raw = endpoints.map(ratio => projectedAxisValue(axis, ratio)).sort((a, b) => a - b);
+      const ticks = direction === categoryDirection && categoryLabels ? undefined : enclosingAxisTicks(axis, raw);
+      const values = ticks ? ticks.map(tick => tick.value) : raw;
+      range[direction] = values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
+      if (ticks) {
+        displayRange[direction] = range[direction];
+        captions[direction] = ticks.every(tick => tick.text === '') ? ''
+          : ticks[0].value === ticks[1].value ? ticks[0].text : ticks.map(tick => tick.text).join(' – ');
+        ratios[direction] = values.map(value => projectedAxisRatio(axis, value));
+      }
+    }
+    const categoryRange = range[categoryDirection];
+    const data = categoryRange ? { range, categoryRange } : { range };
+    if (categoryLabels && categoryRange) {
+      const included = categoryLabels.filter(item => item.value >= categoryRange[0] && item.value <= categoryRange[1]).sort((a, b) => a.value - b.value);
+      data.categories = included.map(item => item.text);
+      captions[categoryDirection] = data.categories.join(', ');
+      if (included.length) displayRange[categoryDirection] = [included[0].value, included[included.length - 1].value];
+    }
+    if (Object.keys(displayRange).length) data.displayRange = displayRange;
+    const caption = captions[categoryDirection] ?? captions.x;
+    if (caption !== undefined) data.label = data.rangeLabel = caption;
+    const xs = ratios.x.map(ratio => plot.x + ratio * plot.width);
+    const ys = ratios.y.map(ratio => plot.y + (1 - ratio) * plot.height);
+    const bounds = [new DOMPoint(Math.min(...xs), Math.min(...ys)), new DOMPoint(Math.max(...xs), Math.max(...ys))]
+      .map(point => point.matrixTransform(matrix));
+    return { data, bounds };
+  };
+  const finishBrushSelection = (root, stage, brush) => {
+    const selection = projectBrushSelection(root, brush.getBoundingClientRect());
+    if (selection.bounds) {
+      const corners = selection.bounds.map(point => stagePoint(stage, point));
+      brush.style.left = Math.min(...corners.map(point => point.x)) + 'px';
+      brush.style.top = Math.min(...corners.map(point => point.y)) + 'px';
+      brush.style.width = Math.abs(corners[1].x - corners[0].x) + 'px';
+      brush.style.height = Math.abs(corners[1].y - corners[0].y) + 'px';
+    }
+    return selection.data;
   };

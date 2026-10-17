@@ -22,7 +22,9 @@ internal static partial class VisualCartesianCompiler {
             var useSecondary = !horizontal && secondaryOnly;
             builder.DataProjection = builder.DataProjection.WithDisplayTicks(xTicks.Select(number => new ChartAxisLabel(number, cache.FormatDisplay(x, number, xTicks))).ToArray(),
                 (useSecondary ? secondaryTicks : yTicks).Select(number => new ChartAxisLabel(number, useSecondary
-                    ? cache.FormatDisplay(chart.Options.SecondaryYAxis, number, secondaryTicks) : cache.FormatDisplay(y, number, yTicks))).ToArray());
+                    ? cache.FormatDisplay(chart.Options.SecondaryYAxis, number, secondaryTicks) : cache.FormatDisplay(y, number, yTicks))).ToArray(),
+                formatX: number => cache.FormatDisplay(x, number, xTicks),
+                formatY: number => useSecondary ? cache.FormatDisplay(chart.Options.SecondaryYAxis, number, secondaryTicks) : cache.FormatDisplay(y, number, yTicks));
         }
         builder.CaptureChartReadouts(chart, (_, number) => horizontal ? Y(number) : X(number),
             (series, number, numericCaption) => horizontal ? X(number, numericCaption)

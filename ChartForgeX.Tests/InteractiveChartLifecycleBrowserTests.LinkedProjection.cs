@@ -26,14 +26,18 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ConfigureProjectionBrush), width, 650);
         var result = await NativeProjectionBrushAsync(session.Page);
         var range = result.GetProperty("range");
-        Assert.InRange(range.GetProperty("x")[0].GetDouble(), .73, .77);
-        Assert.InRange(range.GetProperty("x")[1].GetDouble(), 2.23, 2.27);
+        Assert.InRange(range.GetProperty("x")[0].GetDouble(), 0, .77);
+        Assert.InRange(range.GetProperty("x")[1].GetDouble(), 2.23, 3);
+        foreach (var direction in new[] { "x", "y" }) {
+            if (range.TryGetProperty(direction, out var coordinateRange)) Assert.Equal(coordinateRange.GetRawText(),
+                result.GetProperty("displayRange").GetProperty(direction).GetRawText());
+        }
         if (domains == "mixed" || domains.StartsWith("secondary-primary-y", StringComparison.Ordinal)) Assert.False(range.TryGetProperty("y", out _));
         else {
             var y = range.GetProperty("y");
             var secondary = domains.StartsWith("secondary", StringComparison.Ordinal) || domains == "empty-primary";
-            Assert.InRange(y[0].GetDouble(), secondary ? 1240 : 2.4, secondary ? 1260 : 2.6);
-            Assert.InRange(y[1].GetDouble(), secondary ? 1740 : 7.4, secondary ? 1760 : 7.6);
+            Assert.InRange(y[0].GetDouble(), secondary ? 1000 : 0, secondary ? 1260 : 2.6);
+            Assert.InRange(y[1].GetDouble(), secondary ? 1740 : 7.4, secondary ? 2000 : 10);
         }
         await CaptureAsync(session.Page, "hosted-value-domain-" + domains, result);
         AssertNoConsoleErrors(session);
@@ -65,11 +69,14 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ConfigureProjectionBrush), 820, 650);
         var result = await NativeProjectionBrushAsync(session.Page);
         var range = result.GetProperty("range");
-        Assert.InRange(range.GetProperty("x")[0].GetDouble(), 24.8, 25.2);
-        Assert.InRange(range.GetProperty("x")[1].GetDouble(), 74.8, 75.2);
+        Assert.InRange(range.GetProperty("x")[0].GetDouble(), 0, 25.2);
+        Assert.InRange(range.GetProperty("x")[1].GetDouble(), 74.8, 100);
+        Assert.Equal(range.GetProperty("x").GetRawText(), result.GetProperty("displayRange").GetProperty("x").GetRawText());
         Assert.InRange(range.GetProperty("y")[0].GetDouble(), 1.23, 1.27);
         Assert.InRange(range.GetProperty("y")[1].GetDouble(), 2.73, 2.77);
         Assert.Equal("B", Assert.Single(result.GetProperty("categories").EnumerateArray()).GetString());
+        Assert.Equal("B", result.GetProperty("rangeLabel").GetString());
+        Assert.Equal(new[] { 2d, 2d }, result.GetProperty("displayRange").GetProperty("y").EnumerateArray().Select(value => value.GetDouble()));
         await CaptureAsync(session.Page, "hosted-horizontal-projection-" + kind, result);
         AssertNoConsoleErrors(session);
     }
@@ -135,12 +142,13 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var targetRange = target.GetProperty("range"); var brushRange = brush.GetProperty("range").GetProperty("x");
         if (start < 0) {
             Assert.Equal(new[] { start, end }, targetRange.EnumerateArray().Select(value => value.GetDouble()));
-            Assert.InRange(brushRange[0].GetDouble(), start + (end - start) * .25 - .01, start + (end - start) * .25 + .01);
-            Assert.InRange(brushRange[1].GetDouble(), start + (end - start) * .75 - .01, start + (end - start) * .75 + .01);
+            Assert.InRange(brushRange[0].GetDouble(), start, start + (end - start) * .25 + .01);
+            Assert.InRange(brushRange[1].GetDouble(), start + (end - start) * .75 - .01, end);
         } else {
             Assert.All(targetRange.EnumerateArray(), value => Assert.EndsWith("Z", value.GetString()));
             Assert.All(brushRange.EnumerateArray(), value => Assert.EndsWith("Z", value.GetString()));
         }
+        Assert.Equal(brushRange.GetRawText(), brush.GetProperty("displayRange").GetProperty("x").GetRawText());
         await UpdateAsync(session.Page, Chart.Create().WithSize(640, 360).WithXAxisTimeScale()
             .AddLine("Point", new[] { new ChartPoint(start < 0 ? -1.5 : start, 5) }).ToInteractiveHtmlFragmentWithoutAssets(Fit));
         var point = await session.Page.EvaluateAsync<JsonElement>("()=>{chartController.select({seriesKeys:[JSON.parse(chartController.root.dataset.cfxPreparedChart).series[0].key]});return chartController.getSelection()[0]}");

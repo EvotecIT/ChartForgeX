@@ -217,7 +217,7 @@
       sourcePoints: sourcePointCollection(node),
       legendTargetKind: data.cfxLegendTargetKind,
       legendTargetId: data.cfxLegendTargetId,
-      value: state ? data.cfxStateLabel ?? data.cfxLabel ?? '' : rawValue ?? '',
+      value: state ? data.cfxStateLabel ?? data.cfxLabel ?? '' : capturedText(data, 'cfxFormattedValue', rawValue ?? ''),
       kind: data.cfxKind || ''
     };
   };
@@ -411,8 +411,10 @@
       if (!key || seen.has(key)) return;
       seen.add(key);
       const data = node.dataset || {};
-      const label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
+      let label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
         ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
+      const series = seriesLabel(node);
+      if (timeTarget(node) && label && series && label !== series) label = series + ' · ' + label;
       items.push({ label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target });
     });
     return items;
@@ -2836,10 +2838,32 @@
     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
     return { x, y };
   };
-  const selectTargetsInBox = (root, rect, append) => {
+  const brushPointInRange = (root, node, rect, selection) => {
+    const projection = root._cfxDataProjection;
+    if (!projection || !selection?.range) return null;
+    const target = targetIdentity(node), data = node.dataset;
+    // Scalar source coordinates survive SVG/CSS quantization. Interval facts and
+    // non-point marks retain their existing visual-centre selection contract.
+    if (target.targetKind !== 'point' || target.x === undefined || target.range) return null;
+    if (!keyboardTargetAvailable(node)) return false;
+    const box = node.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + box.height / 2;
+    const categoryDirection = projection.horizontal ? 'y' : 'x', valueDirection = projection.horizontal ? 'x' : 'y';
+    const inside = direction => direction === 'x' ? x >= rect.left && x <= rect.right : y >= rect.top && y <= rect.bottom;
+    const categoryRange = selection.range[categoryDirection];
+    if (categoryRange ? !overlapsRange({ x: target.x }, categoryRange)
+      : root.dataset.cfxBrushAxis !== 'x' && !inside(categoryDirection)) return false;
+    const valueRange = selection.range[valueDirection], valueAxis = projection[valueDirection];
+    const scalar = tooltipNumber(data.cfxY) && data.cfxStart === undefined && data.cfxMedian === undefined && data.cfxOpen === undefined;
+    if (!valueRange) return root.dataset.cfxBrushAxis === 'x' || inside(valueDirection);
+    if (!scalar) return inside(valueDirection);
+    const value = dataValue(data.cfxStackEnd ?? data.cfxY, valueAxis.scale === 'time' && valueAxis.minimum >= 0);
+    return overlapsRange({ x: value }, valueRange);
+  };
+  const selectTargetsInBox = (root, rect, append, selection) => {
     if (!hasFeature(root, 'Selection')) return [];
     const single = root.dataset.cfxSelectionMode === 'single';
-    let candidates = dataTargets(root).filter(node => !node.closest('[data-cfx-role="legend-item"]') && nodeCenterInRect(node, rect));
+    let candidates = dataTargets(root).filter(node => !node.closest('[data-cfx-role="legend-item"]')
+      && (brushPointInRange(root, node, rect, selection) ?? !!nodeCenterInRect(node, rect)));
     if (single) candidates = candidates.slice(0, 1);
     if (!append || single && candidates.length) clearSelections(root);
     const targets = [];
@@ -3125,6 +3149,8 @@
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
       && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
+        tick && Number.isFinite(tick.value) && typeof tick.text === 'string'))
+      && (value.displayBounds === undefined || Array.isArray(value.displayBounds) && value.displayBounds.every(tick =>
         tick && Number.isFinite(tick.value) && typeof tick.text === 'string'));
     return !!plot && [plot.x, plot.y, plot.width, plot.height].every(Number.isFinite) && plot.width > 0 && plot.height > 0
       && typeof projection.horizontal === 'boolean' && axis(projection.x) && (projection.y === undefined || axis(projection.y));
@@ -3147,51 +3173,80 @@
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
     const raw = axis.scale === 'logarithmic' ? Math.pow(10, value)
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
-    return raw;
+    return clamp(raw, axis.minimum, axis.maximum);
   };
   const transformedAxisValue = (axis, value) => axis.scale === 'logarithmic' ? Math.log10(value)
     : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * Math.log10(1 + Math.abs(value) / axis.threshold) : value;
-  const brushDataSelection = (root, rect) => {
+  const enclosingAxisTicks = (axis, values) => {
+    const ticks = [...(axis.displayTicks || []), ...(axis.displayBounds || [])]
+      .filter(tick => tick.value >= axis.minimum && tick.value <= axis.maximum);
+    const lower = ticks.filter(tick => tick.value <= values[0]).sort((a, b) => b.value - a.value)[0];
+    const upper = ticks.filter(tick => tick.value >= values[1]).sort((a, b) => a.value - b.value)[0];
+    return lower && upper ? [lower, upper] : undefined;
+  };
+  const projectedAxisRatio = (axis, value) => {
+    const transformed = transformedAxisValue(axis, value), span = axis.transformedMaximum - axis.transformedMinimum;
+    const ratio = Number.isFinite(span) ? (transformed - axis.transformedMinimum) / span
+      : (transformed / 2 - axis.transformedMinimum / 2) / (axis.transformedMaximum / 2 - axis.transformedMinimum / 2);
+    return axis.reversed ? 1 - ratio : ratio;
+  };
+  const projectBrushSelection = (root, rect) => {
     const projection = root._cfxDataProjection, svg = root.querySelector('.cfx-stage svg');
     const matrix = svg?.getScreenCTM();
-    if (!projection || !matrix || matrix.is2D === false || !matrix.a || !matrix.d) return {};
+    if (!projection || !matrix || matrix.is2D === false || !matrix.a || !matrix.d) return { data: {} };
     let inverse;
-    try { inverse = matrix.inverse(); } catch { return {}; }
+    try { inverse = matrix.inverse(); } catch { return { data: {} }; }
     const points = [new DOMPoint(rect.left, rect.top), new DOMPoint(rect.right, rect.bottom)].map(point => point.matrixTransform(inverse));
-    if (!points.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) return {};
+    if (!points.every(point => Number.isFinite(point.x) && Number.isFinite(point.y))) return { data: {} };
     const plot = projection.plotBounds;
     const x = points.map(point => clamp((point.x - plot.x) / plot.width, 0, 1));
     const y = points.map(point => clamp(1 - (point.y - plot.y) / plot.height, 0, 1));
-    const orderedValues = (axis, ratios) => ratios.map(ratio => projectedAxisValue(axis, ratio)).sort((left, right) => left - right);
-    const ordered = (axis, ratios) => {
-      const values = orderedValues(axis, ratios);
-      return values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
-    };
-    const range = { x: ordered(projection.x, x) };
-    if (root.dataset.cfxBrushAxis !== 'x' && projection.y) range.y = ordered(projection.y, y);
-    const categoryRange = projection.horizontal ? range.y : range.x;
-    const data = categoryRange ? { range, categoryRange } : { range };
-    const displayAxis = (axis, ratios) => {
-      if (!axis?.displayTicks?.length) return undefined;
-      const raw = orderedValues(axis, ratios);
-      const ticks = raw.map(value => {
-        const position = transformedAxisValue(axis, value);
-        return axis.displayTicks.reduce((nearest, tick) =>
-          Math.abs(transformedAxisValue(axis, tick.value) - position) < Math.abs(transformedAxisValue(axis, nearest.value) - position) ? tick : nearest);
-      });
-      return { range: ticks.map(tick => dataValue(tick.value, axis.scale === 'time' && axis.minimum >= 0)),
-        label: ticks.every(tick => tick.text === '') ? '' : ticks.map(tick => tick.text).join(' – ') };
-    };
-    const displayX = displayAxis(projection.x, x), displayY = range.y && displayAxis(projection.y, y);
-    if (displayX || displayY) {
-      data.displayRange = { ...(displayX ? { x: displayX.range } : {}), ...(displayY ? { y: displayY.range } : {}) };
-      const categoryDisplay = projection.horizontal ? displayY || displayX : displayX;
-      if (categoryDisplay) data.label = data.rangeLabel = categoryDisplay.label;
-    }
     let metadata;
-    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return data; }
-    const categories = categoryRange && (metadata.xLabels || []).filter(item => item.value >= categoryRange[0] && item.value <= categoryRange[1]).map(item => item.text);
-    return categories?.length ? { ...data, categories } : data;
+    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { metadata = {}; }
+    const categoryDirection = projection.horizontal ? 'y' : 'x';
+    const categoryAxis = projection[categoryDirection];
+    const categoryLabels = categoryAxis?.scale === 'linear' && metadata.xLabels?.length ? metadata.xLabels : undefined;
+    const selectedAxes = [['x', projection.x, x], ...(root.dataset.cfxBrushAxis !== 'x' && projection.y ? [['y', projection.y, y]] : [])];
+    const range = {}, displayRange = {}, ratios = { x, y }, captions = {};
+    for (const [direction, axis, endpoints] of selectedAxes) {
+      const raw = endpoints.map(ratio => projectedAxisValue(axis, ratio)).sort((a, b) => a - b);
+      const ticks = direction === categoryDirection && categoryLabels ? undefined : enclosingAxisTicks(axis, raw);
+      const values = ticks ? ticks.map(tick => tick.value) : raw;
+      range[direction] = values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
+      if (ticks) {
+        displayRange[direction] = range[direction];
+        captions[direction] = ticks.every(tick => tick.text === '') ? ''
+          : ticks[0].value === ticks[1].value ? ticks[0].text : ticks.map(tick => tick.text).join(' – ');
+        ratios[direction] = values.map(value => projectedAxisRatio(axis, value));
+      }
+    }
+    const categoryRange = range[categoryDirection];
+    const data = categoryRange ? { range, categoryRange } : { range };
+    if (categoryLabels && categoryRange) {
+      const included = categoryLabels.filter(item => item.value >= categoryRange[0] && item.value <= categoryRange[1]).sort((a, b) => a.value - b.value);
+      data.categories = included.map(item => item.text);
+      captions[categoryDirection] = data.categories.join(', ');
+      if (included.length) displayRange[categoryDirection] = [included[0].value, included[included.length - 1].value];
+    }
+    if (Object.keys(displayRange).length) data.displayRange = displayRange;
+    const caption = captions[categoryDirection] ?? captions.x;
+    if (caption !== undefined) data.label = data.rangeLabel = caption;
+    const xs = ratios.x.map(ratio => plot.x + ratio * plot.width);
+    const ys = ratios.y.map(ratio => plot.y + (1 - ratio) * plot.height);
+    const bounds = [new DOMPoint(Math.min(...xs), Math.min(...ys)), new DOMPoint(Math.max(...xs), Math.max(...ys))]
+      .map(point => point.matrixTransform(matrix));
+    return { data, bounds };
+  };
+  const finishBrushSelection = (root, stage, brush) => {
+    const selection = projectBrushSelection(root, brush.getBoundingClientRect());
+    if (selection.bounds) {
+      const corners = selection.bounds.map(point => stagePoint(stage, point));
+      brush.style.left = Math.min(...corners.map(point => point.x)) + 'px';
+      brush.style.top = Math.min(...corners.map(point => point.y)) + 'px';
+      brush.style.width = Math.abs(corners[1].x - corners[0].x) + 'px';
+      brush.style.height = Math.abs(corners[1].y - corners[0].y) + 'px';
+    }
+    return selection.data;
   };
   const revealLayer = (root) => {
     let layer = root.querySelector('[data-cfx-reveal-layer]');
@@ -3322,7 +3377,7 @@
   const inferredPlotSurfaceRoles = new Set(['background', 'frame-card', 'frame-card-shadow', 'content-surface',
     'grid-x', 'grid-y', 'axis-x', 'axis-y', 'axis-secondary-y']);
   // Retain native summaries separately: an Exact line hit is not an inferred observation or crosshair.
-  const pointerCandidates = (root, event, searchNearest, nativeTarget = event.target) => {
+  const pointerCandidates = (root, event, searchNearest, nativeTarget = event.target, withinSeries = null) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
@@ -3352,14 +3407,27 @@
     if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (!isInteractiveTarget(node) || !usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
+      if (!isInteractiveTarget(node) || !usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)
+        || withinSeries && !matchesLocalSeriesTarget(node, withinSeries)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
       const x = box.left + box.width / 2, y = box.top + box.height / 2;
       const distance = Math.hypot(x - event.clientX, y - event.clientY);
-      if (!best || distance < best.distance) best = { node, x, y, distance, exact: false };
+      const rank = withinSeries ? Math.abs(root._cfxDataProjection?.horizontal ? y - event.clientY : x - event.clientX) : distance;
+      if (!best || rank < best.rank || rank === best.rank && distance < best.distance) best = { node, x, y, distance, rank, exact: false };
     });
     return { native, observation: best };
+  };
+  const pointerActivationTarget = (root, node, event) => {
+    if (isDataTarget(node) || renderedTargetKind(node) !== 'series' || !usesCartesianCoordinates(node)
+      || !(event instanceof MouseEvent) || event.detail <= 0) return node;
+    // Native fill paint owns the click, including when it covers another series' hit regions.
+    // Resolve a real observation at the closest category coordinate within that topmost series.
+    const series = seriesTarget(node), candidates = pointerCandidates(root, event, true, event.target, series);
+    const fill = event.target instanceof Element ? event.target.closest('[data-cfx-role]') : null;
+    return candidates?.native?.summary && matchesLocalSeriesTarget(candidates.native.node, series)
+      && candidates.observation && isDataTarget(candidates.observation.node)
+      && fill && cartesianFillObservation(fill, candidates.observation.node) ? candidates.observation.node : node;
   };
   const tooltipAcquiresPoint = (root, point) => {
     if (!point || !hasFeature(root, 'Tooltips')) return false;
@@ -3851,14 +3919,15 @@
       const activateTarget = (event) => {
         event.stopPropagation();
         if (event instanceof KeyboardEvent) resumePointerReadout(root);
-        if (!tooltipReadoutAvailable(node, event)) return;
-        if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item') {
-          if (event.shiftKey) toggleSeriesFocus(root, node, true, true);
-          else toggleSeries(root, node);
+        const activated = pointerActivationTarget(root, node, event);
+        if (!tooltipReadoutAvailable(activated, event)) return;
+        if ((activated.dataset ? activated.dataset.cfxRole : '') === 'legend-item') {
+          if (event.shiftKey) toggleSeriesFocus(root, activated, true, true);
+          else toggleSeries(root, activated);
         }
         else {
-          toggleSelection(root, node, event);
-          pinTip(root, tip, node, event);
+          toggleSelection(root, activated, event);
+          pinTip(root, tip, activated, event);
         }
       };
       listenChart(root, focusNode, 'click', activateTarget);
@@ -4065,12 +4134,12 @@
           const plot = chartXProjection(root)?.plotBounds;
           if (plot && Math.abs(drag.delta) > 0.5) requestXViewport(root, 'pan', plot.x - drag.delta, plot.x + plot.width - drag.delta);
         } else if (drag.mode === 'brush' && brush) {
+          const dataRange = finishBrushSelection(root, stage, brush);
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
           syncResetControl(root);
           const previousTargets = selectedTargets(root), previousSelection = previousTargets.map(targetKey).join('\n');
-          const boxTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey);
+          const boxTargets = selectTargetsInBox(root, brush.getBoundingClientRect(), event.shiftKey, dataRange);
           const replaceSelection = !event.shiftKey;
-          const dataRange = brushDataSelection(root, brush.getBoundingClientRect());
           emitHostEvent(root, 'cfxbrush', { bounds: root.dataset.cfxBrush, ...dataRange });
           if (boxTargets.length || replaceSelection) emitHostEvent(root, 'cfxlasso', { bounds: root.dataset.cfxBrush, count: boxTargets.length, targets: boxTargets, ...dataRange });
           if (previousSelection !== selectionSignature(root)) publishSelectionChange(root, 'lasso');

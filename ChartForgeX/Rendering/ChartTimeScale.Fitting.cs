@@ -210,9 +210,20 @@ internal static partial class ChartTimeScale {
         return first?.Year == last?.Year ? "MM-dd" : "yyyy-MM-dd";
     }
 
-    internal static string FormatTick(ChartAxis axis, double value, IReadOnlyList<double>? ticks) =>
-        ticks is CompactDateTicks compact && ToDisplayTime(axis, value) is { } local
-            ? local.ToString(compact.Format, CultureInfo.InvariantCulture) : Format(axis, value);
+    internal static string FormatTick(ChartAxis axis, double value, IReadOnlyList<double>? ticks, bool retainDateContext = false) {
+        var local = ToDisplayTime(axis, value);
+        if (ticks is CompactDateTicks compact && local.HasValue) return local.Value.ToString(compact.Format, CultureInfo.InvariantCulture);
+        var text = Format(axis, value);
+        if (!retainDateContext || !local.HasValue || local.Value.TimeOfDay == TimeSpan.Zero || ticks == null) return text;
+        // A detached observation cannot borrow the calendar context of neighbouring axis
+        // captions. Keep its display-zone date when that axis includes calendar days.
+        foreach (var tick in ticks) {
+            var tickLocal = ToDisplayTime(axis, tick);
+            if (tickLocal.HasValue && (tickLocal.Value.TimeOfDay == TimeSpan.Zero || tickLocal.Value.Date != local.Value.Date))
+                return local.Value.ToString(local.Value.Second == 0 ? "yyyy-MM-dd HH:mm" : "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        }
+        return text;
+    }
 
     internal static IReadOnlyList<double> PreserveFormatting(IReadOnlyList<double> source, IReadOnlyList<double> selected) =>
         source is CompactDateTicks compact ? new CompactDateTicks(selected, compact.Format) : selected;

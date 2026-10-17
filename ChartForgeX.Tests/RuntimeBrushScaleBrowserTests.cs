@@ -15,7 +15,7 @@ public sealed class RuntimeBrushScaleBrowserTests {
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public async Task NonlinearBrushCaptionsFollowPaintedTickDistanceWithoutChangingRawBounds(bool symmetric, bool reversed) {
+    public async Task NonlinearBrushCaptionsBoundsAndSelectedMarksShareTheEnclosingTicks(bool symmetric, bool reversed) {
         if (!Enabled) return;
         var minimum = symmetric ? -18d : 10;
         var maximum = symmetric ? 18d : 100;
@@ -52,9 +52,14 @@ public sealed class RuntimeBrushScaleBrowserTests {
         await page.Mouse.MoveAsync((float)positions[2], (float)positions[3], new MouseMoveOptions {Steps = 4});
         await page.Mouse.UpAsync();
         var facts = await page.Locator(".cfx-interactive-chart").EvaluateAsync<JsonElement>("""
-            root => JSON.parse(JSON.stringify({detail:scaleBrush,
-              ticks:JSON.parse(root.dataset.cfxPreparedChart).dataProjection.x.displayTicks,
-              shown:!root.querySelector('.cfx-brush-box').hidden}))
+            root => {
+              const projection=JSON.parse(root.dataset.cfxPreparedChart).dataProjection,brush=root.querySelector('.cfx-brush-box');
+              const rect=brush.getBoundingClientRect(),inverse=root.querySelector('.cfx-stage svg').getScreenCTM().inverse();
+              const ends=[new DOMPoint(rect.left,rect.top),new DOMPoint(rect.right,rect.bottom)].map(point=>point.matrixTransform(inverse).x);
+              return JSON.parse(JSON.stringify({detail:scaleBrush,ticks:projection.x.displayTicks,
+                selected:Array.from(root.querySelectorAll('g[data-cfx-role="point"].cfx-selected')).map(node=>Number(node.dataset.cfxPoint)),
+                boxRatios:ends.map(x=>(x-projection.plotBounds.x)/projection.plotBounds.width),shown:!brush.hidden}));
+            }
             """);
         var detail = facts.GetProperty("detail");
         Assert.Equal("Lower – Upper", detail.GetProperty("rangeLabel").GetString());
@@ -63,8 +68,12 @@ public sealed class RuntimeBrushScaleBrowserTests {
         Assert.Equal(maximum, detail.GetProperty("displayRange").GetProperty("x")[1].GetDouble());
         var raw = detail.GetProperty("range").GetProperty("x");
         Assert.Equal(raw.GetRawText(), detail.GetProperty("categoryRange").GetRawText());
-        Assert.InRange(raw[0].GetDouble(), symmetric ? -5.4 : 28, symmetric ? -5.1 : 28.4);
-        Assert.InRange(raw[1].GetDouble(), symmetric ? 5.1 : 35.2, symmetric ? 5.4 : 35.8);
+        Assert.Equal(minimum, raw[0].GetDouble());
+        Assert.Equal(maximum, raw[1].GetDouble());
+        Assert.Equal(raw.GetRawText(), detail.GetProperty("displayRange").GetProperty("x").GetRawText());
+        Assert.Equal(new[] { 0, 1, 2 }, facts.GetProperty("selected").EnumerateArray().Select(value => value.GetInt32()));
+        Assert.InRange(facts.GetProperty("boxRatios")[0].GetDouble(), -.002, .002);
+        Assert.InRange(facts.GetProperty("boxRatios")[1].GetDouble(), .998, 1.002);
         Assert.True(facts.GetProperty("shown").GetBoolean());
         var output = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");
         if (!string.IsNullOrWhiteSpace(output)) {

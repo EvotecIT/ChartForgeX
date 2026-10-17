@@ -35,7 +35,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 document.body.addEventListener('cfxlasso',event=>linkedLasso.push(event.detail));
                 const svg=root.querySelector('.cfx-stage svg'),p=JSON.parse(root.dataset.cfxPreparedChart).dataProjection.plotBounds;
                 const screen=(x,y)=>{const point=new DOMPoint(p.x+x*p.width,p.y+y*p.height).matrixTransform(svg.getScreenCTM());return{x:point.x,y:point.y}};
-                return {from:screen(.2,.25),to:screen(.8,.75)};
+                return {from:screen(.22,.27),to:screen(.78,.73)};
             }
             """);
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
@@ -47,18 +47,31 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var range = result.GetProperty("brush").GetProperty("range");
         var x = range.GetProperty("x").EnumerateArray().ToArray();
         if (axis == "time") {
-            Assert.InRange(DateTimeOffset.Parse(x[0].GetString()!).UtcDateTime.Subtract(new DateTime(2026, 3, 3)).TotalMinutes, -1, 1);
-            Assert.InRange(DateTimeOffset.Parse(x[1].GetString()!).UtcDateTime.Subtract(new DateTime(2026, 3, 9)).TotalMinutes, -1, 1);
+            Assert.InRange(DateTimeOffset.Parse(x[0].GetString()!).UtcDateTime.ToOADate(), start, start + span * .22);
+            Assert.InRange(DateTimeOffset.Parse(x[1].GetString()!).UtcDateTime.ToOADate(), start + span * .78, start + span);
             Assert.EndsWith("Z", x[0].GetString()); Assert.EndsWith("Z", x[1].GetString());
         } else {
-            Assert.InRange(x[0].GetDouble(), span * .2 - .02, span * .2 + .02);
-            Assert.InRange(x[1].GetDouble(), span * .8 - .02, span * .8 + .02);
+            if (axis == "category") {
+                Assert.InRange(x[0].GetDouble(), span * .22 - .02, span * .22 + .02);
+                Assert.InRange(x[1].GetDouble(), span * .78 - .02, span * .78 + .02);
+            } else {
+                Assert.InRange(x[0].GetDouble(), 0, span * .22);
+                Assert.InRange(x[1].GetDouble(), span * .78, span);
+            }
+        }
+        if (axis != "category") foreach (var direction in new[] { "x", "y" }) {
+            if (range.TryGetProperty(direction, out var coordinateRange)) Assert.Equal(coordinateRange.GetRawText(),
+                result.GetProperty("brush").GetProperty("displayRange").GetProperty(direction).GetRawText());
         }
         Assert.Equal(brushAxis == ChartBrushAxis.XY, range.TryGetProperty("y", out var y));
         if (brushAxis == ChartBrushAxis.XY) {
-            Assert.InRange(y[0].GetDouble(), 2.48, 2.52); Assert.InRange(y[1].GetDouble(), 7.48, 7.52);
+            Assert.InRange(y[0].GetDouble(), 0, 2.7); Assert.InRange(y[1].GetDouble(), 7.3, 10);
         }
-        if (axis == "category") Assert.Equal("South", Assert.Single(result.GetProperty("brush").GetProperty("categories").EnumerateArray()).GetString());
+        if (axis == "category") {
+            Assert.Equal("South", Assert.Single(result.GetProperty("brush").GetProperty("categories").EnumerateArray()).GetString());
+            Assert.Equal("South", result.GetProperty("brush").GetProperty("rangeLabel").GetString());
+            Assert.Equal(new[] { 1d, 1d }, result.GetProperty("brush").GetProperty("displayRange").GetProperty("x").EnumerateArray().Select(value => value.GetDouble()));
+        }
         else Assert.False(result.GetProperty("brush").TryGetProperty("categories", out _));
         Assert.Equal(range.GetProperty("x").EnumerateArray().Select(value => value.GetRawText()),
             result.GetProperty("lasso").GetProperty("range").GetProperty("x").EnumerateArray().Select(value => value.GetRawText()));

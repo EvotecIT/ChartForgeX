@@ -12,16 +12,51 @@ namespace ChartForgeX.Tests;
 
 public sealed class ChartLinkedReadableValueContractsTests {
     [Fact]
-    public void AutomaticCoordinateHeadingsDoNotRoundObservationBodyValues() {
+    public void AutomaticCoordinateReadoutsUsePreparedAxisCaptionsAndKeepRawFactsExact() {
         const double x = .025, y = .12345678901234566;
         var chart = Chart.Create().WithXAxisBounds(0, 1).WithYAxisBounds(0, 1)
             .AddScatter("Samples", new[] { new ChartPoint(x, y) });
         var point = Mark(chart.Prepare(new VisualRenderContext()).ToSvg());
         Assert.Equal("0.03", point.Attribute("data-cfx-display-label")!.Value);
-        Assert.Equal("0.025", point.Attribute("data-cfx-formatted-x")!.Value);
-        Assert.Equal("0.12345678901234566", point.Attribute("data-cfx-formatted-value")!.Value);
+        Assert.Equal("0.03", point.Attribute("data-cfx-formatted-x")!.Value);
+        Assert.Equal("0.12", point.Attribute("data-cfx-formatted-value")!.Value);
         Assert.Equal(x, double.Parse(point.Attribute("data-cfx-x")!.Value, CultureInfo.InvariantCulture));
         Assert.Equal(y, double.Parse(point.Attribute("data-cfx-y")!.Value, CultureInfo.InvariantCulture));
+    }
+
+    [Theory]
+    [InlineData("UTC", "2026-03-02", "2026-03-04")]
+    [InlineData("Europe/Warsaw", "2026-03-02 01:00", "2026-03-04 01:00")]
+    [InlineData("America/New_York", "2026-03-01 19:00", "2026-03-03 19:00")]
+    public void CalendarPointReadoutsRetainDatesInTheAxisDisplayZone(string zone, string first, string second) {
+        var chart = ZonedTimeChart(zone);
+        var prepared = chart.Prepare(new VisualRenderContext());
+        var marks = XDocument.Parse(prepared.ToSvg()).Descendants().Where(node => node.Attribute("data-cfx-point") != null).ToArray();
+        Assert.Equal(new[] { first, second }, marks.Select(mark => mark.Attribute("data-cfx-display-label")!.Value));
+        Assert.Equal(new[] { first, second }, marks.Select(mark => mark.Attribute("data-cfx-formatted-x")!.Value));
+        Assert.Equal(chart.Series[0].Points.Select(point => point.X), marks.Select(mark => double.Parse(mark.Attribute("data-cfx-x")!.Value, CultureInfo.InvariantCulture)));
+        var projection = Assert.IsType<ChartDataProjection>(prepared.Scene.DataProjection);
+        Assert.Contains(projection.X.DisplayTicks, tick => tick.Text.Contains("2026-03-", StringComparison.Ordinal));
+        chart.Options.XAxis.TimeZone = TimeZoneInfo.Utc;
+        Assert.Equal(first, XDocument.Parse(prepared.ToSvg()).Descendants().First(node => node.Attribute("data-cfx-point") != null).Attribute("data-cfx-display-label")!.Value);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AuthoredCalendarPointFormattersIncludingEmptyTextRemainAuthoritative(bool empty) {
+        var chart = ZonedTimeChart("Europe/Warsaw");
+        var calls = new Dictionary<double, int>();
+        chart.Options.XAxis.LabelFormatter = number => {
+            calls[number] = calls.TryGetValue(number, out var count) ? count + 1 : 1;
+            return empty ? string.Empty : "Authored clock";
+        };
+        var marks = XDocument.Parse(chart.ToSvg()).Descendants().Where(node => node.Attribute("data-cfx-point") != null).ToArray();
+        Assert.All(marks, mark => {
+            Assert.Equal(empty ? string.Empty : "Authored clock", mark.Attribute("data-cfx-display-label")!.Value);
+            Assert.Equal(empty ? string.Empty : "Authored clock", mark.Attribute("data-cfx-formatted-x")!.Value);
+        });
+        Assert.All(calls.Values, count => Assert.Equal(1, count));
     }
 
     [Fact]
@@ -100,4 +135,11 @@ public sealed class ChartLinkedReadableValueContractsTests {
     }
 
     private static XElement Mark(string svg) => XDocument.Parse(svg).Descendants().Single(node => node.Attribute("data-cfx-point") != null);
+
+    internal static Chart ZonedTimeChart(string zone) {
+        var first = new DateTime(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc);
+        return Chart.Create().WithSize(960, 360).WithXAxisTimeScale()
+            .ConfigureXAxis(axis => axis.TimeZone = TimeZoneInfo.FindSystemTimeZoneById(zone))
+            .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("api"), "API", new[] { new ChartPoint(first, 7), new ChartPoint(first.AddDays(2), 12) }));
+    }
 }

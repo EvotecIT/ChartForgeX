@@ -31,8 +31,9 @@ internal sealed class ChartDataProjection {
     internal ChartDataAxisProjection X { get; }
     internal ChartDataAxisProjection? Y { get; }
     internal bool Horizontal { get; }
-    internal ChartDataProjection WithDisplayTicks(IReadOnlyList<ChartAxisLabel> x, IReadOnlyList<ChartAxisLabel>? y = null) =>
-        new(Plot, X.WithDisplayTicks(x), Y == null ? null : Y.WithDisplayTicks(y ?? System.Array.Empty<ChartAxisLabel>()), Horizontal);
+    internal ChartDataProjection WithDisplayTicks(IReadOnlyList<ChartAxisLabel> x, IReadOnlyList<ChartAxisLabel>? y = null,
+        System.Func<double, string>? formatX = null, System.Func<double, string>? formatY = null) =>
+        new(Plot, X.WithDisplayTicks(x, formatX), Y == null ? null : Y.WithDisplayTicks(y ?? System.Array.Empty<ChartAxisLabel>(), formatY), Horizontal);
 }
 
 internal sealed class ChartDataAxisProjection {
@@ -57,9 +58,19 @@ internal sealed class ChartDataAxisProjection {
     internal double Threshold { get; }
     internal bool Reversed { get; }
     internal IReadOnlyList<ChartAxisLabel> DisplayTicks { get; private set; } = System.Array.Empty<ChartAxisLabel>();
-    internal ChartDataAxisProjection WithDisplayTicks(IReadOnlyList<ChartAxisLabel> ticks) {
+    internal IReadOnlyList<ChartAxisLabel> DisplayBounds { get; private set; } = System.Array.Empty<ChartAxisLabel>();
+    internal ChartDataAxisProjection WithDisplayTicks(IReadOnlyList<ChartAxisLabel> ticks, System.Func<double, string>? format) {
         var copy = (ChartDataAxisProjection)MemberwiseClone();
         copy.DisplayTicks = System.Array.AsReadOnly(ticks.ToArray());
+        // The plot may end between ticks. Reuse painted captions before evaluating the
+        // canonical formatter for the at most two otherwise unrepresented boundaries.
+        if (format != null) {
+            ChartAxisLabel Boundary(double value) {
+                foreach (var tick in ticks) if (tick.Value == value) return tick;
+                return new ChartAxisLabel(value, format(value));
+            }
+            copy.DisplayBounds = System.Array.AsReadOnly(new[] { Boundary(Minimum), Boundary(Maximum) });
+        }
         return copy;
     }
 }

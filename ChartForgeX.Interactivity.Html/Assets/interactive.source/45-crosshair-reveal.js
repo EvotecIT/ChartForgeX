@@ -127,7 +127,7 @@
   const inferredPlotSurfaceRoles = new Set(['background', 'frame-card', 'frame-card-shadow', 'content-surface',
     'grid-x', 'grid-y', 'axis-x', 'axis-y', 'axis-secondary-y']);
   // Retain native summaries separately: an Exact line hit is not an inferred observation or crosshair.
-  const pointerCandidates = (root, event, searchNearest, nativeTarget = event.target) => {
+  const pointerCandidates = (root, event, searchNearest, nativeTarget = event.target, withinSeries = null) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
     const stageRect = stage.getBoundingClientRect();
@@ -157,14 +157,27 @@
     if (!searchNearest || !native && !plotSurface) return { native, observation: null };
     let best = null;
     root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (!isInteractiveTarget(node) || !usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)) return;
+      if (!isInteractiveTarget(node) || !usesCartesianCoordinates(node) || !pointerTargetPaint(node, styles)
+        || withinSeries && !matchesLocalSeriesTarget(node, withinSeries)) return;
       const box = node.getBoundingClientRect();
       if (!box.width && !box.height) return;
       const x = box.left + box.width / 2, y = box.top + box.height / 2;
       const distance = Math.hypot(x - event.clientX, y - event.clientY);
-      if (!best || distance < best.distance) best = { node, x, y, distance, exact: false };
+      const rank = withinSeries ? Math.abs(root._cfxDataProjection?.horizontal ? y - event.clientY : x - event.clientX) : distance;
+      if (!best || rank < best.rank || rank === best.rank && distance < best.distance) best = { node, x, y, distance, rank, exact: false };
     });
     return { native, observation: best };
+  };
+  const pointerActivationTarget = (root, node, event) => {
+    if (isDataTarget(node) || renderedTargetKind(node) !== 'series' || !usesCartesianCoordinates(node)
+      || !(event instanceof MouseEvent) || event.detail <= 0) return node;
+    // Native fill paint owns the click, including when it covers another series' hit regions.
+    // Resolve a real observation at the closest category coordinate within that topmost series.
+    const series = seriesTarget(node), candidates = pointerCandidates(root, event, true, event.target, series);
+    const fill = event.target instanceof Element ? event.target.closest('[data-cfx-role]') : null;
+    return candidates?.native?.summary && matchesLocalSeriesTarget(candidates.native.node, series)
+      && candidates.observation && isDataTarget(candidates.observation.node)
+      && fill && cartesianFillObservation(fill, candidates.observation.node) ? candidates.observation.node : node;
   };
   const tooltipAcquiresPoint = (root, point) => {
     if (!point || !hasFeature(root, 'Tooltips')) return false;

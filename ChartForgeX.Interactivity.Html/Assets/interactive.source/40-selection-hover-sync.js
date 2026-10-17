@@ -241,10 +241,32 @@
     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
     return { x, y };
   };
-  const selectTargetsInBox = (root, rect, append) => {
+  const brushPointInRange = (root, node, rect, selection) => {
+    const projection = root._cfxDataProjection;
+    if (!projection || !selection?.range) return null;
+    const target = targetIdentity(node), data = node.dataset;
+    // Scalar source coordinates survive SVG/CSS quantization. Interval facts and
+    // non-point marks retain their existing visual-centre selection contract.
+    if (target.targetKind !== 'point' || target.x === undefined || target.range) return null;
+    if (!keyboardTargetAvailable(node)) return false;
+    const box = node.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + box.height / 2;
+    const categoryDirection = projection.horizontal ? 'y' : 'x', valueDirection = projection.horizontal ? 'x' : 'y';
+    const inside = direction => direction === 'x' ? x >= rect.left && x <= rect.right : y >= rect.top && y <= rect.bottom;
+    const categoryRange = selection.range[categoryDirection];
+    if (categoryRange ? !overlapsRange({ x: target.x }, categoryRange)
+      : root.dataset.cfxBrushAxis !== 'x' && !inside(categoryDirection)) return false;
+    const valueRange = selection.range[valueDirection], valueAxis = projection[valueDirection];
+    const scalar = tooltipNumber(data.cfxY) && data.cfxStart === undefined && data.cfxMedian === undefined && data.cfxOpen === undefined;
+    if (!valueRange) return root.dataset.cfxBrushAxis === 'x' || inside(valueDirection);
+    if (!scalar) return inside(valueDirection);
+    const value = dataValue(data.cfxStackEnd ?? data.cfxY, valueAxis.scale === 'time' && valueAxis.minimum >= 0);
+    return overlapsRange({ x: value }, valueRange);
+  };
+  const selectTargetsInBox = (root, rect, append, selection) => {
     if (!hasFeature(root, 'Selection')) return [];
     const single = root.dataset.cfxSelectionMode === 'single';
-    let candidates = dataTargets(root).filter(node => !node.closest('[data-cfx-role="legend-item"]') && nodeCenterInRect(node, rect));
+    let candidates = dataTargets(root).filter(node => !node.closest('[data-cfx-role="legend-item"]')
+      && (brushPointInRange(root, node, rect, selection) ?? !!nodeCenterInRect(node, rect)));
     if (single) candidates = candidates.slice(0, 1);
     if (!append || single && candidates.length) clearSelections(root);
     const targets = [];
