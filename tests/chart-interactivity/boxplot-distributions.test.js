@@ -75,6 +75,28 @@ test('IQR readouts distinguish drawable whiskers, source extrema, actual inliers
   assert.deepEqual(supplied.map(row => row.name), ['Category', 'Minimum', 'Q1', 'Median', 'Q3', 'Maximum']);
 });
 
+test('BoxPlot rows preserve present empty captions and consume captured extrema without formatting the IQR factor as units', () => {
+  const { make } = fixture();
+  const summaryRows = runtime.boxPlotTooltipRows(make(summary({
+    cfxCategoryLabel: '', cfxFormattedQ1: '', cfxFormattedSourceMinimum: '0,10 ms',
+    cfxFormattedSourceMaximum: '100,12 ms', cfxFormattedInlierMinimum: '', cfxFormattedInlierMaximum: '8,00 ms',
+    cfxIqrMultiplier: '0.10000000000000001', cfxFormattedIqrMultiplier: '0.1',
+    cfxMinimum: '0.25', cfxInlierMinimum: '0.1', cfxMaximum: '8.5', cfxInlierMaximum: '8'
+  })));
+  assert.deepEqual(summaryRows[0], { name: 'Category', value: '' });
+  assert.ok(summaryRows.some(row => row.name === 'Q1' && row.value === ''));
+  assert.ok(summaryRows.some(row => row.name === 'Source minimum' && row.value === '0,10 ms'));
+  assert.ok(summaryRows.some(row => row.name === 'Source maximum' && row.value === '100,12 ms'));
+  assert.ok(summaryRows.some(row => row.name === 'Inlier minimum' && row.value === ''));
+  assert.ok(summaryRows.some(row => row.name === 'Inlier maximum' && row.value === '8,00 ms'));
+  assert.ok(summaryRows.some(row => row.name === 'IQR multiplier' && row.value === '0.1'));
+  const outlierRows = runtime.boxPlotTooltipRows(make({ cfxKind: 'BoxPlotOutlier', cfxCategoryLabel: '', cfxValue: '100.123', cfxFormattedValue: '' }));
+  assert.deepEqual(outlierRows, [{ name: 'Category', value: '' }, { name: 'Outlier', value: '' }]);
+  const partial = runtime.boxPlotTooltipRows(make({ cfxMinimum: '1', cfxQ1: '2', cfxFormattedQ1: '', cfxMedian: '3' }));
+  assert.deepEqual(partial, [{ name: 'Category', value: 'Service A' }, { name: 'Minimum', value: '1' },
+    { name: 'Q1', value: '' }, { name: 'Median', value: '3' }]);
+});
+
 test('group legend emphasis and muting cover only its summary and outliers while sample selection stays exact', () => {
   const { make } = fixture();
   const group = make(summary());

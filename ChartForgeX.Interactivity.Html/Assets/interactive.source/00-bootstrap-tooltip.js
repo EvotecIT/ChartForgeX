@@ -107,7 +107,7 @@
     const rows = [{ name: rowName(node, 'category', 'Category'), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel ?? data.cfxX }];
     if (kind === 'boxplotoutlier') {
       rows.push({ name: rowName(node, 'outlier', 'Outlier'), value: capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue ?? data.cfxY)) });
-      return rows.filter(row => row.value !== undefined && row.value !== null && row.value !== '');
+      return rows.filter(row => row.value !== undefined && row.value !== null);
     }
     const iqr = data.cfxWhiskerPolicy === 'Iqr';
     ['minimum', 'q1', 'median', 'q3', 'maximum'].forEach(key => rows.push({
@@ -120,16 +120,16 @@
       add('sample-count', 'Sample count', data.cfxSourceCount);
       add('whisker-policy', 'Whisker policy', data.cfxWhiskerPolicy);
       add('quartile-estimator', 'Quartile estimator', data.cfxQuartileEstimator);
-      if (iqr) add('iqr-multiplier', 'IQR multiplier', data.cfxIqrMultiplier);
-      add('source-minimum', 'Source minimum', data.cfxSourceMinimum);
-      add('source-maximum', 'Source maximum', data.cfxSourceMaximum);
+      if (iqr) add('iqr-multiplier', 'IQR multiplier', numericFactText(data, 'IqrMultiplier'));
+      add('source-minimum', 'Source minimum', numericFactText(data, 'SourceMinimum'));
+      add('source-maximum', 'Source maximum', numericFactText(data, 'SourceMaximum'));
       add('outlier-count', 'Outlier count', data.cfxOutlierCount);
       if (iqr && (data.cfxInlierMinimum === undefined || Number(data.cfxInlierMinimum) !== Number(data.cfxMinimum)))
-        add('inlier-minimum', 'Inlier minimum', data.cfxInlierMinimum ?? rowName(node, 'no-inliers', 'None'));
+        add('inlier-minimum', 'Inlier minimum', data.cfxInlierMinimum === undefined ? rowName(node, 'no-inliers', 'None') : numericFactText(data, 'InlierMinimum'));
       if (iqr && (data.cfxInlierMaximum === undefined || Number(data.cfxInlierMaximum) !== Number(data.cfxMaximum)))
-        add('inlier-maximum', 'Inlier maximum', data.cfxInlierMaximum ?? rowName(node, 'no-inliers', 'None'));
+        add('inlier-maximum', 'Inlier maximum', data.cfxInlierMaximum === undefined ? rowName(node, 'no-inliers', 'None') : numericFactText(data, 'InlierMaximum'));
     }
-    return rows.filter(row => row.value !== undefined && row.value !== null && row.value !== '');
+    return rows.filter(row => row.value !== undefined && row.value !== null);
   };
   const rangeBarTooltipRows = (node) => {
     const data = node.dataset || {};

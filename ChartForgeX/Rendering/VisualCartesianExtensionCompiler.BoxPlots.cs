@@ -45,8 +45,6 @@ internal static partial class VisualCartesianCompiler {
             var color = PointColor(series, index, item, colors); var sourcePaint = VisualChartPaint.Series(series, color, item);
             var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("median", median));
             var facts = BoxPlotMetadata(chart, series, item, categories[x]);
-            if (item < series.BoxPlotDistributions.Count && series.BoxPlotDistributions[item].WhiskerPolicy == ChartBoxPlotWhiskerPolicy.Iqr)
-                facts["aria-label"] = DescribeIqrBoxPlot(chart, series, label, categories[x], series.BoxPlotDistributions[item]);
             using (ObservationGroup(builder, series, index, item, raw, 5, bounds, label, facts,
                 ("x", x), ("minimum", minimum), ("q1", q1), ("median", median), ("q3", q3), ("maximum", maximum))) {
                 var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.BoxPlotStrokeWidth;
