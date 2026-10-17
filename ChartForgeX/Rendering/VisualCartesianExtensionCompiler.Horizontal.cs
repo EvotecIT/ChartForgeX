@@ -39,7 +39,7 @@ internal static partial class VisualCartesianCompiler {
     private static void AddHorizontalLabel(Chart chart, VisualRenderContext context, ChartSeries series, int index, int item, ChartPoint anchor,
         ChartRect bounds, double value, double direction, ResolvedPointLabel label, List<LabelPlacementRequest> labels,
         string? associatedId = null, ChartColor? markFill = null, SvgColorRole? markFillRole = null) {
-        if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || label.Text.Length == 0) return;
+        if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) || label.Text.Length == 0) return;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         if (placement == ChartDataLabelPlacement.Left) anchor = new ChartPoint(bounds.Left, anchor.Y);
         if (placement == ChartDataLabelPlacement.Right) anchor = new ChartPoint(bounds.Right, anchor.Y);
@@ -52,15 +52,15 @@ internal static partial class VisualCartesianCompiler {
     private static (ChartAxis Value, ChartAxis Category) HorizontalAxes(Chart chart, AxisLabelCache cache) {
         if (cache.HorizontalValueAxis != null) return (cache.HorizontalValueAxis, cache.HorizontalCategoryAxis!);
         var x = chart.Options.XAxis; var y = chart.Options.YAxis;
-        var valueAxis = new ChartAxis { Scale = x.Scale, TickCount = x.TickCount, LabelAngle = x.LabelAngle,
-            LabelDensity = x.LabelDensity, SymmetricLogarithmThreshold = x.SymmetricLogarithmThreshold,
-            TimeZone = x.TimeZone, TimeZoneLabel = x.TimeZoneLabel, ShowTimeZone = x.ShowTimeZone,
-            ValueFormat = x.ValueFormat ?? (ReferenceEquals(chart.Options.ValueFormat, ChartValueFormat.ExistingValue) ? null : chart.Options.ValueFormat) };
+        var valueAxis = x.Clone();
+        valueAxis.Labels.Clear();
+        if (x.ValueFormat == null && !ReferenceEquals(chart.Options.ValueFormat, ChartValueFormat.ExistingValue))
+            valueAxis.ValueFormat = chart.Options.ValueFormat;
         var waterfall = chart.Series.Any(series => series.Kind == ChartSeriesKind.Waterfall);
         var legacyCategories = ChartCartesianOrientation.UsesLegacyCategoryLabels(chart);
-        var categoryAxis = new ChartAxis { Scale = y.Scale, TickCount = y.TickCount, LabelAngle = y.LabelAngle, LabelDensity = y.LabelDensity,
-            TimeZone = y.TimeZone, TimeZoneLabel = y.TimeZoneLabel, ShowTimeZone = y.ShowTimeZone,
-            ValueFormat = y.ValueFormat ?? (legacyCategories && !waterfall ? x.ValueFormat : null) };
+        var categoryAxis = y.Clone();
+        categoryAxis.Labels.Clear();
+        if (y.ValueFormat == null && legacyCategories && !waterfall) categoryAxis.ValueFormat = x.ValueFormat;
         if (!legacyCategories) foreach (var label in x.Labels) valueAxis.Labels.Add(label);
         var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
         foreach (var label in categoryLabels) categoryAxis.Labels.Add(label);

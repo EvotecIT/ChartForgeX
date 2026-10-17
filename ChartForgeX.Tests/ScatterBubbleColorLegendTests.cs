@@ -11,11 +11,17 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Per-series keys reuse the matrix scene while preserving independent color formatting and bounded layout.</summary>
 public sealed class ScatterBubbleColorLegendTests {
-    [Fact]
-    public void OffsetPlotKeepsItsMarksAndClippingAboveTheNumericKey() {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OffsetPlotKeepsFullEdgeMarkersAndClippedLineInkAboveTheNumericKey(bool withLine) {
         var chart = Chart.Create().WithXAxisBounds(0, 3).WithYAxisBounds(0, 100)
             .AddScatter("Samples", new[] { new ChartPoint(1, 0).WithColorValue(0), new ChartPoint(2, 100).WithColorValue(10) });
         chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High));
+        if (withLine) {
+            chart.AddLine("Outside", new[] { new ChartPoint(.5, -100), new ChartPoint(1.5, 200), new ChartPoint(2.5, -100) }, ChartColor.FromHex("#FF00FF"));
+            chart.Series[1].ConfigureMarkers(markers => markers.Enabled = false);
+        }
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 320)));
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
         var plot = new ChartRect(60, 80, 520, 180);
@@ -23,12 +29,31 @@ public sealed class ScatterBubbleColorLegendTests {
         var scene = builder.Build();
         var key = scene.Regions.Single(region => region.Id == "color-scale-0");
         var marks = scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker").ToArray();
+        var mappedPlot = scene.Regions.Single(region => region.Role == "cartesian-plot").Bounds;
         Assert.Equal(2, marks.Length);
-        Assert.All(marks, mark => Assert.True(mark.Cy <= key.Bounds.Top + .000001));
+        Assert.All(marks, mark => Assert.True(mark.Cy + mark.Ry <= key.Bounds.Top + .000001));
+        Assert.Equal(mappedPlot.Bottom, marks[0].Cy, 6);
+        Assert.True(marks[0].Cy + marks[0].Ry > mappedPlot.Bottom, "A marker centered on an authored edge retains its full radius.");
         var clips = scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Clip.HasValue)
             .Select(node => node.Clip!.Value).Where(bounds => bounds.Top == plot.Top && bounds.Width == plot.Width).ToArray();
-        Assert.NotEmpty(clips);
         Assert.All(clips, bounds => Assert.True(bounds.Bottom <= key.Bounds.Top + .000001));
+        var prepared = new PreparedVisual(scene);
+        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var edgePixel = ((int)(marks[0].Cy + Math.Max(1, marks[0].Ry / 2)) * image.Width + (int)marks[0].Cx) * 4;
+        Assert.Equal(marks[0].Fill!.Value, ChartColor.FromRgba(image.Pixels[edgePixel], image.Pixels[edgePixel + 1], image.Pixels[edgePixel + 2], image.Pixels[edgePixel + 3]));
+        if (withLine) {
+            Assert.Contains(clips, bounds => bounds.Equals(mappedPlot));
+            var line = Role(XDocument.Parse(prepared.ToSvg()), "line").Single();
+            Assert.Contains(line.Ancestors(), node => node.Attribute("clip-path") != null);
+            bool IsLineInk(int x, int y) {
+                var pixel = (y * image.Width + x) * 4;
+                return image.Pixels[pixel] > 240 && image.Pixels[pixel + 1] < 20 && image.Pixels[pixel + 2] > 240 && image.Pixels[pixel + 3] > 0;
+            }
+            Assert.Contains(Enumerable.Range(0, (int)Math.Ceiling(key.Bounds.Top)), y => Enumerable.Range(0, image.Width).Any(x => IsLineInk(x, y)));
+            Assert.DoesNotContain(Enumerable.Range((int)Math.Ceiling(key.Bounds.Top), image.Height - (int)Math.Ceiling(key.Bounds.Top)),
+                y => Enumerable.Range(0, image.Width).Any(x => IsLineInk(x, y)));
+        }
+        Capture(prepared, "offset-color-key-" + (withLine ? "clipped-line" : "edge-markers"));
     }
 
     [Theory]

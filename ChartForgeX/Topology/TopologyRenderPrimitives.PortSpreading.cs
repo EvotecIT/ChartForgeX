@@ -118,7 +118,7 @@ internal static partial class TopologyRenderPrimitives {
         if (!string.IsNullOrWhiteSpace(fromSource ? edge.SourcePortId : edge.TargetPortId)) return port;
         var center = TopologyNodeShapeGeometry.RoutingCenter(node);
         var toward = TopologyNodeShapeGeometry.RoutingCenter(other);
-        var horizontal = ShouldRouteHorizontally(edge.SourcePort, edge.TargetPort, Math.Abs(toward.X - center.X) >= Math.Abs(toward.Y - center.Y));
+        var horizontal = OrthogonalRouteIsHorizontal(node, other, edge.SourcePort, edge.TargetPort);
         return OrthogonalShapePort(node, port, horizontal, toward);
     }
 

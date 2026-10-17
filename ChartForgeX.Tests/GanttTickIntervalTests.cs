@@ -178,6 +178,7 @@ public sealed class GanttTickIntervalTests {
         var chart = Chart.Create().WithLegend(false).WithSize(960, 360).AddGanttTask("Window", start, start.AddDays(7))
             .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, count));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-date-identity-{count}-{fixedInterval}");
         var document = XDocument.Parse(prepared.ToSvg());
         var labels = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").Select(element => element.Value).ToArray();
         Assert.Contains(labels, label => label.StartsWith("2026-01-01", StringComparison.Ordinal));
@@ -194,6 +195,48 @@ public sealed class GanttTickIntervalTests {
         }
         Assert.Equal(labels.Length, labels.Distinct(StringComparer.Ordinal).Count());
         Assert.Equal(fixedInterval, labels.Any(label => label.Contains("00:00:00.000", StringComparison.Ordinal)));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 0)]
+    [InlineData(false, 18)]
+    [InlineData(true, 18)]
+    public void DenseAutomaticFallbackPreservesAuthoredClockFormats(bool mermaid, int fontSize) {
+        var start = new DateTime(2026, 1, 1);
+        var chart = mermaid ? new MermaidParser().ParseGantt("gantt\ntickInterval 100millisecond\naxisFormat %H:%M\nTask :2026-01-01, 7d")
+            .Document!.ToChart(new MermaidGanttRenderOptions { Width = 960, Height = 360 }).WithLegend(false)
+            : Chart.Create().WithLegend(false).WithSize(960, 360).AddGanttTask("Window", start, start.AddDays(7))
+                .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100))
+                .WithXAxisValueFormatter(value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture));
+        chart.ConfigureGridStyle(style => style.ShowVerticalLines = true);
+        if (fontSize > 0) chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
+            .ConfigureTickLabelStyle(style => style.WithFontSize(fontSize));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-dense-authored-clock-{mermaid}-{fontSize}");
+        var labels = XDocument.Parse(prepared.ToSvg()).Descendants()
+            .Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").Select(element => element.Value).ToArray();
+        Assert.Contains("12:00", labels);
+        Assert.All(labels, label => Assert.True(DateTime.TryParseExact(label, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out _),
+            "An authored clock formatter must remain authoritative after an interval falls back: " + label));
+        var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "schedule-tick-label").ToArray();
+        var grid = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "schedule-grid").ToArray();
+        var task = prepared.Regions.Single(region => region.Role == "gantt-task");
+        Assert.Equal(task.Bounds.Left, captions[0].X, 7);
+        Assert.Equal(task.Bounds.Right, captions[^1].X, 7);
+        Assert.Equal(labels.Length, grid.Length);
+        for (var index = 0; index < captions.Length; index++) {
+            Assert.Equal(grid[index].Start.X, captions[index].X, 7);
+            if (fontSize > 0) Assert.Equal(fontSize, captions[index].Text.Style.EffectiveFontSize);
+            if (index == 0) continue;
+            Assert.NotEqual(labels[index - 1], labels[index]);
+            var previous = captions[index - 1];
+            var gap = captions[index].X - previous.X - (captions[index].Text.Metrics.Width + previous.Text.Metrics.Width) / 2;
+            Assert.True(gap + .01 >= Math.Max(24, Math.Max(captions[index].Text.Metrics.Width, previous.Text.Metrics.Width)),
+                "The retained clock cadence must keep the automatic complete-caption gap.");
+        }
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "schedule.axis-label-overflow" or "text.overflow");
         Assert.NotEmpty(prepared.ToPng());
     }
 

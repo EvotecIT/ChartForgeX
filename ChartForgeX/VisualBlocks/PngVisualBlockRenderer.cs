@@ -1,13 +1,12 @@
 using System;
 using ChartForgeX.Core;
-using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Rendering;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>Renders genuine core diagrams and delegates other blocks to their static pixel producer.</summary>
-public sealed partial class PngVisualBlockRenderer {
+public sealed class PngVisualBlockRenderer {
     /// <summary>Renders a genuine diagram or producer-owned static block to PNG.</summary>
     public byte[] Render(IVisualBlock block) => PngWriter.WriteRgba(RenderImage(block));
     internal RgbaImage RenderImage(IVisualBlock block) {
@@ -17,93 +16,18 @@ public sealed partial class PngVisualBlockRenderer {
     internal RgbaImage RenderNativeImage(IVisualBlock block) => RenderCanvas(block).ToImage();
     internal RgbaCanvas RenderCanvas(IVisualBlock block, int? outputScale = null) {
         VisualBlockRendering.Validate(block);
-        return RenderOwnedCanvas(block, canvas => {
-            if (block is PacketLayoutBlock packet) DrawPacketLayout(canvas, packet);
-            else if (block is BlockLayoutBlock blockLayout) DrawBlockLayout(canvas, blockLayout);
-            else if (block is GitGraphBlock gitGraph) DrawGitGraph(canvas, gitGraph);
-            else if (block is VennDiagramBlock venn) DrawVennDiagram(canvas, venn);
-            else if (block is FishboneDiagramBlock fishbone) DrawFishboneDiagram(canvas, fishbone);
-            else if (block is WardleyMapBlock wardleyMap) DrawWardleyMap(canvas, wardleyMap);
-            else throw new NotSupportedException("Unsupported static block producer: " + block.GetType().FullName);
-        }, () => new SvgVisualBlockRenderer().RenderLabelScene(block), outputScale);
+        return RenderOwnedCanvas(block, () => new SvgVisualBlockRenderer().RenderLabelScene(block), outputScale);
     }
 
-    internal static RgbaCanvas RenderOwnedCanvas(IVisualBlock block, Action<RgbaCanvas> renderContent, Func<ChartLabelScene> labelScene, int? outputScale = null) {
+    /// <summary>Paints the block owner's shared marks and positioned text at the requested output density.</summary>
+    internal static RgbaCanvas RenderOwnedCanvas(IVisualBlock block, Func<ChartLabelScene> labelScene, int? outputScale = null) {
         var options = block.Options;
         var theme = options.ResolvedTheme;
         var scene = labelScene();
         var target = new RgbaCanvas(options.Size.Width, options.Size.Height, 2, TypographyFontResolver.ResolveThemeFont(theme.FontFamily), outputScale ?? options.PngOutputScale);
-        // The shared mark scene owns the page background, including its alpha and host-frame policy.
         target.Clear(ChartColor.Transparent);
         scene.PaintMarks(target);
         scene.Paint(target);
         return target;
-    }
-
-    internal static void DrawHeading(RgbaCanvas canvas, IVisualBlock block, ref double y, double x, double width) {
-        var theme = block.Options.ResolvedTheme;
-        var headings = VisualBlockRendering.Headings(block);
-        var titleSize = headings.TitleFontSize; var subtitleSize = headings.SubtitleFontSize;
-        if (block.Title.Length > 0) {
-            var title = VisualBlockRendering.FitMeasuredText(block.Title, titleSize, width, theme.FontFamily, 700);
-            DrawAlignedTextAtBaseline(canvas, title, x, y + headings.TitleAscent, width, TextAlignment.Left, theme.Text, titleSize, true);
-            y += headings.TitleAdvance;
-        }
-
-        if (block.Subtitle.Length > 0) {
-            var subtitle = VisualBlockRendering.FitMeasuredText(block.Subtitle, subtitleSize, width, theme.FontFamily, 400);
-            DrawAlignedTextAtBaseline(canvas, subtitle, x, y + headings.SubtitleAscent, width, TextAlignment.Left, theme.MutedText, subtitleSize, false);
-            y += headings.SubtitleAdvance;
-        }
-    }
-
-    internal static void DrawAlignedTextAtBaseline(RgbaCanvas canvas, string text, double x, double baseline, double width, TextAlignment alignment, ChartColor color, double fontSize, bool emphasized) =>
-        DrawAlignedText(canvas, text, x, baseline - canvas.TextAscent(fontSize, emphasized), width, alignment, color, fontSize, emphasized);
-
-    internal static void DrawAlignedText(RgbaCanvas canvas, string text, double x, double y, double width, TextAlignment alignment, ChartColor color, double fontSize, bool emphasized) {
-        var fitted = FitText(canvas, text, fontSize, Math.Max(1, width), emphasized);
-        var textWidth = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, fontSize) : canvas.MeasureTextWidth(fitted, fontSize);
-        var textX = alignment == TextAlignment.Center ? x + (width - textWidth) / 2 : alignment == TextAlignment.Right ? x + width - textWidth : x;
-        if (emphasized) canvas.DrawTextEmphasized(textX, y, fitted, color, fontSize);
-        else canvas.DrawText(textX, y, fitted, color, fontSize);
-    }
-
-    internal static void DrawCenteredText(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized, double? maxWidth = null) {
-        var fitted = FitText(canvas, text, size, Math.Max(1, maxWidth ?? x * 2), emphasized);
-        var width = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, size) : canvas.MeasureTextWidth(fitted, size);
-        if (emphasized) canvas.DrawTextEmphasized(x - width / 2, y, fitted, color, size);
-        else canvas.DrawText(x - width / 2, y, fitted, color, size);
-    }
-
-    internal static void DrawCenteredTextMiddle(RgbaCanvas canvas, string text, double x, double y, double size, ChartColor color, bool emphasized, double? maxWidth = null) {
-        var fitted = FitText(canvas, text, size, Math.Max(1, maxWidth ?? x * 2), emphasized);
-        var width = emphasized ? canvas.MeasureTextEmphasizedWidth(fitted, size) : canvas.MeasureTextWidth(fitted, size);
-        var height = canvas.MeasureTextHeight(size);
-        if (emphasized) canvas.DrawTextEmphasized(x - width / 2, y - height / 2, fitted, color, size);
-        else canvas.DrawText(x - width / 2, y - height / 2, fitted, color, size);
-    }
-
-    internal static ChartColor ApplyOpacity(ChartColor color, double opacity) {
-        var alpha = (byte)Math.Max(0, Math.Min(255, Math.Round(color.A * Math.Max(0, Math.Min(1, opacity)))));
-        return ChartColor.FromRgba(color.R, color.G, color.B, alpha);
-    }
-
-    internal static double DegreesToRadians(double degrees) => degrees * Math.PI / 180.0;
-
-    internal static string FitText(RgbaCanvas canvas, string value, double fontSize, double maxWidth, bool emphasized = false) {
-        value = VisualBlockRendering.SingleLineText(value);
-        double Measure(string text) => emphasized ? canvas.MeasureTextEmphasizedWidth(text, fontSize) : canvas.MeasureTextWidth(text, fontSize);
-        if (string.IsNullOrEmpty(value) || Measure(value) <= maxWidth) return value;
-        const string suffix = "...";
-        if (Measure(suffix) > maxWidth) return string.Empty;
-        var low = 0;
-        var high = value.Length;
-        while (low < high) {
-            var mid = (low + high + 1) / 2;
-            if (Measure(value.Substring(0, mid) + suffix) <= maxWidth) low = mid;
-            else high = mid - 1;
-        }
-
-        return value.Substring(0, Typography.TextElementBoundary.Snap(value, low)) + suffix;
     }
 }

@@ -9,6 +9,23 @@ namespace ChartForgeX.Tests;
 public sealed class DenseTopologyLayoutTests {
     private static readonly TopologyRenderOptions TileOptions = new() { ReadableDenseLayout = true, IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
 
+    [Fact]
+    public void OrthogonalRerouteDoesNotTreatItsOwnLabelAsAnObstacle() {
+        var chart = TopologyChart.Create().WithViewport(560, 300, 0).WithLegend(null)
+            .AddNode("source", "Source", 30, 118, width: 72, height: 44)
+            .AddNode("blocker", "Blocker", 250, 90, width: 70, height: 100)
+            .AddNode("target", "Target", 460, 118, width: 72, height: 44)
+            .AddEdge("route", "source", "target", "The route label belongs to this relationship", routing: TopologyEdgeRouting.Orthogonal);
+        var edge = chart.Edges.Single();
+        chart.RenderOptions = new TopologyRenderOptions { IncludeLegend = false };
+        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+
+        var route = TopologyEdgeRouter.Route(chart, edge, nodes["source"], nodes["target"]);
+
+        Assert.Equal(1, route.Diagnostics.ObstacleCount);
+        Assert.Equal(0, route.Diagnostics.ObstacleHits);
+    }
+
     [Theory]
     [InlineData(0, false)]
     [InlineData(1, false)]

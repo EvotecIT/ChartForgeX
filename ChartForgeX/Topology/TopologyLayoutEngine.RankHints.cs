@@ -6,8 +6,8 @@ using System.Linq;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
-    private static void ApplyEdgeRankHints(TopologyChart chart) {
-        if (chart.Edges.All(edge => edge.MinimumRankSpan <= 1)) return;
+    private static void ApplyEdgeRankHints(TopologyChart chart, bool force = false) {
+        if (!force && chart.Edges.All(edge => edge.MinimumRankSpan <= 1)) return;
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var edges = chart.Edges
             .Where(edge => nodes.ContainsKey(edge.SourceNodeId) && nodes.ContainsKey(edge.TargetNodeId))

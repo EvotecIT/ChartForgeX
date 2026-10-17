@@ -166,17 +166,27 @@ public sealed class VisualThemeColors {
 
 /// <summary>The shared logical typography scale; the default follows the chart look specification.</summary>
 public sealed class VisualTypography {
-    /// <summary>Creates a validated immutable font scale.</summary>
+    /// <summary>Creates typography with the existing chart-role sizes and default tile sizes.</summary>
+    public VisualTypography(string family, double titleSize, double subtitleSize, double axisSize,
+        double legendSize, double dataLabelSize, double scalarValueSize, double centerValueSize,
+        double? axisTitleSize, string monospaceFamily)
+        : this(family, titleSize, subtitleSize, axisSize, legendSize, dataLabelSize,
+            scalarValueSize, centerValueSize, axisTitleSize, monospaceFamily, 14, 22, 13) { }
+
+    /// <summary>Creates a validated immutable font scale including VisualCanvas tile sizes.</summary>
     public VisualTypography(string family = "Calibri, Carlito, Segoe UI, system-ui, sans-serif",
         double titleSize = 17, double subtitleSize = 13.5, double axisSize = 12, double legendSize = 13, double dataLabelSize = 12,
         double scalarValueSize = 34, double centerValueSize = 20, double? axisTitleSize = null,
-        string monospaceFamily = "Cascadia Mono, Consolas, monospace") {
+        string monospaceFamily = "Cascadia Mono, Consolas, monospace",
+        double tileLabelSize = 14, double tileValueSize = 22, double tileDetailSize = 13) {
         if (string.IsNullOrWhiteSpace(family)) throw new ArgumentException("A font family is required.", nameof(family));
         if (string.IsNullOrWhiteSpace(monospaceFamily)) throw new ArgumentException("A monospace family is required.", nameof(monospaceFamily));
         MonospaceFamily = monospaceFamily; AxisTitleSize = Positive(axisTitleSize ?? axisSize, nameof(axisTitleSize));
         Family = family; TitleSize = Positive(titleSize, nameof(titleSize)); SubtitleSize = Positive(subtitleSize, nameof(subtitleSize));
         AxisSize = Positive(axisSize, nameof(axisSize)); LegendSize = Positive(legendSize, nameof(legendSize)); DataLabelSize = Positive(dataLabelSize, nameof(dataLabelSize));
         ScalarValueSize = Positive(scalarValueSize, nameof(scalarValueSize)); CenterValueSize = Positive(centerValueSize, nameof(centerValueSize));
+        TileLabelSize = Positive(tileLabelSize, nameof(tileLabelSize)); TileValueSize = Positive(tileValueSize, nameof(tileValueSize));
+        TileDetailSize = Positive(tileDetailSize, nameof(tileDetailSize));
     }
     /// <summary>Gets the fallback family stack.</summary>
     public string Family { get; }
@@ -188,7 +198,7 @@ public sealed class VisualTypography {
     public FontSpec ToFontSpec(bool monospace = false) => new() { Family = monospace ? MonospaceFamily : Family };
     /// <summary>Creates an independent scale with a different proportional family.</summary>
     public VisualTypography WithFamily(string family) => new(family, TitleSize, SubtitleSize, AxisSize, LegendSize,
-        DataLabelSize, ScalarValueSize, CenterValueSize, AxisTitleSize, MonospaceFamily);
+        DataLabelSize, ScalarValueSize, CenterValueSize, AxisTitleSize, MonospaceFamily, TileLabelSize, TileValueSize, TileDetailSize);
     /// <summary>Gets the title size.</summary>
     public double TitleSize { get; }
     /// <summary>Gets the subtitle size.</summary>
@@ -203,6 +213,12 @@ public sealed class VisualTypography {
     public double ScalarValueSize { get; }
     /// <summary>Gets the value size inside a radial chart.</summary>
     public double CenterValueSize { get; }
+    /// <summary>Gets the default VisualCanvas information-tile label size.</summary>
+    public double TileLabelSize { get; }
+    /// <summary>Gets the default VisualCanvas information-tile value size.</summary>
+    public double TileValueSize { get; }
+    /// <summary>Gets the default VisualCanvas information-tile detail size.</summary>
+    public double TileDetailSize { get; }
     private static double Positive(double value, string name) {
         if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(name);
         return value;

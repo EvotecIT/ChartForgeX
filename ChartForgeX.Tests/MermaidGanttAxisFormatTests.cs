@@ -62,6 +62,8 @@ public sealed class MermaidGanttAxisFormatTests {
 
     [BrowserTheory]
     [InlineData(false, 960)]
+    [InlineData(true, 960)]
+    [InlineData(false, 320)]
     [InlineData(true, 320)]
     public async Task FormattedWeekdayLabelsAreVisibleInNativeAndStaticBrowserOutput(bool dark, int width) {
         if (!InteractiveChartBrowser.Enabled) return;
@@ -80,7 +82,8 @@ public sealed class MermaidGanttAxisFormatTests {
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);
         var labels = await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync();
         Assert.Equal(nativeLabels.Select(text => text.Text.Lines.Single().Text), labels);
-        Assert.InRange(labels.Count, 2, chart.Options.XAxis.TickCount);
+        Assert.InRange(labels.Count, 2, 5);
+        Assert.Equal(labels.Count, labels.Distinct(StringComparer.Ordinal).Count());
         Assert.Equal(grid.Length, labels.Count);
         var dates = labels.Select(label => DateTime.ParseExact(label + " 2026", "ddd dd MMM yyyy", CultureInfo.InvariantCulture)).ToArray();
         for (var index = 0; index < dates.Length; index++) {

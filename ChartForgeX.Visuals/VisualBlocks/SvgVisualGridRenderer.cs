@@ -110,7 +110,8 @@ public sealed class SvgVisualGridRenderer {
             block.Options.Theme = originalTheme.Configure(builder => {
                 var font = originalTheme.Typography;
                 builder.Typography = new VisualTypography(font.Family, 15, font.SubtitleSize, font.AxisSize, font.LegendSize,
-                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily);
+                    font.DataLabelSize, font.ScalarValueSize, font.CenterValueSize, font.AxisTitleSize, font.MonospaceFamily,
+                    font.TileLabelSize, font.TileValueSize, font.TileDetailSize);
             });
             return _blockRenderer.Render(block, childScope);
         }
