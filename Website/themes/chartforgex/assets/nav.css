@@ -108,7 +108,10 @@
   padding: 0;
   list-style: none;
 }
+.cfx-navpanel[data-count="5"] .cfx-navpanel__items { grid-template-columns: repeat(5, 184px); }
 .cfx-navpanel[data-count="3"] .cfx-navpanel__items { grid-template-columns: repeat(3, 184px); }
+/* Five destinations need about 980px; where that would run past the viewport, they wrap to three columns. */
+@media (max-width: 1279px) { .cfx-navpanel[data-count="5"] .cfx-navpanel__items { grid-template-columns: repeat(3, 184px); } }
 .cfx-navpanel[data-count="2"] .cfx-navpanel__items { grid-template-columns: repeat(2, 184px); }
 
 .cfx-navitem {

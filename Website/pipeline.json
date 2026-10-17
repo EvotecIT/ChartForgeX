@@ -60,7 +60,14 @@
       "criticalCss": "./themes/chartforgex/critical.css",
       "minifyHtml": true,
       "minifyCss": true,
-      "minifyJs": true
+      "minifyJs": true,
+      "optimizeImages": true,
+      "imageInclude": ["powerbginfo/**"],
+      "imageGenerateWebp": true,
+      "imagePreferNextGen": true,
+      "imageWidths": [480, 960, 1440],
+      "imageQuality": 86,
+      "imageFailOnFailures": true
     },
     {
       "task": "seo-doctor",

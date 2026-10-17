@@ -1,0 +1,17 @@
+{{~ ## PowerBGInfo: the other Evotec module built on ChartForgeX, shown with one of its showcase wallpapers in the page
+     theme. The render comes from data/powerbginfo-showcase.json, the copy from data/powershell.json. ## ~}}
+{{~ band = data.powershell.powerbginfo; wall = null
+    for s in data["powerbginfo-showcase"].scenarios; if s.id == band.show; wall = s; end; end ~}}
+<section class="cfx-section cfx-pspbg" id="powerbginfo" aria-labelledby="cfx-pspbg-title">
+  <div class="cfx-pspbg__grid">
+    <div class="cfx-pspbg__copy">
+      <h2 id="cfx-pspbg-title">{{ band.title }}</h2>
+      <p>{{ band.body }}</p>
+      <p><a class="cfx-link" href="/powerbginfo/">{{ band.link }}</a></p>
+    </div>
+    <a class="cfx-pscard__media cfx-pspbg__media" href="/powerbginfo/#{{ wall.id }}" aria-label="{{ wall.title }} wallpaper on the PowerBGInfo page">
+      <img class="cfx-only-light" src="{{ wall.renders.light.url }}" width="{{ wall.renders.light.width }}" height="{{ wall.renders.light.height }}" sizes="(max-width: 900px) 100vw, 720px" loading="lazy" decoding="async" alt="{{ wall.title }} wallpaper rendered by PowerBGInfo: health tiles, a privileged sign-in chart and the allowed admin path as a topology diagram." />
+      <img class="cfx-only-dark" src="{{ wall.renders.dark.url }}" width="{{ wall.renders.dark.width }}" height="{{ wall.renders.dark.height }}" sizes="(max-width: 900px) 100vw, 720px" loading="lazy" decoding="async" alt="{{ wall.title }} wallpaper rendered by PowerBGInfo, dark theme: health tiles, a privileged sign-in chart and the allowed admin path as a topology diagram." />
+    </a>
+  </div>
+</section>

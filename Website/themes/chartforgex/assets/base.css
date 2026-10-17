@@ -416,7 +416,7 @@ code, pre, kbd, samp { font-family: var(--cfx-mono); font-variant-ligatures: non
   font-size: var(--cfx-t-micro);
   font-weight: 500;
 }
-.cfx-codeblock__lang { display: inline-flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; }
+.cfx-codeblock__lang { display: inline-flex; flex: none; align-items: center; gap: 8px; white-space: nowrap; }
 .cfx-codeblock__lang::before {
   content: "";
   flex: none;

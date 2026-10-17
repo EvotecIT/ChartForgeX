@@ -1,4 +1,5 @@
-/* Gallery: the category legend, the example grid and the viewer dialog. */
+/* Gallery: the category legend, the example grid and the viewer dialog. The PowerBGInfo page uses the same cards and
+   viewer for its scenario wallpapers. */
 
 .cfx-gallery-page {
   width: min(100% - 2 * var(--cfx-gutter), var(--cfx-max));
@@ -37,7 +38,7 @@
   border: 1px solid var(--cfx-line);
   border-radius: var(--cfx-r);
   background: var(--cfx-card);
-  aspect-ratio: 400 / 280;
+  aspect-ratio: var(--cfx-card-ratio, 400 / 280);
   transition: border-color .15s ease;
 }
 .cfx-card__media img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -47,6 +48,7 @@
 .cfx-card__open:focus-visible .cfx-card__media { outline: 2px solid var(--cfx-focus); outline-offset: 3px; }
 .cfx-card__text { display: grid; gap: 3px; }
 .cfx-card__title { color: var(--cfx-ink); font-size: .9688rem; font-weight: 600; line-height: 1.35; }
+.cfx-card__note { color: var(--cfx-ink-2); font-size: .875rem; line-height: 1.45; }
 .cfx-card__family {
   display: inline-flex;
   align-items: center;
@@ -132,6 +134,19 @@
 /* The source fills the dialog height under its head (dialog 100vh - 32px, head about 72px, margins 32px) and scrolls
    below its caption bar. */
 .cfx-viewer__source { min-height: 0; max-height: calc(100vh - 136px); margin: 16px; }
+
+/* Source tabs, when a card has them: the shared segmented control above the code block it switches. */
+.cfx-viewer__tabs { justify-self: start; max-width: calc(100% - 32px); margin: 16px 16px 0; flex-wrap: wrap; }
+.cfx-viewer__tabs[hidden] { display: none; }
+.cfx-viewer__tabs + .cfx-viewer__source { margin-top: 10px; }
+
+/* Stacked: the output across the dialog with its source under it, for wide outputs such as wallpapers. The image
+   leaves room for the tabs to show below it; the body scrolls to the code. */
+.cfx-viewer--stack .cfx-viewer__body { grid-template-columns: minmax(0, 1fr); }
+.cfx-viewer--stack .cfx-viewer__image { border-right: 0; border-bottom: 1px solid var(--cfx-line); }
+.cfx-viewer--stack .cfx-viewer__image img { width: auto; max-width: 100%; height: auto; max-height: calc(100vh - 260px); border-radius: 4px; }
+.cfx-viewer--stack .cfx-viewer__source { max-height: none; }
+.cfx-viewer--stack .cfx-viewer__source pre { max-height: 60vh; }
 
 @media (max-width: 900px) {
   .cfx-viewer__head { flex-wrap: wrap; }

@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--powerbginfo{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ## PowerBGInfo: one story from the finished wallpapers to production. The scenario and feature renders come from
+     data/powerbginfo-showcase.json (build/Sync-PowerBGInfo.ps1), the build steps, their changed lines and the source
+     snippets from data/powerbginfo-build.json (build/Render-PowerBGInfoSteps.ps1), and the copy, widget crops and
+     production routes from data/powerbginfo.json. Nothing on the page is a mock-up. ## ~}}
+{{~ pbg = data.powerbginfo; show = data["powerbginfo-showcase"]; src = show.source; built = data["powerbginfo-build"]
+    hero = null; for s in show.scenarios; if s.id == pbg.hero.show; hero = s; end; end
+    steps = []; for s in built.steps; if s.section == "build"; steps = steps | array.add s; end; end
+    timeout = null; for s in built.steps; if s.id == "11-timeout"; timeout = s; end; end
+    final = steps | array.last
+    swap = null; for s in built.sources; if s.id == "system-info"; swap = s; end; end
+    prod = pbg.production ~}}
+<main id="main" class="cfx-main cfx-pbg">
+  {{~ capture stage_side ~}}
+  <dl class="cfx-stage__stats">
+    <div><dt>Scenarios</dt><dd>{{ show.scenarios.size }}</dd></div>
+    <div><dt>Theme presets</dt><dd>{{ show.themes.presets.size }}</dd></div>
+    <div><dt>Cmdlets</dt><dd>{{ show.module.cmdletCount }}</dd></div>
+  </dl>
+  <div class="cfx-install cfx-stage__install">
+    <code><span class="cfx-install__prompt" aria-hidden="true">PS&gt;</span> {{ pbg.start.install }}</code>
+    <button type="button" class="cfx-copy" data-cfx-copy="{{ pbg.start.install }}">Copy</button>
+  </div>
+  <div class="cfx-stage__actions">
+    <a class="cfx-btn cfx-btn--glow" href="#scenarios">See all {{ show.scenarios.size }} wallpapers</a>
+    <a class="cfx-btn cfx-btn--ghost" href="#build">Build one yourself</a>
+  </div>
+  {{~ end ~}}
+  {{~ capture stage_art ~}}
+  {{~ r = hero.renders.dark ~}}
+  <figure class="cfx-output">
+    <figcaption><span class="cfx-output__file">{{ r.file }}</span><span>{{ r.width }} x {{ r.height }}</span></figcaption>
+    <img src="{{ r.url }}" width="{{ r.width }}" height="{{ r.height }}" sizes="(max-width: 900px) 100vw, 680px" fetchpriority="high" decoding="async" alt="{{ pbg.hero.alt }}" />
+  </figure>
+  {{~ end ~}}
+  {{~ stage_title = page.title; stage_lede = pbg.hero.lede ~}}
+  {{ include "stage" }}
+
+  {{~ ## Scenarios: a few in full with their code, the rest as gallery cards that open the shared viewer, filtered by
+       use, and the scenarios rendered at screen sizes other than 1920 x 1080. The featured list, the uses and the
+       screens come from data/powerbginfo.json; each use takes the next series key. ## ~}}
+  {{~ sc = pbg.scenarios; scen = {}; for s in show.scenarios; scen[s.id] = s; end
+      featured = {}; for id in sc.featured; featured[id] = true; end
+      use_of = {}; use_key = {}; keys = {}; hollow = null; more = {}
+      for u in sc.uses
+        use_key[u.id] = "var(--cfx-s" + (for.index + 1) + ")"; keys[u.id] = "--key: " + use_key[u.id]; more[u.id] = 0
+        for id in u.scenarios; use_of[id] = u.id; end
+      end
+      more_count = 0
+      for s in show.scenarios; if !featured[s.id]; more_count = more_count + 1; more[use_of[s.id]] = more[use_of[s.id]] + 1; end; end ~}}
+  <section class="cfx-atlas" id="scenarios" aria-labelledby="cfx-pbg-scenarios-title">
+    <div class="cfx-atlas__head">
+      <h2 id="cfx-pbg-scenarios-title">{{ sc.title }}</h2>
+      <p>{{ sc.body }}</p>
+    </div>
+
+    {{~ for id in sc.featured; s = scen[id]; light = s.renders.light; dark = s.renders.dark ~}}
+    <section class="cfx-atlas__group cfx-pbg-scene" id="{{ s.id }}" aria-labelledby="cfx-pbg-{{ s.id }}" style="--key: {{ use_key[use_of[s.id]] }}">
+      <h3 class="cfx-atlas__group-title" id="cfx-pbg-{{ s.id }}"><span class="cfx-key" aria-hidden="true"></span>{{ s.title }}</h3>
+      <div class="cfx-pbg-scene__head">
+        <p class="cfx-pbg-scene__purpose">{{ s.purpose }}</p>
+        <ul class="cfx-tags" aria-label="ChartForgeX in this wallpaper">
+          {{~ if s.theme ~}}<li class="cfx-tag"><span class="cfx-key cfx-key--hollow" aria-hidden="true"></span>{{ s.theme }} theme preset</li>{{~ end ~}}
+          {{~ for f in s.features ~}}<li class="cfx-tag"><span class="cfx-key" aria-hidden="true"></span>{{ f }}</li>{{~ end ~}}
+        </ul>
+      </div>
+      <figure class="cfx-showcase__frame">
+        <div class="cfx-showcase__bar">
+          <span class="cfx-showcase__name"><span class="cfx-only-light">{{ light.file }}</span><span class="cfx-only-dark">{{ dark.file }}</span></span>
+          <span class="cfx-showcase__links">
+            <a class="cfx-only-light" aria-label="{{ s.title }}, light theme, full size PNG" href="{{ light.url }}">PNG <span class="cfx-count">{{ light.width }} x {{ light.height }}, {{ light.kb }} KB</span></a>
+            <a class="cfx-only-dark" aria-label="{{ s.title }}, dark theme, full size PNG" href="{{ dark.url }}">PNG <span class="cfx-count">{{ dark.width }} x {{ dark.height }}, {{ dark.kb }} KB</span></a>
+            <a href="{{ s.url }}" aria-label="{{ s.file }} on GitHub">Script on GitHub</a>
+          </span>
+        </div>
+        <div class="cfx-showcase__plate">
+          {{~ img_renders = s.renders; img_alt = pbg.alts[s.id]; img_sizes = "(max-width: 1280px) 100vw, 1180px" ~}}
+          {{ include "powerbginfo/image" }}
+        </div>
+      </figure>
+      {{~ if s.data ~}}
+      <div class="cfx-pbg-tabs" data-cfx-tabs>
+        <div class="cfx-seg" role="tablist" aria-label="{{ s.title }} source">
+          <button type="button" role="tab" id="cfx-pbg-{{ s.id }}-tab-draw" aria-controls="cfx-pbg-{{ s.id }}-draw" aria-selected="true" tabindex="0"><span class="cfx-key" aria-hidden="true"></span>Presentation</button>
+          <button type="button" role="tab" id="cfx-pbg-{{ s.id }}-tab-data" aria-controls="cfx-pbg-{{ s.id }}-data" aria-selected="false" tabindex="-1"><span class="cfx-key cfx-key--hollow" aria-hidden="true"></span>Data</button>
+        </div>
+        <figure class="cfx-codeblock cfx-pbg-scene__code" data-lang="powershell" role="tabpanel" id="cfx-pbg-{{ s.id }}-draw" aria-labelledby="cfx-pbg-{{ s.id }}-tab-draw">
+          <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ s.file }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ s.excerpt | html.escape }}</code></pre>
+        </figure>
+        <figure class="cfx-codeblock cfx-pbg-scene__code" data-lang="powershell" role="tabpanel" id="cfx-pbg-{{ s.id }}-data" aria-labelledby="cfx-pbg-{{ s.id }}-tab-data" hidden>
+          <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ s.file }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ s.data | html.escape }}</code></pre>
+        </figure>
+      </div>
+      {{~ else ~}}
+      <figure class="cfx-codeblock cfx-pbg-scene__code" data-lang="powershell">
+        <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ s.file }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+        <pre><code class="language-powershell">{{ s.excerpt | html.escape }}</code></pre>
+      </figure>
+      {{~ end ~}}
+      <div class="cfx-pbg-scene__more">
+        <details class="cfx-pbg-source">
+          <summary>Full script <span class="cfx-count">{{ s.lines }} lines</span></summary>
+          <figure class="cfx-codeblock" data-lang="powershell">
+            <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ s.script }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+            <pre><code class="language-powershell">{{ s.source | html.escape }}</code></pre>
+          </figure>
+        </details>
+        <p><a class="cfx-link" href="{{ s.url }}#L{{ s.excerptFrom }}-L{{ s.lines }}">Lines {{ s.excerptFrom }} to {{ s.lines }} on GitHub</a></p>
+      </div>
+    </section>
+    {{~ end ~}}
+
+    <div class="cfx-pbg-block cfx-pbg-more" id="more-wallpapers">
+      <div class="cfx-pbg-split cfx-pbg-split--head">
+        <div class="cfx-pbg-split__text">
+          <h3>{{ sc.more.title }}</h3>
+          <p>{{ sc.more.body }}</p>
+        </div>
+      </div>
+      <div class="cfx-filters cfx-seg cfx-seg--legend" role="group" aria-label="Filter wallpapers by use" data-cfx-filters>
+        <button type="button" aria-pressed="true" data-filter="all" style="--key: var(--cfx-ink)"><span class="cfx-key" aria-hidden="true"></span>All <span class="cfx-count">{{ more_count }}</span></button>
+        {{~ for u in sc.uses; if more[u.id] > 0 ~}}
+        <button type="button" aria-pressed="false" data-filter="{{ u.id }}" style="{{ keys[u.id] }}"><span class="cfx-key" aria-hidden="true"></span>{{ u.label }} <span class="cfx-count">{{ more[u.id] }}</span></button>
+        {{~ end; end ~}}
+      </div>
+      <ul class="cfx-grid" data-cfx-gallery>
+        {{~ for s in show.scenarios; if !featured[s.id]
+            tabs = '[{"label":"Presentation","from":' + s.excerptFrom + ',"to":' + s.lines + '}'
+            if s.dataFrom; tabs = tabs + ',{"label":"Data","from":' + s.dataFrom + ',"to":' + s.dataTo + '}'; end
+            item = {}; item.id = s.id; item.category = use_of[s.id]; item.title = s.title; item.note = s.purpose
+            item.familyLabel = s.theme + " preset"; item.alt = pbg.alts[s.id]; item.tabs = tabs + "]"
+            item.thumbnail = s.renders.light.url; item.darkThumbnail = s.renders.dark.url
+            item.thumbWidth = s.renders.light.width; item.thumbHeight = s.renders.light.height
+            item.thumbSizes = "(max-width: 560px) 50vw, (max-width: 1180px) 33vw, 390px"
+            item.full = s.renders.light.url; item.darkFull = s.renders.dark.url; item.source = s.text; item.html = s.url ~}}
+        {{ include "gallery-card" }}
+        {{~ end; end ~}}
+      </ul>
+    </div>
+
+    {{~ scr = sc.screens ~}}
+    <div class="cfx-pbg-block">
+      <div class="cfx-pbg-split cfx-pbg-split--head">
+        <div class="cfx-pbg-split__text">
+          <h3>{{ scr.title }}</h3>
+          <p>{{ scr.body }}</p>
+        </div>
+      </div>
+      <div class="cfx-pbg-screens">
+        {{~ for it in scr.items; s = scen[it.scenario]; z = s.screens[it.size]
+            shape = "landscape"; img_sizes = "(max-width: 900px) 100vw, 940px"
+            if z.height > z.width; shape = "portrait"; img_sizes = "(max-width: 900px) 240px, 230px"; end ~}}
+        <figure class="cfx-output cfx-pbg-screens__{{ shape }}" style="--key: {{ use_key[use_of[s.id]] }}">
+          <figcaption><span class="cfx-output__file">{{ it.label }}</span><span>{{ z.width }} x {{ z.height }}</span></figcaption>
+          {{~ img_renders = z.renders; img_alt = it.alt ~}}
+          {{ include "powerbginfo/image" }}
+        </figure>
+        {{~ end ~}}
+      </div>
+    </div>
+    <p class="cfx-atlas__reference">Rendered by <code>{{ src.runner }}</code> from <a href="{{ src.url }}/tree/{{ src.commit }}/Examples">PowerBGInfo {{ src.short }}</a>, every scenario at 1920 x 1080 and these two also at their own screen sizes. Every wallpaper on this page is a script's output, unedited.</p>
+    {{~ viewer_lang = "powershell"; viewer_label = "PowerShell"; viewer_open = "Full-size PNG"; viewer_page = "Script on GitHub"
+        viewer_sizes = "(max-width: 560px) calc(100vw - 50px), (max-width: 1272px) calc(100vw - 90px), 1180px"; viewer_stack = true ~}}
+    {{ include "gallery-dialog" }}
+  </section>
+  <section class="cfx-atlas cfx-pbg-build" id="build" aria-labelledby="cfx-pbg-build-title">
+    <div class="cfx-atlas__head">
+      <h2 id="cfx-pbg-build-title">{{ pbg.build.title }}</h2>
+      <p>{{ pbg.build.body }}</p>
+    </div>
+    <ol class="cfx-pbg-steps">
+      {{~ for s in steps ~}}
+      {{~ opens = true; closes = true
+          if s.group
+            if !for.first && steps[for.index - 1].group == s.group; opens = false; end
+            if !for.last && steps[for.index + 1].group == s.group; closes = false; end
+          end ~}}
+      {{~ if opens ~}}
+      {{~ head = s; if s.group; head = pbg.build.groups[s.group]; end ~}}
+      <li class="cfx-pbg-step" id="build-{{ s.step }}">
+        <div class="cfx-pbg-step__head">
+          <span class="cfx-pbg-step__n" aria-hidden="true">{{ s.step }}</span>
+          <h3>{{ head.title }}</h3>
+          <p>{{ head.body }}</p>
+        </div>
+      {{~ end ~}}
+        <div class="cfx-pbg-step__body">
+          {{~ if s.group ~}}<p class="cfx-pbg-step__layer"><span class="cfx-key" aria-hidden="true"></span><strong>{{ s.title }}.</strong> {{ s.body }}</p>{{~ end ~}}
+          <div class="cfx-pair cfx-pbg-pair">
+            <figure class="cfx-codeblock cfx-pair__source" data-lang="powershell">
+              <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ s.file }}</span><span class="cfx-count" title="Lines added and removed">{{ if for.first }}{{ s.lines }} lines{{ else }}+{{ s.added }} &minus;{{ s.removed }}{{ end }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+              <pre><code class="language-powershell">{{ s.changed | html.escape }}</code></pre>
+            </figure>
+            {{~ r = s.render ~}}
+            <figure class="cfx-output cfx-pair__output">
+              <figcaption><span class="cfx-output__file">{{ r.file }}</span><span>{{ r.width }} x {{ r.height }}</span></figcaption>
+              <a class="cfx-figure__open" href="{{ r.url }}" aria-label="Open {{ r.file }} full size"><img src="{{ r.url }}" width="{{ r.width }}" height="{{ r.height }}" sizes="(max-width: 1180px) 100vw, 600px" loading="lazy" decoding="async" alt="{{ pbg.build.alt }}: {{ s.title | string.downcase }}." /></a>
+            </figure>
+          </div>
+          {{~ if !for.first ~}}
+          <details class="cfx-pbg-source">
+            <summary>Whole script after this step <span class="cfx-count">{{ s.lines }} lines</span></summary>
+            <figure class="cfx-codeblock" data-lang="powershell">
+              <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ s.file }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+              <pre><code class="language-powershell">{{ s.script | html.escape }}</code></pre>
+            </figure>
+          </details>
+          {{~ end ~}}
+        </div>
+      {{~ if closes ~}}
+      </li>
+      {{~ end ~}}
+      {{~ end ~}}
+    </ol>
+    <p class="cfx-atlas__reference">{{ pbg.build.reference }} <a href="{{ built.source.url }}/tree/{{ built.source.commit }}">source commit {{ built.source.short }}</a>.</p>
+  </section>
+
+  <section class="cfx-atlas cfx-pbg-logic" id="your-logic" aria-labelledby="cfx-pbg-logic-title">
+    <div class="cfx-atlas__head">
+      <h2 id="cfx-pbg-logic-title">{{ pbg.logic.title }}</h2>
+      <p>{{ pbg.logic.body }}</p>
+    </div>
+
+    <div class="cfx-pbg-split">
+      <div class="cfx-pbg-split__text">
+        <h3>{{ pbg.logic.data.title }}</h3>
+        <p>{{ pbg.logic.data.body }}</p>
+        <p><a class="cfx-link" href="{{ built.source.templateUrl }}">{{ pbg.logic.data.template }}: {{ built.source.template | string.split "/" | array.last }}</a></p>
+      </div>
+      <figure class="cfx-codeblock cfx-pbg-split__code" data-lang="powershell">
+        <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ final.file }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+        <pre><code class="language-powershell">{{ final.data | html.escape }}</code></pre>
+      </figure>
+    </div>
+
+    <div class="cfx-pbg-split">
+      <div class="cfx-pbg-split__text">
+        <h3>{{ pbg.logic.sources.title }}</h3>
+        <p>{{ pbg.logic.sources.body }}</p>
+      </div>
+      <div class="cfx-pbg-tabs cfx-pbg-split__code" data-cfx-tabs>
+        <div class="cfx-seg" role="tablist" aria-label="Data sources">
+          {{~ k = 0; for c in built.sources; if c.id != "system-info"; k = k + 1 ~}}
+          <button type="button" role="tab" id="cfx-pbg-src-tab-{{ c.id }}" aria-controls="cfx-pbg-src-{{ c.id }}" aria-selected="{{ if k == 1 }}true{{ else }}false{{ end }}" tabindex="{{ if k == 1 }}0{{ else }}-1{{ end }}" style="--key: var(--cfx-s{{ k }})"><span class="cfx-key" aria-hidden="true"></span>{{ c.label }}</button>
+          {{~ end; end ~}}
+        </div>
+        {{~ k = 0; for c in built.sources; if c.id != "system-info"; k = k + 1 ~}}
+        <div class="cfx-pbg-tabs__panel" role="tabpanel" id="cfx-pbg-src-{{ c.id }}" aria-labelledby="cfx-pbg-src-tab-{{ c.id }}"{{ if k != 1 }} hidden{{ end }}>
+          <p>{{ c.body }}</p>
+          <figure class="cfx-codeblock" data-lang="powershell">
+            <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ c.file }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+            <pre><code class="language-powershell">{{ c.code | html.escape }}</code></pre>
+          </figure>
+        </div>
+        {{~ end; end ~}}
+      </div>
+    </div>
+
+    <div class="cfx-pbg-block">
+      <div class="cfx-pbg-split cfx-pbg-split--head">
+        <div class="cfx-pbg-split__text">
+          <h3>{{ pbg.logic.safety.title }}</h3>
+          <p>{{ pbg.logic.safety.body }}</p>
+        </div>
+        <ul class="cfx-pbg-points">
+          {{~ for p in pbg.logic.safety.points ~}}<li>{{ p }}</li>{{~ end ~}}
+        </ul>
+      </div>
+      <p class="cfx-pbg-step__layer"><span class="cfx-key" aria-hidden="true"></span><strong>{{ timeout.title }}.</strong> {{ timeout.body }}</p>
+      <div class="cfx-pair cfx-pbg-pair">
+        <div class="cfx-pair__source cfx-pbg-stack">
+          <figure class="cfx-codeblock" data-lang="powershell">
+            <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ timeout.file }}</span><span class="cfx-count" title="Lines added and removed against step 8">+{{ timeout.added }} &minus;{{ timeout.removed }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+            <pre><code class="language-powershell">{{ timeout.changed | html.escape }}</code></pre>
+          </figure>
+          {{~ if timeout.warnings ~}}
+          <figure class="cfx-codeblock cfx-pbg-console" data-lang="console">
+            <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">Console</span><span class="cfx-codeblock__file">{{ timeout.file }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+            <pre><code>{{ timeout.warnings | html.escape }}</code></pre>
+          </figure>
+          {{~ end ~}}
+        </div>
+        {{~ r = timeout.render ~}}
+        <figure class="cfx-output cfx-pair__output">
+          <figcaption><span class="cfx-output__file">{{ r.file }}</span><span>{{ r.width }} x {{ r.height }}</span></figcaption>
+          <a class="cfx-figure__open" href="{{ r.url }}" aria-label="Open {{ r.file }} full size"><img src="{{ r.url }}" width="{{ r.width }}" height="{{ r.height }}" sizes="(max-width: 1180px) 100vw, 600px" loading="lazy" decoding="async" alt="The same wallpaper drawn from the fallback values: the heading reads STATUS UNAVAILABLE, the details read unknown and the panels are empty." /></a>
+        </figure>
+      </div>
+    </div>
+
+    <div class="cfx-pbg-block">
+      <div class="cfx-pbg-split cfx-pbg-split--head">
+        <div class="cfx-pbg-split__text">
+          <h3>{{ pbg.logic.swap.title }}</h3>
+          <p>{{ pbg.logic.swap.body }}</p>
+        </div>
+        <div>
+          <p class="cfx-pbg-tokens__label">{{ pbg.logic.swap.tokens }}</p>
+          <ul class="cfx-tags cfx-pbg-tokens">{{~ for t in pbg.logic.swap.tokenList ~}}<li class="cfx-tag"><code>{{ t }}</code></li>{{~ end ~}}</ul>
+        </div>
+      </div>
+      <div class="cfx-pair cfx-pbg-pair">
+        <figure class="cfx-codeblock cfx-pair__source" data-lang="powershell">
+          <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ swap.file }}</span><span class="cfx-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ swap.code | html.escape }}</code></pre>
+        </figure>
+        {{~ w = show.widgets["system-info"] ~}}
+        <figure class="cfx-output cfx-pair__output">
+          <figcaption><span class="cfx-output__file"><a href="{{ w.url }}">{{ w.file }}</a></span><span>{{ w.renders.dark.width }} x {{ w.renders.dark.height }}</span></figcaption>
+          {{~ img_renders = w.renders; img_alt = pbg.logic.swap.alt; img_sizes = "(max-width: 1180px) 100vw, 600px" ~}}
+          {{ include "powerbginfo/image" }}
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="cfx-atlas cfx-pbg-caps" id="capabilities" aria-labelledby="cfx-pbg-caps-title">
+    <div class="cfx-atlas__head">
+      <h2 id="cfx-pbg-caps-title">{{ pbg.capabilities.title }}</h2>
+      <p>{{ pbg.capabilities.body }}</p>
+    </div>
+
+    {{~ th = pbg.capabilities.themes ~}}
+    <div class="cfx-pbg-block">
+      <div class="cfx-pbg-split cfx-pbg-split--head">
+        <div class="cfx-pbg-split__text">
+          <h3>{{ th.title }}</h3>
+          <p>{{ th.body }} <a class="cfx-link" href="{{ show.themes.url }}">{{ show.themes.script | string.split "/" | array.last }}</a></p>
+        </div>
+        <figure class="cfx-codeblock cfx-pbg-oneliner" data-lang="powershell">
+          <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ th.snippet | html.escape }}</code></pre>
+        </figure>
+      </div>
+      <ul class="cfx-pbg-themes">
+        {{~ for t in show.themes.presets ~}}
+        <li style="--key: var(--cfx-s{{ for.index + 1 }})">
+          <figure class="cfx-pbg-thumb">
+            {{~ img_renders = t.renders; img_alt = t.name + " theme preset: the theme example wallpaper for APP-WEB-02 with a requests card and a CPU chart."; img_sizes = "(max-width: 620px) 50vw, (max-width: 1180px) 33vw, 390px" ~}}
+            {{ include "powerbginfo/image" }}
+            <figcaption><span class="cfx-key" aria-hidden="true"></span>{{ t.name }}</figcaption>
+          </figure>
+        </li>
+        {{~ end ~}}
+      </ul>
+    </div>
+
+    {{~ rg = pbg.capabilities.regions ~}}
+    <div class="cfx-pbg-block">
+      <div class="cfx-pbg-split cfx-pbg-split--head">
+        <div class="cfx-pbg-split__text">
+          <h3>{{ rg.title }}</h3>
+          <p>{{ rg.body }} <a class="cfx-link" href="{{ show.regions.url }}">{{ show.regions.script | string.split "/" | array.last }}</a></p>
+        </div>
+        <figure class="cfx-codeblock cfx-pbg-oneliner" data-lang="powershell">
+          <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__actions"></span></figcaption>
+          <pre><code class="language-powershell">{{ rg.snippet | html.escape }}</code></pre>
+        </figure>
+      </div>
+      <div class="cfx-pbg-regions">
+        {{~ for z in show.regions.sizes ~}}
+        {{~ shape = "landscape"; img_sizes = "(max-width: 900px) 100vw, 760px"
+            if z.height > z.width; shape = "portrait"; img_sizes = "(max-width: 900px) 100vw, 420px"; end ~}}
+        <figure class="cfx-output cfx-pbg-regions__{{ shape }}">
+          <figcaption><span class="cfx-output__file">{{ z.width }} x {{ z.height }}</span></figcaption>
+          {{~ img_renders = z.renders; img_alt = "The regions example for FILE-SRV-07 at " + z.width + " x " + z.height + ": a left column with a memory card and a CPU chart, a right column with a shares table and volume bars, and a bottom band with network, a CPU gauge and a list." ~}}
+          {{ include "powerbginfo/image" }}
+        </figure>
+        {{~ end ~}}
+      </div>
+    </div>
+
+    {{~ wg = pbg.capabilities.widgets ~}}
+    <div class="cfx-pbg-block">
+      <div class="cfx-pbg-split cfx-pbg-split--head">
+        <div class="cfx-pbg-split__text">
+          <h3>{{ wg.title }}</h3>
+          <p>{{ wg.body }} <a class="cfx-link" href="{{ src.featuresUrl }}">Examples/Features</a></p>
+        </div>
+      </div>
+      <ul class="cfx-pbg-widgets">
+        {{~ for i in wg.items ~}}
+        {{~ w = show.widgets[i.id]; c = i.crop
+            img_sizes = "(max-width: 620px) 300vw, (max-width: 1000px) 160vw, 1200px"
+            if i.wide; img_sizes = "(max-width: 1280px) 105vw, 1240px"; end ~}}
+        <li class="cfx-pbg-widget{{ if i.wide }} cfx-pbg-widget--wide{{ end }}" style="--key: var(--cfx-s{{ (for.index % 6) + 1 }})">
+          <div class="cfx-pbg-widget__head">
+            <h4><span class="cfx-key{{ if for.index >= 6 }} cfx-key--hollow{{ end }}" aria-hidden="true"></span>{{ i.title }}</h4>
+            <p>{{ i.body }}</p>
+          </div>
+          <div class="cfx-pbg-crop" style="--x: {{ c.x }}; --y: {{ c.y }}; --w: {{ c.w }}; --h: {{ c.h }}">
+            {{~ img_renders = w.renders; img_alt = i.title + " from " + w.file + ", cropped to the widget." ~}}
+            {{ include "powerbginfo/image" }}
+          </div>
+          <figure class="cfx-codeblock cfx-pbg-oneliner" data-lang="powershell">
+            <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file"><a href="{{ w.url }}">{{ w.file }}</a></span><span class="cfx-codeblock__actions"></span></figcaption>
+            <pre><code class="language-powershell">{{ i.snippet | html.escape }}</code></pre>
+          </figure>
+        </li>
+        {{~ end ~}}
+      </ul>
+    </div>
+  </section>
+
+  <section class="cfx-atlas cfx-pbg-parts" id="chartforgex" aria-labelledby="cfx-pbg-parts-title">
+    <div class="cfx-atlas__head">
+      <h2 id="cfx-pbg-parts-title">{{ pbg.parts.title }}</h2>
+      <p>{{ pbg.parts.body }}</p>
+    </div>
+    <ul class="cfx-pbg-parts__grid">
+      {{~ for p in pbg.parts.items ~}}
+      <li class="cfx-pbg-part" style="--key: var(--cfx-s{{ for.index + 1 }})">
+        <h3><span class="cfx-key" aria-hidden="true"></span>{{ p.title }}</h3>
+        <code>{{ p.command }}</code>
+        <p>{{ p.body }}</p>
+        <p class="cfx-pbg-part__links">{{~ for l in p.links ~}}<a class="cfx-link" href="{{ l.url }}">{{ l.title }}</a>{{~ end ~}}</p>
+      </li>
+      {{~ end ~}}
+    </ul>
+  </section>
+
+  <section class="cfx-guide" id="get-started" aria-labelledby="cfx-pbg-start-title">
+    <div class="cfx-guide__head">
+      <h2 id="cfx-pbg-start-title">{{ pbg.start.title }}</h2>
+      <p>{{ pbg.start.body }}</p>
+    </div>
+    {{~ steps_html = content ~}}
+    {{ include "steps" }}
+    <p class="cfx-pbg-links">{{~ for l in pbg.start.links ~}}<a class="cfx-tag cfx-tag--link" href="{{ l.url }}">{{ l.title }}</a>{{~ end ~}}</p>
+  </section>
+
+  <section class="cfx-atlas cfx-pbg-prod" id="production" aria-labelledby="cfx-pbg-prod-title">
+    <div class="cfx-atlas__head">
+      <h2 id="cfx-pbg-prod-title">{{ prod.title }}</h2>
+      <p>{{ prod.body }}</p>
+    </div>
+    <div class="cfx-pbg-routes">
+      <table>
+        <thead><tr><th scope="col">Route</th><th scope="col">When to use it</th><th scope="col">Guide</th></tr></thead>
+        <tbody>
+          {{~ for r in prod.routes ~}}
+          <tr style="--key: var(--cfx-s{{ for.index + 1 }})">
+            <th scope="row"><span class="cfx-key" aria-hidden="true"></span>{{ r.route }}</th>
+            <td>{{ r.when }}</td>
+            <td><a class="cfx-link" href="{{ prod.guideBase }}{{ r.guide }}">{{ r.route }} guide</a></td>
+          </tr>
+          {{~ end ~}}
+        </tbody>
+      </table>
+    </div>
+    <ul class="cfx-pbg-notes">
+      {{~ for n in prod.notes ~}}
+      <li class="cfx-pbg-part">
+        <h3>{{ n.title }}</h3>
+        <p>{{ n.body }}</p>
+        <p class="cfx-pbg-part__links"><a class="cfx-link" href="{{ prod.guideBase }}{{ n.guide }}">{{ n.guideTitle }}</a></p>
+      </li>
+      {{~ end ~}}
+    </ul>
+    <nav class="cfx-pbg-guides" aria-labelledby="cfx-pbg-guides-title">
+      <h3 id="cfx-pbg-guides-title">Every guide</h3>
+      <ul>
+        {{~ for g in prod.guides ~}}
+        <li><a href="{{ prod.guideBase }}{{ g.slug }}"><strong>{{ g.title }}</strong><span>{{ g.body }}</span></a></li>
+        {{~ end ~}}
+      </ul>
+    </nav>
+  </section>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>
