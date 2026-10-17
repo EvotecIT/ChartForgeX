@@ -43,7 +43,9 @@ $website = Split-Path -Parent $PSScriptRoot
 $repository = 'EvotecIT/PowerBGInfo'
 # Widgets shown in the capabilities grid, plus the examples the logic section uses.
 $widgetIds = 'metrics', 'tables', 'lists', 'calendar-heatmap', 'timeline', 'treemap', 'mermaid', 'qrcode', 'system-info'
-$scenarioIds = 'server-status', 'helpdesk', 'classroom', 'admin-workstation'
+$scenarioConfig = Get-Content -LiteralPath (Join-Path $website 'data/powerbginfo.json') -Raw | ConvertFrom-Json
+$scenarioIds = @($scenarioConfig.scenarios.featured + ($scenarioConfig.scenarios.uses | ForEach-Object { $_.scenarios }) | Sort-Object -Unique)
+$requiredScreens = @($scenarioConfig.scenarios.screens.items)
 $themePresetIds = 'graphite', 'midnight', 'ember', 'orchid', 'corporate', 'aurora'
 $regionSizes = '1920x1080', '3440x1440', '1080x1920'
 
@@ -93,6 +95,23 @@ $unknownScenarioIds = @($actualScenarioIds | Where-Object { $_ -notin $scenarioI
 $missingScenarioIds = @($scenarioIds | Where-Object { $_ -notin $actualScenarioIds })
 if ($unknownScenarioIds.Count -or $missingScenarioIds.Count) {
     throw "Scenario manifest mismatch. Unknown: [$($unknownScenarioIds -join ', ')]; missing: [$($missingScenarioIds -join ', ')]."
+}
+foreach ($scenarioId in $scenarioIds) {
+    foreach ($mode in 'light', 'dark') {
+        if (-not @($manifest.renders | Where-Object { $_.scenario -eq $scenarioId -and $_.width -eq 1920 -and $_.height -eq 1080 -and $_.theme -eq $mode }).Count) {
+            throw "$RenderPath has no 1920x1080 $mode render of '$scenarioId'."
+        }
+    }
+}
+foreach ($screen in $requiredScreens) {
+    $dimensions = $screen.size -split 'x'
+    $width = [int] $dimensions[0]
+    $height = [int] $dimensions[1]
+    foreach ($mode in 'light', 'dark') {
+        if (-not @($manifest.renders | Where-Object { $_.scenario -eq $screen.scenario -and $_.width -eq $width -and $_.height -eq $height -and $_.theme -eq $mode }).Count) {
+            throw "$RenderPath has no $($screen.size) $mode render of '$($screen.scenario)', required by data/powerbginfo.json."
+        }
+    }
 }
 $target = Join-Path $website 'static/powerbginfo'
 $scriptTarget = Join-Path $target 'scripts'

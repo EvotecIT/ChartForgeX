@@ -1,4 +1,4 @@
-#Requires -Version 7.0
+#Requires -Version 7.4
 <#
 .SYNOPSIS
     Runs the PowerBGInfo build-it-yourself steps for chartforgex.com/powerbginfo/ and records each script, the lines
