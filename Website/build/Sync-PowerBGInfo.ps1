@@ -46,6 +46,10 @@ $widgetIds = 'metrics', 'tables', 'lists', 'calendar-heatmap', 'timeline', 'tree
 $scenarioConfig = Get-Content -LiteralPath (Join-Path $website 'data/powerbginfo.json') -Raw | ConvertFrom-Json
 $scenarioIds = @($scenarioConfig.scenarios.featured + ($scenarioConfig.scenarios.uses | ForEach-Object { $_.scenarios }) | Sort-Object -Unique)
 $requiredScreens = @($scenarioConfig.scenarios.screens.items)
+$missingScreenSizes = @($requiredScreens.size | Sort-Object -Unique | Where-Object { $_ -notin $ScreenSizes })
+if ($missingScreenSizes.Count) {
+    throw "-ScreenSizes omits configured PowerBGInfo screen size(s): $($missingScreenSizes -join ', '). Include them before syncing the showcase."
+}
 $themePresetIds = 'graphite', 'midnight', 'ember', 'orchid', 'corporate', 'aurora'
 $regionSizes = '1920x1080', '3440x1440', '1080x1920'
 
@@ -113,16 +117,26 @@ foreach ($screen in $requiredScreens) {
         }
     }
 }
+$featureManifest = Read-Manifest $FeaturePath $commit
+$featureRenders = @($featureManifest.renders)
+if (-not $featureRenders.Count) { throw "$FeaturePath/manifest.json contains no feature renders." }
 $target = Join-Path $website 'static/powerbginfo'
-$scriptTarget = Join-Path $target 'scripts'
-Clear-Renders $target
+$stagingRoot = Join-Path $website ".powerbginfo-sync-$([guid]::NewGuid().ToString('N'))"
+$stagedTarget = Join-Path $stagingRoot 'powerbginfo'
+$stagedDataPath = Join-Path $stagingRoot 'powerbginfo-showcase.json'
+New-Item -ItemType Directory -Force -Path $stagedTarget | Out-Null
+if (Test-Path -LiteralPath $target -PathType Container) {
+    Get-ChildItem -LiteralPath $target | Copy-Item -Destination $stagedTarget -Recurse -Force
+}
+$scriptTarget = Join-Path $stagedTarget 'scripts'
+Clear-Renders $stagedTarget
 Clear-Renders $scriptTarget '*.txt'
 
 $scenarios = [ordered]@{}
 foreach ($render in $manifest.renders) {
     $size = "$($render.width)x$($render.height)"
     if ($size -ne '1920x1080' -and $size -notin $ScreenSizes) { continue }
-    $copied = Copy-Render $render $RenderPath $target '/powerbginfo'
+    $copied = Copy-Render $render $RenderPath $stagedTarget '/powerbginfo'
     if (-not $scenarios.Contains($render.scenario)) {
         $script = Get-SourceText $render.script
         $lines = $script.TrimEnd().Split("`n")
@@ -182,8 +196,7 @@ foreach ($scenario in $scenarios.Values) {
     }
 }
 
-$featureManifest = Read-Manifest $FeaturePath $commit
-$featureTarget = Join-Path $target 'features'
+$featureTarget = Join-Path $stagedTarget 'features'
 Clear-Renders $featureTarget
 $widgets = [ordered] @{}
 $themes = [ordered] @{}
@@ -266,7 +279,40 @@ $data = [ordered]@{
 }
 
 $dataPath = Join-Path $website 'data/powerbginfo-showcase.json'
-Set-Content -LiteralPath $dataPath -Value (($data | ConvertTo-Json -Depth 8).Replace("`r`n", "`n") + "`n") -NoNewline -Encoding utf8NoBOM
-$total = (@(Get-ChildItem -LiteralPath $target -Filter '*.png' -File) + @(Get-ChildItem -LiteralPath $featureTarget -Filter '*.png' -File) | Measure-Object Length -Sum).Sum
+Set-Content -LiteralPath $stagedDataPath -Value (($data | ConvertTo-Json -Depth 8).Replace("`r`n", "`n") + "`n") -NoNewline -Encoding utf8NoBOM
+$total = (@(Get-ChildItem -LiteralPath $stagedTarget -Filter '*.png' -File) + @(Get-ChildItem -LiteralPath $featureTarget -Filter '*.png' -File) | Measure-Object Length -Sum).Sum
 $screens = @($scenarios.Values | ForEach-Object { $_.screens.Count } | Measure-Object -Sum).Sum
+$targetBackup = Join-Path $stagingRoot 'previous-powerbginfo'
+$dataBackup = Join-Path $stagingRoot 'previous-showcase.json'
+$targetMoved = $false
+$targetPromoted = $false
+$dataMoved = $false
+$dataPromoted = $false
+try {
+    if (Test-Path -LiteralPath $target -PathType Container) { Move-Item -LiteralPath $target -Destination $targetBackup; $targetMoved = $true }
+    Move-Item -LiteralPath $stagedTarget -Destination $target; $targetPromoted = $true
+    if (Test-Path -LiteralPath $dataPath -PathType Leaf) { Move-Item -LiteralPath $dataPath -Destination $dataBackup; $dataMoved = $true }
+    Move-Item -LiteralPath $stagedDataPath -Destination $dataPath; $dataPromoted = $true
+} catch {
+    $promotionError = $_
+    $rollbackErrors = [System.Collections.Generic.List[string]]::new()
+    $rollbackActions = @(
+        @{ Name = 'remove promoted showcase data'; Condition = $dataPromoted; Action = { if (Test-Path -LiteralPath $dataPath -PathType Leaf) { Remove-Item -LiteralPath $dataPath } } },
+        @{ Name = 'restore previous showcase data'; Condition = $dataMoved; Action = { if (Test-Path -LiteralPath $dataBackup -PathType Leaf) { Move-Item -LiteralPath $dataBackup -Destination $dataPath } } },
+        @{ Name = 'remove promoted render directory'; Condition = $targetPromoted; Action = { if (Test-Path -LiteralPath $target -PathType Container) { [System.IO.Directory]::Delete($target, $true) } } },
+        @{ Name = 'restore previous render directory'; Condition = $targetMoved; Action = { if (Test-Path -LiteralPath $targetBackup -PathType Container) { Move-Item -LiteralPath $targetBackup -Destination $target } } }
+    )
+    foreach ($rollback in $rollbackActions) {
+        if (-not $rollback.Condition) { continue }
+        try { & $rollback.Action }
+        catch { $rollbackErrors.Add("$($rollback.Name): $($_.Exception.Message)") }
+    }
+    if ($rollbackErrors.Count) {
+        throw "Promotion failed: $($promotionError.Exception.Message) Rollback also failed: $($rollbackErrors -join '; '). Backups remain under '$stagingRoot'."
+    }
+    throw $promotionError
+}
+if (Test-Path -LiteralPath $targetBackup -PathType Container) { [System.IO.Directory]::Delete($targetBackup, $true) }
+if (Test-Path -LiteralPath $dataBackup -PathType Leaf) { Remove-Item -LiteralPath $dataBackup }
+if (Test-Path -LiteralPath $stagingRoot -PathType Container) { [System.IO.Directory]::Delete($stagingRoot, $true) }
 Write-Host "PowerBGInfo $($commit.Substring(0, 7)): $($scenarios.Count) scenarios ($screens extra screen sizes), $($widgets.Count) widgets, $($themes.Count) themes, $($regions.Count) region sizes, $([math]::Round($total / 1KB)) KB -> $dataPath"

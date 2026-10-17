@@ -62,11 +62,26 @@ foreach ($file in 'PowerBGInfo.psd1', 'PowerBGInfo.psm1') {
 }
 $moduleVersion = (Import-PowerShellDataFile -LiteralPath $ModulePath).ModuleVersion
 
-$sourceFiles = @(git -C $RepositoryPath ls-tree -r --name-only $commit -- Sources Public Private Classes Enums)
-if ($LASTEXITCODE -ne 0 -or -not $sourceFiles.Count) { throw "Cannot list PowerBGInfo source files at $commit." }
-foreach ($relativePath in $sourceFiles) {
+$trackedFiles = @(git -C $RepositoryPath ls-tree -r --name-only $commit)
+if ($LASTEXITCODE -ne 0 -or -not $trackedFiles.Count) { throw "Cannot list build inputs at $commit." }
+$buildInputPattern = '(?i)(\.(cs|csproj|props|targets|resx|razor|xaml|vb|fs|json)$|(^|/)(global\.json|NuGet\.Config|Directory\.Build\.[^/]+|Directory\.Packages\.props|packages\.lock\.json|MSBuild\.rsp)$)'
+$expectedInputs = @($trackedFiles | Where-Object { $_ -match $buildInputPattern })
+$excludedOutput = '(^|/)(\.git|bin|obj|artifacts|TestResults|\.vs)(/|$)'
+$actualInputs = @(Get-ChildItem -LiteralPath $moduleRoot -File -Recurse -Force | ForEach-Object {
+    $relative = [System.IO.Path]::GetRelativePath($moduleRoot, $_.FullName).Replace('\', '/')
+    if ($relative -notmatch $excludedOutput -and $relative -match $buildInputPattern) { $relative }
+})
+$expectedSet = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+$actualSet = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+foreach ($path in $expectedInputs) { [void] $expectedSet.Add($path) }
+foreach ($path in $actualInputs) { [void] $actualSet.Add($path) }
+$extraInputs = @($actualSet | Where-Object { -not $expectedSet.Contains($_) })
+$missingInputs = @($expectedSet | Where-Object { -not $actualSet.Contains($_) })
+if ($extraInputs.Count -or $missingInputs.Count) {
+    throw "The module build tree does not match the recorded commit's build inputs. Extra: [$($extraInputs -join ', ')]; missing: [$($missingInputs -join ', ')]."
+}
+foreach ($relativePath in $expectedInputs) {
     $localSource = Join-Path $moduleRoot $relativePath
-    if (-not (Test-Path -LiteralPath $localSource -PathType Leaf)) { throw "$moduleRoot is missing '$relativePath' from $commit." }
     $expectedBlob = (git -C $RepositoryPath rev-parse "${commit}:$relativePath").Trim()
     if ($LASTEXITCODE -ne 0) { throw "Cannot resolve '$relativePath' at $commit." }
     $actualBlob = (git -C $RepositoryPath hash-object "--path=$relativePath" -- $localSource).Trim()
@@ -75,6 +90,28 @@ foreach ($relativePath in $sourceFiles) {
 
 $project = Join-Path $moduleRoot 'Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj'
 if (-not (Test-Path -LiteralPath $project -PathType Leaf)) { throw "The source build is missing '$project'. Pass a PowerBGInfo source checkout or archive." }
+$externalBuildInputs = [System.Collections.Generic.List[string]]::new()
+$directory = Split-Path -Parent $project
+$buildInputNames = 'Directory.Build.props', 'Directory.Build.targets', 'Directory.Packages.props', 'Directory.Build.rsp', 'MSBuild.rsp', 'global.json', 'NuGet.Config'
+while ($directory) {
+    foreach ($name in $buildInputNames) {
+        $candidate = Join-Path $directory $name
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            $relative = [System.IO.Path]::GetRelativePath($moduleRoot, $candidate).Replace('\', '/')
+            if ($relative.StartsWith('../', [StringComparison]::Ordinal) -or $relative -eq '..') {
+                $externalBuildInputs.Add($candidate)
+            } elseif (-not $expectedSet.Contains($relative)) {
+                throw "Build input '$candidate' is not recorded in commit $commit."
+            }
+        }
+    }
+    $parent = Split-Path -Parent $directory
+    if (-not $parent -or $parent -eq $directory) { break }
+    $directory = $parent
+}
+if ($externalBuildInputs.Count) {
+    throw "The build depends on inputs outside the recorded module snapshot: [$($externalBuildInputs -join ', ')]. Pass a repository-root snapshot that includes these inputs."
+}
 Write-Host "Building PowerBGInfo $($commit.Substring(0, 7)) for the step renders..." -ForegroundColor Cyan
 Push-Location $moduleRoot
 try {
