@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
@@ -32,12 +33,71 @@ internal static partial class TopologyNodeShapeGeometry {
     }
 
     // Keep the last route leg on the same line after fan-out or named-port spreading.
-    internal static void AttachRoute(TopologyNode node, List<ChartPoint> points, int endpointIndex, int adjacentIndex, double gap) {
+    internal static void AttachRoute(TopologyNode node, List<ChartPoint> points, int endpointIndex, int adjacentIndex, double gap,
+        TopologyEdgePort port = TopologyEdgePort.Auto, double? offset = null) {
         if (!node.Shape.HasValue || points.Count < 2) return;
         var endpoint = points[endpointIndex];
         var adjacent = points[adjacentIndex];
-        var direction = new ChartPoint(adjacent.X - endpoint.X, adjacent.Y - endpoint.Y);
-        points[endpointIndex] = SurfacePoint(node, endpoint, direction, gap);
+        var center = RoutingCenter(node);
+        if (offset.HasValue && port != TopologyEdgePort.Auto) {
+            points[endpointIndex] = NamedPortPoint(node, port, offset.Value, gap);
+            return;
+        }
+        var direction = port == TopologyEdgePort.Auto
+            ? new ChartPoint(adjacent.X - endpoint.X, adjacent.Y - endpoint.Y)
+            : port switch {
+                TopologyEdgePort.Top => new ChartPoint(0, -1),
+                TopologyEdgePort.Right => new ChartPoint(1, 0),
+                TopologyEdgePort.Bottom => new ChartPoint(0, 1),
+                TopologyEdgePort.Left => new ChartPoint(-1, 0),
+                _ => new ChartPoint(adjacent.X - endpoint.X, adjacent.Y - endpoint.Y)
+            };
+        points[endpointIndex] = SurfacePoint(node, port == TopologyEdgePort.Auto ? endpoint : center, direction, gap);
+    }
+
+    private static ChartPoint NamedPortPoint(TopologyNode node, TopologyEdgePort port, double offset, double gap) {
+        var vertical = port is TopologyEdgePort.Left or TopologyEdgePort.Right;
+        var coordinate = vertical ? node.Y + node.Height * offset : node.X + node.Width * offset;
+        var intersections = new List<ChartPoint>();
+        if (node.Shape == TopologyNodeShape.Actor) {
+            foreach (var part in SceneParts(node)) AddIntersections(part.Path.Flatten(1), part.Close);
+        } else {
+            foreach (var path in ChartMapPathParser.ParseSubpaths(Path(node), 1)) AddIntersections(path.Points, path.IsClosed);
+        }
+        if (intersections.Count == 0)
+            return BoundaryPoint(node, node.X + node.Width / 2, node.Y + node.Height / 2, port, gap);
+        var boundary = port switch {
+            TopologyEdgePort.Right => intersections.OrderByDescending(point => point.X).First(),
+            TopologyEdgePort.Left => intersections.OrderBy(point => point.X).First(),
+            TopologyEdgePort.Bottom => intersections.OrderByDescending(point => point.Y).First(),
+            _ => intersections.OrderBy(point => point.Y).First()
+        };
+        return port switch {
+            TopologyEdgePort.Right => new ChartPoint(boundary.X + gap, boundary.Y),
+            TopologyEdgePort.Left => new ChartPoint(boundary.X - gap, boundary.Y),
+            TopologyEdgePort.Bottom => new ChartPoint(boundary.X, boundary.Y + gap),
+            _ => new ChartPoint(boundary.X, boundary.Y - gap)
+        };
+
+        void AddIntersections(IReadOnlyList<ChartPoint> points, bool closed) {
+            if (points.Count < 2) return;
+            var segmentCount = closed ? points.Count : points.Count - 1;
+            for (var index = 0; index < segmentCount; index++) {
+                var first = points[index]; var second = points[(index + 1) % points.Count];
+                var a = vertical ? first.Y : first.X;
+                var b = vertical ? second.Y : second.X;
+                var av = vertical ? first.X : first.Y;
+                var bv = vertical ? second.X : second.Y;
+                if (Math.Abs(a - coordinate) < .001) intersections.Add(first);
+                if ((a < coordinate && b > coordinate) || (a > coordinate && b < coordinate)) {
+                    var ratio = (coordinate - a) / (b - a);
+                    intersections.Add(vertical
+                        ? new ChartPoint(av + (bv - av) * ratio, coordinate)
+                        : new ChartPoint(coordinate, av + (bv - av) * ratio));
+                }
+                if (index == segmentCount - 1 && Math.Abs(b - coordinate) < .001) intersections.Add(second);
+            }
+        }
     }
 
     private static ChartPoint SurfacePoint(TopologyNode node, ChartPoint origin, ChartPoint direction, double gap) {

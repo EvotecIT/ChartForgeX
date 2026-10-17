@@ -134,7 +134,7 @@ public sealed class PngVisualCanvasRenderer {
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
-        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile);
+        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, theme);
         var x = metrics.X;
         var y = metrics.Y;
         var width = metrics.Width;
@@ -177,15 +177,17 @@ public sealed class PngVisualCanvasRenderer {
         var textX = metrics.TextX;
         var chartW = metrics.ChartWidth;
         var chartX = metrics.ChartX;
-        foreach (var line in VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme.FontFamily, theme.TextMeasurementMode).Lines) {
+        var textLayout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme);
+        foreach (var line in textLayout.Lines) {
             VisualCanvasTextFace.Resolve(theme.FontFamily, line.Weight, theme.TextMeasurementMode).Draw(canvas, line.X, line.Y, line.Text, TileTextColor(line.Role, theme), line.FontSize);
         }
         if (tile.Progress.HasValue) {
             var railX = textX;
-            var railY = y + height - 16;
-            var railW = metrics.HasMiniChart ? Math.Max(24, chartX - railX - 16) : Math.Max(24, width - (railX - x) - padX);
-            canvas.FillRoundedRect(railX, railY, railW, 8, 4, theme.TileProgressTrackColor);
-            canvas.FillRoundedRect(railX, railY, railW * tile.Progress.Value, 8, 4, accent);
+            var railY = metrics.ProgressRailY;
+            var railHeight = metrics.ProgressRailHeight;
+            var railW = metrics.TextMax;
+            canvas.FillRoundedRect(railX, railY, railW, railHeight, railHeight / 2, theme.TileProgressTrackColor);
+            canvas.FillRoundedRect(railX, railY, railW * tile.Progress.Value, railHeight, railHeight / 2, accent);
         }
         if (metrics.HasMiniChart) {
             DrawTileMiniChart(canvas, tile, theme, accent, chartX, metrics.ChartY, chartW, metrics.ChartHeight);

@@ -42,7 +42,7 @@ internal static partial class VisualPolarCompiler {
                     if (!zero && pattern != ChartFillPattern.None) builder.PatternSlice(cx, cy, r, 0, start, sweep, pattern,
                         ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(100), role: "polar-area-pattern");
                 }
-                if (!zero && (series.ShowDataLabels ?? chart.Options.ShowDataLabels)) {
+                if (!zero && (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))) {
                     var angle = start + sweep / 2; var position = new ChartPoint(cx + Math.Cos(angle) * r * .65, cy + Math.Sin(angle) * r * .65);
                     AddDataLabel(chart, context, builder, plot, labels, series, index, Id(0, index), value, position, angle, false, 0, 1);
                 }

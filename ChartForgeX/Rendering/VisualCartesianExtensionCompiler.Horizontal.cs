@@ -39,7 +39,7 @@ internal static partial class VisualCartesianCompiler {
     private static void AddHorizontalLabel(Chart chart, VisualRenderContext context, ChartSeries series, int index, int item, ChartPoint anchor,
         ChartRect bounds, double value, double direction, ResolvedPointLabel label, List<LabelPlacementRequest> labels,
         string? associatedId = null, ChartColor? markFill = null, SvgColorRole? markFillRole = null) {
-        if (!(series.ShowDataLabels ?? chart.Options.ShowDataLabels) || label.Text.Length == 0) return;
+        if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) || label.Text.Length == 0) return;
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         if (placement == ChartDataLabelPlacement.Left) anchor = new ChartPoint(bounds.Left, anchor.Y);
         if (placement == ChartDataLabelPlacement.Right) anchor = new ChartPoint(bounds.Right, anchor.Y);

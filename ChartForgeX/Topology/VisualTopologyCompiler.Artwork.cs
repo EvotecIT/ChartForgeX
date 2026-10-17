@@ -9,6 +9,21 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
+    private bool CanRenderNodeArtwork(TopologyNode node) {
+        var artwork = ResolveRenderableNodeArtwork(node, _options);
+        if (artwork == null) return false;
+        if (artwork.ImageHref is string href) {
+            if (href.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase)) {
+                var size = ArtworkSamplingSize(new ChartRect(0, 0, node.Width, node.Height));
+                if (SvgRasterRenderer.TryDecodeImageResource(href, size.Width, size.Height, artwork.PreserveAspectRatio, out _)) return true;
+            } else if (VisualSceneImageResource.IsSafeHref(href)) return true;
+        }
+        if (!artwork.HasSvgBody) return false;
+        var dimensions = ArtworkSamplingSize(new ChartRect(0, 0, node.Width, node.Height));
+        return SvgRasterRenderer.TryRenderFragment(artwork.SvgBody!, artwork.SvgViewBox, artwork.PreserveAspectRatio,
+            dimensions.Width, dimensions.Height, out _);
+    }
+
     private bool BuildArtwork(TopologyNode node, ChartRect bounds, bool selectedOutline = true, double? opacity = null, ChartColor? fallbackColor = null) {
         var artwork = ResolveRenderableNodeArtwork(node, _options);
         if (artwork == null) return false;

@@ -88,7 +88,7 @@ internal static partial class VisualBlockRendering {
             case VisualStatus.Positive: return theme.Positive;
             case VisualStatus.Warning: return theme.Warning;
             case VisualStatus.Negative: return theme.Negative;
-            case VisualStatus.Info: return PaletteAt(theme, 0);
+            case VisualStatus.Info: return theme.Info;
             case VisualStatus.Neutral: return theme.MutedText;
             default: return theme.MutedText;
         }

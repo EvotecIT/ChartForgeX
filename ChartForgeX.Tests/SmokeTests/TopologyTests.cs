@@ -140,7 +140,12 @@ internal static partial class SmokeTests {
         Assert(TopologyEntity(svg, "node", "service").Descendants().Any(), "Layered left-to-right topology should render the middle layer.");
         Assert(TopologyEntity(svg, "node", "database").Descendants().Any(), "Layered left-to-right topology should render the last layer.");
         Assert(svg.Contains("x=\"24\"", StringComparison.Ordinal), "Layered left-to-right topology should start inside the left viewport padding.");
-        Assert(svg.Contains("x=\"456\"", StringComparison.Ordinal), "Layered left-to-right topology should place the final layer near the right viewport padding.");
+        var document = System.Xml.Linq.XDocument.Parse(svg);
+        var outputWidth = double.Parse(document.Root!.Attribute("width")!.Value, CultureInfo.InvariantCulture);
+        var right = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-node-surface" && element.Name.LocalName == "rect")
+            .Max(element => double.Parse(element.Attribute("x")!.Value, CultureInfo.InvariantCulture) + double.Parse(element.Attribute("width")!.Value, CultureInfo.InvariantCulture));
+        Assert(outputWidth - right >= chart.Viewport.Padding - 1 && outputWidth - right <= chart.Viewport.Padding * 2,
+            "The final layered node should retain right viewport padding when measured edge captions widen the ranks.");
         Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }).Length > 64, "Layered left-to-right topology should render as PNG.");
     }
 

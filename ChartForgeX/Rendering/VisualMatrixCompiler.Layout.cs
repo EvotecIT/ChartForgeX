@@ -138,7 +138,7 @@ internal static partial class VisualMatrixCompiler {
         var fits = cell.HasValue ? ChartHeatmapSurface.CategoricalLabelFits(cellBounds.Width, cellBounds.Height, measured.Width, measured.Height)
             : measured.Width <= inner.Width && measured.Height <= inner.Height;
         var mode = chart.Options.HeatmapValueTextMode;
-        var visible = mode == ChartHeatmapValueTextMode.Always || mode == ChartHeatmapValueTextMode.Auto && (series.ShowDataLabels ?? chart.Options.ShowDataLabels) && fits;
+        var visible = mode == ChartHeatmapValueTextMode.Always || mode == ChartHeatmapValueTextMode.Auto && (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) && fits;
         if (cell.HasValue) visible = cell.Value.Text != null && mode != ChartHeatmapValueTextMode.Hidden && (mode == ChartHeatmapValueTextMode.Always || fits);
         if (!visible || mode == ChartHeatmapValueTextMode.Hidden) return;
         var placement = cell.HasValue ? ChartDataLabelPlacement.Center : series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;

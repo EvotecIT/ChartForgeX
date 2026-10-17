@@ -28,6 +28,7 @@ public static class MermaidFlowchartRendering {
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
             .WithViewport(options.Width, options.Height, options.Padding)
             .WithLayout(document.Kind == MermaidDiagramKind.Swimlane || (document.Kind == MermaidDiagramKind.UseCase && document.Subgraphs.Count > 0) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered, ToVisualLinkDirection(document.Direction));
+        if (options.HasExplicitViewportSize) chart.DefaultRenderOptions = ToTopologyRenderOptions(options);
         var inferredLayers = MermaidFlowchartLayering.Infer(document);
         var fitViewport = options.FitContent && !options.HasExplicitViewportSize;
 
@@ -74,6 +75,7 @@ public static class MermaidFlowchartRendering {
             target.PreserveDisplayModeSize = true;
             target.FitLabelToContent = options.FitContent && node.Shape != MermaidFlowchartNodeShape.Actor;
             target.BackgroundColor = StyleValue(node.Styles, "fill");
+            target.LabelColor = StyleValue(node.Styles, "color");
             target.Metadata["mermaid.id"] = node.Id;
             target.Metadata["mermaid.label"] = sourceLabel;
             target.Metadata["mermaid.shape"] = node.Shape.ToString();
@@ -182,7 +184,7 @@ public static class MermaidFlowchartRendering {
     }
 
     private static TopologyRenderOptions ToTopologyRenderOptions(MermaidFlowchartRenderOptions options) =>
-        new TopologyRenderOptions { FitContentToViewport = options.HasExplicitViewportSize };
+        new TopologyRenderOptions { FitContentToViewport = options.FitContent && options.HasExplicitViewportSize };
 
     private static string ResolveTitle(MermaidFlowchartDocument document, MermaidFlowchartRenderOptions options) =>
         MermaidHeading.Title(document, options.Title, null, document.Kind == MermaidDiagramKind.Swimlane ? "Mermaid swimlane" : document.Kind == MermaidDiagramKind.UseCase ? "Mermaid use case" : "Mermaid flowchart");
