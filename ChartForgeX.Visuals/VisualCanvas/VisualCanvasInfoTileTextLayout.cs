@@ -91,8 +91,33 @@ internal sealed class VisualCanvasInfoTileTextLayoutResult {
     public double Scale { get; }
 }
 
+internal sealed class VisualCanvasInfoTileRenderLayout {
+    public VisualCanvasInfoTileRenderLayout(VisualCanvasInfoTileMetrics metrics,
+        VisualCanvasInfoTileTextLayoutResult text) {
+        Metrics = metrics;
+        Text = text;
+    }
+
+    public VisualCanvasInfoTileMetrics Metrics { get; }
+    public VisualCanvasInfoTileTextLayoutResult Text { get; }
+}
+
 internal static class VisualCanvasInfoTileTextLayout {
-    public static VisualCanvasInfoTileMetrics CalculateMetrics(VisualCanvasInfoTileLayer tile, ResolvedVisualCanvasStyle theme) {
+    public static VisualCanvasInfoTileRenderLayout CalculateLayout(VisualCanvasInfoTileLayer tile,
+        ResolvedVisualCanvasStyle theme) {
+        var metrics = CalculateMetrics(tile, theme);
+        var text = BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme);
+        var requestedScale = tile.TextScale ?? theme.TileTextScale;
+        if (requestedScale >= 1 && text.WasScaledDown && metrics.IconBox < 24) {
+            metrics = CalculateMetrics(tile, theme, preserveFallbackIcon: true);
+            text = BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme);
+        }
+
+        return new VisualCanvasInfoTileRenderLayout(metrics, text);
+    }
+
+    public static VisualCanvasInfoTileMetrics CalculateMetrics(VisualCanvasInfoTileLayer tile,
+        ResolvedVisualCanvasStyle theme, bool preserveFallbackIcon = false) {
         var x = Math.Round(tile.X);
         var y = Math.Round(tile.Y);
         var width = Math.Round(tile.Width);
@@ -103,7 +128,15 @@ internal static class VisualCanvasInfoTileTextLayout {
         var innerWidth = Math.Max(0, width - 2 * padX);
         var textGap = Math.Min(22 * scale, innerWidth * 0.2);
         var minTextWidth = Math.Min(24 * scale, innerWidth * 0.25);
+        if (preserveFallbackIcon) {
+            var minIconBox = Math.Min(24, Math.Max(1, height - 12));
+            iconBox = Math.Max(iconBox, minIconBox);
+            textGap = Math.Min(textGap, Math.Max(0, innerWidth - iconBox));
+            minTextWidth = Math.Min(minTextWidth,
+                Math.Max(0, innerWidth - textGap - iconBox));
+        }
         iconBox = Math.Min(iconBox, Math.Max(1, innerWidth - textGap - minTextWidth));
+        textGap = Math.Min(textGap, iconBox * (22d / 54));
         var iconX = x + padX;
         var iconY = y + (height - iconBox) / 2;
         var textX = iconX + iconBox + textGap;

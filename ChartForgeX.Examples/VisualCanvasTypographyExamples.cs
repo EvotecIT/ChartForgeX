@@ -11,6 +11,8 @@ internal static class VisualCanvasTypographyExamples {
         Directory.CreateDirectory(output);
         Save(output, VisualThemeMode.Light);
         Save(output, VisualThemeMode.Dark);
+        SaveFallback(output, VisualThemeMode.Light);
+        SaveFallback(output, VisualThemeMode.Dark);
     }
 
     public static void WriteProofMatrix(string output) {
@@ -63,6 +65,21 @@ internal static class VisualCanvasTypographyExamples {
             + "-" + width + "x" + height + "-" + suffix;
         canvas.SavePng(Path.Combine(output, name + ".png"));
         canvas.SaveSvg(Path.Combine(output, name + ".svg"));
+    }
+
+    private static void SaveFallback(string output, VisualThemeMode mode) {
+        var canvas = CreateCanvas(420, 100, mode)
+            .AddInfoTileWithTextOptions(48, 26, 320, 48, string.Empty,
+                "HOSTNAME", "WORKSTATION-01",
+                new VisualCanvasInfoTileTextOptions(textScale: 4),
+                "Windows desktop", ChartColor.FromHex("#38BDF8"),
+                surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline,
+                iconKind: VisualCanvasInfoTileIconKind.Computer);
+        var suffix = mode == VisualThemeMode.Dark ? "dark" : "light";
+        var name = "visual-canvas-tile-text-fallback-" + suffix;
+        canvas.SaveSvg(Path.Combine(output, name + ".svg"));
+        canvas.SavePng(Path.Combine(output, name + ".png"));
+        canvas.SaveHtml(Path.Combine(output, name + ".html"));
     }
 
     private static VisualCanvas CreateCanvas(int width, int height, VisualThemeMode mode) =>

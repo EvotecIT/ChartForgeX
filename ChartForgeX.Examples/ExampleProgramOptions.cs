@@ -11,6 +11,12 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--tile-typography-only")) {
+            VisualCanvasTypographyExamples.Write(output);
+            GalleryWriter.Write(output);
+            Console.WriteLine("Generated tile typography examples in: " + output);
+            return true;
+        }
         if (HasArg(args, "--consumer-rendering-only")) { ConsumerRenderingExamples.Write(output); return true; }
         if (HasArg(args, "--story-appearance-only")) {
             StoryAppearanceExamples.Write(output);
