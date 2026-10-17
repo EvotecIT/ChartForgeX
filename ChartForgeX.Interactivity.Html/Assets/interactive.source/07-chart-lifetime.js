@@ -44,6 +44,7 @@
     clearHover(root, false, false);
     hideCrosshair(root, root.querySelector('.cfx-crosshair'));
     clearFocusTrail(root); clearReveals(root);
+    applyHostHighlight(root, null);
     clearSelections(root); setSeriesIsolation(root, null, false); resetViewport(root);
     root.querySelectorAll('.cfx-series-muted').forEach(node => node.classList.remove('cfx-series-muted'));
     root.querySelectorAll('[data-cfx-muted]').forEach(node => node.removeAttribute('data-cfx-muted'));

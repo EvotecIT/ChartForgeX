@@ -4,11 +4,11 @@
       const metrics = metricsByCluster ? metricsByCluster.get(cluster) : clusterMetrics(cluster, byId);
       if (!metrics) return;
       const label = attr(cluster.el, 'data-cluster-label') || cluster.id;
-      const selected = cluster.el.classList.contains('cfx-graph-selected');
+      const selected = cluster.el.classList.contains('cfx-graph-selected') || cluster.el.classList.contains('cfx-graph-highlighted');
       const clusterColors = graphClusterColors(root, cluster, palette);
       context.beginPath();
       context.arc(metrics.x, metrics.y, metrics.radius, 0, Math.PI * 2);
-      context.globalAlpha = metrics.expanded ? .1 : .86;
+      context.globalAlpha = (metrics.expanded ? .1 : .86) * graphLinkOpacity(cluster.el);
       context.fillStyle = metrics.expanded ? 'rgba(224,242,254,0)' : clusterColors.fill;
       context.strokeStyle = selected ? palette.selected : clusterColors.stroke;
       context.lineWidth = selected ? 4 : metrics.expanded ? 1.2 : 2;
@@ -19,7 +19,7 @@
       if ((!moving && !metrics.expanded) || selected) {
         const memberCount = cluster.nodeIds.length;
         const memberLabel = `${memberCount} ${memberCount === 1 ? 'object' : 'objects'}`;
-        context.globalAlpha = metrics.expanded ? .55 : 1;
+        context.globalAlpha = (metrics.expanded ? .55 : 1) * graphLinkOpacity(cluster.el);
         context.font = '700 12px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';
         context.textBaseline = 'middle';

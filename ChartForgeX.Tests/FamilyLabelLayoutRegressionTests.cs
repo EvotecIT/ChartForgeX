@@ -102,6 +102,12 @@ public sealed class FamilyLabelLayoutRegressionTests {
         Assert.Contains(Texts(prepared, "map-scale-label"), text => text.Text.Lines[0].Text == "Less · 39");
         Assert.Contains(Texts(prepared, "map-scale-label"), text => text.Text.Lines[0].Text == "More · 91");
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "map-scale-step");
+        var ramp = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "map-scale-step").ToArray();
+        var textTop = caption.Baseline - caption.Text.Ascent;
+        Assert.True(swatch.Bounds.Left >= ramp.Max(step => step.Bounds.Right) + 2
+            || textTop + caption.Text.Metrics.Height <= Texts(prepared, "map-scale-label").Min(text => text.Baseline - text.Text.Ascent) - 2
+            || textTop >= ramp.Max(step => step.Bounds.Bottom) - .000001,
+            "The missing-data unit belongs after the ramp or on a separate row, rather than between its endpoint values.");
         if (tiles) {
             var codes = chart.Series[0].TileMapDefinition!.Regions.Select(region => region.Code).ToArray();
             var tileLabels = Texts(prepared, "tile-map-label");

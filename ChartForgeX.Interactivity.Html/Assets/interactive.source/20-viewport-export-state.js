@@ -41,7 +41,7 @@
   };
   const sameGroup = (root, peer) => root !== peer && root.dataset.cfxInteractionGroup && root.dataset.cfxInteractionGroup === peer.dataset.cfxInteractionGroup;
   const emitHostEvent = (root, name, detail) => {
-    root.dispatchEvent(new CustomEvent(name, { detail: Object.assign({ chartId: root.dataset.cfxChartId || '' }, detail || {}) }));
+    root.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, detail: Object.assign({ chartId: root.dataset.cfxChartId || '' }, detail || {}) }));
   };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
@@ -52,10 +52,18 @@
       return;
     }
     payload = { ...payload };
+    if (Array.isArray(payload.previousTargets)) payload.previousTargets = payload.previousTargets.filter(sharedTarget);
     for (const field of ['targets', 'trail']) if (Array.isArray(payload[field])) {
       const shared = payload[field].filter(sharedTarget);
-      if (payload[field].length && !shared.length) return;
+      const replacedSelection = field === 'targets' && (payload.action === 'compare' || payload.action === 'lasso' && Array.isArray(payload.previousTargets));
+      if (payload[field].length && !shared.length && !replacedSelection) return;
       payload[field] = shared;
+    }
+    if (['compare', 'lasso'].includes(payload.action) && Array.isArray(payload.targets)) {
+      // A local-only gesture stays local. Replacing a shared selection with a local one
+      // still retires the former shared identities, without exporting the local target.
+      if (Array.isArray(payload.previousTargets) && !payload.previousTargets.length && !payload.targets.length) return;
+      payload.count = payload.targets.length;
     }
     if (payload.action === 'state' && payload.state) {
       const targets = payload.state.selectedTargets || [], shared = targets.filter(sharedTarget);
@@ -67,7 +75,7 @@
       delete root._cfxSharedHover;
     } else if (['hover', 'crosshair', 'navigate'].includes(payload.action)) root._cfxSharedHover = true;
     const detail = Object.assign({ chartId: root.dataset.cfxChartId || '', group: root.dataset.cfxInteractionGroup }, payload);
-    root.dispatchEvent(new CustomEvent('cfxsync', { detail }));
+    root.dispatchEvent(new CustomEvent('cfxsync', { bubbles: true, composed: true, detail }));
     document.querySelectorAll('.cfx-interactive-chart').forEach((peer) => {
       if (chartLifetimes.get(peer)?.disposed === false && sameGroup(root, peer) && hasFeature(peer, 'SynchronizedCharts')) applySync(peer, detail);
     });
@@ -79,13 +87,25 @@
     });
   };
   const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
-  const resetViewport = (root) => {
-    applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
-    root.dataset.cfxBrush = '';
+  // Clearing a host range also cancels its provisional gesture so pointerup cannot recommit it.
+  const clearBrush = root => {
     const brush = root.querySelector('.cfx-brush-box');
-    if (brush) brush.hidden = true;
-    root.dataset.cfxMode = '';
-    root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+    const changed = Boolean(root.dataset.cfxBrush || root.dataset.cfxMode === 'brush' || brush && !brush.hidden);
+    root._cfxCancelBrushDrag?.();
+    root.removeAttribute('data-cfx-brush');
+    if (brush) {
+      brush.hidden = true;
+      for (const name of ['left', 'top', 'width', 'height']) brush.style.removeProperty(name);
+    }
+    if (root.dataset.cfxMode === 'brush') applyMode(root, '');
+    syncResetControl(root);
+    return changed;
+  };
+  const resetViewport = (root) => {
+    suspendPointerReadout(root);
+    applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
+    clearBrush(root);
+    applyMode(root, '');
     syncResetControl(root);
   };
   const storeInteractionState = (root, snapshot) => {
@@ -124,6 +144,7 @@
   };
   const applyInteractionState = (root, snapshot, emit, sync) => {
     if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
+    const previousSelection = selectedTargets(root).map(targetKey).join('\n');
     if (snapshot.viewport) applyViewport(root, Object.assign({}, snapshot.viewport));
     if (snapshot.mode !== undefined) applyMode(root, snapshot.mode || '');
     if (snapshot.brush !== undefined) root.dataset.cfxBrush = snapshot.brush || '';
@@ -144,7 +165,11 @@
     renderCompare(root);
     syncResetControl(root);
     storeInteractionState(root, snapshot);
-    if (emit !== false) emitHostEvent(root, 'cfxstateapplied', { snapshot });
+    syncSelectionAppearance(root);
+    if (emit !== false) {
+      if (previousSelection !== selectedTargets(root).map(targetKey).join('\n')) publishSelectionChange(root, 'command');
+      emitHostEvent(root, 'cfxstateapplied', { snapshot });
+    }
     if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
   };
   const zoomBy = (root, factor) => {

@@ -109,7 +109,7 @@ public sealed class PatternClipAreaBrowserTests {
         await page.Mouse.ClickAsync(screen[0], screen[1]);
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         var reset = page.Locator("[data-cfx-reset]"); if (await reset.IsVisibleAsync()) await reset.ClickAsync();
-        await MoveAwayAsync(page); await target.FocusAsync();
+        await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, target);
         Assert.Contains("Observed", await TooltipTextAsync(page)); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
@@ -130,7 +130,7 @@ public sealed class PatternClipAreaBrowserTests {
         if (!Enabled) return;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
         var page = session.Page; var target = page.Locator("[data-cfx-target-kind='point'][data-cfx-point='1']");
-        await target.FocusAsync(); Assert.Contains("70", await TooltipTextAsync(page));
+        await FocusWithKeyboardAsync(page, target); Assert.Contains("70", await TooltipTextAsync(page));
         await page.Keyboard.PressAsync("Space"); Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         var reset = page.Locator("[data-cfx-reset]"); if (await reset.IsVisibleAsync()) await reset.ClickAsync(); await MoveAwayAsync(page);
         var screen = await target.Locator("ellipse").EvaluateAsync<float[]>("node=>{const box=node.getBBox(),p=new DOMPoint(box.x+box.width,box.y+box.height/2).matrixTransform(node.getScreenCTM());return [p.x,p.y]}");

@@ -3,7 +3,7 @@
     if (!compact && !moving) return points;
     const eligible = (node) => {
       if (node.shape !== 'circle' || node.card || node.shadow && !moving || node.icon && !moving) return false;
-      const paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
+      const paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact, palette.selected);
       // Include the driver's point limit at maximum semantic zoom and DPR.
       return (node.size * 2 + paint.width) * scale * 4 <= limit && 11 * scale * 4 <= limit;
     };
@@ -25,8 +25,8 @@
     };
     state.nodes.forEach(node => {
       if (!gpuNodes.has(node)) return;
-      const paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected'), compact);
-      const alpha = node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1;
+      const paint = graphNodeMarkPaint(node, node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact, palette.selected);
+      const alpha = (node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1) * graphLinkOpacity(node.el);
       points.nodes.add(node);
       point(node.x, node.y, node.size, paint.width, paint.fill, paint.stroke, alpha);
       const status = attr(node.el, 'data-cfx-status').toLowerCase();

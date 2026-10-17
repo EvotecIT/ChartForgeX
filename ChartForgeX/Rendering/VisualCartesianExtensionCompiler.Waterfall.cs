@@ -26,7 +26,7 @@ internal static partial class VisualCartesianCompiler {
                 : new ChartRect(category - width / 2, Math.Min(start, end), width, Math.Abs(start - end));
             var color = WaterfallColor(series, index, step, colors);
             var label = ResolveObservationLabel(chart, context, series, item, colors,
-                () => (step.Kind != ChartWaterfallItemKind.Delta || step.Value < 0 ? string.Empty : "+") + Value(chart, step.Value));
+                format => (step.Kind != ChartWaterfallItemKind.Delta || step.Value < 0 ? string.Empty : "+") + format("value", step.Value));
             var id = WaterfallId(index, step);
             var axis = horizontal ? chart.Options.XAxis : series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
             var direction = MappedBarDirection(axis, step.Value, start, end, horizontal);
@@ -36,6 +36,11 @@ internal static partial class VisualCartesianCompiler {
                 + " " + WaterfallValueName(chart, step) + "=" + Number(step.Value);
             builder.AddRegion(new VisualSemanticRegion(id, WaterfallRole(step), bounds, description));
             var metadata = WaterfallMetadata(chart, index, step, categories[step.X]); metadata["data-cfx-label"] = label.DisplayedText; metadata["aria-label"] = description;
+            if (label.NumericCaption("value") is { } numericCaption) {
+                metadata["data-cfx-formatted-value"] = numericCaption;
+                if (step.Start == step.Value) metadata["data-cfx-formatted-start"] = numericCaption;
+                if (step.End == step.Value) metadata["data-cfx-formatted-end"] = numericCaption;
+            }
             using (builder.PushGroup(id, WaterfallRole(step), metadata)) {
                 if (previous.HasValue && step.Kind != ChartWaterfallItemKind.Total) {
                     var nextIncreasing = category >= (horizontal ? previous.Value.Top + previous.Value.Height / 2 : previous.Value.Left + previous.Value.Width / 2);

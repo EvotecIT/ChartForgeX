@@ -99,7 +99,8 @@ internal static class VisualCanvasLayoutAnalyzer {
         VisualCanvas.ValidateEnum(tile.IconKind, nameof(tile.IconKind));
         VisualCanvas.ValidateEnum(tile.MiniChartKind, nameof(tile.MiniChartKind));
         VisualCanvas.ValidateEnum(tile.TextFitPolicy, nameof(tile.TextFitPolicy));
-        var metrics = VisualCanvasInfoTileTextLayout.CalculateMetrics(tile, theme);
+        var layoutResult = VisualCanvasInfoTileTextLayout.CalculateLayout(tile, theme);
+        var metrics = layoutResult.Metrics;
         if (metrics.TextMax <= 28) {
             diagnostics.Add(new VisualCanvasLayoutDiagnostic(
                 VisualCanvasLayoutDiagnosticSeverity.Warning,
@@ -110,7 +111,7 @@ internal static class VisualCanvasLayoutAnalyzer {
                 tile.Bounds));
         }
 
-        var layout = VisualCanvasInfoTileTextLayout.BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme);
+        var layout = layoutResult.Text;
         if (layout.WasScaledDown) {
             diagnostics.Add(new VisualCanvasLayoutDiagnostic(
                 VisualCanvasLayoutDiagnosticSeverity.Warning,

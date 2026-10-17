@@ -3,10 +3,12 @@
   const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
   // Source metadata stays exact; fallback captions use the browser's shortest round-trip number.
   const numericDisplayText = (value) => tooltipNumber(value) ? String(Number(value)) : value;
+  const numericFactText = (data, member) => capturedText(data, 'cfxFormatted' + member, numericDisplayText(data['cfx' + member]));
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
-      return [seriesLabel(node), data.cfxLabel].filter(Boolean).join(': ');
+      return [seriesLabel(node), data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxLabel].filter(Boolean).join(': ');
+    if (isDataTarget(node)) return data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxDisplayLabel ?? (data.cfxLabel || data.cfxText || seriesLabel(node) || data.cfxRole || '');
     const aria = node.getAttribute('aria-label');
     if (aria) return aria;
     const label = data.cfxLabel || data.cfxText || '';
@@ -22,22 +24,30 @@
   const targetIdentity = (node) => {
     const data = node.dataset || {};
     const targetKind = renderedTargetKind(node);
+    const state = (data.cfxKind || '').toLowerCase() === 'statetimeline';
+    const rawValue = (data.cfxKind || '').toLowerCase() === 'boxplot' ? data.cfxMedian : data.cfxValue ?? data.cfxY ?? data.cfxEnd;
     return {
       targetKind,
       targetId: renderedTargetId(node, targetKind),
       id: data.cfxId || node.id || '',
       role: data.cfxRole || '',
-      label: data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || '',
+      label: data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxDisplayLabel ?? (data.cfxLabel || data.cfxText || node.getAttribute('aria-label') || ''),
+      rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
       seriesScope: data.cfxSeriesScope,
       observationId: data.cfxObservationId,
+      observationIds: contributorObservationIds(node),
+      category: targetCategory(node),
+      x: targetRawX(node),
+      numericValue: !state && tooltipNumber(rawValue) ? Number(rawValue) : undefined,
+      range: targetDataRange(node),
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
       sourcePoints: sourcePointCollection(node),
       legendTargetKind: data.cfxLegendTargetKind,
       legendTargetId: data.cfxLegendTargetId,
-      value: data.cfxValue || data.cfxY || data.cfxEnd || '',
+      value: state ? data.cfxStateLabel ?? data.cfxLabel ?? '' : capturedText(data, 'cfxFormattedValue', rawValue ?? ''),
       kind: data.cfxKind || ''
     };
   };
@@ -75,37 +85,38 @@
     return ['Open', 'High', 'Low', 'Close'].filter((part) => {
       const value = data['cfx' + part];
       return value !== undefined && value !== null && value !== '';
-    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: String(data['cfx' + part]) }));
+    }).map((part) => ({ name: rowName(node, part.toLowerCase(), part), value: numericFactText(data, part) }));
   };
   const waterfallTooltipRows = (node) => {
     const data = node.dataset || {};
     if (!data.cfxWaterfallKind) return [];
     const fallback = data.cfxWaterfallKind === 'total' ? 'Total' : data.cfxWaterfallKind === 'subtotal' ? 'Subtotal' : data.cfxWaterfallKind === 'opening-balance' ? 'Opening balance' : 'Change';
-    return [{ name: rowName(node, 'waterfall-value', fallback), value: data.cfxValue },
-      { name: 'Start', value: data.cfxStart }, { name: 'End', value: data.cfxEnd }]
-      .filter((row) => row.value !== undefined && row.value !== '');
+    return [{ name: rowName(node, 'waterfall-value', fallback), value: numericFactText(data, 'Value') },
+      { name: 'Start', value: numericFactText(data, 'Start') }, { name: 'End', value: numericFactText(data, 'End') }]
+      .filter((row) => row.value !== undefined && row.value !== null);
   };
   const boxPlotTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'boxplot') return null;
     return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX }]
       .concat(['minimum', 'q1', 'median', 'q3', 'maximum'].map((key) => ({
-        name: rowName(node, key, ''), value: data['cfx' + key.charAt(0).toUpperCase() + key.slice(1)]
-      }))).filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+        name: rowName(node, key, ''), value: numericFactText(data, key.charAt(0).toUpperCase() + key.slice(1))
+      }))).filter((row) => row.value !== undefined && row.value !== null);
   };
   const rangeBarTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
     return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
-      { name: rowName(node, 'start', ''), value: data.cfxStart }, { name: rowName(node, 'end', ''), value: data.cfxEnd }]
-      .filter((row) => row.value !== undefined && row.value !== null && row.value !== '');
+      { name: rowName(node, 'start', ''), value: numericFactText(data, 'Start') },
+      { name: rowName(node, 'end', ''), value: numericFactText(data, 'End') }]
+      .filter((row) => row.value !== undefined && row.value !== null);
   };
   const differenceTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'differencearea') return null;
     return ['First', 'Second'].map((part) => ({
       name: rowName(node, part.toLowerCase(), part),
-      value: capturedText(data, 'cfxFormatted' + part, data['cfx' + part])
+      value: numericFactText(data, part)
     }));
   };
   const tooltipRows = (node) => {
@@ -115,8 +126,8 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     const pushX = () => {
-      const value = capturedText(data, 'cfxXLabel', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || data.cfxStart);
-      if (data.cfxXLabel !== undefined) rows.push({ name: 'X', value });
+      const value = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || capturedText(data, 'cfxFormattedStart', data.cfxStart)));
+      if (data.cfxXLabel !== undefined || data.cfxFormattedX !== undefined) rows.push({ name: 'X', value });
       else push('X', value);
     };
     push('Series', seriesLabel(node));
@@ -127,7 +138,7 @@
     const differenceRows = differenceTooltipRows(node);
     if (differenceRows) {
       pushX();
-      differenceRows.forEach((row) => push(row.name, row.value));
+      rows.push(...differenceRows);
       metadataRows(node).forEach((row) => push(row.name, row.value));
       return rows;
     }
@@ -135,13 +146,13 @@
     else pushX();
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
-    else if (data.cfxWaterfallKind) waterfallTooltipRows(node).forEach((row) => push(row.name, row.value));
+    else if (data.cfxWaterfallKind) rows.push(...waterfallTooltipRows(node));
     else if (data.cfxEmpty !== 'true') {
       const name = data.cfxValue !== undefined ? rowName(node, 'value', 'Value') : 'Y';
       const value = capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue !== undefined ? data.cfxValue : data.cfxY));
       if (data.cfxFormattedValue !== undefined) rows.push({ name, value });
       else push(name, value);
-      push('End', data.cfxEnd);
+      push('End', capturedText(data, 'cfxFormattedEnd', data.cfxEnd));
     }
     sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
     push('Target', data.cfxTarget);
@@ -153,8 +164,11 @@
     if (Number(data.cfxRemainderValue) > 0)
       push(rowName(node, 'remainder', 'Remainder'), data.cfxRemainderValue);
     push('Percent', percentText(data.cfxPercent));
-    if (!data.cfxWaterfallKind) push('Delta', data.cfxDelta);
-    push('Range', data.cfxLower && data.cfxUpper ? data.cfxLower + ' - ' + data.cfxUpper : '');
+    if (!data.cfxWaterfallKind) push('Delta', numericFactText(data, 'Delta'));
+    if (tooltipNumber(data.cfxLower) && tooltipNumber(data.cfxUpper)) {
+      const lower = numericFactText(data, 'Lower'), upper = numericFactText(data, 'Upper');
+      rows.push({ name: 'Range', value: lower === '' && upper === '' ? '' : lower + ' - ' + upper });
+    }
     metadataRows(node).forEach((row) => push(row.name, row.value));
     return rows;
   };
@@ -163,7 +177,8 @@
     const root = node.closest && node.closest('.cfx-interactive-chart');
     if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
     const label = text(node, true);
-    if (!label) return false;
+    // An explicitly captured empty caption remains a valid readout of the source fields.
+    if (label === undefined || label === null) return false;
     tip.replaceChildren();
     const title = document.createElement('div');
     title.className = 'cfx-tooltip__title';
@@ -220,12 +235,17 @@
   const compareItems = (root) => {
     const items = [];
     const seen = new Set();
-    interactiveTargets(root, '.cfx-selected').forEach((node) => {
+    dataTargets(root).filter(node => node.classList.contains('cfx-selected')).forEach((node) => {
       const target = targetIdentity(node);
       const key = targetKey(target);
       if (!key || seen.has(key)) return;
       seen.add(key);
-      items.push({ label: text(node) || target.label || target.role || target.id || 'Target', target });
+      const data = node.dataset || {};
+      let label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
+        ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
+      const series = seriesLabel(node);
+      if (timeTarget(node) && label && series && label !== series) label = series + ' · ' + label;
+      items.push({ label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target });
     });
     return items;
   };
@@ -278,6 +298,7 @@
     root._cfxCompareCleanup.push(listenChart(root, clear, 'click', () => {
       const returnFocus = tray.contains(document.activeElement);
       clearSelections(root);
+      publishSelectionChange(root, 'clear');
       publishCompare(root, true);
       if (returnFocus) {
         if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
@@ -296,12 +317,14 @@
     return items;
   };
   const hideTip = (root, tip, force) => {
+    // A delayed pointer handoff can hide an active readout; a force-dismissed readout has no request to restore.
+    const restoreKeyboardReadout = tip && (!tip.hidden || tooltipRequests.has(root));
     cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
     // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
     const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
     const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
-    if (focused && tooltipReadoutAvailable(focused)) {
+    if (restoreKeyboardReadout && focused && active.matches(':focus-visible') && tooltipReadoutAvailable(focused)) {
       if (root.dataset.cfxHoverKey !== targetKey(targetIdentity(focused))) setHover(root, focused, true, true);
       showTip(root, tip, focused);
       return;
@@ -314,6 +337,7 @@
   };
   const pinTip = (root, tip, node, event) => {
     cancelTooltipRequest(root);
+    if (root.dataset.cfxPinOnSelect === 'false') return;
     if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);
@@ -329,4 +353,10 @@
     root.dataset.cfxPinnedTarget = key;
     moveTip(tip, event, node);
     emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
+  };
+  const unpinTooltip = root => {
+    const key = root.dataset.cfxPinnedTarget;
+    const target = key && interactiveTargets(root).find(node => targetKey(targetIdentity(node)) === key);
+    hideTip(root, root.querySelector('.cfx-tooltip'), true);
+    if (key) emitHostEvent(root, 'cfxtooltip', { pinned: false, ...(target ? { target: targetIdentity(target) } : {}) });
   };

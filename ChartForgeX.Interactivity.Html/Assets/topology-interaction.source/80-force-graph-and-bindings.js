@@ -70,8 +70,9 @@
       });
       setForceHidden('[data-cfx-role="topology-edge-label"]', label => !state.labels || !state.edges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-force-hidden)'));
       syncTopologyGroupVisibility();
+      syncTopologyHighlightAppearance();
       const detail = publishTopologyFilterSummary();
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail: { ...detail, query: state.query, status: state.status, group: state.group, kind: '' } }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, composed: true, detail: { ...detail, query: state.query, status: state.status, group: state.group, kind: '' } }));
       restoreForceFocusLabels();
     };
     const clearForceFocusLabels = () => {
@@ -118,12 +119,12 @@
       element.addEventListener('pointerenter', () => hover(element));
       element.addEventListener('pointerleave', () => {
         clearHover();
-        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true }));
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
       });
       element.addEventListener('focus', () => hover(element));
       element.addEventListener('blur', () => {
         clearHover();
-        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true }));
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
       });
     });
     const initiallySelected = Array.from(wrapper.querySelectorAll(selectables)).find(element => attr(element, 'data-cfx-selected') === 'true');
@@ -316,7 +317,7 @@
     wrapper.addEventListener('keydown', event => {
       if (event.key === 'Escape') {
         clear();
-        wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true }));
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true, composed: true }));
         emitSync('clear-selection', {});
         return;
       }
@@ -333,28 +334,28 @@
       select(element);
     });
     wrapper.addEventListener('cfx-topology-set-selection', event => {
-      const element = findSelection(event.detail);
-      if (element) select(element);
+      setSelection(event.detail);
     });
-    wrapper.addEventListener('cfx-topology-clear-selection', () => {
+    wrapper.addEventListener('cfx-topology-clear-selection', event => {
       clear();
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true }));
-      emitSync('clear-selection', {});
+      if (event.detail?.emit === true) wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true, composed: true }));
+      if (event.detail?.sync === true) emitSync('clear-selection', {});
     });
+    wrapper.addEventListener('cfx-topology-highlight', event => highlight(event.detail));
+    wrapper.addEventListener('cfx-topology-clear-highlight', () => highlight({}));
     wrapper.addEventListener('cfx-topology-apply-sync', event => {
       const detail = event.detail || {};
       if (!syncEnabled || !syncGroup || detail.group !== syncGroup) return;
       applyingSync = true;
       try {
         if (detail.action === 'selection' && detail.selection) {
-          const element = findSelection(detail.selection);
-          if (element) select(element);
+          setSelection({ ...detail.selection, emit: true });
         } else if (detail.action === 'clear-selection') {
           clear();
-          wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true }));
+          wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true, composed: true }));
         } else if (detail.action === 'viewport' && detail.state) {
           applyViewport(detail.state);
-          wrapper.dispatchEvent(new CustomEvent('cfx-topology-viewport', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState(), sourceChartId: detail.chartId } }));
+          wrapper.dispatchEvent(new CustomEvent('cfx-topology-viewport', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState(), sourceChartId: detail.chartId } }));
         } else if (detail.action === 'scenario') {
           setScenario(detail.scenarioId || '');
         } else if (detail.action === 'scenario-filters') {
@@ -367,5 +368,21 @@
         applyingSync = false;
       }
     });
-  }
+    }
+    return wrappers;
+  };
+  // Prefix-specific assets share one dispatcher. Re-registering an asset replaces its
+  // prefix entry without adding recursive wrappers or invalidating retained mount references.
+  const mountsKey = Symbol.for('ChartForgeXTopology.mounts');
+  const previous = window.ChartForgeXTopology?.mount;
+  const prefixMounts = previous?.[mountsKey] instanceof Map ? previous[mountsKey] : new Map();
+  prefixMounts.set(selector, mountForPrefix);
+  const mount = previous?.[mountsKey] === prefixMounts ? previous : root => {
+    const wrappers = new Set();
+    for (const bind of prefixMounts.values()) for (const wrapper of bind(root)) wrappers.add(wrapper);
+    return Array.from(wrappers);
+  };
+  if (!mount[mountsKey]) Object.defineProperty(mount, mountsKey, { value: prefixMounts });
+  window.ChartForgeXTopology = Object.freeze({ mount });
+  mount(document);
 })();

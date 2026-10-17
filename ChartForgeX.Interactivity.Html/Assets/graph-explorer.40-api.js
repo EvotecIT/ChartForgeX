@@ -252,6 +252,10 @@
     return { nodeCount: state.nodes.length, edgeCount: state.edges.length, clusterCount: state.clusters.length };
   };
   const graphExplorerApi = {
+    select: (target, requested, options) => { const root = graphApiRoot(target); return root ? selectGraphItems(root, requested, options) : false; },
+    clearSelection: (target, options) => { const root = graphApiRoot(target); return root ? selectGraphItems(root, [], { ...options, mode: 'replace' }) : false; },
+    highlight: (target, requested, options) => { const root = graphApiRoot(target); return root ? highlightGraphItems(root, requested, options) : false; },
+    clearHighlight: target => { const root = graphApiRoot(target); return root ? highlightGraphItems(root, []) : false; },
     get: target => { const root = graphApiRoot(target); return root ? exportGraphJson(root) : null; },
     update: (target, patch) => applyGraphRuntimePatch(target, patch, { hostUpdate: true }),
     change: (target, patch, source, label) => { const root = graphApiRoot(target); return root ? requestGraphChange(root, patch, source || 'api', label || 'Graph change') : false; },

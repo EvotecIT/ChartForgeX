@@ -57,10 +57,10 @@ internal static partial class VisualHierarchyCompiler {
                         paint: new VisualScenePaintBinding(blend.Paint, outline.HasValue ? SvgPaint.Of(outline.Value, SvgColorRole.Status) : null));
                     Pattern(builder, Rectangle(bounds), series, itemIndex, blend.Color, "treemap-pattern");
                     if (showLabels) {
-                        if (children.Count == 0) Label(chart, context, builder, options.ShowValues ? full + "\n" + formatted : full, bounds, blend.Color, itemIndex,
-                            "treemap-label", fillPaint: blend.Paint, maximumLines: options.ShowValues ? 3 : 2);
-                        else if (options.ShowGroupLabels) Label(chart, context, builder, options.ShowValues ? full + " · " + formatted : full, tile.HeaderRect,
-                            blend.Color, itemIndex, "treemap-group-label", fillPaint: blend.Paint, insetLimit: 4, maximumLines: 1);
+                        if (children.Count == 0) TreemapLabel(chart, context, builder, full, options.ShowValues ? formatted : null,
+                            bounds, blend.Color, itemIndex, blend.Paint, header: false);
+                        else if (options.ShowGroupLabels) TreemapLabel(chart, context, builder, full, options.ShowValues ? formatted : null,
+                            tile.HeaderRect, blend.Color, itemIndex, blend.Paint, header: true);
                     }
                     if (children.Count > 0) using (builder.PushClip(tile.ContentRect)) foreach (var child in Ordered(children)) Draw(child);
                 } else foreach (var child in Ordered(children)) Draw(child);

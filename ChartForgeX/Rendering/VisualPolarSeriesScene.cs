@@ -13,6 +13,8 @@ internal static class VisualPolarSeriesScene {
     internal static void DescribePoint(Dictionary<string, string> metadata, ChartSeries series, int source, string category, string formatted) {
         if (source < 0) return;
         var description = series.Name + ", " + category + ": " + formatted;
+        metadata["data-cfx-category-label"] = category;
+        if (!metadata.ContainsKey("data-cfx-x")) metadata["data-cfx-x"] = series.RenderPoints[source].X.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
         metadata["aria-label"] = description;
         metadata["data-cfx-label"] = description;
     }

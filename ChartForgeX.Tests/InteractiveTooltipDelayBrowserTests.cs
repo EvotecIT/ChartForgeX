@@ -70,21 +70,31 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         if (!Enabled) return;
         await using var session = await OpenAsync(Observations(false).ToInteractiveHtmlPage(options => { ConfigureDelay(options, "exact"); options.Tooltip.Mode = HtmlChartTooltipMode.Single; }), 950, 760);
         var page = session.Page;
+        var clockStart = DateTime.UtcNow;
+        await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = clockStart });
+        await page.Clock.PauseAtAsync(clockStart.AddHours(1));
         await TraceAsync(page);
+        const int switchAfter = 200;
         await PointerAsync(page, Point(0, 0));
-        await Task.Delay(200);
+        await page.Clock.RunForAsync(switchAfter);
         await PointerAsync(page, Point(0, 1));
-        await Task.Delay(200);
+        // Cross the canceled target's deadline, then the new target's exact deadline in browser time.
+        await page.Clock.RunForAsync(Delay - switchAfter);
         Assert.True(await TipHiddenAsync(page));
-        await WaitForTipAsync(page);
+        await page.Clock.RunForAsync(switchAfter - 1);
+        Assert.True(await TipHiddenAsync(page));
+        await page.Clock.RunForAsync(1);
+        Assert.False(await TipHiddenAsync(page));
         Assert.Equal("6", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Y" }).Locator("+ dd").InnerTextAsync());
         await MoveAwayAsync(page);
         await PointerAsync(page, Point(0, 0));
         Assert.True(await TipHiddenAsync(page));
         await MoveAwayAsync(page);
-        await Task.Delay(Delay + 60);
+        await page.Clock.RunForAsync(Delay + 60);
         Assert.True(await TipHiddenAsync(page));
-        await CaptureDelayAsync(page, "delay-switch-leave", await TraceStateAsync(page));
+        var trace = await TraceStateAsync(page);
+        Assert.Equal(1, trace.GetProperty("shown").GetArrayLength());
+        await CaptureDelayAsync(page, "delay-switch-leave", trace);
         AssertNoConsoleErrors(session);
     }
 

@@ -133,14 +133,13 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         if (gauge) await AssertScalarSwatchAsync(page, target, family == "gauge-needle" ? "gauge-needle" : "gauge-value", family == "gauge-needle" ? "stroke" : "fill");
         if (family == "pie") {
             var title = await page.Locator(".cfx-tooltip__title").InnerTextAsync();
-            Assert.Contains("Slice 1", title);
-            Assert.Contains("Value 8", title);
-            Assert.DoesNotContain("Point 0", title);
+            Assert.Equal("Slice 1", title);
+            Assert.Equal("8", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Value" }).Locator("+ dd").InnerTextAsync());
         }
         await page.Keyboard.PressAsync("Space");
         var selected = await page.EvaluateAsync<JsonElement>("() => window.percentSelection");
         var eventLabel = await page.EvaluateAsync<string>("() => window.percentSelectionLabel");
-        if (family == "pie") Assert.Equal("Slice 1 / Point 0 / Value 8", eventLabel);
+        if (family == "pie") Assert.Equal("Slice 1", eventLabel);
         Assert.Equal(id, selected.GetProperty("targetId").GetString());
         Assert.Equal(rawValue, selected.GetProperty("value").GetString());
         Assert.Equal(rawPercent, await target.GetAttributeAsync("data-cfx-percent"));

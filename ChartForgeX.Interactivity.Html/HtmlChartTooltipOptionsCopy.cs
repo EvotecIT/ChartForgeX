@@ -3,6 +3,7 @@ namespace ChartForgeX.Interactivity.Html;
 /// <summary>Copies adapter tooltip values while keeping each chart's mutable option groups independent.</summary>
 internal static class HtmlChartTooltipOptionsCopy {
     internal static void Copy(HtmlChartTooltipOptions source, HtmlChartTooltipOptions destination) {
+        destination.PinOnSelect = source.PinOnSelect;
         destination.Mode = source.Mode;
         destination.Range = source.Range;
         destination.DelayMilliseconds = source.DelayMilliseconds;

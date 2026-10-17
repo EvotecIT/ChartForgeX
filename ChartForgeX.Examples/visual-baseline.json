@@ -2978,6 +2978,30 @@
       }
     },
     {
+      "name": "graphite-dark-linked-chart-views",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 800,
+      "height": 360,
+      "logicalWidth": 800.0,
+      "logicalHeight": 360.0,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 143998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 734,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "graphite-dark-multi-area",
       "layout": {
         "heightMode": "fixed",
@@ -3598,6 +3622,30 @@
         "minVisiblePixels": 274148,
         "minTransparentPixels": 12,
         "minDistinctColors": 501,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "graphite-light-linked-chart-views",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 800,
+      "height": 360,
+      "logicalWidth": 800.0,
+      "logicalHeight": 360.0,
+      "svg": {
+        "minVisualNodes": 15,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 143998,
+        "minTransparentPixels": 2,
+        "minDistinctColors": 845,
         "maxEdgeInkPixels": 0
       }
     },
@@ -8806,6 +8854,54 @@
         "minVisiblePixels": 378000,
         "minTransparentPixels": 0,
         "minDistinctColors": 1353,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-canvas-tile-text-fallback-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 420,
+      "height": 100,
+      "logicalWidth": 420.0,
+      "logicalHeight": 100.0,
+      "svg": {
+        "minVisualNodes": 5,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 21000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 324,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-canvas-tile-text-fallback-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 420,
+      "height": 100,
+      "logicalWidth": 420.0,
+      "logicalHeight": 100.0,
+      "svg": {
+        "minVisualNodes": 5,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 21000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 300,
         "maxEdgeInkPixels": 0
       }
     },

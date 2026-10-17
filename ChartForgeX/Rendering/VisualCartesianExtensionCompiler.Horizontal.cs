@@ -20,7 +20,7 @@ internal static partial class VisualCartesianCompiler {
             var y = map.Y(point.X) + offset;
             var direction = MappedBarDirection(chart.Options.XAxis, stack.Value, startX, endX, horizontal: true);
             var bounds = VisibleSegmentBounds(chart, new ChartRect(Math.Min(startX, endX), y - height / 2, Math.Abs(endX - startX), height), direction, horizontal: true);
-            var label = ResolveObservationLabel(chart, context, series, item, colors, () => Value(chart, point.Y));
+            var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("value", point.Y));
             using (ObservationGroup(builder, series, index, item, item, 1, bounds, label, stack, ("category", point.X), ("value", point.Y), ("base", stack.Base)))
                 DrawBarSurface(chart, context, builder, series, item, bounds, PointColor(series, index, item, colors), colors, "horizontal-bar", horizontal: true, direction: direction);
             obstacles.Add(new LabelObstacle(PointId(index, item), bounds));
@@ -52,15 +52,16 @@ internal static partial class VisualCartesianCompiler {
     private static (ChartAxis Value, ChartAxis Category) HorizontalAxes(Chart chart, AxisLabelCache cache) {
         if (cache.HorizontalValueAxis != null) return (cache.HorizontalValueAxis, cache.HorizontalCategoryAxis!);
         var x = chart.Options.XAxis; var y = chart.Options.YAxis;
-        var valueAxis = new ChartAxis { Scale = x.Scale, TickCount = x.TickCount, LabelAngle = x.LabelAngle,
-            LabelDensity = x.LabelDensity, SymmetricLogarithmThreshold = x.SymmetricLogarithmThreshold,
-            TimeZone = x.TimeZone, TimeZoneLabel = x.TimeZoneLabel, ShowTimeZone = x.ShowTimeZone,
-            ValueFormat = x.ValueFormat ?? (ReferenceEquals(chart.Options.ValueFormat, ChartValueFormat.ExistingValue) ? null : chart.Options.ValueFormat) };
+        var valueAxis = x.Clone();
+        valueAxis.Labels.Clear();
+        // Chart-wide numeric formatting is passed as the native axis fallback.
+        // Keep it distinct from an authored axis policy so readouts can reuse
+        // captured values without eagerly invoking a lazy data-label callback.
         var waterfall = chart.Series.Any(series => series.Kind == ChartSeriesKind.Waterfall);
         var legacyCategories = ChartCartesianOrientation.UsesLegacyCategoryLabels(chart);
-        var categoryAxis = new ChartAxis { Scale = y.Scale, TickCount = y.TickCount, LabelAngle = y.LabelAngle, LabelDensity = y.LabelDensity,
-            TimeZone = y.TimeZone, TimeZoneLabel = y.TimeZoneLabel, ShowTimeZone = y.ShowTimeZone,
-            ValueFormat = y.ValueFormat ?? (legacyCategories && !waterfall ? x.ValueFormat : null) };
+        var categoryAxis = y.Clone();
+        categoryAxis.Labels.Clear();
+        if (y.ValueFormat == null && legacyCategories && !waterfall) categoryAxis.ValueFormat = x.ValueFormat;
         if (!legacyCategories) foreach (var label in x.Labels) valueAxis.Labels.Add(label);
         var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
         foreach (var label in categoryLabels) categoryAxis.Labels.Add(label);

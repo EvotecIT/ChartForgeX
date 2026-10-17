@@ -44,6 +44,7 @@ internal static partial class VisualScheduleCompiler {
         var layout = LaneLayout(chart, context, builder, viewport, model.Lanes.Select(lane => lane.Name), model.Lanes.Select(lane => lane.Summary),
             model.HasSummary, false, model.Ticks, model.FormatTick);
         var plot = layout.Plot;
+        builder.DataProjection = ChartDataProjection.TryCreate(plot, model.Min, model.Max, chart.Options.XAxis, linearOnly: true);
         builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         using (builder.PushGroup("state-timeline", "state-timeline", Window(model.Min, model.Max))) {
             Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, plot), model.FormatTick);
@@ -76,6 +77,7 @@ internal static partial class VisualScheduleCompiler {
                 }
             }
         }
+        builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value, _) => layout.FormatTick(value));
     }
 
     private static void GanttLanes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport) {
@@ -94,6 +96,7 @@ internal static partial class VisualScheduleCompiler {
             minimumExtent, maximumExtent, model.NowVisible ? model.Now : null, lanes: true);
         model = model.Repack(projection.Width);
         var plot = layout.Plot; var tops = model.RowTops(plot); var band = model.Band(plot);
+        builder.DataProjection = ChartDataProjection.TryCreate(projection, model.Min, model.Max, chart.Options.XAxis, linearOnly: true);
         builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         using (builder.PushGroup("gantt-lanes", "gantt-lanes", Window(model.Min, model.Max))) {
             Axis(chart, context, builder, viewport, layout, model.Ticks, value => model.X(value, projection), model.FormatTick);
@@ -141,6 +144,7 @@ internal static partial class VisualScheduleCompiler {
             }
             if (model.NowVisible) Now(chart, context, builder, layout, model.X(model.Now!.Value, projection), model.Now.Value);
         }
+        builder.CaptureChartReadouts(chart, (_, value) => layout.FormatTick(value), (_, value, _) => layout.FormatTick(value));
     }
 
     private static Dictionary<string, string> Window(double min, double max) => new() {

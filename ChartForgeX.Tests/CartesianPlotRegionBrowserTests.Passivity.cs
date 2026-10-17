@@ -41,12 +41,11 @@ public sealed partial class CartesianPlotRegionBrowserTests {
             """);
         await CapturePassiveAsync(session, html, "passive-brush", facts);
         Assert.Equal(0, facts.GetProperty("passiveSelected").GetInt32());
-        Assert.Equal(3, facts.GetProperty("compareCount").GetInt32());
-        Assert.Equal(3, facts.GetProperty("selected").GetArrayLength());
+        Assert.Equal(2, facts.GetProperty("compareCount").GetInt32());
+        Assert.Equal(2, facts.GetProperty("selected").GetArrayLength());
         foreach (var notification in facts.GetProperty("events").EnumerateArray()) {
-            Assert.Equal(3, notification.GetProperty("detail").GetProperty("targets").GetArrayLength());
+            Assert.Equal(2, notification.GetProperty("detail").GetProperty("targets").GetArrayLength());
             Assert.Equal(2, notification.GetProperty("detail").GetProperty("targets").EnumerateArray().Count(target => target.GetProperty("targetKind").GetString() == "point"));
-            Assert.Single(notification.GetProperty("detail").GetProperty("targets").EnumerateArray(), target => target.GetProperty("targetKind").GetString() == "series");
         }
         Assert.Contains(facts.GetProperty("events").EnumerateArray(), e => e.GetProperty("name").GetString() == "cfxlasso");
         Assert.Contains(facts.GetProperty("events").EnumerateArray(), e => e.GetProperty("name").GetString() == "cfxcompare");
