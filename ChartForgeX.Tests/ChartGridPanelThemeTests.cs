@@ -150,7 +150,9 @@ public sealed class ChartGridPanelThemeTests {
     private static void AssertPanel(XDocument document, int index, string heading, string family, ChartColor color) {
         var panel = Panel(document, index);
         Assert.Contains(panel.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "frame-heading"
-            && element.Value == heading && element.Descendants().Any(text => (string?)text.Attribute("font-family") == family));
+            && element.Value == heading && element.Descendants().Any(text => PrimaryFamily((string?)text.Attribute("font-family")) == family));
         Assert.Contains(panel.Descendants(), element => (string?)element.Attribute("fill") == color.ToCss());
     }
+    // SVG font stacks end with a generic family, so the authored family is the first entry.
+    private static string? PrimaryFamily(string? stack) => stack?.Split(',')[0].Trim();
 }

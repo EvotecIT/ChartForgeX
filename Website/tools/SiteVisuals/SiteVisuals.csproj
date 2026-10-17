@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Renders the chartforgex.com hero, surface, Mermaid, navigation, docs and example visuals with ChartForgeX itself. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The playground samples are Mermaid atlas sources, so the atlas and the playground show the same text. -->
+    <Compile Include="..\Playground\PlaygroundEngine.cs" Link="Playground\PlaygroundEngine.cs" />
+    <Compile Include="..\Playground\PlaygroundJson.cs" Link="Playground\PlaygroundJson.cs" />
+    <Compile Include="..\Playground\PlaygroundSamples.cs" Link="Playground\PlaygroundSamples.cs" />
+    <Compile Include="..\Playground\PlaygroundFonts.cs" Link="Playground\PlaygroundFonts.cs" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Regular.ttf" LogicalName="Fonts.Carlito-Regular.ttf" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Bold.ttf" LogicalName="Fonts.Carlito-Bold.ttf" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\OFL.txt" LogicalName="Fonts.Carlito-OFL.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ChartForgeX\ChartForgeX.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Visuals\ChartForgeX.Visuals.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Stories\ChartForgeX.Stories.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj" />
+  </ItemGroup>
+</Project>

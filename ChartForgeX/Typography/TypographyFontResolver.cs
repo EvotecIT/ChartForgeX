@@ -201,7 +201,7 @@ internal static class TypographyFontResolver {
         FontFallbackChain.Reset();
     }
 
-    private static bool IsGenericFamily(string name) {
+    internal static bool IsGenericFamily(string name) {
         switch (name.ToLowerInvariant()) {
             case "serif":
             case "sans-serif":

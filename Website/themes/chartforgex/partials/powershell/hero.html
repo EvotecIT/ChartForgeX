@@ -1,0 +1,33 @@
+{{~ ## The PowerShell page opens with the shared stage band: the title beside the dashboard the flagship script wrote and
+     the console output it printed. ## ~}}
+{{~ ip = data.imageplayground; flag = ex["service-health"]; board = null ~}}
+{{~ for o in flag.outputs ~}}{{~ if o.file == flag.show[0] ~}}{{~ board = o ~}}{{~ end ~}}{{~ end ~}}
+{{~ capture stage_side ~}}
+<dl class="cfx-stage__stats">
+  <div><dt>ChartForgeX commands</dt><dd>{{ ip.module.chartForgeXCommandCount }}</dd></div>
+  <div><dt>ImagePlayground</dt><dd>{{ psx.module.version }}</dd></div>
+  <div><dt>Browsers needed</dt><dd>0</dd></div>
+</dl>
+<div class="cfx-install cfx-stage__install">
+  <code><span class="cfx-install__prompt" aria-hidden="true">PS&gt;</span> {{ ip.module.install }}</code>
+  <button type="button" class="cfx-copy" data-cfx-copy="{{ ip.module.install }}">Copy</button>
+</div>
+<div class="cfx-stage__actions">
+  <a class="cfx-btn cfx-btn--glow" href="#service-health">See a complete script</a>
+  <a class="cfx-btn cfx-btn--ghost" href="#roadmap">What is covered</a>
+</div>
+{{~ end ~}}
+{{~ capture stage_art ~}}
+<div class="cfx-psh__stage">
+  <figure class="cfx-output">
+    <figcaption><span class="cfx-output__file">{{ board.file }}</span><span>written by the script below</span></figcaption>
+    <img src="{{ board.url }}" width="{{ board.width }}" height="{{ board.height }}" fetchpriority="high" decoding="async" alt="Service health dashboard written by the script below: three metric cards, a services table, a checklist and an Orders latency chart against a 250 ms target." />
+  </figure>
+  <figure class="cfx-term cfx-psh__term">
+    <figcaption><i aria-hidden="true"></i>PS&gt; ./{{ flag.id }}.ps1</figcaption>
+    <pre>{{ flag.console | html.escape }}</pre>
+  </figure>
+</div>
+{{~ end ~}}
+{{~ stage_title = page.title; stage_lede = data.powershell.hero.lede ~}}
+{{ include "stage" }}

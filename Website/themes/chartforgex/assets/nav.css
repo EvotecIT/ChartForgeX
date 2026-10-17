@@ -1,0 +1,239 @@
+/* Header navigation: two groups (Product, Developers), each a disclosure button that opens a panel of destinations.
+   A destination shows a thumbnail ChartForgeX rendered for it and carries a series key, like a legend entry. The group
+   holding the current page shows that page as a keyed chip, so the active route reads as a selected legend entry.
+   Without JavaScript (no .cfx-js on <html>) panels open on hover and focus; on phones every group is listed open. */
+
+.cfx-nav {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.cfx-nav__groups { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.cfx-navgroup { position: relative; }
+
+.cfx-navgroup__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 10px 0 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cfx-ink-2);
+  font: inherit;
+  font-size: .9375rem;
+  font-weight: 620;
+  font-stretch: 104%;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.cfx-navgroup__trigger:hover,
+.cfx-navgroup__trigger[aria-expanded="true"] { border-color: var(--cfx-line); background: var(--cfx-card); color: var(--cfx-ink); }
+.cfx-navgroup.is-current > .cfx-navgroup__trigger { color: var(--cfx-ink); }
+.cfx-navgroup__chevron { flex: none; color: var(--cfx-ink-3); transition: transform .18s ease; }
+.cfx-navgroup__trigger[aria-expanded="true"] .cfx-navgroup__chevron { transform: rotate(180deg); }
+
+/* The current page: its group's button carries a key in the page's series colour, and the page itself is set as a
+   selected legend entry after the groups. Every slot keeps its size on every page, so nothing in the header moves. */
+.cfx-navgroup__mark { flex: none; width: 8px; height: 8px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--cfx-line-strong); }
+.cfx-navgroup.is-current .cfx-navgroup__mark { background: var(--key); box-shadow: none; }
+.cfx-nav__here {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 7px;
+  min-height: 28px;
+  margin-left: 6px;
+  padding: 0 10px 0 9px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--key) 15%, var(--cfx-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--key) 55%, transparent);
+  color: var(--cfx-ink);
+  font-size: .8125rem;
+  font-weight: 680;
+  white-space: nowrap;
+}
+.cfx-nav__here .cfx-key { width: 8px; height: 8px; }
+/* Panel */
+.cfx-navpanel {
+  position: absolute;
+  top: calc(100% + 13px);
+  left: -6px;
+  z-index: 30;
+  display: none;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--cfx-gutter));
+  padding: 16px 16px 14px;
+  border: 1px solid var(--cfx-line-strong);
+  border-radius: var(--cfx-r-lg);
+  background: var(--cfx-card);
+  box-shadow: var(--cfx-shadow-float);
+}
+.cfx-navpanel::before {
+  /* An axis tick under the open button, and a bridge so pointer travel from button to panel keeps it open. */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -14px;
+  height: 14px;
+}
+.cfx-navpanel::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  top: -1px;
+  width: 2px;
+  height: 9px;
+  background: var(--cfx-accent);
+}
+.cfx-navgroup__trigger[aria-expanded="true"] + .cfx-navpanel { display: block; }
+:root:not(.cfx-js) .cfx-navgroup:is(:hover, :focus-within) > .cfx-navpanel { display: block; }
+
+.cfx-navpanel__lede {
+  margin: 0 4px 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cfx-line);
+  color: var(--cfx-ink-3);
+  font-size: .8125rem;
+}
+.cfx-navpanel__items {
+  display: grid;
+  grid-template-columns: repeat(4, 184px);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cfx-navpanel[data-count="3"] .cfx-navpanel__items { grid-template-columns: repeat(3, 184px); }
+.cfx-navpanel[data-count="2"] .cfx-navpanel__items { grid-template-columns: repeat(2, 184px); }
+
+.cfx-navitem {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 4px;
+  height: 100%;
+  padding: 8px 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+.cfx-navitem:hover { border-color: var(--cfx-line); background: var(--cfx-card-alt); }
+.cfx-navitem:hover .cfx-navitem__thumb { border-color: var(--cfx-ink-3); }
+.cfx-navitem__thumb {
+  display: block;
+  margin-bottom: 6px;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--cfx-line);
+  border-radius: 7px;
+  background:
+    repeating-linear-gradient(to right, var(--cfx-grid) 0 1px, transparent 1px 16px),
+    repeating-linear-gradient(to bottom, var(--cfx-grid) 0 1px, transparent 1px 16px),
+    var(--cfx-page);
+}
+.cfx-navitem__thumb img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.cfx-navitem__link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--cfx-ink);
+  font-size: .9375rem;
+  font-weight: 680;
+  font-stretch: 104%;
+  text-decoration: none;
+}
+.cfx-navitem__link::after {
+  /* The whole entry is the link's hit area; the link text stays just the destination's name. */
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 10px;
+}
+.cfx-navitem__link:focus-visible { outline: none; }
+.cfx-navitem__link:focus-visible::after { outline: 2px solid var(--cfx-focus); outline-offset: 2px; }
+.cfx-navitem__link .cfx-key { width: 9px; height: 9px; }
+.cfx-navitem__desc { color: var(--cfx-ink-2); font-size: .8125rem; line-height: 1.4; }
+.cfx-navitem.is-current {
+  border-color: color-mix(in srgb, var(--key) 50%, transparent);
+  background: color-mix(in srgb, var(--key) 8%, var(--cfx-card));
+}
+.cfx-navitem.is-current .cfx-navitem__thumb { border-color: var(--key); box-shadow: inset 0 -3px 0 var(--key); }
+.cfx-nav__actions { display: flex; align-items: center; gap: 8px; }
+.cfx-nav-toggle { position: absolute; opacity: 0; pointer-events: none; }
+.cfx-nav-toggle__label { display: none; }
+
+/* Phones and small tablets: the toggle opens a sheet that lists every destination with its thumbnail. */
+@media (max-width: 960px) {
+  .cfx-nav-toggle__label {
+    display: grid;
+    gap: 5px;
+    margin-left: auto;
+    padding: 12px 10px;
+    cursor: pointer;
+  }
+  .cfx-nav-toggle__label span { display: block; width: 20px; height: 2px; border-radius: 2px; background: var(--cfx-ink); transition: transform .18s ease; }
+  .cfx-nav-toggle:checked + .cfx-nav-toggle__label span:first-child { transform: translateY(3.5px) rotate(45deg); }
+  .cfx-nav-toggle:checked + .cfx-nav-toggle__label span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+  .cfx-nav-toggle:focus-visible + .cfx-nav-toggle__label { outline: 2px solid var(--cfx-focus); border-radius: 8px; }
+  .cfx-nav {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    max-height: calc(100vh - 64px);
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
+    padding: 12px var(--cfx-gutter) 20px;
+    border-bottom: 1px solid var(--cfx-line);
+    background: var(--cfx-page);
+  }
+  .cfx-nav-toggle:checked ~ .cfx-nav { display: flex; }
+  .cfx-nav__groups { flex-direction: column; gap: 12px; }
+  .cfx-navgroup__trigger {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 0;
+    border-bottom: 1px solid var(--cfx-line);
+    border-radius: 0;
+    font-size: 1rem;
+  }
+  .cfx-navgroup__trigger:hover,
+  .cfx-navgroup__trigger[aria-expanded="true"] { background: transparent; }
+  .cfx-navgroup__chevron { margin-left: auto; }
+  .cfx-nav__here { display: none; }
+  .cfx-navpanel,
+  :root:not(.cfx-js) .cfx-navgroup .cfx-navpanel {
+    position: static;
+    display: block;
+    width: auto;
+    max-width: none;
+    padding: 8px 0 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .cfx-js .cfx-navgroup__trigger[aria-expanded="false"] + .cfx-navpanel { display: none; }
+  .cfx-navpanel::before, .cfx-navpanel::after, .cfx-navpanel__lede { display: none; }
+  .cfx-navpanel__items,
+  .cfx-navpanel[data-count] .cfx-navpanel__items { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .cfx-navitem {
+    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: 14px;
+    row-gap: 2px;
+    padding: 8px;
+  }
+  .cfx-navitem__thumb { grid-row: 1 / span 2; margin: 0; }
+  .cfx-navitem__link { align-self: end; }
+  .cfx-nav__actions { padding-top: 12px; border-top: 1px solid var(--cfx-line); }
+}

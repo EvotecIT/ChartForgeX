@@ -373,7 +373,7 @@ internal static partial class SmokeTests {
         var system = Chart.Create().WithFontFamily(ChartFontStacks.SystemSans).AddLine("Values", Points(1, 2, 3));
         Assert(system.ToSvg().Contains(ChartFontStacks.SystemSans, StringComparison.Ordinal), "SVG should retain a configured native system font stack.");
         var svg = Chart.Create().WithTheme(VisualTheme.Report()).WithLegend(true).WithFontFamily("A&B \"Display\"").AddLine("Values", Points(1, 2, 3)).ToSvg();
-        Assert(svg.Contains("font-family=\"A&amp;B &quot;Display&quot;\"", StringComparison.Ordinal), "SVG font-family values should be attribute-escaped.");
+        Assert(svg.Contains("font-family=\"A&amp;B &quot;Display&quot;, sans-serif\"", StringComparison.Ordinal), "SVG font-family values should be attribute-escaped.");
         var editorial = Chart.Create().WithTheme(VisualTheme.Editorial()).AddLine("Values", Points(1, 2, 3)).ToSvg();
         Assert(editorial.Contains(ChartFontStacks.Serif, StringComparison.Ordinal), "Editorial themes should use the built-in serif font stack.");
         var dashboard = Chart.Create().WithTheme(VisualTheme.Dashboard()).AddBar("KPI", Points(8, 9, 7)).ToSvg();

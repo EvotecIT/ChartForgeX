@@ -1,0 +1,56 @@
+name: Website CI
+
+on:
+  pull_request:
+    paths:
+      - "Website/**"
+      - "Directory.Build.props"
+      - "ChartForgeX.sln"
+      - "ChartForgeX/**"
+      - "ChartForgeX.Visuals/**"
+      - "ChartForgeX.Stories/**"
+      - "ChartForgeX.Interactivity/**"
+      - "ChartForgeX.Interactivity.Html/**"
+      - "ChartForgeX.Markup/**"
+      - "ChartForgeX.Mermaid/**"
+      - "ChartForgeX.Markup.Mermaid/**"
+      - "ChartForgeX.Examples/**"
+      - "docs/**"
+      - ".github/workflows/website-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "Website/**"
+      - "Directory.Build.props"
+      - "ChartForgeX.sln"
+      - "ChartForgeX/**"
+      - "ChartForgeX.Visuals/**"
+      - "ChartForgeX.Stories/**"
+      - "ChartForgeX.Interactivity/**"
+      - "ChartForgeX.Interactivity.Html/**"
+      - "ChartForgeX.Markup/**"
+      - "ChartForgeX.Mermaid/**"
+      - "ChartForgeX.Markup.Mermaid/**"
+      - "ChartForgeX.Examples/**"
+      - "docs/**"
+      - ".github/workflows/website-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  packages: read
+
+concurrency:
+  group: website-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-site:
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-ci.yml@77a10b3d2b8cf3608d5b08747f273ae38e055479
+    with:
+      website_root: Website
+      pipeline_config: Website/pipeline.json
+      powerforge_lock_path: ./Website/.powerforge/engine-lock.json
+      powerforge_repository_override: ${{ vars.POWERFORGE_REPOSITORY }}
+      powerforge_ref_override: ${{ vars.POWERFORGE_REF }}

@@ -2,13 +2,17 @@
   "slug": "chartforgex",
   "name": "ChartForgeX",
   "description": "Render deterministic charts, dashboards, topology, hierarchy, and report visuals directly from .NET.",
-  "mode": "hub-full",
-  "contentMode": "hybrid",
+  "mode": "dedicated-external",
+  "contentMode": "external",
   "status": "active",
   "listed": true,
   "version": "1.8.2",
   "sourceRef": "main",
   "links": {
+    "website": "https://chartforgex.com",
+    "docs": "https://chartforgex.com/docs/",
+    "apiDotNet": "https://chartforgex.com/api/",
+    "examples": "https://chartforgex.com/examples/",
     "source": "https://github.com/EvotecIT/ChartForgeX",
     "nuget": "https://www.nuget.org/packages/ChartForgeX",
     "releases": "https://github.com/EvotecIT/ChartForgeX/releases"
@@ -21,11 +25,5 @@
     "downloads": true,
     "releases": true,
     "changelog": true
-  },
-  "artifacts": {
-    "docs": "Website/content/project-docs",
-    "examples": "Website/content/examples",
-    "api": "https://github.com/EvotecIT/ChartForgeX/releases/download/ChartForgeX-v{version}/ChartForgeX.ApiDocs.{version}.zip",
-    "demos": "Website/static/examples/promoted-cases.json"
   }
 }

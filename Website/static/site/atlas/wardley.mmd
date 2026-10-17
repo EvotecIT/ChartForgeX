@@ -1,0 +1,22 @@
+wardley-beta
+title Platform map
+size [900, 600]
+evolution Genesis -> Custom Built -> Product -> Commodity
+anchor User [0.95, 0.05]
+component Portal [0.80, 0.35] inertia
+component API [0.70, 0.45] (build)
+component Identity [0.55, 0.65] label [-12, 18]
+User -> Portal
+Portal +'uses'> API
+API -.-> Identity;optional
+evolve API 0.75
+note "Operational pressure" [0.35, 0.75]
+annotations [0.12, 0.88]
+annotation 1, [0.60, 0.50] "Improve automation"
+accelerator Faster [0.42, 0.62]
+deaccelerator Risk [0.48, 0.68]
+pipeline API {
+  component Build [0.30]
+  component Buy [0.55]
+  component Commodity [0.80]
+}

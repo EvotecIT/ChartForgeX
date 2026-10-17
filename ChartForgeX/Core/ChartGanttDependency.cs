@@ -17,9 +17,9 @@ public readonly struct ChartGanttDependency : IEquatable<ChartGanttDependency> {
     public ChartSeriesId SuccessorId { get; }
     /// <summary>Compares both stable series identities.</summary>
     public bool Equals(ChartGanttDependency other) => PredecessorId == other.PredecessorId && SuccessorId == other.SuccessorId;
-    /// <inheritdoc />
+    /// <summary>Compares both stable series identities when <paramref name="obj"/> is a <see cref="ChartGanttDependency"/>.</summary>
     public override bool Equals(object? obj) => obj is ChartGanttDependency other && Equals(other);
-    /// <inheritdoc />
+    /// <summary>Returns a hash code built from both stable series identities.</summary>
     public override int GetHashCode() => unchecked(PredecessorId.GetHashCode() * 397 ^ SuccessorId.GetHashCode());
 }
 

@@ -1,0 +1,19 @@
+{
+  "languages": [
+    {
+      "id": "mermaid",
+      "label": "Mermaid"
+    },
+    {
+      "id": "chartforgex",
+      "label": "ChartForgeX markup"
+    }
+  ],
+  "initial": "flowchart LR\n  alert([Alert raised]) --> triage{Known issue?}\n  triage -->|yes| runbook[Run the runbook]\n  triage -->|no| owner[Page the service owner]\n  runbook --> verify[Verify recovery]\n  owner --> fix[Ship a fix]\n  fix --> verify\n  verify --> close((Close))",
+  "bootNote": "The engine is about 3 MB and is cached after the first visit. Rendering happens in your browser; nothing you type is sent anywhere.",
+  "notes": [
+    "This page runs the ChartForgeX 2.0 NuGet packages compiled to WebAssembly. The SVG you see is the same output a .NET application gets from the snippet beside this note.",
+    "ChartForgeX markup is Markdown with chartforgex fences. Mermaid fences inside a markup document render too, so one document can hold charts, tables, flows and diagrams.",
+    "ZenUML, Agentflow and Railroad diagrams are recognised and reported, but not rendered yet."
+  ]
+}

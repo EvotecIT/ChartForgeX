@@ -1,0 +1,11 @@
+gantt
+  title Release train
+  dateFormat YYYY-MM-DD
+  section Engine
+  Layout pass      :done,    l1, 2026-09-01, 12d
+  Label placement  :active,  l2, after l1, 10d
+  section Surfaces
+  PNG parity       :         s1, 2026-09-10, 14d
+  Email preview    :         s2, after s1, 7d
+  section Release
+  Ship 2.0         :milestone, m1, after l2 s2, 0d

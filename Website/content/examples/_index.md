@@ -1,10 +1,11 @@
 ---
 title: "ChartForgeX examples"
+order: 0
 description: "Build static charts, organization hierarchies, interactive topology, and report compositions."
-layout: docs
+layout: examples
 ---
 
-Use these focused examples as entry points. The [curated ChartForgeX demos](https://evotec.xyz/demos/chartforgex/) explain representative use cases and link each rendered result to its source and downloadable formats. Browse the [complete generated gallery](https://evotec.xyz/demos/chartforgex/gallery/) for the broader visual inventory.
+Use these focused examples as entry points. Browse the [gallery](/gallery/) for every chart family with its source and downloadable formats, or try a diagram in the [playground](/playground/).
 
 - [Your first static chart](./static-chart/)
 - [Organization hierarchy with branch layout policies](./organization-hierarchy/)

@@ -1,0 +1,329 @@
+{
+  "hero": {
+    "title_line_1": "Charts rendered in .NET.",
+    "title_line_2": "Shipped to every surface.",
+    "lede": "Dashboards, charts, topology, maps and Mermaid diagrams from your data, written straight to SVG, PNG, HTML, email or Markdown. No browser, no JavaScript runtime and no package dependencies, from .NET or PowerShell.",
+    "install": "dotnet add package ChartForgeX",
+    "primary": {
+      "label": "Browse the gallery",
+      "url": "/gallery/"
+    },
+    "secondary": {
+      "label": "Read the docs",
+      "url": "/docs/"
+    },
+    "badges": [
+      "MIT licensed",
+      "No runtime dependencies",
+      ".NET Framework 4.7.2 to .NET 10",
+      "Native AOT ready"
+    ]
+  },
+  "surfaces": [
+    {
+      "id": "csharp",
+      "label": "C#",
+      "caption": "The chart definition. Save it as SVG, PNG or HTML from the same object."
+    },
+    {
+      "id": "svg",
+      "label": "SVG",
+      "size": "hero.svg",
+      "caption": "Vector output with an accessible name and description. Its colors are CSS custom properties, so this chart follows the page's theme switch."
+    },
+    {
+      "id": "png",
+      "label": "PNG",
+      "size": "hero-light.png",
+      "caption": "Native PNG from the same layout. No browser, no headless Chrome and no System.Drawing."
+    },
+    {
+      "id": "html",
+      "label": "HTML",
+      "size": "hero-light.html",
+      "caption": "A self-contained page with no script. Switch to interactive to see the optional ChartForgeX.Interactivity.Html adapter on the same chart."
+    },
+    {
+      "id": "email",
+      "label": "Email",
+      "caption": "Mail clients get the PNG, with the chart's text alternative as its alt text."
+    },
+    {
+      "id": "markdown",
+      "label": "Markdown",
+      "caption": "The same chart authored as a fenced block. ChartForgeX.Markup parses it into the same chart model."
+    }
+  ],
+  "facts": [
+    {
+      "title": "No runtime package dependencies",
+      "body": "The core package ships alone. Browser behaviour lives in opt-in adapter packages."
+    },
+    {
+      "title": ".NET Framework 4.7.2 to .NET 10",
+      "body": "Every package targets net472, netstandard2.0, net8.0 and net10.0."
+    },
+    {
+      "title": "Native AOT and trimming",
+      "body": "Trim and AOT analyzers are on, and a Native AOT smoke test runs in the release loop."
+    },
+    {
+      "title": "Deterministic output",
+      "body": "The same input renders the same SVG and PNG, ready for snapshot tests and cached reports."
+    }
+  ],
+  "beyond": [
+    {
+      "title": "Dashboards and report grids",
+      "body": "Compose charts, KPI tiles and tables into one canvas with ChartGrid and VisualGrid.",
+      "image": "/examples/generated/dashboard-restaurant-overview-grid.png",
+      "alt": "Restaurant operations dashboard with revenue trend, order status, customer distribution and occupation charts in a dark report grid.",
+      "url": "/examples/generated/dashboard-restaurant-overview-grid.html",
+      "size": "wide",
+      "width": 2704,
+      "height": 1502
+    },
+    {
+      "title": "Topology and maps",
+      "body": "Layered, grouped and geographic layouts with route arcs, region hulls and icon packs.",
+      "image": "/examples/generated/visual-geographic-topology-map.png",
+      "alt": "Geographic topology map with sites connected by route arcs across regions.",
+      "url": "/examples/generated/visual-geographic-topology-map.html",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "title": "Region and dotted maps",
+      "body": "Region, tile and dotted maps with numeric color scales and a built-in map catalog.",
+      "image": "/examples/generated/revenue-europe-country-map-light.png",
+      "alt": "Map of Europe with countries shaded by revenue.",
+      "url": "/examples/generated/revenue-europe-country-map-light.html",
+      "width": 1960,
+      "height": 1120
+    },
+    {
+      "title": "Hierarchies",
+      "body": "Organization charts, sunbursts and treemaps with stable IDs for drill-down hosts.",
+      "image": "/examples/generated/visual-team-hierarchy-builder.png",
+      "alt": "Team hierarchy diagram with managers and reports arranged as a tree.",
+      "url": "/examples/generated/visual-team-hierarchy-builder.html",
+      "width": 1180,
+      "height": 855
+    },
+    {
+      "title": "Graph explorer",
+      "body": "Browse large hierarchies and meshes in the browser with SVG, Canvas or WebGL rendering from ChartForgeX.Interactivity.Html.",
+      "image": "/examples/generated/visual-replication-mesh-explorer.png",
+      "alt": "Interactive graph explorer showing a replication mesh between directory sites.",
+      "url": "/examples/generated/visual-replication-mesh-explorer.html",
+      "width": 1280,
+      "height": 735
+    }
+  ],
+  "comparison": {
+    "columns": [
+      "ChartForgeX",
+      "Browser chart library",
+      "Mermaid.js"
+    ],
+    "rows": [
+      {
+        "need": "A chart in an email",
+        "cells": [
+          "PNG rendered in-process",
+          "Capture an image with a headless browser",
+          "Render with mermaid-cli, which drives a headless browser"
+        ]
+      },
+      {
+        "need": "A Word or PDF report",
+        "cells": [
+          "SVG or PNG, or editable Visio shapes through OfficeIMO",
+          "Capture an image first",
+          "Capture an image first"
+        ]
+      },
+      {
+        "need": "Snapshot tests in CI",
+        "cells": [
+          "Diff deterministic SVG text",
+          "Compare browser screenshots",
+          "Compare CLI renders"
+        ]
+      },
+      {
+        "need": "A static docs site",
+        "cells": [
+          "SVG with no runtime script",
+          "Ship a script bundle that draws on load",
+          "Ship the script or pre-render with the CLI"
+        ]
+      },
+      {
+        "need": "An interactive dashboard",
+        "cells": [
+          "Optional adapter for tooltips, selection and zoom",
+          "Their home ground",
+          "Click callbacks on some diagrams"
+        ]
+      }
+    ]
+  },
+  "packages": [
+    {
+      "id": "ChartForgeX",
+      "use": "Charts, chart grids, topology, maps, prepared scenes and still-image output."
+    },
+    {
+      "id": "ChartForgeX.Visuals",
+      "use": "Visual canvases, image composition, KPI tiles, tables, lists and watermarks."
+    },
+    {
+      "id": "ChartForgeX.Stories",
+      "use": "Animated visual and terminal stories with GIF and APNG output."
+    },
+    {
+      "id": "ChartForgeX.Mermaid",
+      "use": "Parse Mermaid source and render it through the native engine."
+    },
+    {
+      "id": "ChartForgeX.Markup",
+      "use": "Markdown fences for charts, timelines, topology, flows, sequences and tables."
+    },
+    {
+      "id": "ChartForgeX.Interactivity.Html",
+      "use": "Self-contained interactive pages: tooltips, topology explorer and graph explorer."
+    }
+  ],
+  "family": [
+    {
+      "name": "OfficeIMO",
+      "url": "https://officeimo.com/",
+      "body": "Place ChartForgeX visuals in Office documents, or project them as editable Visio shapes, through the OfficeIMO.ChartForgeX adapter."
+    },
+    {
+      "name": "CanopyX",
+      "url": "https://canopyx.dev/",
+      "body": "Interactive trees and data grids for the tables that sit next to your charts."
+    },
+    {
+      "name": "CodeGlyphX",
+      "url": "https://codeglyphx.com/",
+      "body": "QR codes and barcodes in pure .NET, for report footers, labels and tickets."
+    },
+    {
+      "name": "HtmlForgeX",
+      "url": "https://htmlforgex.com/",
+      "body": "Build HTML reports, dashboards and emails in C# around your charts."
+    },
+    {
+      "name": "ImagePlayground",
+      "url": "https://evotec.xyz/projects/imageplayground/",
+      "body": "PowerShell commands for charts, QR codes and image processing, built on ChartForgeX and CodeGlyphX."
+    }
+  ],
+  "showcases": [
+    {
+      "id": "dashboard-saas-mrr-grid",
+      "title": "SaaS revenue and retention dashboard",
+      "summary": "Monthly recurring revenue, movement drivers, churn context, and supporting KPI cards composed into one deterministic dashboard.",
+      "alt": "SaaS dashboard showing monthly recurring revenue, MRR drivers, customer movement, churn, and supporting KPI cards in a dark grid.",
+      "png": "/examples/generated/dashboard-saas-mrr-grid.png",
+      "svg": "/examples/generated/dashboard-saas-mrr-grid.svg",
+      "html": "/examples/generated/dashboard-saas-mrr-grid.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/DashboardPortfolioExamples.cs",
+      "width": 2728,
+      "height": 2342
+    },
+    {
+      "id": "security-posture-radar-dark",
+      "title": "Security posture radar",
+      "summary": "A dark-theme radar chart for comparing posture across identity, endpoint, data, network, application, and operational dimensions.",
+      "alt": "Dark radar chart comparing security posture scores across six security dimensions with a filled polygon and labeled axes.",
+      "png": "/examples/generated/security-posture-radar-dark.png",
+      "svg": "/examples/generated/security-posture-radar-dark.svg",
+      "html": "/examples/generated/security-posture-radar-dark.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Program.cs",
+      "width": 1840,
+      "height": 1120
+    },
+    {
+      "id": "visual-geographic-topology-map",
+      "title": "Geographic infrastructure topology",
+      "summary": "A topology-native geographic layout with projected site markers, curved WAN routes, regional callouts, selection state, and metadata hooks.",
+      "alt": "World topology map with regional infrastructure sites, curved WAN connections, status labels, and an APAC site selected for detail.",
+      "png": "/examples/generated/visual-geographic-topology-map.png",
+      "svg": "/examples/generated/visual-geographic-topology-map.svg",
+      "html": "/examples/generated/visual-geographic-topology-map.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/TopologyVisualExamples.Geographic.cs",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "id": "control-coverage-heatmap-dark",
+      "title": "Control coverage matrix",
+      "summary": "A heatmap that compares security domains across controls with semantic colors, readable labels, and an explicit value scale.",
+      "alt": "Dark security control coverage heatmap with domain rows, control columns, colored cells, percentage labels, and a semantic value scale.",
+      "png": "/examples/generated/control-coverage-heatmap-dark.png",
+      "svg": "/examples/generated/control-coverage-heatmap-dark.svg",
+      "html": "/examples/generated/control-coverage-heatmap-dark.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/Program.cs",
+      "width": 1960,
+      "height": 1120
+    },
+    {
+      "id": "revenue-europe-country-map-light",
+      "title": "Europe revenue map",
+      "summary": "A dotted geographic map that encodes regional revenue with value-colored points, labels, and a report-oriented viewport.",
+      "alt": "Light map of Europe with country and city labels, colored revenue markers, and a legend explaining the value scale.",
+      "png": "/examples/generated/revenue-europe-country-map-light.png",
+      "svg": "/examples/generated/revenue-europe-country-map-light.svg",
+      "html": "/examples/generated/revenue-europe-country-map-light.html",
+      "source": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/MapExamples.cs",
+      "width": 1960,
+      "height": 1120
+    }
+  ],
+  "surfaces2": [
+    {
+      "id": "dotnet",
+      "name": ".NET",
+      "color": "series-1",
+      "description": "A typed C# API on NuGet for .NET Framework 4.7.2 through .NET 10.",
+      "action": "Install the package",
+      "url": "/docs/install/"
+    },
+    {
+      "id": "powershell",
+      "name": "PowerShell",
+      "color": "series-4",
+      "description": "ImagePlayground brings ChartForgeX to PowerShell 5.1 and 7.",
+      "action": "Start with PowerShell",
+      "url": "/powershell/"
+    },
+    {
+      "id": "markdown",
+      "name": "Markdown",
+      "color": "series-2",
+      "description": "Charts, timelines, topology and tables as fenced blocks in your docs.",
+      "action": "Try markup in the playground",
+      "url": "/playground/?lang=chartforgex"
+    },
+    {
+      "id": "mermaid",
+      "name": "Mermaid",
+      "color": "series-3",
+      "description": "Thirty Mermaid diagram families rendered without a browser.",
+      "action": "See Mermaid support",
+      "url": "/mermaid/"
+    },
+    {
+      "id": "browser",
+      "name": "Browser",
+      "color": "signal",
+      "description": "Optional interactive pages: tooltips, zoom, topology and graph explorers.",
+      "action": "Add interactivity",
+      "url": "/docs/interactivity/"
+    }
+  ]
+}

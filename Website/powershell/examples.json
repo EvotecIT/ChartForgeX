@@ -1,0 +1,85 @@
+{
+  "examples": [
+    {
+      "id": "service-health",
+      "family": "flagship",
+      "title": "A service health dashboard from four objects",
+      "body": "Metric cards, a status table, a checklist and a latency chart composed into one grid. The same grid writes a PNG for chat and email and an HTML page for a browser.",
+      "show": [
+        "service-health.png"
+      ]
+    },
+    {
+      "id": "latency-trend",
+      "family": "charts",
+      "title": "Trend against a target",
+      "body": "Two series, a target line and release markers. One definition renders PNG and SVG.",
+      "show": [
+        "latency-trend.png"
+      ]
+    },
+    {
+      "id": "patch-compliance",
+      "family": "charts",
+      "title": "Compliance by ring",
+      "body": "Group-Object turns machine rows into percentages; progress bars show them."
+    },
+    {
+      "id": "storage-treemap",
+      "family": "charts",
+      "title": "Storage by department",
+      "body": "Share sizes summed per department and drawn as a labelled treemap."
+    },
+    {
+      "id": "cost-bridge",
+      "family": "charts",
+      "title": "Month-over-month cost bridge",
+      "body": "A waterfall from an ordered hashtable: the keys become labels, the values become steps."
+    },
+    {
+      "id": "stacked-builds",
+      "family": "charts",
+      "title": "Stacked bars from a CSV",
+      "body": "Titles, category labels and the bar layout are parameters, so a CSV export becomes a stacked chart in one command."
+    },
+    {
+      "id": "service-map",
+      "family": "diagrams",
+      "title": "Service map from a dependency list",
+      "body": "Tiers become columns and callers become edges. The same map writes a PNG and an interactive HTML page with pan, zoom and node details.",
+      "show": [
+        "service-map.png"
+      ]
+    },
+    {
+      "id": "org-chart",
+      "family": "diagrams",
+      "title": "Organization chart from directory data",
+      "body": "Manager links become the hierarchy; disabled accounts are flagged for review."
+    },
+    {
+      "id": "request-flow",
+      "family": "diagrams",
+      "title": "Animated request flow",
+      "body": "A scenario walks a request across the map. SVG animates in the browser; GIF works in chat.",
+      "show": [
+        "request-flow.svg"
+      ]
+    },
+    {
+      "id": "console-story",
+      "family": "stories",
+      "title": "Animated terminal session",
+      "body": "Commands and output replayed as animated SVG, HTML or GIF for documentation and release notes.",
+      "show": [
+        "console-story.svg"
+      ]
+    },
+    {
+      "id": "social-card",
+      "family": "stories",
+      "title": "Link preview card",
+      "body": "A 1200 x 630 canvas of text and info tiles, built from the same objects as the report."
+    }
+  ]
+}

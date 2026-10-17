@@ -79,6 +79,9 @@ internal sealed partial class TrueTypeFont {
     internal static bool IsMonospaceFamily(string? fontFamily) =>
         ClassifyFamily(fontFamily) == FontFamilyKind.Monospace;
 
+    internal static bool IsSerifFamily(string? fontFamily) =>
+        ClassifyFamily(fontFamily) == FontFamilyKind.Serif;
+
     private static bool ContainsAny(string value, params string[] candidates) {
         foreach (var candidate in candidates) {
             if (value.IndexOf(candidate, StringComparison.OrdinalIgnoreCase) >= 0) return true;

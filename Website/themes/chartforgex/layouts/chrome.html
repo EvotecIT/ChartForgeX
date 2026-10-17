@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--chrome">
+{{~ ## The site header and footer rendered at a route the API docs step owns. build/Export-ApiChrome.ps1 lifts them out
+     after the site build, the API docs step wraps its pages in them, then overwrites this page. One header and one
+     footer partial therefore serve every page, with the right section marked current. ## ~}}
+{{ include "site-header" }}
+<main id="main" class="cfx-main"></main>
+{{ include "site-footer" }}
+</body>
+</html>
