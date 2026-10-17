@@ -91,8 +91,7 @@ internal sealed class ChartGanttLaneModel {
         (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
         IReadOnlyList<double> ticks = axis.Labels.Count > 0
             ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()
-            : ChartTimeScale.Generate(axis, min, max, inside: true)
-                ?? ChartTicks.GenerateInside(new ChartAxis { Scale = ChartScaleKind.Time, TickCount = axis.TickCount }, min, max);
+            : ChartTicks.GenerateTimeInside(axis, min, max);
 
         // Renderer text metrics differ slightly. Pack against the shared minimum possible plot width so a bar
         // with the two-pixel visual floor never obscures the next item in either SVG or PNG.

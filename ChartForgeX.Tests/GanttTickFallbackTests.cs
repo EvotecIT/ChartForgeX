@@ -3,6 +3,8 @@ using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -23,14 +25,28 @@ public sealed class GanttTickFallbackTests {
         Assert.Equal(expected, local);
     }
 
-    [Fact]
-    public void DenseMermaidIntervalsUseTheAutomaticLabelFormatAndKeepExplicitOverrides() {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DenseMermaidIntervalsUseTheAutomaticLabelFormatAndKeepExplicitOverrides(bool dark) {
         const string source = "gantt\ntickInterval 1millisecond\nTask :2026-01-01, 1d";
         var document = new MermaidParser().ParseGantt(source).Document!;
-        var automatic = new MermaidParser().ParseGantt(source.Replace("tickInterval 1millisecond\n", "")).Document!.ToChart();
-        var chart = document.ToChart();
-        Assert.Equal(Labels(automatic), Labels(chart));
-        Assert.NotEmpty(chart.ToPng());
+        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var automatic = new MermaidParser().ParseGantt(source.Replace("tickInterval 1millisecond\n", "")).Document!.ToChart()
+            .WithTheme(VisualTheme.Graphite(), mode);
+        var chart = document.ToChart().WithTheme(VisualTheme.Graphite(), mode);
+        var automaticPrepared = automatic.Prepare(VisualExportRequest.ForChart(automatic).Context);
+        var fallbackPrepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(automaticPrepared, $"gantt-automatic-date-{mode}");
+        ScatterBubbleColorRenderingTests.Capture(fallbackPrepared, $"gantt-dense-date-fallback-{mode}");
+        var automaticLabels = Labels(automatic);
+        Assert.Equal(automaticLabels, Labels(chart));
+        Assert.True(automaticLabels.Length >= 2, "A full-day window has room for both complete date captions.");
+        Assert.Equal(automaticLabels.Length, automaticLabels.Distinct(StringComparer.Ordinal).Count());
+        Assert.All(automaticLabels, label => Assert.True(DateTime.TryParseExact(label, "yyyy-MM-dd",
+            CultureInfo.InvariantCulture, DateTimeStyles.None, out _), "Automatic Gantt captions retain complete date identity: " + label));
+        Assert.NotEmpty(automaticPrepared.ToPng());
+        Assert.NotEmpty(fallbackPrepared.ToPng());
         document.AxisFormat = "%d/%m";
         var authored = document.ToChart();
         Assert.All(Labels(authored), label => Assert.Matches("^0[12]/01$", label));

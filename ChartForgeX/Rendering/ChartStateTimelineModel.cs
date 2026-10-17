@@ -127,8 +127,7 @@ internal sealed class ChartStateTimelineModel {
         // Timeline segments are UTC instants even when callers leave the default linear axis.
         IReadOnlyList<double> ticks = axis.Labels.Count > 0
             ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()
-            : ChartTimeScale.Generate(axis, min, max, inside: true)
-                ?? ChartTicks.GenerateInside(new ChartAxis { Scale = ChartScaleKind.Time, TickCount = axis.TickCount }, min, max);
+            : ChartTicks.GenerateTimeInside(axis, min, max);
         return new ChartStateTimelineModel(chart, lanes, min, max, ticks, legend);
     }
 
