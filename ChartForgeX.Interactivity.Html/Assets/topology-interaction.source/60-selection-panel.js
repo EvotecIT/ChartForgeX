@@ -303,7 +303,7 @@
       wrapper.setAttribute('data-cfx-navigation-source', sourceKey);
       wrapper.setAttribute('data-cfx-navigation-target', targetKey);
       if (target.focus) target.focus({ preventScroll: true });
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-navigate', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), from: publicDetail(element), to: publicDetail(target) } }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-navigate', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), from: publicDetail(element), to: publicDetail(target) } }));
       return true;
     };
     const applyRelatedClasses = (detail, classPrefix, selfClass) => {
@@ -349,7 +349,7 @@
       applyRelatedClasses(detail, 'cfx-topology-html-hover-', 'cfx-topology-html-hovered');
       applyForceFocusLabels(detail);
       delete detail.element;
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover', { bubbles: true, detail }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover', { bubbles: true, composed: true, detail }));
     };
     const select = (element, emit = true, sync = true) => {
       const detail = identity(element);
@@ -365,7 +365,7 @@
       renderSelectionPanel({ ...detail, element });
       detail.selected = true;
       delete detail.element;
-      if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-select', { bubbles: true, detail }));
+      if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-select', { bubbles: true, composed: true, detail }));
       if (sync) emitSync('selection', { selection: { kind: detail.kind, id: detail.id, status: detail.status } });
     };
     const setSelection = request => {
@@ -391,7 +391,7 @@
       });
       matches.forEach(element => { element.classList.add('cfx-topology-html-selected'); element.setAttribute('aria-selected', 'true'); });
       const selections = matches.map(publicDetail);
-      if (detail.emit === true) wrapper.dispatchEvent(new CustomEvent('cfx-topology-select', { bubbles: true, detail: { ...selections[0], ids: selections.map(item => item.id), selections } }));
+      if (detail.emit === true) wrapper.dispatchEvent(new CustomEvent('cfx-topology-select', { bubbles: true, composed: true, detail: { ...selections[0], ids: selections.map(item => item.id), selections } }));
       if (detail.sync === true) emitSync('selection', { selection: { kind: detail.kind, ids: selections.map(item => item.id) } });
       return selections;
     };

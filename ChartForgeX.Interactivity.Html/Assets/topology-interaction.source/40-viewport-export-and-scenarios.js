@@ -11,7 +11,7 @@
     const emitSync = (action, payload) => {
       if (!syncEnabled || !syncGroup || applyingSync) return;
       const detail = Object.assign({ chartId: attr(wrapper, 'data-chart-id'), group: syncGroup, action }, payload || {});
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-sync', { bubbles: true, detail }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-sync', { bubbles: true, composed: true, detail }));
       document.querySelectorAll('.cfx-topology-wrapper[data-cfx-interactive="true"][data-cfx-sync-enabled="true"]').forEach(peer => {
         if (peer === wrapper || peer.getAttribute('data-cfx-sync-group') !== syncGroup) return;
         peer.dispatchEvent(new CustomEvent('cfx-topology-apply-sync', { detail }));
@@ -48,7 +48,7 @@
       return { rect, paddingTop, paddingLeft, width, availableHeight, svgWidth, svgHeight };
     };
     const emitViewport = () => {
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-viewport', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-viewport', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
       emitSync('viewport', { state: viewportState() });
     };
     const zoomBy = (factor, origin) => {
@@ -70,7 +70,7 @@
       const metrics = viewportMetrics();
       const scale = clamp(Math.min(1, metrics.width / metrics.svgWidth, metrics.availableHeight / metrics.svgHeight), 0.001, 1);
       applyViewport({ zoom: scale, panX: (metrics.width - metrics.svgWidth) / 2, panY: (metrics.availableHeight - metrics.svgHeight) / 2 });
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-fit', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-fit', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
       emitViewport();
     };
     const isViewportVisible = element => {
@@ -124,7 +124,7 @@
       const panY = targetY - originY - zoom * (centerY - originY);
       applyViewport({ zoom, panX, panY });
       if (emit) {
-        wrapper.dispatchEvent(new CustomEvent('cfx-topology-fit', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState(), mode: 'visible', count: boxes.length } }));
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-fit', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState(), mode: 'visible', count: boxes.length } }));
         emitViewport();
       }
       return true;
@@ -143,7 +143,7 @@
     const resetViewport = () => {
       applyViewport({ zoom: 1, panX: 0, panY: 0 });
       wrapper.removeAttribute('data-cfx-topology-dragging');
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-reset', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-reset', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
       emitViewport();
     };
     const setViewportMode = mode => {
@@ -173,14 +173,14 @@
       clearScenario();
       const ids = unique((scenarioIds || []).map(value => String(value || '').trim()));
       if (!ids.length) {
-        if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-clear', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
+        if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-clear', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
         if (sync) emitSync('scenario-filters', { scenarioIds: [] });
         return;
       }
 
       const routes = ids.map(scenarioRoute).filter(route => route);
       if (!routes.length) {
-        if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-clear', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
+        if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-clear', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
         if (sync) emitSync('scenario-filters', { scenarioIds: [] });
         return;
       }
@@ -233,19 +233,19 @@
       renderScenarioPanel(routes.length === 1 ? routes[0] : { ...routes[0], label: routes.length + ' routes enabled', description: routes.map(route => route.label).join(' / '), stepCount: routes.reduce((sum, route) => sum + route.stepCount, 0), steps: routes.flatMap(route => route.steps), metadata: {} }, routes.length === 1);
       updateScenarioStepControls(false);
       syncScenarioUrl(routes.map(route => route.scenarioId).join(','), '');
-      if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-filter', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioIds: routes.map(route => route.scenarioId), routes: routes.map(route => ({ scenarioId: route.scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount })), nodeIds: Array.from(nodeIds), edgeIds: Array.from(edgeIds), groupIds: Array.from(groupIds) } }));
+      if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-filter', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioIds: routes.map(route => route.scenarioId), routes: routes.map(route => ({ scenarioId: route.scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount })), nodeIds: Array.from(nodeIds), edgeIds: Array.from(edgeIds), groupIds: Array.from(groupIds) } }));
       if (sync) emitSync('scenario-filters', { scenarioIds: routes.map(route => route.scenarioId) });
     };
     const setScenario = (scenarioId, emit = true, sync = true) => {
       clearScenario();
       if (!scenarioId) {
-        if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-clear', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
+        if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-clear', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
         if (sync) emitSync('scenario', { scenarioId: '' });
         return;
       }
       const route = scenarioRoute(scenarioId);
       if (!route) {
-        if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-clear', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
+        if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-clear', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
         if (sync) emitSync('scenario', { scenarioId: '' });
         return;
       }
@@ -289,7 +289,7 @@
       clearScenarioStep();
       updateScenarioStepControls(false);
       syncScenarioUrl(scenarioId, '');
-      if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount, metadata: route.metadata, steps: route.steps, nodeIds: Array.from(route.nodeIds), edgeIds: Array.from(route.edgeIds), groupIds: Array.from(route.groupIds) } }));
+      if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount, metadata: route.metadata, steps: route.steps, nodeIds: Array.from(route.nodeIds), edgeIds: Array.from(route.edgeIds), groupIds: Array.from(route.groupIds) } }));
       if (sync) emitSync('scenario', { scenarioId });
     };
     const svgElement = () => topologySvg();
@@ -306,7 +306,7 @@
       return { svg, data: new XMLSerializer().serializeToString(clone) };
     };
     const emitExport = format => {
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-export', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), format } }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-export', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), format } }));
     };
     const downloadBlob = (blob, extension, format) => {
       const url = URL.createObjectURL(blob);

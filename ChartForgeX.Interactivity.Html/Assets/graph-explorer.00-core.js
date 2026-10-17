@@ -11,7 +11,7 @@
     const virtual = (root.__cfxGraphVirtualItems || []).filter(item => !item.__cfxRemoved && graphVirtualMatches(item, selector));
     return physical.concat(virtual);
   };
-  const emit = (root, name, detail, options) => root.dispatchEvent(new CustomEvent(name, { bubbles: true, cancelable: !!options?.cancelable, detail }));
+  const emit = (root, name, detail, options) => root.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true, cancelable: !!options?.cancelable, detail }));
   const featureGroups = {
     Explorer: ['Selection', 'MultiSelection', 'Search', 'Filtering', 'Viewport', 'NeighborhoodFocus', 'Clustering', 'LevelOfDetail', 'BoxSelection', 'StateSnapshots']
   };

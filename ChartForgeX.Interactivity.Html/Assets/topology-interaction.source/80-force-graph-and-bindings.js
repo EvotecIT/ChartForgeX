@@ -72,7 +72,7 @@
       syncTopologyGroupVisibility();
       syncTopologyHighlightAppearance();
       const detail = publishTopologyFilterSummary();
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, detail: { ...detail, query: state.query, status: state.status, group: state.group, kind: '' } }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-force-filter', { bubbles: true, composed: true, detail: { ...detail, query: state.query, status: state.status, group: state.group, kind: '' } }));
       restoreForceFocusLabels();
     };
     const clearForceFocusLabels = () => {
@@ -119,12 +119,12 @@
       element.addEventListener('pointerenter', () => hover(element));
       element.addEventListener('pointerleave', () => {
         clearHover();
-        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true }));
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
       });
       element.addEventListener('focus', () => hover(element));
       element.addEventListener('blur', () => {
         clearHover();
-        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true }));
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
       });
     });
     const initiallySelected = Array.from(wrapper.querySelectorAll(selectables)).find(element => attr(element, 'data-cfx-selected') === 'true');
@@ -317,7 +317,7 @@
     wrapper.addEventListener('keydown', event => {
       if (event.key === 'Escape') {
         clear();
-        wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true }));
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true, composed: true }));
         emitSync('clear-selection', {});
         return;
       }
@@ -338,7 +338,7 @@
     });
     wrapper.addEventListener('cfx-topology-clear-selection', event => {
       clear();
-      if (event.detail?.emit === true) wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true }));
+      if (event.detail?.emit === true) wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true, composed: true }));
       if (event.detail?.sync === true) emitSync('clear-selection', {});
     });
     wrapper.addEventListener('cfx-topology-highlight', event => highlight(event.detail));
@@ -352,10 +352,10 @@
           setSelection({ ...detail.selection, emit: true });
         } else if (detail.action === 'clear-selection') {
           clear();
-          wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true }));
+          wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true, composed: true }));
         } else if (detail.action === 'viewport' && detail.state) {
           applyViewport(detail.state);
-          wrapper.dispatchEvent(new CustomEvent('cfx-topology-viewport', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState(), sourceChartId: detail.chartId } }));
+          wrapper.dispatchEvent(new CustomEvent('cfx-topology-viewport', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState(), sourceChartId: detail.chartId } }));
         } else if (detail.action === 'scenario') {
           setScenario(detail.scenarioId || '');
         } else if (detail.action === 'scenario-filters') {

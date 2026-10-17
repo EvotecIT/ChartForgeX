@@ -238,11 +238,17 @@ Linked highlights follow the same replacement boundary. Category and unscoped ra
 ## Linking charts to other views
 
 Listen on the chart root or a containing element. Chart host events bubble from
-their root, including `cfxselect`, `cfxselectionchange`, `cfxhover`, `cfxcompare`,
+their root and cross open and closed shadow boundaries. These include
+`cfxselect`, `cfxselectionchange`, `cfxhover`, `cfxcompare`,
 `cfxbrush`, `cfxbrushclear`, `cfxlasso`, `cfxhighlight`, `cfxhighlightclear`,
 `cfxtooltip`, `cfxreset` and state notifications. A host can
 map their facts into another chart, a table, a tree or its own application state.
 ChartForgeX does not require another view library.
+
+Outside a shadow root, the browser retargets `event.target` to the web-component
+host. Use `event.detail.chartId` to identify the source chart rather than reading
+chart attributes from that target. Send commands through the mounted controller
+or chart root; outward notifications do not broadcast commands to other charts.
 
 `cfxselectionchange` reports the complete selected mark set, independently of
 `CompareMarkers`. Its detail contains `chartId`, `targets` and `reason`: `click`,
@@ -496,6 +502,8 @@ An unmatched addition leaves selection unchanged. Independent highlighting may s
 Graph selection edge details include `sourceNodeId` and `targetNodeId`.
 `cfxgraphhover` and `cfxgraphhoverclear` report `graphId`, `id`, `role`, `label` and
 `metadata`, so a host can coordinate hover without inspecting the graph's paint.
+Graph notifications also cross shadow boundaries. Use `event.detail.graphId`
+outside the shadow root, where `event.target` refers to the component host.
 
 ## Topology motion with HTML controls
 

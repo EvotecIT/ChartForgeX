@@ -118,7 +118,7 @@
         group.classList.toggle('cfx-topology-html-scenario-preview', active);
         group.classList.toggle('cfx-topology-html-scenario-preview-muted', !active);
       });
-      wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-preview', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount, metadata: route.metadata, steps: route.steps, nodeIds: Array.from(route.nodeIds), edgeIds: Array.from(route.edgeIds), groupIds: Array.from(route.groupIds) } }));
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-preview', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioId, label: route.label, description: route.description, color: route.color, stepCount: route.stepCount, metadata: route.metadata, steps: route.steps, nodeIds: Array.from(route.nodeIds), edgeIds: Array.from(route.edgeIds), groupIds: Array.from(route.groupIds) } }));
     };
     const updateScenarioStepControls = playing => {
       const hasRoute = !!scenarioRoute(attr(wrapper, 'data-cfx-active-scenario'));
@@ -159,7 +159,7 @@
       const scrubber = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-scrubber]') : null;
       if (scrubber) scrubber.value = String(index + 1);
       if (!keepPlaying) stopScenarioPlayback();
-      if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-step', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioId: route.scenarioId, index, step: route.steps[index] } }));
+      if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-step', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), scenarioId: route.scenarioId, index, step: route.steps[index] } }));
       syncScenarioUrl(route.scenarioId, index);
       if (sync) emitSync('scenario-step', { scenarioId: route.scenarioId, index });
     };
@@ -194,8 +194,8 @@
       };
       advance();
     };
-    const copyScenarioLink = () => { syncScenarioUrl(attr(wrapper, 'data-cfx-active-scenario') || attr(wrapper, 'data-cfx-active-scenarios'), wrapper.getAttribute('data-cfx-active-scenario-step') || ''); const url = window.location.href; if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).catch(() => {}); wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-link', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), url } })); };
-    const emitFullscreenState = () => wrapper.dispatchEvent(new CustomEvent('cfx-topology-fullscreen', { bubbles: true, detail: { chartId: attr(wrapper, 'data-chart-id'), fullscreen: document.fullscreenElement === wrapper } }));
+    const copyScenarioLink = () => { syncScenarioUrl(attr(wrapper, 'data-cfx-active-scenario') || attr(wrapper, 'data-cfx-active-scenarios'), wrapper.getAttribute('data-cfx-active-scenario-step') || ''); const url = window.location.href; if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).catch(() => {}); wrapper.dispatchEvent(new CustomEvent('cfx-topology-scenario-link', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), url } })); };
+    const emitFullscreenState = () => wrapper.dispatchEvent(new CustomEvent('cfx-topology-fullscreen', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), fullscreen: document.fullscreenElement === wrapper } }));
     const setFullscreenState = () => { wrapper.setAttribute('data-cfx-topology-fullscreen', document.fullscreenElement === wrapper ? 'true' : 'false'); emitFullscreenState(); };
     const toggleFullscreen = () => {
       if (!document.fullscreenElement && wrapper.requestFullscreen) wrapper.requestFullscreen().catch(() => {});
