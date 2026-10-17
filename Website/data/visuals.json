@@ -6,7 +6,7 @@
         "ext": "svg",
         "w": 1180,
         "h": 707,
-        "kb": 62.5,
+        "kb": 62.8,
         "pngKb": 49,
         "interactive": false
       },
@@ -22,7 +22,7 @@
         "ext": "svg",
         "w": 1180,
         "h": 640,
-        "kb": 65.5,
+        "kb": 66.1,
         "interactive": true
       },
       "overview": {
@@ -30,7 +30,7 @@
         "ext": "svg",
         "w": 1032,
         "h": 540,
-        "kb": 37
+        "kb": 39.3
       },
       "stories-1": {
         "base": "/site/docs/stories-1",
@@ -51,14 +51,14 @@
         "ext": "svg",
         "w": 1280,
         "h": 720,
-        "kb": 30.4
+        "kb": 31.3
       },
       "topology": {
         "base": "/site/docs/topology",
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 28.9
+        "kb": 31.5
       }
     },
     "surfaces": {
@@ -67,28 +67,28 @@
         "ext": "svg",
         "w": 584,
         "h": 274,
-        "kb": 6.2
+        "kb": 5.4
       },
       "canvas": {
         "base": "/site/docs/surface-canvas",
         "ext": "svg",
         "w": 1200,
         "h": 630,
-        "kb": 17.9
+        "kb": 15.5
       },
       "chart": {
         "base": "/site/docs/surface-chart",
         "ext": "svg",
         "w": 480,
         "h": 300,
-        "kb": 11.5
+        "kb": 12.3
       },
       "graph": {
         "base": "/site/examples/interactive-topology",
         "ext": "svg",
         "w": 1180,
         "h": 640,
-        "kb": 65.5,
+        "kb": 66.1,
         "interactive": true
       },
       "grid": {
@@ -96,8 +96,8 @@
         "ext": "svg",
         "w": 2064,
         "h": 1184,
-        "kb": 35.2,
-        "pngKb": 103,
+        "kb": 27.9,
+        "pngKb": 99,
         "interactive": false
       },
       "markup": {
@@ -105,14 +105,14 @@
         "ext": "svg",
         "w": 615,
         "h": 320,
-        "kb": 15.1
+        "kb": 15.4
       },
       "topology": {
         "base": "/site/docs/topology",
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 28.9
+        "kb": 31.5
       }
     }
   },
@@ -122,7 +122,7 @@
       "ext": "svg",
       "w": 1180,
       "h": 640,
-      "kb": 65.5,
+      "kb": 66.1,
       "interactive": true
     },
     "organization-hierarchy": {
@@ -130,7 +130,7 @@
       "ext": "svg",
       "w": 1180,
       "h": 707,
-      "kb": 62.5,
+      "kb": 62.8,
       "pngKb": 49,
       "interactive": false
     },
@@ -139,8 +139,8 @@
       "ext": "svg",
       "w": 2064,
       "h": 1184,
-      "kb": 35.2,
-      "pngKb": 103,
+      "kb": 27.9,
+      "pngKb": 99,
       "interactive": false
     },
     "static-chart": {
@@ -148,7 +148,7 @@
       "ext": "svg",
       "w": 1180,
       "h": 640,
-      "kb": 16.5,
+      "kb": 17.4,
       "pngKb": 36,
       "interactive": false
     }
@@ -158,7 +158,7 @@
     "ext": "svg",
     "w": 560,
     "h": 300,
-    "kb": 23.1,
+    "kb": 23.6,
     "total": 60
   },
   "generatedBy": "Website/tools/SiteVisuals",
@@ -169,7 +169,7 @@
         "ext": "svg",
         "w": 911,
         "h": 683,
-        "kb": 26.4,
+        "kb": 31.2,
         "source": "---\ntitle: Report platform\n---\narchitecture-beta\ngroup edge(cloud)[Edge]\ngroup core(cloud)[Platform]\ngroup data(database)[Data] in core\nservice web(internet)[Web] in edge\nservice api(server)[API] in core\nservice renderer(server)[Renderer] in core\nservice sql(database)[SQL] in data\nservice blob(disk)[Cache] in data\nweb:R --\u003E L:api\napi:R --\u003E L:renderer\nrenderer:B --\u003E T:blob\napi:B --\u003E T:sql",
         "lines": 16,
         "warnings": 0
@@ -189,7 +189,7 @@
         "ext": "svg",
         "w": 775,
         "h": 581,
-        "kb": 16.3,
+        "kb": 18.9,
         "source": "C4Context\ntitle System Context\nPerson(customer, \u0022Banking Customer\u0022, \u0022A customer of the bank\u0022)\nSystem(system, \u0022Internet Banking System\u0022, \u0022Allows customers to view balances\u0022)\nSystem_Ext(mail, \u0022E-mail System\u0022, \u0022Sends notifications\u0022)\nRel(customer, system, \u0022Uses\u0022, \u0022HTTPS\u0022)\nRel(system, mail, \u0022Sends e-mails\u0022, \u0022SMTP\u0022)",
         "lines": 7,
         "warnings": 0
@@ -197,9 +197,9 @@
       "class": {
         "base": "/site/atlas/class",
         "ext": "svg",
-        "w": 827,
+        "w": 1072,
         "h": 570,
-        "kb": 18.1,
+        "kb": 18.6,
         "source": "---\ntitle: Chart model\n---\nclassDiagram\n  class Chart {\n    \u002Bstring Title\n    \u002BWithSize(width, height)\n    \u002BToSvg() string\n  }\n  class ChartSeries {\n    \u002Bstring Name\n    \u002BChartPoint[] Points\n  }\n  class VisualTheme {\n    \u002BVisualTypography Typography\n  }\n  Chart \u00221\u0022 *-- \u0022many\u0022 ChartSeries : contains\n  Chart --\u003E VisualTheme : uses",
         "lines": 18,
         "warnings": 0
@@ -209,7 +209,7 @@
         "ext": "svg",
         "w": 940,
         "h": 620,
-        "kb": 12.3,
+        "kb": 13.5,
         "source": "cynefin-beta\ntitle Service decisions\ncomplex\n \u0022Discover demand\u0022\ncomplicated\n \u0022Analyze capacity\u0022\nchaotic\n \u0022Contain outage\u0022\nclear\n \u0022Run checklist\u0022\nconfusion\n \u0022Investigate context\u0022\ncomplex --\u003E complicated : \u0022Learn\u0022",
         "lines": 13,
         "warnings": 0
@@ -217,9 +217,9 @@
       "er": {
         "base": "/site/atlas/er",
         "ext": "svg",
-        "w": 827,
+        "w": 1168,
         "h": 570,
-        "kb": 23,
+        "kb": 23.8,
         "source": "---\ntitle: Orders schema\n---\nerDiagram\n  CUSTOMER ||--o{ ORDER : places\n  ORDER ||--|{ LINE_ITEM : contains\n  PRODUCT ||--o{ LINE_ITEM : \u0022ordered in\u0022\n  CUSTOMER {\n    string id PK\n    string name\n    string email\n  }\n  ORDER {\n    string id PK\n    string customerId FK\n    date placed\n  }",
         "lines": 17,
         "warnings": 0
@@ -229,7 +229,7 @@
         "ext": "svg",
         "w": 1125,
         "h": 690,
-        "kb": 32.3,
+        "kb": 35.9,
         "source": "---\ntitle: Shopping cart events\n---\neventmodeling\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt Cart.ItemAdded [[ItemAdded01]]\ntf 04 rmo Cart.CartView -\u003E\u003E 03\nrf 05 pcr InventoryProcessor\ntimeframe 06 event Inventory.Reserved\ndata ItemAdded01 \u0060json\u0060{\n  \u0022sku\u0022: \u0022ABC\u0022,\n  \u0022quantity\u0022: 1\n}",
         "lines": 14,
         "warnings": 0
@@ -239,7 +239,7 @@
         "ext": "svg",
         "w": 725,
         "h": 544,
-        "kb": 29.1,
+        "kb": 29.6,
         "source": "---\ntitle: Incident response\n---\nflowchart TD\n  alert([Alert raised]) --\u003E triage{Known issue?}\n  triage --\u003E|yes| runbook[Run the runbook]\n  triage --\u003E|no| owner[Page the service owner]\n  runbook --\u003E verify[Verify recovery]\n  owner --\u003E fix[Ship a fix]\n  fix --\u003E verify",
         "lines": 10,
         "warnings": 0
@@ -247,9 +247,9 @@
       "gantt": {
         "base": "/site/atlas/gantt",
         "ext": "svg",
-        "w": 751,
-        "h": 563,
-        "kb": 19.2,
+        "w": 732,
+        "h": 549,
+        "kb": 21,
         "source": "gantt\n  title Release train\n  dateFormat YYYY-MM-DD\n  section Engine\n  Layout pass      :done,    l1, 2026-09-01, 12d\n  Label placement  :active,  l2, after l1, 10d\n  section Surfaces\n  PNG parity       :         s1, 2026-09-10, 14d\n  Email preview    :         s2, after s1, 7d\n  section Release\n  Ship 2.0         :milestone, m1, after l2 s2, 0d",
         "lines": 11,
         "warnings": 0
@@ -277,9 +277,9 @@
       "journey": {
         "base": "/site/atlas/journey",
         "ext": "svg",
-        "w": 751,
-        "h": 563,
-        "kb": 11.7,
+        "w": 743,
+        "h": 557,
+        "kb": 12.6,
         "source": "journey\n  title Report delivery\n  section Build\n    Collect data: 5: Collector\n    Render charts: 4: ChartForgeX\n  section Deliver\n    Send email: 3: Mailer\n    Read on phone: 5: Reader",
         "lines": 8,
         "warnings": 0
@@ -289,7 +289,7 @@
         "ext": "svg",
         "w": 743,
         "h": 557,
-        "kb": 13.7,
+        "kb": 14,
         "source": "---\ntitle: Playground launch\n---\nkanban\n  todo[To do]\n    docs[Write playground docs]\n    share[Share links]\n  doing[In progress]\n    engine[WebAssembly engine]@{ priority: \u0022High\u0022 }\n  done[Done]\n    site[chartforgex.com]",
         "lines": 11,
         "warnings": 0
@@ -299,7 +299,7 @@
         "ext": "svg",
         "w": 1001,
         "h": 570,
-        "kb": 57.7,
+        "kb": 60.9,
         "source": "---\ntitle: What ChartForgeX covers\n---\nmindmap\n  root((ChartForgeX))\n    Outputs\n      SVG\n      PNG\n      HTML\n    Authoring\n      Fluent C#\n      Markdown fences\n      Mermaid\n    Hosts\n      Reports\n      Email\n      Dashboards",
         "lines": 17,
         "warnings": 0
@@ -319,7 +319,7 @@
         "ext": "svg",
         "w": 729,
         "h": 547,
-        "kb": 12.1,
+        "kb": 12.4,
         "source": "pie showData\n  title Sign-ins by method\n  \u0022Passkey\u0022 : 8900\n  \u0022Authenticator app\u0022 : 6200\n  \u0022SMS code\u0022 : 1300\n  \u0022Password only\u0022 : 1500",
         "lines": 6,
         "warnings": 0
@@ -327,9 +327,9 @@
       "quadrant": {
         "base": "/site/atlas/quadrant",
         "ext": "svg",
-        "w": 751,
-        "h": 563,
-        "kb": 17.6,
+        "w": 747,
+        "h": 560,
+        "kb": 18.2,
         "source": "quadrantChart\n  title Feature priorities\n  x-axis Low effort --\u003E High effort\n  y-axis Low impact --\u003E High impact\n  quadrant-1 Plan carefully\n  quadrant-2 Do now\n  quadrant-3 Maybe later\n  quadrant-4 Avoid\n  Dark theme: [0.25, 0.85]\n  PNG export: [0.7, 0.8]\n  Tooltips: [0.35, 0.4]\n  Custom fonts: [0.8, 0.3]",
         "lines": 12,
         "warnings": 0
@@ -339,7 +339,7 @@
         "ext": "svg",
         "w": 695,
         "h": 521,
-        "kb": 16.2,
+        "kb": 16.9,
         "source": "radar-beta\n  title Security posture\n  axis mail[\u0022Mail auth\u0022], dnssec[\u0022DNSSEC\u0022], tls[\u0022TLS\u0022], ct[\u0022CT\u0022], policy[\u0022Policy\u0022]\n  curve current[\u0022Current\u0022]{91, 72, 88, 95, 79}\n  curve target[\u0022Target\u0022]{95, 90, 95, 95, 90}\n  min 0\n  max 100",
         "lines": 7,
         "warnings": 0
@@ -347,9 +347,9 @@
       "requirement": {
         "base": "/site/atlas/requirement",
         "ext": "svg",
-        "w": 855,
-        "h": 641,
-        "kb": 22.2,
+        "w": 903,
+        "h": 677,
+        "kb": 26.3,
         "source": "---\ntitle: Sign-in requirements\n---\nrequirementDiagram\ndirection LR\nfunctionalRequirement mfa_req {\n  id: \u0022SEC-1\u0022\n  text: Every account signs in with a strong method.\n  risk: High\n  verifymethod: Test\n}\nperformanceRequirement report_req {\n  id: \u0022OPS-4\u0022\n  text: The weekly report renders in under a second.\n  risk: Low\n  verifymethod: Analysis\n}\nelement auth_service {\n  type: service\n  docref: \u0022Identity provider\u0022\n}\nelement report_job {\n  type: job\n  docref: \u0022ChartForgeX report\u0022\n}\nauth_service - satisfies -\u003E mfa_req\nreport_job - verifies -\u003E mfa_req\nreport_job - satisfies -\u003E report_req",
         "lines": 28,
         "warnings": 0
@@ -359,7 +359,7 @@
         "ext": "svg",
         "w": 745,
         "h": 559,
-        "kb": 16.3,
+        "kb": 16.6,
         "source": "---\ntitle: Sign-ins by network and method\n---\nsankey-beta\nOffice network,Passkey,5200\nOffice network,Authenticator app,3100\nRemote,Passkey,3700\nRemote,Authenticator app,3100\nRemote,SMS code,1300\nRemote,Password only,1500",
         "lines": 10,
         "warnings": 0
@@ -368,8 +368,8 @@
         "base": "/site/atlas/sequence",
         "ext": "svg",
         "w": 760,
-        "h": 647,
-        "kb": 12.8,
+        "h": 623,
+        "kb": 12.5,
         "source": "---\ntitle: Dashboard sign-in\n---\nsequenceDiagram\n  autonumber\n  actor User\n  participant App\n  participant IdP as Identity provider\n  participant API\n  User-\u003E\u003EApp: Open dashboard\n  App-\u003E\u003EIdP: Authorization request\n  IdP--\u003E\u003EApp: ID token \u002B access token\n  App-\u003E\u003EAPI: GET /reports (Bearer token)\n  alt token valid\n    API--\u003E\u003EApp: 200 report data\n  else token expired\n    API--\u003E\u003EApp: 401 Unauthorized\n  end\n  Note over App,API: Tokens refresh silently before expiry\n  App--\u003E\u003EUser: Render charts",
         "lines": 20,
         "warnings": 0
@@ -378,8 +378,8 @@
         "base": "/site/atlas/state",
         "ext": "svg",
         "w": 760,
-        "h": 720,
-        "kb": 27.3,
+        "h": 768,
+        "kb": 27.6,
         "source": "---\ntitle: Document review\n---\nstateDiagram-v2\n  [*] --\u003E Draft\n  Draft --\u003E Review : submit\n  Review --\u003E Draft : request changes\n  Review --\u003E Approved : approve\n  Approved --\u003E Published : release\n  Published --\u003E [*]",
         "lines": 10,
         "warnings": 0
@@ -389,7 +389,7 @@
         "ext": "svg",
         "w": 735,
         "h": 551,
-        "kb": 22.7,
+        "kb": 22.9,
         "source": "---\ntitle: Pull request flow\n---\nswimlane-beta LR\nsubgraph Author\n A[Write source] --\u003E B[Open pull request]\nend\nsubgraph Build\n C{Checks pass?} --\u003E D[Render report]\nend\nsubgraph Reader\n E[Read in email]\nend\nB --\u003E C\nD --\u003E E",
         "lines": 15,
         "warnings": 0
@@ -397,9 +397,9 @@
       "timeline": {
         "base": "/site/atlas/timeline",
         "ext": "svg",
-        "w": 751,
-        "h": 563,
-        "kb": 13.6,
+        "w": 739,
+        "h": 554,
+        "kb": 14.4,
         "source": "timeline\n  title Rendering history\n  2024 : Fluent chart API : SVG and PNG output\n  2025 : Topology diagrams : Markdown fences\n  2026 : Mermaid families : Native WebAssembly playground",
         "lines": 5,
         "warnings": 0
@@ -409,7 +409,7 @@
         "ext": "svg",
         "w": 760,
         "h": 570,
-        "kb": 12.1,
+        "kb": 12.4,
         "source": "---\ntitle: Device inventory\n---\ntreemap-beta\n\u0022Infrastructure\u0022\n    \u0022Identity\u0022: 42\n    \u0022Messaging\u0022: 18\n    \u0022Endpoints\u0022\n        \u0022Windows\u0022: 24\n        \u0022macOS\u0022: 9\n        \u0022Linux\u0022: 6",
         "lines": 11,
         "warnings": 0
@@ -419,7 +419,7 @@
         "ext": "svg",
         "w": 1073,
         "h": 570,
-        "kb": 48.2,
+        "kb": 54.4,
         "source": "---\ntitle: Repository layout\n---\ntreeView-beta\n    \u0022src\u0022\n        \u0022ChartForgeX\u0022\n            \u0022VisualBlocks\u0022\n        \u0022ChartForgeX.Mermaid\u0022\n            \u0022MermaidParser.cs\u0022\n            \u0022MermaidTreeViewParser.cs\u0022\n    \u0022README.md\u0022",
         "lines": 11,
         "warnings": 0
@@ -429,7 +429,7 @@
         "ext": "svg",
         "w": 735,
         "h": 551,
-        "kb": 18.8,
+        "kb": 20.3,
         "source": "---\ntitle: Online store\n---\nusecase-beta\ndirection LR\nactor Customer\nsystemBoundary Store[Online store]\n Browse(\u0022Browse products\u0022)\n Pay(\u0022Pay for order\u0022)\n Authenticate(\u0022Authenticate\u0022)\nend\nCustomer --\u003E Browse\nBrowse ..\u003E : include Authenticate\nPay --|\u003E Browse",
         "lines": 14,
         "warnings": 0
@@ -457,9 +457,9 @@
       "xychart": {
         "base": "/site/atlas/xychart",
         "ext": "svg",
-        "w": 751,
-        "h": 563,
-        "kb": 17.3,
+        "w": 746,
+        "h": 560,
+        "kb": 18.8,
         "source": "xychart-beta\n  title \u0022Tickets closed per sprint\u0022\n  x-axis [S1, S2, S3, S4, S5, S6, S7, S8]\n  y-axis \u0022Tickets\u0022 0 --\u003E 120\n  bar [48, 61, 57, 72, 80, 77, 94, 103]\n  line [48, 61, 57, 72, 80, 77, 94, 103]",
         "lines": 6,
         "warnings": 0
@@ -478,42 +478,42 @@
         "ext": "svg",
         "w": 1027,
         "h": 560,
-        "kb": 12.5
+        "kb": 12.6
       },
       "docs": {
         "base": "/site/docs/topology",
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 28.9
+        "kb": 31.5
       },
       "examples": {
         "base": "/site/nav/examples",
         "ext": "svg",
         "w": 240,
         "h": 150,
-        "kb": 16.3
+        "kb": 17.8
       },
       "gallery": {
         "base": "/site/nav/gallery",
         "ext": "svg",
         "w": 240,
         "h": 150,
-        "kb": 27.9
+        "kb": 30.6
       },
       "mermaid": {
         "base": "/site/nav/mermaid",
         "ext": "svg",
         "w": 615,
         "h": 320,
-        "kb": 15.1
+        "kb": 15.5
       },
       "playground": {
         "base": "/site/nav/playground",
         "ext": "svg",
         "w": 820,
         "h": 460,
-        "kb": 10.7
+        "kb": 10.8
       },
       "powershell": {
         "base": "/site/nav/powershell",
@@ -529,6 +529,6 @@
     "ext": "svg",
     "w": 560,
     "h": 300,
-    "kb": 7.7
+    "kb": 8
   }
 }
