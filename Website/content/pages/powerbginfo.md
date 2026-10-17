@@ -19,7 +19,6 @@ PowerBGInfo runs on Windows only. It is built for .NET Framework 4.7.2 and .NET 
 
 ```powershell
 New-BGInfo -Theme Aurora -ThemeMode Dark -Target File {
-    New-BGInfoBackground
     New-BGInfoValue -BuiltinValue HostName -Name 'Computer'
     New-BGInfoValue -BuiltinValue FullUserName -Name 'User'
     New-BGInfoValue -BuiltinValue OSName -Name 'Windows'
@@ -30,13 +29,12 @@ New-BGInfo -Theme Aurora -ThemeMode Dark -Target File {
 } -ConfigurationDirectory C:\Temp\PowerBGInfo -OutputFileName preview.png
 ```
 
-`-Target File` writes `preview.png` and leaves the desktop alone. Without a size, `New-BGInfoBackground` paints at the size of the monitor. The built-in values read the machine the script runs on, and `-Metric MemoryPercent` reads the memory in use at that moment, so every machine gets its own wallpaper from the same script.
+`-Target File` writes `preview.png` and leaves the desktop alone. The built-in values read the machine the script runs on, and `-Metric MemoryPercent` reads the memory in use at that moment, so every machine gets its own wallpaper from the same script.
 
 ## Set it as the wallpaper
 
 ```powershell
 New-BGInfo -Theme Aurora {
-    New-BGInfoBackground
     New-BGInfoValue -BuiltinValue HostName -Name 'Computer'
     New-BGInfoValue -BuiltinValue OSName -Name 'Windows'
 } -ConfigurationDirectory C:\ProgramData\PowerBGInfo -WallpaperFit Fill
