@@ -67,6 +67,8 @@ internal sealed class SvgMarkupWriter {
 
     public SvgMarkupWriter Attribute(string name, string? value) {
         if (value == null) return this;
+        // Every SVG font stack ends in a generic family, so a missing named face never falls back to serif.
+        if (name == "font-family") value = Typography.TypographyCss.FamilyWithGenericFallback(value);
         AppendAttributeName(name);
         ReserveCharacters(_builder, _maximumCharacters, 3);
         _builder.Append("=\"");

@@ -1,0 +1,13 @@
+architecture-beta
+group edge(cloud)[Edge]
+group core(cloud)[Platform]
+group data(database)[Data] in core
+service web(internet)[Web] in edge
+service api(server)[API] in core
+service renderer(server)[Renderer] in core
+service sql(database)[SQL] in data
+service blob(disk)[Cache] in data
+web:R --> L:api
+api:R --> L:renderer
+renderer:B --> T:blob
+api:B --> T:sql

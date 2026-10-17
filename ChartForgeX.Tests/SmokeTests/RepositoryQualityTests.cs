@@ -362,8 +362,9 @@ internal static partial class SmokeTests {
             var workflowName = Path.GetFileName(workflow);
             var text = File.ReadAllText(workflow);
             Assert(!text.Contains("self-hosted", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should use public hosted runners now that the repository is public: " + workflowName);
+            // Website workflows build and publish the site through the shared PowerForge workflows, not the library matrix.
             if (string.Equals(workflowName, "vscode-extension.yml", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(workflowName, "website-api-release.yml", StringComparison.OrdinalIgnoreCase)) continue;
+                workflowName.StartsWith("website-", StringComparison.OrdinalIgnoreCase)) continue;
 
             Assert(ContainsAny(text, "ubuntu-latest") && ContainsAny(text, "windows-latest") && ContainsAny(text, "macos-latest"), "GitHub Actions workflows should cover public Linux, Windows, and macOS runners: " + workflowName);
             Assert(text.Contains("actions/setup-dotnet", StringComparison.OrdinalIgnoreCase), "GitHub Actions workflows should install the expected .NET SDK: " + workflowName);

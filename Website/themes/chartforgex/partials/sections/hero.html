@@ -1,0 +1,48 @@
+{{~ hero = data.home.hero ~}}
+<section class="cfx-hero cfx-tone-dark" aria-labelledby="cfx-intro-title">
+  <div class="cfx-hero__inner">
+    <h1 id="cfx-intro-title" class="cfx-hero__title"><span>{{ hero.title_line_1 }}</span> <span class="cfx-hero__accent">{{ hero.title_line_2 }}</span></h1>
+    <div class="cfx-hero__side">
+      <p class="cfx-hero__lede">{{ hero.lede }}</p>
+      <div class="cfx-hero__actions">
+        <a class="cfx-btn cfx-btn--glow" href="{{ hero.primary.url }}">{{ hero.primary.label }}</a>
+        <a class="cfx-btn cfx-btn--ghost" href="{{ hero.secondary.url }}">{{ hero.secondary.label }}</a>
+      </div>
+      <ul class="cfx-hero__badges" aria-label="Highlights">
+        {{~ for b in hero.badges ~}}<li>{{ b }}</li>{{~ end ~}}
+      </ul>
+    </div>
+  </div>
+
+  <div class="cfx-hero__art">
+    <figure class="cfx-window">
+      <div class="cfx-window__bar">
+        <span class="cfx-window__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="cfx-window__name">identity-overview.png</span>
+        <span class="cfx-window__chips" aria-hidden="true"><b>PNG</b><b>SVG</b><b>HTML</b></span>
+      </div>
+      <img src="/site/dashboard-dark.png" width="3280" height="1408" fetchpriority="high" decoding="async"
+        alt="A dark dashboard rendered by ChartForgeX: sign-ins by method as a stacked area, this week's share as a donut, a security posture radar, sign-ins by hour as a heatmap and an MFA coverage gauge at 87." />
+    </figure>
+
+    <figure class="cfx-codeblock cfx-hero__code" data-lang="csharp">
+      <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">C#</span><span class="cfx-codeblock__file">Report.cs</span><span class="cfx-codeblock__actions"></span></figcaption>
+<pre><code class="language-csharp">var report = ChartGrid.Create()
+    .WithThemeMode(VisualThemeMode.Dark)
+    .WithColumns(3)
+    .Add(signIns, columnSpan: 2)
+    .Add(methods).Add(posture)
+    .Add(byHour).Add(coverage);
+
+report.SavePng("identity-overview.png");</code></pre>
+    </figure>
+
+    <figure class="cfx-codeblock cfx-hero__code" data-lang="powershell">
+      <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">Usage.ps1, ImagePlayground</span><span class="cfx-codeblock__actions"></span></figcaption>
+<pre><code class="language-powershell">New-ImageChart {
+    New-ImageChartDonut -Name 'Used' -Value 72
+    New-ImageChartDonut -Name 'Free' -Value 28
+} -Theme Dark -FilePath usage.png</code></pre>
+    </figure>
+  </div>
+</section>

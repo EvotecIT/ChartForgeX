@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <!--
+    In-browser rendering engine for the chartforgex.com playground.
+    Plain .NET browser-wasm app (JSExport, no Blazor). Published by Website/config/presets/pipeline.playground.json
+    and served from /playground/engine/_framework/. Kept out of ChartForgeX.sln so library CI never builds it.
+
+    The configuration deliberately avoids anything that needs the wasm-tools workload: no AOT and no native relink,
+    so the prebuilt runtime from the browser-wasm runtime pack is used as-is and the .NET 10 SDK alone can publish it.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ChartForgeX.Playground</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+
+    <!-- Small runtime: no ICU data, full trimming of framework and ChartForgeX assemblies.
+         InvariantTimezone is deliberately not set: dropping time zone data relinks dotnet.native.wasm and needs wasm-tools. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+    <!-- Surface every trim warning (the browser SDKs can default to hiding them); with TreatWarningsAsErrors they fail the publish. -->
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+
+    <!-- Workload-free: interpreter only, prebuilt dotnet.native.wasm. -->
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <WasmBuildNative>false</WasmBuildNative>
+
+    <!-- GitHub Pages and Cloudflare compress on the fly; precompressed .br/.gz copies would only double the artifact. -->
+    <CompressionEnabled>false</CompressionEnabled>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+    <WasmEmitSymbolMap>false</WasmEmitSymbolMap>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ChartForgeX\ChartForgeX.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj" />
+  </ItemGroup>
+
+  <!-- Carlito (SIL OFL 1.1) gives the browser, which has no installed fonts, real text metrics; see PlaygroundFonts.cs. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Regular.ttf" LogicalName="Fonts.Carlito-Regular.ttf" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Bold.ttf" LogicalName="Fonts.Carlito-Bold.ttf" />
+    <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\OFL.txt" LogicalName="Fonts.Carlito-OFL.txt" />
+  </ItemGroup>
+</Project>

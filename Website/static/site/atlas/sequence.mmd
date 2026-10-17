@@ -1,0 +1,20 @@
+---
+title: Dashboard sign-in
+---
+sequenceDiagram
+  autonumber
+  actor User
+  participant App
+  participant IdP as Identity provider
+  participant API
+  User->>App: Open dashboard
+  App->>IdP: Authorization request
+  IdP-->>App: ID token + access token
+  App->>API: GET /reports (Bearer token)
+  alt token valid
+    API-->>App: 200 report data
+  else token expired
+    API-->>App: 401 Unauthorized
+  end
+  Note over App,API: Tokens refresh silently before expiry
+  App-->>User: Render charts

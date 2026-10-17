@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--docs{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ## The surface table on "Choose a rendering surface" gains the output of each surface beside its row. Rows are
+     matched by their "Need" text (data/docs.json); when any row no longer matches, the table renders unchanged. ## ~}}
+{{~ article = content
+    if article | string.contains "<thead><tr><th>Need</th><th>Start with</th></tr></thead>"
+      rows = data.docs.surfaceRows; complete = true
+      for r in rows; if !(article | string.contains ("<tr><td>" + r.need + "</td>")); complete = false; end; end
+      if complete
+        article = article | string.replace "<thead><tr><th>Need</th>" '<thead><tr><th><span class="cfx-visually-hidden">Output</span></th><th>Need</th>'
+        for r in rows
+          s = data.visuals.docs.surfaces[r.key]
+          cell = '<td class="cfx-surface-cell"><span class="cfx-surface-cell__plate"><img class="cfx-only-light" src="' + s.base + '-light.' + s.ext + '" width="' + s.w + '" height="' + s.h + '" loading="lazy" decoding="async" alt="" /><img class="cfx-only-dark" src="' + s.base + '-dark.' + s.ext + '" width="' + s.w + '" height="' + s.h + '" loading="lazy" decoding="async" alt="" /></span></td>'
+          article = article | string.replace ("<tr><td>" + r.need + "</td>") ("<tr>" + cell + "<td>" + r.need + "</td>")
+        end
+        article = article | string.replace "<table>" '<table class="cfx-surface-table">'
+      end
+    end ~}}
+<main id="main" class="cfx-main">
+  {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = "" ~}}
+  {{ include "masthead" }}
+  <div class="cfx-docs">
+    {{ include "docs-sidebar" }}
+    <article class="cfx-docs__article">
+      <div class="cfx-prose">
+{{ article }}
+      </div>
+      {{ if edit_url != "" }}<p class="cfx-docs__edit"><a href="{{ edit_url }}">Edit this page on GitHub</a></p>{{ end }}
+    </article>
+    {{ if toc != "" }}<aside class="cfx-docs__toc" aria-label="On this page" data-cfx-outline>{{ toc }}</aside>{{ end }}
+  </div>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

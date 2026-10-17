@@ -1,0 +1,15 @@
+---
+title: Pull request flow
+---
+swimlane-beta LR
+subgraph Author
+ A[Write source] --> B[Open pull request]
+end
+subgraph Build
+ C{Checks pass?} --> D[Render report]
+end
+subgraph Reader
+ E[Read in email]
+end
+B --> C
+D --> E

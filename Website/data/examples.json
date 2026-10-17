@@ -1,0 +1,37 @@
+{
+  "intro": "Four complete programs, each shown with the output it renders. Read the code as annotated steps, then copy the whole program into a console app.",
+  "items": [
+    {
+      "slug": "static-chart",
+      "title": "Your first static chart",
+      "outcome": "One chart definition saved as SVG, HTML and PNG.",
+      "mode": "Static",
+      "surface": "Chart",
+      "key": 2
+    },
+    {
+      "slug": "report-grid",
+      "title": "Small-multiple report grid",
+      "outcome": "Typed records faceted into one chart per site, in a single report image.",
+      "mode": "Static",
+      "surface": "Grid",
+      "key": 1
+    },
+    {
+      "slug": "organization-hierarchy",
+      "title": "Organization hierarchy",
+      "outcome": "One team tree that mixes standard, compact and vertical branches.",
+      "mode": "Static",
+      "surface": "Topology",
+      "key": 6
+    },
+    {
+      "slug": "interactive-topology",
+      "title": "Interactive topology explorer",
+      "outcome": "A searchable estate map you can drill into, in one HTML file.",
+      "mode": "Interactive",
+      "surface": "Topology",
+      "key": 6
+    }
+  ]
+}

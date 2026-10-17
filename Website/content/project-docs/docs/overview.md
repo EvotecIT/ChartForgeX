@@ -1,10 +1,13 @@
 ---
 title: "ChartForgeX overview"
+order: 1
 description: "Understand where ChartForgeX fits and what its deterministic rendering model provides."
 layout: docs
 ---
 
 Use ChartForgeX when a .NET application, report generator, build process, or automation host needs polished visuals without sending data to a browser chart service. The same typed model can produce SVG, static HTML, PNG, GIF, JPEG, BMP, PPM, or TIFF output.
+
+{{< cfx-figure id="overview" caption="One ChartGrid of four charts, rendered by ChartForgeX for this page in its light and dark themes. The same model writes PNG and HTML." >}}
 
 ## Good fit
 
@@ -25,5 +28,5 @@ The core `ChartForgeX` package stays deterministic, script-free, and free of run
 - [Choose a rendering surface](../choosing-a-surface/)
 - [Topology and hierarchy](../topology-and-hierarchy/)
 - [Interactive HTML](../interactivity/)
-- [.NET API](/projects/chartforgex/api/)
-- [Examples](/projects/chartforgex/examples/)
+- [.NET API](/api/)
+- [Examples](../../examples/)

@@ -1,0 +1,17 @@
+{{~ about = data.powershell.about ~}}
+<aside class="cfx-ipg" aria-labelledby="cfx-ipg-title">
+  <div class="cfx-ipg__intro">
+    <h3 id="cfx-ipg-title">{{ about.title }}</h3>
+    <p>{{ about.body }}</p>
+    <p class="cfx-ipg__links">{{~ for l in about.links ~}}<a href="{{ l.url }}">{{ l.title }}</a>{{~ end ~}}</p>
+  </div>
+  <ul class="cfx-ipg__libs" aria-label="Libraries in ImagePlayground">
+    {{~ for lib in about.libraries ~}}
+    {{~ if lib.name == "ChartForgeX" ~}}
+    <li class="is-current"><div><strong>{{ lib.name }}</strong><span>{{ lib.role }}</span><em>You are here</em></div></li>
+    {{~ else ~}}
+    <li><a href="{{ lib.url }}"><strong>{{ lib.name }}</strong><span>{{ lib.role }}</span></a></li>
+    {{~ end ~}}
+    {{~ end ~}}
+  </ul>
+</aside>

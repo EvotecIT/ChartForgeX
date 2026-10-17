@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}
+</head>
+<body class="cfx-body cfx-body--powershell{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-main cfx-psp">
+{{~ psx = data["powershell-examples"]; ex = {}; for e in psx.examples; ex[e.id] = e; end ~}}
+{{ include "powershell/hero" }}
+{{ include "powershell/flagship" }}
+{{~ family = "charts"; band = data.powershell.sections.charts ~}}
+{{ include "powershell/family" }}
+{{~ family = "diagrams"; band = data.powershell.sections.diagrams ~}}
+{{ include "powershell/family" }}
+{{~ family = "stories"; band = data.powershell.sections.stories ~}}
+{{ include "powershell/family" }}
+{{ include "powershell/commands" }}
+{{ include "powershell/roadmap" }}
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

@@ -1,0 +1,10 @@
+venn-beta
+title Capability overlap
+set API ["API"] : 60
+set UI ["UI"] : 55
+set Ops ["Operations"] : 45
+union API,UI ["Shared UX"] : 18
+union API,Ops ["Automation"] : 12
+union UI,Ops ["Runbooks"] : 8
+union API,UI,Ops ["Platform"] : 5
+text API,UI note ["Reviewed"]

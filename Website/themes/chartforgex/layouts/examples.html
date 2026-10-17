@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--examples{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ ex = data.examples; outputs = data.visuals.examples ~}}
+<main id="main" class="cfx-main">
+  {{~ capture stage_side ~}}
+  <dl class="cfx-stage__stats">
+    <div><dt>Programs</dt><dd>{{ ex.items.size }}</dd></div>
+    <div><dt>Formats each</dt><dd>3</dd></div>
+    <div><dt>Interactive</dt><dd>1</dd></div>
+  </dl>
+  {{~ end ~}}
+  {{~ capture stage_art ~}}
+  <ul class="cfx-exmosaic" aria-label="Example outputs">
+    {{~ for item in ex.items ~}}
+    {{~ o = outputs[item.slug] ~}}
+    <li><a href="/examples/{{ item.slug }}/" class="cfx-output">
+      <span class="cfx-exmosaic__bar"><span class="cfx-output__file">{{ item.slug }}.{{ if o.interactive }}html{{ else }}svg{{ end }}</span></span>
+      <img src="{{ o.base }}-dark.svg" width="{{ o.w }}" height="{{ o.h }}" {{ if for.first }}fetchpriority="high"{{ else }}loading="lazy"{{ end }} decoding="async" alt="" />
+      <span class="cfx-visually-hidden">{{ item.title }}</span>
+    </a></li>
+    {{~ end ~}}
+  </ul>
+  {{~ end ~}}
+  {{~ stage_title = page.title; stage_lede = ex.intro ~}}
+  {{ include "stage" }}
+
+  <section class="cfx-wide cfx-examples" aria-label="Examples">
+    <ul class="cfx-exgrid">
+      {{~ for item in ex.items ~}}
+      {{~ o = outputs[item.slug] ~}}
+      <li class="cfx-excard" style="--key: var(--cfx-s{{ item.key }})">
+        <a class="cfx-excard__link" href="/examples/{{ item.slug }}/">
+          <span class="cfx-excard__plate">
+            <img class="cfx-only-light" src="{{ o.base }}-light.svg" width="{{ o.w }}" height="{{ o.h }}" loading="lazy" decoding="async" alt="" />
+            <img class="cfx-only-dark" src="{{ o.base }}-dark.svg" width="{{ o.w }}" height="{{ o.h }}" loading="lazy" decoding="async" alt="" />
+          </span>
+          <span class="cfx-excard__body">
+            <span class="cfx-tags">
+              <span class="cfx-tag cfx-tag--{{ item.mode | string.downcase }}"><span class="cfx-key{{ if item.mode == "Interactive" }} cfx-key--hollow{{ end }}" aria-hidden="true"></span>{{ item.mode }}</span>
+              <span class="cfx-tag">{{ item.surface }}</span>
+            </span>
+            <span class="cfx-excard__title">{{ item.title }}</span>
+            <span class="cfx-excard__outcome">{{ item.outcome }}</span>
+            <span class="cfx-excard__formats">{{ if o.interactive }}HTML explorer, static SVG{{ else }}SVG {{ o.kb }} KB, PNG {{ o.pngKb }} KB, HTML{{ end }}</span>
+          </span>
+        </a>
+      </li>
+      {{~ end ~}}
+    </ul>
+    <p class="cfx-examples__more">Every chart family, with its C# source, is in the <a class="cfx-link" href="/gallery/">gallery</a>. Diagrams can be tried live in the <a class="cfx-link" href="/playground/">playground</a>.</p>
+  </section>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "entries": [
+    { "title": "Your first static chart", "url": "/examples/static-chart/", "kind": "sample", "summary": "One chart definition saved as SVG, HTML and PNG.", "targets": ["ChartForgeX.Core.Chart"] },
+    { "title": "Chart gallery", "url": "/gallery/", "kind": "sample", "summary": "Sixty charts, each with the C# that drew it.", "targets": ["ChartForgeX.Core.Chart"] },
+    { "title": "Small-multiple report grid", "url": "/examples/report-grid/", "kind": "sample", "summary": "Typed records faceted into one chart per site, in a single report image.", "targets": ["ChartForgeX.Core.ChartGrid"] },
+    { "title": "Choose a rendering surface", "url": "/docs/choosing-a-surface/", "kind": "guide", "summary": "When to use a chart, a grid, visual blocks, a canvas or topology.", "targets": ["ChartForgeX.Core.ChartGrid", "ChartForgeX.VisualBlocks.ChartTable"] },
+    { "title": "Mermaid diagrams in .NET", "url": "/mermaid/", "kind": "guide", "summary": "Every supported family, rendered from the source shown with it.", "targets": ["ChartForgeX.Mermaid.MermaidRenderer"] },
+    { "title": "Playground", "url": "/playground/", "kind": "sample", "summary": "Edit Mermaid or ChartForgeX markup and render it in the browser.", "targets": ["ChartForgeX.Mermaid.MermaidRenderer"] },
+    { "title": "Topology and hierarchy", "url": "/docs/topology-and-hierarchy/", "kind": "guide", "summary": "Service maps, ownership trees, routes and dense hierarchies from your own records.", "targets": ["ChartForgeX.Topology.TopologyChart"] },
+    { "title": "Organization hierarchy", "url": "/examples/organization-hierarchy/", "kind": "sample", "summary": "One team tree that mixes standard, compact and vertical branches.", "targets": ["ChartForgeX.Topology.TopologyChart"] },
+    { "title": "Stories and recorded replays", "url": "/docs/stories/", "kind": "guide", "summary": "Source edits, terminal sessions and results on one playback clock.", "targets": ["ChartForgeX.Stories.VisualStory"] }
+  ]
+}

@@ -9,6 +9,8 @@ ChartForgeX turns .NET data into charts, diagrams, and report visuals. Create a 
 
 Use it for generated reports, dashboards, documentation, email, static websites, desktop applications, and document exports. Optional packages add Mermaid input, interactive HTML, tables and metric cards, image composition, and animated visual stories.
 
+The [chartforgex.com](https://chartforgex.com) website has the full gallery, Mermaid support, a live playground, PowerShell examples and the .NET API reference.
+
 ## What you can build
 
 | Your task | ChartForgeX provides |
@@ -352,6 +354,7 @@ Inspect the generated gallery before intentionally changing visual baselines. [C
 
 ## Reference and support
 
+- [chartforgex.com](https://chartforgex.com): [gallery](https://chartforgex.com/gallery/), [documentation](https://chartforgex.com/docs/), [playground](https://chartforgex.com/playground/) and [API reference](https://chartforgex.com/api/)
 - [API conventions and chart options](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/api-conventions.md)
 - [Chart combinations, orientation and axes](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/chart-combinations.md)
 - [Topology](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/topology.md) and [icon packs](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/topology-icon-packs.md)

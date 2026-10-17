@@ -1,0 +1,25 @@
+{{~ flag = ex["service-health"] ~}}
+<section class="cfx-section cfx-psflag" id="{{ flag.id }}" aria-labelledby="cfx-psflag-title">
+  <div class="cfx-psflag__grid">
+    <div class="cfx-psflag__copy">
+      <h2 id="cfx-psflag-title">{{ flag.title }}</h2>
+      <p>{{ flag.body }}</p>
+      <figure class="cfx-codeblock" data-lang="powershell">
+        <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">PowerShell</span><span class="cfx-codeblock__file">{{ flag.id }}.ps1</span><span class="cfx-codeblock__actions"></span></figcaption>
+        <pre><code class="language-powershell">{{ flag.script | html.escape }}</code></pre>
+      </figure>
+    </div>
+    <aside class="cfx-psflag__side" aria-labelledby="cfx-psflag-files">
+      <h3 id="cfx-psflag-files">What it wrote</h3>
+      <ul class="cfx-psfiles cfx-psfiles--list">
+        {{~ for o in flag.outputs ~}}
+        <li>
+          <a href="{{ o.url }}">{{ o.file }}</a>
+          <span>{{ if o.width }}{{ o.width }} x {{ o.height }}, {{ end }}{{ (o.bytes / 1024) | math.round }} KB</span>
+        </li>
+        {{~ end ~}}
+      </ul>
+      <p class="cfx-psflag__note">Every file here is the script's own output from ImagePlayground {{ psx.module.version }}. latency.png is the chart alone, saved before the grid embedded it. The dashboard and its console output are at the top of the page; <a class="cfx-link" href="/powershell/examples/{{ flag.id }}/service-health.html">service-health.html</a> is the same grid as a page.</p>
+    </aside>
+  </div>
+</section>

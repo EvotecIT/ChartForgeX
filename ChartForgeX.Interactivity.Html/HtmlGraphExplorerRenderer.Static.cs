@@ -23,9 +23,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (scene == null) throw new ArgumentNullException(nameof(scene));
         var options = StaticOptions(configure);
         var projected = ProjectStaticScene(scene, stage);
-        var body = RenderStaticSvgBody(projected, options, stage);
+        // A raster has no viewer whose color preference could apply, so System renders light.
+        var body = RenderStaticSvgBody(projected, options, stage, rasterTheme: true);
         if (!SvgRasterRenderer.TryRenderFragment(body, "0 0 960 560", "xMidYMid meet", options.Width, options.Height, out var rgba)) throw new InvalidOperationException("Static graph SVG could not be rasterized.");
-        CompositeTransparentPixels(rgba, 255, 255, 255);
+        if (options.Theme == HtmlGraphExplorerTheme.Dark) CompositeTransparentPixels(rgba, 0x0b, 0x12, 0x20);
+        else CompositeTransparentPixels(rgba, 255, 255, 255);
         return PngWriter.WriteRgba(options.Width, options.Height, rgba);
     }
 
@@ -36,7 +38,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return options;
     }
 
-    private static string RenderStaticSvgBody(GraphScene scene, GraphSceneStaticRenderOptions options, GraphSceneStage? stage) {
+    private static string RenderStaticSvgBody(GraphScene scene, GraphSceneStaticRenderOptions options, GraphSceneStage? stage, bool rasterTheme = false) {
         var writer = new StringBuilder();
         var positions = ComputePositions(scene);
         var labeledNodeIds = SelectStaticNodeLabels(scene, options.MaximumNodeLabels);
@@ -45,11 +47,15 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var markerId = SafeId(scene.Id) + "-static-arrow";
         writer.Append("<style>");
         writer.Append(HtmlGraphExplorerAssets.Style);
-        writer.Append("</style><g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export\"><title>");
+        writer.Append("</style><g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export");
+        if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-theme-dark");
+        writer.Append("\"");
+        Attribute(writer, "data-cfx-graph-theme", StaticThemeName(options.Theme, rasterTheme));
+        writer.Append("><title>");
         writer.Append(Text(scene.Title));
         writer.Append("</title>");
         WriteArrowMarkers(writer, scene, markerId);
-        writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\" style=\"fill:#ffffff\"></rect><g data-cfx-role=\"graph-viewport\"");
+        writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\" style=\"fill:var(--cfx-color-paper,#ffffff)\"></rect><g data-cfx-role=\"graph-viewport\"");
         Attribute(writer, "transform", StaticViewportTransform(scene, positions, labeledNodeIds));
         writer.Append('>');
         if (clusters.Count > 0) WriteClusters(writer, scene, clusters, positions, clusterMembership, false, false);
@@ -60,7 +66,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteNodes(writer, scene, positions, clusterMembership, emptyIds, false, false, labeledNodeIds);
         writer.Append("</g>");
         if (stage != null) {
-            writer.Append("<text x=\"480\" y=\"542\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#475569\">");
+            writer.Append("<text x=\"480\" y=\"542\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" style=\"fill:var(--cfx-color-text-muted,#475569)\">");
             var shownNodes = scene.Nodes.Count(node => !node.Hidden);
             var shownEdges = scene.Edges.Count(edge => !edge.Style.Hidden);
             writer.Append(shownNodes).Append(" nodes · ").Append(shownEdges).Append(" relationships shown; ");
@@ -71,6 +77,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("</g>");
         return writer.ToString();
     }
+
+    private static string StaticThemeName(HtmlGraphExplorerTheme theme, bool rasterTheme) => theme switch {
+        HtmlGraphExplorerTheme.Dark => "dark",
+        HtmlGraphExplorerTheme.System when !rasterTheme => "system",
+        _ => "light"
+    };
 
     private static string StaticViewportTransform(GraphScene scene, IReadOnlyDictionary<string, Point> positions, ISet<string> labeledNodeIds) {
         if (scene.Nodes.Count == 0) return "translate(0 0) scale(1)";

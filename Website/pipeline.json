@@ -1,0 +1,121 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.web.pipelinespec.schema.json",
+  "extends": "./config/presets/pipeline.web-quality.json",
+  "steps": [
+    {
+      "task": "llms",
+      "id": "build-llms",
+      "dependsOn": "build-site",
+      "siteRoot": "./_site",
+      "name": "ChartForgeX",
+      "packageId": "ChartForgeX",
+      "license": "MIT",
+      "targets": ".NET Framework 4.7.2, .NET Standard 2.0, .NET 8, .NET 10"
+    },
+    {
+      "task": "exec",
+      "id": "playground-samples-check",
+      "dependsOn": "api-build-chartforgex-markup-mermaid",
+      "command": "dotnet",
+      "argsList": ["run", "--project", "./tools/PlaygroundCheck/PlaygroundCheck.csproj", "-c", "Release"],
+      "workingDirectory": ".",
+      "timeoutSeconds": 900
+    },
+    {
+      "task": "dotnet-publish",
+      "id": "playground-engine-publish",
+      "dependsOn": "playground-samples-check",
+      "project": "./tools/Playground/ChartForgeX.Playground.Engine.csproj",
+      "out": "./_temp/playground-engine",
+      "configuration": "Release",
+      "clean": true,
+      "blazorFixes": false
+    },
+    {
+      "task": "overlay",
+      "id": "playground-engine-overlay",
+      "dependsOn": ["build-site", "playground-engine-publish"],
+      "source": "./_temp/playground-engine/wwwroot",
+      "destination": "./_site/playground/engine",
+      "include": "_framework/**",
+      "clean": true
+    },
+    {
+      "task": "optimize",
+      "id": "optimize-site",
+      "dependsOn": [
+        "build-site",
+        "build-llms",
+        "build-apidocs",
+        "build-powershell-commands",
+        "sitemap",
+        "playground-engine-overlay",
+        "seo-doctor-ci",
+        "verify-ci",
+        "audit-ci"
+      ],
+      "modes": ["ci"],
+      "siteRoot": "./_site",
+      "config": "./site.json",
+      "criticalCss": "./themes/chartforgex/critical.css",
+      "minifyHtml": true,
+      "minifyCss": true,
+      "minifyJs": true
+    },
+    {
+      "task": "seo-doctor",
+      "id": "seo-doctor-optimized-ci",
+      "dependsOn": "optimize-site",
+      "modes": ["ci"],
+      "siteRoot": "./_site",
+      "baseline": "./.powerforge/seo-baseline.json",
+      "failOnNewIssues": true,
+      "checkContentLeaks": true,
+      "requireCanonical": true,
+      "requireHreflang": false,
+      "requireHreflangXDefault": false,
+      "reportPath": "./_reports/seo-doctor-optimized.json",
+      "summaryPath": "./_reports/seo-doctor-optimized.md",
+      "exclude": "examples/generated/**,site/**,playground/engine/**,powershell/examples/**"
+    },
+    {
+      "task": "verify",
+      "id": "verify-optimized-ci",
+      "dependsOn": "optimize-site",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "modes": ["ci"],
+      "baseline": "./.powerforge/verify-baseline.json",
+      "failOnNewWarnings": true,
+      "failOnNavLint": true,
+      "failOnThemeContract": true,
+      "warningPreviewCount": 10,
+      "errorPreviewCount": 10
+    },
+    {
+      "task": "audit",
+      "id": "audit-optimized-ci",
+      "dependsOn": "optimize-site",
+      "siteRoot": "./_site",
+      "modes": ["ci"],
+      "summary": true,
+      "sarif": true,
+      "baseline": "./.powerforge/audit-baseline.json",
+      "failOnNewIssues": true,
+      "requiredRoutes": "/404.html,/",
+      "requireExplicitChecks": true,
+      "checkSeoMeta": false,
+      "checkNetworkHints": true,
+      "checkRenderBlockingResources": true,
+      "checkHeadingOrder": true,
+      "checkLinkPurposeConsistency": true,
+      "checkMediaEmbeds": true,
+      "checkAgentContentSecurity": false,
+      "rendered": false,
+      "renderedMaxPages": 2,
+      "renderedEnsureInstalled": true,
+      "renderedInclude": "index.html,404.html",
+      "exclude": "examples/generated/**,site/**,playground/engine/**,powershell/examples/**"
+    }
+  ]
+}

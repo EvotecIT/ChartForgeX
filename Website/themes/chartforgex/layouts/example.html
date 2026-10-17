@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--example{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+{{~ slug = current_path | string.replace "/examples/" "" | string.replace "/" ""
+    ex = null; for item in data.examples.items; if item.slug == slug; ex = item; end; end
+    o = data.visuals.examples[slug] ~}}
+<main id="main" class="cfx-main">
+  {{~ capture masthead_extra ~}}
+  {{~ if ex ~}}
+  <p class="cfx-tags cfx-masthead__tags">
+    <a class="cfx-tag cfx-tag--link" href="/examples/">All examples</a>
+    <span class="cfx-tag" style="--key: var(--cfx-s{{ ex.key }})"><span class="cfx-key{{ if ex.mode == "Interactive" }} cfx-key--hollow{{ end }}" aria-hidden="true"></span>{{ ex.mode }}</span>
+    <span class="cfx-tag">{{ ex.surface }}</span>
+  </p>
+  {{~ end ~}}
+  {{~ end ~}}
+  {{~ masthead_title = page.title; masthead_lede = page.description ~}}
+  {{ include "masthead" }}
+
+  {{~ if o ~}}
+  <section class="cfx-wide cfx-showcase" aria-label="Output">
+    {{~ if o.interactive ~}}
+    <figure class="cfx-showcase__frame">
+      <div class="cfx-showcase__bar">
+        <span class="cfx-showcase__name">{{ slug }}.html</span>
+        <span class="cfx-showcase__links">
+          <a href="/site/examples/{{ slug }}.html">Open full page</a>
+          <a href="{{ o.base }}-light.svg">Static SVG</a>
+        </span>
+      </div>
+      <iframe class="cfx-showcase__iframe" src="/site/examples/{{ slug }}.html" title="{{ page.title }}, the HTML page this program writes" loading="lazy"></iframe>
+      <figcaption>The explorer this program writes, running in the page. Search, select a region to drill in, and switch its theme.</figcaption>
+    </figure>
+    {{~ else ~}}
+    <figure class="cfx-showcase__frame">
+      <div class="cfx-showcase__bar">
+        <span class="cfx-showcase__name">{{ slug }}.svg</span>
+        <span class="cfx-showcase__links">
+          <a class="cfx-only-light" aria-label="SVG, light theme" href="{{ o.base }}-light.svg">SVG <span class="cfx-count">{{ o.kb }} KB</span></a>
+          <a class="cfx-only-dark" aria-label="SVG, dark theme" href="{{ o.base }}-dark.svg">SVG <span class="cfx-count">{{ o.kb }} KB</span></a>
+          <a class="cfx-only-light" aria-label="PNG, light theme" href="{{ o.base }}-light.png">PNG <span class="cfx-count">{{ o.pngKb }} KB</span></a>
+          <a class="cfx-only-dark" aria-label="PNG, dark theme" href="{{ o.base }}-dark.png">PNG <span class="cfx-count">{{ o.pngKb }} KB</span></a>
+          <a class="cfx-only-light" aria-label="HTML, light theme" href="{{ o.base }}-light.html">HTML</a>
+          <a class="cfx-only-dark" aria-label="HTML, dark theme" href="{{ o.base }}-dark.html">HTML</a>
+        </span>
+      </div>
+      <div class="cfx-showcase__plate">
+        <img class="cfx-only-light" src="{{ o.base }}-light.svg" width="{{ o.w }}" height="{{ o.h }}" fetchpriority="high" decoding="async" alt="{{ page.title }}: the SVG this program renders." />
+        <img class="cfx-only-dark" src="{{ o.base }}-dark.svg" width="{{ o.w }}" height="{{ o.h }}" loading="lazy" decoding="async" alt="{{ page.title }}: the SVG this program renders, dark theme." />
+      </div>
+      <figcaption>Rendered by ChartForgeX from the program below. The files follow the page theme.</figcaption>
+    </figure>
+    {{~ end ~}}
+  </section>
+  {{~ end ~}}
+
+  <section class="cfx-wide cfx-example-steps" aria-label="Program">
+    {{~ steps_html = content ~}}
+    {{ include "steps" }}
+    {{ if edit_url != "" }}<p class="cfx-docs__edit"><a href="{{ edit_url }}">Edit this page on GitHub</a></p>{{ end }}
+  </section>
+
+  <nav class="cfx-wide cfx-next" aria-labelledby="cfx-next-title">
+    <h2 id="cfx-next-title">More examples</h2>
+    <ul class="cfx-next__grid">
+      {{~ for item in data.examples.items ~}}
+      {{~ if item.slug != slug ~}}
+      {{~ n = data.visuals.examples[item.slug] ~}}
+      <li><a class="cfx-next__card" href="/examples/{{ item.slug }}/" style="--key: var(--cfx-s{{ item.key }})">
+        <span class="cfx-next__thumb">
+          <img class="cfx-only-light" src="{{ n.base }}-light.svg" width="{{ n.w }}" height="{{ n.h }}" loading="lazy" decoding="async" alt="" />
+          <img class="cfx-only-dark" src="{{ n.base }}-dark.svg" width="{{ n.w }}" height="{{ n.h }}" loading="lazy" decoding="async" alt="" />
+        </span>
+        <span class="cfx-next__title"><span class="cfx-key{{ if item.mode == "Interactive" }} cfx-key--hollow{{ end }}" aria-hidden="true"></span>{{ item.title }}</span>
+        <span class="cfx-next__outcome">{{ item.outcome }}</span>
+      </a></li>
+      {{~ end ~}}
+      {{~ end ~}}
+      <li><a class="cfx-next__card cfx-next__card--plain" href="/gallery/">
+        <span class="cfx-next__title">Chart gallery</span>
+        <span class="cfx-next__outcome">Sixty charts and diagrams, each with its C# source.</span>
+      </a></li>
+    </ul>
+  </nav>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

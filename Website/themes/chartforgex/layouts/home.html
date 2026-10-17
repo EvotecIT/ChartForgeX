@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}
+</head>
+<body class="cfx-body cfx-body--home{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-main">
+{{ include "sections/hero" }}
+{{ include "sections/surfaces" }}
+{{ include "sections/wall" }}
+{{ include "sections/stage" }}
+{{ include "sections/showcase" }}
+{{ include "sections/powershell" }}
+{{ include "sections/mermaid" }}
+{{ include "sections/fit" }}
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

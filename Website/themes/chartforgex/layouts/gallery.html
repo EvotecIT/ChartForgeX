@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--gallery{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-main">
+  {{~ chart = data.visuals.gallery ~}}
+  {{~ capture stage_side ~}}
+  <dl class="cfx-stage__stats">
+    <div><dt>Examples</dt><dd>{{ data.gallery.items.size }}</dd></div>
+    <div><dt>Categories</dt><dd>{{ data.gallery.categories.size }}</dd></div>
+    <div><dt>Themes each</dt><dd>2</dd></div>
+  </dl>
+  {{~ end ~}}
+  {{~ capture stage_art ~}}
+  <figure class="cfx-output cfx-gallery-chart">
+    <figcaption><span class="cfx-output__file">gallery-categories.svg</span><span>{{ chart.kb }} KB</span></figcaption>
+    <img src="{{ chart.base }}-dark.svg" width="{{ chart.w }}" height="{{ chart.h }}" loading="eager" decoding="async" alt="A horizontal bar chart rendered by ChartForgeX: how many gallery examples each of the {{ data.gallery.categories.size }} categories holds." />
+  </figure>
+  {{~ end ~}}
+  {{~ stage_title = page.title; stage_lede = page.description ~}}
+  {{ include "stage" }}
+  {{~ keys = {}; hollow = {}; for cat in data.gallery.categories; keys[cat.id] = "--key: var(--cfx-s" + ((for.index % 6) + 1) + ")"; hollow[cat.id] = for.index >= 6; end ~}}
+  <section class="cfx-gallery-page" aria-label="Examples">
+    <div class="cfx-filters cfx-seg cfx-seg--legend" role="group" aria-label="Filter by category" data-cfx-filters>
+      <button type="button" aria-pressed="true" data-filter="all" style="--key: var(--cfx-ink)"><span class="cfx-key" aria-hidden="true"></span>All <span class="cfx-count">{{ data.gallery.items.size }}</span></button>
+      {{~ for cat in data.gallery.categories ~}}
+      {{~ count = 0 ~}}
+      {{~ for item in data.gallery.items ~}}{{~ if item.category == cat.id ~}}{{~ count = count + 1 ~}}{{~ end ~}}{{~ end ~}}
+      <button type="button" aria-pressed="false" data-filter="{{ cat.id }}" style="{{ keys[cat.id] }}"><span class="cfx-key{{ if hollow[cat.id] }} cfx-key--hollow{{ end }}" aria-hidden="true"></span>{{ cat.label }} <span class="cfx-count">{{ count }}</span></button>
+      {{~ end ~}}
+    </div>
+    <ul class="cfx-grid" data-cfx-gallery>
+      {{~ for item in data.gallery.items ~}}
+      {{ include "gallery-card" }}
+      {{~ end ~}}
+    </ul>
+    <div class="cfx-prose cfx-gallery-page__note">
+{{ content }}
+    </div>
+    {{ include "gallery-dialog" }}
+  </section>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>
