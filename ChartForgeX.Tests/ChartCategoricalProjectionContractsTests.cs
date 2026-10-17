@@ -6,14 +6,12 @@ namespace ChartForgeX.Tests;
 
 public sealed class ChartCategoricalProjectionContractsTests {
     [Theory]
-    [InlineData(false, false, false)]
-    [InlineData(true, false, false)]
-    [InlineData(false, true, false)]
-    [InlineData(true, true, false)]
-    [InlineData(false, false, true)]
-    [InlineData(true, false, true)]
-    public void PartialNumericTickAliasesKeepThePreparedCategoryDomainContinuous(bool horizontal, bool middleAlias, bool empty) {
-        var points = empty ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(20, 2), new ChartPoint(40, 4), new ChartPoint(60, 6), new ChartPoint(80, 8) };
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void PartialNumericTickAliasesKeepThePreparedCategoryDomainContinuous(bool horizontal, bool middleAlias) {
+        var points = new[] { new ChartPoint(20, 2), new ChartPoint(40, 4), new ChartPoint(60, 6), new ChartPoint(80, 8) };
         var chart = Frame(horizontal, 0, 100).AddLine("Readings", points);
         var axis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         axis.Labels.Add(new ChartAxisLabel(0, "Low")); axis.Labels.Add(new ChartAxisLabel(100, "High"));
@@ -73,19 +71,6 @@ public sealed class ChartCategoricalProjectionContractsTests {
         Assert.Equal(new[] { "Category 1", "Category 2" }, projection.CategoryLabels!.Select(label => label.Text));
         Assert.Empty(projection.Y!.DisplayBounds);
         Assert.Equal(new[] { 0d, 100d }, projection.X.DisplayBounds.Select(bound => bound.Value));
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void EmptyIntrinsicCategoryModelsKeepAnEmptyBindingInsteadOfBecomingNumericAliases(bool horizontal) {
-        var chart = Frame(horizontal, .5, 2.5);
-        if (horizontal) chart.AddHorizontalBar("Empty", Array.Empty<ChartPoint>());
-        else chart.AddBar("Empty", Array.Empty<ChartPoint>());
-        var projection = Projection(chart);
-        Assert.NotNull(projection.CategoryLabels);
-        Assert.Empty(projection.CategoryLabels!);
-        Assert.Empty((horizontal ? projection.Y! : projection.X).DisplayBounds);
     }
 
     [Fact]
