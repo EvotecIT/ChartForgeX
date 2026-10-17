@@ -44,7 +44,7 @@ $repository = 'EvotecIT/PowerBGInfo'
 # Widgets shown in the capabilities grid, plus the examples the logic section uses.
 $widgetIds = 'metrics', 'tables', 'lists', 'calendar-heatmap', 'timeline', 'treemap', 'mermaid', 'qrcode', 'system-info'
 $scenarioIds = 'server-status', 'helpdesk', 'classroom', 'admin-workstation'
-$themePresetIds = 'graphite', 'midnight', 'ember', 'orchid', 'corporate'
+$themePresetIds = 'graphite', 'midnight', 'ember', 'orchid', 'corporate', 'aurora'
 $regionSizes = '1920x1080', '3440x1440', '1080x1920'
 
 $commit = (git -C $RepositoryPath rev-parse --verify "$Ref^{commit}").Trim()

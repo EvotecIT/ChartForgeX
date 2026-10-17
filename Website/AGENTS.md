@@ -108,7 +108,8 @@ pwsh -NoProfile -Command "& D:\Scratch\pbg\Examples\Run.BGInfo.Features.ps1 -Out
 pwsh ./Website/build/Sync-PowerBGInfo.ps1 -RepositoryPath C:\Support\GitHub\PowerBGInfo -Ref <commit> `
     -RenderPath D:\Scratch\out\showcase -FeaturePath D:\Scratch\out\features
 pwsh ./Website/build/Render-PowerBGInfoSteps.ps1 -ModulePath D:\Scratch\pbg\PowerBGInfo.psd1 `
-    -RepositoryPath C:\Support\GitHub\PowerBGInfo -Ref <commit>
+    -RepositoryPath C:\Support\GitHub\PowerBGInfo -Ref <commit> `
+    -ChartForgeXProjectPath D:\Scratch\cfx\ChartForgeX\ChartForgeX.csproj
 dotnet run --project Website/tools/SiteVisuals -c Release -- Website
 ```
 

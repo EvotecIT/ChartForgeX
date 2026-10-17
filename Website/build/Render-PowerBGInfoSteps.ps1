@@ -32,6 +32,8 @@ param(
     [Parameter(Mandatory)] [string] $ModulePath,
     [Parameter(Mandatory)] [string] $RepositoryPath,
     [Parameter(Mandatory)] [string] $Ref,
+    # Optional ChartForgeX project used to rebuild PowerBGInfo against a local development source.
+    [string] $ChartForgeXProjectPath,
     # Lines shown on the page must fit a code block without horizontal scrolling.
     [int] $MaximumLineLength = 79
 )
@@ -76,7 +78,13 @@ if (-not (Test-Path -LiteralPath $project -PathType Leaf)) { throw "The source b
 Write-Host "Building PowerBGInfo $($commit.Substring(0, 7)) for the step renders..." -ForegroundColor Cyan
 Push-Location $moduleRoot
 try {
-    dotnet build 'Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj' --configuration Debug --framework net8.0-windows --no-incremental --property:GeneratePackageOnBuild=false
+    $buildArguments = @(
+        'build', 'Sources/PowerBGInfo.PowerShell/PowerBGInfo.PowerShell.csproj',
+        '--configuration', 'Debug', '--framework', 'net8.0-windows', '--no-incremental',
+        '--property:GeneratePackageOnBuild=false'
+    )
+    if ($ChartForgeXProjectPath) { $buildArguments += "--property:ChartForgeXProjectPath=$ChartForgeXProjectPath" }
+    dotnet @buildArguments
     $buildExitCode = $LASTEXITCODE
 } finally {
     Pop-Location
