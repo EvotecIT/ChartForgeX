@@ -122,6 +122,8 @@ var gauge = Chart.Create().AddSeries(capacity)
 
 Remove the former `options.Target = ...` assignment. Use `UpdateGaugeValue` or `ReplaceGaugeValues` to install a complete replacement reading, including its targets. The existing typed `CreateGauge` factory accepts the complete reading; adding targets does not require a different factory.
 
+Rebuild consuming projects against the changed Gauge contracts. The `ChartGaugeValue` constructor now includes the optional targets parameter; previously compiled calls to its three-parameter form require recompilation. Replacing library DLLs alone does not update those calls.
+
 Keep presentation in `ConfigureGauge`: `Orientation` selects horizontal or vertical linear gauges, while `StartAngleDegrees` and `SweepAngleDegrees` control Arc and Needle forms. Defaults remain horizontal, 150 degrees and 240 degrees. A null `TickCount` retains the form defaults of two radial ticks or five linear ticks. An explicit count is a preferred ceiling; crowded scales use fewer evenly spaced ticks, and full-circle scales avoid duplicating the seam tick. `TickLabels` accepts detached `ChartAxisLabel` values for authored tick text. Caption and semantic bands remain presentation options. See [gauge readings and scales](api-conventions.md#gauge-readings-and-scales) for ownership and formatting.
 
 ## Bubble size mapping

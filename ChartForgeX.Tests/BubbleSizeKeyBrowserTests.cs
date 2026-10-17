@@ -66,7 +66,8 @@ public sealed class BubbleSizeKeyBrowserTests {
         Assert.Equal("requests", identity.GetProperty("seriesKey").GetString());
         Assert.Equal("batch-two", identity.GetProperty("observationId").GetString());
         Assert.Equal("1", identity.GetProperty("sourcePoint").GetString());
-        Assert.Equal("30", identity.GetProperty("value").GetString());
+        Assert.Equal("30.0 ms", identity.GetProperty("value").GetString());
+        Assert.Equal(30, identity.GetProperty("numericValue").GetDouble());
         var keyRadii = await page.Locator("[data-cfx-role='bubble-size-key-sample']").EvaluateAllAsync<double[]>("nodes => nodes.map(node => Number(node.dataset.cfxRadius))");
         Assert.Contains(18, keyRadii); Assert.Equal("18", await page.Locator(Point(0, 2) + " [data-cfx-role='bubble']").GetAttributeAsync("rx"));
         var keyBounds = await page.Locator("[data-cfx-role='bubble-size-key']").EvaluateAsync<double[]>("node => { const r=node.getBoundingClientRect(); return [r.left,r.right,r.top,r.bottom]; }");
