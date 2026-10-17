@@ -9936,6 +9936,54 @@
         "minDistinctColors": 1416,
         "maxEdgeInkPixels": 0
       }
+    },
+    {
+      "name": "visual-canvas-tile-text-fallback-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 420,
+      "height": 100,
+      "logicalWidth": 420.0,
+      "logicalHeight": 100.0,
+      "svg": {
+        "minVisualNodes": 5,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 21000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 324,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-canvas-tile-text-fallback-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 420,
+      "height": 100,
+      "logicalWidth": 420.0,
+      "logicalHeight": 100.0,
+      "svg": {
+        "minVisualNodes": 5,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 21000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 300,
+        "maxEdgeInkPixels": 0
+      }
     }
   ]
 }
