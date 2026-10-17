@@ -12,9 +12,13 @@
     if (!hasFeature(root, 'Selection')) return false;
     const mode = options?.mode || 'replace';
     if (!['replace', 'add', 'remove'].includes(mode)) return false;
-    const matches = new Set(graphRequestedItems(root, requested));
+    const multiple = hasFeature(root, 'MultiSelection');
+    const requestedItems = graphRequestedItems(root, requested);
+    const matches = new Set(!multiple && mode !== 'remove' ? requestedItems.slice(0, 1) : requestedItems);
+    // Ordinary activation replaces selection without MultiSelection; unmatched additions remain a no-op.
+    const replace = mode === 'replace' || mode === 'add' && !multiple && matches.size > 0;
     graphLinkedItems(root).forEach(item => {
-      const selected = mode === 'replace' ? matches.has(item) : mode === 'add' ? matches.has(item) || item.classList.contains('cfx-graph-selected') : !matches.has(item) && item.classList.contains('cfx-graph-selected');
+      const selected = replace ? matches.has(item) : mode === 'add' ? matches.has(item) || item.classList.contains('cfx-graph-selected') : !matches.has(item) && item.classList.contains('cfx-graph-selected');
       item.classList.toggle('cfx-graph-selected', selected);
     });
     const details = updateSelectionState(root, options?.emit === true);

@@ -70,13 +70,14 @@ public sealed class ChartLinkedProjectionContractsTests {
     }
 
     [Theory]
-    [InlineData("cadence", -3, -2)]
+    [InlineData("cadence", -1.25, -1.2916666666666667)]
     [InlineData("state", -3, -2)]
     [InlineData("state", -1, 1)]
     public void HalfOpenLegacyTimeMetadataCapturesAClosedNumericEndpoint(string family, double start, double boundary) {
         var chart = HalfOpenLegacyTimeChart(family, start, boundary);
         var first = XDocument.Parse(chart.ToSvg()).Descendants().Single(node => (string?)node.Attribute("data-cfx-observation-id") == "first");
-        Assert.Equal(Math.BitDecrement(boundary), double.Parse(first.Attribute("data-cfx-range-end")!.Value, System.Globalization.CultureInfo.InvariantCulture));
+        var inclusiveEnd = boundary < start ? Math.BitIncrement(boundary) : Math.BitDecrement(boundary);
+        Assert.Equal(inclusiveEnd, double.Parse(first.Attribute("data-cfx-range-end")!.Value, System.Globalization.CultureInfo.InvariantCulture));
         Assert.Null(first.Attribute("data-cfx-range-end-exclusive"));
         Assert.Null(first.Attribute("data-cfx-range-start-instant"));
         Assert.Null(first.Attribute("data-cfx-range-end-instant"));
@@ -121,9 +122,10 @@ public sealed class ChartLinkedProjectionContractsTests {
     }
 
     internal static Chart HalfOpenLegacyTimeChart(string family, double start, double boundary) {
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisTimeScale().WithXAxisBounds(start, boundary + (boundary - start));
-        if (family == "cadence") chart.AddSeries(ChartSeries.CreateBar(new ChartSeriesId("legacy-days"), "Days",
-            new[] { new ChartPoint(start, 5), new ChartPoint(boundary, 8) }).WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
+        var last = boundary + (boundary - start);
+        var chart = Chart.Create().WithSize(640, 360).WithXAxisTimeScale().WithXAxisBounds(Math.Min(start, last), Math.Max(start, last));
+        if (family == "cadence") chart.AddSeries(ChartSeries.CreateBar(new ChartSeriesId("legacy-hours"), "Hours",
+            new[] { new ChartPoint(start, 5), new ChartPoint(boundary, 8) }).WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Hour)));
         else chart.WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromRgb(13, 148, 136)),
                 new ChartStateCategory("down", "Down", ChartColor.FromRgb(220, 38, 38)))
             .AddStateTimelineLane("States", new[] { new ChartStateTimelineSegment(start, boundary, "up"),

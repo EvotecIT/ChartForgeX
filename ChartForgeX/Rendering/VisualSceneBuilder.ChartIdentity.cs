@@ -59,7 +59,9 @@ internal sealed partial class VisualSceneBuilder {
                 && double.TryParse(rangeEnd, NumberStyles.Float, CultureInfo.InvariantCulture, out var upper)
                 && (numericTimeDomain || lower < 0 || upper < 0)) {
                 if (metadata.TryGetValue("data-cfx-range-end-exclusive", out var exclusive) && exclusive == "true") {
-                    metadata["data-cfx-range-end"] = ChartMath.PreviousRepresentable(upper).ToString("R", CultureInfo.InvariantCulture);
+                    // Same-day negative OLE buckets decrease; move toward the start on either branch.
+                    var inclusiveEnd = upper < lower ? -ChartMath.PreviousRepresentable(-upper) : ChartMath.PreviousRepresentable(upper);
+                    metadata["data-cfx-range-end"] = inclusiveEnd.ToString("R", CultureInfo.InvariantCulture);
                     metadata.Remove("data-cfx-range-end-exclusive");
                 }
             } else {

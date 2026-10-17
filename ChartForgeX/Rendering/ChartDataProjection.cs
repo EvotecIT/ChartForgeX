@@ -21,7 +21,7 @@ internal sealed class ChartDataProjection {
 
     internal static ChartDataProjection? TryCreate(ChartRect plot, double minimum, double maximum, ChartAxis x, bool linearOnly = false) {
         var projectedX = ChartDataAxisProjection.TryCreate(minimum, maximum, linearOnly
-            ? new ChartAxis { Scale = x.Scale == ChartScaleKind.Time ? ChartScaleKind.Time : ChartScaleKind.Linear } : x);
+            ? new ChartAxis { Reversed = x.Reversed, Scale = x.Scale == ChartScaleKind.Time ? ChartScaleKind.Time : ChartScaleKind.Linear } : x);
         return !UsablePlot(plot) || projectedX == null ? null : new ChartDataProjection(plot, projectedX);
     }
 

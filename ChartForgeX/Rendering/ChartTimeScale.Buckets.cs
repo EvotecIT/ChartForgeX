@@ -19,7 +19,7 @@ internal static partial class ChartTimeScale {
                     ChartTimeTickUnit.Minute => utc.AddMinutes(count),
                     _ => utc.AddHours(count)
                 };
-                return ChartDateTime.ToOADate(end);
+                return RepresentableBucketEnd(start, utc, end);
             }
             var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
             var local = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(utc, zone), DateTimeKind.Unspecified);
@@ -28,9 +28,19 @@ internal static partial class ChartTimeScale {
             var instants = new List<DateTime>(2);
             ResolveInstants(boundary, zone, new TimeInterval(TimeUnit.Day, 1), instants);
             if (instants.Count == 0) throw new InvalidOperationException("The time bucket has no representable end instant.");
-            return ChartDateTime.ToOADate(instants[0]);
+            return RepresentableBucketEnd(start, utc, instants[0]);
         } catch (ArgumentException exception) {
             throw new InvalidOperationException("The time bucket end must be a representable calendar instant.", exception);
         }
+    }
+
+    private static double RepresentableBucketEnd(double start, DateTime utc, DateTime end) {
+        var value = ChartDateTime.ToOADate(end);
+        // Negative OLE dates decrease within a UTC day and jump at midnight. A
+        // single numeric interval can represent only one continuous day branch.
+        // Negative aliases for the epoch day also jump when encoded canonically.
+        if (start < 0 && (end.Date != utc.Date || value >= 0))
+            throw new InvalidOperationException("A time bucket with a negative OLE date must remain within one UTC day and cannot use an epoch-day alias.");
+        return value;
     }
 }

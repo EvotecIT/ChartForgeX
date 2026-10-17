@@ -85,12 +85,12 @@
     }
     context.restore();
   };
-  const drawCanvasNodes = (context, root, nodes, compact, moving, gpuNodes) => {
+  const drawCanvasNodes = (context, root, nodes, compact, moving, gpuNodes, palette = graphThemePalette(root)) => {
     nodes.forEach(node => {
       if (!visible(node.el) || gpuNodes?.has(node)) return;
       context.save();
       context.globalAlpha = (node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1) * graphLinkOpacity(node.el);
-      drawNodeMark(context, node, node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact, root, moving);
+      drawNodeMark(context, node, node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact, root, moving, palette.selected);
       context.restore();
     });
     nodes.forEach(node => drawCanvasNodeDetails(context, root, node, compact, moving, gpuNodes));

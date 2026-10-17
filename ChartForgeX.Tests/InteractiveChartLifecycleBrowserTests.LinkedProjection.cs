@@ -155,7 +155,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     }
 
     [BrowserTheory]
-    [InlineData("cadence", -3, -2)]
+    [InlineData("cadence", -1.25, -1.2916666666666667)]
     [InlineData("state", -3, -2)]
     [InlineData("state", -1, 1)]
     public async Task HalfOpenLegacyTimeRangesExcludeAdjacentNumericBoundaries(string family, double start, double boundary) {
@@ -168,8 +168,11 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 chartController.select({ranges:[[bounds.boundary,bounds.boundary]]});const exact=chartController.getSelection().map(target=>target.observationId);
                 chartController.select({ranges:[[bounds.before,bounds.before]]});return{first,roundTrip,exact,
                     before:chartController.getSelection().map(target=>target.observationId),events:linkedEvents.length}}
-            """, new { boundary, before = Math.BitDecrement(boundary) });
-        Assert.Equal(Math.BitDecrement(boundary), result.GetProperty("first").GetProperty("range")[1].GetDouble());
+            """, new { boundary, before = boundary < start ? Math.BitIncrement(boundary) : Math.BitDecrement(boundary) });
+        var inclusiveEnd = boundary < start ? Math.BitIncrement(boundary) : Math.BitDecrement(boundary);
+        var firstRange = result.GetProperty("first").GetProperty("range");
+        Assert.Equal(start, firstRange[0].GetDouble());
+        Assert.Equal(inclusiveEnd, firstRange[1].GetDouble());
         Assert.Equal("first", Assert.Single(result.GetProperty("roundTrip").EnumerateArray()).GetString());
         Assert.Equal("second", Assert.Single(result.GetProperty("exact").EnumerateArray()).GetString());
         Assert.Equal("first", Assert.Single(result.GetProperty("before").EnumerateArray()).GetString());

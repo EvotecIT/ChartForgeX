@@ -28,6 +28,8 @@
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
     return raw;
   };
+  const transformedAxisValue = (axis, value) => axis.scale === 'logarithmic' ? Math.log10(value)
+    : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * Math.log10(1 + Math.abs(value) / axis.threshold) : value;
   const brushDataSelection = (root, rect) => {
     const projection = root._cfxDataProjection, svg = root.querySelector('.cfx-stage svg');
     const matrix = svg?.getScreenCTM();
@@ -51,8 +53,11 @@
     const displayAxis = (axis, ratios) => {
       if (!axis?.displayTicks?.length) return undefined;
       const raw = orderedValues(axis, ratios);
-      const ticks = raw.map(value => axis.displayTicks.reduce((nearest, tick) =>
-        Math.abs(tick.value - value) < Math.abs(nearest.value - value) ? tick : nearest));
+      const ticks = raw.map(value => {
+        const position = transformedAxisValue(axis, value);
+        return axis.displayTicks.reduce((nearest, tick) =>
+          Math.abs(transformedAxisValue(axis, tick.value) - position) < Math.abs(transformedAxisValue(axis, nearest.value) - position) ? tick : nearest);
+      });
       return { range: ticks.map(tick => dataValue(tick.value, axis.scale === 'time' && axis.minimum >= 0)),
         label: ticks.every(tick => tick.text === '') ? '' : ticks.map(tick => tick.text).join(' – ') };
     };

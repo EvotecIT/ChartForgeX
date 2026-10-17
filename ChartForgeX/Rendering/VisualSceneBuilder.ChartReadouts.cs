@@ -6,7 +6,11 @@ using ChartForgeX.Core;
 namespace ChartForgeX.Rendering;
 
 internal sealed partial class VisualSceneBuilder {
-    private static readonly string[] ValueReadoutMembers = { "lower", "upper", "first", "second" };
+    private static readonly string[] ValueReadoutMembers = {
+        "lower", "upper", "first", "second", "delta",
+        "minimum", "q1", "median", "q3", "maximum",
+        "open", "high", "low", "close"
+    };
 
     // Capture display text while the renderer's final axis formatter/cache is available.
     // Exporters and browser hosts never re-run user callbacks or guess a culture/date format.
@@ -37,7 +41,11 @@ internal sealed partial class VisualSceneBuilder {
             if (Number(valueKey, out var y)) metadata["data-cfx-formatted-value"] = Value(valueKey, y);
             foreach (var member in ValueReadoutMembers) {
                 var key = "data-cfx-" + member;
-                if (Number(key, out var number)) metadata["data-cfx-formatted-" + member] = Value(key, number);
+                if (Number(key, out var number)) {
+                    // The primary member and its value alias share one captured result.
+                    metadata["data-cfx-formatted-" + member] = key == valueKey
+                        ? metadata["data-cfx-formatted-value"] : Value(key, number);
+                }
             }
             // Bin display uses the actual upper boundary; its closed logic endpoint remains exact.
             var lowerKey = series.HistogramBinLayout != null ? "data-cfx-bin-lower" : "data-cfx-start";

@@ -300,7 +300,9 @@ display label can read `40 – 60` while its exact inclusive filter endpoint is
 `59.99999999999999`. BoxPlot targets report the median as `numericValue` and
 `value`. State-timeline targets report the named state as `value`; their time
 bounds remain in `range`.
-On a legacy numeric time domain, the inclusive end is the representable number immediately below the boundary.
+On a legacy numeric time domain, the inclusive end is the representable number immediately toward the start from the boundary.
+Negative OLE date buckets must stay within one UTC day and cannot use the epoch-day aliases between -1 and 0.
+Preparation rejects buckets that cross these discontinuities because a single numeric range cannot represent their calendar interval.
 Assign matching row
 and observation IDs with `WithObservationIds(...)` when another view shares those
 identities. The bulk method validates the complete candidate before replacing
@@ -399,15 +401,18 @@ does not expand the separate connected native X-window capabilities.
 
 For readable range chips, both events also provide `label`, `rangeLabel` and
 `displayRange` when the prepared axes have captions. Display bounds snap to the
-nearest prepared axis ticks and retain those ticks' exact formatter output,
+nearest prepared axis ticks in screen space and retain those ticks' exact formatter output,
 including culture and deliberately empty captions. Raw `range` and
-`categoryRange` remain the precise filtering bounds. Choose the raw interval
-for filtering and the display label for the reader:
+`categoryRange` remain the precise filtering bounds. A snapped caption can change
+with the available ticks and should be presented as an approximate summary.
+Keep exact bounds available in accessible details, and use them for filtering:
 
 ```js
 chartRoot.addEventListener('cfxbrush', ({ detail }) => {
   filterRows(detail.categoryRange);
-  rangeChip.textContent = detail.rangeLabel;
+  rangeChip.textContent = detail.rangeLabel ? `≈ ${detail.rangeLabel}` : '';
+  rangeChip.title = `Exact range: ${detail.categoryRange.join(' – ')}`;
+  rangeChip.setAttribute('aria-label', rangeChip.title);
 });
 ```
 
@@ -475,6 +480,9 @@ ChartForgeXGraphExplorer.highlight(graphId, [{ role: 'graph-node', id: 'worker' 
 ChartForgeXGraphExplorer.clearHighlight(graphId);
 ```
 
+Graph host selection follows the scene's `Selection` and `MultiSelection` features.
+Without `MultiSelection`, `select` keeps the first matching graph item and a matched `add` replaces the current selection.
+An unmatched addition leaves selection unchanged. Independent highlighting may still include several items.
 Graph selection edge details include `sourceNodeId` and `targetNodeId`.
 `cfxgraphhover` and `cfxgraphhoverclear` report `graphId`, `id`, `role`, `label` and
 `metadata`, so a host can coordinate hover without inspecting the graph's paint.

@@ -226,7 +226,7 @@
       if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, byId)) return;
       drawCanvasEdge(context, root, edge, graphEdgePaint(root, edge, byId, palette, dense, moving), palette);
     });
-    drawCanvasNodes(context, root, state.nodes, compact, moving);
+    drawCanvasNodes(context, root, state.nodes, compact, moving, undefined, palette);
     context.restore();
     const disclosure = options?.exportDisclosure && graphOverviewDisclosure(root);
     if (disclosure) {
