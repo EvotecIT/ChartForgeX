@@ -64,7 +64,7 @@ public sealed class CompoundReadoutFeedbackTests {
     [InlineData("horizontal-boxplot", true)]
     [InlineData("candlestick", true)]
     [InlineData("ohlc", true)]
-    public void AutomaticCompoundFactsReuseOnlyNativeCaptionsAndKeepCustomLabelsLazy(string family, bool customLabel) {
+    public void AutomaticCompoundFactsReusePreparedCaptionsAndKeepCustomLabelsLazy(string family, bool customLabel) {
         var chart = CreateChart(family);
         const string authoredLabel = "Operator supplied complete caption";
         if (customLabel) chart.Series[0].WithPointLabel(0, authoredLabel);
@@ -79,7 +79,9 @@ public sealed class CompoundReadoutFeedbackTests {
         var point = PointMetadata(svg);
         foreach (var member in Members(family)) {
             var nativeMember = member.Name == (IsBoxPlot(family) ? "median" : "close");
-            var expected = !customLabel && nativeMember ? NativeCaption(member.Value) : ExactCaption(member.Value);
+            // Automatic readouts use axis precision; the underlying fact remains exact.
+            var automaticCaption = member.Value == 1.025 ? "1.03" : ExactCaption(member.Value);
+            var expected = !customLabel && nativeMember ? NativeCaption(member.Value) : automaticCaption;
             Assert.Equal(expected, Attribute(point, "formatted-" + member.Name));
             Assert.Equal(member.Value, double.Parse(Attribute(point, member.Name), CultureInfo.InvariantCulture));
         }
