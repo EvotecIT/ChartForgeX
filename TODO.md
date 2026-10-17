@@ -4,7 +4,7 @@ This is the active product roadmap. The [README](README.md) introduces the libra
 
 ## Current position
 
-Assessment refreshed on 16 October 2026. The shared native renderer and package separation are implemented. The nine coordinated 2.0.0 package IDs were verified on NuGet during the earlier assessment; that does not establish that later source changes are published or that every downstream host has migrated. The unified authoring contracts use the coordinated 3.0.0 package family.
+Assessment refreshed on 17 October 2026. The shared native renderer and package separation are implemented. The nine coordinated 2.0.0 package IDs were verified on NuGet during the earlier assessment; that does not establish that later source changes are published or that every downstream host has migrated. The unified authoring contracts use the coordinated 3.0.0 package family.
 
 | Area | Implemented foundation | Remaining work |
 | --- | --- | --- |
@@ -85,7 +85,6 @@ Connected applications can request native X windows for supported vertical numer
 
 - [ ] Extend connected native X windows beyond the supported vertical numeric Line/StepLine contract only when a family and axis have deliberate projection/tick/layer plans. Broaden compact-label and host qualification while preserving fresh ticks, full source facts, stable identity, fixed full-data Y bounds, reset/export behavior and request cancellation.
 - [ ] Qualify feature policies across ordinary chart families: legend hide/mute, pinned tooltips, nearest-point lookup, crosshair, brush/lasso, touch, keyboard traversal, and linked views. Keep display/palette choices independent from interaction enablement.
-- [ ] Format uncategorized continuous-time tooltip headings through the shared date policy. They can currently show a raw OLE coordinate even when the axis shows dates.
 - [ ] Exercise actual assistive technologies and complete control/legend/series navigation on representative supported platforms. Accessible SVG names and keyboard contracts are foundations; they do not establish screen-reader behavior alone.
 - [ ] Separate UI localization from data number/date formatting and font shaping. Add translated controls, no-data/error text, and deliberate RTL layout where required; test long labels, mirrored controls, focus order, and compact hosts.
 - [ ] Measure small, ordinary, and dense Cartesian workloads separately from large topology scenes. Record preparation/update latency, allocation, output size, hit lookup, viewport response, and browser frame behavior before making scale claims.
