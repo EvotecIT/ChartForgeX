@@ -4,9 +4,9 @@
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
       && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
-        tick && Number.isFinite(tick.value) && typeof tick.text === 'string'))
+        tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')))
       && (value.displayBounds === undefined || Array.isArray(value.displayBounds) && value.displayBounds.every(tick =>
-        tick && Number.isFinite(tick.value) && typeof tick.text === 'string'));
+        tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')));
     return !!plot && [plot.x, plot.y, plot.width, plot.height].every(Number.isFinite) && plot.width > 0 && plot.height > 0
       && typeof projection.horizontal === 'boolean' && axis(projection.x) && (projection.y === undefined || axis(projection.y));
   };
@@ -60,14 +60,16 @@
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { metadata = {}; }
     const categoryDirection = projection.horizontal ? 'y' : 'x';
     const categoryAxis = projection[categoryDirection];
-    const categoryLabels = categoryAxis?.scale === 'linear' && metadata.xLabels?.length ? metadata.xLabels : undefined;
+    const categoryLabels = categoryAxis?.scale === 'linear' && Array.isArray(metadata.categoryLabels) ? metadata.categoryLabels : undefined;
     const selectedAxes = [['x', projection.x, x], ...(root.dataset.cfxBrushAxis !== 'x' && projection.y ? [['y', projection.y, y]] : [])];
     const range = {}, displayRange = {}, ratios = { x, y }, captions = {};
     for (const [direction, axis, endpoints] of selectedAxes) {
       const raw = endpoints.map(ratio => projectedAxisValue(axis, ratio)).sort((a, b) => a - b);
       const ticks = direction === categoryDirection && categoryLabels ? undefined : enclosingAxisTicks(axis, raw);
       const values = ticks ? ticks.map(tick => tick.value) : raw;
-      range[direction] = values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
+      const orderedTime = axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0);
+      range[direction] = values.map((value, index) => orderedTime && ticks?.[index].instant !== undefined
+        ? ticks[index].instant : dataValue(value, orderedTime));
       if (ticks) {
         displayRange[direction] = range[direction];
         captions[direction] = ticks.every(tick => tick.text === '') ? ''

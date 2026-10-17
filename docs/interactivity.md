@@ -391,8 +391,10 @@ for a category or time filter without depending on the chart's orientation. It i
 when that axis has no usable projection or the brush does not include it.
 Time bounds are ISO dates with a time zone. A prepared time domain containing pre-1899-12-30
 legacy OLE coordinates keeps all target coordinates, intervals and brushes numeric, including its positive coordinates,
-so ranges round-trip in one unit. Wholly positive time domains use ISO dates. Category axes
-also report `categories`. These facts come from the prepared plot projection,
+so ranges round-trip in one unit. Wholly positive time domains use ISO dates and
+retain the native axis's 100-microsecond precision, including brush endpoints.
+Category axes also report `categories`; partial display-label maps on a numeric
+axis keep numeric interval semantics. These facts come from the prepared plot projection,
 including the active viewport, rather than guessing from label text. Set
 `ChartInteractionOptions.BrushAxis = ChartBrushAxis.X` to restrict the brush to the physical X axis;
 the default `XY` retains a rectangular brush. Timeline, Gantt, Gantt-lane

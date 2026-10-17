@@ -1424,7 +1424,7 @@
     const series = metadata.series || [];
     root._cfxDataProjection = metadata.dataProjection || null;
     root._cfxObservationIds = series.map(item => new Map((item.observationIds || []).map(value => [value.index, value.id])));
-    const xLabels = new Map((metadata.xLabels || []).map((item) => [item.value, item.text]));
+    const xLabels = new Map((metadata.categoryLabels || metadata.xLabels || []).map((item) => [item.value, item.text]));
     const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
     // Only the renderer's unambiguous final Cartesian map can bound a guide.
     const plots = (metadata.regions || []).filter(region => region.role === 'cartesian-plot');
@@ -2856,7 +2856,8 @@
     const scalar = tooltipNumber(data.cfxY) && data.cfxStart === undefined && data.cfxMedian === undefined && data.cfxOpen === undefined;
     if (!valueRange) return root.dataset.cfxBrushAxis === 'x' || inside(valueDirection);
     if (!scalar) return inside(valueDirection);
-    const value = dataValue(data.cfxStackEnd ?? data.cfxY, valueAxis.scale === 'time' && valueAxis.minimum >= 0);
+    const time = valueAxis.scale === 'time' && valueAxis.minimum >= 0;
+    const value = time && data.cfxValueInstant !== undefined ? data.cfxValueInstant : dataValue(data.cfxStackEnd ?? data.cfxY, time);
     return overlapsRange({ x: value }, valueRange);
   };
   const selectTargetsInBox = (root, rect, append, selection) => {
@@ -3149,9 +3150,9 @@
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
       && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
-        tick && Number.isFinite(tick.value) && typeof tick.text === 'string'))
+        tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')))
       && (value.displayBounds === undefined || Array.isArray(value.displayBounds) && value.displayBounds.every(tick =>
-        tick && Number.isFinite(tick.value) && typeof tick.text === 'string'));
+        tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')));
     return !!plot && [plot.x, plot.y, plot.width, plot.height].every(Number.isFinite) && plot.width > 0 && plot.height > 0
       && typeof projection.horizontal === 'boolean' && axis(projection.x) && (projection.y === undefined || axis(projection.y));
   };
@@ -3205,14 +3206,16 @@
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { metadata = {}; }
     const categoryDirection = projection.horizontal ? 'y' : 'x';
     const categoryAxis = projection[categoryDirection];
-    const categoryLabels = categoryAxis?.scale === 'linear' && metadata.xLabels?.length ? metadata.xLabels : undefined;
+    const categoryLabels = categoryAxis?.scale === 'linear' && Array.isArray(metadata.categoryLabels) ? metadata.categoryLabels : undefined;
     const selectedAxes = [['x', projection.x, x], ...(root.dataset.cfxBrushAxis !== 'x' && projection.y ? [['y', projection.y, y]] : [])];
     const range = {}, displayRange = {}, ratios = { x, y }, captions = {};
     for (const [direction, axis, endpoints] of selectedAxes) {
       const raw = endpoints.map(ratio => projectedAxisValue(axis, ratio)).sort((a, b) => a - b);
       const ticks = direction === categoryDirection && categoryLabels ? undefined : enclosingAxisTicks(axis, raw);
       const values = ticks ? ticks.map(tick => tick.value) : raw;
-      range[direction] = values.map(value => dataValue(value, axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0)));
+      const orderedTime = axis.scale === 'time' && axis.minimum >= 0 && values.every(endpoint => endpoint >= 0);
+      range[direction] = values.map((value, index) => orderedTime && ticks?.[index].instant !== undefined
+        ? ticks[index].instant : dataValue(value, orderedTime));
       if (ticks) {
         displayRange[direction] = range[direction];
         captions[direction] = ticks.every(tick => tick.text === '') ? ''
@@ -4230,6 +4233,8 @@
       || metadata.xProjection !== undefined && !validXProjection(metadata.xProjection)
       || metadata.dataProjection !== undefined && !validDataProjection(metadata.dataProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
+      || metadata.categoryLabels !== undefined && (!Array.isArray(metadata.categoryLabels)
+        || metadata.categoryLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string'))
       || metadata.regions.some(item => !item || typeof item.id !== 'string' || typeof item.role !== 'string'
         || ![item.x, item.y, item.width, item.height].every(Number.isFinite) || item.width < 0 || item.height < 0
         || item.fillInteriors !== undefined && (!Array.isArray(item.fillInteriors)

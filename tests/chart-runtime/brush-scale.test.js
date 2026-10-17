@@ -21,7 +21,7 @@ const selectTargetsInBox = new Function('hasFeature', 'dataTargets', 'clearSelec
   'keyboardTargetAvailable', 'overlapsRange', 'tooltipNumber', 'dataValue',
   selectionSource.slice(selectionSource.indexOf('  const nodeCenterInRect'), selectionSource.indexOf('  const applySync')) + '\nreturn selectTargetsInBox;')(
   () => true, root => root.targets, root => root.targets.forEach(node => node.selected = false),
-  (node, selected) => node.selected = selected, node => ({id:node.id,targetKind:'point',x:dataValue(node.dataset.cfxX,node.time)}), () => {}, () => {},
+  (node, selected) => node.selected = selected, node => ({id:node.id,targetKind:'point',x:node.dataset.cfxXInstant ?? dataValue(node.dataset.cfxX,node.time)}), () => {}, () => {},
   node => node.available !== false, overlapsRange, value => value !== undefined && value !== '' && Number.isFinite(Number(value)), dataValue);
 
 function brush(axis, from, to, horizontal = false) {
@@ -74,11 +74,11 @@ test('linear brush captions and filtering ranges use enclosing ticks even for an
   assert.deepEqual(brush(axis, .5, .5).displayRange.x, [10, 100]);
 });
 
-function gesture(axis, from, to, values, labels = [], horizontal = false, paintOffsets = {}) {
+function gesture(axis, from, to, values, labels = [], horizontal = false, paintOffsets = {}, metadata) {
   const unit = {minimum:0, maximum:100, transformedMinimum:0, transformedMaximum:100, scale:'linear', threshold:1, reversed:false,
     displayTicks:[{value:0,text:'0'},{value:100,text:'100'}]};
   const root = {_cfxDataProjection:{horizontal, plotBounds:{x:0,y:0,width:100,height:100}, x:horizontal ? unit : axis, ...(horizontal ? {y:axis} : {})},
-    dataset:{cfxBrushAxis:horizontal ? 'xy' : 'x', cfxPreparedChart:JSON.stringify({xLabels:labels})},
+    dataset:{cfxBrushAxis:horizontal ? 'xy' : 'x', cfxPreparedChart:JSON.stringify(metadata ?? {xLabels:labels, ...(labels.length ? {categoryLabels:labels} : {})})},
     querySelector:() => ({getScreenCTM:() => ({a:1,d:1,is2D:true,inverse:() => ({})})}),
     targets:values.map(value => {
       const ratio = (value - axis.minimum) / (axis.maximum - axis.minimum), position = 100 * (axis.reversed ? 1 - ratio : ratio) + (paintOffsets[value] || 0);
@@ -194,3 +194,58 @@ test('box-category singleton and empty brushes never borrow excluded category na
   assert.deepEqual(empty.selected,[]); assert.deepEqual(empty.data.categories,[]);
   assert.equal(empty.data.rangeLabel,''); assert.equal(empty.data.label,'');
 });
+
+for (const horizontal of [false, true]) {
+  test(`partial numeric aliases retain interval semantics instead of an empty category filter (horizontal=${horizontal})`, () => {
+    const aliases=[{value:0,text:'Low'},{value:100,text:'High'}];
+    const axis={minimum:0,maximum:100,transformedMinimum:0,transformedMaximum:100,scale:'linear',threshold:1,reversed:false,
+      displayTicks:aliases};
+    const result=gesture(axis,.22,.68,[20,40,60,80],aliases,horizontal,{}, {xLabels:aliases});
+    const direction=horizontal?'y':'x';
+    assert.equal(result.data.categories,undefined);
+    assert.deepEqual(result.data.range[direction],[0,100]);
+    assert.deepEqual(result.data.displayRange[direction],result.data.range[direction]);
+    assert.equal(result.data.rangeLabel,'Low – High');
+    assert.deepEqual(result.selected,[20,40,60,80]);
+  });
+}
+
+// These exact values are produced by public ChartPoint(DateTime,double) at the
+// native 100-microsecond resolution; JavaScript Date would discard the remainder.
+const preciseStops=[
+  {value:46266.00000000463,text:'Start',instant:'2026-09-01T00:00:00.0004000Z'},
+  {value:46266.00011574653,text:'End',instant:'2026-09-01T00:00:10.0005000Z'}
+];
+const unitAxis={minimum:0,maximum:100,transformedMinimum:0,transformedMaximum:100,scale:'linear',threshold:1,reversed:false,
+  displayTicks:[{value:0,text:'0'},{value:100,text:'100'}]};
+function preciseRoot(horizontal, timeOnCategory, stops) {
+  const timeAxis={minimum:preciseStops[0].value,maximum:preciseStops[1].value,transformedMinimum:preciseStops[0].value,
+    transformedMaximum:preciseStops[1].value,scale:'time',threshold:1,reversed:false,...stops};
+  const timeDirection=(horizontal===timeOnCategory)?'y':'x';
+  const target=(id,instant)=>({id,time:timeOnCategory,dataset:timeOnCategory
+    ? {cfxX:String(preciseStops[1].value),cfxXInstant:instant,cfxY:'50'}
+    : {cfxX:'50',cfxY:String(preciseStops[1].value),cfxValueInstant:instant},
+    closest:()=>null,getBoundingClientRect:()=>({left:49,top:49,width:2,height:2})});
+  return {_cfxDataProjection:{horizontal,plotBounds:{x:0,y:0,width:100,height:100},x:timeDirection==='x'?timeAxis:unitAxis,
+    y:timeDirection==='y'?timeAxis:unitAxis},dataset:{cfxBrushAxis:'xy',cfxPreparedChart:'{"xLabels":[]}'},
+    querySelector:()=>({getScreenCTM:()=>({a:1,d:1,is2D:true,inverse:()=>({})})}),
+    targets:[target('last',preciseStops[1].instant),target('outside','2026-09-01T00:00:10.0006000Z')]};
+}
+for (const horizontal of [false,true]) {
+  for (const bounds of [false,true]) {
+    test(`time brush preserves native endpoint precision in ${bounds?'bounds':'ticks'} (horizontal=${horizontal})`,()=>{
+      const root=preciseRoot(horizontal,true,bounds?{displayBounds:preciseStops}:{displayTicks:preciseStops});
+      const rect={left:0,top:0,right:100,bottom:100},selection=projectBrushSelection(root,rect);
+      const range=selection.data.range[horizontal?'y':'x'];
+      assert.deepEqual(range,preciseStops.map(stop=>stop.instant));
+      assert.equal(selection.data.rangeLabel,'Start – End');
+      assert.deepEqual(selectTargetsInBox(root,rect,false,selection.data).map(target=>target.id),['last']);
+    });
+  }
+  test(`time-valued scalar membership uses the captured native value instant (horizontal=${horizontal})`,()=>{
+    const root=preciseRoot(horizontal,false,{displayTicks:preciseStops});
+    const rect={left:0,top:0,right:100,bottom:100},selection=projectBrushSelection(root,rect);
+    assert.deepEqual(selection.data.range[horizontal?'x':'y'],preciseStops.map(stop=>stop.instant));
+    assert.deepEqual(selectTargetsInBox(root,rect,false,selection.data).map(target=>target.id),['last']);
+  });
+}

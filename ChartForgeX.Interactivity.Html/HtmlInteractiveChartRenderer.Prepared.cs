@@ -68,6 +68,16 @@ public sealed partial class HtmlInteractiveChartRenderer {
         }
         json.Append(']');
         if (prepared.Scene.DataProjection is ChartDataProjection dataProjection) {
+            if (dataProjection.CategoryLabels != null) {
+                json.Append(",\"categoryLabels\":[");
+                for (var index = 0; index < dataProjection.CategoryLabels.Count; index++) {
+                    if (index > 0) json.Append(',');
+                    var label = dataProjection.CategoryLabels[index];
+                    json.Append("{\"value\":").Append(label.Value.ToString("R", CultureInfo.InvariantCulture))
+                        .Append(",\"text\":").Append(HtmlJsonString.Encode(label.Text)).Append('}');
+                }
+                json.Append(']');
+            }
             var plot = dataProjection.Plot;
             json.Append(",\"dataProjection\":{\"x\":");
             AppendDataAxis(json, dataProjection.X);
@@ -109,14 +119,18 @@ public sealed partial class HtmlInteractiveChartRenderer {
             if (index > 0) json.Append(',');
             var tick = axis.DisplayTicks[index];
             json.Append("{\"value\":").Append(tick.Value.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"text\":").Append(HtmlJsonString.Encode(tick.Text)).Append('}');
+                .Append(",\"text\":").Append(HtmlJsonString.Encode(tick.Text));
+            if (tick.Instant != null) json.Append(",\"instant\":").Append(HtmlJsonString.Encode(tick.Instant));
+            json.Append('}');
         }
         json.Append("],\"displayBounds\":[");
         for (var index = 0; index < axis.DisplayBounds.Count; index++) {
             if (index > 0) json.Append(',');
             var bound = axis.DisplayBounds[index];
             json.Append("{\"value\":").Append(bound.Value.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"text\":").Append(HtmlJsonString.Encode(bound.Text)).Append('}');
+                .Append(",\"text\":").Append(HtmlJsonString.Encode(bound.Text));
+            if (bound.Instant != null) json.Append(",\"instant\":").Append(HtmlJsonString.Encode(bound.Instant));
+            json.Append('}');
         }
         json.Append("]}");
     }

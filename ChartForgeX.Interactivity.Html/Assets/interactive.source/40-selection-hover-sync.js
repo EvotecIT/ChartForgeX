@@ -259,7 +259,8 @@
     const scalar = tooltipNumber(data.cfxY) && data.cfxStart === undefined && data.cfxMedian === undefined && data.cfxOpen === undefined;
     if (!valueRange) return root.dataset.cfxBrushAxis === 'x' || inside(valueDirection);
     if (!scalar) return inside(valueDirection);
-    const value = dataValue(data.cfxStackEnd ?? data.cfxY, valueAxis.scale === 'time' && valueAxis.minimum >= 0);
+    const time = valueAxis.scale === 'time' && valueAxis.minimum >= 0;
+    const value = time && data.cfxValueInstant !== undefined ? data.cfxValueInstant : dataValue(data.cfxStackEnd ?? data.cfxY, time);
     return overlapsRange({ x: value }, valueRange);
   };
   const selectTargetsInBox = (root, rect, append, selection) => {

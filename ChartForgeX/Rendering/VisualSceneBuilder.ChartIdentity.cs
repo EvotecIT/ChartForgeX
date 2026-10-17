@@ -11,6 +11,8 @@ internal sealed partial class VisualSceneBuilder {
     internal void CaptureChartIdentity(Chart chart) {
         var categoryProjection = DataProjection?.Horizontal == true ? DataProjection.Y : DataProjection?.X;
         var numericTimeDomain = categoryProjection?.Scale == ChartScaleKind.Time && categoryProjection.Minimum < 0;
+        var valueProjection = DataProjection?.Horizontal == true ? DataProjection.X : DataProjection?.Y;
+        var preciseValueTimeDomain = valueProjection?.Scale == ChartScaleKind.Time && valueProjection.Minimum >= 0;
         for (var index = 0; index < _nodes.Count; index++) {
             if (_nodes[index] is not VisualSceneGroup group || !group.Metadata.TryGetValue("data-cfx-series", out var ordinal)
                 || !int.TryParse(ordinal, NumberStyles.None, CultureInfo.InvariantCulture, out var seriesIndex)
@@ -24,6 +26,9 @@ internal sealed partial class VisualSceneBuilder {
                 && pointIndex >= 0 && pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null)
                 metadata["data-cfx-authored-label"] = series.PointLabels[pointIndex]!;
             CaptureChartInterval(chart, series, metadata, numericTimeDomain);
+            if (preciseValueTimeDomain && metadata.ContainsKey("data-cfx-point") && !metadata.ContainsKey("data-cfx-start")
+                && !metadata.ContainsKey("data-cfx-median") && !metadata.ContainsKey("data-cfx-open"))
+                CaptureTimeInstant(metadata, metadata.ContainsKey("data-cfx-stack-end") ? "data-cfx-stack-end" : "data-cfx-y", "data-cfx-value-instant");
             if (TryAuthoredObservationIndex(metadata, out var sourceIndex)
                 && series.ObservationIds.TryGetValue(sourceIndex, out var observationId))
                 metadata["data-cfx-observation-id"] = observationId.Value;
@@ -74,13 +79,10 @@ internal sealed partial class VisualSceneBuilder {
 
     private static void CaptureTimeInstant(IDictionary<string, string> metadata, string valueKey, string instantKey, bool captureInclusiveEnd = false) {
         if (!metadata.TryGetValue(valueKey, out var text) || !double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) || value < 0) return;
-        try {
-            var instant = ChartDateTime.FromOrderedOaDate(value);
-            metadata[instantKey] = instant.ToString("O", CultureInfo.InvariantCulture);
-            // Preserve the exact native boundary while publishing the last DateTime tick inside a half-open interval.
-            if (captureInclusiveEnd) metadata["data-cfx-range-inclusive-end-instant"] = instant.AddTicks(-1).ToString("O", CultureInfo.InvariantCulture);
-        }
-        catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { }
+        if (!ChartDateTime.TryFromOrderedOaDate(value, out var instant)) return;
+        metadata[instantKey] = instant.ToString("O", CultureInfo.InvariantCulture);
+        // Preserve the exact native boundary while publishing the last DateTime tick inside a half-open interval.
+        if (captureInclusiveEnd) metadata["data-cfx-range-inclusive-end-instant"] = instant.AddTicks(-1).ToString("O", CultureInfo.InvariantCulture);
     }
 
     private static bool TryAuthoredObservationIndex(IReadOnlyDictionary<string, string> metadata, out int sourceIndex) {
