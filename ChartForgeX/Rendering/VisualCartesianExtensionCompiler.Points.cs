@@ -31,10 +31,10 @@ internal static partial class VisualCartesianCompiler {
                 var size = series.RenderPoints[raw + 1].Y;
                 radius = VisualMarkerScene.Enabled(series) ? bubbleScale!.Radius(size, plot) : 0;
                 var bounds = Extents(x, y, x, y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
-                var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("size", size));
+                var label = ResolveObservationLabel(chart, context, series, item, colors, _ => bubbleScale!.Presentation.Value(size));
                 var fill = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleFillOpacity);
                 var fillPaint = sourcePaint.WithOpacity(fill, ChartVisualPrimitives.BubbleFillOpacity);
-                using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, colorSurface!, ("x", point.X), ("y", point.Y), ("size", size))) {
+                using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, colorSurface!, bubbleScale!.Presentation, ("x", point.X), ("y", point.Y), ("size", size))) {
                     var outline = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleStrokeOpacity);
                     VisualMarkerScene.Draw(builder, series, item, x, y, radius, fill, fillPaint,
                         "bubble", outline, VisualMarkerScene.FamilyStrokeWidth(series), sourcePaint.WithOpacity(outline, ChartVisualPrimitives.BubbleStrokeOpacity),

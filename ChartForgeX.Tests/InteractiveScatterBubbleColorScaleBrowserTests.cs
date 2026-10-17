@@ -34,7 +34,10 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
         var colors = new double?[] { -12, 0, null };
         if (kind == ChartSeriesKind.Bubble) chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("thermal-source"), "Samples", Enumerable.Range(0, 3)
             .Select(index => new ChartBubble(x[index], y[index], sizes[index]).WithColorValue(colors[index]))))
-            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20; });
+            .ConfigureBubble(bubble => {
+                bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20;
+                bubble.SizeDimension.ValueFormat = ChartValueFormat.Number("0", CultureInfo.InvariantCulture);
+            });
         else chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("thermal-source"), "Samples", Enumerable.Range(0, 3)
             .Select(index => new ChartPoint(x[index], y[index]).WithColorValue(colors[index]))));
         chart.Series[0].WithColorScale(ChartColorScale.Sequential(

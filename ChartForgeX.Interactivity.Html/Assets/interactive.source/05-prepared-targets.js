@@ -30,7 +30,8 @@
     });
     const sourceFacts = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points],[data-cfx-point][data-cfx-derived]'))
       .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint,
-        { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived, identity: derivedPointIdentity(node) }]));
+        { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived, identity: derivedPointIdentity(node),
+          groupIndex: node.dataset.cfxGroupIndex, groupId: node.dataset.cfxGroupId }]));
     const observationIds = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-observation-id]'))
       .map(node => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxObservationId]));
     svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"]').forEach((node) => {
@@ -56,12 +57,14 @@
         data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
         const collectionKey = index + ':' + data.cfxPoint;
         const observationId = observationIds.get(collectionKey);
-        if (observationId !== undefined) data.cfxObservationId = observationId;
         const facts = sourceFacts.get(collectionKey);
+        if (observationId !== undefined && !facts?.derived) data.cfxObservationId = observationId;
         if (facts) {
           if (data.cfxSourcePoints === undefined && facts.points !== undefined) data.cfxSourcePoints = facts.points;
           if (data.cfxDerived === undefined && facts.derived !== undefined) data.cfxDerived = facts.derived;
           if (data.cfxDerivedIdentity === undefined) data.cfxDerivedIdentity = facts.identity;
+          if (data.cfxGroupIndex === undefined && facts.groupIndex !== undefined) data.cfxGroupIndex = facts.groupIndex;
+          if (data.cfxGroupId === undefined && facts.groupId !== undefined) data.cfxGroupId = facts.groupId;
         }
       }
     });
@@ -75,7 +78,7 @@
       if (!item) return;
       data.cfxSeriesName = item.name; data.cfxSeriesKey = item.key;
       data.cfxSeriesScope = item.local ? 'local' : 'shared';
-      data.cfxKind = item.kind;
+      if (data.cfxKind === undefined) data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
       // A zero-imputed category has no authored observation. Category identity remains stable

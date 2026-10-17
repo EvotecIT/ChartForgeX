@@ -48,6 +48,7 @@ internal static partial class VisualScalarProgressCompiler {
             using (builder.PushGroup(Id(sourceIndex), "bullet-row", new Dictionary<string, string> {
                 ["data-cfx-series"] = N(sourceIndex), ["data-cfx-source-point"] = "0", ["data-cfx-source-count"] = "1",
                 ["data-cfx-label"] = series.Name, ["data-cfx-value"] = N(value), ["data-cfx-target"] = N(target),
+                ["data-cfx-label-target"] = chart.Options.Labels.Target,
                 ["data-cfx-min"] = N(series.RenderPoints[0].X), ["data-cfx-max"] = N(series.RenderPoints[1].X), ["data-cfx-scale-min"] = N(min), ["data-cfx-scale-max"] = N(max),
                 ["data-cfx-status"] = status, ["data-cfx-state"] = state.ToString(), ["data-cfx-series-key"] = series.InteractionIdentityKey,
                 ["data-cfx-source-range-ends"] = string.Join(",", series.RenderPoints.Skip(2).Select(point => N(point.X)))

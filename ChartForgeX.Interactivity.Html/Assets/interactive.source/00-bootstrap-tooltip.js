@@ -6,7 +6,7 @@
   const numericFactText = (data, member) => capturedText(data, 'cfxFormatted' + member, numericDisplayText(data['cfx' + member]));
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
-    if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
+    if (tooltipTitle && ['rangebar', 'boxplot', 'boxplotoutlier'].includes((data.cfxKind || '').toLowerCase()))
       return [seriesLabel(node), data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxLabel].filter(Boolean).join(': ');
     if (isDataTarget(node)) return data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxDisplayLabel ?? (data.cfxLabel || data.cfxText || seriesLabel(node) || data.cfxRole || '');
     const aria = node.getAttribute('aria-label');
@@ -45,6 +45,10 @@
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
       sourcePoints: sourcePointCollection(node),
+      derived: data.cfxDerived,
+      groupIndex: data.cfxGroupIndex === undefined ? undefined : Number(data.cfxGroupIndex),
+      groupId: data.cfxGroupId,
+      sourceCount: data.cfxSourceCount === undefined ? undefined : Number(data.cfxSourceCount),
       legendTargetKind: data.cfxLegendTargetKind,
       legendTargetId: data.cfxLegendTargetId,
       value: state ? data.cfxStateLabel ?? data.cfxLabel ?? '' : capturedText(data, 'cfxFormattedValue', rawValue ?? ''),
@@ -73,8 +77,9 @@
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
   const sizeTooltipRows = (node) => {
-    const value = (node.dataset || {}).cfxSize;
-    return value === undefined || value === null || value === '' ? [] : [{ name: rowName(node, 'size', 'Size'), value }];
+    const data = node.dataset || {}, raw = data.cfxSize;
+    if (raw === undefined || raw === null || raw === '') return [];
+    return [{ name: rowName(node, 'size', 'Size'), value: capturedText(data, 'cfxFormattedSize', raw) }];
   };
   const dimensionTooltipRows = (node) => sizeTooltipRows(node).map((row) => ({ ...row, dimension: 'size' }))
     .concat(colorTooltipRows(node).map((row) => ({ ...row, dimension: 'color' })));
@@ -97,11 +102,34 @@
   };
   const boxPlotTooltipRows = (node) => {
     const data = node.dataset || {};
-    if ((data.cfxKind || '').toLowerCase() !== 'boxplot') return null;
-    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX }]
-      .concat(['minimum', 'q1', 'median', 'q3', 'maximum'].map((key) => ({
-        name: rowName(node, key, ''), value: numericFactText(data, key.charAt(0).toUpperCase() + key.slice(1))
-      }))).filter((row) => row.value !== undefined && row.value !== null);
+    const kind = (data.cfxKind || '').toLowerCase();
+    if (!['boxplot', 'boxplotoutlier'].includes(kind)) return null;
+    const rows = [{ name: rowName(node, 'category', 'Category'), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel ?? data.cfxX }];
+    if (kind === 'boxplotoutlier') {
+      rows.push({ name: rowName(node, 'outlier', 'Outlier'), value: capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue ?? data.cfxY)) });
+      return rows.filter(row => row.value !== undefined && row.value !== null);
+    }
+    const iqr = data.cfxWhiskerPolicy === 'Iqr';
+    ['minimum', 'q1', 'median', 'q3', 'maximum'].forEach(key => rows.push({
+      name: rowName(node, iqr && key === 'minimum' ? 'lower-whisker' : iqr && key === 'maximum' ? 'upper-whisker' : key,
+        iqr && key === 'minimum' ? 'Lower whisker' : iqr && key === 'maximum' ? 'Upper whisker' : key === 'q1' ? 'Q1' : key === 'q3' ? 'Q3' : key.charAt(0).toUpperCase() + key.slice(1)),
+      value: numericFactText(data, key.charAt(0).toUpperCase() + key.slice(1))
+    }));
+    if (data.cfxDerived === 'five-number-summary') {
+      const add = (key, caption, value) => rows.push({ name: rowName(node, key, caption), value });
+      add('sample-count', 'Sample count', data.cfxSourceCount);
+      add('whisker-policy', 'Whisker policy', data.cfxWhiskerPolicy);
+      add('quartile-estimator', 'Quartile estimator', data.cfxQuartileEstimator);
+      if (iqr) add('iqr-multiplier', 'IQR multiplier', numericFactText(data, 'IqrMultiplier'));
+      add('source-minimum', 'Source minimum', numericFactText(data, 'SourceMinimum'));
+      add('source-maximum', 'Source maximum', numericFactText(data, 'SourceMaximum'));
+      add('outlier-count', 'Outlier count', data.cfxOutlierCount);
+      if (iqr && (data.cfxInlierMinimum === undefined || Number(data.cfxInlierMinimum) !== Number(data.cfxMinimum)))
+        add('inlier-minimum', 'Inlier minimum', data.cfxInlierMinimum === undefined ? rowName(node, 'no-inliers', 'None') : numericFactText(data, 'InlierMinimum'));
+      if (iqr && (data.cfxInlierMaximum === undefined || Number(data.cfxInlierMaximum) !== Number(data.cfxMaximum)))
+        add('inlier-maximum', 'Inlier maximum', data.cfxInlierMaximum === undefined ? rowName(node, 'no-inliers', 'None') : numericFactText(data, 'InlierMaximum'));
+    }
+    return rows.filter(row => row.value !== undefined && row.value !== null);
   };
   const rangeBarTooltipRows = (node) => {
     const data = node.dataset || {};
@@ -119,6 +147,11 @@
       value: numericFactText(data, part)
     }));
   };
+  const gaugeTargetTooltipRows = (node) => Array.from({ length: Number((node.dataset || {}).cfxGaugeTargetCount) || 0 }, (_, index) => {
+    const prefix = 'data-cfx-gauge-target-' + index + '-';
+    return { name: node.getAttribute(prefix + 'label') || rowName(node, 'target', 'Target'),
+      value: node.getAttribute(prefix + 'formatted-value') };
+  }).filter((row) => row.value !== null);
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -154,8 +187,9 @@
       else push(name, value);
       push('End', capturedText(data, 'cfxFormattedEnd', data.cfxEnd));
     }
-    sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
-    push('Target', data.cfxTarget);
+    rows.push(...sizeTooltipRows(node));
+    rows.push(...gaugeTargetTooltipRows(node));
+    push(rowName(node, 'target', 'Target'), data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
     rows.push(...colorTooltipRows(node));

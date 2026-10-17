@@ -29,12 +29,27 @@ internal sealed partial class VisualSceneBuilder {
             if (preciseValueTimeDomain && metadata.ContainsKey("data-cfx-point") && !metadata.ContainsKey("data-cfx-start")
                 && !metadata.ContainsKey("data-cfx-median") && !metadata.ContainsKey("data-cfx-open"))
                 CaptureTimeInstant(metadata, metadata.ContainsKey("data-cfx-stack-end") ? "data-cfx-stack-end" : "data-cfx-y", "data-cfx-value-instant");
+            CaptureBoxPlotGroupIdentity(series, metadata);
             if (TryAuthoredObservationIndex(metadata, out var sourceIndex)
                 && series.ObservationIds.TryGetValue(sourceIndex, out var observationId))
                 metadata["data-cfx-observation-id"] = observationId.Value;
             _nodes[index] = new VisualSceneGroup(group.Role, group.Id, group.Clip, metadata,
                 group.PathClip, group.Rotation, group.Href, group.Tooltip, group.Translation, group.ImageResource, group.ColorScope);
         }
+    }
+
+    private static void CaptureBoxPlotGroupIdentity(ChartSeries series, IDictionary<string, string> metadata) {
+        if (series.BoxPlotQuartileEstimator == null) return;
+        // Point legends represent raw groups, never original sample observations.
+        if (!metadata.ContainsKey("data-cfx-group-index") && metadata.TryGetValue("data-cfx-point", out var point)
+            && int.TryParse(point, NumberStyles.None, CultureInfo.InvariantCulture, out var ordinal)
+            && ordinal >= 0 && ordinal < series.BoxPlotSourceGroups.Count) {
+            metadata["data-cfx-group-index"] = point;
+            metadata["data-cfx-derived"] = "five-number-summary";
+        }
+        if (metadata.TryGetValue("data-cfx-group-index", out var group)
+            && int.TryParse(group, NumberStyles.None, CultureInfo.InvariantCulture, out var groupIndex)
+            && series.BoxPlotGroupIds.TryGetValue(groupIndex, out var id)) metadata["data-cfx-group-id"] = id.Value;
     }
 
     private static void CaptureChartInterval(Chart chart, ChartSeries series, IDictionary<string, string> metadata, bool numericTimeDomain) {

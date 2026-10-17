@@ -68,7 +68,6 @@ internal sealed class ChartSeriesColorSurface {
     }
 
     internal string AddFacts(Dictionary<string, string> metadata, int point, string description) {
-        if (_bubble) metadata["data-cfx-label-size"] = Presentation.Labels.Size;
         if (Scale == null && !_values[point].HasValue) return description;
         metadata["data-cfx-label-color"] = Presentation.Name;
         metadata["data-cfx-label-no-data"] = Presentation.NoData;

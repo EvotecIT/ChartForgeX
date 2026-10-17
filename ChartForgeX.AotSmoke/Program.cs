@@ -28,8 +28,11 @@ AssertPng(chart.ToPng(), "PNG render failed.");
 foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
     var theme = VisualTheme.Graphite();
     var graphite = Chart.Create().WithSize(420, 300).WithTheme(theme, mode).WithTitle("Graphite AOT")
-        .AddLinearGauge("Readiness", 87).ConfigureGauge(options => { options.Target = 90; options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning)); });
+        .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
+            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) })))
+        .ConfigureGauge(options => { options.Form = ChartGaugeForm.Linear; options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning)); });
     AssertContains(graphite.ToSvg(), "data-cfx-role=\"gauge-value-marker\"", "Graphite gauge SVG failed.");
+    AssertContains(graphite.ToSvg(), "data-cfx-role=\"gauge-target\"", "Graphite gauge target failed.");
     AssertPng(graphite.ToPng(), "Graphite gauge PNG failed.");
     var graphiteHeatmap = Chart.Create().WithTheme(theme, mode).WithXLabels("A", "B", "C")
         .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapRow("Counts", new[] { 0d, 4, 8 });

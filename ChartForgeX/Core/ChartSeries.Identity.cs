@@ -74,7 +74,7 @@ public sealed partial class ChartSeries {
     }
 
     internal string InteractionIdentityKey => Id.Value;
-    private int IdentityObservationCount => IsDecimated || HistogramBinLayout != null || TrendLineSourcePoints.Count > 0 || BoxPlotSourceSamples.Count > 0
+    private int IdentityObservationCount => IsDecimated || HistogramBinLayout != null || TrendLineSourcePoints.Count > 0 || _isRawBoxPlot
         ? SourcePointCount : AuthoredObservationCount;
     internal bool HasIdentity => _hasId;
     internal Chart? Owner => _owner;

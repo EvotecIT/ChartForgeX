@@ -60,7 +60,8 @@
         || legendItems.find((item) => sameSeries(item) && !legendTarget(item));
       return data.cfxPoint === undefined
         ? legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined) || legendItems.find(sameSeries)
-        : legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
+        : legendItems.find((item) => sameSeries(item) && data.cfxGroupIndex !== undefined && item.dataset.cfxGroupIndex === data.cfxGroupIndex)
+          || legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
           || legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined);
     }
     return null;
@@ -123,10 +124,23 @@
   };
   const pointTargetId = (node) => {
     const data = node.dataset || {};
+    if (data.cfxDerived === 'five-number-summary' && data.cfxGroupId !== undefined)
+      return JSON.stringify([seriesKey(node), 'five-number-summary', data.cfxGroupId]);
     if (data.cfxObservationId !== undefined) return JSON.stringify([seriesKey(node), data.cfxObservationId]);
     const derived = hasDerivedPointIdentity(node);
     const point = derived ? 'derived:' + derivedPointIdentity(node) : sourcePointIndex(node) ?? '0';
     return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
+  };
+  // Group legends own a distribution; the individual outlier retains its sample target.
+  const boxPlotGroup = (node) => {
+    const data = node.dataset || {};
+    return data.cfxGroupIndex !== undefined && (data.cfxDerived === 'five-number-summary'
+      || ['boxplot', 'boxplotoutlier'].includes((data.cfxKind || '').toLowerCase()));
+  };
+  const boxPlotGroupTargetId = (node) => {
+    const data = node.dataset || {};
+    return data.cfxGroupId !== undefined ? JSON.stringify([seriesKey(node), 'five-number-summary', data.cfxGroupId])
+      : `${seriesKey(node) || data.cfxSeries || 'series'}:derived:five-number-summary:${data.cfxGroupIndex}`;
   };
   const renderedTargetKind = (node) => {
     const data = node.dataset || {};
@@ -176,7 +190,7 @@
   const numericFactText = (data, member) => capturedText(data, 'cfxFormatted' + member, numericDisplayText(data['cfx' + member]));
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
-    if (tooltipTitle && ['rangebar', 'boxplot'].includes((data.cfxKind || '').toLowerCase()))
+    if (tooltipTitle && ['rangebar', 'boxplot', 'boxplotoutlier'].includes((data.cfxKind || '').toLowerCase()))
       return [seriesLabel(node), data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxLabel].filter(Boolean).join(': ');
     if (isDataTarget(node)) return data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxDisplayLabel ?? (data.cfxLabel || data.cfxText || seriesLabel(node) || data.cfxRole || '');
     const aria = node.getAttribute('aria-label');
@@ -215,6 +229,10 @@
       point: data.cfxPoint,
       sourcePoint: sourcePointIndex(node),
       sourcePoints: sourcePointCollection(node),
+      derived: data.cfxDerived,
+      groupIndex: data.cfxGroupIndex === undefined ? undefined : Number(data.cfxGroupIndex),
+      groupId: data.cfxGroupId,
+      sourceCount: data.cfxSourceCount === undefined ? undefined : Number(data.cfxSourceCount),
       legendTargetKind: data.cfxLegendTargetKind,
       legendTargetId: data.cfxLegendTargetId,
       value: state ? data.cfxStateLabel ?? data.cfxLabel ?? '' : capturedText(data, 'cfxFormattedValue', rawValue ?? ''),
@@ -243,8 +261,9 @@
     return value === undefined ? [] : [{ name: rowName(node, 'color', 'Color'), value }];
   };
   const sizeTooltipRows = (node) => {
-    const value = (node.dataset || {}).cfxSize;
-    return value === undefined || value === null || value === '' ? [] : [{ name: rowName(node, 'size', 'Size'), value }];
+    const data = node.dataset || {}, raw = data.cfxSize;
+    if (raw === undefined || raw === null || raw === '') return [];
+    return [{ name: rowName(node, 'size', 'Size'), value: capturedText(data, 'cfxFormattedSize', raw) }];
   };
   const dimensionTooltipRows = (node) => sizeTooltipRows(node).map((row) => ({ ...row, dimension: 'size' }))
     .concat(colorTooltipRows(node).map((row) => ({ ...row, dimension: 'color' })));
@@ -267,11 +286,34 @@
   };
   const boxPlotTooltipRows = (node) => {
     const data = node.dataset || {};
-    if ((data.cfxKind || '').toLowerCase() !== 'boxplot') return null;
-    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX }]
-      .concat(['minimum', 'q1', 'median', 'q3', 'maximum'].map((key) => ({
-        name: rowName(node, key, ''), value: numericFactText(data, key.charAt(0).toUpperCase() + key.slice(1))
-      }))).filter((row) => row.value !== undefined && row.value !== null);
+    const kind = (data.cfxKind || '').toLowerCase();
+    if (!['boxplot', 'boxplotoutlier'].includes(kind)) return null;
+    const rows = [{ name: rowName(node, 'category', 'Category'), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel ?? data.cfxX }];
+    if (kind === 'boxplotoutlier') {
+      rows.push({ name: rowName(node, 'outlier', 'Outlier'), value: capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue ?? data.cfxY)) });
+      return rows.filter(row => row.value !== undefined && row.value !== null);
+    }
+    const iqr = data.cfxWhiskerPolicy === 'Iqr';
+    ['minimum', 'q1', 'median', 'q3', 'maximum'].forEach(key => rows.push({
+      name: rowName(node, iqr && key === 'minimum' ? 'lower-whisker' : iqr && key === 'maximum' ? 'upper-whisker' : key,
+        iqr && key === 'minimum' ? 'Lower whisker' : iqr && key === 'maximum' ? 'Upper whisker' : key === 'q1' ? 'Q1' : key === 'q3' ? 'Q3' : key.charAt(0).toUpperCase() + key.slice(1)),
+      value: numericFactText(data, key.charAt(0).toUpperCase() + key.slice(1))
+    }));
+    if (data.cfxDerived === 'five-number-summary') {
+      const add = (key, caption, value) => rows.push({ name: rowName(node, key, caption), value });
+      add('sample-count', 'Sample count', data.cfxSourceCount);
+      add('whisker-policy', 'Whisker policy', data.cfxWhiskerPolicy);
+      add('quartile-estimator', 'Quartile estimator', data.cfxQuartileEstimator);
+      if (iqr) add('iqr-multiplier', 'IQR multiplier', numericFactText(data, 'IqrMultiplier'));
+      add('source-minimum', 'Source minimum', numericFactText(data, 'SourceMinimum'));
+      add('source-maximum', 'Source maximum', numericFactText(data, 'SourceMaximum'));
+      add('outlier-count', 'Outlier count', data.cfxOutlierCount);
+      if (iqr && (data.cfxInlierMinimum === undefined || Number(data.cfxInlierMinimum) !== Number(data.cfxMinimum)))
+        add('inlier-minimum', 'Inlier minimum', data.cfxInlierMinimum === undefined ? rowName(node, 'no-inliers', 'None') : numericFactText(data, 'InlierMinimum'));
+      if (iqr && (data.cfxInlierMaximum === undefined || Number(data.cfxInlierMaximum) !== Number(data.cfxMaximum)))
+        add('inlier-maximum', 'Inlier maximum', data.cfxInlierMaximum === undefined ? rowName(node, 'no-inliers', 'None') : numericFactText(data, 'InlierMaximum'));
+    }
+    return rows.filter(row => row.value !== undefined && row.value !== null);
   };
   const rangeBarTooltipRows = (node) => {
     const data = node.dataset || {};
@@ -289,6 +331,11 @@
       value: numericFactText(data, part)
     }));
   };
+  const gaugeTargetTooltipRows = (node) => Array.from({ length: Number((node.dataset || {}).cfxGaugeTargetCount) || 0 }, (_, index) => {
+    const prefix = 'data-cfx-gauge-target-' + index + '-';
+    return { name: node.getAttribute(prefix + 'label') || rowName(node, 'target', 'Target'),
+      value: node.getAttribute(prefix + 'formatted-value') };
+  }).filter((row) => row.value !== null);
   const tooltipRows = (node) => {
     const data = node.dataset || {};
     const rows = [];
@@ -324,8 +371,9 @@
       else push(name, value);
       push('End', capturedText(data, 'cfxFormattedEnd', data.cfxEnd));
     }
-    sizeTooltipRows(node).forEach((row) => push(row.name, row.value));
-    push('Target', data.cfxTarget);
+    rows.push(...sizeTooltipRows(node));
+    rows.push(...gaugeTargetTooltipRows(node));
+    push(rowName(node, 'target', 'Target'), data.cfxTarget);
     push('Status', data.cfxStatus);
     push(rowName(node, 'level', 'Level'), data.cfxLevel);
     rows.push(...colorTooltipRows(node));
@@ -1440,7 +1488,8 @@
     });
     const sourceFacts = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points],[data-cfx-point][data-cfx-derived]'))
       .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint,
-        { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived, identity: derivedPointIdentity(node) }]));
+        { points: node.dataset.cfxSourcePoints, derived: node.dataset.cfxDerived, identity: derivedPointIdentity(node),
+          groupIndex: node.dataset.cfxGroupIndex, groupId: node.dataset.cfxGroupId }]));
     const observationIds = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-observation-id]'))
       .map(node => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxObservationId]));
     svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"]').forEach((node) => {
@@ -1466,12 +1515,14 @@
         data.cfxPoint = match[2] === 'other' ? '-1' : match[2];
         const collectionKey = index + ':' + data.cfxPoint;
         const observationId = observationIds.get(collectionKey);
-        if (observationId !== undefined) data.cfxObservationId = observationId;
         const facts = sourceFacts.get(collectionKey);
+        if (observationId !== undefined && !facts?.derived) data.cfxObservationId = observationId;
         if (facts) {
           if (data.cfxSourcePoints === undefined && facts.points !== undefined) data.cfxSourcePoints = facts.points;
           if (data.cfxDerived === undefined && facts.derived !== undefined) data.cfxDerived = facts.derived;
           if (data.cfxDerivedIdentity === undefined) data.cfxDerivedIdentity = facts.identity;
+          if (data.cfxGroupIndex === undefined && facts.groupIndex !== undefined) data.cfxGroupIndex = facts.groupIndex;
+          if (data.cfxGroupId === undefined && facts.groupId !== undefined) data.cfxGroupId = facts.groupId;
         }
       }
     });
@@ -1485,7 +1536,7 @@
       if (!item) return;
       data.cfxSeriesName = item.name; data.cfxSeriesKey = item.key;
       data.cfxSeriesScope = item.local ? 'local' : 'shared';
-      data.cfxKind = item.kind;
+      if (data.cfxKind === undefined) data.cfxKind = item.kind;
       if (data.cfxState === undefined) data.cfxState = item.state;
       if (data.cfxRole === 'gauge') data.cfxPoint = '0';
       // A zero-imputed category has no authored observation. Category identity remains stable
@@ -2483,6 +2534,9 @@
     const data = node.dataset || {};
     const reference = legendTarget(node) || (['node', 'link', 'region'].includes(data.cfxTargetKind)
       ? { targetKind: data.cfxTargetKind, targetId: data.cfxTargetId } : null);
+    if (boxPlotGroup(node)) return { series: data.cfxSeries, point: data.cfxGroupIndex, seriesKey: seriesKey(node), seriesScope: data.cfxSeriesScope,
+      groupIndex: Number(data.cfxGroupIndex), groupId: data.cfxGroupId, derived: 'five-number-summary',
+      label: data.cfxLabel || seriesLabel(node), targetKind: 'point', targetId: boxPlotGroupTargetId(node) };
     return { series: data.cfxSeries, point: data.cfxPoint, seriesKey: seriesKey(node), seriesScope: data.cfxSeriesScope,
       observationId: data.cfxObservationId, label: data.cfxLabel || seriesLabel(node),
       targetKind: data.cfxPoint === undefined ? 'series' : 'point',
@@ -2494,6 +2548,8 @@
     if (!target) return false;
     const data = node.dataset || {};
     if (data.cfxSeries !== String(target.series)) return false;
+    if (target.derived === 'five-number-summary' && target.groupIndex !== undefined)
+      return boxPlotGroup(node) && (target.groupId !== undefined ? data.cfxGroupId === target.groupId : data.cfxGroupIndex === String(target.groupIndex));
     if (target.targetKind && target.targetKind !== 'series' && target.targetId) {
       if (target.targetKind === 'point') return data.cfxPoint !== undefined && pointTargetId(node) === target.targetId;
       const reference = legendTarget(node);
@@ -2667,6 +2723,8 @@
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
+    if (sameSeries && pointUnits && target.groupIndex !== undefined && boxPlotGroup(node))
+      return target.groupId !== undefined ? data.cfxGroupId === target.groupId : data.cfxGroupIndex === String(target.groupIndex);
     if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node)
       || pointUnits && data.cfxPoint === String(target.point));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));
@@ -4247,8 +4305,9 @@
     return section;
   };
   const durableChartTarget = target => !!target && target.seriesScope === 'shared' && !!target.seriesKey
-    && (target.targetKind !== 'point' || target.observationId !== undefined)
-    && (target.targetKind !== 'legend' || target.point === undefined || target.observationId !== undefined);
+    && (target.targetKind !== 'point' || target.observationId !== undefined || target.derived === 'five-number-summary' && target.groupId !== undefined)
+    && (target.targetKind !== 'legend' || target.point === undefined || target.observationId !== undefined
+      || target.derived === 'five-number-summary' && target.groupId !== undefined);
   const chartLegendStateTargets = (root, isolated) => {
     // A narrow native legend may omit an entry while its data owner remains painted and muted.
     // Capture that owner's identity too; presentation density must not erase reader state.

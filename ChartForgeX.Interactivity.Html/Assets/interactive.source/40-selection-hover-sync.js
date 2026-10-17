@@ -70,6 +70,8 @@
     if (target.series === undefined && !target.seriesKey) return false;
     const data = node.dataset || {};
     const sameSeries = target.seriesKey ? seriesKey(node) === target.seriesKey : data.cfxSeries === String(target.series);
+    if (sameSeries && pointUnits && target.groupIndex !== undefined && boxPlotGroup(node))
+      return target.groupId !== undefined ? data.cfxGroupId === target.groupId : data.cfxGroupIndex === String(target.groupIndex);
     if (itemUnit) return sameSeries && (node.contains(itemUnit) || itemUnit.contains(node)
       || pointUnits && data.cfxPoint === String(target.point));
     return sameSeries && (!pointUnits || data.cfxPoint === String(target.point) || (data.cfxRole === 'series' && data.cfxPoint === undefined));

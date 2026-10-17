@@ -39,8 +39,9 @@
     return section;
   };
   const durableChartTarget = target => !!target && target.seriesScope === 'shared' && !!target.seriesKey
-    && (target.targetKind !== 'point' || target.observationId !== undefined)
-    && (target.targetKind !== 'legend' || target.point === undefined || target.observationId !== undefined);
+    && (target.targetKind !== 'point' || target.observationId !== undefined || target.derived === 'five-number-summary' && target.groupId !== undefined)
+    && (target.targetKind !== 'legend' || target.point === undefined || target.observationId !== undefined
+      || target.derived === 'five-number-summary' && target.groupId !== undefined);
   const chartLegendStateTargets = (root, isolated) => {
     // A narrow native legend may omit an entry while its data owner remains painted and muted.
     // Capture that owner's identity too; presentation density must not erase reader state.

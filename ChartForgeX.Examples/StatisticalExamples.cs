@@ -26,6 +26,18 @@ internal static class StatisticalExamples {
 
         SaveChart(latencySpread, "endpoint-latency-boxplot-dark");
 
+        var measurements = ChartSeries.CreateBoxPlot(new ChartSeriesId("service-measurements"), "Measurements", new[] {
+            new ChartBoxPlotSampleGroup(1, new[] { 18d, 20, 22, 24, 26, 28, 30, 32, 34, 95 }),
+            new ChartBoxPlotSampleGroup(2, new[] { 26d, 28, 30, 32, 34, 36, 38, 40, 42, 112 }),
+            new ChartBoxPlotSampleGroup(3, new[] { 42d, 46, 48, 50, 52, 54, 56, 60, 62, 145 })
+        }).WithBoxPlotGroupIds(new[] { new ChartObservationId("dns"), new ChartObservationId("tcp"), new ChartObservationId("tls") })
+          .ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        SaveChart(Chart.Create().WithTitle("Service latency distributions")
+            .WithSubtitle("Quartiles and IQR whiskers retain individual outlier measurements")
+            .WithXLabels("DNS", "TCP", "TLS").WithYAxis("Response time (ms)")
+            .WithSize(760, 460).WithTheme(VisualTheme.Graphite()).WithDataLabels(false)
+            .AddSeries(measurements), "service-latency-iqr-boxplot-light");
+
         var exposureClusters = Chart.Create()
             .WithTitle("Exposure Clusters")
             .WithSubtitle("Bubble size shows affected assets per cluster")
@@ -40,7 +52,12 @@ internal static class StatisticalExamples {
                 new ChartBubble(2.3, 31, 42),
                 new ChartBubble(3.1, 68, 71),
                 new ChartBubble(3.8, 54, 36)
-            }, ChartColor.FromRgb(37, 99, 235));
+            }, ChartColor.FromRgb(37, 99, 235))
+            .ConfigureBubble(options => {
+                options.SizeDimension.Name = "Affected assets";
+                options.SizeDimension.ValueFormat = ChartValueFormat.Number("0");
+                options.SizeDimension.ShowLegend = true;
+            });
 
         SaveChart(exposureClusters, "exposure-clusters-bubble-light");
 

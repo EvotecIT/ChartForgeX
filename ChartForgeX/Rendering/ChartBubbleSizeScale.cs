@@ -10,18 +10,23 @@ internal sealed class ChartBubbleSizeScale {
     private readonly double? _maximumRadius;
     private readonly bool _reversed;
 
-    private ChartBubbleSizeScale(double minimumValue, double maximumValue, ChartBubbleOptions options) {
+    private ChartBubbleSizeScale(double minimumValue, double maximumValue, Chart chart, bool hasValues) {
+        var options = chart.Options.Bubble;
         _minimumValue = minimumValue; _maximumValue = maximumValue;
         _minimumRadius = options.MinimumRadius; _maximumRadius = options.MaximumRadius; _reversed = options.Reversed;
+        HasValues = hasValues; Presentation = new ChartSizePresentation(chart, minimumValue, maximumValue);
     }
 
     internal bool HasVisibleRadius => !_maximumRadius.HasValue || _maximumRadius.Value > 0;
+    internal bool HasValues { get; }
+    internal ChartSizePresentation Presentation { get; }
+    internal double MinimumValue => _minimumValue;
+    internal double MaximumValue => _maximumValue;
+    internal bool Reversed => _reversed;
 
     internal static ChartBubbleSizeScale Create(Chart chart) {
         var options = chart.Options.Bubble;
         options.Validate();
-        if (options.MinimumValue.HasValue)
-            return new ChartBubbleSizeScale(options.MinimumValue.Value, options.MaximumValue!.Value, options);
         var minimum = double.PositiveInfinity; var maximum = double.NegativeInfinity;
         foreach (var series in chart.Series) {
             if (series.Kind != ChartSeriesKind.Bubble) continue;
@@ -31,17 +36,20 @@ internal sealed class ChartBubbleSizeScale {
             }
         }
         // Empty supported tuple series contributes no source extent and remains a no-data scene.
-        if (double.IsPositiveInfinity(minimum)) minimum = maximum = 0;
-        return new ChartBubbleSizeScale(minimum, maximum, options);
+        var hasValues = !double.IsPositiveInfinity(minimum);
+        if (!hasValues) minimum = maximum = 0;
+        return new ChartBubbleSizeScale(options.MinimumValue ?? minimum, options.MaximumValue ?? maximum, chart, hasValues);
     }
 
     internal double Radius(double size, ChartRect plot) {
-        var maximumRadius = _maximumRadius ?? Math.Max(_minimumRadius,
-            Math.Max(14, Math.Min(32, Math.Min(plot.Width, plot.Height) * .075)));
+        var maximumRadius = MaximumRadius(plot);
         if (_minimumValue == _maximumValue) return ChartMath.InterpolateRange(_minimumRadius, maximumRadius, .5);
         var ratio = Math.Max(0, Math.Min(1, ChartMath.Normalize(size, _minimumValue, _maximumValue)));
         if (_reversed) ratio = 1 - ratio;
         // Preserve the family law: square-root interpolation of the radius range, not equal-area encoding.
         return ChartMath.InterpolateRange(_minimumRadius, maximumRadius, Math.Sqrt(ratio));
     }
+
+    internal double MaximumRadius(ChartRect plot) => _maximumRadius ?? Math.Max(_minimumRadius,
+        Math.Max(14, Math.Min(32, Math.Min(plot.Width, plot.Height) * .075)));
 }

@@ -14,8 +14,9 @@ public sealed class V2GaugeTests {
     [InlineData(ChartGaugeForm.Needle)]
     [InlineData(ChartGaugeForm.Linear)]
     public void Forms_RetainRawOutOfRangeValuesAndClampDrawnMarks(ChartGaugeForm form) {
-        var chart = Chart.Create().AddGauge("Capacity", 140, 0, 100).ConfigureGauge(options => {
-            options.Form = form; options.Target = 75; options.Caption = "Available capacity";
+        var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
+            new ChartGaugeValue(140, 0, 100, new[] { new ChartGaugeTarget(75) }))).ConfigureGauge(options => {
+            options.Form = form; options.Caption = "Available capacity";
             options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Warning));
             options.Bands.Add(new ChartGaugeBand(50, 100, ChartSeriesState.Success));
         });
@@ -47,7 +48,8 @@ public sealed class V2GaugeTests {
     [Fact]
     public void ExplicitPointPaintAndLabelsWinWhileFullTextSurvivesFittingAndArtifactHandoff() {
         const string full = "Complete operator-provided measurement label with additional retained context";
-        var chart = Chart.Create().AddGauge("Long caption that will not fit a compact surface", 42).ConfigureGauge(options => options.Target = 110);
+        var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Long caption that will not fit a compact surface",
+            new ChartGaugeValue(42, targets: new[] { new ChartGaugeTarget(110) })));
         var explicitColor = ChartColor.FromHex("#123456");
         chart.Series[0].WithPointColor(0, explicitColor).WithPointLabel(0, full);
         var scene = Compile(chart, new ChartRect(0, 0, 160, 130));

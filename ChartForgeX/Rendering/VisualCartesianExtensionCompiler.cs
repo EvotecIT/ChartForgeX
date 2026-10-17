@@ -91,12 +91,18 @@ internal static partial class VisualCartesianCompiler {
         ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, colorSurface, values);
 
     private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartSeriesColorSurface colorSurface,
+        ChartSizePresentation size, params (string Name, double Value)[] values) =>
+        ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, colorSurface, values,
+            sizePresentation: size);
+
+    private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
         int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, IReadOnlyDictionary<string, string> facts, params (string Name, double Value)[] values) =>
         ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, null, values, facts);
 
     private static IDisposable ObservationGroupCore(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
         int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartStackPoint? stack, ChartSeriesColorSurface? colorSurface,
-        (string Name, double Value)[] values, IReadOnlyDictionary<string, string>? facts = null) {
+        (string Name, double Value)[] values, IReadOnlyDictionary<string, string>? facts = null, ChartSizePresentation? sizePresentation = null) {
         var id = PointId(seriesIndex, observation);
         var description = series.Name + ": " + label.DisplayedText;
         var metadata = new Dictionary<string, string> {
@@ -121,10 +127,12 @@ internal static partial class VisualCartesianCompiler {
             description += " " + value.Name + "=" + Number(value.Value);
         }
         if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
+        if (sizePresentation != null) description = sizePresentation.AddFacts(metadata, series.RenderPoints[rawStart + 1].Y, description);
         if (colorSurface != null) description = colorSurface.AddFacts(metadata, observation, description);
         if (facts != null) {
             foreach (var fact in facts) metadata[fact.Key] = fact.Value;
-            if (facts.TryGetValue("data-cfx-category-label", out var category)) description += " " + category;
+            if (facts.TryGetValue("aria-label", out var accessibleDescription)) description = accessibleDescription;
+            else if (facts.TryGetValue("data-cfx-category-label", out var category)) description += " " + category;
         }
         metadata["aria-label"] = description;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, description));

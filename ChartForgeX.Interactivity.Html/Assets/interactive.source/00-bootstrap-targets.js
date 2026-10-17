@@ -60,7 +60,8 @@
         || legendItems.find((item) => sameSeries(item) && !legendTarget(item));
       return data.cfxPoint === undefined
         ? legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined) || legendItems.find(sameSeries)
-        : legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
+        : legendItems.find((item) => sameSeries(item) && data.cfxGroupIndex !== undefined && item.dataset.cfxGroupIndex === data.cfxGroupIndex)
+          || legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === data.cfxPoint)
           || legendItems.find((item) => sameSeries(item) && (item.dataset || {}).cfxPoint === undefined);
     }
     return null;
@@ -123,10 +124,23 @@
   };
   const pointTargetId = (node) => {
     const data = node.dataset || {};
+    if (data.cfxDerived === 'five-number-summary' && data.cfxGroupId !== undefined)
+      return JSON.stringify([seriesKey(node), 'five-number-summary', data.cfxGroupId]);
     if (data.cfxObservationId !== undefined) return JSON.stringify([seriesKey(node), data.cfxObservationId]);
     const derived = hasDerivedPointIdentity(node);
     const point = derived ? 'derived:' + derivedPointIdentity(node) : sourcePointIndex(node) ?? '0';
     return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
+  };
+  // Group legends own a distribution; the individual outlier retains its sample target.
+  const boxPlotGroup = (node) => {
+    const data = node.dataset || {};
+    return data.cfxGroupIndex !== undefined && (data.cfxDerived === 'five-number-summary'
+      || ['boxplot', 'boxplotoutlier'].includes((data.cfxKind || '').toLowerCase()));
+  };
+  const boxPlotGroupTargetId = (node) => {
+    const data = node.dataset || {};
+    return data.cfxGroupId !== undefined ? JSON.stringify([seriesKey(node), 'five-number-summary', data.cfxGroupId])
+      : `${seriesKey(node) || data.cfxSeries || 'series'}:derived:five-number-summary:${data.cfxGroupIndex}`;
   };
   const renderedTargetKind = (node) => {
     const data = node.dataset || {};

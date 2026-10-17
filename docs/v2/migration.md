@@ -106,6 +106,26 @@ For example, use `chart.ConfigureLabels(labels => labels.NoData = "Brak danych")
 
 Configuration callbacks now have one ownership rule: edit an isolated copy, then install a separate snapshot after success. Exceptions leave the current owner unchanged. A reference retained before or inside a callback cannot mutate the newly installed options. Theme configuration returns an immutable paired snapshot. See the [API conventions](api-conventions.md#configuration-callback-ownership) for the complete boundary and explicit override intent.
 
+## Gauge readings and presentation
+
+Move `ChartOptions.Gauge.Target` into the reading's `ChartGaugeValue.Targets`. Each immutable `ChartGaugeTarget` holds a numeric value and an optional label, and the reading snapshots the supplied targets in order. Pass one target to preserve a single threshold, or several for a reading with multiple reference values:
+
+```csharp
+var capacity = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
+    new ChartGaugeValue(62, 0, 100, new[] {
+        new ChartGaugeTarget(75, "Plan"),
+        new ChartGaugeTarget(90, "Limit")
+    }));
+var gauge = Chart.Create().AddSeries(capacity)
+    .ConfigureGauge(options => options.Form = ChartGaugeForm.Needle);
+```
+
+Remove the former `options.Target = ...` assignment. Use `UpdateGaugeValue` or `ReplaceGaugeValues` to install a complete replacement reading, including its targets. The existing typed `CreateGauge` factory accepts the complete reading; adding targets does not require a different factory.
+
+Rebuild consuming projects against the changed Gauge contracts. The `ChartGaugeValue` constructor now includes the optional targets parameter; previously compiled calls to its three-parameter form require recompilation. Replacing library DLLs alone does not update those calls.
+
+Keep presentation in `ConfigureGauge`: `Orientation` selects horizontal or vertical linear gauges, while `StartAngleDegrees` and `SweepAngleDegrees` control Arc and Needle forms. Defaults remain horizontal, 150 degrees and 240 degrees. A null `TickCount` retains the form defaults of two radial ticks or five linear ticks. An explicit count is a preferred ceiling; crowded scales use fewer evenly spaced ticks, and full-circle scales avoid duplicating the seam tick. `TickLabels` accepts detached `ChartAxisLabel` values for authored tick text. Caption and semantic bands remain presentation options. See [gauge readings and scales](api-conventions.md#gauge-readings-and-scales) for ownership and formatting.
+
 ## Bubble size mapping
 
 Bubble series share one chart-wide size domain. Previously, each series inferred its own domain, so equal source sizes could render at different radii. Single-series defaults retain their existing square-root radius mapping and responsive endpoints. A constant automatic domain retains the radius midpoint.
@@ -122,6 +142,18 @@ chart.ConfigureBubble(bubble => {
 ```
 
 Use `series.ConfigureMarkers(markers => markers.Enabled = false)` to hide one series' glyphs. Marker shape, fill, outline and point-label overrides remain available. Explicit domains clamp geometry while retaining raw source sizes; `Reversed = true` maps larger values to smaller radii. Pin the domain and both radius endpoints for stable sizing across data and layout changes. Source sizes remain finite and positive, and the mapping does not promise equal painted areas across shapes. See [bubble sizing](api-conventions.md#bubble-size-scale) for validation and automatic defaults.
+
+Name and format the shared size measurement independently from Y and color, and opt into its numeric key through the same callback:
+
+```csharp
+chart.ConfigureBubble(bubble => {
+    bubble.SizeDimension.Name = "Requests";
+    bubble.SizeDimension.ValueFormat = ChartValueFormat.Number("0.##");
+    bubble.SizeDimension.ShowLegend = true;
+});
+```
+
+The key is off by default. Enabling it keeps categorical series entries and color keys in one measured layout budget. Captured size captions also govern native default size labels and HTML size readouts; raw source sizes, shared geometry and selection IDs retain their existing meaning. Explicitly empty formatted text remains empty. Full size-key semantics survive a constrained layout, with `cartesian.size-scale-overflow` explaining an omitted key.
 
 ## HTML tooltip options
 
@@ -141,7 +173,7 @@ Multiple box plot series at the same category now appear side by side instead of
 
 Set `ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal)` for primary physical X values and Y categories. `ChartBoxPlot.X` remains the category coordinate. Move value bounds, scales, reversal and tick formatting to `XAxis`, and category bounds, reversal and formatting to `YAxis`. Explicit Y labels win; `WithXLabels` remains a fallback. Horizontal charts accept only box plot series on the primary axis. Vertical mixtures and secondary Y projection retain their support.
 
-HTML tooltip rows now expose Category, Minimum, Q1, Median, Q3 and Maximum instead of a generic Y row containing only the minimum. Localize them through the corresponding `ChartLabels` properties. Default data labels still show the median, and custom point labels still win. Raw-sample calculations retain interpolated quartiles at `(n - 1) * p` and min/max whiskers; this change introduces no IQR filtering or new statistical estimator. See [box plot conventions](api-conventions.md#grouped-box-plots-and-orientation).
+HTML tooltip rows now expose Category, Minimum, Q1, Median, Q3 and Maximum instead of a generic Y row containing only the minimum. Localize them through the corresponding `ChartLabels` properties. Default data labels still show the median, and custom point labels still win. Existing raw-sample overloads retain interpolated quartiles at `(n - 1) * p` and min/max whiskers. Grouped raw input uses `ChartBoxPlotSampleGroup`; opt into IQR whiskers/outliers through `ChartSeries.ConfigureBoxPlotStatistics`. Raw sample `WithObservationIds` remain sample-indexed; identify derived summaries separately with `WithBoxPlotGroupIds`. To replace measurements while preserving provenance, use `UpdateBoxPlotSampleGroup` instead of `UpdateBoxPlot`; the latter converts the series to supplied summaries and clears source/group IDs. See [box plot conventions](api-conventions.md#grouped-box-plots-and-orientation).
 
 ## Waterfall opening balances and checkpoints
 
@@ -534,7 +566,7 @@ Keep PowerBGInfo's hero template, left/center/right lane policy, synthetic machi
 
 Map all consumed chart families: bar/horizontal bar; line/area/sparkline; gauge/circle/progress ring/bullet; numeric radial bar/column; pie/donut; progress; pictorial. Preserve formatter and font-role overrides, legend/point-legend/data-label settings, min/max/target/ranges, center/status labels, palette, smoothing, thickness/radius/columns and supersampling. Dense trends retain `ChartResolutionPolicy.Trend()` and provenance; categorical and short series remain exact.
 
-These specialized models have native producers. Keep the caller's declared gauge/circle bounds and raw values; clamping the visible progress does not replace source values or formatted text. Bullet rows share one displayed domain while retaining their declared row bounds, targets and ranges. An explicit `WithValueFormat(...)` or value formatter governs values, targets and generated numeric ticks unless an axis-specific formatter overrides those ticks; the default still uses grouped value labels and compact ticks. Pie/donut aggregation uses `MaximumPieSlices` independently of theme and retains contributing indexes for `Other`. Zero pie values remain legend categories; zero polar-area values retain their angular slot. Donut center text, progress handles and pictorial partial fills remain explicit options. Custom pictorial paths become numeric geometry rendered by both backends; the legacy PNG fallback shape does not replace an accepted custom contour.
+These specialized models have native producers. Keep the caller's declared gauge/circle bounds and raw values; clamping the visible progress does not replace source values or formatted text. Bullet rows share one displayed domain while retaining their declared row bounds, targets and ranges. An explicit `WithValueFormat(...)` or value formatter governs values, targets and generated numeric ticks; the default still uses grouped value labels and compact ticks. Gauge ticks use that chart-wide formatting or authored `ChartOptions.Gauge.TickLabels`; other axis families retain their axis-specific formatter precedence. Pie/donut aggregation uses `MaximumPieSlices` independently of theme and retains contributing indexes for `Other`. Zero pie values remain legend categories; zero polar-area values retain their angular slot. Donut center text, progress handles and pictorial partial fills remain explicit options. Custom pictorial paths become numeric geometry rendered by both backends; the legacy PNG fallback shape does not replace an accepted custom contour.
 
 Check the remaining plot dimensions before preparing a nested chart. `BgInfoChartRenderer.Render` currently clamps the space after host padding and title/value text to one pixel, then supplies eight pixels of chart padding on every edge. A fixed `VisualLayoutOptions` request requires a positive interior; widths or heights of sixteen pixels or less cannot retain that padding. Keep the requested outer wallpaper dimensions and choose an explicit consumer policy: skip an exhausted plot, or reduce its internal padding to fit. Do not silently enlarge the chart to satisfy the layout constraint. Include a short tile with a tall title in consumer qualification.
 

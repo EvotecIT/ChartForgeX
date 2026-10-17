@@ -149,7 +149,9 @@ public sealed partial class ChartSeries {
     /// <returns>The current series.</returns>
     public ChartSeries UpdateBoxPlot(int index, ChartBoxPlot value) {
         RequireObservationKind(ChartSeriesKind.BoxPlot);
+        var wasRaw = _isRawBoxPlot;
         UpdateObservation(ref _boxPlots, index, value, ValidateBoxPlot);
+        if (wasRaw) ClearObservationKeys();
         return this;
     }
 
@@ -234,6 +236,6 @@ public sealed partial class ChartSeries {
     private void ObservationDataChanged(int count) {
         _renderPoints = null;
         SourcePointCount = count; SourcePointIndices = Array.Empty<int>(); DecimationMode = null;
-        if (Kind == ChartSeriesKind.BoxPlot) BoxPlotSourceSamples = Array.Empty<double>();
+        if (Kind == ChartSeriesKind.BoxPlot) ClearBoxPlotRaw();
     }
 }

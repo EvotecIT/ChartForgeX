@@ -86,7 +86,8 @@ internal static class DocVisuals {
         var share = Chart.Create().WithThemeMode(mode).WithTitle("Results").WithSubtitle("This week")
             .WithXLabels("Passed", "Warnings", "Failed").AddDonut("Checks", Points(1260, 68, 10));
         var coverage = Chart.Create().WithThemeMode(mode).WithTitle("MFA coverage").WithSubtitle("Against a 95% target")
-            .AddGauge("Coverage", 87).ConfigureGauge(options => options.Target = 95);
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("coverage"), "Coverage",
+                new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(95) })));
         var teams = Chart.Create().WithThemeMode(mode).WithTitle("Open findings").WithSubtitle("By team")
             .WithXLabels("Identity", "Network", "Endpoints", "Mail", "Data")
             .AddBar("Open", Points(14, 9, 21, 6, 11));

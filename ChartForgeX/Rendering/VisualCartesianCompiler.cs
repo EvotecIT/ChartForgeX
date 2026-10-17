@@ -68,7 +68,7 @@ internal static partial class VisualCartesianCompiler {
         if (bubbleScale == null && chart.Series.Any(series => series.Kind == ChartSeriesKind.Bubble)) bubbleScale = ChartBubbleSizeScale.Create(chart);
         var colors = context.Theme.Resolve(context.ThemeMode);
         colorScales ??= new ChartColorPresentationSet(chart);
-        viewport = ColorScaleViewport(chart, context, builder, viewport, colorScales, legendHeight);
+        viewport = NumericScaleViewport(chart, context, builder, viewport, colorScales, legendHeight, bubbleScale, out var sizeKey);
         if (!measureAxes) plot = new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, Math.Min(plot.Height, viewport.Bottom - plot.Top)));
         var coordinates = ChartBarCoordinateMap.Create(chart);
         var stacks = ChartStackLayout.Create(chart, coordinates);
@@ -109,6 +109,7 @@ internal static partial class VisualCartesianCompiler {
             }
         }
         plot = layout.Plot;
+        sizeKey?.Draw(builder, plot);
         var labelBounds = layout.LabelBounds; var axisLabels = layout.AxisLabels;
         var horizontal = layout.Horizontal; var categoryCaptions = layout.CategoryCaptions;
         var horizontalTotals = layout.HorizontalTotals; var verticalTotals = layout.VerticalTotals;
