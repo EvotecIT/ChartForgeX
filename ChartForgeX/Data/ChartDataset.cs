@@ -128,7 +128,7 @@ public sealed class ChartDataset<T> : IReadOnlyList<T> {
         return ChartDataset<ChartDataBin<T>>.From(bins);
     }
 
-    /// <inheritdoc />
+    /// <summary>Returns an enumerator over the dataset rows in insertion order.</summary>
     public IEnumerator<T> GetEnumerator() => _rows.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -1,0 +1,6 @@
+_site/
+_temp/
+_reports/
+.powerforge/pipeline-cache.json
+tools/**/bin/
+tools/**/obj/

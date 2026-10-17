@@ -1,0 +1,18 @@
+---
+title: Chart model
+---
+classDiagram
+  class Chart {
+    +string Title
+    +WithSize(width, height)
+    +ToSvg() string
+  }
+  class ChartSeries {
+    +string Name
+    +ChartPoint[] Points
+  }
+  class VisualTheme {
+    +VisualTypography Typography
+  }
+  Chart "1" *-- "many" ChartSeries : contains
+  Chart --> VisualTheme : uses

@@ -1,10 +1,13 @@
 ---
 title: "Interactive HTML"
+order: 5
 description: "Add self-contained browser interaction without changing ChartForgeX's static rendering contract."
 layout: docs
 ---
 
 Install `ChartForgeX.Interactivity.Html` when a chart or topology needs browser behavior. It provides self-contained pages for tooltips, selection, zoom, pan, brush ranges, scenarios, hierarchy navigation, SVG, Canvas, or WebGL graph rendering, and exports.
+
+{{< cfx-figure frame="/site/examples/interactive-topology.html" title="Interactive topology explorer" caption="The interactive topology example's output, running in the page: search, select a region to drill in, or switch its theme." >}}
 
 The adapter is opt in. The same underlying models can still produce script-free SVG, PNG, and static HTML for email, documentation, reports, and release artifacts.
 

@@ -15,13 +15,13 @@ public readonly struct ChartObservationId : IEquatable<ChartObservationId> {
 
     /// <summary>Gets the identifier. A default struct is invalid until constructed explicitly.</summary>
     public string Value => _value ?? throw new InvalidOperationException("An observation ID must be constructed with a nonempty value.");
-    /// <inheritdoc />
+    /// <summary>Compares two observation identities ordinally.</summary>
     public bool Equals(ChartObservationId other) => string.Equals(_value, other._value, StringComparison.Ordinal);
-    /// <inheritdoc />
+    /// <summary>Compares identities ordinally when <paramref name="obj"/> is a <see cref="ChartObservationId"/>.</summary>
     public override bool Equals(object? obj) => obj is ChartObservationId other && Equals(other);
-    /// <inheritdoc />
+    /// <summary>Returns an ordinal hash code of the identity value.</summary>
     public override int GetHashCode() => _value == null ? 0 : StringComparer.Ordinal.GetHashCode(_value);
-    /// <inheritdoc />
+    /// <summary>Returns the identity value.</summary>
     public override string ToString() => Value;
     /// <summary>Compares two authored observation identities.</summary>
     public static bool operator ==(ChartObservationId left, ChartObservationId right) => left.Equals(right);

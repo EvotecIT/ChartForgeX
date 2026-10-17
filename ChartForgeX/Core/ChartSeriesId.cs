@@ -30,13 +30,13 @@ public readonly struct ChartSeriesId : IEquatable<ChartSeriesId> {
     internal static ChartSeriesId Automatic(long sequence) => new(AutomaticPrefix + sequence.ToString(CultureInfo.InvariantCulture), true);
     internal void Validate() => _ = Value;
 
-    /// <inheritdoc />
+    /// <summary>Compares two series identities ordinally.</summary>
     public bool Equals(ChartSeriesId other) => string.Equals(_value, other._value, StringComparison.Ordinal);
-    /// <inheritdoc />
+    /// <summary>Compares identities ordinally when <paramref name="obj"/> is a <see cref="ChartSeriesId"/>.</summary>
     public override bool Equals(object? obj) => obj is ChartSeriesId other && Equals(other);
-    /// <inheritdoc />
+    /// <summary>Returns an ordinal hash code of the identity value.</summary>
     public override int GetHashCode() => _value == null ? 0 : StringComparer.Ordinal.GetHashCode(_value);
-    /// <inheritdoc />
+    /// <summary>Returns the identity value.</summary>
     public override string ToString() => Value;
     /// <summary>Compares two case-sensitive series identities.</summary>
     public static bool operator ==(ChartSeriesId left, ChartSeriesId right) => left.Equals(right);

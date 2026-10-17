@@ -1,0 +1,28 @@
+---
+title: Sign-in requirements
+---
+requirementDiagram
+direction LR
+functionalRequirement mfa_req {
+  id: "SEC-1"
+  text: Every account signs in with a strong method.
+  risk: High
+  verifymethod: Test
+}
+performanceRequirement report_req {
+  id: "OPS-4"
+  text: The weekly report renders in under a second.
+  risk: Low
+  verifymethod: Analysis
+}
+element auth_service {
+  type: service
+  docref: "Identity provider"
+}
+element report_job {
+  type: job
+  docref: "ChartForgeX report"
+}
+auth_service - satisfies -> mfa_req
+report_job - verifies -> mfa_req
+report_job - satisfies -> report_req

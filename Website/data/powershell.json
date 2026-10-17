@@ -1,0 +1,59 @@
+{
+  "intro": "ImagePlayground is the Evotec PowerShell module for visual automation. It wraps ChartForgeX, so a script can turn the objects it already has into charts, service maps, dashboards, social cards and animated terminal stories.",
+  "hero": {
+    "lede": "Charts, service maps, dashboards and animated stories from the objects your scripts already have, in Windows PowerShell 5.1 and PowerShell 7. Every script on this page ran as shown against the published module, next to the files it wrote and the console output it printed."
+  },
+  "sections": {
+    "charts": {
+      "title": "Charts from pipeline objects",
+      "body": "Each chart starts from rows a script already has: Import-Csv, Group-Object or a hashtable. The console block under every chart is what the script printed."
+    },
+    "diagrams": {
+      "title": "Maps, org charts and motion",
+      "body": "Topology and organization charts take nodes and links from data. Positions, statuses and labels come from columns, not from a drawing tool."
+    },
+    "stories": {
+      "title": "Stories and canvases",
+      "body": "Replay a terminal session for documentation, or compose a fixed-size card for link previews, from the same objects as the report."
+    }
+  },
+  "about": {
+    "title": "One module, three libraries",
+    "body": "A single Install-Module gives scripts the same .NET libraries that applications reference directly, so charts, QR codes and photo edits come from one toolset.",
+    "libraries": [
+      {
+        "name": "ChartForgeX",
+        "role": "Charts, topology, dashboards, canvases and animated stories",
+        "url": "https://chartforgex.com/"
+      },
+      {
+        "name": "CodeGlyphX",
+        "role": "QR codes, barcodes and decoding",
+        "url": "https://codeglyphx.com/"
+      },
+      {
+        "name": "OfficeIMO",
+        "role": "Image processing, metadata and pixel comparison",
+        "url": "https://officeimo.com/"
+      }
+    ],
+    "links": [
+      {
+        "title": "PowerShell Gallery",
+        "url": "https://www.powershellgallery.com/packages/ImagePlayground"
+      },
+      {
+        "title": "Command reference",
+        "url": "/powershell/commands/"
+      },
+      {
+        "title": "Project overview",
+        "url": "https://evotec.xyz/projects/imageplayground/"
+      },
+      {
+        "title": "Source",
+        "url": "https://github.com/EvotecIT/ImagePlayground"
+      }
+    ]
+  }
+}

@@ -16,7 +16,7 @@ internal static partial class SmokeTests {
         Assert(manifest.GetProperty("schemaVersion").GetInt32() == 1, "Promoted demo manifest should use the current schema version.");
         Assert(manifest.GetProperty("projectSlug").GetString() == "chartforgex", "Promoted demo manifest should identify the project slug used by the central gallery.");
         Assert(manifest.GetProperty("$schema").GetString() == "https://evotec.xyz/schemas/project-demos.schema.json", "Promoted demo manifest should reference the reusable Evotec project-demo schema.");
-        Assert(manifest.GetProperty("catalogUrl").GetString() == "https://evotec.xyz/demos/chartforgex/gallery/", "Promoted demo manifest should point readers from the curated tour to the complete catalog on the Evotec project hub.");
+        Assert(manifest.GetProperty("catalogUrl").GetString() == "https://chartforgex.com/gallery/", "Promoted demo manifest should point readers from the curated tour to the complete gallery on chartforgex.com.");
         var galleryValue = manifest.GetProperty("gallery").GetString();
         Assert(!string.IsNullOrWhiteSpace(galleryValue), "Promoted demo manifest should declare the complete gallery data file consumed by the Evotec hub.");
         Assert(File.Exists(Path.Combine(root, galleryValue!.Replace('/', Path.DirectorySeparatorChar))), "Promoted demo gallery data should exist: " + galleryValue);
@@ -79,8 +79,10 @@ internal static partial class SmokeTests {
         }
 
         using var projectManifestDocument = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "WebsiteArtifacts", "project-manifest.json")));
-        var demosPath = projectManifestDocument.RootElement.GetProperty("artifacts").GetProperty("demos").GetString();
-        Assert(demosPath == "Website/static/examples/promoted-cases.json", "Project manifest should expose the reusable promoted demo artifact explicitly.");
+        var projectManifest = projectManifestDocument.RootElement;
+        Assert(projectManifest.GetProperty("mode").GetString() == "dedicated-external", "The Evotec catalog should list ChartForgeX as an external product hosted on chartforgex.com.");
+        Assert(!projectManifest.TryGetProperty("artifacts", out _), "chartforgex.com hosts the docs, examples, API and gallery, so the project manifest should not hand them to the Evotec hub.");
+        Assert(projectManifest.GetProperty("links").GetProperty("website").GetString() == "https://chartforgex.com", "Project manifest should point the Evotec catalog at chartforgex.com.");
     }
 
     private static string ResolvePromotedDemoArtifactPath(string assetRoot, string? value, string id, string artifactName) {

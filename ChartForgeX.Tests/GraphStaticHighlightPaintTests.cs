@@ -21,7 +21,7 @@ public sealed class GraphStaticHighlightPaintTests {
         void Configure(GraphSceneStaticRenderOptions options) { options.Width = width; options.Height = height; }
         var svg = graph.ToGraphSvg(stage, Configure);
         var background = XDocument.Parse(svg).Descendants().Single(element => (string?)element.Attribute("class") == "cfx-graph-bg");
-        Assert.Equal("fill:#ffffff", (string?)background.Attribute("style"));
+        Assert.Equal("fill:var(--cfx-color-paper,#ffffff)", (string?)background.Attribute("style"));
         Assert.Null(background.Attribute("stroke"));
         Assert.DoesNotContain("<script", svg, StringComparison.OrdinalIgnoreCase);
         var raster = RasterImageDecoder.Decode(graph.ToGraphPng(stage, Configure));

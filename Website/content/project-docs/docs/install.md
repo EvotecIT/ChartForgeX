@@ -1,5 +1,6 @@
 ---
 title: "Install ChartForgeX"
+order: 2
 description: "Install the core ChartForgeX package and add optional adapters only when needed."
 layout: docs
 ---
@@ -9,6 +10,8 @@ Install the core renderer from NuGet:
 ```powershell
 dotnet add package ChartForgeX
 ```
+
+{{< cfx-figure id="install" caption="The packages and what each adds, drawn as a ChartForgeX table. Visual blocks set exact facts like these beside charts." >}}
 
 Add an optional package only for the capability the host needs:
 

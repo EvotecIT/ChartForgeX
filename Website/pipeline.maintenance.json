@@ -1,0 +1,4 @@
+{
+  "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/powerforge.web.pipelinespec.schema.json",
+  "extends": "./config/presets/pipeline.web-maintenance.json"
+}

@@ -1,0 +1,17 @@
+<section class="cfx-section cfx-beyond" aria-labelledby="cfx-beyond-title">
+  <div class="cfx-section__head">
+    <h2 id="cfx-beyond-title">More than single charts</h2>
+    <p>The same renderer lays out dashboards, network topology, maps and hierarchies, so a report keeps one look from the first chart to the last diagram.</p>
+  </div>
+  <div class="cfx-beyond__grid">
+    {{~ for tile in data.home.beyond ~}}
+    <a class="cfx-tile{{ if tile.size == "wide" }} cfx-tile--wide{{ end }}" href="{{ tile.url }}">
+      <span class="cfx-tile__media"><img src="{{ tile.image }}" width="{{ tile.width }}" height="{{ tile.height }}" loading="lazy" decoding="async" alt="{{ tile.alt }}" /></span>
+      <span class="cfx-tile__text">
+        <strong>{{ tile.title }}</strong>
+        <span>{{ tile.body }}</span>
+      </span>
+    </a>
+    {{~ end ~}}
+  </div>
+</section>

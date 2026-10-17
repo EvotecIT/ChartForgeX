@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}</head>
+<body class="cfx-body cfx-body--notfound{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-main">
+  {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = "" ~}}
+  {{ include "masthead" }}
+  <div class="cfx-page cfx-empty">
+    {{~ nf = data.visuals.notFound ~}}
+    <figure class="cfx-empty__chart">
+      <img class="cfx-only-light" src="{{ nf.base }}-light.svg" width="{{ nf.w }}" height="{{ nf.h }}" loading="eager" decoding="async" alt="An empty bar chart rendered by ChartForgeX: no pages found at this route." />
+      <img class="cfx-only-dark" src="{{ nf.base }}-dark.svg" width="{{ nf.w }}" height="{{ nf.h }}" loading="lazy" decoding="async" alt="An empty bar chart rendered by ChartForgeX: no pages found at this route." />
+      <figcaption class="cfx-empty__note">No observations at this route</figcaption>
+    </figure>
+    <div class="cfx-prose">
+{{ content }}
+    </div>
+  </div>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+</body>
+</html>

@@ -33,7 +33,7 @@ public sealed class V2FrameTypographyTests {
         var lineText = Heading(line); var donutText = Heading(donut);
         Assert.Equal(lineText.ToString(), donutText.ToString());
         Assert.Equal("24", lineText.Attribute("font-size")!.Value);
-        Assert.Equal("Missing frame test font", lineText.Attribute("font-family")!.Value);
+        Assert.Equal("Missing frame test font, sans-serif", lineText.Attribute("font-family")!.Value);
         Assert.Equal("#7923A1", lineText.Attribute("fill")!.Value, ignoreCase: true);
         Assert.Contains(XDocument.Parse(line.ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "text-decoration");
         Assert.True(double.Parse(lineText.Attribute("x")!.Value, System.Globalization.CultureInfo.InvariantCulture) > 100);
