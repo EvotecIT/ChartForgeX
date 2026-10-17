@@ -42,6 +42,10 @@ $manifestIds = @(
         [string]$example.id
     }
 )
+$unknownIds = @($Id | Where-Object { $_ -cnotin $manifestIds } | Select-Object -Unique)
+if ($unknownIds.Count -gt 0) {
+    throw "Unknown example id(s): $($unknownIds -join ', '). Choose an id from Website/powershell/examples.json."
+}
 
 if (-not $ModulePath) {
     $installed = Get-Module ImagePlayground -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1

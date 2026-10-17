@@ -5,7 +5,7 @@
     {
       "task": "llms",
       "id": "build-llms",
-      "dependsOn": "build-site",
+      "dependsOn": ["build-site", "build-apidocs", "build-powershell-commands"],
       "siteRoot": "./_site",
       "name": "ChartForgeX",
       "packageId": "ChartForgeX",
