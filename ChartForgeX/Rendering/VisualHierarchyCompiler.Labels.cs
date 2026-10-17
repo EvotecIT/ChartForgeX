@@ -35,7 +35,7 @@ internal static partial class VisualHierarchyCompiler {
         bool shortened = lines.Length > count;
         for (int i = 0; i < Math.Min(count, lines.Length); i++) {
             string line = lines[i];
-            if (i == count - 1 && lines.Length > count) line += "...";
+            if (i == count - 1 && lines.Length > count) line += "…";
             string result = ChartTextFitting.TrimEnd(line, style.EffectiveFontSize, width, (value, _) => builder.MeasureText(value, style).Width);
             shortened |= result != line; fitted.Add(result);
         }

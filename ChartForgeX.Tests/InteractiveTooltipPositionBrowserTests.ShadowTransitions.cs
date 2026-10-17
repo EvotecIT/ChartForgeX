@@ -97,8 +97,10 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         Assert.True(early.GetProperty("source").GetProperty("right").GetDouble() > early.GetProperty("clip").GetProperty("left").GetDouble());
         Assert.False(early.GetProperty("hidden").GetBoolean());
         await CaptureAsync(page, "transition-closed-shadow-early", early, session);
-        await page.WaitForFunctionAsync("() => { const f=transitionFacts(); return f.source.left<f.clip.left && f.source.right>f.clip.left; }");
-        var partial = await page.EvaluateAsync<JsonElement>("() => transitionFacts()");
+        // Capture paint and geometry in the frame that first observes partial clipping. The host may
+        // resume after the transition has ended, so a second evaluation cannot describe that frame.
+        await using var partialState = await page.WaitForFunctionAsync("() => { const f=transitionFacts(); return f.source.left<f.clip.left && f.source.right>f.clip.left ? f : false; }");
+        var partial = await partialState.JsonValueAsync<JsonElement>();
         Assert.False(partial.GetProperty("hidden").GetBoolean());
         await CaptureAsync(page, "transition-closed-shadow-partial", partial, session);
         await page.WaitForFunctionAsync("() => transitionEvents.native > 0");

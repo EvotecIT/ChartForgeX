@@ -14,6 +14,48 @@ public sealed class CaptionLayoutRegressionTests {
     [Theory]
     [InlineData(400, 280, VisualThemeMode.Light)]
     [InlineData(400, 280, VisualThemeMode.Dark)]
+    [InlineData(800, 440, VisualThemeMode.Light)]
+    [InlineData(800, 440, VisualThemeMode.Dark)]
+    public void TreemapCatalogPreservesCompleteNamesInItsActualNestedCells(int width, int height, VisualThemeMode mode) {
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Treemap, "wide", mode);
+        var context = Context(width, height, mode, null, 16);
+        if (width == 800) context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode,
+            new VisualFrame(V2GalleryModels.Title(ChartSeriesKind.Treemap), "Explore the data, then download the chart"), FontSpec.FromFamily(ProofFont));
+        var prepared = chart.Prepare(context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"caption-treemap-catalog-{width}-{mode}");
+        var document = XDocument.Parse(prepared.ToSvg());
+        var leaves = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "treemap-tile").ToArray();
+        Assert.Equal(7, leaves.Length);
+        foreach (var leaf in leaves) {
+            var name = (string)leaf.Attribute("data-cfx-full-label")!;
+            var caption = Assert.Single(leaf.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "treemap-label");
+            var displayed = string.Join(" ", caption.DescendantsAndSelf().Where(element => element.Name.LocalName == "text").Select(element => element.Value));
+            Assert.StartsWith(name, displayed, StringComparison.Ordinal);
+            Assert.DoesNotContain("…", displayed);
+            Assert.False(string.IsNullOrEmpty((string?)leaf.Attribute("data-cfx-formatted-value")));
+        }
+        Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role is "treemap-label" or "treemap-group-label"),
+            label => Assert.True(label.Text.Size >= (width == 400 ? 13.5 : 12)));
+        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    [Fact]
+    public void TreemapOmitsAnUnfittingCompleteNameWhileKeepingItsMarkAndSourceFacts() {
+        const string name = "A service name that cannot fit in a tiny cell";
+        var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] { new ChartHierarchyItem("service", name, value: 125) });
+        var prepared = chart.Prepare(Context(40, 32, VisualThemeMode.Light, false, 0));
+        Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "treemap-label");
+        Assert.Contains(prepared.Scene.Nodes, node => node.Role == "treemap-tile-mark");
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
+        var source = XDocument.Parse(prepared.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-target-id") == "service");
+        Assert.Equal(name, (string?)source.Attribute("data-cfx-full-label"));
+        Assert.Equal("125", (string?)source.Attribute("data-cfx-formatted-value"));
+        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    [Theory]
+    [InlineData(400, 280, VisualThemeMode.Light)]
+    [InlineData(400, 280, VisualThemeMode.Dark)]
     [InlineData(640, 400, VisualThemeMode.Light)]
     [InlineData(640, 400, VisualThemeMode.Dark)]
     public void ProgressRingCenterReservesItsCompleteCaptionWithinTheMeasuredCircularHole(int width, int height, VisualThemeMode mode) {
@@ -67,7 +109,7 @@ public sealed class CaptionLayoutRegressionTests {
     }
 
     [Fact]
-    public void TreemapKeepsItsValueWhenOnlyTwoCaptionRowsFit() {
+    public void TreemapGivesItsValueRowToTheCompletePrimaryCaptionWhenOnlyTwoRowsFit() {
         var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
             new ChartHierarchyItem("service", "Service team", value: 125)
         });
@@ -75,14 +117,34 @@ public sealed class CaptionLayoutRegressionTests {
         ScatterBubbleColorRenderingTests.Capture(prepared, "caption-treemap-short-height");
         var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "treemap-label");
         Assert.Equal(2, caption.Text.Lines.Count);
-        Assert.EndsWith("…", caption.Text.Lines[0].Text);
-        Assert.Equal("125", caption.Text.Lines[1].Text);
+        Assert.Equal(new[] { "Service", "team" }, caption.Text.Lines.Select(line => line.Text));
         var tile = Assert.Single(prepared.Regions, region => region.Role == "treemap-tile");
         Assert.Equal("Service team: 125", tile.Label);
         Assert.True(caption.Baseline - caption.Text.Ascent + caption.Text.Metrics.Height <= tile.Bounds.Bottom);
+        var source = XDocument.Parse(prepared.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-target-id") == "service");
+        Assert.Equal("125", (string?)source.Attribute("data-cfx-formatted-value"));
+        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 
-    private static VisualRenderContext Context(int width, int height, VisualThemeMode mode, bool legend, double padding) {
+    [Theory]
+    [InlineData(400, 280, VisualThemeMode.Light)]
+    [InlineData(400, 280, VisualThemeMode.Dark)]
+    [InlineData(800, 440, VisualThemeMode.Light)]
+    [InlineData(800, 440, VisualThemeMode.Dark)]
+    public void SunburstOmitsAnUnfittingCaptionRatherThanPaintingAnIncompleteName(int width, int height, VisualThemeMode mode) {
+        var prepared = SunburstRecipe.Create().Prepare(Context(width, height, mode, true, 14));
+        ScatterBubbleColorRenderingTests.Capture(prepared, $"caption-sunburst-{width}-{mode}");
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "sunburst-label").ToArray();
+        Assert.NotEmpty(labels);
+        Assert.All(labels, label => Assert.DoesNotContain("…", string.Join(" ", label.Text.Lines.Select(line => line.Text))));
+        if (width == 800) Assert.Equal(new[] { "All teams", "Engineering", "Operations", "Platform", "Support", "Support" }.OrderBy(name => name),
+            labels.Select(label => string.Join(" ", label.Text.Lines.Select(line => line.Text))).OrderBy(name => name));
+        var source = XDocument.Parse(prepared.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-target-id") == "engineering");
+        Assert.Equal("Engineering", (string?)source.Attribute("data-cfx-full-label"));
+        Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    private static VisualRenderContext Context(int width, int height, VisualThemeMode mode, bool? legend, double padding) {
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         foreach (var (file, weight) in new[] { ("Carlito-Regular.ttf", 400), ("Carlito-Bold.ttf", 700) }) {
             var path = Path.Combine(fonts, file);

@@ -9,6 +9,8 @@ namespace ChartForgeX.Core;
 public sealed class ChartAnnotation {
     // Statistical helpers describe source Y values; preparation resolves their physical axis.
     internal bool FollowsSeriesValueAxis { get; set; }
+    // Default reference lines follow the prepared theme; explicitly authored colors remain authoritative.
+    internal bool UsesThemeColor { get; set; }
 
     /// <summary>
     /// Gets the annotation kind.

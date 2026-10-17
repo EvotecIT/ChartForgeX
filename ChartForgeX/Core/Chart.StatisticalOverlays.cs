@@ -55,7 +55,10 @@ public sealed partial class Chart {
 
     private Chart AddStatisticalAnnotation(double value, double? endValue, string label, ChartColor? color, double opacity) {
         var kind = endValue.HasValue ? ChartAnnotationKind.HorizontalBand : ChartAnnotationKind.HorizontalLine;
-        Annotations.Add(new ChartAnnotation(kind, value, endValue, label, color ?? Options.ResolvedTheme.Axis, opacity) { FollowsSeriesValueAxis = true });
+        Annotations.Add(new ChartAnnotation(kind, value, endValue, label,
+            color ?? (endValue.HasValue ? Options.ResolvedTheme.Axis : Options.ResolvedTheme.Text2), opacity) {
+            FollowsSeriesValueAxis = true, UsesThemeColor = !color.HasValue && !endValue.HasValue
+        });
         return this;
     }
 

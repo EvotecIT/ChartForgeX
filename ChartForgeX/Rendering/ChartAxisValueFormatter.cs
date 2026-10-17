@@ -36,7 +36,7 @@ internal static class ChartAxisValueFormatter {
         var formatter = axis.LabelFormatter ?? fallbackFormatter;
         if (formatter != null) return formatter(value) ?? string.Empty;
         if (axis.Scale == ChartScaleKind.Time && ticks != null && ChartTicks.IsNumericTimeFallback(ticks)) return value.ToString("G17", System.Globalization.CultureInfo.InvariantCulture);
-        if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Format(axis, value);
+        if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.FormatTick(axis, value, ticks);
         return ChartNumericFormatter.FormatCompactAxisValue(value);
     }
 

@@ -6,6 +6,8 @@ This is the active product roadmap. The [README](README.md) introduces the libra
 
 Assessment refreshed on 17 October 2026. The shared native renderer and package separation are implemented. The nine coordinated 2.0.0 package IDs were verified on NuGet during the earlier assessment; that does not establish that later source changes are published or that every downstream host has migrated. The unified authoring contracts use the coordinated 3.0.0 package family.
 
+Calendar axes leave measured gaps between complete captions, prefer coarser full dates over denser compact captions, preserve an authored tick-count ceiling and keep regular time-bar captions on their observations. Compact default dates use culture-neutral numeric forms. Automatic Gantt axes preserve their regular project-relative calendar phase after label fitting; successful authored intervals keep their own grid. Short threshold captions can use a leader and the available margin; default reference lines remain distinct from the grid. Hierarchy labels give the complete primary name priority over its value, and map keys separate missing data from quantitative ramp values. Broader whole-chart acceptance remains part of the work below.
+
 | Area | Implemented foundation | Remaining work |
 | --- | --- | --- |
 | Rendering and ownership | Typed models prepare a detached scene for SVG/native PNG; common frame, theme, typography, labels, semantic regions, and artifact handoff; runtime-dependency-free core across four target frameworks | Complete downstream migration of the unified contracts; whole-chart visual fidelity needs stronger independent proof |
@@ -70,6 +72,7 @@ Measured compact layouts select readable Cartesian and schedule ticks before pai
 - [ ] Complete useful existing-family depth before adding headline names: BoxPlot IQR/outlier/statistic policies, Bubble size keys, gauge orientation/sweep/ticks/targets, hierarchy label fitting/padding, mixed radial projections, and horizontal/secondary-axis combinations.
 - [ ] Extend the existing color-scale owner with arbitrary interior captions and independent Chord quantitative color where required. Preserve raw color facts, missing-value behavior, identity, and independent Bubble size.
 - [ ] Add deliberate Sankey tiny-flow and hierarchy fitting policies only when actual compact data requires them. Preserve proportional weights, conservation, authored parent totals, source identity, and readable captions.
+- [ ] Improve Sunburst inner-ring names with arc placement or wrapping before omission; anchor multi-day calendar steps to a fixed phase across linked windows; align map Less/More captions with the ramp endpoints.
 - [ ] Keep chart look choices in shared geometry/paint/label/theme owners. Palette changes must not select different renderer implementations. Preserve explicit effect styles and qualify small-label contrast, theme switching, and mixed-grid export density.
 - [ ] Review complete report examples with chart grids and factual blocks, including host/embed frames and print. Keep page shells, collection, filters, and inspectors in consuming products; keep reusable block/composition behavior in Visuals and motion in Stories.
 

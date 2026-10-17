@@ -52,18 +52,16 @@ internal static partial class VisualCartesianCompiler {
     private static (ChartAxis Value, ChartAxis Category) HorizontalAxes(Chart chart, AxisLabelCache cache) {
         if (cache.HorizontalValueAxis != null) return (cache.HorizontalValueAxis, cache.HorizontalCategoryAxis!);
         var x = chart.Options.XAxis; var y = chart.Options.YAxis;
-        var valueAxis = new ChartAxis { Scale = x.Scale, TickCount = x.TickCount, LabelAngle = x.LabelAngle,
-            LabelDensity = x.LabelDensity, SymmetricLogarithmThreshold = x.SymmetricLogarithmThreshold,
-            TimeZone = x.TimeZone, TimeZoneLabel = x.TimeZoneLabel, ShowTimeZone = x.ShowTimeZone,
-            // Chart-wide numeric formatting is passed as the native axis fallback.
-            // Keep it distinct from an authored axis policy so readouts can reuse
-            // captured values without eagerly invoking a lazy data-label callback.
-            ValueFormat = x.ValueFormat };
+        var valueAxis = x.Clone();
+        valueAxis.Labels.Clear();
+        // Chart-wide numeric formatting is passed as the native axis fallback.
+        // Keep it distinct from an authored axis policy so readouts can reuse
+        // captured values without eagerly invoking a lazy data-label callback.
         var waterfall = chart.Series.Any(series => series.Kind == ChartSeriesKind.Waterfall);
         var legacyCategories = ChartCartesianOrientation.UsesLegacyCategoryLabels(chart);
-        var categoryAxis = new ChartAxis { Scale = y.Scale, TickCount = y.TickCount, LabelAngle = y.LabelAngle, LabelDensity = y.LabelDensity,
-            TimeZone = y.TimeZone, TimeZoneLabel = y.TimeZoneLabel, ShowTimeZone = y.ShowTimeZone,
-            ValueFormat = y.ValueFormat ?? (legacyCategories && !waterfall ? x.ValueFormat : null) };
+        var categoryAxis = y.Clone();
+        categoryAxis.Labels.Clear();
+        if (y.ValueFormat == null && legacyCategories && !waterfall) categoryAxis.ValueFormat = x.ValueFormat;
         if (!legacyCategories) foreach (var label in x.Labels) valueAxis.Labels.Add(label);
         var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
         foreach (var label in categoryLabels) categoryAxis.Labels.Add(label);

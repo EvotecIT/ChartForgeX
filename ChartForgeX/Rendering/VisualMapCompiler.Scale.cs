@@ -16,7 +16,7 @@ internal static partial class VisualMapCompiler {
         if (chart.Options.MapColorScale is ChartColorScale scale && !MapHasDomain(chart, scale, min, max))
             return MissingScaleLayout(chart, context, builder, plot, presentation);
         var texts = ResolveScaleCaptions(chart, min, max, presentation);
-        if (legendInset != null) return new MapLayout(legendInset.Map, legendInset.ColorKey, texts, false, true, true);
+        if (legendInset != null) return new MapLayout(legendInset.Map, legendInset.ColorKey, texts, false, inset: true, missingDataKey: legendInset.MissingDataKey);
         var style = TickStyle(chart, context); var gap = context.Theme.Spacing;
         var title = presentation.HasName ? presentation.Name : chart.Series[0].Name;
         var height = texts.Concat(new[] { "Mg", title, presentation.NoData })
@@ -28,14 +28,13 @@ internal static partial class VisualMapCompiler {
                 new ChartRect(plot.Right - width, plot.Top, width, plot.Height), texts, true);
         }
         var missingWidth = height * .7 + 4 + builder.MeasureText(presentation.NoData, style).Width;
-        // A measured missing-data item can share the endpoint-caption row. This retains both the numeric key
-        // and readable map cells in compact views without a thumbnail-specific legend suppression.
+        // A compact missing-data item uses its own trailing column, outside the quantitative ramp.
         var inlineMissing = !presentation.HasName && ChartHeatmapSurface.MapMidpointLabel(chart) == null && HasMissingMapValues(chart)
-            && Math.Max(builder.MeasureText(texts[0], style).Width, builder.MeasureText(texts[2], style).Width) / 2
-                + missingWidth / 2 + gap <= plot.Width / 4;
+            && 2 * Math.Max(builder.MeasureText(texts[0], style).Width, builder.MeasureText(texts[2], style).Width)
+                + missingWidth + gap <= plot.Width;
         // An inline key needs one measured caption row and a half-row color ramp. Keep its map separation
         // proportional to that compact key, so a readable key does not consume another full row of tile codes.
-        var reserve = Math.Min(plot.Height * .35, inlineMissing ? height * 1.5
+        var reserve = Math.Min(plot.Height * .35, inlineMissing ? height * 2
             : height * (ChartHeatmapSurface.MapMidpointLabel(chart) != null ? 4 : 3) + gap * 2
                 + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null));
         return new MapLayout(new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, plot.Height - reserve - (inlineMissing ? gap / 4 : gap))),
@@ -76,7 +75,8 @@ internal static partial class VisualMapCompiler {
             ["data-cfx-midpoint-value"] = N(ChartHeatmapSurface.MapScaleMidpoint(chart, min, max))
         };
         if (presentation.LegendStyle != ChartColorLegendStyle.Auto) metadata["data-cfx-legend-style"] = presentation.LegendStyle.ToString().ToLowerInvariant();
-        using (builder.PushGroup("map-scale", "map-scale", metadata)) using (builder.PushClip(area)) {
+        var clip = layout.MissingDataKey.HasValue ? new ChartRect(area.Left, layout.MissingDataKey.Value.Top, area.Width, area.Bottom - layout.MissingDataKey.Value.Top) : area;
+        using (builder.PushGroup("map-scale", "map-scale", metadata)) using (builder.PushClip(clip)) {
             if (scale != null) VisualColorScaleLegendScene.PositionedStops(builder, scale, area, "map-scale",
                 presentation.ScaleValues, presentation.HasOverrides ? presentation.Name : null);
             if (layout.Right) {
@@ -105,11 +105,15 @@ internal static partial class VisualMapCompiler {
                     Intersect(new ChartRect(area.Left + swatchWidth + gap, centers[index] - labelHeight / 2, textWidth, labelHeight), area), style, "map-scale-label", "map-scale-label-" + index);
                 if (missing) MissingScale(chart, builder, colors, Intersect(new ChartRect(area.Left, area.Bottom - row, area.Width, row), area), style, row, presentation.NoData);
             } else {
-                ChartRect? inlineMissing = null;
+                ChartRect? inlineMissing = layout.MissingDataKey;
+                if (missing && inlineMissing.HasValue) MissingScale(chart, builder, colors, inlineMissing.Value, style, row, presentation.NoData);
                 if (layout.InlineMissing) {
                     var width = row * .7 + 4 + builder.MeasureText(presentation.NoData, style).Width;
-                    inlineMissing = new ChartRect(area.Left + (area.Width - width) / 2, area.Top, width, row);
+                    // Its swatch and caption sit after the ramp, with their center on the color strip.
+                    // Low/high captions retain their own ramp-relative anchors in the remaining column.
+                    inlineMissing = new ChartRect(area.Right - width, area.Top + row * .85, width, Math.Min(row, Math.Max(0, area.Height - row * .85)));
                     MissingScale(chart, builder, colors, inlineMissing.Value, style, row, presentation.NoData);
+                    area = new ChartRect(area.Left, area.Top, Math.Max(0, area.Width - width - gap), area.Height);
                 }
                 if (presentation.HasName) {
                     var heading = Math.Min(area.Height, VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.Name));
@@ -185,11 +189,12 @@ internal static partial class VisualMapCompiler {
     }
 
     private sealed class MapLayout {
-        internal MapLayout(ChartRect map, ChartRect scale, string[] texts, bool right, bool inlineMissing = false, bool inset = false) {
-            Map = map; Scale = scale; Texts = texts; Right = right; InlineMissing = inlineMissing; Inset = inset;
+        internal MapLayout(ChartRect map, ChartRect scale, string[] texts, bool right, bool inlineMissing = false, bool inset = false, ChartRect? missingDataKey = null) {
+            Map = map; Scale = scale; Texts = texts; Right = right; InlineMissing = inlineMissing; Inset = inset; MissingDataKey = missingDataKey;
         }
         internal ChartRect Map { get; } internal ChartRect Scale { get; } internal string[] Texts { get; } internal bool Right { get; }
         internal bool InlineMissing { get; }
         internal bool Inset { get; }
+        internal ChartRect? MissingDataKey { get; }
     }
 }
