@@ -1,4 +1,4 @@
-name: Validate Website and Apply Cloudflare Policy
+name: Deploy Website to GitHub Pages
 
 on:
   push:
@@ -28,30 +28,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  website-deploy:
+    if: ${{ github.ref == 'refs/heads/main' }}
     permissions:
       actions: write
       contents: read
+      deployments: read
       packages: read
-    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-run.yml@77a10b3d2b8cf3608d5b08747f273ae38e055479
+      pages: write
+      id-token: write
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-deploy.yml@77a10b3d2b8cf3608d5b08747f273ae38e055479
     with:
       website_root: Website
       pipeline_config: Website/pipeline.json
       source_ref: ${{ github.sha }}
+      site_output_path: Website/_site
       engine_mode: source
       runner_labels_json: '["ubuntu-latest"]'
-      timeout_minutes: 60
+      build_timeout_minutes: 60
       powerforge_repository: EvotecIT/PSPublishModule
       powerforge_ref: 77a10b3d2b8cf3608d5b08747f273ae38e055479
       report_artifact_name: chartforgex-website-deploy-reports
-      site_artifact_name: powerforge-site-chartforgex.com
-      site_artifact_retention_days: 7
+      deployment_target: github-pages
     secrets:
       indexnow_key: ${{ secrets.INDEXNOW_KEY }}
 
   site-policy:
-    needs: build
-    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: website-deploy
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production
@@ -60,8 +63,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ needs.build.outputs.source_sha }}
 
       - name: Apply managed Cloudflare site policy
         uses: EvotecIT/PSPublishModule/.github/actions/powerforge-cloudflare-site-policy@77a10b3d2b8cf3608d5b08747f273ae38e055479
