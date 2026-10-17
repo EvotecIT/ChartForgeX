@@ -166,6 +166,21 @@ public sealed class VisualCanvasTileTypographyTests {
         Assert.True(layout.Metrics.IconBox < 24);
     }
 
+    [Fact]
+    public void SmallRequestedScaleKeepsItsIconSizeWhenTextMustShrink() {
+        var canvas = VisualCanvas.Create(320, 80).AddInfoTileWithTextOptions(
+            8, 8, 304, 36, string.Empty, "HOSTNAME",
+            "A long host value that needs extra room to fit in the tile",
+            new VisualCanvasInfoTileTextOptions(textScale: 0.5),
+            "Windows workstation");
+        var tile = (VisualCanvasInfoTileLayer)canvas.Layers[0];
+        var layout = VisualCanvasInfoTileTextLayout.CalculateLayout(tile,
+            canvas.ResolveStyle());
+
+        Assert.True(layout.Text.WasScaledDown);
+        Assert.True(layout.Metrics.IconBox < 24);
+    }
+
     [Theory]
     [InlineData(1.5)]
     [InlineData(4)]

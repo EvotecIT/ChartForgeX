@@ -107,7 +107,8 @@ internal static class VisualCanvasInfoTileTextLayout {
         ResolvedVisualCanvasStyle theme) {
         var metrics = CalculateMetrics(tile, theme);
         var text = BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme);
-        if (text.WasScaledDown && metrics.IconBox < 24) {
+        var requestedScale = tile.TextScale ?? theme.TileTextScale;
+        if (requestedScale >= 1 && text.WasScaledDown && metrics.IconBox < 24) {
             metrics = CalculateMetrics(tile, theme, preserveFallbackIcon: true);
             text = BuildResult(tile, metrics.Y, metrics.Height, metrics.TextX, metrics.TextMax, theme);
         }
