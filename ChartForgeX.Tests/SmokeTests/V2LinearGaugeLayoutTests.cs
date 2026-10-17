@@ -2,6 +2,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -53,21 +54,38 @@ public sealed class V2LinearGaugeLayoutTests {
         Assert.True(prepared.ToPng().Length > 64);
     }
 
-    [Fact]
-    public void HeightConstrainedLinearGaugeRetainsItsMeasurementInsteadOfPaintingAMicroscopicDefault() {
+    [Theory]
+    [InlineData(70, true)]
+    [InlineData(58, false)]
+    public void HeightConstrainedLinearGaugeRetainsItsMeasurementInsteadOfPaintingAMicroscopicDefault(double height, bool trackFits) {
         var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
             new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(options => options.Form = ChartGaugeForm.Linear);
-        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(180, 58), 0));
+        var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        Assert.True(File.Exists(font), "A controlled face distinguishes a missing summary row from an entirely insufficient viewport.");
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(180, height), 0), font: FontSpec.FromFile(font));
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
-        VisualGaugeCompiler.Build(chart, context, builder, new ChartRect(0, 0, 180, 58));
+        VisualGaugeCompiler.Build(chart, context, builder, new ChartRect(0, 0, 180, height));
         var scene = builder.Build();
+        var source = Assert.Single(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "gauge");
+        Assert.Equal("87", source.Metadata["data-cfx-value"]);
+        Assert.Equal("90", source.Metadata["data-cfx-gauge-target-0-value"]);
+        Assert.Contains(scene.Regions, region => region.Role == "gauge" && region.Label == "Readiness: 87");
+        Assert.Contains(scene.Regions, region => region.Role == "gauge-reference" && region.Label == "90");
+        Assert.DoesNotContain(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "gauge-label");
+        if (!trackFits) {
+            Assert.DoesNotContain(scene.Nodes, node => node.Role is "gauge-track" or "gauge-target" or "gauge-value");
+            Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "gauge.insufficient-space");
+            return;
+        }
+        // The two full-size footer rows fit at 70px, while the scalar summary still cannot fit.
+        Assert.DoesNotContain(scene.Diagnostics, diagnostic => diagnostic.Code == "gauge.insufficient-space");
         Assert.Contains(scene.Nodes, node => node.Role == "gauge-track");
         Assert.Contains(scene.Nodes, node => node.Role == "gauge-target");
         Assert.Contains(scene.Regions, region => region.Role == "gauge-label" && region.Label == "87");
-        Assert.DoesNotContain(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "gauge-label");
         Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
-        var source = Assert.Single(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "gauge");
-        Assert.Equal("87", source.Metadata["data-cfx-value"]);
+        var footer = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role is "gauge-min-label" or "gauge-max-label" or "gauge-target-label").ToArray();
+        Assert.Equal(3, footer.Length);
+        Assert.All(footer, text => Assert.Equal(context.Theme.Typography.AxisSize, text.Text.Size));
     }
 
     [Fact]
