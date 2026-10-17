@@ -15916,7 +15916,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 20
     },
     {
       "id": "family-gantt-wide-dark",
@@ -15984,7 +15984,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 20
     },
     {
       "id": "family-sankey-wide-light",
@@ -16579,14 +16579,12 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -16626,7 +16624,6 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -16635,8 +16632,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -16673,14 +16669,12 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -16720,7 +16714,6 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -16729,8 +16722,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -16835,14 +16827,12 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -16882,7 +16872,6 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -16891,8 +16880,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -16929,14 +16917,12 @@
       "diagnostics": [
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -16976,7 +16962,6 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
@@ -16985,8 +16970,7 @@
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
         "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was shortened to fit its segment; complete text remains in source semantics."
+        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17700,12 +17684,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "hierarchy.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 17
     },
     {
@@ -17743,20 +17723,14 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 17
     },
@@ -17828,7 +17802,7 @@
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 13
     },
@@ -17862,12 +17836,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "hierarchy.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 17
     },
     {
@@ -17900,12 +17870,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "hierarchy.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 17
     },
     {
@@ -17943,20 +17909,14 @@
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics.",
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics.",
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 17
     },
@@ -18028,7 +17988,7 @@
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
+        "A treemap value was omitted to preserve its complete primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 13
     },
@@ -18062,12 +18022,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "hierarchy.label-overflow"
-      ],
-      "diagnosticMessages": [
-        "A hierarchy label was shortened to fit its mark; complete text remains in source semantics."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 17
     },
     {
@@ -22406,7 +22362,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 27
     },
     {
       "id": "family-difference-area-step-start-light",
@@ -22680,7 +22636,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 27
     },
     {
       "id": "family-difference-area-step-start-dark",
