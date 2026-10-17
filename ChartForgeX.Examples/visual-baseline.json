@@ -4880,9 +4880,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 1002,
+      "width": 1059,
       "height": 560,
-      "logicalWidth": 1002.0,
+      "logicalWidth": 1059.0,
       "logicalHeight": 560.0,
       "svg": {
         "minVisualNodes": 11,
@@ -4891,9 +4891,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 280560,
+        "minVisiblePixels": 296520,
         "minTransparentPixels": 0,
-        "minDistinctColors": 277,
+        "minDistinctColors": 308,
         "maxEdgeInkPixels": 0
       }
     },
@@ -4953,9 +4953,9 @@
         "frameFontFingerprint": "0D0D556327E2D43D53FDF08EE21307294160A0B2CFFA09CA56E0F706731C57F6"
       },
       "width": 960,
-      "height": 644,
+      "height": 668,
       "logicalWidth": 960.0,
-      "logicalHeight": 644.1,
+      "logicalHeight": 668.1,
       "svg": {
         "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
@@ -4963,7 +4963,7 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 309600,
+        "minVisiblePixels": 321120,
         "minTransparentPixels": 0,
         "minDistinctColors": 347,
         "maxEdgeInkPixels": 0
@@ -4976,9 +4976,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 1002,
+      "width": 1059,
       "height": 560,
-      "logicalWidth": 1002.0,
+      "logicalWidth": 1059.0,
       "logicalHeight": 560.0,
       "svg": {
         "minVisualNodes": 12,
@@ -4987,9 +4987,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 280560,
+        "minVisiblePixels": 296520,
         "minTransparentPixels": 0,
-        "minDistinctColors": 331,
+        "minDistinctColors": 370,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5000,9 +5000,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 1420,
+      "width": 1530,
       "height": 320,
-      "logicalWidth": 1420.0,
+      "logicalWidth": 1530.0,
       "logicalHeight": 320.0,
       "svg": {
         "minVisualNodes": 32,
@@ -5011,9 +5011,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 227200,
+        "minVisiblePixels": 244800,
         "minTransparentPixels": 0,
-        "minDistinctColors": 247,
+        "minDistinctColors": 355,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5024,9 +5024,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 640,
+      "width": 787,
       "height": 510,
-      "logicalWidth": 640.0,
+      "logicalWidth": 787.0,
       "logicalHeight": 510.0,
       "svg": {
         "minVisualNodes": 23,
@@ -5035,9 +5035,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 163200,
+        "minVisiblePixels": 200685,
         "minTransparentPixels": 0,
-        "minDistinctColors": 361,
+        "minDistinctColors": 375,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5048,9 +5048,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 766,
+      "width": 1033,
       "height": 320,
-      "logicalWidth": 766.0,
+      "logicalWidth": 1033.0,
       "logicalHeight": 320.0,
       "svg": {
         "minVisualNodes": 11,
@@ -5059,9 +5059,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 122560,
+        "minVisiblePixels": 165280,
         "minTransparentPixels": 0,
-        "minDistinctColors": 272,
+        "minDistinctColors": 294,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6729,9 +6729,9 @@
         "frameFontFingerprint": "0D0D556327E2D43D53FDF08EE21307294160A0B2CFFA09CA56E0F706731C57F6"
       },
       "width": 960,
-      "height": 644,
+      "height": 668,
       "logicalWidth": 960.0,
-      "logicalHeight": 644.1,
+      "logicalHeight": 668.1,
       "svg": {
         "minVisualNodes": 12,
         "maxClippedTextNodes": 0,
@@ -6739,9 +6739,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 309600,
+        "minVisiblePixels": 321120,
         "minTransparentPixels": 0,
-        "minDistinctColors": 328,
+        "minDistinctColors": 327,
         "maxEdgeInkPixels": 0
       }
     },
@@ -8830,6 +8830,54 @@
         "minVisiblePixels": 330400,
         "minTransparentPixels": 0,
         "minDistinctColors": 1212,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-canvas-tile-text-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1200,
+      "height": 630,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 630.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 378000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1353,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "visual-canvas-tile-text-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1200,
+      "height": 630,
+      "logicalWidth": 1200.0,
+      "logicalHeight": 630.0,
+      "svg": {
+        "minVisualNodes": 16,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 378000,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 1264,
         "maxEdgeInkPixels": 0
       }
     },

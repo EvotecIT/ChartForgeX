@@ -8,8 +8,17 @@ namespace ChartForgeX.Composition;
 /// <summary>Canvas-specific presentation overrides. Unassigned colors and fonts come from <see cref="VisualTheme"/>.</summary>
 public sealed class VisualCanvasStyleOptions {
     private TextMeasurementMode _textMeasurementMode;
+    private double _tileTextScale = 1;
     /// <summary>Chooses portable text measurement or an explicit host-font opt-in.</summary>
     public TextMeasurementMode TextMeasurementMode { get => _textMeasurementMode; set { VisualCanvas.ValidateEnum(value, nameof(value)); _textMeasurementMode = value; } }
+    /// <summary>Scales information-tile typography and its supporting layout when a tile has no explicit scale.</summary>
+    public double TileTextScale {
+        get => _tileTextScale;
+        set {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) throw new ArgumentOutOfRangeException(nameof(value));
+            _tileTextScale = value;
+        }
+    }
     /// <summary>Overrides the top glass-tile paint.</summary>
     public ChartColor? TileGlassTop { get; set; }
     /// <summary>Overrides the bottom glass-tile paint.</summary>
@@ -72,6 +81,8 @@ public sealed partial class VisualCanvas {
         style ??= new VisualCanvasStyleOptions();
         return new ResolvedVisualCanvasStyle {
             FontFamily = theme.Typography.Family, MonospaceFontFamily = theme.Typography.MonospaceFamily,
+            TileLabelSize = theme.Typography.TileLabelSize, TileValueSize = theme.Typography.TileValueSize,
+            TileDetailSize = theme.Typography.TileDetailSize, TileTextScale = style.TileTextScale,
             TextMeasurementMode = style.TextMeasurementMode,
             Accent = colors.Accent, SecondaryAccent = colors.SecondaryAccent,
             HeroTitleColor = colors.Foreground, HeroTitleAccentColor = colors.Accent,

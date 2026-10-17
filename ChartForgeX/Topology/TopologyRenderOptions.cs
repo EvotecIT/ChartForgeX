@@ -125,7 +125,7 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether the SVG should include responsive sizing style.</summary>
     public bool UseResponsiveSvg { get; set; } = true;
 
-    /// <summary>Gets or sets whether rendered topology content should scale down to remain inside the requested viewport instead of expanding it.</summary>
+    /// <summary>Gets or sets whether rendered topology content should be uniformly fitted to the requested viewport.</summary>
     public bool FitContentToViewport { get; set; }
 
     /// <summary>Gets or sets whether complete HTML pages should include lightweight selection interactions. Defaults to static, script-free HTML.</summary>

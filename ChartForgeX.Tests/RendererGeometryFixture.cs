@@ -25,7 +25,7 @@ internal static class RendererGeometryFixture {
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ink, ink, ink, ink }; });
         if (family.StartsWith("funnel", StringComparison.Ordinal)) {
             var chart = Chart.Create().WithSize(400, 280).WithTheme(theme).WithCard(false).WithPlotBackground(false).WithLegend(false);
-            chart.Options.ShowAxes = chart.Options.ShowGrid = chart.Options.ShowDataLabels = false;
+            chart.Options.ShowAxes = chart.Options.ShowGrid = false; chart.Options.ShowDataLabels = false;
             chart.Options.PngOutputScale = density;
             chart.AddFunnel("Stages", new[] { new ChartPoint(0, 8), new ChartPoint(1, 5) }, family == "funnel-series" ? ink : null);
             chart.Series[0].ShowDataLabels = false;

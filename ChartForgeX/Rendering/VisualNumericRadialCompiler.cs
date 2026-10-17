@@ -42,7 +42,7 @@ internal static partial class VisualNumericRadialCompiler {
         }
         var labels = new List<RadialSeriesLabel>();
         // Axis captions and totals also need mark avoidance when point captions are off.
-        var obstacles = chart.Options.ShowAxes || chart.Options.ShowStackTotals || chart.Series.Any(series => series.ShowDataLabels ?? chart.Options.ShowDataLabels)
+        var obstacles = chart.Options.ShowAxes || chart.Options.ShowStackTotals || chart.Series.Any(series => series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
             ? new List<LabelObstacle>() : null;
         if (obstacles != null && geometry.Inner > 0 && ChartSeriesKindTraits.IsMixedNumericRadial(chart))
             obstacles.Add(new LabelObstacle("radial-hole", new LabelMarkShape(new[] {
@@ -149,7 +149,7 @@ internal static partial class VisualNumericRadialCompiler {
                     pattern, ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(110), role: "radial-fill-pattern", cornerRadius: cornerRadius);
             }
         }
-        if (geometry.Outer > 0 && (series.ShowDataLabels ?? chart.Options.ShowDataLabels)) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
+        if (geometry.Outer > 0 && (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))) DataLabel(chart, context, builder, plot, series, pointIndex, id, text, mark, bounds, color, labels);
     }
 
     private static ChartAxis Axis(Chart chart, ChartAxisSide side) => side == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;

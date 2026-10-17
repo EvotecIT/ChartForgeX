@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualSpecialtyCompiler {
     private static void Pyramid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var series = chart.Series[0]; var options = chart.Options.Pyramid; var colors = context.Theme.Resolve(context.ThemeMode);
-        var show = series.ShowDataLabels ?? chart.Options.ShowDataLabels;
+        var show = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         var rail = 0d;
         var sideRail = placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right

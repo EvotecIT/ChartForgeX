@@ -324,6 +324,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Badge = node.Badge,
             Color = node.Color,
             BackgroundColor = node.BackgroundColor,
+            LabelColor = node.LabelColor,
             Href = SafeHref(node.Href),
             Tooltip = node.Tooltip,
             X = node.X,
