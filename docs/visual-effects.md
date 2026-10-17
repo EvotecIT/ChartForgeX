@@ -74,7 +74,7 @@ New namespace `ChartForgeX.Effects` in the core package. Every type is immutable
 | `VisualMask` | Alpha or luminance mask from a gradient, a shape or a nested layer. |
 | `VisualPaint` | Solid, linear, radial or conic gradient, noise (spec-exact turbulence) or grain. Usable as a fill and as a stroke paint. |
 | `VisualStrokeProfile` | Colour and width along cumulative path length. Uses shared arc-length sampling and bounded outline subdivision, with bake/fallback when that lowering cannot meet its error budget. |
-| `VisualColorRef` | A literal colour, or a theme role with optional alpha. Preparation captures both the resolved raster colour and its `SvgPaint` binding for SVG colour-variable export. |
+| `VisualColorRef` | A literal colour, or a theme role with optional alpha. Scene preparation or explicit composition resolution captures the resolved colour; scenes also retain its `SvgPaint` binding for SVG colour-variable export. |
 
 **Generators** produce ordinary scene geometry. That geometry needs no effect lowering; an attached glow, blur or blend still follows the effect profile:
 
@@ -152,6 +152,8 @@ Effects reach output through three routes:
    - `FillBackdrop(shape, effect)`;
    - procedural fills and `VisualBackdrop`.
 
+   An overload accepting theme roles or named theme effects also takes an explicit immutable `VisualTheme` snapshot and `ThemeMode`. The shared resolver captures those roles, paints and effects before touching the canvas, including roles nested inside masks, backdrops and generators. Overloads without that context accept only literals or already-resolved values; unresolved roles fail validation before any pixels change. Composition never guesses a theme from the canvas or from global state. Both routes use the same resolution rules as scene preparation; the final overload names belong to phase 0.
+
 Product-specific chrome stays in local style options. Only the reusable primitive lives in core.
 
 ## Themes
@@ -180,7 +182,7 @@ The built-in presets (`Graphite`, `Report` and the rest) keep their current effe
 The prepared scene (`ChartForgeX/Rendering/VisualScene.cs`) is a flat display list. Groups are `VisualSceneGroup`/`VisualSceneEndGroup` pairs with a clip and a rigid transform. Today no group carries opacity, a filter, a mask or a blend mode.
 
 1. **Layer node.**
-   - Add an internal `VisualSceneLayer` begin node with `Opacity`, `BlendMode`, `Isolation`, `Mask`, `Effects` (the resolved IR) and an explicit `Bounds`. It closes with the existing end-group node.
+   - Add an internal `VisualSceneLayer` begin node with `Opacity`, `BlendMode`, `Isolation`, `Mask`, `Effects` (the resolved IR) and an explicit `Bounds`, paired with a distinct `VisualSceneEndLayer`. `VisualSceneEndGroup` closes only `VisualSceneGroup`.
    - Ordinary clip and transform groups stay on today's fast path.
    - Builder scopes: `PushLayer(...)` and `PushBackdrop(shape, effect)`.
 2. **Backdrop node.**
@@ -195,7 +197,8 @@ The prepared scene (`ChartForgeX/Rendering/VisualScene.cs`) is a flat display li
 5. **Identity and splicing.**
    - Every new field joins `VisualSceneSvgRenderer.Identity()`, because ids are content hashes.
    - Every new field is carried through scene `Append()`, which grids and stories use.
-   - Topology motion insertion respects layer bracketing.
+   - Every scene walker handles the distinct layer pair before a producer emits it: SVG and raster paint, colour scopes, bounds and annotation transforms, interactive fill interiors, image-fallback skipping, scene splicing and topology motion insertion. Group-only state is popped only by an end-group; walkers that track all nesting distinguish the two end types. Neither kind may be silently skipped when its bounds, transform or paint changes the result.
+   - Nested group/layer scopes must remain balanced through append, fallback skipping and motion insertion. Malformed internal pairs fail validation before export rather than reaching a stack underflow or changing another group's state.
 
 ## Backends
 
@@ -206,7 +209,7 @@ The prepared scene (`ChartForgeX/Rendering/VisualScene.cs`) is a flat display li
 - **Layer stack.**
   - `PushLayer(deviceBounds)` takes a bounds-limited working buffer from a per-render pool.
   - `PopLayer(opacity, blend, mask, effects)` applies the effect IR and composites back.
-  - `VisualSceneRasterRenderer` maps layer begin and end exactly where it pushes and pops clip scopes today.
+  - `VisualSceneRasterRenderer` handles the layer pair separately from ordinary clip/transform groups and restores each scope's state on its matching end node.
   - Existing opacity layers in `RgbaCanvas.MarkLayers.cs` and `SvgRaster` may share bounds allocation and pooling only with their current RGBA8 arithmetic and per-composite quantization intact. Keep their compatibility path until byte-identity proof permits replacing its plumbing.
 - **Working format.**
   - Explicit new-effect units use premultiplied RGBA in 16-bit integers.
@@ -245,14 +248,14 @@ There is no central defs owner today. Scene SVG writes clips and gradients in a 
   - scopes ids with the caller's prefix;
   - returns `url(#...)` references.
 - Filters explicitly use `filterUnits="userSpaceOnUse"` and `primitiveUnits="userSpaceOnUse"`, with filter and primitive rectangles from the propagated support regions, including offset, spread and blur. Masks explicitly set `maskUnits`, `maskContentUnits` and their region in the same coordinate system. No default percentage region may clip an effect or disappear on a thin path; region-dependent definitions follow the complete-key rule above.
-- `VisualSceneSvgRenderer.WriteClips` becomes a general `WriteDefinitions` pre-pass that calls it. Layers write `filter`, `mask`, `opacity` and `style="mix-blend-mode:...;isolation:isolate"`.
+- `VisualSceneSvgRenderer.WriteClips` becomes a general `WriteDefinitions` pre-pass that calls it. Layers write their authored `filter`, `mask`, `opacity` and `mix-blend-mode`. Emit `isolation:isolate` only when `Isolation` is true; otherwise retain non-isolated blending with the enclosing backdrop. A capture buffer alone must not implicitly isolate descendants. SVG, native raster and `SvgRaster` qualify both paths, including a non-normal descendant inside a non-isolated layer. If a backend cannot preserve that composition, bake the enclosing unit with the required backdrop or use the declared fallback with a diagnostic.
 - The `VisualCanvas`, terminal and block writers call the same helper with their provisional `SvgRenderedIdentity` ids. Shared compatibility definitions preserve existing SVG output; new recipes replace the local filter implementations only for callers that opt in.
 - **Conic paint.** SVG has no native conic-gradient paint server. Lower it to bounded wedge geometry, sampled with the same stops, interpolation and seam rules as the native raster sampler. Qualification includes the wrap seam and translucent stops. If its geometry budget is exceeded, bake the affected paint or use the declared fallback and report that choice. `SvgRaster` consumes the resulting ordinary paths or embedded image; no invented `<conicGradient>` element is emitted.
-- **Backdrop emulation.** Do not rely on SVG `BackgroundImage`. The definitions pre-pass materializes the captured preceding content as one dedicated group (or a baked snapshot) before a backdrop node references it. Nested transforms, clips and layer order are preserved; copied IDs and references are rebound within the caller's scope. The capture is acyclic, contains no external references, and is decorative so it does not duplicate accessible names. A backdrop node then emits:
+- **Backdrop emulation.** Do not rely on SVG `BackgroundImage`. The definitions pre-pass materializes the captured preceding content as one dedicated group (or a baked snapshot) before a backdrop node references it. Nested transforms, clips and layer order are preserved; copied paint IDs and references are rebound within the caller's scope. The capture is acyclic, contains no external references, and is decorative. A shared paint-only capture path resolves presentation before removing anchors and navigation attributes, event handlers, interaction classes, every `data-*` binding, focus attributes and interactive roles, plus copied accessible names and relationships. Retain only the geometry, text and scoped paint resources needed for appearance. The capture and its uses have `aria-hidden="true"`, `focusable="false"` and `pointer-events="none"`; no descendant has a tab stop. A baked snapshot is the alternative when a paint-only copy cannot preserve the appearance safely. A backdrop node then emits:
   1. a clipped `<use>` of that single captured group, or the snapshot image;
   2. the blur and tint filter on that copy;
   3. the layer content.
-  An unsupported capture boundary requires an explicit bake or fallback with a diagnostic; `<use>` never refers to an arbitrary sibling range.
+   An unsupported capture boundary requires an explicit bake or fallback with a diagnostic; `<use>` never refers to an arbitrary sibling range. Runtime target discovery must also exclude capture/definition subtrees, including graph and topology discovery, so copies cannot become targets after mounting or a refresh. Sanitization and discovery exclusion apply to both the definition and any expanded copy; the original live marks keep their interactions and semantics.
 - In HTML output, real CSS `backdrop-filter` may be used on HTML overlay panels.
 - Decorative layers get `aria-hidden="true"`. Unaffected visible text stays real vector text. Text inside a source-replacing blur, mask or composite participates in that unit's bake; a sharp duplicate above it would bypass the effect. Semantic names and data remain available separately.
 
@@ -274,7 +277,9 @@ An authored group effect spans every mark, label decoration and text paint belon
 
 ### HTML and interactivity
 
-`ChartForgeX.Interactivity.Html` inlines SVG through `RawTrusted`, with scoped prefixes. Effects work natively there. Generated CSS includes:
+Inline HTML exporters explicitly select `VisualSvgOptions.EffectProfile = Browser` when they create SVG; the standalone `ToSvg` default remains `SvgImage`. This routing covers core chart/grid HTML, interactive chart/topology adapters, visual canvas and story HTML, including nested inline content. Image or data-URI SVG embedded through `<img>` or `<image>` retains the `SvgImage` policy; being inside an HTML document does not make it inline SVG. Hosts pass through an explicit caller profile override and its export diagnostics rather than silently changing it.
+
+`ChartForgeX.Interactivity.Html` inlines SVG through `RawTrusted`, with scoped prefixes. A qualified Browser export may emit native effects there. HTML overlay panels and live backdrop behaviour belong to the HTML adapter; selecting Browser on a static inline-SVG exporter does not create an overlay or require scripts. Generated CSS includes:
 - `@media (prefers-reduced-motion: reduce)` rules for any CSS-driven effect animation;
 - `@media (forced-colors: active)` and `prefers-reduced-transparency` rules that swap glass for solid fills and drop glows.
 
@@ -312,7 +317,10 @@ Host format policies sit outside `VisualSvgOptions`:
   - Shared preparation preflight samples the composed background immediately before text paint and freezes a tint/scrim decision for both SVG and PNG, including an SVG-only export. Use resolved foreground colour and the worst relevant background under the text: at least 4.5:1 for normal text and 3:1 for qualifying large text.
   - Sampling has the same work budget as effects. If the background cannot be bounded or qualified, use a conservative opaque scrim/tint rather than certify an unknown contrast ratio. Record the measured ratio or the reason for fallback.
   - Output-profile lowering rechecks any changed background in shared export preflight without mutating the preparation snapshot. Animated backdrop changes invalidate the decision. Arbitrary host colour variables, CSS or external backdrops require host requalification, a frozen capture, or the conservative fallback; a resolved-theme measurement does not certify later overrides.
-- **Motion.** Animated effects in stories respect reduced motion. CSS media queries cannot stop SMIL animation, so effect animation in SVG uses CSS keyframes inside the SVG's style, or renders a static frame. Sparkle stays under three flashes per second.
+- **Motion.** Story and motion exporters take an explicit motion policy at the export boundary. The normal policy preserves authored animation; the reduced policy chooses a deterministic poster timestamp (the completed state by default) and disables effect animation. The same policy reaches generic stories, topology motion and terminal stories, including their convenience exports.
+  - SVG uses CSS keyframes with `prefers-reduced-motion` selecting the poster, or exports a static frame. CSS media queries cannot stop SMIL animation; no SMIL-only effect may claim reduced-motion support.
+  - GIF and APNG cannot query a viewer preference. A reduced export encodes one poster frame with no animation. A host that offers animated raster output must select a separately exported static poster when reduced motion is requested, without first displaying the animation. With no host preference supplied, the encoded animation does not claim automatic preference handling.
+  - Sparkle stays under three flashes per second in the normal policy. The concrete option names and poster-selection API are phase-0 decisions; effects are not enabled in story exports before both policies are qualified.
 - **Semantics.** Decorative layers are hidden from assistive technology, and baked images carry empty alternative text. Existing accessible names, descriptions and semantic regions are unchanged.
 
 ## Performance
@@ -348,13 +356,18 @@ Every phase follows [AGENTS.md](../AGENTS.md): smoke tests, generated examples f
   - Native PNG against browser rendering of the emitted SVG, in the required Chromium lane (`Build/Test-BrowserQuality.ps1`), with a stated per-effect tolerance. Pixel identity is not the contract.
   - `SvgRaster` against native PNG, with no unexpected diagnostics.
   - Large effects on small sources, offset shadows, thin paths, transformed/reused definitions, curved/reversing/closed gradient strokes, atomic mark/text groups, and moving content beneath glass.
+  - Distinct group/layer nesting through every scene walker, append, image fallback and motion insertion; isolated and non-isolated nested blends against the same backdrop.
+  - Direct composition with explicit light/dark theme context, literal/resolved values without context, and atomic rejection of unresolved roles nested anywhere in an effect recipe.
   - Shared contrast decisions in SVG-only export and PNG, including an unqualified-background fallback.
 - **Profiles and hosts.** Assert each SVG profile's lowering, and test format selection separately in its owning host:
+  - every inline HTML entry point explicitly selects Browser unless overridden; image/data-URI routes retain SvgImage, and an SVG profile alone never creates an HTML overlay;
   - email exports select PNG and contain no inline SVG;
   - `OfficeSvg` has no live filters, with source-replacing effects baked together with their source;
   - `SvgImage` has no external references;
   - degradation is returned through export diagnostics without changing preparation diagnostics;
-  - nested isolation, captured backdrop IDs and colour-variable mappings retain their semantics.
+  - captured backdrop copies preserve paint, but add no runtime targets, focus stops, navigation, host events or accessible names before or after mounting and refresh, including graph/topology paths;
+  - nested isolation, captured backdrop IDs and colour-variable mappings retain their semantics;
+  - reduced-motion SVG and single-frame GIF/APNG use the same poster timestamp; host preference changes select the static raster artifact without displaying animated frames.
 - **Visual baselines.** Effected examples get new entries. Existing entries change only through an intentional `-UpdateVisualBaseline` after gallery inspection.
 - **Existing assertions:**
   - `TopologyTests` asserts no `filter=` in topology SVG; it gains an opt-in exception.
@@ -386,24 +399,24 @@ Each phase is one coherent outcome. Phases 0–2 precede public effects in phase
 | --- | --- | --- |
 | 0. Spike and decisions | Integer triple-box blur prototype, benchmarked at 2560×1440 on net472 and net10. Browser parity measured for blur, shadow and two blend modes. Office, Safari and resvg behaviour checked with one blur each. The decisions below confirmed. | Benchmark numbers, per-effect tolerances, stroke subdivision/error budgets and per-render work limits recorded; open decisions closed |
 | 1. Raster foundation | Bounded premultiplied layer stack and pool; blur, morphology, flood, offset, composite and merge kernels; sRGB buffer-level blend engine; ordered dither for opt-in units; legacy composite/mask paths retained | Kernel, total-work and determinism tests; benchmark lane; existing bytes unchanged |
-| 2. Scene and SVG foundation | `VisualSceneLayer` and atomic producer scopes; `SvgEffectWriter` and the `WriteDefinitions` pre-pass; complete bounds/identity/append support; `SvgRaster` primitives | Parity tests across scene SVG, browser and native PNG for internal fixtures, including mark/text capture and masks; existing bytes unchanged |
+| 2. Scene and SVG foundation | Distinct `VisualSceneLayer`/`VisualSceneEndLayer` and atomic producer scopes; all scene walkers migrated; `SvgEffectWriter` and the `WriteDefinitions` pre-pass; complete bounds/identity/append support; `SvgRaster` primitives | Parity tests across scene SVG, browser and native PNG for internal fixtures, including mark/text capture, non-isolated blending and masks; existing bytes unchanged |
 | 3. Public effects and themes | `ChartForgeX.Effects` presets (drop and inner shadow, glow, layer blur, opacity, blend, mask); `VisualThemeEffects` and JSON; SVG profiles and host policies; shared compatibility card shadow and opt-in blurred elevation | Gallery examples per preset; API conventions and migration notes; existing default baselines unchanged, new entries for opt-in effects |
 | 4. Glass, bloom and strokes | `VisualBackdropBlur` with SVG emulation and a qualified HTML `backdrop-filter` path; `VisualBloom` (baked for SVG); arc-length gradient and tapered strokes; light streaks | Shared contrast/scrim and cache invalidation; bounded stroke lowering; parity per profile |
 | 5. Procedural and generators | Grain; spec-exact turbulence; particles; dot matrix; perspective grid; vignette; `VisualBackdrop` | Determinism across frameworks; gallery acceptance example |
-| 6. Family adoption | Chart series glow and card elevation; Mermaid highlight and shadow mapping; topology elevation and path glow; canvas glass tiles; story backgrounds; `ImageComposition` operations | Family examples, both themes, both outputs |
+| 6. Family adoption | Chart series glow and card elevation; Mermaid highlight and shadow mapping; topology elevation and path glow; canvas glass tiles; story backgrounds; resolved/theme-aware `ImageComposition` operations | Family examples, both themes, both outputs; reduced-motion poster exports and host routing qualified before story effects are enabled |
 | 7. Consumers and release | PowerBGInfo backgrounds and panels on `VisualBackdrop`, glass and glow; ImagePlayground effect commands on `ImageComposition`, removing its OfficeIMO pixel copies; coordinated package release | Consumer qualification through candidate packages, then public packages |
 
 ## Decisions to confirm
 
 Merging this proposal records its direction and acceptance criteria. It does not implement the effects or approve a new runtime dependency, maintained toolchain, or final public API. Resolve the following during phase 0 before committing the corresponding implementation boundary.
 
-1. **Layer node.** A separate `VisualSceneLayer` (recommended, keeping clip groups fast) or new fields on `VisualSceneGroup`.
+1. **Layer node.** A separate `VisualSceneLayer`/`VisualSceneEndLayer` pair (recommended, keeping clip groups fast) or new fields on the existing balanced `VisualSceneGroup` pair. Never pair a new begin-only type with a group-only closing node.
 2. **Working precision.** 16-bit integer premultiplied buffers (recommended, deterministic on every framework), or float on net8.0/net10.0 if profiling favours it.
 3. **Parallelism.** Whether row-band `Parallel.For` is acceptable in core raster when output stays identical.
 4. **Default SVG profile.** `SvgImage` (recommended) or `Browser`, and the size limit for baked layers inside SVG.
 5. **Mermaid scope.** Which Mermaid styling inputs (`classDef`, `style`, `look`) map to effects, and how far CSS `filter` values in Mermaid styles are honoured.
 6. **Presets in core.** Whether neutral looks such as an "elevated" or "glass" theme ship as core presets, or only as consumer themes.
-7. **Public names.** `ChartForgeX.Effects` with `Visual*` type names, matching existing conventions.
+7. **Public names.** `ChartForgeX.Effects` with `Visual*` type names, matching existing conventions; explicit composition theme-context overloads and the shared motion/poster export policy.
 
 ## Sources
 
