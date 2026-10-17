@@ -114,6 +114,35 @@ public sealed class BubbleSizeKeyTests {
         Assert.Equal("25", point.Metadata["data-cfx-size"]);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CloseSizesShareDistinctDefaultCaptionsWhileExplicitPrecisionRemainsAuthoritative(bool explicitFormat) {
+        var chart = Bare().WithDataLabels()
+            .AddBubble("First", new[] { new ChartBubble(2, 20, 1.001) })
+            .AddBubble("Second", new[] { new ChartBubble(8, 80, 1.002) })
+            .ConfigureBubble(options => {
+                options.SizeDimension.ShowLegend = true;
+                if (explicitFormat) options.SizeDimension.ValueFormat = ChartValueFormat.Number("0");
+            });
+        var prepared = Prepare(chart);
+        var expectedPoints = explicitFormat ? new[] { "1", "1" } : new[] { "1.001", "1.002" };
+        var expectedKey = explicitFormat ? new[] { "1", "1", "1" } : new[] { "1.001", "1.0015", "1.002" };
+        var points = Groups(prepared, "point");
+        Assert.Equal(expectedPoints, points.Select(point => point.Metadata["data-cfx-formatted-size"]));
+        Assert.Equal(expectedPoints, points.Select(point => point.Metadata["data-cfx-label"]));
+        Assert.Equal(new[] { 1.001, 1.002 }, points.Select(point => double.Parse(point.Metadata["data-cfx-size"], CultureInfo.InvariantCulture)));
+        Assert.Equal(expectedKey, Texts(prepared, "bubble-size-key-label"));
+        Assert.Contains(string.Join(", ", expectedKey), prepared.Regions.Single(region => region.Role == "bubble-size-key").Label);
+        for (var index = 0; index < points.Length; index++) Assert.Contains(expectedPoints[index], points[index].Metadata["aria-label"]);
+        Assert.NotEqual(Marks(prepared)[0].Rx, Marks(prepared)[1].Rx);
+        var document = XDocument.Parse(prepared.ToSvg());
+        Assert.Equal(expectedKey, document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "bubble-size-key-label").Select(element => element.Value));
+        var glyphs = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "bubble-size-key-marker").ToArray();
+        AssertKeyPaintedInSvgAndPng(prepared, glyphs);
+        Capture(prepared, explicitFormat ? "close-sizes-authored-format" : "close-sizes-default");
+    }
+
     [Fact]
     public void AtomicBubbleConfigurationClonesNestedPresentationAndPreparedExportsStayDetached() {
         var chart = Bare().AddBubble("Service", new[] { new ChartBubble(2, 20, 25), new ChartBubble(8, 80, 100) });

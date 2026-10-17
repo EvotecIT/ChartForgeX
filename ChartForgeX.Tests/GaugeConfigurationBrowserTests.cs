@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
@@ -66,6 +67,80 @@ public sealed class GaugeConfigurationBrowserTests {
             var name = "configured-" + layout + "-" + viewportWidth + "-" + (dark ? "dark" : "light");
             await session.Page.ScreenshotAsync(new() { Path = Path.Combine(output, name + ".png"), FullPage = true });
             await File.WriteAllTextAsync(Path.Combine(output, name + ".html"), html);
+        }
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NearbyHorizontalExplicitTicksKeepReadableBrowserGlyphsAndTheirNativeFacts(bool dark) {
+        if (!Enabled) return;
+        var chart = GaugeHorizontalExplicitScaleTests.Create(dark, 1, "Near minimum").WithFontFamily("CFX Gauge Carlito");
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var prepared = chart.Prepare(context);
+        var omitted = Assert.Single(prepared.Regions, region => region.Id == "series-0-gauge-scale-1");
+        Assert.Equal("Near minimum", omitted.Label);
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "gauge.label-overflow");
+        var svg = prepared.ToSvg(); var png = prepared.ToPng();
+        var html = "<!doctype html><html><head><style>@font-face{font-family:'CFX Gauge Carlito';src:url(data:font/ttf;base64,"
+            + Convert.ToBase64String(File.ReadAllBytes(chart.Options.PngFontPath!)) + ") format('truetype');font-weight:400}body{margin:12px;background:"
+            + (dark ? "#17191d" : "#fff") + "}svg,img{display:block;max-width:100%;height:auto}</style></head><body>" + svg
+            + "<img src='data:image/png;base64," + Convert.ToBase64String(png) + "'></body></html>";
+        await using var session = await OpenAsync(html, 390, 440);
+        await session.Page.EvaluateAsync("async () => { await document.fonts.ready; await document.querySelector('img').decode(); }");
+        var defects = await session.Page.EvaluateAsync<string[]>("""
+            axisSize => {
+              const svg = document.querySelector('svg'), view = svg.viewBox.baseVal, defects = [];
+              const labels = [...svg.querySelectorAll('text')].filter(node => {
+                const role = node.closest('[data-cfx-role]')?.dataset.cfxRole;
+                return role === 'gauge-min-label' || role === 'gauge-max-label' || role?.startsWith('gauge-tick-label-');
+              });
+              if (labels.length !== 2 || labels.map(node => node.textContent).join('|') !== 'Minimum|Maximum')
+                defects.push('The noncolliding explicit captions were lost or the crowded caption was painted');
+              const boxes = labels.map(node => node.getBBox());
+              for (const [index, node] of labels.entries()) {
+                const box = boxes[index], style = getComputedStyle(node);
+                if (box.width <= 0 || box.height <= 0 || parseFloat(style.fontSize) < axisSize)
+                  defects.push('An explicit caption is unreadable');
+                if (!style.fontFamily.includes('CFX Gauge Carlito')) defects.push('The fixture face was lost');
+                if (box.x < view.x - .5 || box.x + box.width > view.x + view.width + .5
+                    || box.y < view.y - .5 || box.y + box.height > view.y + view.height + .5)
+                  defects.push('An explicit caption escapes the SVG viewport');
+                for (let other = index + 1; other < boxes.length; other++) {
+                  const next = boxes[other];
+                  if (box.x < next.x + next.width && box.x + box.width > next.x
+                      && box.y < next.y + next.height && box.y + box.height > next.y)
+                    defects.push('Painted explicit glyphs overlap');
+                }
+              }
+              const track = svg.querySelector('[data-cfx-role="gauge-track"]').getBBox();
+              const ticks = [...svg.querySelectorAll('[data-cfx-role="gauge-tick"]')];
+              const expected = [track.x, track.x + track.width * .01, track.x + track.width];
+              if (ticks.length !== 3 || ticks.some((tick, index) => Math.abs(tick.getBBox().x - expected[index]) > .01))
+                defects.push('Explicit ticks moved away from 0, 1 and 100');
+              const image = document.querySelector('img');
+              if (image.naturalWidth !== 360 || image.naturalHeight !== 180
+                  || image.naturalWidth !== Number(svg.getAttribute('width')) || image.naturalHeight !== Number(svg.getAttribute('height')))
+                defects.push('SVG and native PNG dimensions differ');
+              if (!document.fonts.check(axisSize + 'px "CFX Gauge Carlito"')) defects.push('The fixture face did not load');
+              if (document.documentElement.scrollWidth > innerWidth + 1) defects.push('The document overflows the viewport');
+              return defects;
+            }
+            """, context.Theme.Typography.AxisSize);
+        Assert.Empty(defects);
+        var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(output)) {
+            Directory.CreateDirectory(output);
+            var name = "configured-horizontal-explicit-390-" + (dark ? "dark" : "light");
+            await session.Page.ScreenshotAsync(new() { Path = Path.Combine(output, name + ".png"), FullPage = true });
+            await File.WriteAllTextAsync(Path.Combine(output, name + ".html"), html);
+            await File.WriteAllTextAsync(Path.Combine(output, name + ".svg"), svg);
+            await File.WriteAllBytesAsync(Path.Combine(output, name + ".native.png"), png);
+            await File.WriteAllTextAsync(Path.Combine(output, name + ".runtime.json"), JsonSerializer.Serialize(new {
+                omittedFact = new { omitted.Id, omitted.Role, omitted.Label },
+                diagnostics = prepared.Diagnostics.Select(diagnostic => new { diagnostic.Code, diagnostic.Message }), defects
+            }, new JsonSerializerOptions { WriteIndented = true }));
         }
         AssertNoConsoleErrors(session);
     }

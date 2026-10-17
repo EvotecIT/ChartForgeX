@@ -12,6 +12,37 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Numeric size keys remain descriptive while native Bubble readouts and stable observation commands stay usable.</summary>
 public sealed class BubbleSizeKeyBrowserTests {
+    [BrowserFact]
+    public async Task CloseDefaultSizeReadoutsAgreeWithTheNumericKey() {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(900, 560).WithTitle("Close size measurements")
+            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100).WithLegend().WithDataLabels(false)
+            .AddBubble("Requests", new[] { new ChartBubble(2, 20, 1.001), new ChartBubble(8, 80, 1.002) })
+            .ConfigureBubble(options => options.SizeDimension.ShowLegend = true);
+        var html = chart.ToInteractiveHtmlPage(options => {
+            options.Tooltip.Mode = HtmlChartTooltipMode.Single;
+            options.Tooltip.PinOnSelect = false;
+        });
+        await using var session = await OpenAsync(html, 1440, 900);
+        var page = session.Page;
+        Assert.Equal(new[] { "1.001", "1.0015", "1.002" }, await page.Locator("[data-cfx-role='bubble-size-key-label']").AllTextContentsAsync());
+        await MoveToAsync(page, Point(0, 0));
+        Assert.Equal("1.001", await Row(page, "Size"));
+        await MoveAwayAsync(page);
+        await FocusWithKeyboardAsync(page, page.Locator(Point(0, 1)));
+        Assert.Equal("1.002", await Row(page, "Size"));
+        var directory = Environment.GetEnvironmentVariable("CFX_BUBBLE_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            Directory.CreateDirectory(directory);
+            await page.ScreenshotAsync(new() { Path = Path.Combine(directory, "close-sizes-default.browser.png") });
+            await File.WriteAllTextAsync(Path.Combine(directory, "close-sizes-default.runtime.json"), JsonSerializer.Serialize(new {
+                key = await page.Locator("[data-cfx-role='bubble-size-key-label']").AllTextContentsAsync(),
+                readout = await TooltipTextAsync(page), rawSize = await page.Locator(Point(0, 1)).GetAttributeAsync("data-cfx-size")
+            }, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        AssertNoConsoleErrors(session);
+    }
+
     [BrowserTheory]
     [InlineData(false, false)]
     [InlineData(false, true)]

@@ -250,6 +250,16 @@ internal static partial class VisualGaugeCompiler {
         string value, string caption, string? target, IReadOnlyList<string> scaleCaptions, IReadOnlyList<double> scaleValues, IReadOnlyList<string> targetCaptions) {
         var colors = context.Theme.Resolve(context.ThemeMode); var gap = context.Theme.Spacing;
         var labelHeight = context.Theme.Typography.AxisSize * 1.5;
+        if (scaleCaptions.Count > 0) {
+            var style = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
+            labelHeight = Math.Max(labelHeight, scaleCaptions.Max(text => builder.MeasureText(text, style).Height) + 3);
+        }
+        if (targetCaptions.Count > 0) {
+            var multiple = targetCaptions.Count > 1;
+            var style = VisualRadialPrimitives.Style(chart, context, multiple ? colors.MutedForeground : colors.Foreground,
+                context.Theme.Typography.AxisSize, point: multiple ? -1 : 0, ticks: multiple);
+            labelHeight = Math.Max(labelHeight, targetCaptions.Max(text => builder.MeasureText(text, style).Height));
+        }
         var height = Math.Min(plot.Height / 7, Math.Max(4, context.Theme.Typography.DataLabelSize * 1.4));
         var footerTop = plot.Bottom - labelHeight * ((scaleCaptions.Count > 0 ? 1 : 0) + (target != null ? 1 : 0));
         var maximumTrackTop = footerTop - height - (target != null ? height / 4 : 0) - gap / 3;
@@ -309,10 +319,21 @@ internal static partial class VisualGaugeCompiler {
         if (scaleCaptions.Count == 0) return;
         var colors = context.Theme.Resolve(context.ThemeMode);
         var left = plot.Left + context.Theme.Spacing; var width = Math.Max(0, plot.Width - context.Theme.Spacing * 2);
+        var explicitScale = chart.Options.Gauge.TickLabels.Count > 0;
+        var occupied = new List<ChartRect>();
         builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "gauge-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
         for (var tick = 0; tick < scaleCaptions.Count; tick++) {
             var x = left + width * Ratio(data, scaleValues[tick]);
             builder.Line(x, y, x, y + 3, colors.Border, context.Theme.AxisStrokeWidth, "gauge-tick", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
+            if (explicitScale) {
+                var style = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
+                var captionWidth = builder.MeasureText(scaleCaptions[tick], style).Width;
+                var bounds = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - captionWidth, x - captionWidth / 2)),
+                    y + 3, captionWidth, Math.Max(0, height - 3));
+                FactualLabel(chart, context, builder, plot, scaleCaptions[tick], bounds, ScaleRole(data, scaleValues[tick], tick),
+                    "series-0-gauge-scale-" + tick, occupied);
+                continue;
+            }
             var boxWidth = plot.Width / Math.Max(1, scaleCaptions.Count);
             var box = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - boxWidth, x - boxWidth / 2)), y + 3, boxWidth, Math.Max(0, height - 3));
             Label(chart, context, builder, scaleCaptions[tick], box, ScaleRole(data, scaleValues[tick], tick), context.Theme.Typography.AxisSize, ticks: true);

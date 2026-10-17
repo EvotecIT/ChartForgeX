@@ -14,7 +14,7 @@ internal sealed class ChartBubbleSizeScale {
         var options = chart.Options.Bubble;
         _minimumValue = minimumValue; _maximumValue = maximumValue;
         _minimumRadius = options.MinimumRadius; _maximumRadius = options.MaximumRadius; _reversed = options.Reversed;
-        HasValues = hasValues; Presentation = new ChartSizePresentation(chart);
+        HasValues = hasValues; Presentation = new ChartSizePresentation(chart, minimumValue, maximumValue);
     }
 
     internal bool HasVisibleRadius => !_maximumRadius.HasValue || _maximumRadius.Value > 0;
