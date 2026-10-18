@@ -53,6 +53,7 @@ internal static partial class VisualCartesianCompiler {
                 axisLabels.SetTicks(categoryAxis, categoryCaptions.Keys.OrderBy(value => value).ToArray());
             foreach (var category in categoryCaptions) axisLabels.Set(categoryAxis, category.Key, category.Value);
         }
+        RefreshCategoryDisplay(chart, context, builder, viewport, range, colors, axisLabels);
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         if (expandMarkers && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
@@ -60,6 +61,7 @@ internal static partial class VisualCartesianCompiler {
                 axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
                 if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
             }
+            RefreshCategoryDisplay(chart, context, builder, plot, range, colors, axisLabels);
             if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
                 : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         }
@@ -95,6 +97,7 @@ internal static partial class VisualCartesianCompiler {
                     if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
                 }
             }
+            RefreshCategoryDisplay(chart, context, builder, plot, range, colors, axisLabels);
             FitCartesianTicks(chart, context, builder, plot, range, secondaryRange, colors, axisLabels, horizontal);
             if (!measureAxes || pass == maximumAxisPasses) break;
             var measured = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)

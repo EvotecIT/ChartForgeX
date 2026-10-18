@@ -19,6 +19,7 @@ internal static partial class VisualCartesianCompiler {
         private readonly Dictionary<ChartAxis, Func<double, string>> _formatters = new();
         private readonly Dictionary<ChartAxis, Func<double, string>> _readoutFormatters = new();
         private readonly Dictionary<ChartAxis, HashSet<double>> _formattedValues = new();
+        private readonly Dictionary<ChartAxis, Dictionary<double, (string Text, bool Shortened)>> _categoryDisplay = new();
         private IReadOnlyList<double>? _regularTimeBarObservations;
         private bool _hasTimeBarObservations;
         internal ChartAxis? HorizontalValueAxis { get; set; }
@@ -29,6 +30,14 @@ internal static partial class VisualCartesianCompiler {
             return _regularTimeBarObservations;
         }
         internal void Set(ChartAxis axis, double value, string text) => _labels.Set(axis, value, text);
+        internal void SetCategoryDisplay(ChartAxis axis, Dictionary<double, (string Text, bool Shortened)>? captions) {
+            if (captions == null) _categoryDisplay.Remove(axis);
+            else _categoryDisplay[axis] = captions;
+        }
+        internal string CategoryDisplay(ChartAxis axis, double value, string source) =>
+            _categoryDisplay.TryGetValue(axis, out var captions) && captions.TryGetValue(value, out var display) ? display.Text : source;
+        internal bool CategoryShortened(ChartAxis axis, double value) =>
+            _categoryDisplay.TryGetValue(axis, out var captions) && captions.TryGetValue(value, out var display) && display.Shortened;
         internal void SetTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _ticks[axis] = ticks;
         internal bool HasAuthoredTicks(ChartAxis axis) => axis.Labels.Count > 0 || _ticks.ContainsKey(axis);
         internal void SetFittedTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _fittedTicks[axis] = ticks;
@@ -119,7 +128,8 @@ internal static partial class VisualCartesianCompiler {
         var ticks = labels.Ticks(axis, minimum, maximum);
         var width = 0d; var height = 0d;
         foreach (var tick in ticks) {
-            var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(labels.Format(axis, tick, fallback, ticks), style), axis.LabelAngle);
+            var text = labels.CategoryDisplay(axis, tick, labels.Format(axis, tick, fallback, ticks));
+            var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), axis.LabelAngle);
             width = Math.Max(width, metrics.Width); height = Math.Max(height, metrics.Height);
         }
         return new TextMetrics(width, height, height);
@@ -212,7 +222,11 @@ internal static partial class VisualCartesianCompiler {
         var shortenedCategories = false;
         string Display(double tick) {
             var text = labels.Format(axis, tick, fallback, ticks);
-            if (horizontal || !labels.HasAuthoredTicks(axis) || VisualAxisText.Angle(axis.LabelAngle) != 0 || bounds.Width <= 0) return text;
+            if (horizontal) {
+                shortenedCategories |= labels.CategoryShortened(axis, tick);
+                return labels.CategoryDisplay(axis, tick, text);
+            }
+            if (!labels.HasAuthoredTicks(axis) || VisualAxisText.Angle(axis.LabelAngle) != 0 || bounds.Width <= 0) return text;
             // Only named horizontal categories use this bounded caption fallback. Numeric
             // and calendar value axes keep their complete-caption scale/stride policy.
             if (ReferenceEquals(axis, labels.HorizontalCategoryAxis) && axis.Labels.Count > 0 && axis.Scale != ChartScaleKind.Time) {
