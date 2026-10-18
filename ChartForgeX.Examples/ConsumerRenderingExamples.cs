@@ -231,6 +231,9 @@ public static class ConsumerRenderingExamples {
                 .WithMetric("CPU", "38").WithStatus(VisualStatus.Info).WithSymbol("CPU")
                 .WithMiniSparkline(new[] { 12d, 24, 18, 38, 27, 38 });
             SaveExample( "metric-" + suffix, card.ToSvg(), card.ToPng());
+            var compactMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(subtitleSize: 9)), mode)
+                .WithSize(281, 55).WithPadding(6.5).WithCard(false).WithMetric("Memory", 68, unit: "%").WithStatus(VisualStatus.Positive);
+            SaveExample("metric-compact-" + suffix, compactMetric.ToSvg(), compactMetric.ToPng());
             var markerTheme = VisualTheme.Graphite().WithPalette(ChartColor.FromRgb(210, 30, 45), ChartColor.FromRgb(20, 170, 90), ChartColor.FromRgb(40, 90, 220));
             var list = ChartList.Create().WithTheme(markerTheme, mode).WithSize(330, 140).WithPadding(0).WithCard(false)
                 .AddCheckItem("Backups verified", true, "02:10").AddCheckItem("DR test", false, "due 30 Oct");
