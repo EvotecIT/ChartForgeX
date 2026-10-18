@@ -193,10 +193,12 @@ internal sealed partial class VisualTopologyCompiler {
         }
         if (badge && footer.Height > 0 && area.Right > left) {
             var badgeBounds = Project(new ChartRect(left, footer.Y, Math.Max(0, Math.Min(NodeBadgeWidth(node, _options), area.Right - left)), footer.Height));
+            var paint = NodeAccentPaint(node, accent, active);
             _builder.Rect(badgeBounds, accent, radius: Math.Min(4 * _scale, badgeBounds.Height / 2), role: "topology-node-badge-surface",
-                paint: new VisualScenePaintBinding(NodeAccentPaint(node, accent, active)));
-            Text(NodeBadge(node), badgeBounds, preferred * .75, _colors.Surface, 600, "topology-node-badge", centered: true,
-                paint: CardPaint(_colors.Surface), fitSingleLine: true, verticallyCentered: true);
+                paint: new VisualScenePaintBinding(paint));
+            var ink = ChartColorMath.AccessibleTextOnBackground(accent);
+            Text(NodeBadge(node), badgeBounds, preferred * .75, ink, 600, "topology-node-badge", centered: true,
+                paint: SvgPaint.Contrast(accent, paint), fitSingleLine: true, verticallyCentered: true);
         }
         ChartRect Row(double height) {
             var result = new ChartRect(text.X, y, text.Width, Math.Min(height, Math.Max(0, text.Bottom - y)));

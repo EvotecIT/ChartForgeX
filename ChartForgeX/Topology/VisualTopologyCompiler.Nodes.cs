@@ -94,7 +94,9 @@ internal sealed partial class VisualTopologyCompiler {
                 var reserved = NodeBadgeBounds(node, mode, _options);
                 var badge = Bounds(reserved.X, reserved.Y, reserved.Width, reserved.Height);
                 _builder.Rect(badge, accent, radius: 4 * _scale, role: "topology-node-badge-surface", paint: new VisualScenePaintBinding(accentPaint));
-                Text(NodeBadge(node), badge, _context.Theme.Typography.DataLabelSize * .75, _colors.Surface, 600, "topology-node-badge", 1, centered: true, paint: CardPaint(_colors.Surface), fitSingleLine: true);
+                var ink = ChartColorMath.AccessibleTextOnBackground(accent);
+                Text(NodeBadge(node), badge, _context.Theme.Typography.DataLabelSize * .75, ink, 600, "topology-node-badge", 1, centered: true,
+                    paint: SvgPaint.Contrast(accent, accentPaint), fitSingleLine: true);
             }
         }
         _builder.AddRegion(new VisualSemanticRegion(node.Id, "topology-node", bounds, node.Label));
