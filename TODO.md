@@ -194,6 +194,18 @@ Completion: each new family passes the same source/model/diagnostic/scene/export
 
 Completion: the documented support window is backed by source, artifacts, host workflows and package evidence. Implementation, merge, publication and installed-consumer qualification remain separate gates.
 
+## Visual effects
+
+The [visual effects design](docs/visual-effects.md) proposes shared effect definitions, theme tokens, SVG profiles, host format policies, kernels, parity rules and phases. The proposed system is not implemented. PowerBGInfo and ImagePlayground hand-build glows, glass and blur; internal canvas glow and terminal shadow also have SVG/PNG differences.
+
+- [ ] Phase 0: benchmark an integer triple-box blur at 2560×1440 on net472 and net10, measure browser parity for blur, shadow and two blend modes, check Office, Safari and resvg with one blur each, and close the design's open decisions, stroke error limits and per-render work budgets.
+- [ ] Phases 1–2: add bounded raster effect layers, shared kernels and SVG lowering, complete support regions, explicit mask conversion and atomic mark/text capture. Preserve each legacy backend's RGBA8 compositing, masks and default bytes; precision changes and dither belong to opt-in units. Qualify total work as well as allocation.
+- [ ] Phase 3: ship the public `ChartForgeX.Effects` presets, `VisualThemeEffects` with unambiguous JSON precedence, SVG lowering profiles and export diagnostics. Move the existing card shadow to the shared compatibility recipe without changing default output; add true blurred elevation as opt-in. Qualify canvas and terminal migrations through their actual SVG and PNG producers.
+- [ ] Phases 4–5: add frosted glass with shared contrast decisions and dependency-aware caching, bloom, bounded arc-length gradient/tapered strokes, light streaks, grain, turbulence, particles, dot matrix, perspective grid, vignette and `VisualBackdrop`.
+- [ ] Phases 6–7: adopt effects in charts, Mermaid, topology, canvas, stories and `ImageComposition`, then move PowerBGInfo and ImagePlayground onto them.
+
+Completion: every effect has one owner, deterministic native PNG output and declared SVG behaviour per output profile; existing defaults are unchanged; and the integrated HUD-wallpaper acceptance example renders in both outputs within the stated performance budget.
+
 ## Focused extensions
 
 These are later lanes selected by real consumers; they do not block making the current report/chart product coherent.
