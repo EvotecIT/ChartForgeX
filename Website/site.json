@@ -98,6 +98,18 @@
       }
     ]
   },
+  "StructuredData": {
+    "Enabled": true,
+    "Website": true,
+    "Organization": true,
+    "WebPage": true,
+    "Breadcrumbs": true,
+    "SoftwareSourceCode": true,
+    "OrganizationName": "Evotec",
+    "OrganizationUrl": "https://evotec.xyz/",
+    "OrganizationLogo": "https://evotec.xyz/favicon.svg",
+    "OrganizationSameAs": ["https://github.com/EvotecIT"]
+  },
   "Social": {
     "Enabled": true,
     "SiteName": "ChartForgeX",
@@ -130,7 +142,16 @@
         }
       ]
     },
-    "MarkdownNegotiation": true
+    "MarkdownNegotiation": false,
+    "MarkdownArtifacts": { "Enabled": true, "MaxPages": 0 },
+    "AgentsJson": { "Enabled": true },
+    "ApiCatalog": {
+      "Enabled": true,
+      "Entries": [
+        { "Anchor": "/api/", "ServiceDesc": "/api/index.json", "ServiceDoc": "/api/", "Title": "ChartForgeX .NET API" },
+        { "Anchor": "/powershell/commands/", "ServiceDesc": "/powershell/commands/index.json", "ServiceDoc": "/powershell/commands/", "Title": "ImagePlayground commands for ChartForgeX" }
+      ]
+    }
   },
   "EditLinks": {
     "Enabled": true,

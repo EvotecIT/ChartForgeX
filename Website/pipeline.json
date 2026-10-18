@@ -5,19 +5,48 @@
     {
       "task": "llms",
       "id": "build-llms",
-      "dependsOn": ["build-site", "build-apidocs", "build-powershell-commands"],
+      "dependsOn": [
+        "build-site",
+        "build-apidocs",
+        "build-powershell-commands"
+      ],
       "siteRoot": "./_site",
       "name": "ChartForgeX",
       "packageId": "ChartForgeX",
+      "project": "../ChartForgeX/ChartForgeX.csproj",
+      "apiIndexes": [
+        "./_site/api/index.json",
+        "./_site/powershell/commands/index.json"
+      ],
+      "apiLevel": "summary",
+      "apiMaxTypes": 2000,
+      "discovery": "./config/llms-discovery.md",
       "license": "MIT",
       "targets": ".NET Framework 4.7.2, .NET Standard 2.0, .NET 8, .NET 10"
+    },
+    {
+      "task": "agent-ready",
+      "id": "agent-ready-prepare",
+      "dependsOn": [
+        "sitemap",
+        "build-llms"
+      ],
+      "operation": "prepare",
+      "config": "./site.json",
+      "siteRoot": "./_site"
     },
     {
       "task": "exec",
       "id": "playground-samples-check",
       "dependsOn": "api-build-chartforgex-markup-mermaid",
       "command": "dotnet",
-      "argsList": ["run", "--project", "./tools/PlaygroundCheck/PlaygroundCheck.csproj", "-c", "Release"],
+      "argsList": [
+        "run",
+        "--project",
+        "./tools/PlaygroundCheck/PlaygroundCheck.csproj",
+        "-c",
+        "Release"
+      ],
       "workingDirectory": ".",
       "timeoutSeconds": 900
     },
@@ -34,7 +63,10 @@
     {
       "task": "overlay",
       "id": "playground-engine-overlay",
-      "dependsOn": ["build-site", "playground-engine-publish"],
+      "dependsOn": [
+        "build-site",
+        "playground-engine-publish"
+      ],
       "source": "./_temp/playground-engine/wwwroot",
       "destination": "./_site/playground/engine",
       "include": "_framework/**",
@@ -46,6 +78,7 @@
       "dependsOn": [
         "build-site",
         "build-llms",
+        "agent-ready-prepare",
         "build-apidocs",
         "build-powershell-commands",
         "sitemap",
@@ -54,7 +87,9 @@
         "verify-ci",
         "audit-ci"
       ],
-      "modes": ["ci"],
+      "modes": [
+        "ci"
+      ],
       "siteRoot": "./_site",
       "config": "./site.json",
       "criticalCss": "./themes/chartforgex/critical.css",
@@ -62,10 +97,16 @@
       "minifyCss": true,
       "minifyJs": true,
       "optimizeImages": true,
-      "imageInclude": ["powerbginfo/**"],
+      "imageInclude": [
+        "powerbginfo/**"
+      ],
       "imageGenerateWebp": true,
       "imagePreferNextGen": true,
-      "imageWidths": [480, 960, 1440],
+      "imageWidths": [
+        480,
+        960,
+        1440
+      ],
       "imageQuality": 86,
       "imageFailOnFailures": true
     },
@@ -73,7 +114,9 @@
       "task": "seo-doctor",
       "id": "seo-doctor-optimized-ci",
       "dependsOn": "optimize-site",
-      "modes": ["ci"],
+      "modes": [
+        "ci"
+      ],
       "siteRoot": "./_site",
       "baseline": "./.powerforge/seo-baseline.json",
       "failOnNewIssues": true,
@@ -91,7 +134,9 @@
       "dependsOn": "optimize-site",
       "config": "./site.json",
       "siteRoot": "./_site",
-      "modes": ["ci"],
+      "modes": [
+        "ci"
+      ],
       "baseline": "./.powerforge/verify-baseline.json",
       "failOnNewWarnings": true,
       "failOnNavLint": true,
@@ -104,7 +149,9 @@
       "id": "audit-optimized-ci",
       "dependsOn": "optimize-site",
       "siteRoot": "./_site",
-      "modes": ["ci"],
+      "modes": [
+        "ci"
+      ],
       "summary": true,
       "sarif": true,
       "baseline": "./.powerforge/audit-baseline.json",
@@ -123,6 +170,19 @@
       "renderedEnsureInstalled": true,
       "renderedInclude": "index.html,404.html",
       "exclude": "examples/generated/**,site/**,playground/engine/**,powershell/examples/**"
+    },
+    {
+      "task": "agent-ready",
+      "id": "agent-ready-verify",
+      "dependsOn": "optimize-site",
+      "modes": [
+        "ci"
+      ],
+      "operation": "verify",
+      "config": "./site.json",
+      "siteRoot": "./_site",
+      "output": "./_reports/agent-ready.json",
+      "failOnFailures": true
     }
   ]
 }

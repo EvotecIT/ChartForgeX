@@ -47,7 +47,7 @@ concurrency:
 
 jobs:
   verify-site:
-    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-ci.yml@77a10b3d2b8cf3608d5b08747f273ae38e055479
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-ci.yml@cad2b985384215894e10eadaa8eb09b8096ac627
     with:
       website_root: Website
       pipeline_config: Website/pipeline.json
