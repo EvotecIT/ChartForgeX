@@ -9,10 +9,11 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgFactBlockRenderer {
-    private static void RenderMetricValueSurface(SvgMarkupWriter writer, MetricCard card, ChartRect content, double detailBottom, double labelSize, double valueSize, double valueWidth, ChartColor statusColor) {
+    private static void RenderMetricValueSurface(SvgMarkupWriter writer, MetricCard card, ChartRect content, MetricTextLayout textLayout, double valueWidth, ChartColor statusColor) {
         var theme = card.Options.ResolvedTheme;
-        var y = content.Y + labelSize + 18;
-        var height = Math.Max(1, detailBottom - y - 4);
+        var y = textLayout.SurfaceY;
+        var height = textLayout.SurfaceHeight;
+        var valueSize = textLayout.ValueSize;
         var radius = Math.Min(20, Math.Max(14, theme.PlotCornerRadius + 7));
         writer.StartElement("rect").Attribute("data-cfx-role", "metric-value-surface").Attribute("x", content.X).Attribute("y", y).Attribute("width", content.Width).Attribute("height", height).Attribute("rx", radius).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.WithAlpha(140).ToCss()).EndEmptyElement().Line();
         var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
@@ -31,7 +32,7 @@ public sealed partial class SvgFactBlockRenderer {
         }
 
         var surfaceValueWidth = Math.Max(1, Math.Min(valueWidth, content.X + content.Width - valueX - 22));
-        RenderMetricValueText(writer, card, valueX, y + height * 0.5 + valueSize * 0.34, valueSize, surfaceValueWidth, theme.Text, theme.MutedText);
+        RenderMetricValueText(writer, card, valueX, textLayout.ValueBaseline, valueSize, surfaceValueWidth, theme.Text, theme.MutedText);
     }
 
     private static void RenderMetricValueText(SvgMarkupWriter writer, MetricCard card, double x, double y, double valueSize, double maxWidth, ChartColor valueColor, ChartColor unitColor) {
@@ -55,5 +56,5 @@ public sealed partial class SvgFactBlockRenderer {
         return Math.Max(22, Math.Floor(requestedSize * maxWidth / Math.Max(1, estimatedWidth)));
     }
 
-    private static double MetricUnitFontSize(double valueSize) => Math.Max(13, Math.Min(24, valueSize * 0.42));
+    private static double MetricUnitFontSize(double valueSize) => Math.Min(valueSize, Math.Max(13, Math.Min(24, valueSize * 0.42)));
 }

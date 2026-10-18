@@ -162,9 +162,13 @@ public sealed partial class SvgFactBlockRenderer {
         if (heroMicroVisual) valueWidth = content.Width;
         if (valueInsetSurface && (card.Icon != VisualIcon.None || card.Symbol.Length > 0)) valueWidth = Math.Max(1, content.Width - 106);
         var valueSize = MetricValueFontSize(card, baseValueSize, valueWidth);
-        writer.StartElement("text").Attribute("data-cfx-role", "metric-label").Attribute("x", labelX).Attribute("y", content.Y + labelSize).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", labelSize).Attribute("font-weight", "700").Text(VisualBlockRendering.FitText(card.Label, labelSize, labelWidth)).EndElement().Line();
-        if (valueInsetSurface) RenderMetricValueSurface(writer, card, content, detailBottom, labelSize, valueSize, valueWidth, statusColor);
-        else RenderMetricValueText(writer, card, content.X, content.Y + labelSize + valueSize + 14 + valueYOffset, valueSize, valueWidth, theme.Text, theme.MutedText);
+        var preferredDetailsTop = content.Y + labelSize + valueSize + 22 + valueYOffset;
+        var textLayout = LayoutMetricText(card, content, labelSize, valueSize, valueYOffset, valueInsetSurface);
+        labelSize = textLayout.LabelSize;
+        valueSize = textLayout.ValueSize;
+        writer.StartElement("text").Attribute("data-cfx-role", "metric-label").Attribute("x", labelX).Attribute("y", textLayout.LabelBaseline).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", labelSize).Attribute("font-weight", "700").Text(VisualBlockRendering.FitText(card.Label, labelSize, labelWidth)).EndElement().Line();
+        if (valueInsetSurface) RenderMetricValueSurface(writer, card, content, textLayout, valueWidth, statusColor);
+        else RenderMetricValueText(writer, card, content.X, textLayout.ValueBaseline, valueSize, valueWidth, theme.Text, theme.MutedText);
         var microX = heroMicroVisual ? content.X + 24 : content.X + content.Width - microWidth;
         var microY = heroMicroVisual ? content.Y + Math.Max(66, options.Size.Height * 0.36) : content.Y + labelSize + Math.Max(20, valueSize * 0.52) + valueYOffset;
         if (hasMicroVisual && !heroMicroVisual && card.BadgePlacement == MetricCardBadgePlacement.TopRight
@@ -184,17 +188,16 @@ public sealed partial class SvgFactBlockRenderer {
 
         if (card.SparklineCount > 0) RenderMetricMiniSparkline(writer, card, microX, microY, microWidth, microHeight);
         else if (card.MiniBars.Count > 0) RenderMetricMiniBars(writer, card, microX, microY, microWidth, microHeight);
-        var detailsTop = heroMicroVisual ? microY + microHeight + 10 : content.Y + labelSize + valueSize + 22 + valueYOffset;
+        var detailsTop = heroMicroVisual ? microY + microHeight + 10 : textLayout.Compacted ? textLayout.ValueBaseline + 8 : preferredDetailsTop;
         RenderMetricDetails(writer, card, content, detailsTop, detailBottom);
-        RenderMetricDetail(writer, card, detailBottom, content.X, content.Width);
+        RenderMetricDetail(writer, card, textLayout.FooterBaseline, content.X, content.Width);
     }
 
-    private static void RenderMetricDetail(SvgMarkupWriter writer, MetricCard card, double bottom, double x, double width) {
+    private static void RenderMetricDetail(SvgMarkupWriter writer, MetricCard card, double baseline, double x, double width) {
         var theme = card.Options.ResolvedTheme;
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
         var trendSize = Math.Max(10, theme.SubtitleFontSize);
         var captionSize = Math.Max(10, theme.SubtitleFontSize - 1);
-        var baseline = bottom - (card.Trend.Length > 0 && card.Caption.Length > 0 ? 5 : 0);
         if (card.Trend.Length > 0) {
             var trendWidth = Math.Min(width * 0.42, VisualBlockRendering.EstimateTextWidth(card.Trend, trendSize) + 10);
             writer.StartElement("text").Attribute("data-cfx-role", "metric-trend").Attribute("x", x).Attribute("y", baseline).Attribute("fill", statusColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", trendSize).Attribute("font-weight", "700").Text(VisualBlockRendering.FitText(card.Trend, trendSize, trendWidth)).EndElement().Line();
