@@ -6780,7 +6780,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 24
     },
     {
       "id": "family-bubble-compact-options-light",
@@ -6814,7 +6814,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 23
     },
     {
       "id": "family-bubble-wide-dark",
@@ -7122,7 +7122,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 24
     },
     {
       "id": "family-bubble-compact-options-dark",
@@ -7156,7 +7156,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 23
     },
     {
       "id": "family-error-bar-wide-light",
@@ -16238,7 +16238,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 17
     },
     {
       "id": "family-timeline-compact-light",
@@ -16272,7 +16272,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 14
     },
     {
       "id": "family-timeline-wide-dark",
@@ -16306,7 +16306,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 17
     },
     {
       "id": "family-timeline-compact-dark",
@@ -16340,7 +16340,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 14
     },
     {
       "id": "family-gantt-wide-light",
@@ -17070,13 +17070,11 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17160,13 +17158,11 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17318,13 +17314,11 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17408,13 +17402,11 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -22819,7 +22811,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 28
     },
     {
       "id": "family-difference-area-compact-dated-gaps-light",
@@ -23093,7 +23085,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 28
     },
     {
       "id": "family-difference-area-compact-dated-gaps-dark",
@@ -23854,8 +23846,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "topology.shape-content-overflow",
+        "topology.label-height",
+        "topology.shape-content-overflow",
+        "topology.label-height"
+      ],
+      "diagnosticMessages": [
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange.",
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."
+      ],
       "semanticRegions": 17
     },
     {
@@ -23990,8 +23992,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "topology.shape-content-overflow",
+        "topology.label-height",
+        "topology.shape-content-overflow",
+        "topology.label-height"
+      ],
+      "diagnosticMessages": [
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange.",
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."
+      ],
       "semanticRegions": 17
     },
     {

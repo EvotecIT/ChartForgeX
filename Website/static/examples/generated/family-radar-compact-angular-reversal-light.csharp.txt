@@ -32,7 +32,8 @@ public static class RadarRecipe {
         if (variant is "angular-reversal" or "compact-angular-reversal") return Reversed();
         if (variant is "options" or "compact-options") return Markers();
         var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Radar, Observations(variant));
-        var expected = new ChartSeries(new ChartSeriesId("expected"), "Expected", ChartSeriesKind.Radar, Observations(variant, 12));
+        var expected = new ChartSeries(new ChartSeriesId("expected"), "Expected", ChartSeriesKind.Radar, Observations(variant == "sparse" ? "wide" : variant, 12));
+        observed.ConfigureRadar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
         return Chart.Create().WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
             .AddSeries(observed).AddSeries(expected)
             .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));

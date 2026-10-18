@@ -20,7 +20,7 @@ var theme = VisualTheme.Graphite();
 var model = BubbleMarkerOptionsRecipe.Create("options", mode);
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
-    new VisualFrame("Workload, time and request volume", "Equal request volumes share a radius; values above 100 retain their facts", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("Workload, time and request volume", "Equal request volumes share a filled area; values above 100 retain their facts", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());
@@ -43,6 +43,10 @@ public static class BubbleMarkerOptionsRecipe {
         }).ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
         return Chart.Create().WithXAxis("Workload batches").WithYAxis("Time (minutes)")
             .AddSeries(standard).AddSeries(priority)
-            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
+            .ConfigureBubble(bubble => {
+                bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 0; bubble.MaximumRadius = 24;
+                bubble.SizeEncoding = ChartBubbleSizeEncoding.Area;
+                bubble.SizeDimension.Name = "Requests"; bubble.SizeDimension.ShowLegend = true;
+            });
     }
 }

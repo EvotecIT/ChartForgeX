@@ -9462,12 +9462,12 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|400|normal|13|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|600|normal|13|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "AEFE6D3CA0A5344E6E65331BE34755A75022543BCD55FC36B7EC9E768C870E47"
+        "frameFontFingerprint": "EF3C323D0110027E780E4B1AE7DA5072C4377C50D889AB2B0A51B494242CB7B6"
       },
       "width": 1280,
-      "height": 733,
+      "height": 723,
       "logicalWidth": 1280.0,
-      "logicalHeight": 732.925,
+      "logicalHeight": 722.925,
       "svg": {
         "minVisualNodes": 133,
         "maxClippedTextNodes": 0,
@@ -9486,12 +9486,12 @@
       "layout": {
         "heightMode": "natural",
         "frameFontRequest": "Calibri, Carlito, Segoe UI, system-ui, sans-serif|400|normal|13.5|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|400|normal|13|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|600|normal|13|\nCalibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "AEFE6D3CA0A5344E6E65331BE34755A75022543BCD55FC36B7EC9E768C870E47"
+        "frameFontFingerprint": "EF3C323D0110027E780E4B1AE7DA5072C4377C50D889AB2B0A51B494242CB7B6"
       },
       "width": 1280,
-      "height": 733,
+      "height": 723,
       "logicalWidth": 1280.0,
-      "logicalHeight": 732.925,
+      "logicalHeight": 722.925,
       "svg": {
         "minVisualNodes": 138,
         "maxClippedTextNodes": 0,

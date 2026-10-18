@@ -1,25 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-a594a824" width="1376" height="300" viewBox="0 0 1376 300" role="img" aria-labelledby="cfx-visual-grid-a594a824-title cfx-visual-grid-a594a824-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-grid-a594a824-title">Endpoint Snapshot</title>
-<desc id="cfx-visual-grid-a594a824-desc">Static visual grid containing charts and visual blocks.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-2787231a" width="1376" height="300" viewBox="0 0 1376 300" role="img" aria-labelledby="cfx-visual-grid-2787231a-title cfx-visual-grid-2787231a-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-grid-2787231a-title">Endpoint Snapshot</title>
+<desc id="cfx-visual-grid-2787231a-desc">Static visual grid containing charts and visual blocks.</desc>
 <defs>
-<style>#cfx-visual-grid-a594a824 .cfx-guide-stroke,#cfx-visual-grid-a594a824 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-a594a824 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<style>#cfx-visual-grid-2787231a .cfx-guide-stroke,#cfx-visual-grid-2787231a .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-2787231a text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
 </defs>
 <rect width="100%" height="100%" fill="#101319"/>
 <text data-cfx-role="visual-grid-title" data-cfx-target="title" x="24" y="42.75" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="25" font-weight="700">Endpoint Snapshot</text>
 <text data-cfx-role="visual-grid-subtitle" data-cfx-target="subtitle" x="26" y="61.5" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5">PowerBGInfo-style reusable metric cards with embedded micro visuals.</text>
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-7e55a70a" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-7e55a70a-title cfx-visual-7e55a70a-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="24" y="100" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-7e55a70a-title">CPU Load</title>
-<desc id="cfx-visual-7e55a70a-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-27e6fdfa" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-27e6fdfa-title cfx-visual-27e6fdfa-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="24" y="100" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-27e6fdfa-title">CPU Load</title>
+<desc id="cfx-visual-27e6fdfa-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-7e55a70a .cfx-guide-stroke,#cfx-visual-7e55a70a .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-7e55a70a text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-7e55a70a-visualCardClip"><rect x="0" y="0" width="320" height="176" rx="18"/></clipPath>
+<style>#cfx-visual-27e6fdfa .cfx-guide-stroke,#cfx-visual-27e6fdfa .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-27e6fdfa text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-27e6fdfa-visualCardClip"><rect x="0" y="0" width="320" height="176" rx="18"/></clipPath>
 </defs>
 <rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="319" height="175" rx="17.5" fill="#171B22" stroke="#222834"/>
-<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="173" fill="#10B981" clip-path="url(#cfx-visual-7e55a70a-visualCardClip)"/>
+<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="173" fill="#10B981" clip-path="url(#cfx-visual-27e6fdfa-visualCardClip)"/>
 <circle data-cfx-role="metric-symbol-badge" data-cfx-placement="top-left" cx="37.36" cy="35.36" r="19.36" fill="rgba(16,185,129,0.188)" stroke="#10B981"/>
 <text data-cfx-role="metric-symbol" x="37.36" y="35.36" text-anchor="middle" dominant-baseline="central" alignment-baseline="central" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700">CPU</text>
 <text data-cfx-role="metric-label" x="68.72" y="28.5" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">CPU Load</text>
-<text data-cfx-role="metric-value" x="18" y="91.868" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="38.72" font-weight="700">38%</text>
+<text data-cfx-role="metric-value" x="68.72" y="91.868" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="38.72" font-weight="700">38%</text>
 <g data-cfx-role="metric-mini-sparkline" data-cfx-style="area" data-cfx-min="38" data-cfx-max="52">
 <polygon data-cfx-role="metric-mini-sparkline-fill" points="211.12,101.522 211.12,59.282 233.84,71.351 256.56,83.42 279.28,92.471 302,101.522 302,101.522" fill="rgba(52,211,153,0.165)"/>
 <polyline data-cfx-role="metric-mini-sparkline-line" points="211.12,59.282 233.84,71.351 256.56,83.42 279.28,92.471 302,101.522" fill="none" stroke="#34D399" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -29,19 +29,19 @@
 <text data-cfx-role="metric-caption" x="54.25" y="159" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5">5 minute trend</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-de17c72b" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-de17c72b-title cfx-visual-de17c72b-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="360" y="100" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-de17c72b-title">Memory Used</title>
-<desc id="cfx-visual-de17c72b-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-8b68e2ca" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-8b68e2ca-title cfx-visual-8b68e2ca-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="360" y="100" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-8b68e2ca-title">Memory Used</title>
+<desc id="cfx-visual-8b68e2ca-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-de17c72b .cfx-guide-stroke,#cfx-visual-de17c72b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-de17c72b text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-de17c72b-visualCardClip"><rect x="0" y="0" width="320" height="176" rx="18"/></clipPath>
+<style>#cfx-visual-8b68e2ca .cfx-guide-stroke,#cfx-visual-8b68e2ca .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-8b68e2ca text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-8b68e2ca-visualCardClip"><rect x="0" y="0" width="320" height="176" rx="18"/></clipPath>
 </defs>
 <rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="319" height="175" rx="17.5" fill="#171B22" stroke="#222834"/>
-<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="173" fill="#F59E0B" clip-path="url(#cfx-visual-de17c72b-visualCardClip)"/>
+<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="173" fill="#F59E0B" clip-path="url(#cfx-visual-8b68e2ca-visualCardClip)"/>
 <circle data-cfx-role="metric-symbol-badge" data-cfx-placement="top-left" cx="37.36" cy="35.36" r="19.36" fill="rgba(245,158,11,0.188)" stroke="#F59E0B"/>
 <text data-cfx-role="metric-symbol" x="37.36" y="35.36" text-anchor="middle" dominant-baseline="central" alignment-baseline="central" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700">RAM</text>
 <text data-cfx-role="metric-label" x="68.72" y="28.5" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">Memory Used</text>
-<text data-cfx-role="metric-value" x="18" y="91.868" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="38.72" font-weight="700">71%</text>
+<text data-cfx-role="metric-value" x="68.72" y="91.868" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="38.72" font-weight="700">71%</text>
 <g data-cfx-role="metric-mini-bars" data-cfx-min="0" data-cfx-max="100">
 <rect data-cfx-role="metric-mini-bar" data-cfx-index="0" data-cfx-value="55" x="211.12" y="78.29" width="14.176" height="23.232" rx="5" fill="rgba(100,116,139,0.361)"/>
 <rect data-cfx-role="metric-mini-bar" data-cfx-index="1" data-cfx-value="59" x="230.296" y="76.601" width="14.176" height="24.922" rx="5" fill="rgba(100,116,139,0.361)"/>
@@ -53,19 +53,19 @@
 <text data-cfx-role="metric-caption" x="54.25" y="159" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5">since boot</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-331d897b" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-331d897b-title cfx-visual-331d897b-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="696" y="100" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-331d897b-title">Disk Free</title>
-<desc id="cfx-visual-331d897b-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-3b4d42c5" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-3b4d42c5-title cfx-visual-3b4d42c5-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="696" y="100" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-3b4d42c5-title">Disk Free</title>
+<desc id="cfx-visual-3b4d42c5-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-331d897b .cfx-guide-stroke,#cfx-visual-331d897b .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-331d897b text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-331d897b-visualCardClip"><rect x="0" y="0" width="320" height="176" rx="18"/></clipPath>
+<style>#cfx-visual-3b4d42c5 .cfx-guide-stroke,#cfx-visual-3b4d42c5 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-3b4d42c5 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-3b4d42c5-visualCardClip"><rect x="0" y="0" width="320" height="176" rx="18"/></clipPath>
 </defs>
 <rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="319" height="175" rx="17.5" fill="#171B22" stroke="#222834"/>
-<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="173" fill="#10B981" clip-path="url(#cfx-visual-331d897b-visualCardClip)"/>
+<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="173" fill="#10B981" clip-path="url(#cfx-visual-3b4d42c5-visualCardClip)"/>
 <circle data-cfx-role="metric-symbol-badge" data-cfx-placement="top-left" cx="37.36" cy="35.36" r="19.36" fill="rgba(16,185,129,0.188)" stroke="#10B981"/>
 <text data-cfx-role="metric-symbol" x="37.36" y="35.36" text-anchor="middle" dominant-baseline="central" alignment-baseline="central" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700">SSD</text>
 <text data-cfx-role="metric-label" x="68.72" y="28.5" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">Disk Free</text>
-<text data-cfx-role="metric-value" x="18" y="91.868" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="38.72" font-weight="700">128 GB</text>
+<text data-cfx-role="metric-value" x="68.72" y="91.868" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="38.72" font-weight="700">128 GB</text>
 <g data-cfx-role="metric-mini-bars" data-cfx-min="0" data-cfx-max="100">
 <rect data-cfx-role="metric-mini-bar" data-cfx-index="0" data-cfx-value="92" x="211.12" y="62.662" width="14.176" height="38.861" rx="5" fill="rgba(100,116,139,0.361)"/>
 <rect data-cfx-role="metric-mini-bar" data-cfx-index="1" data-cfx-value="87" x="230.296" y="64.774" width="14.176" height="36.749" rx="5" fill="rgba(100,116,139,0.361)"/>
@@ -77,23 +77,23 @@
 <text data-cfx-role="metric-caption" x="74.75" y="159" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5">system volume</text>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-ff862433" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-ff862433-title cfx-visual-ff862433-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="1032" y="100" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-ff862433-title">Network</title>
-<desc id="cfx-visual-ff862433-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-784cbe5c" width="320" height="176" viewBox="0 0 320 176" role="img" aria-labelledby="cfx-visual-784cbe5c-title cfx-visual-784cbe5c-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="1032" y="100" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-784cbe5c-title">Network</title>
+<desc id="cfx-visual-784cbe5c-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-ff862433 .cfx-guide-stroke,#cfx-visual-ff862433 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-ff862433 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-ff862433-visualCardClip"><rect x="0" y="0" width="320" height="176" rx="18"/></clipPath>
+<style>#cfx-visual-784cbe5c .cfx-guide-stroke,#cfx-visual-784cbe5c .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-784cbe5c text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-784cbe5c-visualCardClip"><rect x="0" y="0" width="320" height="176" rx="18"/></clipPath>
 </defs>
 <rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="319" height="175" rx="17.5" fill="#171B22" stroke="#222834"/>
-<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="173" fill="#2F6BD9" clip-path="url(#cfx-visual-ff862433-visualCardClip)"/>
+<rect data-cfx-role="metric-status-bar" x="1.5" y="1.5" width="7" height="173" fill="#2F6BD9" clip-path="url(#cfx-visual-784cbe5c-visualCardClip)"/>
 <circle data-cfx-role="metric-symbol-badge" data-cfx-placement="top-left" cx="37.36" cy="35.36" r="19.36" fill="rgba(47,107,217,0.188)" stroke="#2F6BD9"/>
 <text data-cfx-role="metric-symbol" x="37.36" y="35.36" text-anchor="middle" dominant-baseline="central" alignment-baseline="central" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700">LAN</text>
 <text data-cfx-role="metric-label" x="68.72" y="28.5" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">Network</text>
-<text data-cfx-role="metric-value" x="18" y="91.868" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="38.72" font-weight="700">842 Mbps</text>
+<text data-cfx-role="metric-value" x="68.72" y="91.868" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="28.08" font-weight="700">842 Mbps</text>
 <g data-cfx-role="metric-mini-sparkline" data-cfx-style="area" data-cfx-min="24" data-cfx-max="82">
-<polygon data-cfx-role="metric-mini-sparkline-fill" points="211.12,101.522 211.12,101.522 233.84,84.044 256.56,92.055 279.28,72.391 302,59.282 302,101.522" fill="rgba(255,159,74,0.165)"/>
-<polyline data-cfx-role="metric-mini-sparkline-line" points="211.12,101.522 233.84,84.044 256.56,92.055 279.28,72.391 302,59.282" fill="none" stroke="#FF9F4A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-<circle data-cfx-role="metric-mini-sparkline-current" cx="302" cy="59.282" r="3.2" fill="#FF9F4A"/>
+<polygon data-cfx-role="metric-mini-sparkline-fill" points="211.12,101.388 211.12,101.388 233.84,83.909 256.56,91.92 279.28,72.257 302,59.148 302,101.388" fill="rgba(255,159,74,0.165)"/>
+<polyline data-cfx-role="metric-mini-sparkline-line" points="211.12,101.388 233.84,83.909 256.56,91.92 279.28,72.257 302,59.148" fill="none" stroke="#FF9F4A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<circle data-cfx-role="metric-mini-sparkline-current" cx="302" cy="59.148" r="3.2" fill="#FF9F4A"/>
 </g>
 <text data-cfx-role="metric-trend" x="18" y="159" fill="#2F6BD9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700">+18%</text>
 <text data-cfx-role="metric-caption" x="62" y="159" fill="#A6ADBB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5">active adapter</text>
