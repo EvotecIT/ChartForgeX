@@ -567,7 +567,7 @@ body {
 }
 
 .cfx-compare-tray__summary,
-.cfx-compare-tray__more {
+.cfx-compare-tray__range {
   flex: 0 0 auto;
   color: #7dd3fc;
   font-size: 11px;
@@ -577,6 +577,7 @@ body {
 }
 
 .cfx-compare-chip,
+.cfx-compare-page,
 .cfx-compare-clear {
   min-width: 0;
   border: 1px solid rgba(56, 189, 248, .34);
@@ -600,10 +601,15 @@ body {
 }
 
 .cfx-compare-chip:hover,
-.cfx-compare-chip:focus-visible {
+.cfx-compare-chip:focus-visible,
+.cfx-compare-page:hover:not(:disabled),
+.cfx-compare-page:focus-visible {
   border-color: #7dd3fc;
   color: #bae6fd;
 }
+
+.cfx-compare-page { flex: 0 0 auto; white-space: nowrap; }
+.cfx-compare-page:disabled { cursor: default; opacity: .5; }
 
 .cfx-compare-clear {
   flex: 0 0 auto;
@@ -791,7 +797,35 @@ body {
 .cfx-interactive-chart .cfx-scenario:hover,
 .cfx-interactive-chart .cfx-scenario:focus-visible,
 .cfx-interactive-chart .cfx-scenario[aria-pressed="true"] {
-  border-color: var(--cfx-host-accent); color: var(--cfx-host-accent);
+  border-color: var(--cfx-host-accent); color: var(--cfx-tooltip-text);
+}
+/* Scenario captions use the same readable surface roles as other host controls. */
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__title,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li[aria-current="step"] { color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__meta { color: var(--cfx-tooltip-muted); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li::before {
+  background: var(--cfx-tooltip-line); color: var(--cfx-tooltip-text); border: 1px solid var(--cfx-scenario-color, var(--cfx-host-accent));
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li[aria-current="step"] { border-color: var(--cfx-scenario-color, var(--cfx-host-accent)); }
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-scenario-playback="playing"] [data-cfx-scenario-step-control="play"] {
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); border-color: var(--cfx-scenario-color, var(--cfx-host-accent));
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress__bar {
+  inset: auto auto 0 0; height: 3px; background: var(--cfx-tooltip-muted);
+  box-shadow: inset -2px 0 0 var(--cfx-scenario-color, var(--cfx-host-accent));
+}
+@media (forced-colors: active) {
+  .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress {
+    background: Canvas; color: CanvasText; border-color: CanvasText; forced-color-adjust: none;
+  }
+  .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress__bar {
+    background: CanvasText; box-shadow: none; forced-color-adjust: none;
+  }
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-stage { background: transparent; border: 0; padding: 0; }
 /* The frame hugs the chart card and aligns its contextual control with the card edge. */
@@ -807,13 +841,16 @@ body {
   box-shadow: none; font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__summary,
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__more { color: var(--cfx-tooltip-muted); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__range { color: var(--cfx-tooltip-muted); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:hover,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:focus-visible,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page:hover:not(:disabled),
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page:focus-visible,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:hover,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:focus-visible { border-color: var(--cfx-host-accent); }
 .cfx-dashboard { gap: 16px; }
@@ -861,6 +898,7 @@ body {
   .cfx-reset,
   .cfx-tooltip,
   .cfx-compare-tray,
+  .cfx-legend-overflow,
   .cfx-brush-box,
   [data-cfx-keyboard-focus-outline],
   .cfx-crosshair,
@@ -980,12 +1018,34 @@ body {
 .cfx-interactive-chart[dir="rtl"] .cfx-scenarios,
 .cfx-interactive-chart[dir="rtl"] .cfx-compare-tray { text-align: start; }
 .cfx-interactive-chart[dir="rtl"] .cfx-tooltip__meta dt { text-align: start; }
+
+/* Retained native legend facts stay readable without changing the chart's measured frame. */
+.cfx-legend-overflow {
+  margin-block: 10px;
+  padding: 10px;
+  border: 1px solid var(--cfx-tooltip-line, #334155);
+  border-radius: 6px;
+  background: var(--cfx-tooltip-surface, #111827);
+  color: var(--cfx-tooltip-text, #e5e7eb);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.cfx-legend-overflow summary { cursor: pointer; font-weight: 600; }
+.cfx-legend-overflow summary:focus-visible { outline: 2px solid var(--cfx-host-accent, #38bdf8); outline-offset: 3px; }
+.cfx-legend-overflow__navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-block: 10px; }
+.cfx-legend-overflow__range { margin-inline-end: auto; color: var(--cfx-tooltip-muted, #94a3b8); }
+.cfx-legend-overflow__entries { display: grid; gap: 6px; }
+.cfx-legend-overflow__entry { display: flex; align-items: start; gap: 8px; min-width: 0; }
+.cfx-legend-overflow__entry > .cfx-tool { flex: 0 0 auto; }
+.cfx-legend-overflow__entry > .cfx-legend-overflow__toggle { flex: 1 1 auto; min-width: 0; white-space: normal; text-align: start; }
+.cfx-legend-overflow__toggle[aria-pressed="true"] > span { text-decoration: line-through; }
+.cfx-legend-overflow [data-cfx-legend-page]:disabled { cursor: default; opacity: .5; }
 </style>
 <style>body{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}@media print{body{min-height:auto;padding:0;background:transparent}body{background:transparent!important}.cfx-shell{min-height:auto;padding:0;background:transparent!important}}</style>
 </head>
 <body style="background:#F2F3F4;color:#16181C;font-family:Calibri, Carlito, Segoe UI, system-ui, sans-serif">
 <main class="cfx-shell" style="background:#F2F3F4;color:#16181C;font-family:Calibri, Carlito, Segoe UI, system-ui, sans-serif">
-<section class="cfx-interactive-chart" data-cfx-look="graphite" role="group" aria-label="Check results over time" lang="en" data-cfx-ui="{&quot;ChartControls&quot;:&quot;Chart controls&quot;,&quot;ZoomIn&quot;:&quot;Zoom in&quot;,&quot;ZoomOut&quot;:&quot;Zoom out&quot;,&quot;ZoomInButton&quot;:&quot;Zoom +&quot;,&quot;ZoomOutButton&quot;:&quot;Zoom -&quot;,&quot;Pan&quot;:&quot;Pan&quot;,&quot;PanChart&quot;:&quot;Pan chart&quot;,&quot;Brush&quot;:&quot;Brush&quot;,&quot;BrushRegion&quot;:&quot;Brush select region&quot;,&quot;DownloadSvg&quot;:&quot;Download SVG&quot;,&quot;DownloadPng&quot;:&quot;Download PNG&quot;,&quot;ResetView&quot;:&quot;Reset view&quot;,&quot;Compare&quot;:&quot;Compare {count}&quot;,&quot;Clear&quot;:&quot;Clear&quot;,&quot;Highlighted&quot;:&quot;{count} marks highlighted&quot;,&quot;HighlightCleared&quot;:&quot;Highlight cleared&quot;,&quot;ChartScenarios&quot;:&quot;Chart scenarios&quot;,&quot;All&quot;:&quot;All&quot;,&quot;ShowAllScenarios&quot;:&quot;Show all scenarios&quot;,&quot;AllDataVisible&quot;:&quot;All chart data visible&quot;,&quot;Steps&quot;:&quot;{count} steps&quot;,&quot;StepProgress&quot;:&quot;Step {current} / {count}&quot;,&quot;Previous&quot;:&quot;Prev&quot;,&quot;PreviousStep&quot;:&quot;Previous step&quot;,&quot;Play&quot;:&quot;Play&quot;,&quot;Pause&quot;:&quot;Pause&quot;,&quot;PlayScenario&quot;:&quot;Play scenario&quot;,&quot;PauseScenario&quot;:&quot;Pause scenario&quot;,&quot;Next&quot;:&quot;Next&quot;,&quot;NextStep&quot;:&quot;Next step&quot;,&quot;ClearStep&quot;:&quot;Clear step&quot;,&quot;Link&quot;:&quot;Link&quot;,&quot;CopyScenarioLink&quot;:&quot;Copy scenario link&quot;,&quot;ScenarioTimelineStep&quot;:&quot;Scenario timeline step&quot;,&quot;Pinned&quot;:&quot;Pinned&quot;}" data-cfx-asset-source="document" data-cfx-chart-id="check-results-over-time" data-cfx-prepared-chart="{&quot;series&quot;:[{&quot;name&quot;:&quot;Passed&quot;,&quot;key&quot;:&quot;passed&quot;,&quot;local&quot;:false,&quot;kind&quot;:&quot;line&quot;,&quot;state&quot;:&quot;quiet&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;Warnings&quot;,&quot;key&quot;:&quot;warnings&quot;,&quot;local&quot;:false,&quot;kind&quot;:&quot;line&quot;,&quot;state&quot;:&quot;warning&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;Failed&quot;,&quot;key&quot;:&quot;failed&quot;,&quot;local&quot;:false,&quot;kind&quot;:&quot;line&quot;,&quot;state&quot;:&quot;danger&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]}],&quot;xLabels&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;Mon&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;Tue&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;Wed&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;Thu&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;Fri&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;Sat&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;Sun&quot;}],&quot;regions&quot;:[{&quot;id&quot;:&quot;legend-series-0&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Passed&quot;,&quot;x&quot;:24,&quot;y&quot;:75.65,&quot;width&quot;:71.36083984375,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-1&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Warnings&quot;,&quot;x&quot;:107.36083984375,&quot;y&quot;:75.65,&quot;width&quot;:82.4248046875,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-2&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Failed&quot;,&quot;x&quot;:201.78564453125,&quot;y&quot;:75.65,&quot;width&quot;:63.4072265625,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;cartesian-plot&quot;,&quot;role&quot;:&quot;cartesian-plot&quot;,&quot;label&quot;:&quot;&quot;,&quot;x&quot;:58.681640625,&quot;y&quot;:115.19375000000001,&quot;width&quot;:501.08984375,&quot;height&quot;:170.71875},{&quot;id&quot;:&quot;axis-x-label-0&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Mon (1)&quot;,&quot;x&quot;:58.681640625,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-1&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Tue (2)&quot;,&quot;x&quot;:141.69661458333334,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-2&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Wed (3)&quot;,&quot;x&quot;:224.71158854166669,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-3&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Thu (4)&quot;,&quot;x&quot;:307.7265625,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-4&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Fri (5)&quot;,&quot;x&quot;:390.74153645833337,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-5&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Sat (6)&quot;,&quot;x&quot;:473.7565104166667,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-6&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Sun (7)&quot;,&quot;x&quot;:556.771484375,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-y-label-0&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;0 (0)&quot;,&quot;x&quot;:24,&quot;y&quot;:284.24072624190063,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-1&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;250 (250)&quot;,&quot;x&quot;:24,&quot;y&quot;:254.05376619870412,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-2&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;500 (500)&quot;,&quot;x&quot;:24,&quot;y&quot;:223.86680615550756,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-3&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;750 (750)&quot;,&quot;x&quot;:24,&quot;y&quot;:193.67984611231103,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-4&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;1k (1000)&quot;,&quot;x&quot;:24,&quot;y&quot;:163.4928860691145,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-5&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;1.3k (1250)&quot;,&quot;x&quot;:24,&quot;y&quot;:133.30592602591796,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;series-0-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 820 (1, 820)&quot;,&quot;x&quot;:55.681640625,&quot;y&quot;:182.227497300216,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 940 (2, 940)&quot;,&quot;x&quot;:138.69661458333334,&quot;y&quot;:167.73775647948167,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 980 (3, 980)&quot;,&quot;x&quot;:221.71158854166669,&quot;y&quot;:162.90784287257023,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,041 (4, 1041)&quot;,&quot;x&quot;:304.7265625,&quot;y&quot;:155.54222462203026,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,120 (5, 1120)&quot;,&quot;x&quot;:387.74153645833337,&quot;y&quot;:146.00314524838015,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,180 (6, 1180)&quot;,&quot;x&quot;:470.7565104166667,&quot;y&quot;:138.75827483801297,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,230 (7, 1230)&quot;,&quot;x&quot;:553.771484375,&quot;y&quot;:132.72088282937366,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 120 (1, 120)&quot;,&quot;x&quot;:55.681640625,&quot;y&quot;:266.7509854211663,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 138 (2, 138)&quot;,&quot;x&quot;:138.69661458333334,&quot;y&quot;:264.5775242980562,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 131 (3, 131)&quot;,&quot;x&quot;:221.71158854166669,&quot;y&quot;:265.42275917926565,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 112 (4, 112)&quot;,&quot;x&quot;:304.7265625,&quot;y&quot;:267.7169681425486,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 98 (5, 98)&quot;,&quot;x&quot;:387.74153645833337,&quot;y&quot;:269.4074379049676,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 86 (6, 86)&quot;,&quot;x&quot;:470.7565104166667,&quot;y&quot;:270.85641198704104,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 72 (7, 72)&quot;,&quot;x&quot;:553.771484375,&quot;y&quot;:272.54688174946006,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 22 (1, 22)&quot;,&quot;x&quot;:55.681640625,&quot;y&quot;:278.58427375809936,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 30 (2, 30)&quot;,&quot;x&quot;:138.69661458333334,&quot;y&quot;:277.6182910367171,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 27 (3, 27)&quot;,&quot;x&quot;:221.71158854166669,&quot;y&quot;:277.98053455723544,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 31 (4, 31)&quot;,&quot;x&quot;:304.7265625,&quot;y&quot;:277.49754319654426,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 18 (5, 18)&quot;,&quot;x&quot;:387.74153645833337,&quot;y&quot;:279.0672651187905,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 14 (6, 14)&quot;,&quot;x&quot;:470.7565104166667,&quot;y&quot;:279.5502564794817,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 11 (7, 11)&quot;,&quot;x&quot;:553.771484375,&quot;y&quot;:279.9125,&quot;width&quot;:6,&quot;height&quot;:6}],&quot;categoryLabels&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;Mon&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;Tue&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;Wed&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;Thu&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;Fri&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;Sat&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;Sun&quot;}],&quot;dataProjection&quot;:{&quot;x&quot;:{&quot;minimum&quot;:1,&quot;maximum&quot;:7.03613805867729,&quot;transformedMinimum&quot;:1,&quot;transformedMaximum&quot;:7.03613805867729,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;displayTicks&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;Mon&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;Tue&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;Wed&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;Thu&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;Fri&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;Sat&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;Sun&quot;}],&quot;displayBounds&quot;:[]},&quot;y&quot;:{&quot;minimum&quot;:-13.845164896590404,&quot;maximum&quot;:1400,&quot;transformedMinimum&quot;:-13.845164896590404,&quot;transformedMaximum&quot;:1400,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;displayTicks&quot;:[{&quot;value&quot;:0,&quot;text&quot;:&quot;0&quot;},{&quot;value&quot;:250,&quot;text&quot;:&quot;250&quot;},{&quot;value&quot;:500,&quot;text&quot;:&quot;500&quot;},{&quot;value&quot;:750,&quot;text&quot;:&quot;750&quot;},{&quot;value&quot;:1000,&quot;text&quot;:&quot;1k&quot;},{&quot;value&quot;:1250,&quot;text&quot;:&quot;1.3k&quot;}],&quot;displayBounds&quot;:[{&quot;value&quot;:-13.845164896590404,&quot;text&quot;:&quot;-13.85&quot;},{&quot;value&quot;:1400,&quot;text&quot;:&quot;1.4k&quot;}]},&quot;horizontal&quot;:false,&quot;plotBounds&quot;:{&quot;x&quot;:58.681640625,&quot;y&quot;:115.19375000000001,&quot;width&quot;:501.08984375,&quot;height&quot;:170.71875}},&quot;xProjection&quot;:{&quot;fullMinimum&quot;:1,&quot;fullMaximum&quot;:7.03613805867729,&quot;minimum&quot;:1,&quot;maximum&quot;:7.03613805867729,&quot;scale&quot;:&quot;linear&quot;,&quot;reversed&quot;:false,&quot;plotBounds&quot;:{&quot;x&quot;:58.681640625,&quot;y&quot;:115.19375000000001,&quot;width&quot;:501.08984375,&quot;height&quot;:170.71875}}}" data-cfx-interaction-features="ReportReview" data-cfx-scenario-count="0" data-cfx-deep-link-state="false" data-cfx-responsive-layout="readable" data-cfx-toolbar="band" data-cfx-selection-mode="toggle" data-cfx-brush-axis="xy" data-cfx-dim-others-selected="false" data-cfx-pin-on-select="true" data-cfx-tooltip-mode="shared-x" data-cfx-tooltip-range="distance" data-cfx-tooltip-distance="120" data-cfx-tooltip-delay="360" data-cfx-tooltip-anchor="pointer" data-cfx-tooltip-placements="bottom-right" data-cfx-tooltip-gap="14" data-cfx-tooltip-offset-x="0" data-cfx-tooltip-offset-y="0" data-cfx-crosshair-label="false" style="--cfx-intrinsic-width:596px;--cfx-native-width:596px;--cfx-native-height:338px;--cfx-host-background:transparent;--cfx-tooltip-font:Calibri, Carlito, Segoe UI, system-ui, sans-serif;--cfx-tooltip-surface:var(--cfx-surface-card,#FFFFFF);--cfx-tooltip-text:var(--cfx-text-primary,#16181C);--cfx-tooltip-muted:var(--cfx-text-muted,#4D525B);--cfx-tooltip-line:var(--cfx-surface-line,#E2E4E7);--cfx-tooltip-shadow:var(--cfx-shadow-tooltip,0 8px 24px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.08));--cfx-crosshair-axis:var(--cfx-guide-axis,#E2E4E7);--cfx-host-accent:var(--cfx-accent-base,#2A78D6)">
+<section class="cfx-interactive-chart" data-cfx-look="graphite" role="group" aria-label="Check results over time" lang="en" data-cfx-ui="{&quot;ChartControls&quot;:&quot;Chart controls&quot;,&quot;ZoomIn&quot;:&quot;Zoom in&quot;,&quot;ZoomOut&quot;:&quot;Zoom out&quot;,&quot;ZoomInButton&quot;:&quot;Zoom +&quot;,&quot;ZoomOutButton&quot;:&quot;Zoom -&quot;,&quot;Pan&quot;:&quot;Pan&quot;,&quot;PanChart&quot;:&quot;Pan chart&quot;,&quot;Brush&quot;:&quot;Brush&quot;,&quot;BrushRegion&quot;:&quot;Brush select region&quot;,&quot;DownloadSvg&quot;:&quot;Download SVG&quot;,&quot;DownloadPng&quot;:&quot;Download PNG&quot;,&quot;ResetView&quot;:&quot;Reset view&quot;,&quot;Compare&quot;:&quot;Compare {count}&quot;,&quot;Clear&quot;:&quot;Clear&quot;,&quot;Highlighted&quot;:&quot;{count} marks highlighted&quot;,&quot;HighlightCleared&quot;:&quot;Highlight cleared&quot;,&quot;ChartScenarios&quot;:&quot;Chart scenarios&quot;,&quot;All&quot;:&quot;All&quot;,&quot;ShowAllScenarios&quot;:&quot;Show all scenarios&quot;,&quot;AllDataVisible&quot;:&quot;All chart data visible&quot;,&quot;Steps&quot;:&quot;{count} steps&quot;,&quot;StepProgress&quot;:&quot;Step {current} / {count}&quot;,&quot;Previous&quot;:&quot;Prev&quot;,&quot;PreviousStep&quot;:&quot;Previous step&quot;,&quot;Play&quot;:&quot;Play&quot;,&quot;Pause&quot;:&quot;Pause&quot;,&quot;PlayScenario&quot;:&quot;Play scenario&quot;,&quot;PauseScenario&quot;:&quot;Pause scenario&quot;,&quot;Next&quot;:&quot;Next&quot;,&quot;NextStep&quot;:&quot;Next step&quot;,&quot;ClearStep&quot;:&quot;Clear step&quot;,&quot;Link&quot;:&quot;Link&quot;,&quot;CopyScenarioLink&quot;:&quot;Copy scenario link&quot;,&quot;ScenarioTimelineStep&quot;:&quot;Scenario timeline step&quot;,&quot;Pinned&quot;:&quot;Pinned&quot;,&quot;ComparePrevious&quot;:&quot;Previous selected targets&quot;,&quot;CompareNext&quot;:&quot;Next selected targets&quot;,&quot;CompareRange&quot;:&quot;{first}–{last} of {count}&quot;,&quot;Value&quot;:&quot;Value&quot;,&quot;LegendMore&quot;:&quot;More legend entries ({count})&quot;,&quot;LegendPrevious&quot;:&quot;Previous legend entries&quot;,&quot;LegendNext&quot;:&quot;Next legend entries&quot;,&quot;LegendRange&quot;:&quot;{first}–{last} of {count}&quot;,&quot;LegendMute&quot;:&quot;Mute {label}&quot;,&quot;LegendIsolate&quot;:&quot;Isolate {label}&quot;,&quot;LegendIsolateButton&quot;:&quot;Isolate&quot;}" data-cfx-label-value="Value" data-cfx-asset-source="document" data-cfx-chart-id="check-results-over-time" data-cfx-prepared-chart="{&quot;series&quot;:[{&quot;name&quot;:&quot;Passed&quot;,&quot;key&quot;:&quot;passed&quot;,&quot;local&quot;:false,&quot;kind&quot;:&quot;line&quot;,&quot;state&quot;:&quot;quiet&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;Warnings&quot;,&quot;key&quot;:&quot;warnings&quot;,&quot;local&quot;:false,&quot;kind&quot;:&quot;line&quot;,&quot;state&quot;:&quot;warning&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;Failed&quot;,&quot;key&quot;:&quot;failed&quot;,&quot;local&quot;:false,&quot;kind&quot;:&quot;line&quot;,&quot;state&quot;:&quot;danger&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]}],&quot;xLabels&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;Mon&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;Tue&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;Wed&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;Thu&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;Fri&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;Sat&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;Sun&quot;}],&quot;regions&quot;:[{&quot;id&quot;:&quot;legend-series-0&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Passed&quot;,&quot;x&quot;:24,&quot;y&quot;:75.65,&quot;width&quot;:71.36083984375,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-1&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Warnings&quot;,&quot;x&quot;:107.36083984375,&quot;y&quot;:75.65,&quot;width&quot;:82.4248046875,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-2&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Failed&quot;,&quot;x&quot;:201.78564453125,&quot;y&quot;:75.65,&quot;width&quot;:63.4072265625,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;cartesian-plot&quot;,&quot;role&quot;:&quot;cartesian-plot&quot;,&quot;label&quot;:&quot;&quot;,&quot;x&quot;:58.681640625,&quot;y&quot;:115.19375000000001,&quot;width&quot;:501.08984375,&quot;height&quot;:170.71875},{&quot;id&quot;:&quot;axis-x-label-0&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Mon (1)&quot;,&quot;x&quot;:58.681640625,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-1&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Tue (2)&quot;,&quot;x&quot;:141.69661458333334,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-2&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Wed (3)&quot;,&quot;x&quot;:224.71158854166669,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-3&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Thu (4)&quot;,&quot;x&quot;:307.7265625,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-4&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Fri (5)&quot;,&quot;x&quot;:390.74153645833337,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-5&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Sat (6)&quot;,&quot;x&quot;:473.7565104166667,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-x-label-6&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;Sun (7)&quot;,&quot;x&quot;:556.771484375,&quot;y&quot;:297.9125,&quot;width&quot;:0,&quot;height&quot;:16.087499999999977},{&quot;id&quot;:&quot;axis-y-label-0&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;0 (0)&quot;,&quot;x&quot;:24,&quot;y&quot;:284.24072624190063,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-1&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;250 (250)&quot;,&quot;x&quot;:24,&quot;y&quot;:254.05376619870412,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-2&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;500 (500)&quot;,&quot;x&quot;:24,&quot;y&quot;:223.86680615550756,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-3&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;750 (750)&quot;,&quot;x&quot;:24,&quot;y&quot;:193.67984611231103,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-4&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;1k (1000)&quot;,&quot;x&quot;:24,&quot;y&quot;:163.4928860691145,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-5&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;1.3k (1250)&quot;,&quot;x&quot;:24,&quot;y&quot;:133.30592602591796,&quot;width&quot;:22.681640625,&quot;height&quot;:0},{&quot;id&quot;:&quot;series-0-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 820 (1, 820)&quot;,&quot;x&quot;:55.681640625,&quot;y&quot;:182.227497300216,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 940 (2, 940)&quot;,&quot;x&quot;:138.69661458333334,&quot;y&quot;:167.73775647948167,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 980 (3, 980)&quot;,&quot;x&quot;:221.71158854166669,&quot;y&quot;:162.90784287257023,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,041 (4, 1041)&quot;,&quot;x&quot;:304.7265625,&quot;y&quot;:155.54222462203026,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,120 (5, 1120)&quot;,&quot;x&quot;:387.74153645833337,&quot;y&quot;:146.00314524838015,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,180 (6, 1180)&quot;,&quot;x&quot;:470.7565104166667,&quot;y&quot;:138.75827483801297,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-0-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passed: 1,230 (7, 1230)&quot;,&quot;x&quot;:553.771484375,&quot;y&quot;:132.72088282937366,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 120 (1, 120)&quot;,&quot;x&quot;:55.681640625,&quot;y&quot;:266.7509854211663,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 138 (2, 138)&quot;,&quot;x&quot;:138.69661458333334,&quot;y&quot;:264.5775242980562,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 131 (3, 131)&quot;,&quot;x&quot;:221.71158854166669,&quot;y&quot;:265.42275917926565,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 112 (4, 112)&quot;,&quot;x&quot;:304.7265625,&quot;y&quot;:267.7169681425486,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 98 (5, 98)&quot;,&quot;x&quot;:387.74153645833337,&quot;y&quot;:269.4074379049676,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 86 (6, 86)&quot;,&quot;x&quot;:470.7565104166667,&quot;y&quot;:270.85641198704104,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-1-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Warnings: 72 (7, 72)&quot;,&quot;x&quot;:553.771484375,&quot;y&quot;:272.54688174946006,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 22 (1, 22)&quot;,&quot;x&quot;:55.681640625,&quot;y&quot;:278.58427375809936,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 30 (2, 30)&quot;,&quot;x&quot;:138.69661458333334,&quot;y&quot;:277.6182910367171,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 27 (3, 27)&quot;,&quot;x&quot;:221.71158854166669,&quot;y&quot;:277.98053455723544,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 31 (4, 31)&quot;,&quot;x&quot;:304.7265625,&quot;y&quot;:277.49754319654426,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 18 (5, 18)&quot;,&quot;x&quot;:387.74153645833337,&quot;y&quot;:279.0672651187905,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 14 (6, 14)&quot;,&quot;x&quot;:470.7565104166667,&quot;y&quot;:279.5502564794817,&quot;width&quot;:6,&quot;height&quot;:6},{&quot;id&quot;:&quot;series-2-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Failed: 11 (7, 11)&quot;,&quot;x&quot;:553.771484375,&quot;y&quot;:279.9125,&quot;width&quot;:6,&quot;height&quot;:6}],&quot;categoryLabels&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;Mon&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;Tue&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;Wed&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;Thu&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;Fri&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;Sat&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;Sun&quot;}],&quot;dataProjection&quot;:{&quot;x&quot;:{&quot;minimum&quot;:1,&quot;maximum&quot;:7.03613805867729,&quot;transformedMinimum&quot;:1,&quot;transformedMaximum&quot;:7.03613805867729,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;displayTicks&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;Mon&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;Tue&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;Wed&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;Thu&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;Fri&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;Sat&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;Sun&quot;}],&quot;displayBounds&quot;:[]},&quot;y&quot;:{&quot;minimum&quot;:-13.845164896590404,&quot;maximum&quot;:1400,&quot;transformedMinimum&quot;:-13.845164896590404,&quot;transformedMaximum&quot;:1400,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;displayTicks&quot;:[{&quot;value&quot;:0,&quot;text&quot;:&quot;0&quot;},{&quot;value&quot;:250,&quot;text&quot;:&quot;250&quot;},{&quot;value&quot;:500,&quot;text&quot;:&quot;500&quot;},{&quot;value&quot;:750,&quot;text&quot;:&quot;750&quot;},{&quot;value&quot;:1000,&quot;text&quot;:&quot;1k&quot;},{&quot;value&quot;:1250,&quot;text&quot;:&quot;1.3k&quot;}],&quot;displayBounds&quot;:[{&quot;value&quot;:-13.845164896590404,&quot;text&quot;:&quot;-13.85&quot;},{&quot;value&quot;:1400,&quot;text&quot;:&quot;1.4k&quot;}]},&quot;horizontal&quot;:false,&quot;plotBounds&quot;:{&quot;x&quot;:58.681640625,&quot;y&quot;:115.19375000000001,&quot;width&quot;:501.08984375,&quot;height&quot;:170.71875}},&quot;xProjection&quot;:{&quot;fullMinimum&quot;:1,&quot;fullMaximum&quot;:7.03613805867729,&quot;minimum&quot;:1,&quot;maximum&quot;:7.03613805867729,&quot;scale&quot;:&quot;linear&quot;,&quot;reversed&quot;:false,&quot;plotBounds&quot;:{&quot;x&quot;:58.681640625,&quot;y&quot;:115.19375000000001,&quot;width&quot;:501.08984375,&quot;height&quot;:170.71875}}}" data-cfx-interaction-features="ReportReview" data-cfx-scenario-count="0" data-cfx-deep-link-state="false" data-cfx-responsive-layout="readable" data-cfx-toolbar="band" data-cfx-selection-mode="toggle" data-cfx-brush-axis="xy" data-cfx-dim-others-selected="false" data-cfx-pin-on-select="true" data-cfx-tooltip-mode="shared-x" data-cfx-tooltip-range="distance" data-cfx-tooltip-distance="120" data-cfx-tooltip-delay="360" data-cfx-tooltip-anchor="pointer" data-cfx-tooltip-placements="bottom-right" data-cfx-tooltip-gap="14" data-cfx-tooltip-offset-x="0" data-cfx-tooltip-offset-y="0" data-cfx-crosshair-label="false" style="--cfx-intrinsic-width:596px;--cfx-native-width:596px;--cfx-native-height:338px;--cfx-host-background:transparent;--cfx-tooltip-font:Calibri, Carlito, Segoe UI, system-ui, sans-serif;--cfx-tooltip-surface:var(--cfx-surface-card,#FFFFFF);--cfx-tooltip-text:var(--cfx-text-primary,#16181C);--cfx-tooltip-muted:var(--cfx-text-muted,#4D525B);--cfx-tooltip-line:var(--cfx-surface-line,#E2E4E7);--cfx-tooltip-shadow:var(--cfx-shadow-tooltip,0 8px 24px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.08));--cfx-crosshair-axis:var(--cfx-guide-axis,#E2E4E7);--cfx-host-accent:var(--cfx-accent-base,#2A78D6)">
 <div class="cfx-frame">
 <div class="cfx-stage">
 <svg xmlns="http://www.w3.org/2000/svg" width="596" height="338" viewBox="0 0 596 338" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Check results over time" aria-labelledby="check-results-over-time-title" aria-describedby="check-results-over-time-description"><title id="check-results-over-time-title">Check results over time</title><desc id="check-results-over-time-description">Check results over time with 3 data series: Passed, Warnings, Failed.</desc><defs><clipPath id="check-results-over-time-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="548" height="290"/></clipPath><clipPath id="check-results-over-time-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="548" height="19.5"/></clipPath><clipPath id="check-results-over-time-clip-11" clipPathUnits="userSpaceOnUse"><rect x="24" y="78.969" width="10" height="10"/></clipPath><clipPath id="check-results-over-time-clip-17" clipPathUnits="userSpaceOnUse"><rect x="107.361" y="78.969" width="10" height="10"/></clipPath><clipPath id="check-results-over-time-clip-23" clipPathUnits="userSpaceOnUse"><rect x="201.786" y="78.969" width="10" height="10"/></clipPath><clipPath id="check-results-over-time-clip-29" clipPathUnits="userSpaceOnUse"><rect x="24" y="107.15" width="548" height="206.85"/></clipPath><clipPath id="check-results-over-time-clip-53" clipPathUnits="userSpaceOnUse"><rect x="58.682" y="115.194" width="501.09" height="170.719"/></clipPath></defs><rect x="0.5" y="0.5" width="595" height="337" rx="3" data-cfx-role="frame-card" fill="#FFFFFF" stroke="#E2E4E7" stroke-width="1"/><g clip-path="url(#check-results-over-time-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="Calibri, Carlito, Segoe UI, system-ui, sans-serif|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="39.39" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Check results over time</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="Calibri, Carlito, Segoe UI, system-ui, sans-serif|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.321" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Healthy checks recede; failures remain visible</text></g></g></g><g clip-path="url(#check-results-over-time-clip-9)"><g id="check-results-over-time-node-10" data-cfx-source-id="legend-series-0" data-cfx-role="legend-entry" aria-label="Passed" data-cfx-series-key="passed" data-cfx-state="Quiet"><g clip-path="url(#check-results-over-time-clip-11)"><line x1="24" y1="83.969" x2="34" y2="83.969" data-cfx-role="legend-swatch" fill="none" stroke="#1D8A52" stroke-width="2"/></g><g data-cfx-role="legend-label"><text x="42" y="87.419" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Passed</text></g></g><g id="check-results-over-time-node-16" data-cfx-source-id="legend-series-1" data-cfx-role="legend-entry" aria-label="Warnings" data-cfx-series-key="warnings" data-cfx-state="Warning"><g clip-path="url(#check-results-over-time-clip-17)"><line x1="107.361" y1="83.969" x2="117.361" y2="83.969" data-cfx-role="legend-swatch" fill="none" stroke="#C78404" stroke-width="2"/></g><g data-cfx-role="legend-label"><text x="125.361" y="87.419" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Warnings</text></g></g><g id="check-results-over-time-node-22" data-cfx-source-id="legend-series-2" data-cfx-role="legend-entry" aria-label="Failed" data-cfx-series-key="failed" data-cfx-state="Danger"><g clip-path="url(#check-results-over-time-clip-23)"><line x1="201.786" y1="83.969" x2="211.786" y2="83.969" data-cfx-role="legend-swatch" fill="none" stroke="#D4302F" stroke-width="2"/></g><g data-cfx-role="legend-label"><text x="219.786" y="87.419" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Failed</text></g></g></g><g clip-path="url(#check-results-over-time-clip-29)"><line x1="58.682" y1="284.241" x2="559.771" y2="284.241" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="58.682" y1="254.054" x2="559.771" y2="254.054" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="58.682" y1="223.867" x2="559.771" y2="223.867" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="58.682" y1="193.68" x2="559.771" y2="193.68" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="58.682" y1="163.493" x2="559.771" y2="163.493" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="58.682" y1="133.306" x2="559.771" y2="133.306" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="58.682" y1="285.913" x2="559.771" y2="285.913" data-cfx-role="axis-x" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="47.01" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Mon</text></g><g data-cfx-role="axis-x-label"><text x="131.58" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Tue</text></g><g data-cfx-role="axis-x-label"><text x="212.483" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Wed</text></g><g data-cfx-role="axis-x-label"><text x="297.388" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Thu</text></g><g data-cfx-role="axis-x-label"><text x="383.745" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Fri</text></g><g data-cfx-role="axis-x-label"><text x="464.751" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Sat</text></g><g data-cfx-role="axis-x-label"><text x="546.096" y="308.776" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Sun</text></g><line x1="58.682" y1="115.194" x2="58.682" y2="285.913" data-cfx-role="axis-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="40.008" y="287.06" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="26.66" y="256.873" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">250</text></g><g data-cfx-role="axis-y-label"><text x="26.66" y="226.686" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">500</text></g><g data-cfx-role="axis-y-label"><text x="26.66" y="196.499" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">750</text></g><g data-cfx-role="axis-y-label"><text x="34.008" y="166.312" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1k</text></g><g data-cfx-role="axis-y-label"><text x="24" y="136.125" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">1.3k</text></g></g><g id="check-results-over-time-node-52" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Passed" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Line" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="passed" data-cfx-series-name="Passed" data-cfx-series-scope="shared" data-cfx-source-points="7" data-cfx-state="quiet"><g clip-path="url(#check-results-over-time-clip-53)"><path d="M 58.682 185.227 L 141.697 170.738 L 224.712 165.908 L 307.727 158.542 L 390.742 149.003 L 473.757 141.758 L 556.771 135.721" data-cfx-role="line" fill="none" stroke="#1D8A52" stroke-width="2"/></g><g id="check-results-over-time-node-56" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Passed: 820 (1, 820)" data-cfx-axis="primary" data-cfx-display-label="Mon" data-cfx-fill-pattern="None" data-cfx-formatted-value="820" data-cfx-formatted-x="Mon" data-cfx-label="820" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="passed" data-cfx-series-scope="shared" data-cfx-source-point="0" data-cfx-state="quiet" data-cfx-x="1" data-cfx-y="820"></g><g id="check-results-over-time-node-58" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Passed: 940 (2, 940)" data-cfx-axis="primary" data-cfx-display-label="Tue" data-cfx-fill-pattern="None" data-cfx-formatted-value="940" data-cfx-formatted-x="Tue" data-cfx-label="940" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="passed" data-cfx-series-scope="shared" data-cfx-source-point="1" data-cfx-state="quiet" data-cfx-x="2" data-cfx-y="940"></g><g id="check-results-over-time-node-60" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Passed: 980 (3, 980)" data-cfx-axis="primary" data-cfx-display-label="Wed" data-cfx-fill-pattern="None" data-cfx-formatted-value="980" data-cfx-formatted-x="Wed" data-cfx-label="980" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="passed" data-cfx-series-scope="shared" data-cfx-source-point="2" data-cfx-state="quiet" data-cfx-x="3" data-cfx-y="980"></g><g id="check-results-over-time-node-62" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Passed: 1,041 (4, 1041)" data-cfx-axis="primary" data-cfx-display-label="Thu" data-cfx-fill-pattern="None" data-cfx-formatted-value="1k" data-cfx-formatted-x="Thu" data-cfx-label="1,041" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="passed" data-cfx-series-scope="shared" data-cfx-source-point="3" data-cfx-state="quiet" data-cfx-x="4" data-cfx-y="1041"></g><g id="check-results-over-time-node-64" data-cfx-source-id="series-0-point-4" data-cfx-role="point" aria-label="Passed: 1,120 (5, 1120)" data-cfx-axis="primary" data-cfx-display-label="Fri" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.1k" data-cfx-formatted-x="Fri" data-cfx-label="1,120" data-cfx-point="4" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="passed" data-cfx-series-scope="shared" data-cfx-source-point="4" data-cfx-state="quiet" data-cfx-x="5" data-cfx-y="1120"></g><g id="check-results-over-time-node-66" data-cfx-source-id="series-0-point-5" data-cfx-role="point" aria-label="Passed: 1,180 (6, 1180)" data-cfx-axis="primary" data-cfx-display-label="Sat" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.2k" data-cfx-formatted-x="Sat" data-cfx-label="1,180" data-cfx-point="5" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="passed" data-cfx-series-scope="shared" data-cfx-source-point="5" data-cfx-state="quiet" data-cfx-x="6" data-cfx-y="1180"></g><g id="check-results-over-time-node-68" data-cfx-source-id="series-0-point-6" data-cfx-role="point" aria-label="Passed: 1,230 (7, 1230)" data-cfx-axis="primary" data-cfx-display-label="Sun" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.2k" data-cfx-formatted-x="Sun" data-cfx-label="1,230" data-cfx-point="6" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="passed" data-cfx-series-scope="shared" data-cfx-source-point="6" data-cfx-state="quiet" data-cfx-x="7" data-cfx-y="1230"><ellipse cx="556.771" cy="135.721" rx="3" ry="3" data-cfx-role="marker" fill="#1D8A52" stroke="none" stroke-width="0"/></g></g><g id="check-results-over-time-node-72" data-cfx-source-id="series-1" data-cfx-role="series" aria-label="Warnings" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Line" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="warnings" data-cfx-series-name="Warnings" data-cfx-series-scope="shared" data-cfx-source-points="7" data-cfx-state="warning"><g clip-path="url(#check-results-over-time-clip-53)"><path d="M 58.682 269.751 L 141.697 267.578 L 224.712 268.423 L 307.727 270.717 L 390.742 272.407 L 473.757 273.856 L 556.771 275.547" data-cfx-role="line" fill="none" stroke="#C78404" stroke-width="2"/></g><g id="check-results-over-time-node-76" data-cfx-source-id="series-1-point-0" data-cfx-role="point" aria-label="Warnings: 120 (1, 120)" data-cfx-axis="primary" data-cfx-display-label="Mon" data-cfx-fill-pattern="None" data-cfx-formatted-value="120" data-cfx-formatted-x="Mon" data-cfx-label="120" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="warnings" data-cfx-series-scope="shared" data-cfx-source-point="0" data-cfx-state="warning" data-cfx-x="1" data-cfx-y="120"></g><g id="check-results-over-time-node-78" data-cfx-source-id="series-1-point-1" data-cfx-role="point" aria-label="Warnings: 138 (2, 138)" data-cfx-axis="primary" data-cfx-display-label="Tue" data-cfx-fill-pattern="None" data-cfx-formatted-value="138" data-cfx-formatted-x="Tue" data-cfx-label="138" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="warnings" data-cfx-series-scope="shared" data-cfx-source-point="1" data-cfx-state="warning" data-cfx-x="2" data-cfx-y="138"></g><g id="check-results-over-time-node-80" data-cfx-source-id="series-1-point-2" data-cfx-role="point" aria-label="Warnings: 131 (3, 131)" data-cfx-axis="primary" data-cfx-display-label="Wed" data-cfx-fill-pattern="None" data-cfx-formatted-value="131" data-cfx-formatted-x="Wed" data-cfx-label="131" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="warnings" data-cfx-series-scope="shared" data-cfx-source-point="2" data-cfx-state="warning" data-cfx-x="3" data-cfx-y="131"></g><g id="check-results-over-time-node-82" data-cfx-source-id="series-1-point-3" data-cfx-role="point" aria-label="Warnings: 112 (4, 112)" data-cfx-axis="primary" data-cfx-display-label="Thu" data-cfx-fill-pattern="None" data-cfx-formatted-value="112" data-cfx-formatted-x="Thu" data-cfx-label="112" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="warnings" data-cfx-series-scope="shared" data-cfx-source-point="3" data-cfx-state="warning" data-cfx-x="4" data-cfx-y="112"></g><g id="check-results-over-time-node-84" data-cfx-source-id="series-1-point-4" data-cfx-role="point" aria-label="Warnings: 98 (5, 98)" data-cfx-axis="primary" data-cfx-display-label="Fri" data-cfx-fill-pattern="None" data-cfx-formatted-value="98" data-cfx-formatted-x="Fri" data-cfx-label="98" data-cfx-point="4" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="warnings" data-cfx-series-scope="shared" data-cfx-source-point="4" data-cfx-state="warning" data-cfx-x="5" data-cfx-y="98"></g><g id="check-results-over-time-node-86" data-cfx-source-id="series-1-point-5" data-cfx-role="point" aria-label="Warnings: 86 (6, 86)" data-cfx-axis="primary" data-cfx-display-label="Sat" data-cfx-fill-pattern="None" data-cfx-formatted-value="86" data-cfx-formatted-x="Sat" data-cfx-label="86" data-cfx-point="5" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="warnings" data-cfx-series-scope="shared" data-cfx-source-point="5" data-cfx-state="warning" data-cfx-x="6" data-cfx-y="86"></g><g id="check-results-over-time-node-88" data-cfx-source-id="series-1-point-6" data-cfx-role="point" aria-label="Warnings: 72 (7, 72)" data-cfx-axis="primary" data-cfx-display-label="Sun" data-cfx-fill-pattern="None" data-cfx-formatted-value="72" data-cfx-formatted-x="Sun" data-cfx-label="72" data-cfx-point="6" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="warnings" data-cfx-series-scope="shared" data-cfx-source-point="6" data-cfx-state="warning" data-cfx-x="7" data-cfx-y="72"><ellipse cx="556.771" cy="275.547" rx="3" ry="3" data-cfx-role="marker" fill="#C78404" stroke="none" stroke-width="0"/></g></g><g id="check-results-over-time-node-92" data-cfx-source-id="series-2" data-cfx-role="series" aria-label="Failed" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="Line" data-cfx-pin-state-colors="false" data-cfx-rendered-points="7" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="failed" data-cfx-series-name="Failed" data-cfx-series-scope="shared" data-cfx-source-points="7" data-cfx-state="danger"><g clip-path="url(#check-results-over-time-clip-53)"><path d="M 58.682 281.584 L 141.697 280.618 L 224.712 280.981 L 307.727 280.498 L 390.742 282.067 L 473.757 282.55 L 556.771 282.913" data-cfx-role="line" fill="none" stroke="#D4302F" stroke-width="2"/></g><g id="check-results-over-time-node-96" data-cfx-source-id="series-2-point-0" data-cfx-role="point" aria-label="Failed: 22 (1, 22)" data-cfx-axis="primary" data-cfx-display-label="Mon" data-cfx-fill-pattern="None" data-cfx-formatted-value="22" data-cfx-formatted-x="Mon" data-cfx-label="22" data-cfx-point="0" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="failed" data-cfx-series-scope="shared" data-cfx-source-point="0" data-cfx-state="danger" data-cfx-x="1" data-cfx-y="22"></g><g id="check-results-over-time-node-98" data-cfx-source-id="series-2-point-1" data-cfx-role="point" aria-label="Failed: 30 (2, 30)" data-cfx-axis="primary" data-cfx-display-label="Tue" data-cfx-fill-pattern="None" data-cfx-formatted-value="30" data-cfx-formatted-x="Tue" data-cfx-label="30" data-cfx-point="1" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="failed" data-cfx-series-scope="shared" data-cfx-source-point="1" data-cfx-state="danger" data-cfx-x="2" data-cfx-y="30"></g><g id="check-results-over-time-node-100" data-cfx-source-id="series-2-point-2" data-cfx-role="point" aria-label="Failed: 27 (3, 27)" data-cfx-axis="primary" data-cfx-display-label="Wed" data-cfx-fill-pattern="None" data-cfx-formatted-value="27" data-cfx-formatted-x="Wed" data-cfx-label="27" data-cfx-point="2" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="failed" data-cfx-series-scope="shared" data-cfx-source-point="2" data-cfx-state="danger" data-cfx-x="3" data-cfx-y="27"></g><g id="check-results-over-time-node-102" data-cfx-source-id="series-2-point-3" data-cfx-role="point" aria-label="Failed: 31 (4, 31)" data-cfx-axis="primary" data-cfx-display-label="Thu" data-cfx-fill-pattern="None" data-cfx-formatted-value="31" data-cfx-formatted-x="Thu" data-cfx-label="31" data-cfx-point="3" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="failed" data-cfx-series-scope="shared" data-cfx-source-point="3" data-cfx-state="danger" data-cfx-x="4" data-cfx-y="31"></g><g id="check-results-over-time-node-104" data-cfx-source-id="series-2-point-4" data-cfx-role="point" aria-label="Failed: 18 (5, 18)" data-cfx-axis="primary" data-cfx-display-label="Fri" data-cfx-fill-pattern="None" data-cfx-formatted-value="18" data-cfx-formatted-x="Fri" data-cfx-label="18" data-cfx-point="4" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="failed" data-cfx-series-scope="shared" data-cfx-source-point="4" data-cfx-state="danger" data-cfx-x="5" data-cfx-y="18"></g><g id="check-results-over-time-node-106" data-cfx-source-id="series-2-point-5" data-cfx-role="point" aria-label="Failed: 14 (6, 14)" data-cfx-axis="primary" data-cfx-display-label="Sat" data-cfx-fill-pattern="None" data-cfx-formatted-value="14" data-cfx-formatted-x="Sat" data-cfx-label="14" data-cfx-point="5" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="failed" data-cfx-series-scope="shared" data-cfx-source-point="5" data-cfx-state="danger" data-cfx-x="6" data-cfx-y="14"></g><g id="check-results-over-time-node-108" data-cfx-source-id="series-2-point-6" data-cfx-role="point" aria-label="Failed: 11 (7, 11)" data-cfx-axis="primary" data-cfx-display-label="Sun" data-cfx-fill-pattern="None" data-cfx-formatted-value="11" data-cfx-formatted-x="Sun" data-cfx-label="11" data-cfx-point="6" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="failed" data-cfx-series-scope="shared" data-cfx-source-point="6" data-cfx-state="danger" data-cfx-x="7" data-cfx-y="11"><ellipse cx="556.771" cy="282.913" rx="3" ry="3" data-cfx-role="marker" fill="#D4302F" stroke="none" stroke-width="0"/></g></g></svg>
@@ -1366,7 +1426,7 @@ body {
     if (financialRows) rows.push(...financialRows);
     else if (data.cfxWaterfallKind) rows.push(...waterfallTooltipRows(node));
     else if (data.cfxEmpty !== 'true') {
-      const name = data.cfxValue !== undefined ? rowName(node, 'value', 'Value') : 'Y';
+      const name = data.cfxValue !== undefined || data.cfxValueOverflow === 'true' ? rowName(node, 'value', 'Value') : 'Y';
       const value = capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue !== undefined ? data.cfxValue : data.cfxY));
       if (data.cfxFormattedValue !== undefined) rows.push({ name, value });
       else push(name, value);
@@ -1469,70 +1529,6 @@ body {
     return items;
   };
   const selectedTargets = (root) => compareItems(root).map((item) => item.target);
-  const renderCompare = (root) => {
-    (root._cfxCompareCleanup || []).forEach(release => release());
-    root._cfxCompareCleanup = [];
-    const tray = root.querySelector('[data-cfx-compare-tray]');
-    if (!tray || !hasFeature(root, 'CompareMarkers')) return [];
-    const items = compareItems(root);
-    tray.replaceChildren();
-    if (!items.length) {
-      tray.hidden = true;
-      root.removeAttribute('data-cfx-compare-count');
-      return items;
-    }
-    tray.hidden = false;
-    root.dataset.cfxCompareCount = String(items.length);
-    const summary = document.createElement('div');
-    summary.className = 'cfx-compare-tray__summary';
-    summary.textContent = uiText(root, 'Compare', 'Compare {count}', { count: items.length });
-    tray.appendChild(summary);
-    items.slice(0, 6).forEach((item, index) => {
-      const chip = document.createElement('button');
-      chip.className = 'cfx-compare-chip';
-      chip.type = 'button';
-      chip.textContent = item.label;
-      chip.dataset.cfxCompareIndex = String(index);
-      chip.title = item.label;
-      root._cfxCompareCleanup.push(listenChart(root, chip, 'click', () => {
-        clearHover(root, false, false);
-        if (applyHoverByTarget(root, item.target)) {
-          recordFocusTrail(root, item.target, true, true);
-          const node = interactiveTargets(root).find(node => matchesTargetIdentity(node, item.target)), tip = root.querySelector('.cfx-tooltip');
-          if (node && tip) {
-            if (!tooltipSourceInView({ node, tip })) scrollKeyboardTargetIntoView(root, targetFocusNode(node));
-            if (root.dataset.cfxPinOnSelect === 'false') showTip(root, tip, node);
-            else pinTip(root, tip, node, undefined, false);
-          }
-          emitHostEvent(root, 'cfxhover', { label: item.label, target: item.target });
-        }
-      }));
-      tray.appendChild(chip);
-    });
-    if (items.length > 6) {
-      const more = document.createElement('span');
-      more.className = 'cfx-compare-tray__more';
-      more.textContent = '+' + (items.length - 6);
-      tray.appendChild(more);
-    }
-    const clear = document.createElement('button');
-    clear.className = 'cfx-compare-clear';
-    clear.type = 'button';
-    clear.textContent = uiText(root, 'Clear', 'Clear');
-    clear.setAttribute('data-cfx-compare-clear', 'true');
-    root._cfxCompareCleanup.push(listenChart(root, clear, 'click', () => {
-      const returnFocus = tray.contains(document.activeElement);
-      clearSelections(root);
-      publishSelectionChange(root, 'clear');
-      publishCompare(root, true);
-      if (returnFocus) {
-        if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
-        try { root.focus({ preventScroll: true }); } catch { root.focus(); }
-      }
-    }));
-    tray.appendChild(clear);
-    return items;
-  };
   const publishCompare = (root, sync) => {
     const items = renderCompare(root);
     if (!hasFeature(root, 'CompareMarkers')) return items;
@@ -1598,15 +1594,44 @@ body {
     if (values) Object.entries(values).forEach(([name, value]) => { text = text.split('{' + name + '}').join(String(value)); });
     return text;
   };
-  // SVG coordinates have three decimals. Bound screen-space comparisons by one logical
-  // quantization step, projected through the live transform, plus a small screen rounding allowance.
+  // Calibrate viewport scaling while retaining native viewBox alignment and local transforms.
+  const svgScreenProjection = (svg, styles) => {
+    const projections = styles && (styles._cfxScreenProjections ||= new WeakMap());
+    if (projections?.has(svg)) return projections.get(svg);
+    const matrix = svg?.getScreenCTM(), view = svg?.viewBox.baseVal;
+    if (!matrix || !view?.width || !view.height || matrix.is2D === false
+      || matrix.b !== 0 || matrix.c !== 0 || matrix.a <= 0 || matrix.d <= 0) return null;
+    const style = getComputedStyle(svg);
+    const viewport = (dimension, sides) => {
+      const inset = sides.reduce((sum, side) => sum + parseFloat(style['padding' + side]) + parseFloat(style['border' + side + 'Width']), 0);
+      const size = parseFloat(style[dimension]) - (style.boxSizing === 'border-box' ? inset : 0);
+      return { size, outer: size + inset };
+    };
+    const horizontal = viewport('width', ['Left', 'Right']), vertical = viewport('height', ['Top', 'Bottom']);
+    const width = horizontal.size, height = vertical.size;
+    if (!(width > 0 && height > 0)) return null;
+    const box = svg.getBoundingClientRect(), aspect = svg.preserveAspectRatio.baseVal;
+    const scale = (aspect.meetOrSlice === 2 ? Math.max : Math.min)(width / view.width, height / view.height);
+    const x = (aspect.align === 1 ? width / view.width : scale) * box.width / horizontal.outer / matrix.a;
+    const y = (aspect.align === 1 ? height / view.height : scale) * box.height / vertical.outer / matrix.d;
+    const projection = Math.abs(x - 1) + Math.abs(y - 1) >= .000001
+      && Number.isFinite(x) && Number.isFinite(y) && x > 0 && y > 0
+      ? new DOMMatrix([x, 0, 0, y, matrix.e * (1 - x), matrix.f * (1 - y)]) : null;
+    projections?.set(svg, projection);
+    return projection;
+  };
+  const svgScreenMatrix = (node, projection = svgScreenProjection(node?.ownerSVGElement || node)) => {
+    const matrix = node?.getScreenCTM();
+    return matrix && projection ? projection.multiply(matrix) : matrix;
+  };
+  // Bound comparisons by the native .001 coordinate quantum and live screen rounding.
   const svgCoordinatePrecision = matrix => ({
     x: .001 * (Math.abs(matrix.a) + Math.abs(matrix.c)) + .0001,
     y: .001 * (Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001
   });
-  // Captured native geometry avoids browser hit-area inflation and screen-layout box quantization.
-  const nativeRegionScreenBox = (node, region = node._cfxNativeRegion) => {
-    const matrix = region && node.getScreenCTM();
+  // Captured geometry excludes inflated browser hit areas and layout rounding.
+  const nativeRegionScreenBox = (node, region = node._cfxNativeRegion, projection) => {
+    const matrix = region && svgScreenMatrix(node, projection);
     if (!matrix) return null;
     const corners = [[region.x, region.y], [region.x + region.width, region.y],
       [region.x, region.y + region.height], [region.x + region.width, region.y + region.height]]
@@ -1679,7 +1704,7 @@ body {
     const sourceInverse = sourceMatrix.inverse(), shapeInverse = shapeMatrix.inverse();
     const paired = pairedExtentObservation(subject), x = region.x + region.width / 2;
     // Scalar sources retain their source-location clip contract, even when their footprint overlaps paint.
-    if (!paired && !paintWithinNativeClips(node, subject)) return false;
+    if (!paired && !paintWithinNativeClips(node, subject, styles)) return false;
     const low = paired ? region.y + region.width / 2 : region.y + region.height / 2;
     const high = paired ? region.y + region.height - region.width / 2 : low;
     // Native SVG uses three decimals. Interior probes below that quantum distinguish a real held
@@ -1730,6 +1755,13 @@ body {
     }
     subjects.set(subject, visible);
     return visible;
+  };
+  // Dense adapter controls share one bounded page calculation; each control owns its content and actions.
+  const chartControlPage = (count, requested, pageSize) => {
+    const last = Math.max(0, Math.floor((count - 1) / pageSize));
+    const page = Math.max(0, Math.min(last, requested ?? 0));
+    const offset = page * pageSize;
+    return { page, last, offset, first: count ? offset + 1 : 0, end: Math.min(offset + pageSize, count) };
   };
   // Semantic groups do not paint. Resolve the real mark before using a series or legend fallback.
   const paintShapes = 'rect,circle,ellipse,line,polyline,path,polygon';
@@ -1818,8 +1850,7 @@ body {
       const clip = parent.ownerSVGElement.getElementById(reference[1]);
       if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
         || !clip.firstElementChild.matches('rect')) continue;
-      // Firefox returns an empty bounding box for geometry inside the non-rendered clipPath tree.
-      // Native rectangular clips expose their resolved user-space geometry through SVG lengths.
+      // SVG lengths resolve clip geometry even when a non-rendered clipPath has an empty box.
       const shape = clip.firstElementChild, matrix = parent.getScreenCTM();
       const rect = { x: shape.x.baseVal.value, y: shape.y.baseVal.value,
         width: shape.width.baseVal.value, height: shape.height.baseVal.value };
@@ -1829,20 +1860,22 @@ body {
     return clips;
   };
   // A retained fact or a path's box can lie outside the native clips.
-  const paintWithinNativeClips = (node, subject = node) => {
+  const paintWithinNativeClips = (node, subject = node, styles) => {
     const paired = subject !== node && pairedExtentObservation(subject);
     const clips = nativePaintClips(node);
     if (!clips) return false;
+    const projection = clips.length && svgScreenProjection(node.ownerSVGElement, styles);
+    if (projection) for (const clip of clips) clip.matrix = projection.multiply(clip.matrix);
     let box;
     for (const { rect, matrix } of clips) {
       const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
         .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
       const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
       const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
-      // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
+      // Prepared facts can exceed the native coordinate precision.
       const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
-      box ||= paired ? pairedExtentScreenBox(subject)
-        : subject !== node ? nativeRegionScreenBox(subject) || subject.getBoundingClientRect() : subject.getBoundingClientRect();
+      box ||= paired ? nativeRegionScreenBox(subject, subject._cfxPairedRegion, projection)
+        : subject !== node ? nativeRegionScreenBox(subject, subject._cfxNativeRegion, projection) || subject.getBoundingClientRect() : subject.getBoundingClientRect();
       if (!box) return false;
       if (subject !== node) {
         // Connected paired fills use their own extent. Single-point line/radar paint keeps its source-location contract.
@@ -1892,7 +1925,7 @@ body {
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
     const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
-      || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node)) return null;
+      || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node, node, styles)) return null;
     // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
     if (node.matches('circle,ellipse')) {
       const box = node.getBBox();
@@ -1911,14 +1944,14 @@ body {
       return stroke && cartesianFillStrokeInk(node, subject, paint) ? stroke : null;
     }
     const resolved = fill || stroke;
-    return resolved && (subject === node || paintWithinNativeClips(node, subject)) ? resolved : null;
+    return resolved && (subject === node || paintWithinNativeClips(node, subject, styles)) ? resolved : null;
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
     // Text is the mark for a word-cloud term or annotation caption; ordinary point labels are decoration.
     if (role !== 'word-cloud-term' && role !== 'annotation' && !(decoration && role === 'legend-item')) return null;
     for (const text of node.querySelectorAll('text')) {
-      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text)
+      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text, text, styles)
         || !decoration && text.closest('[data-cfx-label-decoration]')) continue;
       const style = paintStyle(text, styles);
       if (!(parseFloat(style.fontSize) > 0)) continue;
@@ -2004,6 +2037,97 @@ body {
     if (paint && paint.colour) return paint.colour;
     const fallback = !legend && childPaint(seriesLegend(node), true, styles);
     return fallback && fallback.colour || '';
+  };
+  const comparePageSize = 6;
+  const renderCompare = (root, requestedPage) => {
+    (root._cfxCompareCleanup || []).forEach(release => release());
+    root._cfxCompareCleanup = [];
+    const tray = root.querySelector('[data-cfx-compare-tray]');
+    if (!tray || !hasFeature(root, 'CompareMarkers')) return [];
+    const items = compareItems(root);
+    tray.replaceChildren();
+    if (!items.length) {
+      tray.hidden = true;
+      root.removeAttribute('data-cfx-compare-count');
+      delete root._cfxComparePage;
+      return items;
+    }
+    tray.hidden = false;
+    root.dataset.cfxCompareCount = String(items.length);
+    const summary = document.createElement('div');
+    summary.className = 'cfx-compare-tray__summary';
+    summary.textContent = uiText(root, 'Compare', 'Compare {count}', { count: items.length });
+    tray.appendChild(summary);
+    const pageWindow = chartControlPage(items.length, requestedPage ?? root._cfxComparePage, comparePageSize);
+    const { page, offset, last: lastPage } = pageWindow;
+    root._cfxComparePage = page;
+    if (lastPage > 0) {
+      const range = document.createElement('span');
+      range.className = 'cfx-compare-tray__range';
+      range.setAttribute('role', 'status');
+      range.setAttribute('aria-atomic', 'true');
+      range.textContent = uiText(root, 'CompareRange', '{first}–{last} of {count}', {
+        first: pageWindow.first, last: pageWindow.end, count: items.length });
+      tray.appendChild(range);
+      [-1, 1].forEach(direction => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'cfx-compare-page';
+        button.dataset.cfxComparePage = direction < 0 ? 'previous' : 'next';
+        button.textContent = uiText(root, direction < 0 ? 'Previous' : 'Next', direction < 0 ? 'Prev' : 'Next');
+        button.setAttribute('aria-label', uiText(root, direction < 0 ? 'ComparePrevious' : 'CompareNext',
+          direction < 0 ? 'Previous selected targets' : 'Next selected targets'));
+        button.disabled = direction < 0 ? page === 0 : page === lastPage;
+        root._cfxCompareCleanup.push(listenChart(root, button, 'click', () => {
+          renderCompare(root, page + direction);
+          tray.scrollLeft = 0;
+          const chips = tray.querySelectorAll('.cfx-compare-chip');
+          const focus = direction < 0 ? chips[chips.length - 1] : chips[0];
+          focus?.focus({ preventScroll: true });
+          if (focus) scrollKeyboardTargetIntoView(root, focus);
+        }));
+        tray.appendChild(button);
+      });
+    }
+    items.slice(offset, pageWindow.end).forEach((item, index) => {
+      const chip = document.createElement('button');
+      chip.className = 'cfx-compare-chip';
+      chip.type = 'button';
+      chip.textContent = item.label;
+      chip.dataset.cfxCompareIndex = String(offset + index);
+      chip.title = item.label;
+      root._cfxCompareCleanup.push(listenChart(root, chip, 'click', () => {
+        clearHover(root, false, false);
+        if (applyHoverByTarget(root, item.target)) {
+          recordFocusTrail(root, item.target, true, true);
+          const node = interactiveTargets(root).find(node => matchesTargetIdentity(node, item.target)), tip = root.querySelector('.cfx-tooltip');
+          if (node && tip) {
+            if (!tooltipSourceInView({ node, tip })) scrollKeyboardTargetIntoView(root, targetFocusNode(node));
+            if (root.dataset.cfxPinOnSelect === 'false') showTip(root, tip, node);
+            else pinTip(root, tip, node, undefined, false);
+          }
+          emitHostEvent(root, 'cfxhover', { label: item.label, target: item.target });
+        }
+      }));
+      tray.appendChild(chip);
+    });
+    const clear = document.createElement('button');
+    clear.className = 'cfx-compare-clear';
+    clear.type = 'button';
+    clear.textContent = uiText(root, 'Clear', 'Clear');
+    clear.setAttribute('data-cfx-compare-clear', 'true');
+    root._cfxCompareCleanup.push(listenChart(root, clear, 'click', () => {
+      const returnFocus = tray.contains(document.activeElement);
+      clearSelections(root);
+      publishSelectionChange(root, 'clear');
+      publishCompare(root, true);
+      if (returnFocus) {
+        if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
+        try { root.focus({ preventScroll: true }); } catch { root.focus(); }
+      }
+    }));
+    tray.appendChild(clear);
+    return items;
   };
   // The prepared kind names distinguish source quantities from map/grid coordinates and tuple summaries.
   const sharedXSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'scatter', 'bubble', 'errorbar', 'slope', 'trendline', 'waterfall', 'differencearea']);
@@ -2524,13 +2648,14 @@ body {
           groupIndex: node.dataset.cfxGroupIndex, groupId: node.dataset.cfxGroupId }]));
     const observationIds = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-observation-id]'))
       .map(node => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxObservationId]));
-    svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"]').forEach((node) => {
+    svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"],[data-cfx-role="legend-entry-omitted"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
       const match = source.match(/^legend-series-(\d+)(?:-point-(\d+|other))?$/);
       const index = match ? Number(match[1]) : series.findIndex((item) => item.key === data.cfxSeriesKey);
       if (index < 0) return;
-      data.cfxRole = 'legend-item'; data.cfxSeries = String(index);
+      if (data.cfxRole !== 'legend-entry-omitted') data.cfxRole = 'legend-item';
+      data.cfxSeries = String(index);
       const region = regions.get(source);
       data.cfxLabel = data.cfxLabel || (region ? region.label : node.getAttribute('aria-label') || '');
       const reference = legendTarget(node);
@@ -2590,7 +2715,7 @@ body {
         const label = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX));
         if (label !== undefined) data.cfxXLabel = label;
       }
-      if (data.cfxRole === 'legend-item') return;
+      if (data.cfxRole === 'legend-item' || data.cfxRole === 'legend-entry-omitted') return;
       const region = regions.get(data.cfxSourceId || '');
       // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
       if (region && data.cfxPoint === undefined && data.cfxValue !== undefined && data.cfxPercent !== undefined
@@ -2959,6 +3084,133 @@ body {
     tip.appendChild(list);
     return true;
   };
+  // Native legend density remains bounded. Optional HTML chrome exposes retained omitted facts and commands.
+  const legendOverflowPageSize = 6;
+  const legendOverflowIdentity = source => {
+    const target = seriesTarget(source);
+    return JSON.stringify([target.seriesKey, target.targetKind, target.targetId]);
+  };
+  const syncLegendOverflow = root => {
+    const state = root._cfxLegendOverflow;
+    if (!state) return;
+    for (const control of state.controls) {
+      for (const [button, attribute] of [[control.mute, 'cfxMuted'], [control.isolate, 'cfxIsolated']]) {
+        const active = control.source.dataset[attribute] === 'true';
+        button.setAttribute('aria-pressed', String(active));
+      }
+    }
+  };
+  const renderLegendOverflow = (root, requestedPage, direction = 0) => {
+    const state = root._cfxLegendOverflow;
+    if (!state) return;
+    state.pageCleanups.splice(0).forEach(release => release());
+    state.controls = [];
+    state.body.replaceChildren();
+    const page = chartControlPage(state.sources.length, requestedPage ?? state.page, legendOverflowPageSize);
+    state.page = page.page;
+    const navigation = document.createElement('div');
+    navigation.className = 'cfx-legend-overflow__navigation';
+    const range = document.createElement('span');
+    range.className = 'cfx-legend-overflow__range';
+    range.setAttribute('role', 'status'); range.setAttribute('aria-atomic', 'true');
+    range.tabIndex = -1;
+    range.textContent = uiText(root, 'LegendRange', '{first}–{last} of {count}',
+      { first: page.first, last: page.end, count: state.sources.length });
+    navigation.appendChild(range);
+    if (page.last) [-1, 1].forEach(step => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'cfx-tool';
+      button.dataset.cfxLegendPage = step < 0 ? 'previous' : 'next';
+      button.textContent = uiText(root, step < 0 ? 'Previous' : 'Next', step < 0 ? 'Prev' : 'Next');
+      button.setAttribute('aria-label', uiText(root, step < 0 ? 'LegendPrevious' : 'LegendNext',
+        step < 0 ? 'Previous legend entries' : 'Next legend entries'));
+      button.disabled = step < 0 ? page.page === 0 : page.page === page.last;
+      state.pageCleanups.push(listenChart(root, button, 'click', event => {
+        event.stopPropagation(); renderLegendOverflow(root, page.page + step, step);
+      }));
+      navigation.appendChild(button);
+    });
+    state.body.appendChild(navigation);
+    const list = document.createElement('div');
+    list.className = 'cfx-legend-overflow__entries';
+    state.sources.slice(page.offset, page.end).forEach((source, index) => {
+      const row = document.createElement('div');
+      row.className = 'cfx-legend-overflow__entry';
+      row.dataset.cfxLegendIndex = String(page.offset + index);
+      const label = source.getAttribute('aria-label') || source.dataset.cfxLabel || '';
+      const actionable = hasFeature(root, 'LegendToggles') && source.dataset.cfxSeries !== undefined;
+      if (!actionable) {
+        row.textContent = label;
+        list.appendChild(row); return;
+      }
+      const mute = document.createElement('button');
+      mute.type = 'button'; mute.className = 'cfx-tool cfx-legend-overflow__toggle';
+      mute.dataset.cfxLegendAction = 'mute';
+      mute.setAttribute('aria-label', uiText(root, 'LegendMute', 'Mute {label}', { label }));
+      const caption = document.createElement('span'); caption.textContent = label; mute.appendChild(caption);
+      const isolate = document.createElement('button');
+      isolate.type = 'button'; isolate.className = 'cfx-tool';
+      isolate.dataset.cfxLegendAction = 'isolate';
+      isolate.textContent = uiText(root, 'LegendIsolateButton', 'Isolate');
+      isolate.setAttribute('aria-label', uiText(root, 'LegendIsolate', 'Isolate {label}', { label }));
+      for (const [button, action] of [[mute, () => toggleSeries(root, source)], [isolate, () => toggleSeriesFocus(root, source, true, true)]])
+        state.pageCleanups.push(listenChart(root, button, 'click', event => {
+          event.stopPropagation();
+          if (root._cfxLegendOverflow === state && root.contains(source)) action();
+        }));
+      state.controls.push({ source, mute, isolate });
+      row.append(mute, isolate); list.appendChild(row);
+    });
+    state.body.appendChild(list);
+    syncLegendOverflow(root);
+    if (direction) {
+      const control = direction < 0 ? state.controls[state.controls.length - 1] : state.controls[0];
+      (control?.mute || range).focus({ preventScroll: true });
+    }
+  };
+  const bindLegendOverflow = root => {
+    const stage = root.querySelector('.cfx-stage');
+    const sources = Array.from(stage?.querySelectorAll('svg [data-cfx-role="legend-entry-omitted"]') || []);
+    if (!stage || !sources.length) return;
+    const details = document.createElement('details');
+    details.className = 'cfx-legend-overflow';
+    const summary = document.createElement('summary');
+    summary.textContent = uiText(root, 'LegendMore', 'More legend entries ({count})', { count: sources.length });
+    const body = document.createElement('div'); body.className = 'cfx-legend-overflow__body';
+    details.append(summary, body); stage.after(details);
+    const state = { sources, details, summary, body, controls: [], pageCleanups: [], page: 0 };
+    root._cfxLegendOverflow = state;
+    ownChartWork(root, () => {
+      state.pageCleanups.splice(0).forEach(release => release());
+      state.controls = []; state.sources = []; details.remove();
+      if (root._cfxLegendOverflow === state) delete root._cfxLegendOverflow;
+    });
+    renderLegendOverflow(root);
+  };
+  const captureLegendOverflow = (root, sameSource) => {
+    const state = root._cfxLegendOverflow;
+    if (!state) return root._cfxLegendOverflowPreferences || null;
+    const active = root.getRootNode().activeElement;
+    const control = state.controls.find(item => item.mute === active || item.isolate === active);
+    const target = control && seriesTarget(control.source);
+    return { open: state.details.open, page: state.page, ownedFocus: state.details.contains(active),
+      focused: target && (sameSource || durableChartTarget(target))
+        ? { target, action: active === control.isolate ? 'isolate' : 'mute' } : null };
+  };
+  const restoreLegendOverflow = (root, captured) => {
+    if (!captured) return;
+    root._cfxLegendOverflowPreferences = { open: captured.open, page: captured.page, ownedFocus: false, focused: null };
+    const state = root._cfxLegendOverflow;
+    if (!state) return;
+    state.details.open = captured.open;
+    const identity = captured.focused && JSON.stringify([captured.focused.target.seriesKey,
+      captured.focused.target.targetKind, captured.focused.target.targetId]);
+    const focusedIndex = identity ? state.sources.findIndex(source => legendOverflowIdentity(source) === identity) : -1;
+    renderLegendOverflow(root, focusedIndex < 0 ? captured.page : Math.floor(focusedIndex / legendOverflowPageSize));
+    if (!captured.ownedFocus) return;
+    const control = focusedIndex >= 0 && state.controls.find(item => legendOverflowIdentity(item.source) === identity);
+    (control && state.details.open ? control[captured.focused.action] : state.summary).focus({ preventScroll: true });
+  };
   // Absolute overlays and SVG pan translations use stage CSS pixels, including its scroll origin.
   // Browser hit geometry stays in screen pixels; account for axis-aligned host scaling and the stage border.
   const stageProjection = stage => {
@@ -2980,7 +3232,7 @@ body {
   const visibleCartesianPlot = (root, stage, plot = root._cfxCartesianPlot) => {
     const svg = stage.querySelector('svg');
     if (!plot || !svg || stage.clientWidth <= 0 || stage.clientHeight <= 0) return null;
-    const matrix = svg.getScreenCTM();
+    const matrix = svgScreenMatrix(svg);
     // stagePoint supports positive axis-aligned host scaling, not rotated/skewed/perspective hosts.
     if (!matrix || matrix.is2D === false || matrix.b !== 0 || matrix.c !== 0 || matrix.a <= 0 || matrix.d <= 0) return null;
     const corners = [[plot.x, plot.y], [plot.x + plot.width, plot.y],
@@ -3577,8 +3829,21 @@ body {
     const box = node.getBoundingClientRect(), viewport = owner.getBoundingClientRect();
     // Native reveal reaches opaque slots; preserve partly visible wide marks.
     if (!preserveVisiblePortion && box.width <= viewport.width - inset * 2 && box.height <= viewport.height - inset * 2) {
-      node.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
-      // Native SVG reveal may reset known clips; remeasure after opaque hosts move.
+      // Native SVG scrolling can leave an offscreen mark hidden through an opaque slot.
+      // A transient HTML footprint lets the browser traverse that host without inspecting it.
+      let nativeTarget = node;
+      if (node instanceof SVGElement) {
+        const start = stagePoint(owner, { x: box.left, y: box.top });
+        const end = stagePoint(owner, { x: box.right, y: box.bottom });
+        nativeTarget = document.createElement('span');
+        nativeTarget.setAttribute('aria-hidden', 'true');
+        nativeTarget.style.cssText = 'all:initial;position:absolute;display:block;pointer-events:none;opacity:0;margin:0;padding:0;border:0;'
+          + `scroll-margin:${inset}px;left:${start.x}px;top:${start.y}px;width:${end.x - start.x}px;height:${end.y - start.y}px`;
+        owner.appendChild(nativeTarget);
+      }
+      try { nativeTarget.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' }); }
+      finally { if (nativeTarget !== node) nativeTarget.remove(); }
+      // Native reveal may reset known clips; remeasure after opaque hosts move.
       revealClips();
     }
   };
@@ -3646,7 +3911,7 @@ body {
     if (!hasFeature(root, 'KeyboardNavigation') || root._cfxPointerFocus === true) { clearKeyboardFocusPaint(root); return; }
     const focused = root.getRootNode().activeElement;
     const node = interactiveTargets(root).find(node => targetFocusNode(node) === focused);
-    const svg = node?.ownerSVGElement, matrix = svg?.getScreenCTM();
+    const svg = node?.ownerSVGElement, matrix = svgScreenMatrix(svg);
     if (!node || !focused.matches(':focus-visible') || !matrix || !keyboardTargetAvailable(node)) {
       clearKeyboardFocusPaint(root); return;
     }
@@ -3742,6 +4007,7 @@ body {
     });
     refreshKeyboardNavigation(root);
     syncSelectionAppearance(root);
+    syncLegendOverflow(root);
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
@@ -3774,6 +4040,7 @@ body {
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
     syncSelectionAppearance(root);
+    syncLegendOverflow(root);
     syncResetControl(root);
   };
   const toggleSeriesFocus = (root, item, emit, sync) => {
@@ -4396,7 +4663,7 @@ body {
   };
   const projectBrushSelection = (root, rect) => {
     const projection = root._cfxDataProjection, svg = root.querySelector('.cfx-stage svg');
-    const matrix = svg?.getScreenCTM();
+    const matrix = svgScreenMatrix(svg);
     if (!projection || !matrix || matrix.is2D === false || !matrix.a || !matrix.d) return { data: {} };
     let inverse;
     try { inverse = matrix.inverse(); } catch { return { data: {} }; }
@@ -5046,6 +5313,7 @@ body {
       if (event.key === 'Escape') cancelXViewportRequest(chartLifetimes.get(root));
     }, true);
     applyRenderedTargetContract(root);
+    bindLegendOverflow(root);
     bindHostCommands(root);
     prepareRootBranchHighlights(root);
     if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
@@ -5506,7 +5774,8 @@ body {
       isolated: chartLegendStateTargets(root, true).filter(target => sameSource || durableChartTarget(target)),
       focused: focused && (sameSource || durableChartTarget(targetIdentity(focused))) ? targetIdentity(focused) : null,
       highlight: captureHostHighlight(root, sameSource),
-      ownedFocus: !!active && root.contains(active), viewport: getState(root)
+      ownedFocus: !!active && root.contains(active), comparePage: root._cfxComparePage,
+      legendOverflow: captureLegendOverflow(root, sameSource), viewport: getState(root)
     };
   };
   const installChartSection = (root, next) => {
@@ -5524,6 +5793,7 @@ body {
   const restoreChartUpdateState = (root, state, nativeCommit = false) => {
     // Explicit identity survives position changes; anonymous ordinal facts never inherit full-replacement state.
     applySelectionSetByTargets(root, state.selected, true);
+    root._cfxComparePage = state.comparePage;
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
     for (const target of state.isolated) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesIsolation(root, resolved, true); }
     applyHostHighlight(root, state.highlight);
@@ -5533,6 +5803,7 @@ body {
     const focused = state.focused && interactiveTargets(root).find(node => seriesKey(node) === state.focused.seriesKey && matchesTargetIdentity(node, state.focused));
     if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused, pointerReadoutSuspended(root));
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
+    restoreLegendOverflow(root, state.legendOverflow);
     // Focus recovery must not resurrect a pinned or stale readout from the previous scene.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
   };
@@ -5568,7 +5839,7 @@ body {
     pending.abort.abort();
   };
   const logicalXPointer = (root, event) => {
-    const matrix = root.querySelector('.cfx-stage svg')?.getScreenCTM();
+    const matrix = svgScreenMatrix(root.querySelector('.cfx-stage svg'));
     if (!matrix) return null;
     const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
     return Number.isFinite(point.x) ? point.x : null;

@@ -30,6 +30,8 @@ The assessment does not exhaustively compare every public member or option combi
 
 The quality loop covers native tests, four target frameworks, NativeAOT compilation and execution, pinned Mermaid reference lanes, required Chromium contracts, paired SVG/PNG and gallery HTML health, and nine packages across six qualification reports. Curated compact/wide light/dark captures and focused before/after regressions supplement those checks. Each result belongs to its tested source, artifacts and host. Whole-family visual acceptance, hosted cross-platform checks, public package delivery and installed-consumer behavior remain separate gates.
 
+Selected native consumers cover raw and supplied BoxPlot summaries in both orientations, independent Bubble size and color keys, and configured radial and linear gauges. Vertical BoxPlot category captions still thin when names are long, and closely spaced Bubble inputs can overlap. Broader option, difficult-data, font and platform qualification remains open.
+
 ## Delivery order
 
 | Order | Outcome | Dependencies and completion evidence |
