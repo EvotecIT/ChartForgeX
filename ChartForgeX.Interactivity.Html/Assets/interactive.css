@@ -645,14 +645,14 @@ body {
   stroke-width: var(--cfx-interactive-hover-stroke-width, 2.5) !important;
 }
 
-.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where([data-cfx-highlight-managed])),
-.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"]) .cfx-hover-related[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where([data-cfx-highlight-managed],.cfx-selected,.cfx-highlighted)),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where(.cfx-selected,.cfx-highlighted))[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .82 !important;
   filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
 }
 
-.cfx-interactive-chart:not([data-cfx-look="graphite"]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where([data-cfx-highlight-managed])),
-.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected)[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+.cfx-interactive-chart:not([data-cfx-look="graphite"]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where([data-cfx-highlight-managed],.cfx-highlighted)),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where(.cfx-highlighted))[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .38;
 }
 

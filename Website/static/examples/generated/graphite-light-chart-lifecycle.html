@@ -651,14 +651,14 @@ body {
   stroke-width: var(--cfx-interactive-hover-stroke-width, 2.5) !important;
 }
 
-.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where([data-cfx-highlight-managed])),
-.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"]) .cfx-hover-related[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where([data-cfx-highlight-managed],.cfx-selected,.cfx-highlighted)),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where(.cfx-selected,.cfx-highlighted))[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .82 !important;
   filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
 }
 
-.cfx-interactive-chart:not([data-cfx-look="graphite"]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where([data-cfx-highlight-managed])),
-.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected)[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+.cfx-interactive-chart:not([data-cfx-look="graphite"]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where([data-cfx-highlight-managed],.cfx-highlighted)),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where(.cfx-highlighted))[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
   opacity: .38;
 }
 
@@ -886,7 +886,7 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-hovered:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-look="graphite"] .cfx-hovered[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { filter: none; }
 /* Series hover keeps the pointed series at full strength and dims the others to 30 %; the shared crosshair dims nothing. */
-.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-point-interaction-target) { opacity: .3; }
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-point-interaction-target):not(:where(.cfx-selected,.cfx-highlighted)) { opacity: .3; }
 .cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hovered,
 .cfx-interactive-chart[data-cfx-look="graphite"] circle.cfx-hover-column { r: 4px; opacity: 1 !important; stroke: var(--cfx-tooltip-surface); stroke-width: 2px !important; }
 
@@ -938,7 +938,7 @@ body {
     outline: none !important;
   }
 }
-.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered) { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="series"] circle.cfx-hover-column:not(.cfx-hover-series):not(.cfx-hovered):not(:where(.cfx-selected,.cfx-highlighted)) { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column):not(.cfx-selected):not(.cfx-highlighted) { opacity: 0 !important; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-look="graphite"] .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: .3 !important; }
@@ -4506,6 +4506,16 @@ body {
         && (Number(target.sourcePoint) === item.index || target.sourcePoints?.includes(item.index)))
       || scoped && (match.ranges || []).some(range => overlapsRange(target, range));
   };
+  const resolveHostTargets = (root, match) => {
+    const normalized = match === undefined ? null : hostMatch(match), seen = new Set();
+    const targets = dataTargets(root).filter(node => normalized === null || matchesHostTarget(node, normalized))
+      .map(targetIdentity).filter(target => {
+        const key = targetKey(target);
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+      });
+    return copyHostValue(targets);
+  };
   const runSelectionCommand = (root, match, options = {}) => {
     if (!hasFeature(root, 'Selection')) return [];
     const normalized = hostMatch(match), mode = options.mode || 'replace';
@@ -6009,6 +6019,7 @@ body {
       clearSelection: options => { requireMounted(); clearSelectionCommand(root, options); return controller; },
       clearBrush: options => { requireMounted(); clearBrushCommand(root, options); return controller; },
       getSelection: () => { requireMounted(); return copyHostValue(selectedTargets(root)); },
+      resolveTargets: match => { requireMounted(); return resolveHostTargets(root, match); },
       highlight: (match, options) => { requireMounted(); runHighlightCommand(root, match, options); return controller; },
       clearHighlight: options => { requireMounted(); clearHighlightCommand(root, options); return controller; },
       unpinTooltip: () => { requireMounted(); unpinTooltip(root); return controller; },

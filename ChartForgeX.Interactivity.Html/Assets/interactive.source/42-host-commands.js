@@ -107,6 +107,16 @@
         && (Number(target.sourcePoint) === item.index || target.sourcePoints?.includes(item.index)))
       || scoped && (match.ranges || []).some(range => overlapsRange(target, range));
   };
+  const resolveHostTargets = (root, match) => {
+    const normalized = match === undefined ? null : hostMatch(match), seen = new Set();
+    const targets = dataTargets(root).filter(node => normalized === null || matchesHostTarget(node, normalized))
+      .map(targetIdentity).filter(target => {
+        const key = targetKey(target);
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+      });
+    return copyHostValue(targets);
+  };
   const runSelectionCommand = (root, match, options = {}) => {
     if (!hasFeature(root, 'Selection')) return [];
     const normalized = hostMatch(match), mode = options.mode || 'replace';

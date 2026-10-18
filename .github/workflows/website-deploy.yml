@@ -37,7 +37,7 @@ jobs:
       packages: read
       pages: write
       id-token: write
-    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-deploy.yml@77a10b3d2b8cf3608d5b08747f273ae38e055479
+    uses: EvotecIT/PSPublishModule/.github/workflows/powerforge-website-deploy.yml@396e00acba04dcaae4c3c95433338f4df65fbc01
     with:
       website_root: Website
       pipeline_config: Website/pipeline.json
@@ -47,7 +47,7 @@ jobs:
       runner_labels_json: '["ubuntu-latest"]'
       build_timeout_minutes: 60
       powerforge_repository: EvotecIT/PSPublishModule
-      powerforge_ref: 77a10b3d2b8cf3608d5b08747f273ae38e055479
+      powerforge_ref: 396e00acba04dcaae4c3c95433338f4df65fbc01
       report_artifact_name: chartforgex-website-deploy-reports
       deployment_target: github-pages
     secrets:
@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Apply managed Cloudflare site policy
-        uses: EvotecIT/PSPublishModule/.github/actions/powerforge-cloudflare-site-policy@77a10b3d2b8cf3608d5b08747f273ae38e055479
+        uses: EvotecIT/PSPublishModule/.github/actions/powerforge-cloudflare-site-policy@396e00acba04dcaae4c3c95433338f4df65fbc01
         with:
           site-config: Website/site.json
           checkout-caller: "false"

@@ -19,6 +19,7 @@
       clearSelection: options => { requireMounted(); clearSelectionCommand(root, options); return controller; },
       clearBrush: options => { requireMounted(); clearBrushCommand(root, options); return controller; },
       getSelection: () => { requireMounted(); return copyHostValue(selectedTargets(root)); },
+      resolveTargets: match => { requireMounted(); return resolveHostTargets(root, match); },
       highlight: (match, options) => { requireMounted(); runHighlightCommand(root, match, options); return controller; },
       clearHighlight: options => { requireMounted(); clearHighlightCommand(root, options); return controller; },
       unpinTooltip: () => { requireMounted(); unpinTooltip(root); return controller; },
