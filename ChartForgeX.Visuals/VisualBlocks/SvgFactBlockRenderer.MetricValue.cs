@@ -58,8 +58,7 @@ public sealed partial class SvgFactBlockRenderer {
             var minimumUnitWidth = Math.Min(desiredUnitWidth, VisualBlockRendering.MeasureTextWidth("...", unitSize, family, 650));
             var reserveValueWidth = fullValueWidth;
             if (fullValueWidth + gap + minimumUnitWidth > maxWidth) {
-                var prefix = value.Substring(0, value.Length == 0 ? 0 : ChartForgeX.Typography.TextElementBoundary.Next(value, 0));
-                reserveValueWidth = Math.Min(fullValueWidth, VisualBlockRendering.MeasureTextWidth(prefix + "...", valueSize, family, 700));
+                reserveValueWidth = Math.Max(1, maxWidth - gap - minimumUnitWidth);
             }
             desiredUnitWidth = Math.Min(desiredUnitWidth, Math.Max(minimumUnitWidth, maxWidth - gap - reserveValueWidth));
         }
