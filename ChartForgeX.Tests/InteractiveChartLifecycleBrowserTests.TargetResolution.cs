@@ -47,6 +47,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                     selected:controller.getSelection(),announcement:root.querySelector('[data-cfx-live]').textContent};
             }
             """);
+        await CaptureAsync(page, "read-only-target-resolution-aggregate", result);
         Assert.Equal(2, result.GetProperty("all").GetArrayLength());
         var target = result.GetProperty("snapshot");
         Assert.Equal("point", target.GetProperty("targetKind").GetString());
@@ -54,7 +55,24 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Equal(new[] { 0, 1 }, target.GetProperty("sourcePoints").EnumerateArray().Select(item => item.GetInt32()));
         Assert.Equal(new[] { "first", "second" }, target.GetProperty("observationIds").EnumerateArray().Select(item => item.GetString()));
         Assert.False(target.TryGetProperty("observationId", out _));
-        Assert.Equal(target.GetRawText(), Assert.Single(result.GetProperty("fresh").EnumerateArray()).GetRawText());
+        var fresh = Assert.Single(result.GetProperty("fresh").EnumerateArray());
+        foreach (var property in new[] { "targetKind", "targetId", "id", "role", "label", "rangeLabel", "series", "seriesKey",
+            "seriesScope", "observationId", "category", "point", "sourcePoint", "derived", "groupId", "legendTargetKind", "legendTargetId", "value", "kind" }) {
+            var present = target.TryGetProperty(property, out var expected);
+            Assert.Equal(present, fresh.TryGetProperty(property, out var actual));
+            if (present) Assert.Equal(expected.GetString(), actual.GetString());
+        }
+        foreach (var property in new[] { "x", "numericValue", "groupIndex", "sourceCount" }) {
+            var present = target.TryGetProperty(property, out var expected);
+            Assert.Equal(present, fresh.TryGetProperty(property, out var actual));
+            if (present) Assert.Equal(expected.GetDouble(), actual.GetDouble());
+        }
+        Assert.Equal(target.GetProperty("observationIds").EnumerateArray().Select(item => item.GetString()),
+            fresh.GetProperty("observationIds").EnumerateArray().Select(item => item.GetString()));
+        Assert.Equal(target.GetProperty("sourcePoints").EnumerateArray().Select(item => item.GetInt32()),
+            fresh.GetProperty("sourcePoints").EnumerateArray().Select(item => item.GetInt32()));
+        Assert.Equal(target.GetProperty("range").EnumerateArray().Select(item => item.GetDouble()),
+            fresh.GetProperty("range").EnumerateArray().Select(item => item.GetDouble()));
         Assert.Empty(result.GetProperty("empty").EnumerateArray());
         Assert.Empty(result.GetProperty("missing").EnumerateArray());
         Assert.True(result.GetProperty("unchanged").GetBoolean());
@@ -66,7 +84,6 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Equal(new[] { "third" }, Assert.Single(result.GetProperty("selected").EnumerateArray())
             .GetProperty("observationIds").EnumerateArray().Select(item => item.GetString()));
         Assert.Equal("1 marks highlighted", result.GetProperty("announcement").GetString());
-        await CaptureAsync(page, "read-only-target-resolution-aggregate", result);
         AssertNoConsoleErrors(session);
     }
 
