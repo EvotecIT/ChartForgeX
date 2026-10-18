@@ -149,6 +149,10 @@ This operation supports the eleven point-mapped families: Line, StepLine, Area, 
 
 Decimation, histogram and regression factories expose read-only derived `Points`. Change complete source observations and rebuild the derived series rather than editing a reduced point, bin aggregate or fitted endpoint independently of its source provenance. Original-input counts, mappings and source snapshots remain consistent. Presentation overrides remain configurable.
 
+`WithDataLabels` sets chart-level visibility. A series overrides it with `WithDataLabels` and restores inheritance with `UseChartDataLabels`. Layout and paint use the same resolved setting; when neither is explicit, each family keeps its default. This includes Chord/Sankey captions, gauge summaries, Circle captions, radial centers, Bullet captions, the Donut center and ProgressBar numeric values. Dedicated content switches such as `ShowProgressValues` can still suppress their content. Progress row category names and gauge ticks and target labels keep their separate roles.
+
+Gantt lane item captions are visible by default. `WithDataLabels(false)` hides them at chart or series level; an explicit series setting takes precedence. Hidden captions reserve no extra bar height.
+
 Lane factories and full replacements order items by start, end and input order. `UpdateStateTimelineSegment` and `UpdateGanttLaneItem` retain the observation index even when a changed time moves the item in the rendered order. State, category, label and detail stay with that complete item. Adjacent timeline intervals with the same state and detail may render as one run; its contributor metadata lists only the intervals actually combined. A combined run keeps derived identity; a one-interval run retains its authored observation ID.
 
 Categorical `HeatmapCells` includes null masked cells in column order. Observation indices and IDs refer to those columns. `UpdateHeatmapCell(index, null)` masks one cell while preserving later cells' identities; restoring the cell restores its existing ID. Use `CreateHeatmapCategoryRow` for categorical data and the numeric row APIs for numeric data.

@@ -7,7 +7,8 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static class ChartTreeLayout {
-    public static ChartTreeModel Build(Chart chart, ChartRect plot, bool fitViewport = false) {
+    public static ChartTreeModel Build(Chart chart, ChartRect plot, bool fitViewport = false,
+        Func<int, double>? requestedNodeHeight = null, double nodeStrokeWidth = 0, double nodeGap = 0) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Tree);
         if (series?.Relationships == null || series.Nodes.Count == 0) return ChartTreeModel.Empty;
         var facts = series.Relationships;
@@ -25,9 +26,10 @@ internal static class ChartTreeLayout {
 
         var root = facts.Root;
         ApplyDepths(nodes, children, root, 0);
-        LayoutNodes(nodes, children, root, plot, fitViewport, out var nodeWidth, out var nodeHeight, out var maxDepth);
+        LayoutNodes(nodes, children, root, plot, fitViewport, out var nodeWidth, out var maxDepth);
+        if (requestedNodeHeight != null) FitNodeHeights(nodes, plot, requestedNodeHeight, nodeStrokeWidth, nodeGap);
         var maxLinkValue = links.Count == 0 ? 1 : links.Max(link => link.Value);
-        return new ChartTreeModel(nodes, links, nodeWidth, nodeHeight, maxDepth, maxLinkValue);
+        return new ChartTreeModel(nodes, links, nodeWidth, maxDepth, maxLinkValue);
     }
 
     private static void ApplyDepths(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<int>[] children, int node, int depth) {
@@ -35,11 +37,11 @@ internal static class ChartTreeLayout {
         foreach (var child in children[node]) ApplyDepths(nodes, children, child, depth + 1);
     }
 
-    private static void LayoutNodes(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<int>[] children, int root, ChartRect plot, bool fitViewport, out double nodeWidth, out double nodeHeight, out int maxDepth) {
+    private static void LayoutNodes(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<int>[] children, int root, ChartRect plot, bool fitViewport, out double nodeWidth, out int maxDepth) {
         maxDepth = nodes.Max(node => node.Depth);
         var leafCount = Math.Max(1, nodes.Count(node => children[node.Index].Count == 0));
         nodeWidth = Math.Max(ChartVisualPrimitives.TreeNodeMinWidth, Math.Min(ChartVisualPrimitives.TreeNodeMaxWidth, plot.Width / (maxDepth + 1) * ChartVisualPrimitives.TreeNodeWidthFactor));
-        nodeHeight = Math.Max(ChartVisualPrimitives.TreeNodeMinHeight, Math.Min(ChartVisualPrimitives.TreeNodeMaxHeight, plot.Height / Math.Max(1, leafCount) * ChartVisualPrimitives.TreeNodeHeightFactor));
+        var nodeHeight = Math.Max(ChartVisualPrimitives.TreeNodeMinHeight, Math.Min(ChartVisualPrimitives.TreeNodeMaxHeight, plot.Height / Math.Max(1, leafCount) * ChartVisualPrimitives.TreeNodeHeightFactor));
         if (fitViewport) {
             nodeWidth = Math.Min(nodeWidth, Math.Max(1, plot.Width / (maxDepth + 1) * .68));
             nodeHeight = Math.Min(nodeHeight, Math.Max(1, plot.Height / leafCount * .68));
@@ -53,6 +55,7 @@ internal static class ChartTreeLayout {
             var horizontalPadding = Math.Min(ChartVisualPrimitives.TreeLayoutHorizontalPadding, Math.Max(0, (plot.Width - nodeWidth) / 2));
             var availableWidth = Math.Max(fitViewport ? 0 : 1, plot.Width - nodeWidth - horizontalPadding * 2);
             node.X = maxDepth == 0 ? plot.Left + plot.Width / 2 - nodeWidth / 2 : plot.Left + horizontalPadding + node.Depth / (double)maxDepth * availableWidth;
+            node.Height = nodeHeight;
             node.Y -= nodeHeight / 2;
         }
 
@@ -71,7 +74,24 @@ internal static class ChartTreeLayout {
         }
     }
 
-
+    // A dense leaf level must not shrink every ancestor's caption. Keep the recursive
+    // centres, then use only the room beside peers at the same depth for each body.
+    private static void FitNodeHeights(IReadOnlyList<ChartTreeNode> nodes, ChartRect plot,
+        Func<int, double> requestedHeight, double strokeWidth, double gap) {
+        foreach (var level in nodes.GroupBy(node => node.Depth)) {
+            var ordered = level.OrderBy(node => node.Y + node.Height / 2).ToArray();
+            var centres = ordered.Select(node => node.Y + node.Height / 2).ToArray();
+            for (var index = 0; index < ordered.Length; index++) {
+                var node = ordered[index]; var centre = centres[index];
+                var capacity = 2 * Math.Min(centre - plot.Top, plot.Bottom - centre) - strokeWidth;
+                if (index > 0) capacity = Math.Min(capacity, centre - centres[index - 1] - strokeWidth - gap);
+                if (index + 1 < ordered.Length) capacity = Math.Min(capacity, centres[index + 1] - centre - strokeWidth - gap);
+                node.Height = Math.Min(Math.Max(0, capacity), Math.Min(ChartVisualPrimitives.TreeNodeMaxHeight,
+                    Math.Max(node.Height, requestedHeight(node.Index))));
+                node.Y = centre - node.Height / 2;
+            }
+        }
+    }
 }
 
 internal sealed class ChartTreeNode {
@@ -82,6 +102,7 @@ internal sealed class ChartTreeNode {
     public int Depth { get; set; }
     public double X { get; set; }
     public double Y { get; set; }
+    public double Height { get; set; }
 }
 
 internal readonly struct ChartTreeLayoutLink {
@@ -93,20 +114,18 @@ internal readonly struct ChartTreeLayoutLink {
 }
 
 internal readonly struct ChartTreeModel {
-    public ChartTreeModel(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<ChartTreeLayoutLink> links, double nodeWidth, double nodeHeight, int maxDepth, double maxLinkValue) {
+    public ChartTreeModel(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<ChartTreeLayoutLink> links, double nodeWidth, int maxDepth, double maxLinkValue) {
         Nodes = nodes;
         Links = links;
         NodeWidth = nodeWidth;
-        NodeHeight = nodeHeight;
         MaxDepth = maxDepth;
         MaxLinkValue = maxLinkValue;
     }
 
-    public static ChartTreeModel Empty { get; } = new(Array.Empty<ChartTreeNode>(), Array.Empty<ChartTreeLayoutLink>(), 0, 0, 0, 1);
+    public static ChartTreeModel Empty { get; } = new(Array.Empty<ChartTreeNode>(), Array.Empty<ChartTreeLayoutLink>(), 0, 0, 1);
     public IReadOnlyList<ChartTreeNode> Nodes { get; }
     public IReadOnlyList<ChartTreeLayoutLink> Links { get; }
     public double NodeWidth { get; }
-    public double NodeHeight { get; }
     public int MaxDepth { get; }
     public double MaxLinkValue { get; }
 }

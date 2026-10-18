@@ -236,7 +236,7 @@ public sealed partial class ChartOptions {
 
     /// <summary>
     /// Gets or sets chart-level data-label visibility. Series without an explicit override use this setting.
-    /// When unset, ordinary chart values are hidden and treemap captions are visible.
+    /// When unset, the renderer uses its family's default visibility.
     /// </summary>
     public bool? ShowDataLabels { get => _showDataLabels; set => _showDataLabels = value; }
     private bool? _showDataLabels;

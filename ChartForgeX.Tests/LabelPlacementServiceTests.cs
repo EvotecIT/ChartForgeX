@@ -230,5 +230,44 @@ public sealed class LabelPlacementServiceTests {
         Assert.Equal(20, world.X, 3); Assert.Equal(70, world.Y, 3);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SourceLeadersAndOtherCaptionsStayClearInEitherPlacementOrder(bool captionFirst) {
+        var caption = new LabelPlacementRequest("Other caption", new ChartPoint(50, 50), Style,
+            new[] { new LabelCandidate(0, 0), new LabelCandidate(60, 0) }, captionFirst ? 100 : 10) {
+            MeasuredSize = new TextMetrics(40, 10, 10), Fallback = LabelFallbackRule.Drop
+        };
+        var source = new LabelPlacementRequest("Source caption", new ChartPoint(70, 30), Style,
+            new[] { new LabelCandidate(0, 0), new LabelCandidate(0, 40), new LabelCandidate(40, 0) }, captionFirst ? 10 : 100) {
+            MeasuredSize = new TextMetrics(10, 10, 10), HasLeaderLine = true, Fallback = LabelFallbackRule.Drop
+        };
+        var service = new LabelPlacementService();
+        var results = service.Place(new[] { caption, source }, new ChartRect(0, 0, 200, 100),
+            new[] { new LabelObstacle("source-mark", new ChartRect(65, 25, 20, 20)) }, 2, service.Measure, avoidLeaderLabels: true);
+        Assert.All(results, result => Assert.False(result.IsDropped));
+        Assert.Equal(captionFirst ? 0 : 1, results[0].CandidateIndex);
+        Assert.Equal(captionFirst ? 2 : 1, results[1].CandidateIndex);
+        Assert.True(results[1].HasLeaderLine);
+        var stroke = new LabelMarkShape(new[] { new List<ChartPoint> { source.Anchor, results[1].LeaderEnd } }, false, 1);
+        Assert.False(stroke.Intersects(results[0].Bounds));
+    }
+
+    [Fact]
+    public void BlockedLeaderDropsItsCaptionRatherThanLeavingAnUnassociatedLabel() {
+        var caption = new LabelPlacementRequest("Other caption", new ChartPoint(50, 50), Style, new[] { new LabelCandidate(0, 0) }, 100) {
+            MeasuredSize = new TextMetrics(40, 10, 10), Fallback = LabelFallbackRule.Drop
+        };
+        var source = new LabelPlacementRequest("Full source fact", new ChartPoint(70, 30), Style,
+            new[] { new LabelCandidate(0, 0), new LabelCandidate(0, 40) }) {
+            MeasuredSize = new TextMetrics(10, 10, 10), HasLeaderLine = true, Fallback = LabelFallbackRule.Drop
+        };
+        var service = new LabelPlacementService();
+        var results = service.Place(new[] { caption, source }, new ChartRect(0, 0, 200, 100),
+            new[] { new LabelObstacle("source-mark", new ChartRect(65, 25, 20, 20)) }, 2, service.Measure, avoidLeaderLabels: true);
+        Assert.False(results[0].IsDropped); Assert.True(results[1].IsDropped);
+        Assert.Equal("Full source fact", results[1].Request.Text);
+    }
+
     private static LabelPlacementRequest Request(string text, int priority) => new(text, new ChartPoint(12, 12), Style, new[] { new LabelCandidate(0, 0) }, priority) { Fallback = LabelFallbackRule.Drop };
 }

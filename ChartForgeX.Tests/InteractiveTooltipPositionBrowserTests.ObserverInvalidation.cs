@@ -7,6 +7,7 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     [BrowserTheory]
+    [Trait("BrowserSuite", "Compatibility")]
     [InlineData(HtmlChartTooltipAnchor.Pointer, false)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, true)]
     [InlineData(HtmlChartTooltipAnchor.Node, false)]
@@ -20,8 +21,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await InstallListenerProbeAsync(page);
         await page.SetContentAsync(PositionObserverHtml(anchor));
         var baseline = await ListenerStateAsync(page);
-        await AcquireObservedPositionAsync(page, pinned);
-        var shown = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight });
+        var pointer = await AcquireObservedPositionAsync(page, pinned);
+        var shown = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, pointer: pointer);
         await InstallPositionWorkProbeAsync(page);
         var work = await page.EvaluateAsync<JsonElement>("""
             async()=>{
@@ -34,9 +35,10 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
                 return window.positionWork;
             }
             """);
-        var retained = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight });
-        await CaptureAsync(page, $"position-observer-unrelated-{anchor}-{pinned}", new { shown, work, retained }, session);
+        var retained = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, pointer: pointer);
+        await CaptureAsync(page, $"position-observer-unrelated-{anchor}-{pinned}", new { pointer, shown, work, retained }, session);
         Assert.Equal(0, work.GetProperty("paintStyleReads").GetInt32());
+        Assert.InRange(work.GetProperty("projectionStyleReads").GetInt32(), 0, 20);
         Assert.Equal(0, work.GetProperty("placementStyleReads").GetInt32());
         Assert.Equal(0, work.GetProperty("tipStyleWrites").GetInt32());
         Assert.Equal(shown.GetProperty("text").GetString(), retained.GetProperty("text").GetString());
@@ -53,6 +55,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     }
 
     [BrowserTheory]
+    [Trait("BrowserSuite", "Compatibility")]
     [InlineData(HtmlChartTooltipAnchor.Node, false)]
     [InlineData(HtmlChartTooltipAnchor.Node, true)]
     [InlineData(HtmlChartTooltipAnchor.Chart, false)]
@@ -77,6 +80,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         Assert.InRange(moved.GetProperty("stage").GetProperty("y").GetDouble() - shown.GetProperty("stage").GetProperty("y").GetDouble(), 119.85, 120.15);
         Assert.InRange(moved.GetProperty("tip").GetProperty("y").GetDouble() - shown.GetProperty("tip").GetProperty("y").GetDouble(), 119.85, 120.15);
         Assert.Equal(0, work.GetProperty("paintStyleReads").GetInt32());
+        Assert.InRange(work.GetProperty("projectionStyleReads").GetInt32(), 0, 1);
         Assert.True(work.GetProperty("placementStyleReads").GetInt32() > 0);
         Assert.Equal(shown.GetProperty("text").GetString(), moved.GetProperty("text").GetString());
         Assert.Equal(pinned, moved.GetProperty("pinned").GetBoolean());
@@ -113,8 +117,8 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await InstallListenerProbeAsync(page);
         await page.SetContentAsync(PositionObserverHtml(anchor));
         var baseline = await ListenerStateAsync(page);
-        await AcquireObservedPositionAsync(page, pinned);
-        var shown = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight });
+        var pointer = await AcquireObservedPositionAsync(page, pinned);
+        var shown = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, pointer: pointer);
         // Hosts can hide the target itself or an ancestor while retaining the same screen bounds.
         await page.EvaluateAsync("""
             ({selector,change,subject})=>{
@@ -129,7 +133,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         var hidden = await GeometryAsync(page);
         var released = await ListenerStateAsync(page);
         var paint = await page.EvaluateAsync<JsonElement>("()=>{const s=getComputedStyle(window.positionPaintSubject);return{opacity:s.opacity,visibility:s.visibility};}");
-        await CaptureAsync(page, $"position-observer-paint-{anchor}-{pinned}-{subject}-{change}", new { shown, hidden, paint, baseline, released }, session);
+        await CaptureAsync(page, $"position-observer-paint-{anchor}-{pinned}-{subject}-{change}", new { pointer, shown, hidden, paint, baseline, released }, session);
         Assert.Equal(shown.GetProperty("node").GetRawText(), hidden.GetProperty("node").GetRawText());
         Assert.Equal(change.EndsWith("opacity", StringComparison.Ordinal) ? "0" : "hidden", paint.GetProperty(change.EndsWith("opacity", StringComparison.Ordinal) ? "opacity" : "visibility").GetString());
         Assert.True(hidden.GetProperty("hidden").GetBoolean());

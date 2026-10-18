@@ -18,7 +18,7 @@ internal static partial class VisualSankeyCompiler {
         if (chart.Series.Count != 1 || chart.Series[0].Kind != ChartSeriesKind.Sankey) throw new InvalidOperationException("Prepared Sankey charts require one weighted-flow series.");
         var series = chart.Series[0]; var options = chart.Options.Sankey; var model = ChartSankeyLayout.Build(chart); var colors = context.Theme.Resolve(context.ThemeMode);
         if (model.Nodes.Count == 0) { builder.AddDiagnostic(new VisualDiagnostic("sankey.no-data", "The Sankey chart has no flows.")); return; }
-        bool showLabels = series.ShowDataLabels != false;
+        bool showLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true);
         var styles = model.Nodes.Select(node => ChartRelationshipPaint.LabelStyle(chart, context, node.Index, colors.Foreground)).ToArray();
         var formatted = model.Nodes.Select(node => ChartNumericFormatter.FormatValue(chart.Options, node.Value)).ToArray();
         var fullLabels = model.Nodes.Select(node => node.Label + " " + formatted[node.Index]).ToArray();

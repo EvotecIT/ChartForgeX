@@ -21,7 +21,7 @@ internal readonly struct ProgressRingLayout {
     internal double RadiusAt(int index) => OuterRadius - StrokeWidth / 2 - index * (StrokeWidth + Gap);
 
     internal static double RequestedCenterRadius(Chart chart, ChartSeries series, double outerRadius, string centerLabel, double valueFontSize, double nameFontSize, TextStyleOverride style) {
-        if (!chart.Options.ShowProgressRingCenterLabel || series.ShowDataLabels == false) return 0;
+        if (!chart.Options.ShowProgressRingCenterLabel || !series.ResolveDataLabels(chart.Options, defaultVisible: true)) return 0;
         var measurement = new TextMeasurementContext(style.FontFamily ?? chart.Options.ResolvedTheme.FontFamily);
         var value = style.TransformText(centerLabel, CultureInfo.InvariantCulture);
         var name = style.TransformText(series.Name, CultureInfo.InvariantCulture);

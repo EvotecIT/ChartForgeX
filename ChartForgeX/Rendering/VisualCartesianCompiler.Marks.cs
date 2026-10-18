@@ -249,7 +249,10 @@ internal static partial class VisualCartesianCompiler {
             // second lane before shortening the label, then the opposite vertical side.
             candidates.Add(new LabelCandidate(0, positive ? -spacing * 2 : spacing * 2, .5, positive ? 1 : 0));
             candidates.Add(new LabelCandidate(0, positive ? spacing : -spacing, .5, positive ? 0 : 1));
-            foreach (var alignment in new[] { .5, 0, 1 }) {
+            // A lollipop's mark includes its complete stem back to zero. Its value caption
+            // must stay beside the endpoint; a stem-edge fallback can cross the baseline
+            // and appear to label a different observation. Keep the full stem obstacle.
+            if (series.Kind != ChartSeriesKind.Lollipop) foreach (var alignment in new[] { .5, 0, 1 }) {
                 candidates.Add(new LabelCandidate(0, mark.Top - anchor.Y - spacing, alignment, 1));
                 candidates.Add(new LabelCandidate(0, mark.Bottom - anchor.Y + spacing, alignment, 0));
             }

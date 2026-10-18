@@ -54,18 +54,40 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     }
 
     [BrowserFact]
+    [Trait("BrowserSuite", "Compatibility")]
     public async Task PointerReadoutDismissesWhenReadableViewportClipsItsSource() {
         if (!Enabled) return;
         await using var session = await OpenAsync(StatusLines(false).ToInteractiveHtmlPage(options => {
             options.Tooltip.Position.Anchor = HtmlChartTooltipAnchor.Node;
         }), 390, 844);
         var page = session.Page;
-        await MoveToAsync(page, Point(0, 0)); await WaitForTipAsync(page);
+        await page.EvaluateAsync("""
+            ()=>{
+                const root=document.querySelector('.cfx-interactive-chart');
+                window.readableScrollTarget=null;window.readableScrollEvents=[];
+                root.addEventListener('cfxhover',event=>{
+                    if(event.detail.target?.targetKind==='point')window.readableScrollTarget=event.detail.target;
+                    readableScrollEvents.push({type:'cfxhover',target:event.detail.target});
+                });
+                root.addEventListener('pointermove',event=>readableScrollEvents.push({type:'pointermove',x:event.clientX,y:event.clientY}),{passive:true});
+            }
+            """);
+        var pointer = await PointerAsync(page);
+        await WaitForTipAsync(page);
         Assert.Equal("Mon", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
         await page.Locator(".cfx-stage").EvaluateAsync("stage => stage.scrollLeft = stage.scrollWidth");
         await ScrollSettledAsync(page);
-        await CaptureAsync(page, "scroll-readable-light-pointer-clipped", await ScrollFactsAsync(page, Point(0, 0)), session);
-        Assert.True(await TipHiddenAsync(page));
+        var clipped = await ReadablePointerFactAsync(page);
+        Assert.True(clipped.GetProperty("original").GetProperty("right").GetDouble() < clipped.GetProperty("viewport").GetProperty("left").GetDouble());
+        // A native pointer event after scrolling may acquire a different visible source. Mon must never remain shown.
+        if (!clipped.GetProperty("hidden").GetBoolean()) AssertVisibleThursdayFact(clipped);
+        await CaptureAsync(page, "scroll-readable-light-pointer-clipped", clipped, session);
+        await page.Mouse.MoveAsync((float)pointer[0], (float)pointer[1]);
+        await ScrollSettledAsync(page);
+        var reacquired = await ReadablePointerFactAsync(page);
+        Assert.False(reacquired.GetProperty("hidden").GetBoolean());
+        AssertVisibleThursdayFact(reacquired);
+        await CaptureAsync(page, "scroll-readable-light-pointer-reacquired", new { pointer, clipped, reacquired }, session);
         AssertNoConsoleErrors(session);
     }
 
@@ -193,6 +215,35 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         Assert.True(await TipHiddenAsync(page));
         Assert.NotEqual("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
         AssertNoConsoleErrors(session);
+    }
+
+    private static Task<JsonElement> ReadablePointerFactAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
+        ()=>{
+            const root=document.querySelector('.cfx-interactive-chart'),tip=root.querySelector('.cfx-tooltip'),stage=root.querySelector('.cfx-stage');
+            const target=window.readableScrollTarget;
+            const node=target&&root.querySelector('[data-cfx-target-id="'+CSS.escape(target.targetId)+'"]');
+            const rect=node=>node.getBoundingClientRect().toJSON(),clip=stage.getBoundingClientRect();
+            const viewport={left:clip.left+stage.clientLeft,right:clip.left+stage.clientLeft+stage.clientWidth,
+                top:clip.top+stage.clientTop,bottom:clip.top+stage.clientTop+stage.clientHeight};
+            const box=node&&rect(node),style=node&&getComputedStyle(node);
+            return{hidden:tip.hidden,title:tip.querySelector('.cfx-tooltip__title')?.textContent,text:tip.innerText,
+                original:rect(root.querySelector('g[data-cfx-role=point][data-cfx-series="0"][data-cfx-point="0"]')),viewport,target,
+                source:node&&{id:node.dataset.cfxTargetId,label:node.dataset.cfxXLabel,value:Number(node.dataset.cfxY),formatted:node.dataset.cfxFormattedValue,box,
+                    painted:box.right>viewport.left&&box.left<viewport.right&&box.bottom>viewport.top&&box.top<viewport.bottom
+                        &&style.display!=='none'&&style.visibility!=='hidden'&&Number(style.opacity)>0},events:readableScrollEvents};
+        }
+        """);
+
+    private static void AssertVisibleThursdayFact(JsonElement state) {
+        var source = state.GetProperty("source");
+        Assert.Equal("passed:3", state.GetProperty("target").GetProperty("targetId").GetString());
+        Assert.Equal("passed:3", source.GetProperty("id").GetString());
+        Assert.True(source.GetProperty("painted").GetBoolean());
+        Assert.Equal(1041d, state.GetProperty("target").GetProperty("numericValue").GetDouble());
+        Assert.Equal(1041d, source.GetProperty("value").GetDouble());
+        Assert.Equal("Thu", source.GetProperty("label").GetString());
+        Assert.Equal("Thu", state.GetProperty("title").GetString());
+        Assert.Contains(source.GetProperty("formatted").GetString()!, state.GetProperty("text").GetString()!, StringComparison.Ordinal);
     }
 
     private static Task ScrollSettledAsync(IPage page) => page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))");

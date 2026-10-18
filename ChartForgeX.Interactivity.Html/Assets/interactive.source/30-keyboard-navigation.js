@@ -234,8 +234,21 @@
     const box = node.getBoundingClientRect(), viewport = owner.getBoundingClientRect();
     // Native reveal reaches opaque slots; preserve partly visible wide marks.
     if (!preserveVisiblePortion && box.width <= viewport.width - inset * 2 && box.height <= viewport.height - inset * 2) {
-      node.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
-      // Native SVG reveal may reset known clips; remeasure after opaque hosts move.
+      // Native SVG scrolling can leave an offscreen mark hidden through an opaque slot.
+      // A transient HTML footprint lets the browser traverse that host without inspecting it.
+      let nativeTarget = node;
+      if (node instanceof SVGElement) {
+        const start = stagePoint(owner, { x: box.left, y: box.top });
+        const end = stagePoint(owner, { x: box.right, y: box.bottom });
+        nativeTarget = document.createElement('span');
+        nativeTarget.setAttribute('aria-hidden', 'true');
+        nativeTarget.style.cssText = 'all:initial;position:absolute;display:block;pointer-events:none;opacity:0;margin:0;padding:0;border:0;'
+          + `scroll-margin:${inset}px;left:${start.x}px;top:${start.y}px;width:${end.x - start.x}px;height:${end.y - start.y}px`;
+        owner.appendChild(nativeTarget);
+      }
+      try { nativeTarget.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' }); }
+      finally { if (nativeTarget !== node) nativeTarget.remove(); }
+      // Native reveal may reset known clips; remeasure after opaque hosts move.
       revealClips();
     }
   };

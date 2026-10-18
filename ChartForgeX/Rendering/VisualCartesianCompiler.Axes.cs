@@ -209,11 +209,19 @@ internal static partial class VisualCartesianCompiler {
             style = VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, horizontal ? Math.Min(bounds.Width, pitch) : bounds.Width,
                 horizontal ? bounds.Height : Math.Min(bounds.Height, pitch)), ticks.Select(tick => labels.Format(axis, tick, fallback, ticks)).ToArray(), axis.LabelAngle);
         }
+        var shortenedCategories = false;
         string Display(double tick) {
             var text = labels.Format(axis, tick, fallback, ticks);
-            return !horizontal && labels.HasAuthoredTicks(axis) && VisualAxisText.Angle(axis.LabelAngle) == 0 && bounds.Width > 0
-                ? string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, bounds.Width,
-                    (value, _) => builder.MeasureText(value, style).Width)) : text;
+            if (horizontal || !labels.HasAuthoredTicks(axis) || VisualAxisText.Angle(axis.LabelAngle) != 0 || bounds.Width <= 0) return text;
+            // Only named horizontal categories use this bounded caption fallback. Numeric
+            // and calendar value axes keep their complete-caption scale/stride policy.
+            if (ReferenceEquals(axis, labels.HorizontalCategoryAxis) && axis.Labels.Count > 0 && axis.Scale != ChartScaleKind.Time) {
+                var displayed = VisualAxisText.FitWrappedCategory(builder, text, style, bounds.Width, out var shortened);
+                shortenedCategories |= shortened;
+                return displayed;
+            }
+            return string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, bounds.Width,
+                (value, _) => builder.MeasureText(value, style).Width));
         }
         var visible = SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
         var requests = new List<LabelPlacementRequest>();
@@ -246,8 +254,8 @@ internal static partial class VisualCartesianCompiler {
         var placed = axis.LabelDensity == ChartLabelDensity.All
             ? requests.Select(request => placement.Place(new[] { request }, bounds, null, 0, builder.MeasureText)[0]).ToArray()
             : placement.Place(requests, bounds, null, gap, builder.MeasureText);
-        if (placed.Any(label => label.IsDropped))
-            builder.AddDiagnostic(new VisualDiagnostic("cartesian.axis-label-overflow", "An axis caption cannot fit at its tick inside the available frame."));
+        if (shortenedCategories || placed.Any(label => label.IsDropped))
+            builder.AddDiagnostic(new VisualDiagnostic("cartesian.axis-label-overflow", "An axis caption was shortened or could not fit at its tick inside the available frame."));
         foreach (var label in placed) VisualAxisText.Draw(builder, label, role);
     }
 

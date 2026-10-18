@@ -87,9 +87,13 @@ internal static partial class VisualCartesianCompiler {
         var widest = 0d; var tallest = 0d;
         foreach (var category in categories) {
             var text = cache.Format(axes.Category, category, null, categories);
-            if (cache.HasAuthoredTicks(axes.Category) && VisualAxisText.Angle(axes.Category.LabelAngle) == 0)
-                text = string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
-                    Math.Max(0, viewport.Width * .35 - spacing), (value, _) => builder.MeasureText(value, style).Width));
+            if (cache.HasAuthoredTicks(axes.Category) && VisualAxisText.Angle(axes.Category.LabelAngle) == 0) {
+                var width = Math.Max(0, viewport.Width * .35 - spacing);
+                text = axes.Category.Labels.Count > 0 && axes.Category.Scale != ChartScaleKind.Time
+                    ? VisualAxisText.FitWrappedCategory(builder, text, style, width, out _)
+                    : string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
+                        width, (value, _) => builder.MeasureText(value, style).Width));
+            }
             var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), axes.Category.LabelAngle);
             widest = Math.Max(widest, metrics.Width); tallest = Math.Max(tallest, metrics.Height);
         }

@@ -14,7 +14,7 @@ jobs:
   build-test-pack:
     name: Build, test, examples, pack (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 30
+    timeout-minutes: ${{ matrix.name == 'Windows' && 40 || 30 }}
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +37,21 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
+
+      - name: Setup .NET 8 for Windows packed consumers
+        if: runner.os == 'Windows'
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install packed-consumer qualification tooling
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Install-Module -Name PSPublishModule -RequiredVersion 3.0.168 -Repository PSGallery -Scope CurrentUser -Force -ErrorAction Stop
+          Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -Name Version, Release -ErrorAction Stop |
+            Select-Object Version, Release | ConvertTo-Json |
+            Set-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'chartforgex-framework-runtime.json') -Encoding utf8
 
       - name: Setup Node.js for Mermaid conformance
         uses: actions/setup-node@v7
@@ -143,12 +158,23 @@ jobs:
 
       - name: Run quality loop
         shell: pwsh
-        run: ./Build.ps1 -Configuration Release
+        run: ./Build.ps1 -Configuration Release -QualifyPackages:($env:RUNNER_OS -eq 'Windows')
 
       - name: Export Website API documentation bundle
         if: runner.os == 'Linux'
         shell: pwsh
         run: ./Build/Export-WebsiteApiDocs.ps1 -SkipBuild
+
+      - name: Retain packed-consumer qualification reports
+        if: always() && runner.os == 'Windows'
+        uses: actions/upload-artifact@v7
+        with:
+          name: chartforgex-package-qualification-Windows
+          path: |
+            artifacts/packages/Release/qualification/*.json
+            ${{ runner.temp }}/chartforgex-framework-runtime.json
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Upload packages
         uses: actions/upload-artifact@v7

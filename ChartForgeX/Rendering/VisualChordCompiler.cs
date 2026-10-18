@@ -19,7 +19,7 @@ internal static partial class VisualChordCompiler {
         var series = chart.Series[0]; var options = chart.Options.Chord; var colors = context.Theme.Resolve(context.ThemeMode);
         var styles = series.Nodes.Select((_, index) => ChartRelationshipPaint.LabelStyle(chart, context, index, colors.Foreground)).ToArray();
         var labels = series.Nodes.Select((node, index) => Label(chart, index)).ToArray();
-        var showLabels = series.ShowDataLabels != false && options.LabelContent != ChartChordLabelContent.None;
+        var showLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true) && options.LabelContent != ChartChordLabelContent.None;
         var model = ChartChordLayout.Compute(series, options, plot);
         // Semantic-only nodes have no rendered caption, including positive totals whose native arcs collapse.
         var captionNodes = showLabels ? model.Nodes.Where(node => node.IsVisible).ToArray() : Array.Empty<ChartChordNode>();

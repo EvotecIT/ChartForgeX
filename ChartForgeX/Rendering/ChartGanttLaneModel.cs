@@ -160,7 +160,11 @@ internal sealed class ChartGanttLaneModel {
         return new ChartGanttLaneModel(Chart, rows, Min, Max, Now, Ticks, Legend);
     }
 
-    public double Band(ChartRect plot) => Math.Min(UnitHeight(plot) * 0.9, Math.Max(BandMinimum, Math.Min(BandMaximum, UnitHeight(plot) * 0.72)));
+    /// <summary>Leaves separation within each allocated packed row, including measured caption-height requests.</summary>
+    internal double MaximumBand(ChartRect plot) => UnitHeight(plot) * 0.9;
+
+    public double Band(ChartRect plot, double minimumCaptionBand = 0) => Math.Min(MaximumBand(plot),
+        Math.Max(minimumCaptionBand, Math.Max(BandMinimum, Math.Min(BandMaximum, UnitHeight(plot) * 0.72))));
 
     /// <summary>Returns the top of each row, in row order, followed by the plot bottom.</summary>
     public double[] RowTops(ChartRect plot) {
@@ -178,7 +182,8 @@ internal sealed class ChartGanttLaneModel {
 
     private static double RowUnits(ChartGanttLaneRow row) => row.IsGroup ? (row.Name.Length == 0 ? SeparatorRowUnits : GroupRowUnits) : row.SubRows;
 
-    public double BarTop(ChartRect plot, double rowTop, int subRow) => rowTop + subRow * UnitHeight(plot) + (UnitHeight(plot) - Band(plot)) / 2;
+    public double BarTop(ChartRect plot, double rowTop, int subRow, double minimumCaptionBand = 0) =>
+        rowTop + subRow * UnitHeight(plot) + (UnitHeight(plot) - Band(plot, minimumCaptionBand)) / 2;
 
     public double X(double value, ChartRect plot) => plot.Left + ChartMath.Normalize(Math.Max(Min, Math.Min(Max, value)), Min, Max) * plot.Width;
 

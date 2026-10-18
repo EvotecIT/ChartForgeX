@@ -199,6 +199,37 @@ public sealed class FunnelGeometryTests {
         Assert.Contains(scene.Regions, region => region.Role == "funnel-ratio" && region.Label == "25% retained\n75% drop-off");
     }
 
+    [Theory]
+    [InlineData(390, 8)]
+    [InlineData(390, 12)]
+    [InlineData(760, 12)]
+    public void DenseConeKeepsUsefulRailCaptionsWithoutLosingStageValuesOrFullDescriptions(int width, double fontSize) {
+        var values = Enumerable.Range(1, 16).Select(x => 105d - x * 5).ToArray();
+        var names = Enumerable.Range(1, 24).Select(x => $"Region {x}: international distribution").ToArray();
+        var chart = Chart.Create().WithSize(width, 420).WithTitle("Sixteen ordered stages").WithLegend(false).WithDataLabels()
+            .ConfigureDataLabelStyle(style => style.WithFontSize(fontSize)).WithXLabels(names)
+            .ConfigureFunnel(options => options.Form = ChartFunnelForm.Cone)
+            .AddFunnel("Ordered stages", values.Select((value, i) => new ChartPoint(i + 1, value)));
+        chart.Series[0].WithObservationIds(Enumerable.Range(0, values.Length).Select(i => new ChartObservationId("stage-" + i)));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "funnel-label").ToArray();
+        Assert.NotEmpty(captions);
+        foreach (var caption in captions) {
+            var region = prepared.Regions.Single(item => item.Id == caption.Id);
+            var bounds = new ChartRect(caption.LineLeft(caption.Text.Lines[0]), caption.Baseline - caption.Text.Ascent, caption.Text.Metrics.Width, caption.Text.Metrics.Height);
+            Assert.True(LabelPlacementService.Contains(region.Bounds, bounds));
+            Assert.InRange(caption.Text.Size, Math.Min(10, fontSize), fontSize);
+            var source = int.Parse(caption.Id!.Substring("series-0-point-".Length).Replace("-label", "", StringComparison.Ordinal), CultureInfo.InvariantCulture);
+            Assert.Equal(names[source] + ": " + values[source].ToString("0", CultureInfo.InvariantCulture), region.Label);
+            if (fontSize >= 10) Assert.EndsWith(": " + values[source].ToString("0", CultureInfo.InvariantCulture), string.Join("", caption.Text.Lines.Select(line => line.Text)));
+        }
+        var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "funnel-stage").ToArray();
+        Assert.Equal(values.Length, groups.Length);
+        Assert.All(groups, group => Assert.True(group.Metadata.ContainsKey("data-cfx-observation-id")));
+        Assert.Contains(prepared.Regions, region => region.Role == "funnel-ratio" && region.Label!.Contains("retained", StringComparison.Ordinal));
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
     private static Chart Funnel(double[] values, ChartFunnelForm form, ChartOrientation orientation) {
         var chart = Chart.Create().WithXLabels(values.Select((_, index) => "Stage " + index).ToArray())
             .ConfigureFunnel(options => { options.Form = form; options.Orientation = orientation; })

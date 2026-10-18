@@ -123,7 +123,7 @@ internal static partial class VisualScheduleCompiler {
 
     private static void DataLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series, int index,
         string text, ChartRect bounds, ChartRect viewport, VisualThemeColors colors, ChartColor? fillOverride = null, ChartColorBlend? ink = null) {
-        if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) && series.Kind != ChartSeriesKind.GanttLane) return;
+        if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))) return;
         var fill = fillOverride ?? VisualStateSceneTools.SeriesColor(series, chart.IndexOfSeries(series), colors);
         var style = VisualStateSceneTools.DataStyle(chart, context, series, index, ink?.Color ?? ChartColorMath.AccessibleTextOnBackground(fill));
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
@@ -139,13 +139,7 @@ internal static partial class VisualScheduleCompiler {
                     paint: VisualStateSceneTools.DataPaint(chart, series, index, style, ink?.Paint));
                 return;
             }
-            if (series.Kind != ChartSeriesKind.GanttLane) return;
-            // Thin schedule bars still carry meaningful labels. Place them above the mark
-            // when their complete text cannot fit inside the bar instead of dropping them.
-            placement = ChartDataLabelPlacement.Above;
-            style = VisualStateSceneTools.DataStyle(chart, context, series, index, ChartColorMath.AccessibleTextOnBackground(colors.Surface));
-            measured = builder.MeasureText(text, style);
-            ink = null;
+            return;
         }
         var width = Math.Min(viewport.Width, measured.Width); var height = Math.Min(viewport.Height, measured.Height);
         var left = bounds.Left + (bounds.Width - width) / 2; var top = bounds.Top - gap - height;

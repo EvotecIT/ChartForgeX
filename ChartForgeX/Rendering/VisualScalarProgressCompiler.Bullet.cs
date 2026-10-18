@@ -20,7 +20,7 @@ internal static partial class VisualScalarProgressCompiler {
         var gap = context.Theme.Spacing;
         var labelWidth = 0d; var valueWidth = 0d;
         for (var index = 0; index < entries.Length; index++) {
-            var series = entries[index].Series; if (series.ShowDataLabels == false) continue;
+            var series = entries[index].Series; if (!series.ResolveDataLabels(chart.Options, defaultVisible: true)) continue;
             var style = Style(chart, context, series, 0, colors.Foreground, context.Theme.Typography.DataLabelSize, 400);
             labelWidth = Math.Max(labelWidth, builder.MeasureText(series.Name, style).Width + gap);
             valueWidth = Math.Max(valueWidth, builder.MeasureText(labels[index], Style(chart, context, series, 0,
@@ -65,7 +65,7 @@ internal static partial class VisualScalarProgressCompiler {
                 }
                 builder.Rect(new ChartRect(left, y - barHeight / 6, X(value) - left, barHeight / 3), color, role: "bullet-value", paint: VisualChartPaint.Fill(measurePaint));
                 builder.Line(X(target), y - barHeight / 2, X(target), y + barHeight / 2, colors.Foreground, context.Theme.SeriesStrokeWidth, "bullet-target", paint: VisualChartPaint.Stroke(colors.Foreground, SvgColorRole.Text));
-                if (series.ShowDataLabels != false) {
+                if (series.ResolveDataLabels(chart.Options, defaultVisible: true)) {
                     Text(chart, context, builder, series, 0, series.Name, new ChartRect(plot.Left, bounds.Top, Math.Max(0, labelWidth - gap), rowHeight),
                         "bullet-row-label", Id(sourceIndex) + "-label", colors.Foreground, context.Theme.Typography.DataLabelSize, alignment: TextAlignment.Left);
                     var textLeft = left + width + gap;

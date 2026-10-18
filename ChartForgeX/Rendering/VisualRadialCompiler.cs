@@ -97,7 +97,7 @@ internal static partial class VisualRadialCompiler {
             }
             if (vertical) DrawVerticalLabels(chart, context, builder, plot, labels, radius, cy, maximumOffset, placement);
             else DrawOutsideLabels(chart, context, builder, plot, labels, radius);
-            if (inner > 0 && chart.Options.ShowDonutCenterLabel && series.ShowDataLabels != false)
+            if (inner > 0 && chart.Options.ShowDonutCenterLabel && series.ResolveDataLabels(chart.Options, defaultVisible: true))
                 DrawCenter(chart, context, builder, cx, cy, inner, total.FiniteTotal);
         }
     }

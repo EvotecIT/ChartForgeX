@@ -24,7 +24,7 @@ internal static partial class VisualGaugeCompiler {
         var data = Read(chart, colors);
         var series = chart.Series[0]; var options = chart.Options.Gauge;
         var authoredValue = series.PointLabels.Count > 0 ? series.PointLabels[0] : null;
-        var showValue = series.ShowDataLabels != false;
+        var showValue = series.ResolveDataLabels(chart.Options, defaultVisible: true);
         var caption = options.Caption ?? series.Name;
         var scaleValues = ScaleValues(chart, data);
         var retainedValues = new List<double>(data.Targets.Select(target => target.Value));
@@ -126,7 +126,7 @@ internal static partial class VisualGaugeCompiler {
                 cx + Math.Cos(angle) * (radius + stroke / 2 + bandWidth), cy + Math.Sin(angle) * (radius + stroke / 2 + bandWidth),
                 colors.Foreground, context.Theme.SeriesStrokeWidth, "gauge-target", paint: VisualChartPaint.Stroke(colors.Foreground, SvgColorRole.Axis));
         }
-        if (chart.Series[0].ShowDataLabels != false) {
+        if (chart.Series[0].ResolveDataLabels(chart.Options, defaultVisible: true)) {
             var needle = chart.Options.Gauge.Form == ChartGaugeForm.Needle;
             var captionBottom = Math.Min(plot.Bottom, cy + radius * .5 + stroke / 2);
             // Below-pivot summaries can use the gap before the scale row, including taller resolved faces.
@@ -272,7 +272,7 @@ internal static partial class VisualGaugeCompiler {
             minimumDefaultSize: context.Theme.Typography.DataLabelSize);
         var captionStyle = LabelStyle(chart, context, builder, caption, summaryBudget, context.Theme.Typography.DataLabelSize, muted: true,
             minimumDefaultSize: context.Theme.Typography.DataLabelSize);
-        var summaryHeight = chart.Series[0].ShowDataLabels == false ? 0
+        var summaryHeight = !chart.Series[0].ResolveDataLabels(chart.Options, defaultVisible: true) ? 0
             : Math.Min(summaryBudget, Math.Max(builder.MeasureText(value, valueStyle).Height, builder.MeasureText(caption, captionStyle).Height));
         var trackTop = Math.Min(maximumTrackTop, Math.Max(plot.Top + plot.Height * .45, plot.Top + summaryHeight + gap / 3 + height / 2));
         var track = new ChartRect(plot.Left + gap, trackTop, Math.Max(0, plot.Width - gap * 2), height);
@@ -296,7 +296,7 @@ internal static partial class VisualGaugeCompiler {
             var tx = track.Left + track.Width * Ratio(data, reference.Value);
             builder.Line(tx, track.Top - height / 4, tx, track.Bottom + height / 4, colors.Foreground, context.Theme.SeriesStrokeWidth, "gauge-target", paint: VisualChartPaint.Stroke(colors.Foreground, SvgColorRole.Axis));
         }
-        if (chart.Series[0].ShowDataLabels != false) {
+        if (chart.Series[0].ResolveDataLabels(chart.Options, defaultVisible: true)) {
             var valueWidth = Math.Min(track.Width * .6, builder.MeasureText(value, valueStyle).Width);
             var captionWidth = Math.Min(Math.Max(0, track.Width - valueWidth - gap), builder.MeasureText(caption, captionStyle).Width);
             var summaryLeft = track.Left + (track.Width - valueWidth - gap - captionWidth) / 2;

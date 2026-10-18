@@ -23,7 +23,7 @@ internal readonly struct ChartBulletLayout {
         foreach (var series in chart.Series) {
             if (series.Kind != ChartSeriesKind.Bullet || series.RenderPoints.Count < 2) continue;
             rows++;
-            if (series.ShowDataLabels == false) continue;
+            if (!series.ResolveDataLabels(chart.Options, defaultVisible: true)) continue;
             labeled = true;
             var style = series.PointDataLabelStyles.Count > 0 && series.PointDataLabelStyles[0]?.HasOverrides == true ? series.PointDataLabelStyles[0]!
                 : series.DataLabelStyle.HasOverrides ? series.DataLabelStyle : chart.Options.DataLabelStyle;

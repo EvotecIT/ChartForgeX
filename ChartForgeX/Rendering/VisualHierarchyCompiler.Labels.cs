@@ -9,8 +9,14 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualHierarchyCompiler {
+    private const double LabelInsetLimit = 8;
+
+    /// <summary>Requests one measured line with the existing padding; geometry still bounds the actual body.</summary>
+    private static double LabelBodyHeight(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, int pointIndex) =>
+        builder.MeasureText("M", LabelStyle(chart, context, context.Theme.Resolve(context.ThemeMode).Foreground, pointIndex)).Height + LabelInsetLimit * 2;
+
     private static void Label(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
-        ChartColor fill, int pointIndex, string role, bool center = false, SvgPaint? fillPaint = null, double insetLimit = 8, int maximumLines = 2) {
+        ChartColor fill, int pointIndex, string role, bool center = false, SvgPaint? fillPaint = null, double insetLimit = LabelInsetLimit, int maximumLines = 2) {
         var style = LabelStyle(chart, context, fill, pointIndex);
         var inset = Math.Min(insetLimit, Math.Min(bounds.Width, bounds.Height) / 5);
         double width = Math.Max(0, bounds.Width - inset * 2), height = Math.Max(0, bounds.Height - inset * 2);

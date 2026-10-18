@@ -18,8 +18,31 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     private static async Task<double[]> PointerAsync(IPage page, string selector = Reading, double offsetX = 0, double offsetY = 0) {
         var box = await BoxAsync(page, selector);
         var position = new[] { box.X + box.Width / 2 + offsetX, box.Y + box.Height / 2 + offsetY };
-        await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
-        return position;
+        // Native engines may quantize pointer coordinates; assert the event delivered to the chart.
+        await page.EvaluateAsync("""
+            ()=>{
+                const capture=window.positionPointerCapture={};
+                capture.listener=event=>capture.point=[event.clientX,event.clientY];
+                document.addEventListener('pointermove',capture.listener,{capture:true,passive:true,once:true});
+            }
+            """);
+        try {
+            await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
+            return await page.EvaluateAsync<double[]>("""
+                ()=>{
+                    const point=window.positionPointerCapture.point;
+                    if(!point)throw new Error('Native pointer movement was not observed.');
+                    return point;
+                }
+                """);
+        } finally {
+            await page.EvaluateAsync("""
+                ()=>{
+                    document.removeEventListener('pointermove',window.positionPointerCapture.listener,true);
+                    delete window.positionPointerCapture;
+                }
+                """);
+        }
     }
 
     private static Task CentreReadableTargetAsync(IPage page, string selector = Reading) => page.Locator(selector).EvaluateAsync("node => { const stage=node.closest('.cfx-stage'), b=node.getBoundingClientRect(), s=stage.getBoundingClientRect(); stage.scrollLeft += b.x+b.width/2-s.x-s.width/2; }");
