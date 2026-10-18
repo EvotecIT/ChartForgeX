@@ -15,8 +15,9 @@ internal static partial class InteractiveChartBrowser {
     internal static Task AssertCssColorsDifferentAsync(IPage page, string first, string second) =>
         AssertCssColorsAsync(page, first, second, equal: false);
 
-    private static async Task AssertCssColorsAsync(IPage page, string expected, string actual, bool equal) {
-        var channels = await page.EvaluateAsync<int[][]>("""
+    /// <summary>Resolves CSS paint through the browser's native sRGB canvas.</summary>
+    internal static Task<int[][]> ResolveCssColorsAsync(IPage page, params string[] values) =>
+        page.EvaluateAsync<int[][]>("""
             values => {
                 const canvas = document.createElement('canvas');
                 canvas.width = canvas.height = 1;
@@ -34,7 +35,10 @@ internal static partial class InteractiveChartBrowser {
                     return [...context.getImageData(0, 0, 1, 1).data];
                 });
             }
-            """, new[] { expected, actual });
+            """, values);
+
+    private static async Task AssertCssColorsAsync(IPage page, string expected, string actual, bool equal) {
+        var channels = await ResolveCssColorsAsync(page, expected, actual);
         var captures = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");
         if (!string.IsNullOrWhiteSpace(captures)) {
             if (!Path.IsPathRooted(captures)) throw new InvalidOperationException("CFX_V2_CAPTURE_ROOT must be an explicit absolute output path.");

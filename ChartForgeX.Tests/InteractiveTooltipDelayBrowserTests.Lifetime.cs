@@ -118,6 +118,9 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         page.PageError += (_, error) => pageErrors.Add(error);
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
         await SettleCameraAsync(page);
+        var clockStart = DateTime.UtcNow;
+        await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = clockStart });
+        await page.Clock.PauseAtAsync(clockStart.AddHours(1));
         await TraceAsync(page);
         await page.EvaluateAsync("""
             delay => {
@@ -151,23 +154,24 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.True(await TipHiddenAsync(page));
         var queued = await page.EvaluateAsync<JsonElement>(resetState);
         var timers = queued.GetProperty("timers");
-        var canceledTimers = timers.GetProperty("canceled").EnumerateArray().Select(timer => timer.GetProperty("id").GetInt32()).ToArray();
+        var canceledTimers = timers.GetProperty("canceled").EnumerateArray().Select(timer => timer.GetProperty("id").GetInt64()).ToArray();
         var queuedTimer = Assert.Single(timers.GetProperty("queued").EnumerateArray(),
-            timer => !canceledTimers.Contains(timer.GetProperty("id").GetInt32())).GetProperty("id").GetInt32();
+            timer => !canceledTimers.Contains(timer.GetProperty("id").GetInt64())).GetProperty("id").GetInt64();
         Assert.Empty(queued.GetProperty("timers").GetProperty("fired").EnumerateArray());
         Assert.True(await page.Locator(Point(0, 0)).EvaluateAsync<bool>("node=>{const b=node.getBoundingClientRect();return node.contains(document.elementFromPoint(b.x+b.width/2,b.y+b.height/2));}"));
         await page.Locator("[data-cfx-reset]").FocusAsync();
         var before = await page.EvaluateAsync<JsonElement>(resetState);
         await page.Keyboard.PressAsync("Enter");
         var reset = await page.EvaluateAsync<JsonElement>(resetState);
-        await Task.Delay(Delay + 80);
+        await page.Clock.RunForAsync(Delay + 80);
         var deadline = await page.EvaluateAsync<JsonElement>(resetState);
         await CaptureDelayAsync(page, "delay-reset-keyboard", new { queued, before, reset, deadline, pageErrors }, session);
         Assert.True(await TipHiddenAsync(page));
         Assert.True(await page.Locator("[data-cfx-reset]").IsHiddenAsync());
         Assert.Empty((await TraceStateAsync(page)).GetProperty("shown").EnumerateArray());
-        Assert.Contains(deadline.GetProperty("timers").GetProperty("canceled").EnumerateArray(), timer => timer.GetProperty("id").GetInt32() == queuedTimer);
-        Assert.DoesNotContain(deadline.GetProperty("timers").GetProperty("fired").EnumerateArray(), timer => timer.GetProperty("id").GetInt32() == queuedTimer);
+        Assert.Contains(deadline.GetProperty("timers").GetProperty("canceled").EnumerateArray(), timer => timer.GetProperty("id").GetInt64() == queuedTimer);
+        Assert.DoesNotContain(deadline.GetProperty("timers").GetProperty("fired").EnumerateArray(), timer => timer.GetProperty("id").GetInt64() == queuedTimer);
+        await page.Clock.ResumeAsync();
         await page.Locator(Point(0, 0)).FocusAsync();
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.True(await page.Locator(Point(0, 1)).EvaluateAsync<bool>("node=>node===document.activeElement"));
@@ -204,6 +208,9 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         });
         await using var session = await OpenAsync(html, 950, 1300);
         var page = session.Page;
+        var clockStart = DateTime.UtcNow;
+        await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = clockStart });
+        await page.Clock.PauseAtAsync(clockStart.AddHours(1));
         await TraceAsync(page);
         await PointerAsync(page, ".cfx-interactive-chart:nth-child(1) " + Point(0, 0));
         var roots = page.Locator(".cfx-interactive-chart");
@@ -211,7 +218,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.False(await roots.Nth(1).Locator(".cfx-tooltip").EvaluateAsync<bool>("tip=>tip.hidden"));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await roots.Nth(0).Locator(Legend(0)).GetAttributeAsync("data-cfx-muted"));
-        await Task.Delay(Delay + 80);
+        await page.Clock.RunForAsync(Delay + 80);
         Assert.True(await TipHiddenAsync(page));
         Assert.Empty((await TraceStateAsync(page)).GetProperty("shown").EnumerateArray());
         await CaptureDelayAsync(page, "delay-semantic-mute", await TraceStateAsync(page));

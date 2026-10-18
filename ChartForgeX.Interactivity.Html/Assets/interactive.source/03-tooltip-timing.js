@@ -1,12 +1,11 @@
-  // Timing is scoped to one chart and semantic target; hover and guide notifications stay immediate.
+  // Per-chart target timing; hover and guides stay immediate.
   const tooltipRequests = new WeakMap();
   const pendingTooltips = new Set();
   let tooltipObserver = null;
   const tooltipObservedNodes = new Map();
   const pointerReadoutSuspended = root => root._cfxPointerReadoutSuspended === true;
   const resumePointerReadout = root => { delete root._cfxPointerReadoutSuspended; };
-  // A native pointer entry can be caused by layout or replacement beneath a stationary mouse.
-  // Keyboard focus keeps its readout until the reader moves or presses a pointer again.
+  // Reflow beneath a stationary pointer must not steal the focused readout.
   const keyboardReadoutOwnsPointer = root => {
     const node = root._cfxKeyboardReadout;
     return !!node && node.isConnected && root.contains(node)
@@ -17,12 +16,11 @@
     resumePointerReadout(root);
   };
   const suspendPointerReadout = root => {
-    // Reset can animate native marks beneath a stationary pointer. Passive entry
-    // must not undo its dismissal; only fresh pointer or keyboard input resumes it.
+    // Reset resumes only on fresh input, not passive entry during animation.
     root._cfxPointerReadoutSuspended = true;
     hideTip(root, root.querySelector('.cfx-tooltip'), true);
   };
-  // A closed shadow tree is still reachable from its chart. Keep every enclosing tree in the lifetime boundary.
+  // Include enclosing closed trees in the lifetime boundary.
   const tooltipRootTrees = (root) => {
     const trees = [];
     for (let tree = root.getRootNode(); tree; tree = tree.host && tree.host.getRootNode()) trees.push(tree);
@@ -42,8 +40,7 @@
     if (!pendingTooltips.size && tooltipObserver) {
       tooltipObserver.disconnect(); tooltipObserver = null; tooltipObservedNodes.clear();
     } else if (tooltipObserver) {
-      // A shared observer cannot unobserve one node or downgrade its subtree boundary. Release canceled hosts.
-      // Preserve queued removals for surviving requests before disconnect discards the native record queue.
+      // Rebinding releases canceled hosts; drain surviving removals first.
       checkPendingTooltipMutations(tooltipObserver.takeRecords());
       if (!tooltipObserver) return;
       tooltipObserver.disconnect(); tooltipObservedNodes.clear();
@@ -51,8 +48,7 @@
     }
   };
   const cancelTooltipRequest = (root) => {
-    // A host may restore paint before a staged move runs. Retire that old sample
-    // with its request so it cannot acquire a new deadline without fresh input.
+    // Retire staged samples too: restored paint alone cannot start a new deadline.
     root._cfxCancelPointerHover?.();
     const request = tooltipRequests.get(root);
     if (!request) return;
@@ -65,10 +61,10 @@
     && root.dataset.cfxTooltipPinned !== 'true' && !!pointerTargetPaint(node);
   const currentPointerTooltip = (root, event) => {
     if (!event || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY) || !hasFeature(root, 'Tooltips')) return null;
-    // The event's old hit can outlive a scroll, reflow or host update. Resolve the actual native surface again.
+    // Resolve native paint again after scroll, reflow or host updates.
     let hit = root.ownerDocument.elementFromPoint(event.clientX, event.clientY);
     const trees = tooltipRootTrees(root);
-    // Descend only through the actual enclosing host hit: outer dialogs must continue to obscure the chart.
+    // Descend through hit hosts only; outer dialogs still obscure the chart.
     for (let index = trees.length - 2; index >= 0; index--) {
       if (hit !== trees[index].host) return null;
       hit = trees[index].elementFromPoint(event.clientX, event.clientY);
@@ -81,27 +77,26 @@
     return point && point.node;
   };
   const checkPendingTooltipMutations = (records) => {
-    // Native paint probes are synchronous reads, not host changes. Observing their own suspension
-    // would queue another availability probe indefinitely while a pointer request is pending.
+    // Ignore synchronous paint probes to avoid an observer feedback loop.
     records = records.filter(record => record.type !== 'attributes' || record.attributeName !== 'data-cfx-highlight-probe');
     if (!records.length) return;
     for (const pending of Array.from(pendingTooltips)) {
       const removed = records.some(record => record.type === 'childList'
         && Array.from(record.removedNodes).some(node => node.contains(pending.root) || node.contains(pending.node) || node.contains(pending.tip)
           || pending.nodes.some(boundary => node.contains(boundary))));
-      // Ancestor child-list delivery is needed for detach, but unrelated dashboard updates need no paint scan.
+      // Ancestor removals matter; unrelated dashboard updates need no paint scan.
       const paintChanged = records.some(record => pending.root.contains(record.target)
         || record.type === 'attributes' && pending.nodes.includes(record.target));
       if (removed || paintChanged && !tooltipRequestAvailable(pending)) cancelTooltipRequest(pending.root);
     }
   };
   const watchPendingTooltips = (request) => {
-    // Observe only while a request is queued, so a detached or briefly replaced host cannot retain a long timer.
+    // Observe queued requests only; detach must cancel even a long timer.
     if (!tooltipObserver) tooltipObserver = new MutationObserver(checkPendingTooltipMutations);
     for (const node of request.nodes) {
       const subtree = node === request.root;
       if (tooltipObservedNodes.has(node) && (tooltipObservedNodes.get(node) || !subtree)) continue;
-      // Descendants belong to the chart. Enclosing elements and shadow hosts contribute only their own style and detach.
+      // Watch chart descendants, but only ancestor style and detach.
       tooltipObserver.observe(node, { childList: true, attributes: node instanceof Element, subtree });
       tooltipObservedNodes.set(node, subtree);
     }
@@ -132,7 +127,7 @@
       displayTip(tip, acquired, request.event);
     }, tooltipDelay(root));
   };
-  // An immediate focus readout is already shown for this identity; pointer handoff must not hide it again.
+  // Preserve the immediate readout during pointer handoff.
   const rememberImmediateTooltip = (root, tip, node, event) => {
     if (tooltipDelay(root) > 0) tooltipRequests.set(root, { root, tip, node, event, key: targetKey(targetIdentity(node)), shown: true });
   };

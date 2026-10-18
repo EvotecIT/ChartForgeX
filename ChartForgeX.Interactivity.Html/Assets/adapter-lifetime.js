@@ -12,11 +12,12 @@
   const watch = () => {
     observer?.disconnect();
     if (!mounted.size) { observer = null; return; }
-    observer ||= new MutationObserver(() => {
+    observer ||= new MutationObserver(records => {
+      const removals = records.filter(record => record.removedNodes.length);
       let changed = false;
       for (const lifetime of Array.from(mounted)) {
         if (!lifetime.root.isConnected) { lifetime.dispose(); changed = true; continue; }
-        lifetime.prune();
+        if (removals.some(record => lifetime.root.contains(record.target))) lifetime.prune();
         const trees = treesFor(lifetime.root);
         if (trees.length !== lifetime.trees.length || trees.some((tree, index) => tree !== lifetime.trees[index])) changed = true;
       }

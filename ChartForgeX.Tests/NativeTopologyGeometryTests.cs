@@ -120,6 +120,7 @@ public sealed class NativeTopologyGeometryTests {
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
         var chart = Assert.IsType<TopologyChart>(factory.Invoke(null, null));
         foreach (var scenario in chart.Scenarios) {
+            Assert.True(scenario.Steps.Count % 2 == 1, "Scenario " + scenario.Id + " must alternate node and edge steps.");
             Assert.Equal(TopologyScenarioStepKind.Node, scenario.Steps[0].Kind);
             Assert.Equal(TopologyScenarioStepKind.Node, scenario.Steps[scenario.Steps.Count - 1].Kind);
             for (var index = 1; index + 1 < scenario.Steps.Count; index += 2) {

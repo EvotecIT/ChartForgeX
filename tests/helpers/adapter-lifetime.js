@@ -35,7 +35,7 @@ function adapterLifetimes(options = {}) {
       mounted.add(lifetime);
       return lifetime;
     },
-    notifyMutations() { for (const observer of Array.from(observers)) if (observer.observing) observer.callback(); },
+    notifyMutations(records = []) { for (const observer of Array.from(observers)) if (observer.observing) observer.callback(records); },
     dispose() { for (const lifetime of mounted) lifetime.dispose(); mounted.clear(); }
   };
 }

@@ -31,19 +31,25 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
                     const veil=document.createElementNS('http://www.w3.org/2000/svg',element);
                     veil.id='delay-svg-veil';
                     for(const [key,value] of Object.entries({x:0,y:0,width:800,height:540,fill:'#eee','pointer-events':'all'})) veil.setAttribute(key,String(value));
-                    // A foreignObject's native rectangle owns the hit even when it has no HTML children.
+                    if(element==='foreignObject') {
+                        const content=document.createElementNS('http://www.w3.org/1999/xhtml','div');
+                        content.style.cssText='width:100%;height:100%;background:#eee';
+                        veil.append(content);
+                    }
                     svg.append(veil);
                 };
                 const record=()=>{
-                    const hit=document.elementFromPoint(...window.delayTrace.pointer);
-                    window.svgVeilExpiry.push({hit:hit?.id,tag:hit?.localName,owned:!!hit&&root.contains(hit),hidden:tip.hidden,readout:tip.innerText});
+                    const hit=document.elementFromPoint(...window.delayTrace.pointer), owner=hit?.closest('#delay-svg-veil');
+                    window.svgVeilExpiry.push({hit:hit?.id,tag:hit?.localName,veil:owner?.id,veilTag:owner?.localName,
+                        owned:!!hit&&root.contains(hit),hidden:tip.hidden,readout:tip.innerText});
                 };
                 window.recordSvgVeil=record;
                 if(!delay) { cover(); return; }
                 const nativeTimer=window.setTimeout.bind(window);
+                let covered=false;
                 window.setTimeout=(callback,ms,...args)=>nativeTimer((...values)=>{
-                    if(ms!==delay) { callback(...values); return; }
-                    cover(); callback(...values); record();
+                    if(ms!==delay||covered) { callback(...values); return; }
+                    covered=true; cover(); callback(...values); record();
                 },ms,...args);
             }
             """, new { element, delay });
@@ -54,11 +60,18 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         var trace = await TraceStateAsync(page);
         await CaptureDelayAsync(page, "delay-svg-veil-" + element + "-" + range + "-" + delay, new { expiry, trace }, session);
         var observed = Assert.Single(expiry.EnumerateArray());
-        Assert.Equal("delay-svg-veil", observed.GetProperty("hit").GetString());
-        Assert.Equal(element, observed.GetProperty("tag").GetString());
+        Assert.Equal("delay-svg-veil", observed.GetProperty("veil").GetString());
+        Assert.Equal(element, observed.GetProperty("veilTag").GetString());
+        Assert.Equal(element == "foreignObject" ? "div" : "rect", observed.GetProperty("tag").GetString());
         Assert.True(observed.GetProperty("owned").GetBoolean());
         Assert.True(observed.GetProperty("hidden").GetBoolean());
         Assert.Empty(trace.GetProperty("shown").EnumerateArray());
+        await MoveAwayAsync(page);
+        await page.Locator("#delay-svg-veil").EvaluateAsync("node=>node.remove()");
+        await PointerAsync(page, Point(0, 0));
+        await WaitForTipAsync(page);
+        Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
+        await CaptureDelayAsync(page, "delay-svg-veil-removed-" + element + "-" + range + "-" + delay, await TraceStateAsync(page), session);
         AssertNoConsoleErrors(session);
     }
 

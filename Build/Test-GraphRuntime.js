@@ -10,6 +10,7 @@ const tests = [
   'tests/graph-explorer-runtime/state.test.js',
   'tests/graph-explorer-runtime/webgl.test.js',
   'tests/graph-explorer-runtime/images.test.js',
+  'tests/graph-explorer-runtime/lifetime.test.js',
   'tests/graph-explorer-runtime/linked-commands.test.js',
   'tests/graph-explorer-runtime/selection-policy.test.js',
   'tests/interactive-runtime/linked-paint.test.js',

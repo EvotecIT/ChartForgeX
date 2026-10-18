@@ -85,6 +85,9 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await using var session = await OpenAsync(HostFragment(delay: access == "default-zero" ? 0 : Delay), 950, 760);
         var page = session.Page;
         await MountFragmentAsync(page, "nested-closed");
+        var clockStart = DateTime.UtcNow;
+        await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = clockStart });
+        await page.Clock.PauseAtAsync(clockStart.AddHours(1));
         await RecordHostExpiryAsync(page);
         await MoveToHostTargetAsync(page, Point(0, 0));
         if (access != "default-zero") {
@@ -94,7 +97,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             if (access == "pin") await page.Keyboard.PressAsync("Space");
         }
         Assert.False(await HostedTipHiddenAsync(page));
-        await Task.Delay(Delay + 80);
+        await page.Clock.RunForAsync(Delay + 80);
         var receipt = await HostReceiptAsync(page);
         await CaptureDelayAsync(page, "delay-shadow-immediate-" + access, receipt, session);
         Assert.False(receipt.GetProperty("hidden").GetBoolean());

@@ -96,7 +96,8 @@ public sealed class InteractiveSelectionDockBrowserTests {
             """);
         var requested = page.Locator(".cfx-compare-chip").Nth(3);
         await requested.ClickAsync();
-        await CaptureAsync(page, "selection-dock-inspect-pointer-" + dark + "-" + width + "-" + pinOnSelect);
+        Assert.Contains("Thu", await TooltipTextAsync(page));
+        await CaptureAsync(page, "selection-dock-inspect-pointer-" + dark + "-" + width + "-" + pinOnSelect, fullPage: false);
         Assert.Contains("Thu", await TooltipTextAsync(page));
         Assert.Equal(pinOnSelect ? "true" : null, await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
         await AssertReadoutDoesNotCoverDockAsync(page);
@@ -116,7 +117,8 @@ public sealed class InteractiveSelectionDockBrowserTests {
         Assert.Equal(6, await page.Locator("[aria-selected=true]").CountAsync());
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>dockSelectionEvents.length"));
         await AssertReadoutDoesNotCoverDockAsync(page);
-        await CaptureAsync(page, "selection-dock-inspect-keyboard-" + dark + "-" + width + "-" + pinOnSelect);
+        await CaptureAsync(page, "selection-dock-inspect-keyboard-" + dark + "-" + width + "-" + pinOnSelect, fullPage: false);
+        Assert.Contains("Fri", await TooltipTextAsync(page));
         if (!pinOnSelect) {
             await page.EvaluateAsync("""
                 ()=>{
@@ -308,11 +310,11 @@ public sealed class InteractiveSelectionDockBrowserTests {
             "An inspected readout must leave comparison controls readable when it fits above them.");
     }
 
-    private static async Task CaptureAsync(IPage page, string name) {
+    private static async Task CaptureAsync(IPage page, string name, bool fullPage = true) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;
         Directory.CreateDirectory(directory);
-        await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png"), FullPage = true });
+        await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name + ".png"), FullPage = fullPage });
         var facts = await page.EvaluateAsync<object>("""
             () => Array.from(document.querySelectorAll('.cfx-interactive-chart')).map(root => {
                 const box = selector => root.querySelector(selector).getBoundingClientRect().toJSON(),stage=root.querySelector('.cfx-stage');

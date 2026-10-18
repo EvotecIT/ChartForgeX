@@ -361,7 +361,7 @@ body {
   content: attr(data-cfx-pinned-label);
   display: block;
   margin-bottom: 4px;
-  color: #fde68a;
+  color: inherit;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: .04em;
