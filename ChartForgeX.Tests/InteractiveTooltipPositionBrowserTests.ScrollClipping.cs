@@ -100,7 +100,9 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await page.Keyboard.PressAsync("Space"); await SettleObservedPositionAsync(page);
         Assert.False((await GeometryAsync(page, Point(0, 0), true)).GetProperty("hidden").GetBoolean());
         var shown = await GeometryAsync(page, Point(0, 0), true);
-        await page.Mouse.MoveAsync(350, 350);
+        // Keep the pointer outside the chart: scrolling may otherwise acquire a different visible source.
+        await page.Mouse.MoveAsync(2, 2);
+        Assert.True(await page.EvaluateAsync<bool>("() => !window.positionFocusChart.contains(document.elementFromPoint(2, 2))"));
         await CaptureAsync(page, "scroll-closed-shadow-pinned-before", shown, session);
         await page.EvaluateAsync("() => { const stage = window.positionFocusChart.querySelector('.cfx-stage'); stage.scrollLeft = stage.scrollWidth; }");
         await SettleObservedPositionAsync(page);

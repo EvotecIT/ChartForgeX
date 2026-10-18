@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Raster;
@@ -82,7 +83,13 @@ internal static partial class SmokeTests {
         Assert(rasterParitySvg.Contains("style=\"stroke-dasharray:8 6\"", StringComparison.Ordinal), "Static SVG should inline the default dashed-edge pattern so dependency-free PNG rendering does not depend on unsupported attribute selectors.");
         Assert(rasterParitySvg.Contains("class=\"cfx-graph-node-label-bg\"", StringComparison.Ordinal) && rasterParitySvg.Contains("fill:#fef3c7", StringComparison.Ordinal), "Static SVG should preserve explicit node label backgrounds above node marks.");
         Assert(rasterParitySvg.Contains("style=\"fill:#22c55e;stroke:var(--cfx-color-paper);stroke-width:2\"", StringComparison.Ordinal), "Static SVG should inline semantic status colors so dependency-free PNG rendering does not depend on unsupported attribute selectors.");
-        Assert(rasterParitySvg.Contains("<circle r=\"8\" style=\"fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2\"", StringComparison.Ordinal) && rasterParitySvg.Contains("style=\"fill:var(--cfx-color-paper);stroke:none\"", StringComparison.Ordinal), "Static SVG should emit rasterizable badge fills without CSS priority tokens in color values.");
+        var badge = XDocument.Parse(rasterParitySvg).Descendants().Single(element =>
+            (string?)element.Attribute("class") == "cfx-graph-node-badge");
+        var badgeSurface = badge.Elements().Single(element => element.Name.LocalName == "circle" || element.Name.LocalName == "rect");
+        var badgeText = badge.Elements().Single(element => element.Name.LocalName == "text");
+        Assert((string?)badgeSurface.Attribute("style") == "fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2"
+            && (string?)badgeText.Attribute("style") == "fill:var(--cfx-color-paper);stroke:none" && badgeText.Value == "42",
+            "Static SVG should retain complete badge text and rasterizable fills for either a measured circle or pill, without CSS priority tokens in color values.");
         var rasterParityPixels = RasterImageDecoder.Decode(rasterParity.ToGraphPng()).Pixels;
         Assert(Enumerable.Range(0, rasterParityPixels.Length / 4).Any(index => Math.Abs(rasterParityPixels[index * 4] - 96) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 1] - 165) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 2] - 250) <= 3), "Static PNG should preserve the plain default node outline color instead of dropping color-mix strokes during rasterization.");
         Assert(Enumerable.Range(0, rasterParityPixels.Length / 4).Any(index => Math.Abs(rasterParityPixels[index * 4] - 34) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 1] - 197) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 2] - 94) <= 3), "Static PNG should preserve healthy status-dot colors from the SVG node-detail contract.");

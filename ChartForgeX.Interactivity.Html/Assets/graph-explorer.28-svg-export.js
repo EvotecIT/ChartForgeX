@@ -83,7 +83,7 @@
       group.appendChild(secondary);
     }
     if (node.badge) {
-      const geometry = graphBadgeGeometry(node);
+      const geometry = graphBadgeGeometry(node, root);
       const badge = svgNode(document, 'g', { class: 'cfx-graph-node-badge', transform: `translate(${geometry.x} ${geometry.y})` });
       badge.appendChild(svgNode(document, geometry.width <= 16 ? 'circle' : 'rect', geometry.width <= 16 ? { r: 8 }
         : { x: -geometry.width / 2, y: -8, width: geometry.width, height: 16, rx: 8 }));

@@ -1,7 +1,14 @@
   const imageCache = new Map();
   const imageLoadCallbacks = new Map();
-  const graphImageRedraw = (root) => root.__cfxGraphImageRedraw ||= () => {
-    if (root.isConnected !== false) drawCanvas(root, root.__cfxGraphState || graphState(root));
+  const graphImageRedraw = (root) => {
+    if (root.__cfxGraphImageRedraw) return root.__cfxGraphImageRedraw;
+    const redraw = () => { if (graphLifetime(root)?.active && root.isConnected) drawCanvas(root, root.__cfxGraphState || graphState(root)); };
+    root.__cfxGraphImageRedraw = redraw;
+    graphLifetime(root)?.own(() => {
+      for (const [url, callbacks] of imageLoadCallbacks) { callbacks.delete(redraw); if (!callbacks.size) imageLoadCallbacks.delete(url); }
+      delete root.__cfxGraphImageRedraw;
+    });
+    return redraw;
   };
   const graphImage = (url, onload) => {
     if (!url) return null;
@@ -138,8 +145,8 @@
     if (!stage || typeof ResizeObserver === 'undefined') return;
     let frame = 0;
     const observer = new ResizeObserver(() => {
-      if (frame) cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
+      if (frame) graphLifetime(root)?.cancelFrame(frame);
+      frame = graphLifetime(root)?.frame(() => {
         frame = 0;
         if (root.isConnected === false) { observer.disconnect(); return; }
         if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched) fitViewport(root);
@@ -148,4 +155,5 @@
     });
     observer.observe(stage);
     root.__cfxGraphResizeObserver = observer;
+    graphLifetime(root)?.own(() => { observer.disconnect(); if (frame) graphLifetime(root)?.cancelFrame(frame); delete root.__cfxGraphResizeObserver; });
   };

@@ -2,12 +2,15 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const names = ['00-core', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '09-performance', '10-layout', '10-neighborhood-plan', '10-neighborhood', '11-state-sync', '13-hierarchy', '15-edge-hit-index', '15-hit-testing', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
+const names = ['00-core', '00-lifetime', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '09-performance', '10-layout', '10-neighborhood-plan', '10-neighborhood', '11-state-sync', '13-hierarchy', '15-edge-hit-index', '15-hit-testing', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
 const code = names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
 const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, applyFilters, applyNeighborhoodFocus, applyClusterState, applyHierarchyView, clearHiddenSelections, attr };');
-const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, {}, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });
+const lifetimes = adapterLifetimes();
+test.after(() => lifetimes.dispose());
+const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, lifetimes.window, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });
 
 function scene(siteCount, edgeSpecs, renderer = 'canvas') {
   const physicalLabels = [];
@@ -48,6 +51,7 @@ function scene(siteCount, edgeSpecs, renderer = 'canvas') {
     'data-target-cluster-id': `site-${target}`, 'data-edge-weight': '1'
   }, []));
   root.__cfxGraphVirtualItems = [...nodes, ...edges, ...clusters];
+  lifetimes.mount(root);
   return { root, edges, physicalLabels };
 }
 
@@ -352,11 +356,12 @@ test('accelerated pointer activation expands a bundle without Selection enabled'
   overlay.closest = selector => selector.includes('graph-edge') ? overlay : null;
   const nearbyNode = { id: 'nearby', el: runtime.graphVirtualElement('graph-node', {}, []) };
   const root = { dataset: {}, querySelector: () => stage, __cfxGraphState: { nodes: [nearbyNode], edges: [{ id: 'route', el: canonical }], clusters: [] } };
+  lifetimes.mount(root);
   const selected = [];
-  const bind = new Function('attr', 'scenePoint', 'hasFeature', 'hitNodeAt', 'hitGraphItemAt', 'select',
+  const bind = new Function('attr', 'scenePoint', 'hasFeature', 'hitNodeAt', 'hitGraphItemAt', 'select', 'graphLifetime', 'listenGraph',
     source + '\nreturn bindPointerInteractions;')(
     runtime.attr, () => ({ x: 1, y: 2 }), (_, feature) => feature === 'Clustering' || feature === 'Viewport',
-    () => nearbyNode, () => null, (_, item) => selected.push(item)
+    () => nearbyNode, () => null, (_, item) => selected.push(item), lifetimes.graphLifetime, lifetimes.listenGraph
   );
   bind(root);
   let prevented = false;

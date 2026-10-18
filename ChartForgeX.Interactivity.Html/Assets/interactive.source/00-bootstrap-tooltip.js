@@ -313,6 +313,12 @@
         clearHover(root, false, false);
         if (applyHoverByTarget(root, item.target)) {
           recordFocusTrail(root, item.target, true, true);
+          const node = interactiveTargets(root).find(node => matchesTargetIdentity(node, item.target)), tip = root.querySelector('.cfx-tooltip');
+          if (node && tip) {
+            if (!tooltipSourceInView({ node, tip })) scrollKeyboardTargetIntoView(root, targetFocusNode(node));
+            if (root.dataset.cfxPinOnSelect === 'false') showTip(root, tip, node);
+            else pinTip(root, tip, node, undefined, false);
+          }
           emitHostEvent(root, 'cfxhover', { label: item.label, target: item.target });
         }
       }));
@@ -369,14 +375,14 @@
     root.removeAttribute('data-cfx-tooltip-pinned');
     root.removeAttribute('data-cfx-pinned-target');
   };
-  const pinTip = (root, tip, node, event) => {
+  const pinTip = (root, tip, node, event, toggle = true) => {
     cancelTooltipRequest(root);
     if (root.dataset.cfxPinOnSelect === 'false') return;
     if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);
     const pinned = root.dataset.cfxTooltipPinned === 'true' && root.dataset.cfxPinnedTarget === key;
-    if (pinned) {
+    if (pinned && toggle) {
       hideTip(root, tip, true);
       emitHostEvent(root, 'cfxtooltip', { pinned: false, target });
       return;
@@ -386,7 +392,8 @@
     root.dataset.cfxTooltipPinned = 'true';
     root.dataset.cfxPinnedTarget = key;
     moveTip(tip, event, node);
-    emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
+    if (!tip.hidden && root.dataset.cfxTooltipPinned === 'true' && root.dataset.cfxPinnedTarget === key)
+      emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
   };
   const unpinTooltip = root => {
     const key = root.dataset.cfxPinnedTarget;

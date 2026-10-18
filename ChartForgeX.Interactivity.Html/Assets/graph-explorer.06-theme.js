@@ -203,7 +203,7 @@
     const stored = configured === 'system' && attr(root, 'data-cfx-graph-theme-persist') !== 'false' ? graphThemeStored() : '';
     syncGraphAccessibilityPreferences(root);
     setGraphTheme(root, stored || configured, { persist: false, announce: false });
-    root.querySelector("[data-cfx-graph-action='theme']")?.addEventListener('click', () => {
+    listenGraph(root, root.querySelector("[data-cfx-graph-action='theme']"), 'click', () => {
       const current = graphThemeMode(root);
       setGraphTheme(root, graphThemeModes[(graphThemeModes.indexOf(current) + 1) % graphThemeModes.length]);
     });
@@ -212,7 +212,7 @@
       if (graphThemeMode(root) === 'system') setGraphTheme(root, 'system', { persist: false, announce: false });
       else redrawGraphTheme(root);
     };
-    graphThemeMedia?.addEventListener?.('change', syncSystemTheme);
-    graphReducedMotionMedia?.addEventListener?.('change', syncSystemTheme);
-    graphForcedColorsMedia?.addEventListener?.('change', syncSystemTheme);
+    listenGraph(root, graphThemeMedia, 'change', syncSystemTheme);
+    listenGraph(root, graphReducedMotionMedia, 'change', syncSystemTheme);
+    listenGraph(root, graphForcedColorsMedia, 'change', syncSystemTheme);
   };

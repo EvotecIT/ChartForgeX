@@ -26,7 +26,7 @@
       context.stroke();
     }
     if (node.badge && !compact && !moving) {
-      const badge = graphBadgeGeometry(node), badgeX = node.x + badge.x, badgeY = node.y + badge.y;
+      const badge = graphBadgeGeometry(node, root), badgeX = node.x + badge.x, badgeY = node.y + badge.y;
       context.beginPath();
       if (badge.width <= 16) context.arc(badgeX, badgeY, 8, 0, Math.PI * 2);
       else if (context.roundRect) context.roundRect(badgeX - badge.width / 2, badgeY - 8, badge.width, 16, 8);

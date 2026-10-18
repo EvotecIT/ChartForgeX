@@ -40,7 +40,14 @@ New-BenchmarkSuite 'chartforgex-interactivity' {
     }
     Add-BenchmarkMetadata FixtureAssemblySha256 (Get-FileHash -LiteralPath $fixture).Hash
     Add-BenchmarkMetadata BenchmarkSpecSha256 $specHash
-    Add-BenchmarkMetadata HtmlTinkerXVersion '3.0.5'
+    $browserAssembly = Join-Path $binaries 'HtmlTinkerX.dll'
+    Add-BenchmarkMetadata HtmlTinkerXVersion ([Reflection.AssemblyName]::GetAssemblyName($browserAssembly).Version.ToString())
+    Add-BenchmarkMetadata HtmlTinkerXProductVersion ([Diagnostics.FileVersionInfo]::GetVersionInfo($browserAssembly).ProductVersion)
+    if ($baselineBinaries) {
+        $baselineBrowserAssembly = Join-Path $baselineBinaries 'HtmlTinkerX.dll'
+        Add-BenchmarkMetadata BaselineHtmlTinkerXVersion ([Reflection.AssemblyName]::GetAssemblyName($baselineBrowserAssembly).Version.ToString())
+        Add-BenchmarkMetadata BaselineHtmlTinkerXProductVersion ([Diagnostics.FileVersionInfo]::GetVersionInfo($baselineBrowserAssembly).ProductVersion)
+    }
     Add-BenchmarkMetadata Scope 'One persistent Chromium session per point count. PowerForge times a batch of in-page nearest-observation queries plus Playwright round-trip/serialization; chart preparation, browser startup, geometry oracle, public pointer hover, and complete result validation are outside timing. No performance threshold is part of correctness CI.'
     Add-BenchmarkMetadata LogicalProcessors ([Environment]::ProcessorCount)
     Add-BenchmarkMetadata HostNoise (Get-BenchmarkInput HostNoise -Default 'Normal development host; placement unchanged')

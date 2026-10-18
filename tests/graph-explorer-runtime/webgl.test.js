@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const manifest = fs.readFileSync(path.join(assets, '../HtmlGraphExplorerAssets.cs'), 'utf8');
 const source = [...manifest.matchAll(/"ChartForgeX\.Interactivity\.Html\.Assets\.(graph-explorer\.[^"]+\.js)"/g)]
@@ -351,16 +352,18 @@ test('mixed and driver-limited marks preserve authored body order before all sta
     }
   }
 });
-test('context loss and restoration retain the canonical graph state through Canvas fallback', () => {
+test('context loss and restoration retain the canonical graph state through Canvas fallback', t => {
   const script = fs.readFileSync(path.join(assets, 'graph-explorer.04-webgl.js'), 'utf8');
   const handlers = new Map(), state = {}, paints = [];
   const canvas = { addEventListener: (name, action) => handlers.set(name, action) };
   const root = { dataset: { cfxGraphRendererActive: 'webgl' }, __cfxGraphState: state, querySelector: () => canvas, getAttribute: () => 'webgl' };
-  const bind = new Function('setGraphRenderer', 'drawCanvas', 'graphState', 'hasFeature', 'applyLod', 'attr', 'webGlAvailable',
+  const lifetimes = adapterLifetimes(); lifetimes.mount(root);
+  t.after(() => lifetimes.dispose());
+  const bind = new Function('setGraphRenderer', 'drawCanvas', 'graphState', 'hasFeature', 'applyLod', 'attr', 'webGlAvailable', 'listenGraph',
     script.slice(script.indexOf('  const bindWebGlHitTesting')) + '\nreturn bindWebGlHitTesting;')(
     (target, renderer) => target.dataset.cfxGraphRendererActive = renderer,
     (target, actual) => { assert.equal(actual, state); paints.push(target.dataset.cfxGraphRendererActive); },
-    () => { throw new Error('Discarded live graph state'); }, () => false, () => {}, (target, name) => target.getAttribute(name), () => true);
+    () => { throw new Error('Discarded live graph state'); }, () => false, () => {}, (target, name) => target.getAttribute(name), () => true, lifetimes.listenGraph);
   bind(root);
   let prevented = false;
   handlers.get('webglcontextlost')({ preventDefault: () => prevented = true });

@@ -89,12 +89,12 @@
   };
   const bindGraphManipulation = root => {
     const editor = graphEditor(root); if (!editor) return;
-    root.querySelector('[data-cfx-graph-editor-close]')?.addEventListener('click', () => {
+    listenGraph(root, root.querySelector('[data-cfx-graph-editor-close]'), 'click', () => {
       editor.setAttribute('hidden', '');
       items(root, "[data-cfx-graph-action='edit']").forEach(button => button.setAttribute('aria-pressed', 'false'));
     });
-    items(root, '[data-cfx-graph-editor-action]').forEach(button => button.addEventListener('click', () => handleGraphEditorAction(root, attr(button, 'data-cfx-graph-editor-action'))));
-    items(root, '[data-cfx-graph-editor-form]').forEach(form => form.addEventListener('submit', event => {
+    items(root, '[data-cfx-graph-editor-action]').forEach(button => listenGraph(root, button, 'click', () => handleGraphEditorAction(root, attr(button, 'data-cfx-graph-editor-action'))));
+    items(root, '[data-cfx-graph-editor-form]').forEach(form => listenGraph(root, form, 'submit', event => {
       event.preventDefault();
       try {
         const result = attr(form, 'data-cfx-graph-editor-form') === 'node' ? submitGraphNode(root, form) : submitGraphEdge(root, form);

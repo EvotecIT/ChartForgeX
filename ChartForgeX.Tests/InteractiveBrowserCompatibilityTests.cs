@@ -40,6 +40,12 @@ public sealed class InteractiveBrowserCompatibilityTests {
         Assert.Contains("12", await TooltipTextAsync(page));
         await FocusWithKeyboardAsync(page, page.Locator(North));
         await AssertNativeKeyboardFocusAsync(page);
+        // A context-menu press must leave the existing keyboard indicator visible.
+        await page.Locator(North).ClickAsync(new LocatorClickOptions { Button = MouseButton.Right });
+        Assert.True(await page.Locator(North).EvaluateAsync<bool>("node=>node.getRootNode().activeElement===node"));
+        await CaptureAsync(page, "ordinary-secondary-focus-" + width);
+        Assert.Equal(1, await page.Locator("[data-cfx-keyboard-focus-outline]").CountAsync());
+        await AssertNativeKeyboardFocusAsync(page);
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.True(await page.Locator(South).EvaluateAsync<bool>("node=>node.getRootNode().activeElement===node"));
         await page.Keyboard.PressAsync("Space");

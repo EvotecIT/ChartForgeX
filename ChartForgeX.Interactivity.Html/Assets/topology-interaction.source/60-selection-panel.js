@@ -152,6 +152,11 @@
       });
       restoreForceFocusLabels();
     };
+    lifetime.own(() => {
+      const hovered = wrapper.hasAttribute('data-cfx-hover-id');
+      clearHover(); clearScenarioPreview();
+      if (hovered) wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
+    });
     const identity = element => {
       const role = element.getAttribute('data-cfx-role') || '';
       const base = {

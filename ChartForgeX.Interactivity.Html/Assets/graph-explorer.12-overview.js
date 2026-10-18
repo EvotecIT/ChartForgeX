@@ -120,14 +120,19 @@
       setViewport(root, { scale: view.scale, x: size.centerX - point.x * view.scale, y: size.centerY - point.y * view.scale });
       emit(root, 'cfxgraphoverview', { graphId: attr(root, 'data-cfx-graph-id'), x: point.x, y: point.y, scale: view.scale });
     };
-    canvas.addEventListener('pointerdown', event => {
+    graphLifetime(root).own(() => {
+      const pointer = canvas.__cfxGraphOverviewPointer;
+      if (pointer) { try { canvas.releasePointerCapture?.(pointer); } catch { } }
+      delete canvas.__cfxGraphOverviewPointer;
+    });
+    listenGraph(root, canvas, 'pointerdown', event => {
       event.preventDefault();
       event.stopPropagation();
       canvas.setPointerCapture?.(event.pointerId);
       canvas.__cfxGraphOverviewPointer = event.pointerId;
       moveTo(event);
     });
-    canvas.addEventListener('pointermove', event => {
+    listenGraph(root, canvas, 'pointermove', event => {
       if (canvas.__cfxGraphOverviewPointer !== event.pointerId) return;
       event.preventDefault();
       moveTo(event);
@@ -137,7 +142,7 @@
       canvas.releasePointerCapture?.(event.pointerId);
       canvas.__cfxGraphOverviewPointer = 0;
     };
-    canvas.addEventListener('pointerup', finish);
-    canvas.addEventListener('pointercancel', finish);
+    listenGraph(root, canvas, 'pointerup', finish);
+    listenGraph(root, canvas, 'pointercancel', finish);
     updateOverview(root, graphState(root));
   };

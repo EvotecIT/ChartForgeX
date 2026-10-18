@@ -4,6 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 const { JSDOM } = require('../mermaid-conformance/node_modules/jsdom');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/topology-interaction.source');
+const lifetimeSource = fs.readFileSync(path.resolve(assets, '../adapter-lifetime.js'), 'utf8');
 function fixture() {
   const dom = new JSDOM(`<div id="chart" data-chart-id="test"><aside id="controls">
     <input data-cfx-force-search><select data-cfx-force-status><option value=""></option><option value="one">One</option><option value="two">Two</option></select>
@@ -13,20 +14,23 @@ function fixture() {
     ${['a', 'b'].map(group => `<div data-cfx-role="topology-group" data-group-id="${group}"></div>` +
       [1, 2].map(n => `<div data-cfx-role="topology-node" data-node-id="${group}${n}" data-group-id="${group}" data-node-kind="${n === 1 ? 'one' : 'two'}" data-cfx-status="${n === 1 ? 'one' : 'two'}"></div>`).join('') +
       `<div data-cfx-role="topology-edge" data-edge-id="${group}" data-source-node-id="${group}1" data-target-node-id="${group}2"></div>
-       <div data-cfx-role="topology-edge-label" data-edge-id="${group}"></div>`).join('')}</div>`);
+       <div data-cfx-role="topology-edge-label" data-edge-id="${group}"></div>`).join('')}</div>`, { runScripts: 'outside-only' });
   const wrapper = dom.window.document.querySelector('#chart'), forceGraphPanel = wrapper.querySelector('#controls');
+  dom.window.eval(lifetimeSource);
+  const lifetime = dom.window[Symbol.for('ChartForgeX.adapterLifetimes')].create(wrapper, 'topology');
   let source = ['40-viewport-export-and-scenarios.js', '60-selection-panel.js', '70-topology-filters.js', '75-filter-summary.js']
     .map(name => fs.readFileSync(path.join(assets, name), 'utf8')).join('\n');
   source += fs.readFileSync(path.join(assets, '80-force-graph-and-bindings.js'), 'utf8').split('    const clearForceFocusLabels =')[0];
-  const api = new Function('wrapper', 'forceGraphPanel', 'window', 'CustomEvent', `
+  const api = new Function('wrapper', 'forceGraphPanel', 'window', 'CustomEvent', 'lifetime', `
     const CSS = window.CSS, Element = window.Element;
     const forceGraphControls = true, viewportControls = false, attr = (element, name) => element.getAttribute(name) || '';
     const restoreForceFocusLabels = () => {};
-    ${source}\nreturn { applyTopologyFilter, clearTopologyFilter, applyForceGraphFilters, highlight };`)(wrapper, forceGraphPanel, dom.window, dom.window.CustomEvent);
+    const clearScenarioPreview = () => {};
+    ${source}\nreturn { applyTopologyFilter, clearTopologyFilter, applyForceGraphFilters, highlight };`)(wrapper, forceGraphPanel, dom.window, dom.window.CustomEvent, lifetime);
   const force = group => { forceGraphPanel.querySelector('[data-cfx-force-group]').value = group; api.applyForceGraphFilters(); };
   const forceSearch = query => { forceGraphPanel.querySelector('[data-cfx-force-search]').value = query; api.applyForceGraphFilters(); };
   const forceStatus = status => { forceGraphPanel.querySelector('[data-cfx-force-status]').value = status; api.applyForceGraphFilters(); };
-  return { wrapper, api, force, forceSearch, forceStatus, close: () => dom.window.close() };
+  return { wrapper, api, force, forceSearch, forceStatus, close: () => { lifetime.dispose(); dom.window.close(); } };
 }
 test('clearing host filters during force filtering does not retain hidden labels or groups', () => {
   const view = fixture();

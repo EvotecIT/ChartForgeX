@@ -7,7 +7,8 @@ namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Localizes HTML controls independently from chart data labels and native number/date formatting.</summary>
 /// <remarks>Unspecified messages use English. Templates retain named placeholders such as {count}, {current} and {total}.
-/// Chart language is inherited when Language is null. Direction affects adapter chrome, not native axis order.</remarks>
+/// Chart language is inherited when Language is null. Automatic direction inherits the host document.
+/// Direction affects adapter chrome, not native axis order.</remarks>
 public sealed class HtmlChartLocalization {
     private readonly Dictionary<HtmlChartText, string> _overrides = new Dictionary<HtmlChartText, string>();
     private string? _language;
@@ -82,8 +83,8 @@ public sealed class HtmlChartLocalization {
         }
     }
 
-    internal string DirectionAttribute => Direction == HtmlChartTextDirection.RightToLeft ? "rtl"
-        : Direction == HtmlChartTextDirection.LeftToRight ? "ltr" : "auto";
+    internal string? DirectionAttribute => Direction == HtmlChartTextDirection.RightToLeft ? "rtl"
+        : Direction == HtmlChartTextDirection.LeftToRight ? "ltr" : null;
     internal string ResolveLanguage(string? inherited) => Language ?? inherited ?? "en";
     internal string Format(HtmlChartText message, string name, int count) => this[message]
         .Replace("{" + name + "}", count.ToString(CultureInfo.InvariantCulture));
@@ -97,7 +98,7 @@ public sealed class HtmlChartLocalization {
 
 /// <summary>Controls the HTML adapter's text and chrome direction without reversing native chart axes.</summary>
 public enum HtmlChartTextDirection {
-    /// <summary>Lets the browser determine direction from the displayed text.</summary>
+    /// <summary>Inherits the host document's direction; standalone pages use the browser's default.</summary>
     Automatic,
     /// <summary>Uses left-to-right HTML controls.</summary>
     LeftToRight,

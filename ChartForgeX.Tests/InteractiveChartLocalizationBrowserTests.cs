@@ -11,6 +11,40 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class InteractiveChartLocalizationBrowserTests {
     [BrowserTheory]
+    [InlineData(false, false, HtmlChartTextDirection.Automatic, "ltr")]
+    [InlineData(true, true, HtmlChartTextDirection.Automatic, "rtl")]
+    [InlineData(true, true, HtmlChartTextDirection.LeftToRight, "ltr")]
+    [InlineData(false, false, HtmlChartTextDirection.RightToLeft, "rtl")]
+    public async Task ChromeInheritsTheHostDirectionUnlessTheAuthorChoosesOne(bool fragment, bool rtlHost,
+        HtmlChartTextDirection direction, string expected) {
+        if (!Enabled) return;
+        var chart = StatusLines(false).WithTitle(fragment ? "Measurements" : "القياسات");
+        void Configure(HtmlChartInteractionOptions options) => options.Localization.Direction = direction;
+        var html = fragment ? "<!doctype html><html dir='" + (rtlHost ? "rtl" : "ltr")
+            + "'><head></head><body>" + chart.ToInteractiveHtmlFragment(Configure) + "</body></html>"
+            : chart.ToInteractiveHtmlPage(Configure);
+        await using var session = await OpenAsync(html, 700, 560);
+        var page = session.Page;
+        var root = page.Locator(".cfx-interactive-chart");
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            Directory.CreateDirectory(captures);
+            await page.ScreenshotAsync(new() { Path = Path.Combine(captures, "direction-" + direction + "-" + (fragment ? "fragment" : "page") + ".png"), FullPage = true });
+        }
+        Assert.Equal(expected, await root.EvaluateAsync<string>("node=>getComputedStyle(node).direction"));
+        Assert.Equal(fragment ? (rtlHost ? "rtl" : "ltr") : expected,
+            await page.Locator("html").EvaluateAsync<string>("node=>getComputedStyle(node).direction"));
+        if (fragment && direction == HtmlChartTextDirection.LeftToRight)
+            Assert.Equal("rtl", await page.Locator("html").GetAttributeAsync("dir"));
+        if (direction == HtmlChartTextDirection.Automatic) {
+            Assert.Null(await root.GetAttributeAsync("dir"));
+            if (!fragment) Assert.Null(await page.Locator("html").GetAttributeAsync("dir"));
+        } else Assert.Equal(expected, await root.GetAttributeAsync("dir"));
+        Assert.Equal("ltr", await page.Locator(".cfx-stage").EvaluateAsync<string>("node=>getComputedStyle(node).direction"));
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
     [InlineData(390)]
     [InlineData(980)]
     public async Task TranslatedChromeAndDynamicAnnouncementsFollowNativeUpdatesWithoutReversingAxes(int width) {

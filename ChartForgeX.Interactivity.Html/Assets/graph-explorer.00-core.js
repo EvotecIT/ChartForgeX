@@ -1,4 +1,4 @@
-  const roots = () => Array.from(document.querySelectorAll('.cfx-graph-explorer:not([data-cfx-graph-bound])'));
+  const roots = (target = document) => target?.matches?.('.cfx-graph-explorer') ? [target] : Array.from(target.querySelectorAll('.cfx-graph-explorer'));
   const attr = (node, name) => node ? node.getAttribute(name) || '' : '';
   const num = (node, name, fallback) => {
     const raw = attr(node, name);
@@ -54,7 +54,7 @@
     const detailGroups = new Map(items(root, '[data-cfx-role="graph-node-details"]').map(el => [attr(el, 'data-node-details-for'), el]));
     let cardFill;
     const nodes = items(root, '[data-cfx-role="graph-node"]').map((el, index) => ({
-      el,
+      el, root,
       detailsEl: detailGroups.get(attr(el, 'data-node-id')) || null,
       id: attr(el, 'data-node-id'),
       label: attr(el, 'data-node-label'),

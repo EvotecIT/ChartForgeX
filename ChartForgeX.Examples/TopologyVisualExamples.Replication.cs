@@ -106,6 +106,8 @@ internal static partial class TopologyVisualExamples {
                 .AddNodeStep("fra-dc1", "Origin")
                 .AddEdgeStep("fra-lon", "Route", configure: step => step.WithMetadata("transport", "WAN"))
                 .AddNodeStep("lon-dc2", "Policy")
+                .AddEdgeStep("lon-local", "Site handoff", configure: step => step.WithMetadata("transport", "LAN"))
+                .AddNodeStep("lon-dc1", "Directory source")
                 .AddEdgeStep("lon-nyc", "Directory", configure: step => step.WithMetadata("transport", "Directory replication"))
                 .AddNodeStep("nyc-dc1", "Lookup"))
             .AddScenario("apac-failover", "APAC failover", scenario => scenario

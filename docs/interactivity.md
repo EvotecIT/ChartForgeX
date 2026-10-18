@@ -4,7 +4,9 @@ ChartForgeX keeps static SVG, PNG, and HTML output deterministic by default. Bro
 
 The HTML adapter works from renderer metadata such as `data-cfx-series`, `data-cfx-series-key`, `data-cfx-point`, `data-cfx-label`, `data-cfx-id`, and `data-cfx-role`. Chart families can expose their own shapes and still reuse the same hover, selection, keyboard traversal, compare tray, crosshair, lasso, focus trail, reveal label, scenario, and playback contracts.
 
-The selected-target compare tray appears below the chart viewport, preserving axes, outer labels, and pointer access to marks. Its controls wrap inside compact hosts. Clearing the selection returns focus to the chart when the clear button held focus. Graphite charts use the chart's surface, text, and accent colors for these controls.
+The selected-target compare tray appears below the chart viewport, preserving axes, outer labels, and pointer access to marks. Its controls scroll horizontally inside compact hosts, including when reached by keyboard. Clearing the selection returns focus to the chart when the clear button held focus. Graphite charts use the chart's surface, text, and accent colors for these controls.
+
+The tray offers inspection chips for the first six selected targets and summarizes additional selections with a count. Activating a chip inspects its target without changing the selection. With `Tooltip.PinOnSelect` enabled, inspection switches the pinned readout; activating the same chip keeps it pinned. With pinning disabled, the inspection readout closes when pointer and keyboard focus leave the tray. When enough viewport space is available, the readout stays above the visible tray so its controls remain usable.
 
 Native painted marks retain their observation identity when pointed at. Cartesian producers declare `data-cfx-coordinate-system="cartesian"` on their series groups; inferred observations and crosshair guides require that scope. A producer declares polar geometry with `data-cfx-coordinate-system="polar"` on the SVG or a containing semantic group. Polar and other native-only families use SVG hit testing, leave empty stage space without an inferred target, and suppress the Cartesian crosshair. Nested observations inherit their containing series identity.
 
@@ -18,7 +20,7 @@ Point-legend muting and isolation use the same identity rules across charts. Zer
 
 Raw trend-line and box-plot summaries omit both singular `sourcePoint` and contributor arrays. Their source data remains available through the series' immutable `TrendLineSourcePoints` and `BoxPlotSourceSamples` collections. Migration: derived target IDs now include their derivation kind; use event-provided IDs instead of constructing IDs from point ordinals.
 
-Radar fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category.
+Radar's default `Zero` missing-category policy fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category. `Gap` and `Connect` are explicit alternatives that preserve missing data without fabricating zero geometry; configure them through `ConfigureRadar`.
 
 ## Keyboard navigation
 
@@ -468,7 +470,29 @@ numeric values remain in the detail rows.
 ## Linking topology and graph explorers
 
 `ChartForgeXTopology.mount(root)` binds a topology inserted after the shared
-runtime. Topology commands default to silent updates as well:
+runtime. `ChartForgeXGraphExplorer.mount(root)` does the same for graph explorers.
+Both return the matching roots and leave an already mounted root bound once.
+Their standalone assets mount existing roots automatically without requiring the
+ordinary-chart runtime.
+
+Dispose a root before replacing its host when immediate cleanup is needed:
+
+```js
+ChartForgeXTopology.dispose(topologyRoot); // Returns the roots released.
+ChartForgeXGraphExplorer.dispose(graphRoot); // Returns whether it released a mounted graph.
+```
+
+Disposal releases listeners, observers, playback timers, scheduled frames and
+owned graph workers and GPU buffers. It clears transient hover while retaining
+committed graph positions and topology selection, including an explicitly cleared
+selection, for a later mount. Removing a root or its shadow host also
+releases that work when the browser delivers the removal. Mount a reinserted or
+explicitly disposed root again before sending commands. Repeated disposal is
+safe. Topology mount/dispose also handles custom `CssClassPrefix` assets through
+the same API; registering another prefix does not replace the earlier prefix's
+bindings.
+
+Topology commands default to silent updates as well:
 
 ```js
 topologyRoot.dispatchEvent(new CustomEvent('cfx-topology-set-selection', {
@@ -614,7 +638,7 @@ chart.SaveInteractiveHtml("measurements.html", options => {
 
 Templates use named placeholders such as `{count}` and `{current}`. Messages are displayed as text, including literal angle brackets. Updating a mounted chart installs its replacement bundle while retaining surviving selected observations. The Graphite gallery includes a complete Polish controls example.
 
-For right-to-left controls, set `Localization.Direction = HtmlChartTextDirection.RightToLeft` and an appropriate language tag. Adapter chrome follows that direction; the native SVG keeps the authored axis order. Data labels, number/date formatting and native font shaping remain properties of the chart and its render context. Translate chart headings and dimension names through those native APIs. These browser contracts do not establish physical screen-reader or bidirectional font-shaping qualification.
+The default `Automatic` direction inherits the surrounding document's direction; standalone pages use the browser's normal default. A chart title or label does not choose the direction of the page shell. For right-to-left controls, set `Localization.Direction = HtmlChartTextDirection.RightToLeft` and an appropriate language tag; `LeftToRight` provides an explicit override in an RTL host. Adapter chrome follows that direction; the native SVG keeps the authored axis order. Data labels, number/date formatting and native font shaping remain properties of the chart and its render context. Translate chart headings and dimension names through those native APIs. These browser contracts do not establish physical screen-reader or bidirectional font-shaping qualification.
 
 ## Connected native X windows
 

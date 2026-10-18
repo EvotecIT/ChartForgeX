@@ -497,6 +497,12 @@
         clearHover(root, false, false);
         if (applyHoverByTarget(root, item.target)) {
           recordFocusTrail(root, item.target, true, true);
+          const node = interactiveTargets(root).find(node => matchesTargetIdentity(node, item.target)), tip = root.querySelector('.cfx-tooltip');
+          if (node && tip) {
+            if (!tooltipSourceInView({ node, tip })) scrollKeyboardTargetIntoView(root, targetFocusNode(node));
+            if (root.dataset.cfxPinOnSelect === 'false') showTip(root, tip, node);
+            else pinTip(root, tip, node, undefined, false);
+          }
           emitHostEvent(root, 'cfxhover', { label: item.label, target: item.target });
         }
       }));
@@ -553,14 +559,14 @@
     root.removeAttribute('data-cfx-tooltip-pinned');
     root.removeAttribute('data-cfx-pinned-target');
   };
-  const pinTip = (root, tip, node, event) => {
+  const pinTip = (root, tip, node, event, toggle = true) => {
     cancelTooltipRequest(root);
     if (root.dataset.cfxPinOnSelect === 'false') return;
     if (!hasFeature(root, 'Tooltips') || !tooltipReadoutAvailable(node, event) || !renderTip(tip, node)) return;
     const target = targetIdentity(node);
     const key = targetKey(target);
     const pinned = root.dataset.cfxTooltipPinned === 'true' && root.dataset.cfxPinnedTarget === key;
-    if (pinned) {
+    if (pinned && toggle) {
       hideTip(root, tip, true);
       emitHostEvent(root, 'cfxtooltip', { pinned: false, target });
       return;
@@ -570,7 +576,8 @@
     root.dataset.cfxTooltipPinned = 'true';
     root.dataset.cfxPinnedTarget = key;
     moveTip(tip, event, node);
-    emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
+    if (!tip.hidden && root.dataset.cfxTooltipPinned === 'true' && root.dataset.cfxPinnedTarget === key)
+      emitHostEvent(root, 'cfxtooltip', { pinned: true, label: text(node), target });
   };
   const unpinTooltip = root => {
     const key = root.dataset.cfxPinnedTarget;
@@ -1213,7 +1220,7 @@
     request.node = node; request.event = event;
     return true;
   };
-  // Screen placement belongs to the Html adapter; target acquisition supplies the canonical native node.
+  // Screen placement uses the canonical acquired node.
   const tooltipPositions = new WeakMap();
   const activeTooltipPositions = new Set();
   const tooltipPositionTrees = new Set();
@@ -1259,12 +1266,12 @@
     const source = nativeRegionScreenBox(node);
     if (source) return source;
     const rect = node.getBoundingClientRect();
-    // Unlocated retained keyboard facts have no painted box; their visible SVG remains the host boundary.
+    // Unlocated keyboard facts use their visible SVG bounds.
     return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;
   };
   const tooltipShadowContainingBlock = (node, position, source) => {
     if (!(node instanceof HTMLElement) || node.getRootNode() === source.getRootNode()) return false;
-    // offsetParent can hide a slotted node's internal containing block. Inspect the accessible flat tree.
+    // Inspect the flat tree: offsetParent can hide slotted containing blocks.
     const style = getComputedStyle(node);
     return position === 'absolute' && style.position !== 'static'
       || ['transform', 'translate', 'rotate', 'scale', 'perspective', 'filter', 'backdropFilter'].some(key => style[key] && style[key] !== 'none')
@@ -1311,7 +1318,7 @@
       state.clippingAncestors = tooltipClippingAncestors(state.node);
       state.placementClippingAncestors = tooltipClippingAncestors(state.tip);
     }
-    // Keep geometry live while caching overflow axes until the existing paint invalidation fires.
+    // Cache overflow axes until paint invalidation; keep bounds live.
     const { left, top, right, bottom } = tooltipClippingBounds(state.clippingAncestors);
     const source = tooltipSourceRect(state.node);
     return state.nativeIntersecting !== false && source && right > left && bottom > top
@@ -1322,7 +1329,7 @@
     && hasFeature(state.root, 'Tooltips') && state.stage.getClientRects().length > 0
     && (!state.paintChanged || tooltipReadoutAvailable(state.node, state.readoutEvent)) && tooltipSourceInView(state);
   const queueTooltipPositionRefresh = (invalidation) => {
-    // Native geometry events can change clipping or responsive paint without a DOM attribute mutation.
+    // Native geometry can change without a DOM mutation.
     if (invalidation) for (const state of activeTooltipPositions) state.paintChanged = true;
     if (tooltipPositionFrame || !activeTooltipPositions.size) return;
     tooltipPositionFrame = requestAnimationFrame(() => {
@@ -1348,7 +1355,7 @@
     });
   };
   const checkTooltipPositionMutations = (records) => {
-    // Placement writes cannot change target paint or layout. External tooltip styles still invalidate geometry.
+    // Our placement styles cannot change target paint; host styles can.
     records = records.filter(record => {
       const placed = tooltipPositions.get(record.target);
       return !(placed && record.type === 'attributes' && record.attributeName === 'style'
@@ -1430,17 +1437,22 @@
   const placeTooltip = (state, skipUnchanged = false) => {
     const { root, tip } = state, anchor = tooltipAnchorRect(state);
     const bounds = tooltipClippingBounds(state.placementClippingAncestors);
+    const dock = root.querySelector('[data-cfx-compare-tray]');
+    if (dock && !dock.hidden) {
+      const box = dock.getBoundingClientRect();
+      if (box.right > bounds.left && box.left < bounds.right && box.top < bounds.bottom
+        && box.top >= bounds.top + tip.getBoundingClientRect().height + 16) bounds.bottom = box.top;
+    }
     const geometry = tooltipPositionGeometry(state, anchor, bounds);
     if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
-    // Measure at a stable origin, then keep the measured width while positioning. This prevents
-    // fixed-position shrink-to-fit from changing the readout as it approaches a containing block's edge.
+    // Hold measured width to prevent fixed-position shrink-to-fit near host edges.
     tip.style.left = '0px'; tip.style.top = '0px';
     tip.style.width = '';
     tip.style.width = getComputedStyle(tip).width;
     const origin = tip.getBoundingClientRect();
     tip.style.left = '1px'; tip.style.top = '1px';
     const unit = tip.getBoundingClientRect();
-    // The one-pixel probe converts screen coordinates through ordinary translated/scaled host blocks.
+    // One-pixel probes convert screen coordinates through transformed hosts.
     const scaleX = unit.left - origin.left || 1, scaleY = unit.top - origin.top || 1;
     const gap = Number(root.dataset.cfxTooltipGap ?? 14);
     const offsetX = Number(root.dataset.cfxTooltipOffsetX || 0), offsetY = Number(root.dataset.cfxTooltipOffsetY || 0);
@@ -1468,7 +1480,7 @@
     let state = tooltipPositions.get(tip);
     const pinned = state && root.dataset.cfxTooltipPinned === 'true' && state.key === root.dataset.cfxPinnedTarget;
     if (!state) { state = { root, tip, stage, ...composedAncestry(root) }; tooltipPositions.set(tip, state); }
-    // A pin retains its acquisition mode: later pointer movement must not invalidate a keyboard-only fact.
+    // Pinned pointer motion must retain keyboard-only fact acquisition.
     if (!pinned) {
       if (state.node !== node) state.nativeIntersecting = undefined;
       state.node = node; state.key = targetKey(targetIdentity(node)); state.readoutEvent = event;
@@ -2333,8 +2345,7 @@
     image.onerror = release;
     image.src = sourceUrl;
   };
-  // Adapter emphasis changes paint, never membership in the roving component. Host/native
-  // class changes still invalidate availability, including a class changed in the same batch.
+  // Adapter emphasis preserves roving membership; host/native classes still invalidate availability.
   const keyboardPaintClasses = new Set(['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series',
     'cfx-selected', 'cfx-highlighted', 'cfx-linked-dim', 'cfx-selection-dim', 'cfx-linked-series-active',
     'cfx-linked-series-dim', 'cfx-trail']);
@@ -2346,8 +2357,7 @@
     if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline]')) return false;
     if (record.type === 'attributes' && record.attributeName === 'style' && record.target.matches('[data-cfx-highlight-paint]')
       && keyboardNativeStyle(record.oldValue) === keyboardNativeStyle(record.target.getAttribute('style'))) return false;
-    // Tooltip, brush, guide and compare UI repaint while the pointer moves. They are not SVG
-    // navigation targets; ResizeObserver covers any resulting change to the stage's size.
+    // Only SVG marks affect navigation; ResizeObserver handles chrome layout.
     const svg = stage.querySelector('svg');
     if (record.type === 'attributes') return record.target === stage || !!svg?.contains(record.target) || ancestry.nodes.includes(record.target);
     const changes = [...record.addedNodes, ...record.removedNodes];
@@ -2356,21 +2366,21 @@
     return !!svg?.contains(record.target) || changes.some(node => node.contains(stage) || svg && node.contains(svg)
       || ancestry.nodes.some(boundary => node.contains(boundary)));
   };
-  // Data and legend are separate roving components. Source identities stay on the actual rendered marks.
+  // Data and legend rove separately on rendered marks.
   const keyboardTargetAvailable = (node) => {
     if (node.dataset.cfxVisible === 'false') return false;
     if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, new Map())) return false;
-    // Muted data leaves navigation; its legend remains an entry point for restoring the series.
+    // Muted data leaves navigation; its legend remains reachable.
     if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted')) return false;
     const style = getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
     if (pointerTargetPaint(node)) return true;
-    // Retained authored facts can have no filled geometry, while still belonging to the data component.
+    // Retained facts can have no filled geometry.
     const data = node.dataset;
     if (!data.cfxTargetKind || !data.cfxTargetId || !retainedGeometryFact(node)) return false;
     const svg = node.ownerSVGElement;
     if (!svg) return false;
-    // The viewport detects hidden hosts; CSS-hidden inner groups need their own ancestor check.
+    // Check CSS-hidden ancestors as well as viewport visibility.
     for (let parent = node.parentElement; parent && parent !== svg; parent = parent.parentElement) {
       if (getComputedStyle(parent).display === 'none') return false;
     }
@@ -2435,7 +2445,7 @@
     state.legends = targets.filter((node) => renderedTargetKind(node) === 'legend');
     state.groups = keyboardDataGroups(targets.filter((node) => renderedTargetKind(node) !== 'legend'));
     state.data = state.groups.flatMap((group) => group.nodes);
-    // A hidden host has no available targets. Retain each component's position until layout returns.
+    // Keep component positions while the host is hidden.
     if (state.data.length && !state.data.includes(state.activeData)) state.activeData = state.data[0];
     if (state.legends.length && !state.legends.includes(state.activeLegend)) state.activeLegend = state.legends[0];
     if (state.data.includes(focused)) state.activeData = focused;
@@ -2504,7 +2514,7 @@
       resizeObserver = new ResizeObserver(queueRefresh);
       resizeObserver.observe(stage);
     }
-    // Native paint and host styles can change without a resize. Tab and arrow availability share this owner.
+    // Share paint/style availability between Tab and arrow navigation.
     paintObserver = new MutationObserver(records => {
       if (chartLifetimes.get(root)?.disposed !== false) return;
       if (!root.isConnected) { queueRefresh(); return; }
@@ -2523,7 +2533,13 @@
       return;
     }
     root._cfxKeyboardNavigation = { owned: new Set() };
-    // SVG focus listeners can make aggregate groups implicitly tabbable. Only roving leaves enter the tab order.
+    const stage = root.querySelector('.cfx-stage');
+    // Keep native scroll stages outside the roving tab order.
+    if (stage && !stage.hasAttribute('tabindex')) {
+      stage.setAttribute('tabindex', '-1');
+      ownChartWork(root, () => { if (stage.getAttribute('tabindex') === '-1') stage.removeAttribute('tabindex'); });
+    }
+    // Only roving leaves, including SVG groups, enter the tab order.
     interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
     refreshKeyboardNavigation(root);
     bindKeyboardNavigationAvailability(root);
@@ -2546,23 +2562,29 @@
       return offset;
     };
     let preserveVisiblePortion = false;
-    // Scroll inner clips first, then remeasure through each outer clip, including closed shadow hosts.
-    for (const { node: clip, x, y } of tooltipClippingAncestors(node)) {
-      const style = getComputedStyle(clip), box = node.getBoundingClientRect();
-      const start = stagePoint(clip, { x: box.left, y: box.top });
-      const end = stagePoint(clip, { x: box.right, y: box.bottom });
-      const left = clip.scrollLeft + 8, top = clip.scrollTop + 8;
-      preserveVisiblePortion ||= x && end.x - start.x > clip.clientWidth - 16 && end.x > left && start.x < left + clip.clientWidth - 16
-        || y && end.y - start.y > clip.clientHeight - 16 && end.y > top && start.y < top + clip.clientHeight - 16;
-      clip.scrollTo({ behavior: 'instant',
-        left: scrollAxis(style.overflowX, clip.scrollWidth, clip.clientWidth, clip.scrollLeft, left, left + clip.clientWidth - 16, start.x, end.x),
-        top: scrollAxis(style.overflowY, clip.scrollHeight, clip.clientHeight, clip.scrollTop, top, top + clip.clientHeight - 16, start.y, end.y) });
-    }
+    const inset = 16; // Keep focused paint clear of native overlay scrollbars.
+    // Reveal inner clips before outer clips, including shadow hosts.
+    const revealClips = () => {
+      for (const { node: clip, x, y } of tooltipClippingAncestors(node)) {
+        const style = getComputedStyle(clip), box = node.getBoundingClientRect();
+        const start = stagePoint(clip, { x: box.left, y: box.top });
+        const end = stagePoint(clip, { x: box.right, y: box.bottom });
+        const left = clip.scrollLeft + inset, top = clip.scrollTop + inset;
+        preserveVisiblePortion ||= x && end.x - start.x > clip.clientWidth - inset * 2 && end.x > left && start.x < left + clip.clientWidth - inset * 2
+          || y && end.y - start.y > clip.clientHeight - inset * 2 && end.y > top && start.y < top + clip.clientHeight - inset * 2;
+        clip.scrollTo({ behavior: 'instant',
+          left: scrollAxis(style.overflowX, clip.scrollWidth, clip.clientWidth, clip.scrollLeft, left, left + clip.clientWidth - inset * 2, start.x, end.x),
+          top: scrollAxis(style.overflowY, clip.scrollHeight, clip.clientHeight, clip.scrollTop, top, top + clip.clientHeight - inset * 2, start.y, end.y) });
+      }
+    };
+    revealClips();
     const box = node.getBoundingClientRect(), viewport = owner.getBoundingClientRect();
-    // Native scrolling can reveal a small focus mark through an opaque slot's internal scroller.
-    // Preserve the precise manual policy for wide marks that already have a visible portion.
-    if (!preserveVisiblePortion && box.width <= viewport.width - 16 && box.height <= viewport.height - 16)
+    // Native reveal reaches opaque slots; preserve partly visible wide marks.
+    if (!preserveVisiblePortion && box.width <= viewport.width - inset * 2 && box.height <= viewport.height - inset * 2) {
       node.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
+      // Native SVG reveal may reset known clips; remeasure after opaque hosts move.
+      revealClips();
+    }
   };
   const focusKeyboardTarget = (root, node, passive = false) => {
     const focusNode = targetFocusNode(node);
@@ -4050,8 +4072,20 @@
       publishCompare(root, false);
     }, true);
     if (compareTray) {
-      listenChart(root, compareTray, 'pointerdown', (event) => event.stopPropagation());
-      listenChart(root, compareTray, 'focusin', (event) => scrollKeyboardTargetIntoView(root, event.target));
+      let pointerFocus = false;
+      listenChart(root, compareTray, 'pointerdown', (event) => { pointerFocus = event.button === 0; event.stopPropagation(); });
+      ['pointerup', 'pointercancel'].forEach(type => listenChart(root, compareTray, type, () => { pointerFocus = false; }));
+      listenChart(root, compareTray, 'pointerleave', () => {
+        pointerFocus = false;
+        const active = root.getRootNode().activeElement;
+        if (!compareTray.contains(active) || !active.matches(':focus-visible')) hideTip(root, tip, false);
+      });
+      listenChart(root, compareTray, 'focusout', event => {
+        if (!compareTray.contains(event.relatedTarget)) hideTip(root, tip, false);
+      });
+      listenChart(root, compareTray, 'focusin', (event) => {
+        if (!pointerFocus && event.target instanceof Element && event.target.matches(':focus-visible')) scrollKeyboardTargetIntoView(root, event.target);
+      });
     }
     if (hasFeature(root, 'StateBookmarks')) {
       listenChart(root, root, 'cfx-capture-state', (event) => {
@@ -4286,9 +4320,9 @@
         delete root._cfxCancelPointerHover;
       });
       listenChart(root, stage, 'pointerdown', (event) => {
+        if (event.button !== 0) return;
         root._cfxPointerFocus = true;
         clearKeyboardFocusPaint(root);
-        if (event.button !== 0) return;
         resumePointerHover(root);
         cancelPointerMove();
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {

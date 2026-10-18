@@ -115,6 +115,29 @@ public sealed class NativeTopologyGeometryTests {
     }
 
     [Fact]
+    public void ReplicationMeshScenariosTraverseConnectedNodeAndEdgeSteps() {
+        var factory = typeof(GalleryWriter).Assembly.GetType("TopologyVisualExamples")!.GetMethod("BuildReplicationMeshExplorer",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        var chart = Assert.IsType<TopologyChart>(factory.Invoke(null, null));
+        foreach (var scenario in chart.Scenarios) {
+            Assert.Equal(TopologyScenarioStepKind.Node, scenario.Steps[0].Kind);
+            Assert.Equal(TopologyScenarioStepKind.Node, scenario.Steps[scenario.Steps.Count - 1].Kind);
+            for (var index = 1; index + 1 < scenario.Steps.Count; index += 2) {
+                var previous = scenario.Steps[index - 1]; var next = scenario.Steps[index + 1];
+                Assert.Equal(TopologyScenarioStepKind.Node, previous.Kind);
+                Assert.Equal(TopologyScenarioStepKind.Node, next.Kind);
+                Assert.Equal(TopologyScenarioStepKind.Edge, scenario.Steps[index].Kind);
+                var edge = Assert.Single(chart.Edges, item => item.Id == scenario.Steps[index].Id);
+                var forward = edge.SourceNodeId == previous.Id && edge.TargetNodeId == next.Id;
+                var backward = edge.TargetNodeId == previous.Id && edge.SourceNodeId == next.Id;
+                Assert.True(forward || backward, "Scenario " + scenario.Id + " must not jump between disconnected node steps.");
+                if (edge.Direction == VisualLinkDirection.Forward) Assert.True(forward);
+                if (edge.Direction == VisualLinkDirection.Backward) Assert.True(backward);
+            }
+        }
+    }
+
+    [Fact]
     public void AutomaticMonitoringMeshBadgeKeepsItsOwnRouteAnchorAndClearance() {
         // Exercise the actual example that previously put LON/SFO's badge over the NYC/SFO route.
         var factory = typeof(GalleryWriter).Assembly.GetType("TopologyVisualExamples")!.GetMethod("BuildReplicationMeshExplorer",

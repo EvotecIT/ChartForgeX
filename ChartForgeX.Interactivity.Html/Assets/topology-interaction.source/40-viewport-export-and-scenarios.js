@@ -134,8 +134,8 @@
       if (!forceGraphControls || wrapper.getAttribute('data-cfx-force-hide-moving-edges') !== 'true') return;
       wrapper.setAttribute('data-cfx-force-moving-edges', 'true');
       wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => edge.classList.add('cfx-topology-html-force-moving'));
-      if (forceGraphMotionTimer) window.clearTimeout(forceGraphMotionTimer);
-      forceGraphMotionTimer = window.setTimeout(() => {
+      if (forceGraphMotionTimer) lifetime.clearTimeout(forceGraphMotionTimer);
+      forceGraphMotionTimer = lifetime.timeout(() => {
         wrapper.removeAttribute('data-cfx-force-moving-edges');
         wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
       }, 280);
@@ -309,6 +309,7 @@
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-export', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), format } }));
     };
     const downloadBlob = (blob, extension, format) => {
+      if (!lifetime.active || !wrapper.isConnected) return;
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -337,7 +338,9 @@
       const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
       const sourceUrl = URL.createObjectURL(source);
       const image = new Image();
+      const releaseImage = lifetime.own(() => { image.onload = null; image.onerror = null; URL.revokeObjectURL(sourceUrl); });
       image.onload = () => {
+        if (!lifetime.active || !wrapper.isConnected) { releaseImage(); return; }
         const size = svgSize(serialized.svg);
         const scale = Math.max(1, Math.ceil(window.devicePixelRatio || 1));
         const canvas = document.createElement('canvas');
@@ -345,17 +348,17 @@
         canvas.height = size.height * scale;
         const context = canvas.getContext('2d');
         if (!context) {
-          URL.revokeObjectURL(sourceUrl);
+          releaseImage();
           return;
         }
         context.setTransform(scale, 0, 0, scale, 0, 0);
         context.clearRect(0, 0, size.width, size.height);
         context.drawImage(image, 0, 0, size.width, size.height);
         canvas.toBlob(blob => {
-          URL.revokeObjectURL(sourceUrl);
-          if (blob) downloadBlob(blob, 'png', 'png');
+          releaseImage();
+          if (blob && lifetime.active) downloadBlob(blob, 'png', 'png');
         }, 'image/png');
       };
-      image.onerror = () => URL.revokeObjectURL(sourceUrl);
+      image.onerror = releaseImage;
       image.src = sourceUrl;
     };

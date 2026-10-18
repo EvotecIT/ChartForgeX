@@ -10,7 +10,9 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.editor.css"
     };
     private static readonly string[] ScriptResourceNames = {
+        "ChartForgeX.Interactivity.Html.Assets.adapter-lifetime.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-lifetime.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.01-document.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-geometry.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.03-canvas-nodes.js",

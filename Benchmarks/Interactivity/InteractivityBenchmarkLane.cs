@@ -28,12 +28,14 @@ public sealed class InteractivityBenchmarkLane : IDisposable {
     /// <summary>Initializes the persistent browser on first setup and resets results between samples.</summary>
     public void Reset() {
         _fixture ??= Activator.CreateInstance(_type, _points, _queries, _source)!;
-        _type.GetMethod("Reset")!.Invoke(_fixture, null);
+        Invoke("Reset");
     }
     /// <summary>Runs the declared acquisition batch inside PowerForge timing.</summary>
-    public void Execute() => _type.GetMethod("Execute")!.Invoke(_fixture, null);
+    public void Execute() => Invoke("Execute");
     /// <summary>Runs source-identity and nearest-observation integrity proof outside timing.</summary>
-    public void Validate() => _type.GetMethod("Validate")!.Invoke(_fixture, null);
+    public void Validate() => Invoke("Validate");
+    private void Invoke(string method) => _type.GetMethod(method)!.Invoke(_fixture,
+        BindingFlags.Public | BindingFlags.Instance | BindingFlags.DoNotWrapExceptions, null, null, null);
     /// <summary>Gets the measured batch's checked source-index checksum.</summary>
     public int SourceIndexSum => (int)_type.GetProperty("SourceIndexSum")!.GetValue(_fixture)!;
     /// <summary>Returns the browser versions without creating uninitialized cases.</summary>

@@ -8,7 +8,7 @@ internal static class HtmlInteractivePage {
         + ";color:" + chart.Options.ResolvedTheme.Text.ToCss() + ";font-family:" + HtmlChartRenderer.CssFontFamily(chart.Options.ResolvedTheme.FontFamily);
 
     internal static HtmlMarkupWriter StartDocument(string title, HtmlAssetReferences? assets = null, string? bodyStyle = null,
-        string language = "en", string direction = "auto") {
+        string language = "en", string? direction = null) {
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", language).Attribute("dir", direction).EndStartElement().Line()

@@ -86,10 +86,10 @@
   const bindGraphItemSelection = (root, item) => {
     if (attr(item, 'data-cfx-graph-selection-bound') === 'true') return;
     item.setAttribute('data-cfx-graph-selection-bound', 'true');
-    item.addEventListener('pointerenter', () => graphHover(root, item));
-    item.addEventListener('pointerleave', () => graphHover(root, null));
-    item.addEventListener('blur', () => graphHover(root, null));
-    item.addEventListener('focus', () => {
+    listenGraph(root, item, 'pointerenter', () => graphHover(root, item));
+    listenGraph(root, item, 'pointerleave', () => graphHover(root, null));
+    listenGraph(root, item, 'blur', () => graphHover(root, null));
+    listenGraph(root, item, 'focus', () => {
       graphHover(root, item);
       root.dataset.cfxGraphKeyboardItem = graphKeyboardItemKey(item);
       items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(candidate => {
@@ -98,7 +98,7 @@
         else candidate.removeAttribute('aria-keyshortcuts');
       });
     });
-    item.addEventListener('click', event => {
+    listenGraph(root, item, 'click', event => {
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
       if (id && root.__cfxGraphSuppressClickId === id) {
         root.__cfxGraphSuppressClickId = '';
@@ -108,7 +108,7 @@
       if (id && root.__cfxGraphPointerSelectionId === id && Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
       select(root, item, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
     });
-    item.addEventListener('keydown', event => {
+    listenGraph(root, item, 'keydown', event => {
       if (event.defaultPrevented) return;
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
         event.preventDefault();
@@ -124,8 +124,8 @@
   const bindGraphSearch = (root) => {
     const search = root.querySelector('[data-cfx-graph-search]');
     if (!search) return;
-    search.addEventListener('input', () => applyFilters(root));
-    search.addEventListener('keydown', event => {
+    listenGraph(root, search, 'input', () => applyFilters(root));
+    listenGraph(root, search, 'keydown', event => {
       if (event.key !== 'Enter') return;
       const query = search.value.trim().toLowerCase();
       const match = (root.__cfxGraphState || graphState(root)).nodes.find(node => visible(node.el) && (!query || searchable(node.el).includes(query)));

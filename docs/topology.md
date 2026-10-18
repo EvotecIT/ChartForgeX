@@ -96,6 +96,8 @@ var html = chart.ToInteractiveHtmlPage(options);
 
 Add `ChartForgeX.Stories` and use `TopologyMotionOptions.RoutePulseForScenario(...)` when a scenario route should become a script-free animated asset. SVG output adds native `<animate>` route pulses without JavaScript, while GIF output samples deterministic PNG frames from the same topology model. The presentation reuses detached prepared geometry for route tours, map arcs, replication flow, failover paths, and README/documentation previews. Static topology render options remain in core.
 
+Node steps immediately beside an edge establish its traversal direction when every available adjacent node matches the corresponding endpoint. A target-node → edge → source-node sequence traverses the resolved route in reverse; either adjacent node can establish that direction on its own. Edge-only scenarios, explicit edge lists, self-loops, and unrelated or contradictory adjacent nodes retain authored source-to-target order. Both animated SVG and sampled raster use the same resolved plan. Each edge keeps its port-to-port geometry, with separate tour subpaths between edges.
+
 ```csharp
 using ChartForgeX.Topology;
 using System.IO;

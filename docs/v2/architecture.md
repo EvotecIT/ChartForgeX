@@ -104,7 +104,9 @@ The [consumer capability ledger](consumer-capabilities.csv) covers [PowerBGInfo]
 
 The [API conventions](api-conventions.md) define meaningful fluent verbs and purposeful exceptions. The [public member inventory](api-ledger.md) records the integrated source, exact overloads/defaults and planned ownership. The original inventory describes six baseline runtime assemblies. Phase 4 adds a separate eight-assembly source inventory and an assembly/signature diff; packed dependency, resource and execution qualification remains independent evidence.
 
-The [chart capability roadmap](chart-capabilities.csv) records per-family existing capabilities, missing options, priority lanes, dependencies and acceptance fixtures. Priority is driven by real use and architectural reuse. Browser interaction, maps and advanced financial tooling have separate scope from static chart quality. Chart names alone do not establish completeness.
+The [chart capability roadmap](chart-capabilities.csv) explicitly maps all native series kinds through `NativeKinds`, alongside compound workflows. It records existing capabilities, missing options, priority lanes, dependencies and representative acceptance fixtures. `Verification` and `QualificationStatus` bound the current evidence; `FutureAcceptance` describes work that is not established by those fixtures. Priority is driven by real use and architectural reuse. Browser interaction, maps and advanced financial tooling have separate scope from static chart quality. Chart names alone do not establish completeness.
+
+`PriorityLane` refers to the numbered delivery outcomes in [TODO.md](../../TODO.md#delivery-order). It describes the next kind of work for that row, not a license tier or a completion score.
 
 Every migrated family needs typed data/geometry, shared frame/theme/text, SVG/native PNG proof, meaningful edge cases, catalog examples, semantics and performance evidence. Do not implement every catalog gap before the common pipeline has qualified.
 

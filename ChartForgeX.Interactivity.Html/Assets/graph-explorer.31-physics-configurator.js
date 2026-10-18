@@ -52,13 +52,13 @@
     if (!panel || panel.dataset.cfxPhysicsBound === 'true') return;
     panel.dataset.cfxPhysicsBound = 'true';
     root.__cfxGraphPhysicsDefaults = physicsConfigurationAttributes(root);
-    panel.addEventListener('change', event => {
+    listenGraph(root, panel, 'change', event => {
       const input = event.target.closest?.('[data-cfx-physics-field]');
       if (!input) return;
       const field = attr(input, 'data-cfx-physics-field');
       applyPhysicsConfiguration(root, field === 'solver' ? { solver: input.value } : { [field]: input.type === 'checkbox' ? input.checked : Number(input.value) });
     });
-    panel.addEventListener('click', event => {
+    listenGraph(root, panel, 'click', event => {
       const action = attr(event.target.closest?.('[data-cfx-physics-action]'), 'data-cfx-physics-action');
       if (action === 'reheat') reheatPhysics(root, 'configurator', { rebuild: true, fit: false });
       if (action === 'reset') {
@@ -67,6 +67,6 @@
       }
       if (action) syncPhysicsConfigurator(root);
     });
-    root.addEventListener('cfxgraphstabilized', () => syncPhysicsConfigurator(root));
+    listenGraph(root, root, 'cfxgraphstabilized', () => syncPhysicsConfigurator(root));
     syncPhysicsConfigurator(root);
   };

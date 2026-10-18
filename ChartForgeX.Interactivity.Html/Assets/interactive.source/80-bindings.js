@@ -30,8 +30,20 @@
       publishCompare(root, false);
     }, true);
     if (compareTray) {
-      listenChart(root, compareTray, 'pointerdown', (event) => event.stopPropagation());
-      listenChart(root, compareTray, 'focusin', (event) => scrollKeyboardTargetIntoView(root, event.target));
+      let pointerFocus = false;
+      listenChart(root, compareTray, 'pointerdown', (event) => { pointerFocus = event.button === 0; event.stopPropagation(); });
+      ['pointerup', 'pointercancel'].forEach(type => listenChart(root, compareTray, type, () => { pointerFocus = false; }));
+      listenChart(root, compareTray, 'pointerleave', () => {
+        pointerFocus = false;
+        const active = root.getRootNode().activeElement;
+        if (!compareTray.contains(active) || !active.matches(':focus-visible')) hideTip(root, tip, false);
+      });
+      listenChart(root, compareTray, 'focusout', event => {
+        if (!compareTray.contains(event.relatedTarget)) hideTip(root, tip, false);
+      });
+      listenChart(root, compareTray, 'focusin', (event) => {
+        if (!pointerFocus && event.target instanceof Element && event.target.matches(':focus-visible')) scrollKeyboardTargetIntoView(root, event.target);
+      });
     }
     if (hasFeature(root, 'StateBookmarks')) {
       listenChart(root, root, 'cfx-capture-state', (event) => {
@@ -266,9 +278,9 @@
         delete root._cfxCancelPointerHover;
       });
       listenChart(root, stage, 'pointerdown', (event) => {
+        if (event.button !== 0) return;
         root._cfxPointerFocus = true;
         clearKeyboardFocusPaint(root);
-        if (event.button !== 0) return;
         resumePointerHover(root);
         cancelPointerMove();
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {

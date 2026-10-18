@@ -1,8 +1,9 @@
-  const graphApiRoot = (target) => {
-    if (target?.matches?.('.cfx-graph-explorer')) return target;
-    if (target?.closest) return target.closest('.cfx-graph-explorer');
-    if (typeof target !== 'string') return null;
-    return Array.from(document.querySelectorAll('.cfx-graph-explorer')).find(root => attr(root, 'data-cfx-graph-id') === target || root.id === target) || document.querySelector(target);
+  const graphApiRoot = (target, includeUnmounted = false) => {
+    let root = null;
+    if (target?.matches?.('.cfx-graph-explorer')) root = target;
+    else if (target?.closest) root = target.closest('.cfx-graph-explorer');
+    else if (typeof target === 'string') root = Array.from(document.querySelectorAll('.cfx-graph-explorer')).find(item => attr(item, 'data-cfx-graph-id') === target || item.id === target) || document.querySelector(target);
+    return root && (includeUnmounted || graphLifetime(root)?.active) ? root : null;
   };
   const svgElement = (root, name) => root.ownerDocument.createElementNS('http:' + '//www.w3.org/2000/svg', name);
   const setGraphAttribute = (element, name, value) => {
@@ -123,7 +124,7 @@
       secondary.setAttribute('y', String(card ? 14 : shape === 'text' ? 18 : size + 32)); secondary.textContent = card ? graphCardText(node.secondaryLabel, size, true) : node.secondaryLabel; details.appendChild(secondary);
     }
     if (node.badge) {
-      const geometry = graphBadgeGeometry({ ...node, size });
+      const geometry = graphBadgeGeometry({ ...node, size }, root);
       const badge = svgElement(root, 'g'); badge.classList.add('cfx-graph-node-badge'); badge.setAttribute('transform', `translate(${geometry.x} ${geometry.y})`);
       const surface = svgElement(root, geometry.width <= 16 ? 'circle' : 'rect');
       Object.entries(geometry.width <= 16 ? { r: 8 } : { x: -geometry.width / 2, y: -8, width: geometry.width, height: 16, rx: 8 }).forEach(([key, value]) => surface.setAttribute(key, String(value)));
@@ -255,6 +256,8 @@
     return { nodeCount: state.nodes.length, edgeCount: state.edges.length, clusterCount: state.clusters.length };
   };
   const graphExplorerApi = {
+    mount: target => { const host = typeof target === 'string' ? graphApiRoot(target, true) : target || document; return host ? mountGraph(host) : []; },
+    dispose: target => { const root = graphApiRoot(target); const lifetime = root && graphLifetime(root); if (!lifetime) return false; lifetime.dispose(); return true; },
     select: (target, requested, options) => { const root = graphApiRoot(target); return root ? selectGraphItems(root, requested, options) : false; },
     clearSelection: (target, options) => { const root = graphApiRoot(target); return root ? selectGraphItems(root, [], { ...options, mode: 'replace' }) : false; },
     highlight: (target, requested, options) => { const root = graphApiRoot(target); return root ? highlightGraphItems(root, requested, options) : false; },

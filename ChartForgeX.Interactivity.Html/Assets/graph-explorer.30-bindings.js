@@ -9,7 +9,7 @@
       root.__cfxGraphCanvasSelectionTick = Date.now();
       return true;
     };
-    canvas.addEventListener('click', event => {
+    listenGraph(root, canvas, 'click', event => {
       const best = hitGraphItemAt(root, scenePoint(root, event));
       const bestId = best ? attr(best.el, 'data-node-id') || attr(best.el, 'data-edge-id') || attr(best.el, 'data-cluster-id') : '';
       if (bestId && root.__cfxGraphSuppressClickId === bestId) {
@@ -21,7 +21,7 @@
       if (Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
       selectCanvasNode(event, best);
     });
-    canvas.addEventListener('keydown', event => {
+    listenGraph(root, canvas, 'keydown', event => {
       if (!root.classList.contains('cfx-graph-render-canvas') || !(hasFeature(root, 'Selection') || hasFeature(root, 'Clustering'))) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -33,7 +33,7 @@
   const bindAcceleratedSvgKeyboard = (root) => {
     const scene = root.querySelector('[data-cfx-role="graph-scene"]');
     if (!scene) return;
-    scene.addEventListener('keydown', event => {
+    listenGraph(root, scene, 'keydown', event => {
       if (root.dataset.cfxGraphRendererActive !== 'svg' || attr(root, 'data-cfx-graph-accelerated-markup') !== 'true' || !(hasFeature(root, 'Selection') || hasFeature(root, 'Clustering'))) return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -44,6 +44,8 @@
     });
   };
   const exportGraph = async (root, format) => {
+    const lifetime = graphLifetime(root);
+    if (!lifetime?.active) return;
     const name = `${attr(root, 'data-cfx-graph-id') || 'graph'}.${format}`;
     let content = '';
     let mime = 'application/octet-stream';
@@ -57,6 +59,7 @@
       const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
       const state = (root.__cfxGraphState || graphState(root));
       await preloadCanvasImages(root, state);
+      if (!lifetime.active || !root.isConnected) return;
       drawCanvas(root, state, { force: true, exportDisclosure: true });
       try {
         content = canvas ? canvas.toDataURL('image/png') : '';
@@ -84,14 +87,15 @@
     const done = () => {
       if (settled) return;
       settled = true;
-      image.removeEventListener?.('load', done);
-      image.removeEventListener?.('error', done);
-      clearTimeout(timeout);
+      releaseLoad(); releaseError();
+      lifetime.clearTimeout(timeout); releasePending();
       resolve();
     };
-    const timeout = setTimeout(done, 1500);
-    image.addEventListener?.('load', done, { once: true });
-    image.addEventListener?.('error', done, { once: true });
+    const lifetime = graphLifetime(root);
+    const releaseLoad = listenGraph(root, image, 'load', done, { once: true });
+    const releaseError = listenGraph(root, image, 'error', done, { once: true });
+    const timeout = lifetime.timeout(done, 1500);
+    const releasePending = lifetime.own(done);
   })));
   const exportSvgContent = (root) => {
     const svg = root.querySelector('[data-cfx-role="graph-scene"]');
@@ -164,15 +168,15 @@
   const bindCommandMenus = (root) => {
     const menus = Array.from(root.querySelectorAll('.cfx-graph-command-menu'));
     if (!menus.length) return;
-    root.addEventListener('pointerdown', event => menus.forEach(menu => {
+    listenGraph(root, root, 'pointerdown', event => menus.forEach(menu => {
       if (menu.open && !menu.contains(event.target)) menu.removeAttribute('open');
     }));
     menus.forEach(menu => {
       const summary = menu.querySelector('summary');
       const sync = () => summary?.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
-      menu.addEventListener('toggle', sync);
+      listenGraph(root, menu, 'toggle', sync);
       sync();
-      menu.addEventListener('keydown', event => {
+      listenGraph(root, menu, 'keydown', event => {
         if (event.key !== 'Escape' || !menu.open) return;
         event.preventDefault();
         menu.removeAttribute('open');
@@ -194,6 +198,8 @@
     if (!isDataUrl) setTimeout(() => URL.revokeObjectURL(url), 500);
   };
   const bind = (root) => {
+    if (graphLifetime(root)) return;
+    beginGraphLifetime(root);
     root.setAttribute('data-cfx-graph-bound', 'true');
     bindGraphTheme(root);
     indexHitTesting(root, graphState(root));
@@ -234,9 +240,9 @@
     bindCommandMenus(root);
     items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(item => bindGraphItemSelection(root, item));
     bindGraphSearch(root);
-    items(root, '[data-cfx-graph-filter]').forEach(filter => filter.addEventListener('change', () => applyFilters(root)));
+    items(root, '[data-cfx-graph-filter]').forEach(filter => listenGraph(root, filter, 'change', () => applyFilters(root)));
     items(root, '[data-cfx-graph-action]').forEach(button => {
-      button.addEventListener('click', () => {
+      listenGraph(root, button, 'click', () => {
         const action = attr(button, 'data-cfx-graph-action');
         if (action === 'clusters') applyClusterState(root, root.dataset.cfxGraphClusters !== 'collapsed');
         if (action === 'hierarchy-home') applyHierarchyView(root, '', Number(root.dataset.cfxGraphHierarchyDepth || num(root, 'data-cfx-graph-hierarchy-depth', 2)));
@@ -304,6 +310,7 @@
       lod: root.dataset.cfxGraphLod
     });
   };
-  const start = () => roots().forEach(bind);
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  const mountGraph = (target = document) => { const found = roots(target); found.forEach(bind); return found; };
+  const start = () => mountGraph();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();

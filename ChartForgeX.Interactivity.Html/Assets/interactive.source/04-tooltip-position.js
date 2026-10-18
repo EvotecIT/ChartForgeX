@@ -1,4 +1,4 @@
-  // Screen placement belongs to the Html adapter; target acquisition supplies the canonical native node.
+  // Screen placement uses the canonical acquired node.
   const tooltipPositions = new WeakMap();
   const activeTooltipPositions = new Set();
   const tooltipPositionTrees = new Set();
@@ -44,12 +44,12 @@
     const source = nativeRegionScreenBox(node);
     if (source) return source;
     const rect = node.getBoundingClientRect();
-    // Unlocated retained keyboard facts have no painted box; their visible SVG remains the host boundary.
+    // Unlocated keyboard facts use their visible SVG bounds.
     return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;
   };
   const tooltipShadowContainingBlock = (node, position, source) => {
     if (!(node instanceof HTMLElement) || node.getRootNode() === source.getRootNode()) return false;
-    // offsetParent can hide a slotted node's internal containing block. Inspect the accessible flat tree.
+    // Inspect the flat tree: offsetParent can hide slotted containing blocks.
     const style = getComputedStyle(node);
     return position === 'absolute' && style.position !== 'static'
       || ['transform', 'translate', 'rotate', 'scale', 'perspective', 'filter', 'backdropFilter'].some(key => style[key] && style[key] !== 'none')
@@ -96,7 +96,7 @@
       state.clippingAncestors = tooltipClippingAncestors(state.node);
       state.placementClippingAncestors = tooltipClippingAncestors(state.tip);
     }
-    // Keep geometry live while caching overflow axes until the existing paint invalidation fires.
+    // Cache overflow axes until paint invalidation; keep bounds live.
     const { left, top, right, bottom } = tooltipClippingBounds(state.clippingAncestors);
     const source = tooltipSourceRect(state.node);
     return state.nativeIntersecting !== false && source && right > left && bottom > top
@@ -107,7 +107,7 @@
     && hasFeature(state.root, 'Tooltips') && state.stage.getClientRects().length > 0
     && (!state.paintChanged || tooltipReadoutAvailable(state.node, state.readoutEvent)) && tooltipSourceInView(state);
   const queueTooltipPositionRefresh = (invalidation) => {
-    // Native geometry events can change clipping or responsive paint without a DOM attribute mutation.
+    // Native geometry can change without a DOM mutation.
     if (invalidation) for (const state of activeTooltipPositions) state.paintChanged = true;
     if (tooltipPositionFrame || !activeTooltipPositions.size) return;
     tooltipPositionFrame = requestAnimationFrame(() => {
@@ -133,7 +133,7 @@
     });
   };
   const checkTooltipPositionMutations = (records) => {
-    // Placement writes cannot change target paint or layout. External tooltip styles still invalidate geometry.
+    // Our placement styles cannot change target paint; host styles can.
     records = records.filter(record => {
       const placed = tooltipPositions.get(record.target);
       return !(placed && record.type === 'attributes' && record.attributeName === 'style'
@@ -215,17 +215,22 @@
   const placeTooltip = (state, skipUnchanged = false) => {
     const { root, tip } = state, anchor = tooltipAnchorRect(state);
     const bounds = tooltipClippingBounds(state.placementClippingAncestors);
+    const dock = root.querySelector('[data-cfx-compare-tray]');
+    if (dock && !dock.hidden) {
+      const box = dock.getBoundingClientRect();
+      if (box.right > bounds.left && box.left < bounds.right && box.top < bounds.bottom
+        && box.top >= bounds.top + tip.getBoundingClientRect().height + 16) bounds.bottom = box.top;
+    }
     const geometry = tooltipPositionGeometry(state, anchor, bounds);
     if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
-    // Measure at a stable origin, then keep the measured width while positioning. This prevents
-    // fixed-position shrink-to-fit from changing the readout as it approaches a containing block's edge.
+    // Hold measured width to prevent fixed-position shrink-to-fit near host edges.
     tip.style.left = '0px'; tip.style.top = '0px';
     tip.style.width = '';
     tip.style.width = getComputedStyle(tip).width;
     const origin = tip.getBoundingClientRect();
     tip.style.left = '1px'; tip.style.top = '1px';
     const unit = tip.getBoundingClientRect();
-    // The one-pixel probe converts screen coordinates through ordinary translated/scaled host blocks.
+    // One-pixel probes convert screen coordinates through transformed hosts.
     const scaleX = unit.left - origin.left || 1, scaleY = unit.top - origin.top || 1;
     const gap = Number(root.dataset.cfxTooltipGap ?? 14);
     const offsetX = Number(root.dataset.cfxTooltipOffsetX || 0), offsetY = Number(root.dataset.cfxTooltipOffsetY || 0);
@@ -253,7 +258,7 @@
     let state = tooltipPositions.get(tip);
     const pinned = state && root.dataset.cfxTooltipPinned === 'true' && state.key === root.dataset.cfxPinnedTarget;
     if (!state) { state = { root, tip, stage, ...composedAncestry(root) }; tooltipPositions.set(tip, state); }
-    // A pin retains its acquisition mode: later pointer movement must not invalidate a keyboard-only fact.
+    // Pinned pointer motion must retain keyboard-only fact acquisition.
     if (!pinned) {
       if (state.node !== node) state.nativeIntersecting = undefined;
       state.node = node; state.key = targetKey(targetIdentity(node)); state.readoutEvent = event;

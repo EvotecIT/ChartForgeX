@@ -53,6 +53,7 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
 
     [BrowserTheory]
     [InlineData(false, 700, 460)]
+    [Trait("BrowserSuite", "Compatibility")]
     [InlineData(true, 340, 560)]
     public async Task RevealedHostEntersDataThenLegendAndRestoresEachComponentAfterAnotherReveal(bool dark, int width, int height) {
         if (!Enabled) return;
@@ -75,6 +76,7 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
         Assert.True(await page.Locator(Legend(1)).EvaluateAsync<bool>("node => node === document.activeElement"));
         await CaptureAsync(page, "keyboard-reveal-legend-" + (dark ? "compact-dark" : "wide-light") + ".png");
         await page.Keyboard.PressAsync("Tab");
+        await CaptureAsync(page, "keyboard-reveal-after-legend-tab-" + (dark ? "compact-dark" : "wide-light") + ".png");
         Assert.True(await page.Locator("#after-chart").EvaluateAsync<bool>("node => node === document.activeElement"));
 
         await page.Locator("#chart-host").EvaluateAsync("node => node.hidden = true");
@@ -123,15 +125,21 @@ public sealed class InteractiveKeyboardLifecycleBrowserTests {
         "count => document.querySelectorAll('[data-cfx-keyboard-component][tabindex=\"0\"]').length === count", count,
         new PageWaitForFunctionOptions { Timeout = 5000 });
 
+    // An explicit host tab stop keeps this contract independent of native button Tab preferences.
     private static string HiddenHost(string fragment, bool dark, bool cssHidden) => "<!doctype html><html><body style=\"margin:12px;font-family:system-ui;background:" +
         (dark ? "#151b27;color:#dce4f0" : "#f5f7fa;color:#17263a") + "\">" +
         "<button id=\"show-chart\" onclick=\"const host=document.getElementById('chart-host');host.hidden=false;host.style.display=''\">Show chart</button>" +
-        "<div id=\"chart-host\" " + (cssHidden ? "style=\"display:none\"" : "hidden") + ">" + fragment + "</div><button id=\"after-chart\">After chart</button></body></html>";
+        "<div id=\"chart-host\" " + (cssHidden ? "style=\"display:none\"" : "hidden") + ">" + fragment + "</div><button id=\"after-chart\" tabindex=\"0\">After chart</button></body></html>";
 
     private static async Task CaptureAsync(IPage page, string name) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;
         Directory.CreateDirectory(directory);
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name) });
+        var facts = await page.EvaluateAsync<object>("""
+            ()=>({active:{tag:document.activeElement.localName,html:document.activeElement.outerHTML.slice(0,1800)},
+                stops:[...document.querySelectorAll('[tabindex]')].map(node=>({tag:node.localName,tabIndex:node.tabIndex,data:{...node.dataset}}))})
+            """);
+        File.WriteAllText(Path.Combine(directory, Path.GetFileNameWithoutExtension(name) + ".json"), System.Text.Json.JsonSerializer.Serialize(facts));
     }
 }

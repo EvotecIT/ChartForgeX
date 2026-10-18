@@ -43,9 +43,6 @@ internal static partial class SmokeTests {
         var liveStateUses = (bindings + pointers).Split(new[] { liveState }, StringSplitOptions.None).Length - 1;
         Assert(liveStateUses >= 7, "Canvas dragging and SVG, PNG, and JSON exports should consume live physics coordinates before falling back to hidden SVG attributes.");
         Assert(bindings.Contains("indexHitTesting(root, graphState(root))", StringComparison.Ordinal), "Initial graph binding should still build a fresh state before the live cache exists.");
-        var script = HtmlGraphExplorerRenderer.BuildInteractionScript();
-        var bootstrap = script.IndexOf("const start = () => roots().forEach(bind);", StringComparison.Ordinal);
-        Assert(bootstrap > script.IndexOf("const bindPhysicsConfigurator = (root) =>", StringComparison.Ordinal) && bootstrap > script.IndexOf("window.ChartForgeXGraphExplorer = Object.freeze(graphExplorerApi);", StringComparison.Ordinal), "Graph explorer bootstrap should run after every runtime definition so fragments injected into loaded documents bind without temporal-dead-zone errors.");
     }
 
     private static void GraphExplorerRuntimePatchesPreserveVisualAndReferenceContracts() {

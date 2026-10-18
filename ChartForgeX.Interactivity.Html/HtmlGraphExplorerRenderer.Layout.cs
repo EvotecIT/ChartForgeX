@@ -18,7 +18,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var generated = nodes.Where(node => !node.HasExplicitPosition).ToArray();
         if (generated.Length == 0) return positions;
         if (scene.Options.Layout.Mode == GraphLayoutMode.Hierarchical) {
-            ComputeHierarchicalPositions(scene, positions);
+            var hierarchyExtents = MeasurePreparedNodeExtents(nodes, nodes.Count < 500);
+            ComputeHierarchicalPositions(scene, positions, hierarchyExtents);
             return positions;
         }
 
@@ -31,9 +32,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         if (generated.All(node => positions.ContainsKey(node.Id))) {
-            SeparatePreparedOverlaps(positions, generated, 6);
+            var extents = MeasurePreparedNodeExtents(generated, generated.Length < 500);
+            SeparatePreparedOverlaps(positions, generated, extents, 6);
             NormalizeGeneratedPositions(positions, generated);
-            SeparatePreparedOverlaps(positions, generated, generated.Length >= 500 ? 3 : 8);
+            SeparatePreparedOverlaps(positions, generated, extents, generated.Length >= 500 ? 3 : 8);
             NormalizeGeneratedPositions(positions, generated);
             AnchorGeneratedHubs(positions, components, centers, adjacency);
         }
@@ -41,7 +43,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return positions;
     }
 
-    private static void ComputeHierarchicalPositions(GraphScene scene, IDictionary<string, Point> positions) {
+    private static void ComputeHierarchicalPositions(GraphScene scene, IDictionary<string, Point> positions,
+        IReadOnlyDictionary<string, PreparedNodeExtents> extents) {
         var levels = ResolveHierarchyLevels(scene);
         var adjacency = BuildAdjacency(scene);
         var components = ConnectedComponents(scene.Nodes, adjacency);
@@ -52,7 +55,6 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
         var layout = scene.Options.Layout;
         var horizontal = layout.Direction is GraphLayoutDirection.LeftToRight or GraphLayoutDirection.RightToLeft;
-        var includeLabels = scene.Nodes.Count < 500;
         var hierarchyOrder = BuildHierarchyOrder(scene);
         var degree = scene.Nodes.ToDictionary(node => node.Id, _ => 0, StringComparer.Ordinal);
         foreach (var edge in scene.Edges) { if (degree.ContainsKey(edge.SourceNodeId)) degree[edge.SourceNodeId]++; if (degree.ContainsKey(edge.TargetNodeId)) degree[edge.TargetNodeId]++; }
@@ -75,7 +77,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
                     .ToArray(),
                 Breadth = group
                     .GroupBy(node => levels[node.Id])
-                    .Select(level => HierarchyLineBreadth(level.OrderBy(node => hierarchyOrder[node.Id]).ToArray(), horizontal, layout.NodeSpacing, includeLabels))
+                    .Select(level => HierarchyLineBreadth(level.OrderBy(node => hierarchyOrder[node.Id]).ToArray(), horizontal, layout.NodeSpacing, extents))
                     .DefaultIfEmpty(0)
                     .Max()
             })
@@ -88,15 +90,15 @@ public sealed partial class HtmlGraphExplorerRenderer {
         for (var componentIndex = 0; componentIndex < orderedComponents.Length; componentIndex++) {
             var component = orderedComponents[componentIndex];
             var componentCenter = componentOffset + component.Breadth / 2;
-            var primaryOffsets = HierarchyPrimaryOffsets(component.Levels.Select(level => new KeyValuePair<int, GraphSceneNode[]>(level.Level, level.Nodes)).ToArray(), horizontal, layout.LevelSeparation, includeLabels);
+            var primaryOffsets = HierarchyPrimaryOffsets(component.Levels.Select(level => new KeyValuePair<int, GraphSceneNode[]>(level.Level, level.Nodes)).ToArray(), horizontal, layout.LevelSeparation, extents);
             foreach (var level in component.Levels) {
                 var nodes = level.Nodes;
-                var lineOffset = componentCenter - HierarchyLineBreadth(nodes, horizontal, layout.NodeSpacing, includeLabels) / 2;
+                var lineOffset = componentCenter - HierarchyLineBreadth(nodes, horizontal, layout.NodeSpacing, extents) / 2;
                 var secondary = lineOffset;
                 for (var index = 0; index < nodes.Length; index++) {
-                    var extent = HierarchySecondaryExtent(nodes[index], horizontal, includeLabels);
+                    var extent = HierarchySecondaryExtent(extents[nodes[index].Id], horizontal);
                     if (index == 0) secondary += extent;
-                    else secondary += Math.Max(layout.NodeSpacing, HierarchySecondaryExtent(nodes[index - 1], horizontal, includeLabels) + extent + 20);
+                    else secondary += Math.Max(layout.NodeSpacing, HierarchySecondaryExtent(extents[nodes[index - 1].Id], horizontal) + extent + 20);
                     var primary = primaryOffsets[level.Level];
                     raw[nodes[index].Id] = horizontal
                         ? new Point(primary, secondary)
@@ -127,26 +129,28 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return order;
     }
 
-    private static double HierarchySecondaryExtent(GraphSceneNode node, bool horizontal, bool includeLabels) => horizontal ? PreparedNodeHalfHeight(node, includeLabels) : PreparedNodeHalfWidth(node, includeLabels);
+    private static double HierarchySecondaryExtent(PreparedNodeExtents extents, bool horizontal) => horizontal ? extents.HalfHeight : extents.HalfWidth;
 
-    private static double HierarchyPrimaryExtent(GraphSceneNode node, bool horizontal, bool includeLabels) => horizontal ? PreparedNodeHalfWidth(node, includeLabels) : PreparedNodeHalfHeight(node, includeLabels);
+    private static double HierarchyPrimaryExtent(PreparedNodeExtents extents, bool horizontal) => horizontal ? extents.HalfWidth : extents.HalfHeight;
 
-    private static double HierarchyLineBreadth(IReadOnlyList<GraphSceneNode> nodes, bool horizontal, double spacing, bool includeLabels) {
+    private static double HierarchyLineBreadth(IReadOnlyList<GraphSceneNode> nodes, bool horizontal, double spacing,
+        IReadOnlyDictionary<string, PreparedNodeExtents> extents) {
         if (nodes.Count == 0) return 0;
-        var breadth = HierarchySecondaryExtent(nodes[0], horizontal, includeLabels) * 2;
-        for (var index = 1; index < nodes.Count; index++) breadth += Math.Max(spacing, HierarchySecondaryExtent(nodes[index - 1], horizontal, includeLabels) + HierarchySecondaryExtent(nodes[index], horizontal, includeLabels) + 20);
+        var breadth = HierarchySecondaryExtent(extents[nodes[0].Id], horizontal) * 2;
+        for (var index = 1; index < nodes.Count; index++) breadth += Math.Max(spacing, HierarchySecondaryExtent(extents[nodes[index - 1].Id], horizontal) + HierarchySecondaryExtent(extents[nodes[index].Id], horizontal) + 20);
         return breadth;
     }
 
-    private static Dictionary<int, double> HierarchyPrimaryOffsets(IReadOnlyList<KeyValuePair<int, GraphSceneNode[]>> levels, bool horizontal, double separation, bool includeLabels) {
+    private static Dictionary<int, double> HierarchyPrimaryOffsets(IReadOnlyList<KeyValuePair<int, GraphSceneNode[]>> levels, bool horizontal, double separation,
+        IReadOnlyDictionary<string, PreparedNodeExtents> extents) {
         var offsets = new Dictionary<int, double>();
         if (levels.Count == 0) return offsets;
         var previousLevel = levels[0].Key;
-        var previousExtent = levels[0].Value.Max(node => HierarchyPrimaryExtent(node, horizontal, includeLabels));
+        var previousExtent = levels[0].Value.Max(node => HierarchyPrimaryExtent(extents[node.Id], horizontal));
         offsets[previousLevel] = 0;
         for (var index = 1; index < levels.Count; index++) {
             var level = levels[index];
-            var extent = level.Value.Max(node => HierarchyPrimaryExtent(node, horizontal, includeLabels));
+            var extent = level.Value.Max(node => HierarchyPrimaryExtent(extents[node.Id], horizontal));
             var gap = Math.Max(1, level.Key - previousLevel);
             offsets[level.Key] = offsets[previousLevel] + Math.Max(separation * gap, previousExtent + extent + 32);
             previousLevel = level.Key;
@@ -437,10 +441,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
     }
 
-    private static void SeparatePreparedOverlaps(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated, int passes) {
+    private static void SeparatePreparedOverlaps(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated,
+        IReadOnlyDictionary<string, PreparedNodeExtents> extents, int passes) {
         if (generated.Count < 2) return;
-        var includeLabels = generated.Count < 500;
-        var cellSize = Math.Max(32, generated.Max(node => Math.Max(PreparedNodeHalfWidth(node, includeLabels), PreparedNodeHalfHeight(node, includeLabels))) * 2 + 16);
+        var cellSize = Math.Max(32, generated.Max(node => Math.Max(extents[node.Id].HalfWidth, extents[node.Id].HalfHeight)) * 2 + 16);
         var maxPairs = generated.Count >= 3000 ? 120000 : generated.Count >= 1000 ? 180000 : 220000;
         for (var pass = 0; pass < passes; pass++) {
             var grid = new Dictionary<string, List<int>>(StringComparer.Ordinal);
@@ -455,11 +459,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
                 bucket.Add(index);
             }
 
-            if (!SeparatePreparedOverlapPass(positions, generated, grid, cellSize, maxPairs, pass, includeLabels)) return;
+            if (!SeparatePreparedOverlapPass(positions, generated, extents, grid, cellSize, maxPairs, pass)) return;
         }
     }
 
-    private static bool SeparatePreparedOverlapPass(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated, IReadOnlyDictionary<string, List<int>> grid, double cellSize, int maxPairs, int pass, bool includeLabels) {
+    private static bool SeparatePreparedOverlapPass(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated,
+        IReadOnlyDictionary<string, PreparedNodeExtents> extents, IReadOnlyDictionary<string, List<int>> grid, double cellSize, int maxPairs, int pass) {
         var pairs = 0;
         var moved = false;
         for (var i = 0; i < generated.Count; i++) {
@@ -474,7 +479,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
                         if (j <= i) continue;
                         pairs++;
                         if (pairs > maxPairs) return moved;
-                        moved |= SeparatePreparedPair(positions, generated, i, j, pass, includeLabels);
+                        moved |= SeparatePreparedPair(positions, generated, extents, i, j, pass);
                     }
                 }
             }
@@ -483,15 +488,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return moved;
     }
 
-    private static bool SeparatePreparedPair(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated, int i, int j, int pass, bool includeLabels) {
+    private static bool SeparatePreparedPair(IDictionary<string, Point> positions, IReadOnlyList<GraphSceneNode> generated,
+        IReadOnlyDictionary<string, PreparedNodeExtents> extents, int i, int j, int pass) {
         var first = generated[i];
         var second = generated[j];
         var a = positions[first.Id];
         var b = positions[second.Id];
         var dx = b.X - a.X;
         var dy = b.Y - a.Y;
-        var overlapX = PreparedNodeHalfWidth(first, includeLabels) + PreparedNodeHalfWidth(second, includeLabels) + 12 - Math.Abs(dx);
-        var overlapY = PreparedNodeHalfHeight(first, includeLabels) + PreparedNodeHalfHeight(second, includeLabels) + 10 - Math.Abs(dy);
+        var firstExtents = extents[first.Id]; var secondExtents = extents[second.Id];
+        var overlapX = firstExtents.HalfWidth + secondExtents.HalfWidth + 12 - Math.Abs(dx);
+        var overlapY = firstExtents.HalfHeight + secondExtents.HalfHeight + 10 - Math.Abs(dy);
         if (overlapX <= 0 || overlapY <= 0) return false;
         if (Math.Abs(dx) < 0.001 && Math.Abs(dy) < 0.001) {
             var angle = GoldenAngle(i + j + pass);
@@ -514,33 +521,6 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var legacyRadius = size + (shape == GraphNodeShape.Box ? 16 : shape == GraphNodeShape.Image || shape == GraphNodeShape.RectangularImage ? 14 : 12);
         if (TryNodeBoundaryExtents(node, shape, size, out var halfWidth, out var halfHeight)) return Math.Max(14, Math.Max(legacyRadius, Math.Max(halfWidth, halfHeight) + 7));
         return Math.Max(14, legacyRadius);
-    }
-
-    private static double PreparedNodeHalfWidth(GraphSceneNode node, bool includeLabels = true) {
-        var mark = PreparedNodeRadius(node);
-        if (includeLabels && !string.IsNullOrWhiteSpace(node.BadgeText)) {
-            var badge = NodeBadgeBounds(node, SafeNodeSize(node));
-            mark = Math.Max(mark, Math.Max(Math.Abs(badge.Left), Math.Abs(badge.Right)) + 1);
-        }
-        if (IsCardNode(node)) return mark;
-        if (!includeLabels) return mark;
-        var label = Math.Max(24, Math.Min(132, node.Label.Length * 3.5 + 10));
-        if (!string.IsNullOrWhiteSpace(node.SecondaryLabel)) label = Math.Max(label, Math.Min(132, node.SecondaryLabel!.Length * 2.8 + 8));
-        return Math.Max(mark, label);
-    }
-
-    private static double PreparedNodeHalfHeight(GraphSceneNode node, bool includeLabels = true) {
-        var size = SafeNodeSize(node);
-        var mark = PreparedNodeRadius(node);
-        if (includeLabels && !string.IsNullOrWhiteSpace(node.BadgeText)) {
-            var badge = NodeBadgeBounds(node, size);
-            mark = Math.Max(mark, Math.Max(Math.Abs(badge.Top), Math.Abs(badge.Bottom)) + 1);
-        }
-        if (IsCardNode(node)) return mark;
-        if (!includeLabels) return mark;
-        var labelBottom = node.Shape == GraphNodeShape.Text ? 9 : size + 24;
-        if (!string.IsNullOrWhiteSpace(node.SecondaryLabel)) labelBottom += 15;
-        return Math.Max(mark, labelBottom);
     }
 
     private static string GridKey(Point point, double cellSize) =>

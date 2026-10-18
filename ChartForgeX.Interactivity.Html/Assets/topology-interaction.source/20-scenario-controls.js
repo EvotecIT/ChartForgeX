@@ -135,8 +135,17 @@
       if (scrubber) scrubber.value = '1';
       updateScenarioStepControls(false);
     };
+    lifetime.own(() => {
+      if (scenarioPlayback) lifetime.clearTimeout(scenarioPlayback);
+      if (forceGraphMotionTimer) lifetime.clearTimeout(forceGraphMotionTimer);
+      scenarioPlayback = null; forceGraphMotionTimer = null;
+      wrapper.removeAttribute('data-cfx-topology-dragging');
+      wrapper.removeAttribute('data-cfx-force-moving-edges');
+      wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
+      updateScenarioStepControls(false);
+    });
     const stopScenarioPlayback = () => {
-      if (scenarioPlayback) window.clearTimeout(scenarioPlayback);
+      if (scenarioPlayback) lifetime.clearTimeout(scenarioPlayback);
       scenarioPlayback = null;
       updateScenarioStepControls(false);
     };
@@ -190,7 +199,7 @@
         }
         const current = index++;
         setScenarioStep(current, true);
-        scenarioPlayback = window.setTimeout(advance, stepDelay(route.steps[current]));
+        scenarioPlayback = lifetime.timeout(advance, stepDelay(route.steps[current]));
       };
       advance();
     };
