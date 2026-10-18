@@ -52,6 +52,17 @@ public sealed partial class SvgFactBlockRenderer {
         var family = card.Options.ResolvedTheme.FontFamily;
         var desiredUnitWidth = card.Unit.Length == 0 ? 0 : measured ? VisualBlockRendering.MeasureTextWidth(card.Unit, unitSize, family, 650)
             : VisualBlockRendering.EstimateTextWidth(card.Unit, unitSize);
+        if (measured && card.Unit.Length > 0) {
+            var value = VisualBlockRendering.SingleLineText(card.Value);
+            var fullValueWidth = VisualBlockRendering.MeasureTextWidth(value, valueSize, family, 700);
+            var minimumUnitWidth = Math.Min(desiredUnitWidth, VisualBlockRendering.MeasureTextWidth("...", unitSize, family, 650));
+            var reserveValueWidth = fullValueWidth;
+            if (fullValueWidth + gap + minimumUnitWidth > maxWidth) {
+                var prefix = value.Substring(0, value.Length == 0 ? 0 : ChartForgeX.Typography.TextElementBoundary.Next(value, 0));
+                reserveValueWidth = Math.Min(fullValueWidth, VisualBlockRendering.MeasureTextWidth(prefix + "...", valueSize, family, 700));
+            }
+            desiredUnitWidth = Math.Min(desiredUnitWidth, Math.Max(minimumUnitWidth, maxWidth - gap - reserveValueWidth));
+        }
         var valueWidth = Math.Max(1, maxWidth - desiredUnitWidth - gap);
         var fittedValue = measured ? VisualBlockRendering.FitMeasuredText(card.Value, valueSize, valueWidth, family, 700)
             : VisualBlockRendering.FitText(card.Value, valueSize, valueWidth);

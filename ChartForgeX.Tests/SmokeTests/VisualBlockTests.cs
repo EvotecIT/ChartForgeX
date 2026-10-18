@@ -1,9 +1,12 @@
 using System;
 using System.Linq;
+using System.Globalization;
+using System.Xml.Linq;
 using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
@@ -115,7 +118,36 @@ internal static partial class SmokeTests {
             .WithSize(210, 140);
         var narrowValueSurfaceSvg = narrowValueSurfaceMetric.ToSvg("visual-block-metric-narrow-value-surface");
         Assert(narrowValueSurfaceSvg.Contains("data-cfx-role=\"metric-unit\"", StringComparison.Ordinal), "MetricCard narrow value surfaces should still render unit text.");
-        Assert(!narrowValueSurfaceSvg.Contains("kilocalories-per-day", StringComparison.Ordinal) && narrowValueSurfaceSvg.Contains("...", StringComparison.Ordinal), "MetricCard value surfaces should fit unit text to the remaining inset width.");
+        var narrowElements = XDocument.Parse(narrowValueSurfaceSvg).Descendants().ToArray();
+        var narrowValue = narrowElements.Single(element => (string?)element.Attribute("data-cfx-role") == "metric-value");
+        var narrowUnit = narrowElements.Single(element => (string?)element.Attribute("data-cfx-role") == "metric-unit");
+        var narrowSurface = narrowElements.Single(element => (string?)element.Attribute("data-cfx-role") == "metric-value-surface");
+        double MetricNumber(XElement element, string attribute) => double.Parse(element.Attribute(attribute)!.Value, CultureInfo.InvariantCulture);
+        TextStyle MetricStyle(XElement element) => new() {
+            Font = new FontSpec { Family = element.Attribute("font-family")!.Value, Weight = (int)MetricNumber(element, "font-weight") },
+            FontSize = MetricNumber(element, "font-size"), LineHeight = 1 };
+        double MetricWidth(string text, XElement element) => TextLayoutEngine.Measure(text, MetricStyle(element)).Width;
+        var narrowRight = MetricNumber(narrowSurface, "x") + MetricNumber(narrowSurface, "width") - 22;
+        var narrowUnitWidth = narrowRight - MetricNumber(narrowUnit, "x");
+        Assert(narrowValue.Value.Any(char.IsDigit), "A narrow metric must retain a visible primary-value prefix.");
+        Assert(MetricNumber(narrowValue, "font-size") >= 18, "Primary facts should retain readable emphasis.");
+        Assert(narrowUnit.Value.Length > 0, "A narrow metric should retain a visible unit indication.");
+        var minimumUnitWidth = Math.Min(MetricWidth(narrowValueSurfaceMetric.Unit, narrowUnit), MetricWidth("...", narrowUnit));
+        if (MetricWidth(narrowValueSurfaceMetric.Value, narrowValue) + minimumUnitWidth + 6 <= narrowRight - MetricNumber(narrowValue, "x") + .01)
+            Assert(narrowValue.Value == narrowValueSurfaceMetric.Value, "A primary fact should remain complete when it fits beside a visible unit indication.");
+        else Assert(narrowValue.Value.StartsWith("1", StringComparison.Ordinal) && narrowValue.Value.EndsWith("...", StringComparison.Ordinal), "An oversized primary fact should show its prefix and truncation.");
+        Assert(MetricNumber(narrowValue, "x") + MetricWidth(narrowValue.Value, narrowValue) + 2 <= MetricNumber(narrowUnit, "x"), "Metric value and unit ink should remain separate.");
+        Assert(MetricWidth(narrowUnit.Value, narrowUnit) <= narrowUnitWidth + .01, "Metric unit ink should fit inside the remaining inset width.");
+        foreach (var text in new[] { narrowValue, narrowUnit }) {
+            var style = MetricStyle(text);
+            var metrics = TextLayoutEngine.Measure(text.Value, style);
+            var ascent = TypographyFontResolver.ResolveFace(style.Font).Font?.Ascent(style.FontSize) ?? metrics.LineHeight;
+            var top = MetricNumber(text, "y") - ascent;
+            Assert(top >= MetricNumber(narrowSurface, "y") - .01 && top + metrics.Height <= MetricNumber(narrowSurface, "y") + MetricNumber(narrowSurface, "height") + .01,
+                "Primary value and unit line boxes should fit vertically inside their inset surface.");
+        }
+        if (MetricWidth(narrowValueSurfaceMetric.Unit, narrowUnit) > narrowUnitWidth)
+            Assert(narrowUnit.Value.EndsWith("...", StringComparison.Ordinal), "A unit should show truncation when its full text cannot fit.");
         Assert(narrowValueSurfaceMetric.ToPng().Length > 64, "MetricCard narrow value surfaces should render PNG output.");
 
         var compactValueSurfaceMetric = MetricCard.Create().WithTheme(VisualTheme.Report())

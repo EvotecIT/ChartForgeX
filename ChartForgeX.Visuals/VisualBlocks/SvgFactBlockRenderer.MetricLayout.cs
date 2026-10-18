@@ -91,6 +91,9 @@ public sealed partial class SvgFactBlockRenderer {
             // contract after fitting, rather than forcing every character into tiny text.
             valueSize = ChartTextFitting.FitFontSize(Math.Min(22, valueSize), valueSize,
                 size => MetricValueWidth(card, size) <= valueWidth);
+            var readableSize = Math.Min(18, valueSize);
+            if (MetricPrimaryValueWidth(card, valueSize) > valueWidth && MetricPrimaryValueWidth(card, readableSize) <= valueWidth)
+                valueSize = ChartTextFitting.FitFontSize(readableSize, valueSize, size => MetricPrimaryValueWidth(card, size) <= valueWidth);
         }
         return new MetricTextLayout(layout.LabelSize, layout.LabelBaseline, valueSize, layout.ValueBaseline,
             layout.SurfaceY, layout.SurfaceHeight, layout.FooterBaseline, layout.Compacted,
@@ -102,6 +105,15 @@ public sealed partial class SvgFactBlockRenderer {
         var width = VisualBlockRendering.MeasureTextWidth(card.Value, size, family, 700);
         if (card.Unit.Length > 0) width += Math.Max(6, size * .14) +
             VisualBlockRendering.MeasureTextWidth(card.Unit, MetricUnitFontSize(size), family, 650);
+        return width;
+    }
+
+    private static double MetricPrimaryValueWidth(MetricCard card, double size) {
+        var family = card.Options.ResolvedTheme.FontFamily;
+        var width = VisualBlockRendering.MeasureTextWidth(card.Value, size, family, 700);
+        if (card.Unit.Length > 0) width += Math.Max(6, size * .14) + Math.Min(
+            VisualBlockRendering.MeasureTextWidth(card.Unit, MetricUnitFontSize(size), family, 650),
+            VisualBlockRendering.MeasureTextWidth("...", MetricUnitFontSize(size), family, 650));
         return width;
     }
 
