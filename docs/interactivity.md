@@ -38,6 +38,10 @@ Legend tooltips summarize the series for readers: the name with its colour swatc
 
 Muting a series retains it at 30% opacity and strikes through its legend label. Keyboard targets use a 2 px focus outline in the host accent.
 
+When a native legend exceeds its `WithLegendBudget`, open **More legend entries** to read the omitted captions in pages of six. Previous and next controls show the current range and total. Captions retain their full native descriptions, including values where the native legend supplies them. The disclosure uses normal HTML focus and follows the host's language, direction and control colours.
+
+With `ChartInteractionFeatures.LegendToggles` enabled, each actionable entry offers mute and isolate buttons with pressed states. These use the same series, observation, distribution or named-node identity as the native legend; linked charts and later native preparations retain the existing identity rules. State-category keys and entries shown with legend actions disabled remain descriptive. A grouped pie **Other** entry remains one native aggregate with its contributors. Opening or paging the disclosure retains the chart's selection and plotting area. Native SVG/PNG downloads and print keep the bounded native legend; the disclosure stays in the browser.
+
 There is no permanent toolbar unless zoom, pan, brush, or export are enabled. `IncludeResetButton` (on by default) adds a 28 px "Reset view" ghost button below the chart, keeping titles and marks clear. Its row is reserved so selecting a mark does not move the report content below it. The button appears only while the view differs from its initial state (zoomed, panned, brushed, a point selected, or a series muted or isolated) and hides again after reset, returning keyboard focus to the chart. The optional compare tray also reserves one row; its chips scroll horizontally, including when reached by keyboard. Hosts that supply their own controls can disable `IncludeResetButton` and `CompareMarkers`. Resetting also clears selections, focus trails, and pinned tooltips. Hosts can set `--cfx-host-accent` on the interactive container to align that outline with their own controls. Static exports retain the same flat marks and colour roles without browser behavior.
 
 A cancelled brush gesture restores the previous brush presentation without committing new bounds or changing the existing selection.
@@ -571,6 +575,8 @@ interaction.AddScenario("recovery", "Recovery route", scenario => scenario
 ```
 
 `Highlight` is the default: it emphasizes route members while preserving titles, axes, and surrounding data context. Use `Spotlight` only when dimming non-route data is intentional. Playback and autoplay are opt in, autoplay is suppressed when the browser requests reduced motion, and the HTML adapter exposes previous/next controls plus an accessible range scrubber for direct step selection. Individual step durations override the scenario default; both accept 200-60000 milliseconds.
+
+Graphite timeline panels use the chart surface and text colours. Route accents identify controls and steps, while a progress strip stays below the label. Forced-colour progress uses the system surface and text colours.
 
 The HTML adapter uses `HtmlChartResponsiveLayout.Readable` by default. In narrow hosts, including dashboard columns in a wide window, it keeps the fixed-design SVG legible inside a contained horizontal viewport. Set `ResponsiveLayout = HtmlChartResponsiveLayout.Fit` when seeing the entire chart at once is more important than minimum label size.
 

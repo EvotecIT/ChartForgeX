@@ -34,13 +34,14 @@
           groupIndex: node.dataset.cfxGroupIndex, groupId: node.dataset.cfxGroupId }]));
     const observationIds = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-observation-id]'))
       .map(node => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxObservationId]));
-    svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"]').forEach((node) => {
+    svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"],[data-cfx-role="legend-entry-omitted"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
       const match = source.match(/^legend-series-(\d+)(?:-point-(\d+|other))?$/);
       const index = match ? Number(match[1]) : series.findIndex((item) => item.key === data.cfxSeriesKey);
       if (index < 0) return;
-      data.cfxRole = 'legend-item'; data.cfxSeries = String(index);
+      if (data.cfxRole !== 'legend-entry-omitted') data.cfxRole = 'legend-item';
+      data.cfxSeries = String(index);
       const region = regions.get(source);
       data.cfxLabel = data.cfxLabel || (region ? region.label : node.getAttribute('aria-label') || '');
       const reference = legendTarget(node);
@@ -100,7 +101,7 @@
         const label = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX));
         if (label !== undefined) data.cfxXLabel = label;
       }
-      if (data.cfxRole === 'legend-item') return;
+      if (data.cfxRole === 'legend-item' || data.cfxRole === 'legend-entry-omitted') return;
       const region = regions.get(data.cfxSourceId || '');
       // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
       if (region && data.cfxPoint === undefined && data.cfxValue !== undefined && data.cfxPercent !== undefined

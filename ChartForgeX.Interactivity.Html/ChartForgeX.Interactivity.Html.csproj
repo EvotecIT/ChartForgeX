@@ -48,6 +48,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\interactive.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.css" />
+    <EmbeddedResource Include="Assets\interactive.chrome.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.chrome.css" />
     <EmbeddedResource Include="Assets\interactive.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.js" />
     <EmbeddedResource Include="Assets\adapter-lifetime.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.adapter-lifetime.js" />
     <EmbeddedResource Include="Assets\graph-explorer.00-lifetime.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-lifetime.js" />

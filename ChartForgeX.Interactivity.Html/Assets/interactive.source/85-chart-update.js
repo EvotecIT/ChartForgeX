@@ -67,7 +67,8 @@
       isolated: chartLegendStateTargets(root, true).filter(target => sameSource || durableChartTarget(target)),
       focused: focused && (sameSource || durableChartTarget(targetIdentity(focused))) ? targetIdentity(focused) : null,
       highlight: captureHostHighlight(root, sameSource),
-      ownedFocus: !!active && root.contains(active), comparePage: root._cfxComparePage, viewport: getState(root)
+      ownedFocus: !!active && root.contains(active), comparePage: root._cfxComparePage,
+      legendOverflow: captureLegendOverflow(root, sameSource), viewport: getState(root)
     };
   };
   const installChartSection = (root, next) => {
@@ -95,6 +96,7 @@
     const focused = state.focused && interactiveTargets(root).find(node => seriesKey(node) === state.focused.seriesKey && matchesTargetIdentity(node, state.focused));
     if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused, pointerReadoutSuspended(root));
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
+    restoreLegendOverflow(root, state.legendOverflow);
     // Focus recovery must not resurrect a pinned or stale readout from the previous scene.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
   };

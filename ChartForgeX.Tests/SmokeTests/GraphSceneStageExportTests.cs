@@ -90,8 +90,9 @@ internal static partial class SmokeTests {
         Assert((string?)badgeSurface.Attribute("style") == "fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2"
             && (string?)badgeText.Attribute("style") == "fill:var(--cfx-color-paper);stroke:none" && badgeText.Value == "42",
             "Static SVG should retain complete badge text and rasterizable fills for either a measured circle or pill, without CSS priority tokens in color values.");
-        var rasterParityPixels = RasterImageDecoder.Decode(rasterParity.ToGraphPng()).Pixels;
-        Assert(Enumerable.Range(0, rasterParityPixels.Length / 4).Any(index => Math.Abs(rasterParityPixels[index * 4] - 96) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 1] - 165) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 2] - 250) <= 3), "Static PNG should preserve the plain default node outline color instead of dropping color-mix strokes during rasterization.");
+        var rasterParityImage = RasterImageDecoder.Decode(rasterParity.ToGraphPng());
+        var rasterParityPixels = rasterParityImage.Pixels;
+        Assert(GraphStaticHighlightPaintTests.HasDefaultOutlineStroke(rasterParitySvg, rasterParityImage, "right"), "Static PNG should paint the current default node outline at its SVG boundary.");
         Assert(Enumerable.Range(0, rasterParityPixels.Length / 4).Any(index => Math.Abs(rasterParityPixels[index * 4] - 34) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 1] - 197) <= 3 && Math.Abs(rasterParityPixels[index * 4 + 2] - 94) <= 3), "Static PNG should preserve healthy status-dot colors from the SVG node-detail contract.");
 
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-stage-export-" + Guid.NewGuid().ToString("N"));

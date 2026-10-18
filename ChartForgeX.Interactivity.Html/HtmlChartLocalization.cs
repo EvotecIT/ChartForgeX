@@ -53,6 +53,13 @@ public sealed class HtmlChartLocalization {
         [HtmlChartText.CompareNext] = "Next selected targets",
         [HtmlChartText.CompareRange] = "{first}–{last} of {count}",
         [HtmlChartText.Value] = "Value",
+        [HtmlChartText.LegendMore] = "More legend entries ({count})",
+        [HtmlChartText.LegendPrevious] = "Previous legend entries",
+        [HtmlChartText.LegendNext] = "Next legend entries",
+        [HtmlChartText.LegendRange] = "{first}–{last} of {count}",
+        [HtmlChartText.LegendMute] = "Mute {label}",
+        [HtmlChartText.LegendIsolate] = "Isolate {label}",
+        [HtmlChartText.LegendIsolateButton] = "Isolate",
     };
 
     /// <summary>Gets or sets the HTML language tag, or null to inherit the chart's accessibility language.</summary>

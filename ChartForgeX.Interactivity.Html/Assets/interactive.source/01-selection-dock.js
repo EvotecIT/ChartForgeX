@@ -18,17 +18,16 @@
     summary.className = 'cfx-compare-tray__summary';
     summary.textContent = uiText(root, 'Compare', 'Compare {count}', { count: items.length });
     tray.appendChild(summary);
-    const lastPage = Math.floor((items.length - 1) / comparePageSize);
-    const page = Math.max(0, Math.min(lastPage, requestedPage ?? root._cfxComparePage ?? 0));
+    const pageWindow = chartControlPage(items.length, requestedPage ?? root._cfxComparePage, comparePageSize);
+    const { page, offset, last: lastPage } = pageWindow;
     root._cfxComparePage = page;
-    const offset = page * comparePageSize;
     if (lastPage > 0) {
       const range = document.createElement('span');
       range.className = 'cfx-compare-tray__range';
       range.setAttribute('role', 'status');
       range.setAttribute('aria-atomic', 'true');
       range.textContent = uiText(root, 'CompareRange', '{first}–{last} of {count}', {
-        first: offset + 1, last: Math.min(offset + comparePageSize, items.length), count: items.length });
+        first: pageWindow.first, last: pageWindow.end, count: items.length });
       tray.appendChild(range);
       [-1, 1].forEach(direction => {
         const button = document.createElement('button');
@@ -50,7 +49,7 @@
         tray.appendChild(button);
       });
     }
-    items.slice(offset, offset + comparePageSize).forEach((item, index) => {
+    items.slice(offset, pageWindow.end).forEach((item, index) => {
       const chip = document.createElement('button');
       chip.className = 'cfx-compare-chip';
       chip.type = 'button';

@@ -66,6 +66,7 @@
     });
     refreshKeyboardNavigation(root);
     syncSelectionAppearance(root);
+    syncLegendOverflow(root);
     syncResetControl(root);
   };
   const setSeriesIsolation = (root, target, isolated) => {
@@ -98,6 +99,7 @@
     if (isolated) root.dataset.cfxIsolatedSeries = seriesTargetToken(target);
     else root.removeAttribute('data-cfx-isolated-series');
     syncSelectionAppearance(root);
+    syncLegendOverflow(root);
     syncResetControl(root);
   };
   const toggleSeriesFocus = (root, item, emit, sync) => {

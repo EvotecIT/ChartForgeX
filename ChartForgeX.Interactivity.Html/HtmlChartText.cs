@@ -80,4 +80,18 @@ public enum HtmlChartText {
     CompareRange,
     /// <summary>Default tooltip caption for a scalar value without a native dimension label.</summary>
     Value,
+    /// <summary>Disclosure title for native legend entries omitted by the drawing budget, using {count}.</summary>
+    LegendMore,
+    /// <summary>Accessible name for the previous page of omitted legend entries.</summary>
+    LegendPrevious,
+    /// <summary>Accessible name for the next page of omitted legend entries.</summary>
+    LegendNext,
+    /// <summary>Visible omitted-legend range, using {first}, {last} and {count}.</summary>
+    LegendRange,
+    /// <summary>Mute toggle name for an omitted legend entry, using {label}.</summary>
+    LegendMute,
+    /// <summary>Isolation toggle name for an omitted legend entry, using {label}.</summary>
+    LegendIsolate,
+    /// <summary>Visible text on an omitted legend entry's isolation button.</summary>
+    LegendIsolateButton,
 }
