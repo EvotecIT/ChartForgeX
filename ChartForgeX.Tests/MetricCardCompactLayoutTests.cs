@@ -105,6 +105,44 @@ public sealed class MetricCardCompactLayoutTests {
         Assert.True(value.Bottom <= 68.51);
     }
 
+    [Theory]
+    [InlineData("top-left")]
+    [InlineData("top-right-long")]
+    [InlineData("inset-symbol")]
+    [InlineData("inset-icon")]
+    public void CompactBadgeAndRequiredFactsKeepSeparateMeasuredBounds(string kind) {
+        var inset = kind.StartsWith("inset", StringComparison.Ordinal);
+        var card = Compact(55).WithMetric("Memory", kind == "top-right-long" ? "MMMMMMMMMMMMMM" : "68", unit: "%")
+            .WithStatus(VisualStatus.Positive);
+        if (kind == "top-left") card.WithIcon(VisualIcon.Lightning).WithBadgePlacement(MetricCardBadgePlacement.TopLeft);
+        else if (kind == "top-right-long") card.WithSymbol("RAM").WithBadgePlacement(MetricCardBadgePlacement.TopRight);
+        else if (kind == "inset-symbol") card.WithSymbol("RAM").WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
+        else card.WithIcon(VisualIcon.Lightning).WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
+        var elements = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
+        var badge = Assert.Single(elements, element => (string?)element.Attribute("data-cfx-role") ==
+            (inset ? "metric-value-surface-badge" : "metric-symbol-badge"));
+        var circle = new ChartRect(Number(badge, "cx") - Number(badge, "r"), Number(badge, "cy") - Number(badge, "r"),
+            Number(badge, "r") * 2, Number(badge, "r") * 2);
+        var text = Text(card);
+        var value = Bounds(text["metric-value"]);
+        var unit = Bounds(text["metric-unit"]);
+        Assert.False(Overlaps(circle, value), "The badge must not obscure the required value.");
+        Assert.False(Overlaps(circle, unit), "The badge must not obscure the required unit.");
+        Assert.True(value.Right + 2 <= unit.Left, "The measured value must end before the unit.");
+        Assert.True(unit.Right <= 274.51, "The required facts must remain inside the content width.");
+        Assert.InRange(Number(text["metric-value"], "font-size"), 20, 26);
+        Assert.InRange(Number(badge, "r"), 10, 17);
+        if (kind != "top-right-long") Assert.Equal("68", text["metric-value"].Value);
+        if (inset) {
+            var tray = Assert.Single(elements, element => (string?)element.Attribute("data-cfx-role") == "metric-value-surface");
+            Assert.True(circle.Top >= Number(tray, "y") + .49, "The badge stroke must fit inside the short tray.");
+            Assert.True(circle.Bottom <= Number(tray, "y") + Number(tray, "height") - .49);
+        }
+    }
+
+    private static bool Overlaps(ChartRect a, ChartRect b) =>
+        a.Left < b.Right && a.Right > b.Left && a.Top < b.Bottom && a.Bottom > b.Top;
+
     private static (int Top, int Bottom) InkRows(RgbaImage image) {
         var rows = new List<int>();
         for (var y = 0; y < image.Height; y++)

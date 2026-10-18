@@ -125,6 +125,7 @@ public sealed partial class SvgFactBlockRenderer {
         var labelWidth = content.Width;
         var valueYOffset = 0.0;
         var badgeBottom = content.Y;
+        ChartRect? badgeBounds = null;
         if (card.Status != VisualStatus.None) {
             var barInset = options.ShowCard ? ChartVisualPrimitives.CardInnerHighlightInset : 0;
             writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", barInset).Attribute("y", barInset).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", Math.Max(1, options.Size.Height - barInset * 2)).Attribute("fill", statusColor.ToCss());
@@ -138,6 +139,7 @@ public sealed partial class SvgFactBlockRenderer {
             var leftBadge = card.BadgePlacement == MetricCardBadgePlacement.TopLeft;
             var cx = leftBadge ? content.X + badgeRadius : options.Size.Width - options.Padding.Right - badgeRadius - 16;
             var cy = options.Padding.Top + badgeRadius;
+            badgeBounds = new ChartRect(cx - badgeRadius, cy - badgeRadius, badgeRadius * 2, badgeRadius * 2);
             badgeBottom = cy + badgeRadius + 8;
             if (!leftBadge) labelWidth = Math.Max(1, cx - badgeRadius - 10 - labelX);
             if (leftBadge) {
@@ -163,12 +165,13 @@ public sealed partial class SvgFactBlockRenderer {
         if (valueInsetSurface && (card.Icon != VisualIcon.None || card.Symbol.Length > 0)) valueWidth = Math.Max(1, content.Width - 106);
         var valueSize = MetricValueFontSize(card, baseValueSize, valueWidth);
         var preferredDetailsTop = content.Y + labelSize + valueSize + 22 + valueYOffset;
-        var textLayout = LayoutMetricText(card, content, labelSize, valueSize, valueYOffset, valueInsetSurface);
+        var textLayout = LayoutMetricText(card, content, labelSize, valueSize, valueYOffset, valueInsetSurface, valueWidth, badgeBounds);
         labelSize = textLayout.LabelSize;
         valueSize = textLayout.ValueSize;
         writer.StartElement("text").Attribute("data-cfx-role", "metric-label").Attribute("x", labelX).Attribute("y", textLayout.LabelBaseline).Attribute("fill", theme.MutedText.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", labelSize).Attribute("font-weight", "700").Text(VisualBlockRendering.FitText(card.Label, labelSize, labelWidth)).EndElement().Line();
-        if (valueInsetSurface) RenderMetricValueSurface(writer, card, content, textLayout, valueWidth, statusColor);
-        else RenderMetricValueText(writer, card, content.X, textLayout.ValueBaseline, valueSize, valueWidth, theme.Text, theme.MutedText);
+        if (valueInsetSurface) RenderMetricValueSurface(writer, card, content, textLayout, statusColor);
+        else RenderMetricValueText(writer, card, textLayout.ValuePlacement.X, textLayout.ValueBaseline, valueSize,
+            textLayout.ValuePlacement.Width, theme.Text, theme.MutedText, textLayout.ValuePlacement.Measured);
         var microX = heroMicroVisual ? content.X + 24 : content.X + content.Width - microWidth;
         var microY = heroMicroVisual ? content.Y + Math.Max(66, options.Size.Height * 0.36) : content.Y + labelSize + Math.Max(20, valueSize * 0.52) + valueYOffset;
         if (hasMicroVisual && !heroMicroVisual && card.BadgePlacement == MetricCardBadgePlacement.TopRight

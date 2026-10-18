@@ -7,7 +7,8 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgFactBlockRenderer {
     /// <summary>Fits required metric rows only when their established measured geometry exceeds the available height.</summary>
-    private static MetricTextLayout LayoutMetricText(MetricCard card, ChartRect content, double labelSize, double valueSize, double valueYOffset, bool inset) {
+    private static MetricTextLayout LayoutMetricText(MetricCard card, ChartRect content, double labelSize, double valueSize, double valueYOffset,
+        bool inset, double valueWidth, ChartRect? badgeBounds) {
         var bottom = content.Bottom;
         var label = MeasureMetricLine(card, labelSize, 700);
         var value = MeasureMetricValueLine(card, valueSize);
@@ -23,7 +24,8 @@ public sealed partial class SvgFactBlockRenderer {
         var valueLimit = inset ? Math.Min(valueBottom, surfaceY + surfaceHeight) : valueBottom;
         if (labelBaseline - label.Ascent >= content.Y && valueBaseline - value.Ascent >= valueTop
             && valueBaseline + value.Descent <= valueLimit)
-            return new MetricTextLayout(labelSize, labelBaseline, valueSize, valueBaseline, surfaceY, surfaceHeight, footerBaseline);
+            return ArrangeMetricValue(card, content, new MetricTextLayout(labelSize, labelBaseline, valueSize, valueBaseline,
+                surfaceY, surfaceHeight, footerBaseline), valueWidth, inset, badgeBounds);
 
         // Compact cards keep both facts. Spend the decorative gap first, then fit the
         // measured value line; the unit participates in the same baseline and bounds.
@@ -45,7 +47,61 @@ public sealed partial class SvgFactBlockRenderer {
         value = MeasureMetricValueLine(card, valueSize);
         valueBaseline = rowTop + value.Ascent;
         if (inset) valueBaseline += Math.Max(0, (surfaceHeight - value.Height) / 2);
-        return new MetricTextLayout(labelSize, labelBaseline, valueSize, valueBaseline, surfaceY, surfaceHeight, footerBaseline, compacted: true);
+        return ArrangeMetricValue(card, content, new MetricTextLayout(labelSize, labelBaseline, valueSize, valueBaseline,
+            surfaceY, surfaceHeight, footerBaseline, compacted: true), valueWidth, inset, badgeBounds);
+    }
+
+    /// <summary>Reserves a measured value lane around visible badges without changing geometry that already fits.</summary>
+    private static MetricTextLayout ArrangeMetricValue(MetricCard card, ChartRect content, MetricTextLayout layout,
+        double valueWidth, bool inset, ChartRect? badgeBounds) {
+        var x = inset ? content.X + 22 : content.X;
+        var radius = 0.0;
+        var badgeX = 0.0;
+        var badgeY = 0.0;
+        var measured = false;
+        if (inset) {
+            if (card.Icon != VisualIcon.None || card.Symbol.Length > 0) {
+                var preferredRadius = Math.Min(24, Math.Max(17, layout.SurfaceHeight * .30));
+                radius = Math.Min(preferredRadius, Math.Max(.5, (layout.SurfaceHeight - 1) / 2));
+                measured = radius < preferredRadius;
+                badgeX = content.X + 28 + radius;
+                badgeY = layout.SurfaceY + layout.SurfaceHeight / 2;
+                x = badgeX + radius + 24;
+            }
+            valueWidth = Math.Max(1, Math.Min(valueWidth, content.Right - x - 22));
+        }
+        var line = MeasureMetricValueLine(card, layout.ValueSize);
+        var textWidth = MetricValueWidth(card, layout.ValueSize);
+        if (!inset && badgeBounds is { } badge && layout.ValueBaseline - line.Ascent < badge.Bottom + 2
+            && layout.ValueBaseline + line.Descent > badge.Top - 2 && x < badge.Right + 2 && x + textWidth > badge.Left - 2) {
+            if (card.BadgePlacement == MetricCardBadgePlacement.TopLeft) {
+                var right = x + valueWidth;
+                x = Math.Max(x, badge.Right + 12);
+                valueWidth = Math.Max(1, right - x);
+            } else valueWidth = Math.Max(1, Math.Min(valueWidth, badge.Left - 10 - x));
+            measured = true;
+        }
+        var valueSize = layout.ValueSize;
+        measured |= textWidth > valueWidth || (card.Unit.Length > 0 &&
+            VisualBlockRendering.MeasureTextWidth(card.Value, valueSize, card.Options.ResolvedTheme.FontFamily, 700)
+                > VisualBlockRendering.EstimateTextWidth(card.Value, valueSize));
+        if (measured) {
+            // Long facts retain readable emphasis and use the existing end-ellipsis
+            // contract after fitting, rather than forcing every character into tiny text.
+            valueSize = ChartTextFitting.FitFontSize(Math.Min(22, valueSize), valueSize,
+                size => MetricValueWidth(card, size) <= valueWidth);
+        }
+        return new MetricTextLayout(layout.LabelSize, layout.LabelBaseline, valueSize, layout.ValueBaseline,
+            layout.SurfaceY, layout.SurfaceHeight, layout.FooterBaseline, layout.Compacted,
+            new MetricValuePlacement(x, valueWidth, badgeX, badgeY, radius, measured));
+    }
+
+    private static double MetricValueWidth(MetricCard card, double size) {
+        var family = card.Options.ResolvedTheme.FontFamily;
+        var width = VisualBlockRendering.MeasureTextWidth(card.Value, size, family, 700);
+        if (card.Unit.Length > 0) width += Math.Max(6, size * .14) +
+            VisualBlockRendering.MeasureTextWidth(card.Unit, MetricUnitFontSize(size), family, 650);
+        return width;
     }
 
     private static MetricLine MeasureMetricValueLine(MetricCard card, double valueSize) {
@@ -79,10 +135,12 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private readonly struct MetricTextLayout {
-        internal MetricTextLayout(double labelSize, double labelBaseline, double valueSize, double valueBaseline, double surfaceY, double surfaceHeight, double footerBaseline, bool compacted = false) {
+        internal MetricTextLayout(double labelSize, double labelBaseline, double valueSize, double valueBaseline, double surfaceY, double surfaceHeight,
+            double footerBaseline, bool compacted = false, MetricValuePlacement valuePlacement = default) {
             LabelSize = labelSize; LabelBaseline = labelBaseline; ValueSize = valueSize; ValueBaseline = valueBaseline;
             SurfaceY = surfaceY; SurfaceHeight = surfaceHeight; FooterBaseline = footerBaseline;
             Compacted = compacted;
+            ValuePlacement = valuePlacement;
         }
         internal double LabelSize { get; }
         internal double LabelBaseline { get; }
@@ -92,5 +150,18 @@ public sealed partial class SvgFactBlockRenderer {
         internal double SurfaceHeight { get; }
         internal double FooterBaseline { get; }
         internal bool Compacted { get; }
+        internal MetricValuePlacement ValuePlacement { get; }
+    }
+
+    private readonly struct MetricValuePlacement {
+        internal MetricValuePlacement(double x, double width, double badgeX, double badgeY, double badgeRadius, bool measured) {
+            X = x; Width = width; BadgeX = badgeX; BadgeY = badgeY; BadgeRadius = badgeRadius; Measured = measured;
+        }
+        internal double X { get; }
+        internal double Width { get; }
+        internal double BadgeX { get; }
+        internal double BadgeY { get; }
+        internal double BadgeRadius { get; }
+        internal bool Measured { get; }
     }
 }
