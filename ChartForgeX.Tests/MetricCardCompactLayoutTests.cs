@@ -110,12 +110,14 @@ public sealed class MetricCardCompactLayoutTests {
     [InlineData("top-right-long")]
     [InlineData("inset-symbol")]
     [InlineData("inset-icon")]
+    [InlineData("top-right-unit-narrow")]
     public void CompactBadgeAndRequiredFactsKeepSeparateMeasuredBounds(string kind) {
         var inset = kind.StartsWith("inset", StringComparison.Ordinal);
-        var card = Compact(55).WithMetric("Memory", kind == "top-right-long" ? "MMMMMMMMMMMMMM" : "68", unit: "%")
+        var card = Compact(55).WithMetric("Memory", kind == "top-right-long" ? "MMMMMMMMMMMMMM" :
+                kind == "top-right-unit-narrow" ? new string('i', 17) : "68", unit: "%")
             .WithStatus(VisualStatus.Positive);
         if (kind == "top-left") card.WithIcon(VisualIcon.Lightning).WithBadgePlacement(MetricCardBadgePlacement.TopLeft);
-        else if (kind == "top-right-long") card.WithSymbol("RAM").WithBadgePlacement(MetricCardBadgePlacement.TopRight);
+        else if (kind == "top-right-long" || kind == "top-right-unit-narrow") card.WithSymbol("RAM").WithBadgePlacement(MetricCardBadgePlacement.TopRight);
         else if (kind == "inset-symbol") card.WithSymbol("RAM").WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
         else card.WithIcon(VisualIcon.Lightning).WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
         var elements = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
@@ -132,7 +134,8 @@ public sealed class MetricCardCompactLayoutTests {
         Assert.True(unit.Right <= 274.51, "The required facts must remain inside the content width.");
         Assert.InRange(Number(text["metric-value"], "font-size"), 20, 26);
         Assert.InRange(Number(badge, "r"), 10, 17);
-        if (kind != "top-right-long") Assert.Equal("68", text["metric-value"].Value);
+        if (kind == "top-right-unit-narrow") Assert.Equal(new string('i', 17), text["metric-value"].Value);
+        else if (kind != "top-right-long") Assert.Equal("68", text["metric-value"].Value);
         if (inset) {
             var tray = Assert.Single(elements, element => (string?)element.Attribute("data-cfx-role") == "metric-value-surface");
             Assert.True(circle.Top >= Number(tray, "y") + .49, "The badge stroke must fit inside the short tray.");

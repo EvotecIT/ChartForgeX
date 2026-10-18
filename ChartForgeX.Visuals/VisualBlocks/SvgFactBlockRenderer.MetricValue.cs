@@ -38,6 +38,15 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void RenderMetricValueText(SvgMarkupWriter writer, MetricCard card, double x, double y, double valueSize, double maxWidth,
         ChartColor valueColor, ChartColor unitColor, bool measured = false) {
+        var text = LayoutMetricValueText(card, valueSize, maxWidth, measured);
+        var family = card.Options.ResolvedTheme.FontFamily;
+        writer.StartElement("text").Attribute("data-cfx-role", "metric-value").Attribute("x", x).Attribute("y", y).Attribute("fill", valueColor.ToCss()).Attribute("font-family", family).Attribute("font-size", valueSize).Attribute("font-weight", "850").Text(text.Value).EndElement().Line();
+        if (card.Unit.Length == 0) return;
+        writer.StartElement("text").Attribute("data-cfx-role", "metric-unit").Attribute("x", x + text.UnitOffset).Attribute("y", y).Attribute("fill", unitColor.ToCss()).Attribute("font-family", family).Attribute("font-size", MetricUnitFontSize(valueSize)).Attribute("font-weight", "650").Text(text.Unit).EndElement().Line();
+    }
+
+    /// <summary>Shares emitted value/unit positions with the measured collision check, including estimated legacy spacing.</summary>
+    private static MetricValueTextLayout LayoutMetricValueText(MetricCard card, double valueSize, double maxWidth, bool measured) {
         var unitSize = MetricUnitFontSize(valueSize);
         var gap = card.Unit.Length == 0 ? 0 : Math.Max(6, valueSize * 0.14);
         var family = card.Options.ResolvedTheme.FontFamily;
@@ -46,14 +55,16 @@ public sealed partial class SvgFactBlockRenderer {
         var valueWidth = Math.Max(1, maxWidth - desiredUnitWidth - gap);
         var fittedValue = measured ? VisualBlockRendering.FitMeasuredText(card.Value, valueSize, valueWidth, family, 700)
             : VisualBlockRendering.FitText(card.Value, valueSize, valueWidth);
-        writer.StartElement("text").Attribute("data-cfx-role", "metric-value").Attribute("x", x).Attribute("y", y).Attribute("fill", valueColor.ToCss()).Attribute("font-family", card.Options.ResolvedTheme.FontFamily).Attribute("font-size", valueSize).Attribute("font-weight", "850").Text(fittedValue).EndElement().Line();
-        if (card.Unit.Length == 0) return;
+        var drawnValueWidth = VisualBlockRendering.MeasureTextWidth(fittedValue, valueSize, family, 700);
+        if (card.Unit.Length == 0) return new MetricValueTextLayout(fittedValue, string.Empty, 0, drawnValueWidth);
         var valueTextWidth = measured ? VisualBlockRendering.MeasureTextWidth(fittedValue, valueSize, family, 700)
             : VisualBlockRendering.EstimateTextWidth(fittedValue, valueSize);
         var unitWidth = Math.Max(1, maxWidth - valueTextWidth - gap);
         var fittedUnit = measured ? VisualBlockRendering.FitMeasuredText(card.Unit, unitSize, unitWidth, family, 650)
             : VisualBlockRendering.FitText(card.Unit, unitSize, unitWidth);
-        writer.StartElement("text").Attribute("data-cfx-role", "metric-unit").Attribute("x", x + valueTextWidth + gap).Attribute("y", y).Attribute("fill", unitColor.ToCss()).Attribute("font-family", family).Attribute("font-size", unitSize).Attribute("font-weight", "650").Text(fittedUnit).EndElement().Line();
+        var unitOffset = valueTextWidth + gap;
+        var drawnUnitRight = unitOffset + VisualBlockRendering.MeasureTextWidth(fittedUnit, unitSize, family, 650);
+        return new MetricValueTextLayout(fittedValue, fittedUnit, unitOffset, Math.Max(drawnValueWidth, drawnUnitRight));
     }
 
     private static double MetricValueFontSize(MetricCard card, double requestedSize, double maxWidth) {
@@ -65,4 +76,14 @@ public sealed partial class SvgFactBlockRenderer {
     }
 
     private static double MetricUnitFontSize(double valueSize) => Math.Min(valueSize, Math.Max(13, Math.Min(24, valueSize * 0.42)));
+
+    private readonly struct MetricValueTextLayout {
+        internal MetricValueTextLayout(string value, string unit, double unitOffset, double width) {
+            Value = value; Unit = unit; UnitOffset = unitOffset; Width = width;
+        }
+        internal string Value { get; }
+        internal string Unit { get; }
+        internal double UnitOffset { get; }
+        internal double Width { get; }
+    }
 }

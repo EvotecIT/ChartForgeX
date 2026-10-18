@@ -71,7 +71,8 @@ public sealed partial class SvgFactBlockRenderer {
             valueWidth = Math.Max(1, Math.Min(valueWidth, content.Right - x - 22));
         }
         var line = MeasureMetricValueLine(card, layout.ValueSize);
-        var textWidth = MetricValueWidth(card, layout.ValueSize);
+        var textWidth = Math.Max(MetricValueWidth(card, layout.ValueSize),
+            LayoutMetricValueText(card, layout.ValueSize, valueWidth, measured: false).Width);
         if (!inset && badgeBounds is { } badge && layout.ValueBaseline - line.Ascent < badge.Bottom + 2
             && layout.ValueBaseline + line.Descent > badge.Top - 2 && x < badge.Right + 2 && x + textWidth > badge.Left - 2) {
             if (card.BadgePlacement == MetricCardBadgePlacement.TopLeft) {
