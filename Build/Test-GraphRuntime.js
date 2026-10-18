@@ -13,6 +13,7 @@ const tests = [
   'tests/graph-explorer-runtime/linked-commands.test.js',
   'tests/graph-explorer-runtime/selection-policy.test.js',
   'tests/interactive-runtime/linked-paint.test.js',
+  'tests/interactive-runtime/target-resolution.test.js',
   'tests/chart-runtime/readable-values.test.js',
   'tests/chart-runtime/brush-scale.test.js',
   'tests/graph-neighborhood/planner.test.js',

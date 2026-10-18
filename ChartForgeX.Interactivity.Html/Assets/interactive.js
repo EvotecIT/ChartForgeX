@@ -3094,6 +3094,16 @@
         && (Number(target.sourcePoint) === item.index || target.sourcePoints?.includes(item.index)))
       || scoped && (match.ranges || []).some(range => overlapsRange(target, range));
   };
+  const resolveHostTargets = (root, match) => {
+    const normalized = match === undefined ? null : hostMatch(match), seen = new Set();
+    const targets = dataTargets(root).filter(node => normalized === null || matchesHostTarget(node, normalized))
+      .map(targetIdentity).filter(target => {
+        const key = targetKey(target);
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+      });
+    return copyHostValue(targets);
+  };
   const runSelectionCommand = (root, match, options = {}) => {
     if (!hasFeature(root, 'Selection')) return [];
     const normalized = hostMatch(match), mode = options.mode || 'replace';
@@ -4548,6 +4558,7 @@
       clearSelection: options => { requireMounted(); clearSelectionCommand(root, options); return controller; },
       clearBrush: options => { requireMounted(); clearBrushCommand(root, options); return controller; },
       getSelection: () => { requireMounted(); return copyHostValue(selectedTargets(root)); },
+      resolveTargets: match => { requireMounted(); return resolveHostTargets(root, match); },
       highlight: (match, options) => { requireMounted(); runHighlightCommand(root, match, options); return controller; },
       clearHighlight: options => { requireMounted(); clearHighlightCommand(root, options); return controller; },
       unpinTooltip: () => { requireMounted(); unpinTooltip(root); return controller; },

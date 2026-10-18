@@ -335,10 +335,36 @@ controller.clearBrush();
 controller.highlight({ categories: ['API'] }, { dim: true, source: 'service-list' });
 controller.clearHighlight();
 const selectedMarks = controller.getSelection();
+const matchingMarks = controller.resolveTargets({ observationIds: ['reading-42'] });
 controller.unpinTooltip();
 ```
 
-The equivalent commands are ordinary `CustomEvent`s dispatched on the root:
+`resolveTargets(match?)` reads rendered data targets without changing selection,
+highlights, classes or the live announcement, and emits no events or synchronization.
+It works even when `Selection` is disabled. Omitting the matcher (or passing
+`undefined`) returns all data targets in rendered order; `{}`, empty matcher arrays
+and unmatched filters return `[]`. Invalid matchers use the same validation as
+`select` and `highlight`. The returned target snapshots are detached copies with
+the same identity and fact fields as `getSelection()`. Repeated target snapshots
+are collapsed by the same identity key used for selection readouts. Like other
+controller methods, resolution requires a mounted, connected chart.
+
+Resolve independent filters separately to intersect their rendered target
+identities. An aggregate can match each filter through different contributors;
+its `targetId` remains the aggregate's opaque identity. Keep `targetKind`,
+`targetId` and `seriesKey` together when passing resolved targets to
+`highlight({ targets })` or `select({ targets })`.
+
+```js
+const identity = target => JSON.stringify([target.targetKind, target.targetId, target.seriesKey]);
+const first = controller.resolveTargets({ sourcePoints: [{ seriesKey: 'durations', index: 0 }] });
+const second = new Set(controller.resolveTargets({
+  sourcePoints: [{ seriesKey: 'durations', index: 1 }]
+}).map(identity));
+controller.highlight({ targets: first.filter(target => second.has(identity(target))) }, { dim: true });
+```
+
+The state-changing commands also accept ordinary `CustomEvent`s dispatched on the root:
 
 ```js
 chartRoot.dispatchEvent(new CustomEvent('cfx-select', {
