@@ -33,7 +33,7 @@ $start.ArgumentList.Add((Join-Path $PSScriptRoot 'Serve-BrowserGallery.cjs'))
 $start.ArgumentList.Add($gallery)
 $start.ArgumentList.Add($addressFile)
 $server = $null
-$variables = @('HFX_TEST_ENABLE_PLAYWRIGHT', 'CFX_TEST_REQUIRE_BROWSER', 'CFX_V2_GALLERY_URL', 'CFX_V2_CAPTURE_ROOT', 'CFX_BROWSER_CAPTURE_DIRECTORY')
+$variables = @('HFX_TEST_ENABLE_PLAYWRIGHT', 'CFX_TEST_REQUIRE_BROWSER', 'CFX_TEST_BROWSER', 'CFX_V2_GALLERY_URL', 'CFX_V2_CAPTURE_ROOT', 'CFX_BROWSER_CAPTURE_DIRECTORY')
 $saved = @{}
 foreach ($name in $variables) { $saved[$name] = [Environment]::GetEnvironmentVariable($name) }
 try {
@@ -51,6 +51,7 @@ try {
     }
     $env:HFX_TEST_ENABLE_PLAYWRIGHT = '1'
     $env:CFX_TEST_REQUIRE_BROWSER = '1'
+    $env:CFX_TEST_BROWSER = 'chromium'
     $env:CFX_V2_GALLERY_URL = [IO.File]::ReadAllText($addressFile)
     $env:CFX_V2_CAPTURE_ROOT = $captures
     $env:CFX_BROWSER_CAPTURE_DIRECTORY = $captures
@@ -82,6 +83,11 @@ try {
         'InteractiveNativeXViewportBrowserTests.FailedNativeRepliesLeaveTheCommittedSceneAndExportWorking',
         'InteractiveNativeXViewportBrowserTests.UnsupportedAndEmptyConnectedScenesDisableNativeControlsUntilSupportedReplacement',
         'InteractiveNativeXViewportBrowserTests.StandaloneControlsKeepGeometricZoomAndDisconnectDoesNotPretendToResetANativeDomain',
+        'InteractiveNativeXViewportBrowserTests.NativeSourceWindowsReprepareSmoothAreaAndBubbleOnLinearAndTimeAxes',
+        'InteractiveNativeXViewportBrowserTests.NativeWheelKeepsThePointerSourceAnchorWhileButtonsUseThePlotCentre',
+        'InteractiveChartExportBrowserTests.StandaloneSvgAndBrowserPngRetainPersistentPaintWithoutHoverOrKeyboardChrome',
+        'InteractiveChartLocalizationBrowserTests.TranslatedChromeAndDynamicAnnouncementsFollowNativeUpdatesWithoutReversingAxes',
+        'InteractiveChartTouchScrollingBrowserTests.NativeTouchScrollsTheReportAndExplicitBrushRetainsItsGesture',
         'DottedMapPointLegendBrowserTests.PointKeysKeepWeightedFactsAndPointOnlyLegendStateAcrossNativeReplacement',
         'MermaidFlowchartCaptionLayoutTests.ShapeOnlyFlowchartsCenterMeasuredCaptionsWithoutInfrastructureGlyphs',
         'MermaidFlowchartLengthTests.AuthoredSpacingRendersInNativeAndResponsiveStaticHosts',

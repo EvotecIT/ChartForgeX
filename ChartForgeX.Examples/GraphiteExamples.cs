@@ -16,6 +16,9 @@ internal static class GraphiteExamples {
             var lifecycleName = "graphite-" + suffix + "-chart-lifecycle.html";
             HtmlChartLifecycleExamples.Write(output, dark);
             gallery.Append("<p><a href='").Append(lifecycleName).Append("'>Update measurements and retain chart identity</a></p>");
+            var localizedName = "graphite-" + suffix + "-localized-controls.html";
+            File.WriteAllText(Path.Combine(output, localizedName), HtmlLocalizedChartExamples.CreatePage(dark));
+            gallery.Append("<p><a href='").Append(localizedName).Append("'>Polish controls and comparison tray</a></p>");
             LinkedChartViewsExamples.Write(output, dark);
             gallery.Append("<p><a href='graphite-").Append(suffix).Append("-linked-chart-views.html'>Brush dates and highlight services across two charts</a></p>");
             foreach (var anchor in Enum.GetValues<HtmlChartTooltipAnchor>()) {

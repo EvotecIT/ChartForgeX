@@ -118,9 +118,11 @@ public sealed class MermaidFlowchartFontSizingTests {
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void OptedInCaptionsRetainCompleteTextWhenSyntheticBoldMetricsChangeAfterScaling(bool resizePreparedLayout) {
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void OptedInCaptionsRetainCompleteTextWhenSyntheticBoldMetricsChangeAfterScaling(bool resizePreparedLayout, bool showStatus) {
         var fontPath = Path.Combine(Path.GetTempPath(), "cfx-topology-fit-" + Guid.NewGuid().ToString("N") + ".ttf");
         try {
             using (var input = typeof(MermaidFlowchartFontSizingTests).Assembly.GetManifestResourceStream("ChartForgeX.Tests.Fixtures.OpenType.bitmap-1-1-1.ttf")!)
@@ -128,7 +130,7 @@ public sealed class MermaidFlowchartFontSizingTests {
             var label = new string('A', 100);
             var chart = TopologyChart.Create().WithViewport(1200, 400);
             chart.Nodes.Add(new TopologyNode { Id = "owner", Label = label, Shape = TopologyNodeShape.Rectangle,
-                X = 24, Y = 24, Width = 40, Height = 60, FitLabelToContent = true, PreserveDisplayModeSize = true, ShowStatusBadge = false });
+                X = 24, Y = 24, Width = 40, Height = 60, FitLabelToContent = true, PreserveDisplayModeSize = true, ShowStatusBadge = showStatus });
             var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: 18));
             var options = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, MaxNodeLabelLines = 1 };
             VisualRenderContext Context(int width) => new(new VisualLayoutOptions(new VisualSize(width, 180)), theme,
@@ -150,7 +152,7 @@ public sealed class MermaidFlowchartFontSizingTests {
             Assert.True(left >= node.X && left + text.Text.Metrics.Width <= node.X + node.Width);
             var png = PngReader.Decode(visual.ToPng());
             Assert.Equal(320, png.Width);
-            Capture(visual, "scaled-synthetic-bold-" + (resizePreparedLayout ? "prepared" : "direct"));
+            Capture(visual, "scaled-synthetic-bold-" + (resizePreparedLayout ? "prepared" : "direct") + (showStatus ? "-status" : ""));
         } finally { File.Delete(fontPath); }
     }
 

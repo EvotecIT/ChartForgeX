@@ -83,10 +83,12 @@
       group.appendChild(secondary);
     }
     if (node.badge) {
-      const badge = svgNode(document, 'g', { class: 'cfx-graph-node-badge', transform: card ? `translate(${node.size * 1.45 - 18} ${-cardHalfHeight + 18})` : `translate(${node.size * 0.82} ${-node.size * 0.82})` });
-      badge.appendChild(svgNode(document, 'circle', { r: 8 }));
+      const geometry = graphBadgeGeometry(node);
+      const badge = svgNode(document, 'g', { class: 'cfx-graph-node-badge', transform: `translate(${geometry.x} ${geometry.y})` });
+      badge.appendChild(svgNode(document, geometry.width <= 16 ? 'circle' : 'rect', geometry.width <= 16 ? { r: 8 }
+        : { x: -geometry.width / 2, y: -8, width: geometry.width, height: 16, rx: 8 }));
       const text = svgNode(document, 'text', { y: 3.5 });
-      text.textContent = node.badge.slice(0, 5);
+      text.textContent = geometry.text;
       badge.appendChild(text);
       group.appendChild(badge);
     }

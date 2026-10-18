@@ -124,12 +124,11 @@ internal static partial class VisualCartesianCompiler {
 
     internal static bool SupportsXViewport(Chart chart) => chart.Series.Count > 0 && !chart.Options.IsSparkline
         && !ChartCartesianOrientation.IsHorizontal(chart)
-        && chart.Options.XAxis.Scale == ChartScaleKind.Linear
-        && chart.Series.All(series => (series.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine)
-            && (series.Interpolation is ChartInterpolation.Linear or ChartInterpolation.Step));
+        && (chart.Options.XAxis.Scale is ChartScaleKind.Linear or ChartScaleKind.Time)
+        && chart.Series.All(series => IsPointSeries(series.Kind) || series.Kind == ChartSeriesKind.Bubble);
 
     internal static void ValidateXViewport(Chart chart) {
-        if (!SupportsXViewport(chart)) throw new NotSupportedException("An X viewport requires ordinary vertical Line or StepLine series with linear X and linear or step interpolation.");
+        if (!SupportsXViewport(chart)) throw new NotSupportedException("An X viewport requires ordinary vertical line, area, scatter or bubble series with a linear or time X axis.");
         if (!chart.Series.Any(series => series.HasSourceData)) throw new InvalidOperationException("An X viewport requires source observations.");
     }
 }

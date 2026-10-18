@@ -41,14 +41,8 @@
   };
   const tooltipSourceRect = (node) => {
     if (node._cfxPairedRegion) return pairedExtentScreenBox(node);
-    const region = node._cfxNativeRegion, matrix = region && node.getScreenCTM();
-    if (matrix) {
-      const corners = [[region.x, region.y], [region.x + region.width, region.y],
-        [region.x, region.y + region.height], [region.x + region.width, region.y + region.height]]
-        .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
-      return { left: Math.min(...corners.map(p => p.x)), right: Math.max(...corners.map(p => p.x)),
-        top: Math.min(...corners.map(p => p.y)), bottom: Math.max(...corners.map(p => p.y)) };
-    }
+    const source = nativeRegionScreenBox(node);
+    if (source) return source;
     const rect = node.getBoundingClientRect();
     // Unlocated retained keyboard facts have no painted box; their visible SVG remains the host boundary.
     return !rect.width && !rect.height && node.ownerSVGElement ? node.ownerSVGElement.getBoundingClientRect() : rect;

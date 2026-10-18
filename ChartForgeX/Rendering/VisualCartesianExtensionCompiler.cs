@@ -36,7 +36,8 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawExtensionSeries(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
-        ChartBubbleSizeScale? bubbleScale, IReadOnlyDictionary<double, string>? categoryCaptions, ChartSeriesColorSurface? colorSurface = null) {
+        ChartBubbleSizeScale? bubbleScale, IReadOnlyDictionary<double, string>? categoryCaptions, ChartSeriesColorSurface? colorSurface = null,
+        ChartXViewport? xViewport = null) {
         var series = chart.Series[index];
         switch (series.Kind) {
             case ChartSeriesKind.DifferenceArea:
@@ -53,7 +54,7 @@ internal static partial class VisualCartesianCompiler {
                 DrawPreparedHorizontalBars(chart, context, builder, plot, map, stacks, index, colors, labels, obstacles); break;
             case ChartSeriesKind.Waterfall:
                 DrawPreparedWaterfall(chart, context, builder, plot, map, index, colors, labels, obstacles, categoryCaptions!); break;
-            default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles, bubbleScale, colorSurface); break;
+            default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles, bubbleScale, colorSurface, xViewport); break;
         }
     }
 
@@ -92,9 +93,9 @@ internal static partial class VisualCartesianCompiler {
 
     private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
         int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartSeriesColorSurface colorSurface,
-        ChartSizePresentation size, params (string Name, double Value)[] values) =>
+        ChartSizePresentation size, bool visible, params (string Name, double Value)[] values) =>
         ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, colorSurface, values,
-            sizePresentation: size);
+            sizePresentation: size, visible: visible);
 
     private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
         int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, IReadOnlyDictionary<string, string> facts, params (string Name, double Value)[] values) =>
@@ -102,7 +103,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static IDisposable ObservationGroupCore(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
         int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartStackPoint? stack, ChartSeriesColorSurface? colorSurface,
-        (string Name, double Value)[] values, IReadOnlyDictionary<string, string>? facts = null, ChartSizePresentation? sizePresentation = null) {
+        (string Name, double Value)[] values, IReadOnlyDictionary<string, string>? facts = null, ChartSizePresentation? sizePresentation = null, bool visible = true) {
         var id = PointId(seriesIndex, observation);
         var description = series.Name + ": " + label.DisplayedText;
         var metadata = new Dictionary<string, string> {
@@ -128,6 +129,7 @@ internal static partial class VisualCartesianCompiler {
         }
         if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
         if (sizePresentation != null) description = sizePresentation.AddFacts(metadata, series.RenderPoints[rawStart + 1].Y, description);
+        if (!visible) metadata["data-cfx-visible"] = "false";
         if (colorSurface != null) description = colorSurface.AddFacts(metadata, observation, description);
         if (facts != null) {
             foreach (var fact in facts) metadata[fact.Key] = fact.Value;

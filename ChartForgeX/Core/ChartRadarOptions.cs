@@ -8,6 +8,18 @@ public sealed class ChartRadarOptions {
     private double? _fillOpacity;
     private double? _curveTension;
     private ChartStrokeStyle? _outlineStroke;
+    private ChartRadarMissingCategoryPolicy _missingCategoryPolicy;
+
+    /// <summary>Gets or sets how absent categories affect geometry. Zero preserves the existing behavior.</summary>
+    /// <remarks>Gap retains only contiguous open outlines and omits incomplete area fills. Connect closes the authored
+    /// vertices when at least three remain. Both retain only authored point targets, labels and source identities.</remarks>
+    public ChartRadarMissingCategoryPolicy MissingCategoryPolicy {
+        get => _missingCategoryPolicy;
+        set {
+            if (!Enum.IsDefined(typeof(ChartRadarMissingCategoryPolicy), value)) throw new ArgumentOutOfRangeException(nameof(value));
+            _missingCategoryPolicy = value; IsConfigured = true;
+        }
+    }
 
     /// <summary>Gets or sets immutable outline-stroke overrides. Null uses the series color and width; zero width hides the outline while retaining the area, markers and observations. Dedicated and mixed radial layouts share these overrides.</summary>
     public ChartStrokeStyle? OutlineStroke {

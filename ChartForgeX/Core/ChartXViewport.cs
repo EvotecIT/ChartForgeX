@@ -3,7 +3,8 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
 
-/// <summary>An immutable numeric X window used when preparing a line chart.</summary>
+/// <summary>An immutable source-coordinate X window used when preparing a supported Cartesian chart.</summary>
+/// <remarks>Time-axis coordinates use OLE Automation date units, as do the chart's source points.</remarks>
 public sealed class ChartXViewport {
     /// <summary>Creates a finite, increasing X window.</summary>
     /// <param name="minimum">The inclusive lower source-coordinate bound.</param>

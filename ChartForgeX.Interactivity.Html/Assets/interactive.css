@@ -52,7 +52,7 @@ body {
   border-radius: 8px;
   padding: 12px;
   overflow: hidden;
-  touch-action: none;
+  touch-action: auto;
 }
 
 .cfx-stage svg {
@@ -78,8 +78,8 @@ body {
   touch-action: auto;
 }
 
-.cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="pan"] .cfx-stage,
-.cfx-interactive-chart[data-cfx-responsive-layout="readable"][data-cfx-mode="brush"] .cfx-stage {
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage,
+.cfx-interactive-chart[data-cfx-mode="brush"] .cfx-stage {
   touch-action: none;
 }
 
@@ -358,7 +358,7 @@ body {
 }
 
 .cfx-tooltip--pinned::before {
-  content: "Pinned";
+  content: attr(data-cfx-pinned-label);
   display: block;
   margin-bottom: 4px;
   color: #fde68a;
@@ -856,6 +856,7 @@ body {
   .cfx-tooltip,
   .cfx-compare-tray,
   .cfx-brush-box,
+  [data-cfx-keyboard-focus-outline],
   .cfx-crosshair,
   .cfx-reveal-layer {
     display: none !important;
@@ -904,6 +905,10 @@ body {
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
 .cfx-interactive-chart :focus:not(:focus-visible) { outline: none; }
 .cfx-interactive-chart :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }
+.cfx-interactive-chart[data-cfx-keyboard-focus] .cfx-stage svg :focus-visible { outline: none; }
+.cfx-interactive-chart [data-cfx-keyboard-focus-outline] { pointer-events: none; }
+.cfx-interactive-chart [data-cfx-focus-halo] { stroke: var(--cfx-tooltip-surface); stroke-width: 5px; }
+.cfx-interactive-chart [data-cfx-focus-ink] { stroke: var(--cfx-host-accent); stroke-width: 2px; }
 /* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
 .cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series]:not(:where([data-cfx-highlight-managed],.cfx-linked-dim,.cfx-selection-dim)),
 .cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series]:not(:where([data-cfx-highlight-managed],.cfx-linked-dim,.cfx-selection-dim)) { opacity: 1 !important; }
@@ -962,3 +967,10 @@ body {
   filter: drop-shadow(0 0 6px rgba(125, 211, 252, .34));
 }
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed]:not(.cfx-selected) > [data-cfx-highlight-paint] { filter: none; }
+
+/* Native axes retain their prepared direction; adapter controls follow the host's language. */
+.cfx-interactive-chart .cfx-stage { direction: ltr; }
+.cfx-interactive-chart[dir="rtl"] .cfx-toolbar,
+.cfx-interactive-chart[dir="rtl"] .cfx-scenarios,
+.cfx-interactive-chart[dir="rtl"] .cfx-compare-tray { text-align: start; }
+.cfx-interactive-chart[dir="rtl"] .cfx-tooltip__meta dt { text-align: start; }

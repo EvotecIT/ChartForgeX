@@ -48,6 +48,7 @@ public sealed class InteractiveSelectionDockBrowserTests {
     }
 
     [BrowserTheory]
+    [Trait("BrowserSuite", "Compatibility")]
     [InlineData(false)]
     [InlineData(true)]
     public async Task CompareControlsStayInsideAnEmbeddedHostAndPreserveTheFollowingContent(bool dark) {

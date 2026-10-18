@@ -105,8 +105,8 @@
     if (!route) {
       panel.removeAttribute('data-cfx-panel-active-scenario');
       panel.style.removeProperty('--cfx-scenario-color');
-      if (title) title.textContent = 'All';
-      if (meta) meta.textContent = 'All chart data visible';
+      if (title) title.textContent = uiText(root, 'All', 'All');
+      if (meta) meta.textContent = uiText(root, 'AllDataVisible', 'All chart data visible');
       if (steps) steps.replaceChildren();
       return;
     }
@@ -116,7 +116,7 @@
     if (title) title.textContent = route.label || route.id;
     if (meta) {
       const pairs = Object.entries(route.metadata || {}).slice(0, 2).map(([key, value]) => key + ': ' + value);
-      meta.textContent = [route.description, route.steps.length ? route.steps.length + ' steps' : '', ...pairs].filter(Boolean).join(' / ');
+      meta.textContent = [route.description, route.steps.length ? uiText(root, 'Steps', '{count} steps', { count: route.steps.length }) : '', ...pairs].filter(Boolean).join(' / ');
     }
     if (steps) {
       steps.replaceChildren();
@@ -139,7 +139,7 @@
     const hasStep = stepIndex !== undefined && stepIndex !== null && stepIndex !== '';
     const current = count && hasStep ? clamp(Number(stepIndex) + 1, 0, count) : 0;
     const percent = count ? Math.round((current / count) * 100) : 0;
-    const label = 'Step ' + current + ' / ' + count;
+    const label = uiText(root, 'StepProgress', 'Step {current} / {count}', { current, count });
     if (progress) {
       progress.hidden = !count;
       progress.style.setProperty('--cfx-scenario-progress', percent + '%');
@@ -243,7 +243,7 @@
       const playing = normalized === 'playing';
       button.setAttribute('aria-pressed', playing ? 'true' : 'false');
       button.textContent = playing ? (button.dataset.cfxScenarioPauseLabel || 'Pause') : (button.dataset.cfxScenarioPlayLabel || 'Play');
-      button.title = playing ? 'Pause scenario' : 'Play scenario';
+      button.title = playing ? uiText(root, 'PauseScenario', 'Pause scenario') : uiText(root, 'PlayScenario', 'Play scenario');
     });
     if (emit !== false) {
       emitHostEvent(root, 'cfxscenarioplayback', {

@@ -20,7 +20,7 @@
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
     refreshTooltipPosition(root);
   };
-  // The reset control is contextual: it exists only while the reader has changed the view.
+  // Reset is visible only for a changed view.
   const viewChanged = (root) => {
     if (connectedXViewport(root) && nativeXWindowChanged(root)) return true;
     const state = getState(root);
@@ -33,7 +33,7 @@
     if (!reset) return;
     const changed = viewChanged(root);
     if (!changed && document.activeElement === reset) {
-      // Keep keyboard focus inside the chart instead of dropping it to the document when the control hides.
+      // Move focus before hiding its control.
       if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
       try { root.focus({ preventScroll: true }); } catch { root.focus(); }
     }
@@ -45,7 +45,7 @@
   };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
-    // Automatically allocated identities are local handles, never accidental matches in a peer chart.
+    // Automatic IDs never match peer charts.
     const sharedTarget = target => target && target.seriesScope !== 'local';
     if (payload.target?.seriesScope === 'local') {
       if (['hover', 'crosshair', 'navigate'].includes(payload.action) && root._cfxSharedHover) emitSync(root, { action: 'hover-clear' });
@@ -60,8 +60,7 @@
       payload[field] = shared;
     }
     if (['compare', 'lasso'].includes(payload.action) && Array.isArray(payload.targets)) {
-      // A local-only gesture stays local. Replacing a shared selection with a local one
-      // still retires the former shared identities, without exporting the local target.
+      // A local selection retires shared IDs without publishing local targets.
       if (Array.isArray(payload.previousTargets) && !payload.previousTargets.length && !payload.targets.length) return;
       payload.count = payload.targets.length;
     }
@@ -81,13 +80,14 @@
     });
   };
   const applyMode = (root, mode) => {
+    if (mode === 'pan' && !hasFeature(root, 'Pan') || mode === 'brush' && !hasFeature(root, 'Brush')) mode = '';
     root.dataset.cfxMode = mode || '';
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
       button.setAttribute('aria-pressed', button.dataset.cfxModeButton === root.dataset.cfxMode ? 'true' : 'false');
     });
   };
   const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
-  // Clearing a host range also cancels its provisional gesture so pointerup cannot recommit it.
+  // Cancel provisional ranges before pointerup can recommit.
   const clearBrush = root => {
     const brush = root.querySelector('.cfx-brush-box');
     const changed = Boolean(root.dataset.cfxBrush || root.dataset.cfxMode === 'brush' || brush && !brush.hidden);
@@ -121,6 +121,7 @@
       chartId: root.dataset.cfxChartId || '',
       source: source || '',
       viewport: getState(root),
+      xWindow: connectedXViewport(root) ? nativeXWindow(root) : null,
       mode: root.dataset.cfxMode || '',
       brush: root.dataset.cfxBrush || '',
       selectedTargets: selectedTargets(root),
@@ -142,10 +143,16 @@
     if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
     return snapshot;
   };
-  const applyInteractionState = (root, snapshot, emit, sync) => {
+  const applyInteractionState = (root, snapshot, emit, sync, nativeAccepted = false) => {
     if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
+    if (!nativeAccepted && snapshot.xWindow && connectedXViewport(root)) {
+      // Capture now and replay only after this request installs its accepted scene.
+      const captured = copyHostValue(snapshot);
+      if (requestNativeXWindow(root, captured.xWindow, false,
+        () => applyInteractionState(root, captured, emit, sync, true))) return;
+    }
     const previousSelection = selectedTargets(root).map(targetKey).join('\n');
-    if (snapshot.viewport) applyViewport(root, Object.assign({}, snapshot.viewport));
+    if (!nativeAccepted && snapshot.viewport) applyViewport(root, Object.assign({}, snapshot.viewport));
     if (snapshot.mode !== undefined) applyMode(root, snapshot.mode || '');
     if (snapshot.brush !== undefined) root.dataset.cfxBrush = snapshot.brush || '';
     const scenario = snapshot.scenario || {};
@@ -172,10 +179,10 @@
     }
     if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
   };
-  const zoomBy = (root, factor) => {
+  const zoomBy = (root, factor, logicalX) => {
     if (!hasFeature(root, 'Zoom')) return;
     if (chartLifetimes.get(root)?.xViewportConnection) {
-      requestXViewportZoom(root, factor);
+      requestXViewportZoom(root, factor, logicalX);
       return;
     }
     const state = getState(root);
@@ -183,67 +190,4 @@
     applyViewport(root, state);
     emitHostEvent(root, 'cfxviewport', { state: getState(root) });
     emitSync(root, { action: 'viewport', state: getState(root) });
-  };
-  const serializeSvg = (root) => {
-    const svg = root.querySelector('.cfx-stage svg');
-    return svg ? { svg, data: new XMLSerializer().serializeToString(svg) } : null;
-  };
-  const downloadBlob = (root, blob, extension, format) => {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = (root.dataset.cfxChartId || 'chart') + '.' + extension;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    emitHostEvent(root, 'cfxexport', { format });
-  };
-  const svgSize = (svg) => {
-    const viewBox = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
-    const rect = svg.getBoundingClientRect ? svg.getBoundingClientRect() : { width: 0, height: 0 };
-    const width = Math.max(1, Math.round((viewBox && viewBox.width) || (svg.width && svg.width.baseVal ? svg.width.baseVal.value : 0) || rect.width || 800));
-    const height = Math.max(1, Math.round((viewBox && viewBox.height) || (svg.height && svg.height.baseVal ? svg.height.baseVal.value : 0) || rect.height || 450));
-    return { width, height };
-  };
-  const exportSvg = (root) => {
-    if (!hasFeature(root, 'Export')) return;
-    const serialized = serializeSvg(root);
-    if (!serialized) return;
-    downloadBlob(root, new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' }), 'svg', 'svg');
-  };
-  const exportPng = (root) => {
-    if (!hasFeature(root, 'Export')) return;
-    const serialized = serializeSvg(root);
-    if (!serialized) return;
-    const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
-    const sourceUrl = URL.createObjectURL(source);
-    const image = new Image();
-    let canceled = false;
-    const release = ownChartWork(root, () => {
-      canceled = true; image.onload = null; image.onerror = null; image.src = ''; URL.revokeObjectURL(sourceUrl);
-    });
-    image.onload = () => {
-      if (canceled) return;
-      const size = svgSize(serialized.svg);
-      const scale = Math.max(1, Math.ceil(window.devicePixelRatio || 1));
-      const canvas = document.createElement('canvas');
-      canvas.width = size.width * scale;
-      canvas.height = size.height * scale;
-      const context = canvas.getContext('2d');
-      if (!context) {
-        release();
-        return;
-      }
-      context.setTransform(scale, 0, 0, scale, 0, 0);
-      context.clearRect(0, 0, size.width, size.height);
-      context.drawImage(image, 0, 0, size.width, size.height);
-      canvas.toBlob((blob) => {
-        if (canceled) return;
-        release();
-        if (blob && root.isConnected) downloadBlob(root, blob, 'png', 'png');
-      }, 'image/png');
-    };
-    image.onerror = release;
-    image.src = sourceUrl;
   };

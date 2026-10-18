@@ -65,6 +65,14 @@
     });
     return result;
   };
+  const interactionOutlineNode = (kind, attribute, role = 'interaction-highlight') => {
+    const outline = document.createElementNS('http://www.w3.org/2000/svg', kind);
+    outline.setAttribute('data-cfx-role', role);
+    outline.setAttribute(attribute, '');
+    outline.setAttribute('aria-hidden', 'true');
+    outline.setAttribute('focusable', 'false');
+    return outline;
+  };
   const highlightOutline = (paint, style) => {
     const primary = paint.querySelector('[data-cfx-role="sunburst-segment-mark"]');
     let outline = paint.querySelector('[data-cfx-highlight-outline]');
@@ -74,11 +82,7 @@
     }
     // Copy only the primary geometry: no hatch, IDs, targets, tab stops or native paint attributes.
     if (!outline) {
-      outline = document.createElementNS('http://www.w3.org/2000/svg', primary.localName);
-      outline.setAttribute('data-cfx-role', 'interaction-highlight');
-      outline.setAttribute('data-cfx-highlight-outline', '');
-      outline.setAttribute('aria-hidden', 'true');
-      outline.setAttribute('focusable', 'false');
+      outline = interactionOutlineNode(primary.localName, 'data-cfx-highlight-outline');
       paint.insertBefore(outline, paint.firstChild);
     }
     ['d', 'transform', 'fill-rule'].forEach(key => {

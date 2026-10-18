@@ -38,6 +38,13 @@
         syncXViewportControls(root);
         return controller;
       },
+      getXWindow: () => { requireMounted(); return copyHostValue(nativeXWindow(root)); },
+      setXWindow: (minimum, maximum) => {
+        requireMounted();
+        if (!requestNativeXWindow(root, { minimum, maximum }))
+          throw new TypeError('A native X window requires a connected supported chart and finite increasing source bounds.');
+        return controller;
+      },
       resize: () => {
         requireMounted(); hideCrosshair(root, root.querySelector('.cfx-crosshair'));
         refreshKeyboardNavigation(root); refreshTooltipPosition(root); syncResetControl(root);

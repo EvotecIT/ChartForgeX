@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -113,11 +114,37 @@ public sealed class ComfortableCalendarAxisTests {
         var role = scenario.StartsWith("state-", StringComparison.Ordinal) ? "schedule-tick-label" : "axis-x-label";
         var prepared = Prepare(chart);
         var native = Labels(prepared, role);
-        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>",
+        await using var session = await BrowserProofFonts.OpenAsync(chart.ToHtmlFragment(),
             (int)chart.Options.Size.Width, (int)chart.Options.Size.Height);
         var selector = "[data-cfx-role='" + role + "']";
         Assert.Equal(native.Select(node => node.Text.Lines.Single().Text), await session.Page.Locator(selector).AllTextContentsAsync());
         var bounds = await session.Page.EvaluateAsync<double[][]>("selector => [...document.querySelectorAll(selector)].map(node => { const r=node.getBoundingClientRect(); return [r.left,r.right,r.width]; })", selector);
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            var name = "comfortable-calendar-" + scenario + "-" + mode;
+            await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + ".png"), FullPage = true });
+            File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), prepared.ToPng());
+            File.WriteAllText(Path.Combine(captures, name + ".svg"), prepared.ToSvg());
+            File.WriteAllText(Path.Combine(captures, name + ".json"), JsonSerializer.Serialize(new {
+                scenario, mode = mode.ToString(), browser = InteractiveChartBrowser.Engine.ToString(),
+                authoredFamily = chart.Options.Theme.Typography.Family, authoredFile = chart.Options.PngFontPath,
+                native = native.Select(node => {
+                    var line = node.Text.Lines.Single();
+                    var ink = node.Text.Face.Font?.MeasureGlyphInk(line.Glyphs, node.Text.Size, node.Text.Face.SynthesizeItalic);
+                    return new { text = line.Text, left = Left(node), width = node.Text.Metrics.Width, fontPath = node.Text.Face.Path,
+                        inkLeft = ink.HasValue ? (double?)(node.LineLeft(line) + ink.Value.Left) : null,
+                        inkRight = ink.HasValue ? (double?)(node.LineLeft(line) + ink.Value.Right) : null };
+                }),
+                browserBounds = bounds,
+                browserText = await session.Page.EvaluateAsync<JsonElement>("""
+                    selector=>[...document.querySelectorAll(selector)].map(node=>{
+                        const text=node.matches('text')?node:node.querySelector('text'),style=getComputedStyle(text),box=text.getBoundingClientRect();
+                        return{text:text.textContent,left:box.left,right:box.right,width:box.width,advance:text.getComputedTextLength(),
+                            family:style.fontFamily,size:style.fontSize,weight:style.fontWeight};
+                    })
+                    """, selector)
+            }));
+        }
         for (var index = 1; index < bounds.Length; index++) {
             var gap = bounds[index][0] - bounds[index - 1][1];
             // Native and browser font implementations may round fractional metrics differently.
@@ -125,12 +152,6 @@ public sealed class ComfortableCalendarAxisTests {
         }
         Assert.True(await session.Page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= innerWidth"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
-        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
-        if (!string.IsNullOrWhiteSpace(captures)) {
-            var name = "comfortable-calendar-" + scenario + "-" + mode;
-            await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, name + ".png"), FullPage = true });
-            File.WriteAllBytes(Path.Combine(captures, name + "-native.png"), prepared.ToPng());
-        }
     }
 
     internal static Chart Fixture(string scenario) {
@@ -152,6 +173,7 @@ public sealed class ComfortableCalendarAxisTests {
     }
 
     private static Chart Base(int width) => Chart.Create().WithSize(width, 320).WithHeader(false).WithLegend(false).WithXAxisTimeScale()
+        .WithFontFamily(BrowserProofFonts.Family)
         .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
         .ConfigureGridStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);

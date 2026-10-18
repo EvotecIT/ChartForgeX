@@ -300,7 +300,7 @@
     root.dataset.cfxCompareCount = String(items.length);
     const summary = document.createElement('div');
     summary.className = 'cfx-compare-tray__summary';
-    summary.textContent = 'Compare ' + items.length;
+    summary.textContent = uiText(root, 'Compare', 'Compare {count}', { count: items.length });
     tray.appendChild(summary);
     items.slice(0, 6).forEach((item, index) => {
       const chip = document.createElement('button');
@@ -327,7 +327,7 @@
     const clear = document.createElement('button');
     clear.className = 'cfx-compare-clear';
     clear.type = 'button';
-    clear.textContent = 'Clear';
+    clear.textContent = uiText(root, 'Clear', 'Clear');
     clear.setAttribute('data-cfx-compare-clear', 'true');
     root._cfxCompareCleanup.push(listenChart(root, clear, 'click', () => {
       const returnFocus = tray.contains(document.activeElement);

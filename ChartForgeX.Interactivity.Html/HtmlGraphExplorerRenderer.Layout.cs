@@ -518,6 +518,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static double PreparedNodeHalfWidth(GraphSceneNode node, bool includeLabels = true) {
         var mark = PreparedNodeRadius(node);
+        if (includeLabels && !string.IsNullOrWhiteSpace(node.BadgeText)) {
+            var badge = NodeBadgeBounds(node, SafeNodeSize(node));
+            mark = Math.Max(mark, Math.Max(Math.Abs(badge.Left), Math.Abs(badge.Right)) + 1);
+        }
         if (IsCardNode(node)) return mark;
         if (!includeLabels) return mark;
         var label = Math.Max(24, Math.Min(132, node.Label.Length * 3.5 + 10));
@@ -528,6 +532,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static double PreparedNodeHalfHeight(GraphSceneNode node, bool includeLabels = true) {
         var size = SafeNodeSize(node);
         var mark = PreparedNodeRadius(node);
+        if (includeLabels && !string.IsNullOrWhiteSpace(node.BadgeText)) {
+            var badge = NodeBadgeBounds(node, size);
+            mark = Math.Max(mark, Math.Max(Math.Abs(badge.Top), Math.Abs(badge.Bottom)) + 1);
+        }
         if (IsCardNode(node)) return mark;
         if (!includeLabels) return mark;
         var labelBottom = node.Shape == GraphNodeShape.Text ? 9 : size + 24;

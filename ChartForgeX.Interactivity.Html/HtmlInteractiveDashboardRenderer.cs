@@ -39,7 +39,8 @@ public sealed class HtmlInteractiveDashboardRenderer {
         var groupName = options.Interaction.GroupName ?? scope;
 
         var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chartArray[0]);
-        var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle);
+        var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle,
+            options.Localization.ResolveLanguage(chartArray[0].Accessibility.Language), options.Localization.DirectionAttribute);
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .StartElement("div").Attribute("class", "cfx-dashboard").Attribute("style", "--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture)).EndStartElement().Line();
         for (var i = 0; i < chartArray.Length; i++) {
@@ -66,6 +67,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
         childOptions.Adaptive.Breakpoint = options.Adaptive.Breakpoint;
         HtmlChartTooltipOptionsCopy.Copy(options.Tooltip, childOptions.Tooltip);
         options.Highlight.CopyTo(childOptions.Highlight);
+        options.Localization.CopyTo(childOptions.Localization);
         options.Crosshair.CopyTo(childOptions.Crosshair);
         childOptions.Interaction.ChartId = chartId;
         childOptions.Interaction.GroupName = groupName;

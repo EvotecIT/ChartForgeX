@@ -3,7 +3,6 @@
     fill: node.backgroundColor || '#2563eb', stroke: selected ? selectedColor : node.borderColor || '#eff6ff',
     width: graphNodeMarkWidth(selected, compact)
   });
-  let graphNodeMeasureContext = null;
   const graphNodeMarkBounds = (node, compact, moving, margin) => {
     const extents = nodeShapeExtents(node), width = graphNodeMarkWidth(node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact);
     // Canvas's default miter limit is 10; angular strokes can extend beyond

@@ -1,4 +1,4 @@
-  // Connected hosts return a C#-prepared scene. JavaScript owns gesture geometry and reply lifetime only.
+  // Native hosts own scenes; the browser owns gestures and reply lifetime.
   let chartSceneSequence = 0, chartViewportRequestSequence = 0;
   const nextChartSceneRevision = () => 'cfx-scene-' + (++chartSceneSequence);
   const validXProjection = projection => {
@@ -36,28 +36,28 @@
     return Number.isFinite(point.x) ? point.x : null;
   };
   const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '') => {
-    // Validate every alternate before releasing the working scene, preserving atomic host updates.
+    // Validate alternates before releasing the committed scene.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
     const state = chartUpdateState(root, !!adaptiveDrawing);
     const suspended = nativeKind === 'reset' || !!adaptiveDrawing && pointerReadoutSuspended(root);
-    // Keep the request current through validation so a rejected alternate reports its failure.
+    // Retain the request until validation can report failures.
     if (nativeKind) lifetime.xViewportPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
     releaseChartLifetime(root);
     installChartSection(root, next);
-    // The application owns the root and connection; each installed scene owns fresh browser work.
+    // Retain the root and connection; replace scene-owned work.
     lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();
     lifetime.adaptive = adaptive;
     if (adaptiveDrawing) adaptive.current = adaptiveDrawing;
     chartLifetimes.set(root, lifetime); mountedCharts.add(root);
-    // Same-source redraws retain explicit reset dismissal before any fresh scene can acquire input.
+    // Preserve reset dismissal before binding the fresh scene.
     if (suspended) suspendPointerReadout(root);
     prepareAdaptiveRoot(root, lifetime);
     bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind);
     bindAdaptiveLayout(root);
     syncXViewportControls(root);
   };
-  const requestXViewport = (root, kind, left, right) => {
+  const requestXViewport = (root, kind, left, right, sync = true, accepted) => {
     const lifetime = chartLifetimes.get(root), connection = lifetime?.xViewportConnection;
     if (!connection || lifetime.disposed || !root.isConnected || !chartXProjection(root)) return;
     if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return;
@@ -82,11 +82,12 @@
         throw new TypeError('The viewport reply must retain the chart identity and a supported X projection.');
       const previousSelection = kind === 'reset' ? selectionSignature(root) : '';
       replaceChartSection(root, lifetime, next, kind);
+      if (accepted) accepted();
       if (kind === 'reset') {
         emitHostEvent(root, 'cfxreset', {});
         publishResetSelection(root, previousSelection);
-        emitSync(root, { action: 'viewport', state: getState(root) });
       }
+      if (sync) emitSync(root, { action: 'viewport', state: getState(root), xWindow: nativeXWindow(root) });
       emitHostEvent(root, 'cfxviewportchange', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind });
     }).catch(error => {
       if (!current()) return;
@@ -95,9 +96,25 @@
         message: error instanceof Error ? error.message : String(error) });
     });
   };
-  const requestXViewportZoom = (root, factor) => {
+  const requestXViewportZoom = (root, factor, logicalX) => {
     const plot = chartXProjection(root)?.plotBounds;
     if (!plot || !Number.isFinite(factor) || factor <= 0) return;
-    const middle = plot.x + plot.width / 2, half = plot.width / (2 * factor);
-    requestXViewport(root, 'zoom', middle - half, middle + half);
+    const anchor = Number.isFinite(logicalX) ? clamp(logicalX, plot.x, plot.x + plot.width) : plot.x + plot.width / 2;
+    requestXViewport(root, 'zoom', anchor - (anchor - plot.x) / factor, anchor + (plot.x + plot.width - anchor) / factor);
+  };
+  const nativeXWindow = root => {
+    const projection = chartXProjection(root);
+    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale || 'linear' } : null;
+  };
+  const requestNativeXWindow = (root, window, sync = true, accepted) => {
+    const projection = chartXProjection(root), axis = root._cfxDataProjection?.x;
+    if (!connectedXViewport(root) || !projection || !axis || !window
+      || !Number.isFinite(window.minimum) || !Number.isFinite(window.maximum) || window.minimum >= window.maximum
+      || window.scale && window.scale !== (projection.scale || 'linear')) return false;
+    // Reuse the captured data projection's mapping; the host still owns confinement, ticks and native re-preparation.
+    const first = projection.plotBounds.x + projectedAxisRatio(axis, window.minimum) * projection.plotBounds.width;
+    const last = projection.plotBounds.x + projectedAxisRatio(axis, window.maximum) * projection.plotBounds.width;
+    if (!Number.isFinite(first) || !Number.isFinite(last) || first === last) return false;
+    requestXViewport(root, 'window', Math.min(first, last), Math.max(first, last), sync, accepted);
+    return true;
   };

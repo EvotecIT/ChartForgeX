@@ -183,7 +183,7 @@
     });
     syncSelectionAppearance(root);
     const region = root.querySelector('[data-cfx-live]');
-    if (region) region.textContent = state ? highlighted.length + ' marks highlighted' : 'Highlight cleared';
+    if (region) region.textContent = state ? uiText(root, 'Highlighted', '{count} marks highlighted', { count: highlighted.length }) : uiText(root, 'HighlightCleared', 'Highlight cleared');
     return highlighted.map(targetIdentity);
   };
   const runHighlightCommand = (root, match, options = {}) => {

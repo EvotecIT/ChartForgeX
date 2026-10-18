@@ -117,6 +117,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         var pageErrors = new List<string>();
         page.PageError += (_, error) => pageErrors.Add(error);
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
+        await SettleCameraAsync(page);
         await TraceAsync(page);
         await page.EvaluateAsync("""
             delay => {
@@ -148,16 +149,25 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             """;
         await PointerAsync(page, Point(0, 0));
         Assert.True(await TipHiddenAsync(page));
+        var queued = await page.EvaluateAsync<JsonElement>(resetState);
+        var timers = queued.GetProperty("timers");
+        var canceledTimers = timers.GetProperty("canceled").EnumerateArray().Select(timer => timer.GetProperty("id").GetInt32()).ToArray();
+        var queuedTimer = Assert.Single(timers.GetProperty("queued").EnumerateArray(),
+            timer => !canceledTimers.Contains(timer.GetProperty("id").GetInt32())).GetProperty("id").GetInt32();
+        Assert.Empty(queued.GetProperty("timers").GetProperty("fired").EnumerateArray());
+        Assert.True(await page.Locator(Point(0, 0)).EvaluateAsync<bool>("node=>{const b=node.getBoundingClientRect();return node.contains(document.elementFromPoint(b.x+b.width/2,b.y+b.height/2));}"));
         await page.Locator("[data-cfx-reset]").FocusAsync();
         var before = await page.EvaluateAsync<JsonElement>(resetState);
         await page.Keyboard.PressAsync("Enter");
         var reset = await page.EvaluateAsync<JsonElement>(resetState);
         await Task.Delay(Delay + 80);
         var deadline = await page.EvaluateAsync<JsonElement>(resetState);
-        await CaptureDelayAsync(page, "delay-reset-keyboard", new { before, reset, deadline, pageErrors }, session);
+        await CaptureDelayAsync(page, "delay-reset-keyboard", new { queued, before, reset, deadline, pageErrors }, session);
         Assert.True(await TipHiddenAsync(page));
         Assert.True(await page.Locator("[data-cfx-reset]").IsHiddenAsync());
         Assert.Empty((await TraceStateAsync(page)).GetProperty("shown").EnumerateArray());
+        Assert.Contains(deadline.GetProperty("timers").GetProperty("canceled").EnumerateArray(), timer => timer.GetProperty("id").GetInt32() == queuedTimer);
+        Assert.DoesNotContain(deadline.GetProperty("timers").GetProperty("fired").EnumerateArray(), timer => timer.GetProperty("id").GetInt32() == queuedTimer);
         await page.Locator(Point(0, 0)).FocusAsync();
         await page.Keyboard.PressAsync("ArrowRight");
         Assert.True(await page.Locator(Point(0, 1)).EvaluateAsync<bool>("node=>node===document.activeElement"));
@@ -169,11 +179,16 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await page.Locator("[data-cfx-reset]").FocusAsync();
         await page.Keyboard.PressAsync("Enter");
         Assert.True(await TipHiddenAsync(page));
+        // Acquire the final native paint, rather than a camera position sampled mid-transition.
+        await SettleCameraAsync(page);
         await PointerAsync(page, Point(0, 0));
         Assert.True(await TipHiddenAsync(page));
-        await WaitForTipAsync(page);
+        try {
+            await WaitForTipAsync(page);
+        } finally {
+            await CaptureDelayAsync(page, "delay-reset-keyboard-recovery", new { keyboard, pointer = await page.EvaluateAsync<JsonElement>(resetState), pageErrors }, session);
+        }
         Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
-        await CaptureDelayAsync(page, "delay-reset-keyboard-recovery", new { keyboard, pointer = await page.EvaluateAsync<JsonElement>(resetState), pageErrors }, session);
         AssertNoConsoleErrors(session);
     }
 

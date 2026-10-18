@@ -12,8 +12,15 @@ internal static class ChartSeriesColours {
 
     internal static ChartColor Resolve(ChartSeries series, int index, VisualThemeColors colors) {
         if (series.Color.HasValue) return series.Color.Value;
-        return State(series.StateRole, colors, colors.Palette[index % colors.Palette.Count]);
+        return State(series.StateRole, colors, Palette(series, index, colors));
     }
+
+    internal static ChartColor Palette(ChartSeries series, int index, VisualThemeColors colors, int offset = 0) =>
+        colors.Palette[(PaletteIndex(series, index, colors.Palette.Count) + offset) % colors.Palette.Count];
+
+    /// <summary>Part-to-whole categories retain their own ordinal palette instead of inheriting one series slot.</summary>
+    internal static ChartColor CategoryPoint(ChartSeries series, int point, VisualThemeColors colors) =>
+        PointOverride(series, point) ?? series.Color ?? State(series.StateRole, colors, colors.Palette[point % colors.Palette.Count]);
 
     internal static ChartColor State(ChartSeriesState state, VisualThemeColors colors, ChartColor fallback) {
         if (state == ChartSeriesState.None) return fallback;
@@ -46,8 +53,19 @@ internal static class ChartSeriesColours {
             ChartSeriesState.Info => t.Info,
             ChartSeriesState.Neutral => t.Neutral,
             ChartSeriesState.Success or ChartSeriesState.Quiet => ChartSeriesKindTraits.UsesOptionalLineMarker(series.Kind) ? t.QuietLine : t.Quiet,
-            _ => t.Palette[index % t.Palette.Length]
+            _ => t.Palette[PaletteIndex(series, index, t.Palette.Length)]
         };
+    }
+
+    /// <summary>Explicit identities select deterministic palette slots; chart-local anonymous helpers retain ordinal paint.</summary>
+    /// <remarks>Hashing never depends on the current series set, so adding or removing another series cannot recolor an existing ID.
+    /// A finite palette can repeat. An explicit series color remains the way to guarantee a distinct authored color.</remarks>
+    private static int PaletteIndex(ChartSeries series, int index, int count) {
+        if (series.AutomaticIdentityOwner != null || !series.HasIdentity) return index % count;
+        // FNV-1a over UTF-16 code units is stable across runtimes and platforms, unlike string.GetHashCode().
+        var hash = 2166136261u;
+        foreach (var value in series.Id.Value) hash = unchecked((hash ^ value) * 16777619u);
+        return (int)(hash % (uint)count);
     }
     internal static int Priority(ChartSeriesState role) => role switch {
         ChartSeriesState.Success or ChartSeriesState.Quiet => 0,

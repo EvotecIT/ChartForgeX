@@ -22,7 +22,7 @@ internal static partial class VisualPolarCompiler {
                 builder.Ellipse(cx, cy, radius * ring / ChartVisualPrimitives.PolarAreaGridRings, radius * ring / ChartVisualPrimitives.PolarAreaGridRings,
                     null, colors.Border, context.Theme.GridStrokeWidth, "polar-area-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             for (var index = 0; index < series.RenderPoints.Count; index++) {
-                var point = series.RenderPoints[index]; var color = ChartSeriesColours.Point(series, index, index, colors);
+                var point = series.RenderPoints[index]; var color = ChartSeriesColours.CategoryPoint(series, index, colors);
                 var start = CategoryAngle(chart.Options.XAxis, index, series.RenderPoints.Count, sweep); var zero = point.Y == 0;
                 var r = zero ? radius : radius * Math.Sqrt(point.Y / max); var inner = zero ? radius * ChartVisualPrimitives.PolarAreaZeroSlotInnerRadiusFactor : 0;
                 var value = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, point.Y);

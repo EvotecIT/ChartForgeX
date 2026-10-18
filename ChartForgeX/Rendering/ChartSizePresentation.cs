@@ -7,9 +7,11 @@ namespace ChartForgeX.Rendering;
 /// <summary>Captures one shared Bubble size caption/format policy for marks, readouts and the measured numeric key.</summary>
 internal sealed class ChartSizePresentation {
     private readonly ChartValueFormat _format;
+    private readonly string _mapping;
     private readonly Dictionary<double, string> _values = new();
 
-    internal ChartSizePresentation(Chart chart, double minimumValue, double maximumValue) {
+    internal ChartSizePresentation(Chart chart, double minimumValue, double maximumValue, string mapping) {
+        _mapping = mapping;
         var options = chart.Options.Bubble.SizeDimension;
         Name = options.Name ?? chart.Options.Labels.Size;
         HasName = options.Name != null; HasFormat = options.ValueFormat != null;
@@ -51,6 +53,7 @@ internal sealed class ChartSizePresentation {
     internal string AddFacts(Dictionary<string, string> metadata, double value, string description) {
         metadata["data-cfx-label-size"] = Name;
         metadata["data-cfx-formatted-size"] = Value(value);
+        metadata["data-cfx-size-mapping"] = _mapping;
         return HasName || HasFormat ? description + "; " + Name + ": " + Value(value) : description;
     }
 }

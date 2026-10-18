@@ -26,18 +26,21 @@
       context.stroke();
     }
     if (node.badge && !compact && !moving) {
+      const badge = graphBadgeGeometry(node), badgeX = node.x + badge.x, badgeY = node.y + badge.y;
       context.beginPath();
-      context.arc(card ? node.x + cardHalfWidth - 18 : node.x + node.size * .82, card ? node.y - cardHalfHeight + 18 : node.y - node.size * .82, 8, 0, Math.PI * 2);
+      if (badge.width <= 16) context.arc(badgeX, badgeY, 8, 0, Math.PI * 2);
+      else if (context.roundRect) context.roundRect(badgeX - badge.width / 2, badgeY - 8, badge.width, 16, 8);
+      else context.rect(badgeX - badge.width / 2, badgeY - 8, badge.width, 16);
       context.fillStyle = palette.text;
       context.fill();
       context.strokeStyle = palette.halo;
       context.lineWidth = 2;
       context.stroke();
-      context.font = '800 7px Inter, Segoe UI, sans-serif';
+      context.font = '800 7px Inter, "Segoe UI", Arial, sans-serif';
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       context.fillStyle = palette.paper;
-      context.fillText(node.badge.slice(0, 5), card ? node.x + cardHalfWidth - 18 : node.x + node.size * .82, card ? node.y - cardHalfHeight + 18.5 : node.y - node.size * .82 + .5);
+      context.fillText(badge.text, badgeX, badgeY + .5);
     }
     if (primary) {
       context.beginPath();

@@ -137,9 +137,9 @@ internal static partial class VisualMapCompiler {
                     }
                 }
                 VisualRadialPrimitives.Text(builder, layout.Texts[2], new ChartRect(area.Left, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-low",
-                    alignment: layout.Inset ? TextAlignment.Left : TextAlignment.Center);
+                    alignment: TextAlignment.Left);
                 VisualRadialPrimitives.Text(builder, layout.Texts[0], new ChartRect(area.Left + area.Width / 2, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-high",
-                    alignment: layout.Inset ? TextAlignment.Right : TextAlignment.Center);
+                    alignment: TextAlignment.Right);
                 var next = swatchTop + swatchHeight;
                 if (ChartHeatmapSurface.MapMidpointLabel(chart) != null) {
                     var center = gradient ? area.Left + area.Width * ChartColorScaleLegend.MidpointRatio(scale!, min, max)

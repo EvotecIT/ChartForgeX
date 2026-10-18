@@ -38,6 +38,7 @@
     return ownChartWork(root, () => target.removeEventListener(name, listener, options));
   };
   const clearChartBrowserState = (root) => {
+    clearKeyboardFocusPaint(root);
     cancelTooltipRequest(root);
     hideTip(root, root.querySelector('.cfx-tooltip'), true);
     stopScenarioPlayback(root, 'paused', false);

@@ -17,7 +17,7 @@ public sealed class CompactCalendarAxisTests {
     [InlineData("state", 800, VisualThemeMode.Light, 6)]
     [InlineData("gantt", 400, VisualThemeMode.Light, 5)]
     [InlineData("gantt", 400, VisualThemeMode.Dark, 5)]
-    [InlineData("timeline", 400, VisualThemeMode.Light, 5)]
+    [InlineData("timeline", 400, VisualThemeMode.Light, 4)]
     [InlineData("lane", 400, VisualThemeMode.Light, 4)]
     public void ShortScheduleCaptionsKeepUsefulCalendarStepsWithoutMovingOffTheirGrid(string family, int width, VisualThemeMode mode, int minimum) {
         var chart = family switch {
@@ -39,6 +39,15 @@ public sealed class CompactCalendarAxisTests {
             if (index > 0) Assert.True(labels[index].X - labels[index - 1].X >= (labels[index].Text.Metrics.Width + labels[index - 1].Text.Metrics.Width) / 2);
         }
         if (family == "state") Assert.Equal(6, labels.Length);
+        if (family == "timeline") {
+            var sourceMinimum = chart.Series.SelectMany(series => series.Points).Min(point => point.X);
+            var year = DateTime.FromOADate(sourceMinimum).Year;
+            var dates = labels.Select(label => DateTime.ParseExact(year + " " + label.Text.Lines.Single().Text,
+                "yyyy MMM d", CultureInfo.InvariantCulture)).ToArray();
+            var days = (dates[1] - dates[0]).Days;
+            Assert.True(dates[0].ToOADate() >= sourceMinimum && dates[0].ToOADate() < sourceMinimum + days);
+            Assert.All(dates, date => Assert.Equal(0, date.Ticks / TimeSpan.TicksPerDay % days));
+        }
         AssertPortable(prepared, labels, "schedule-tick-label", $"compact-calendar-{family}-{width}-{mode}");
     }
 
@@ -55,7 +64,9 @@ public sealed class CompactCalendarAxisTests {
         Assert.InRange(labels.Length, 4, 8);
         Assert.All(labels, label => Assert.Matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", label.Text.Lines.Single().Text));
         var dates = labels.Select(label => DateTime.ParseExact(label.Text.Lines.Single().Text, "yyyy-MM-dd", CultureInfo.InvariantCulture)).ToArray();
-        Assert.Equal(start, dates[0]);
+        var stride = dates[1] - dates[0];
+        Assert.True(dates[0] >= start && dates[0] < start + stride, "The first full calendar caption must be the first boundary of the stable phase inside the window.");
+        Assert.Equal(0, dates[0].Ticks / TimeSpan.TicksPerDay % stride.Days);
         for (var index = 2; index < dates.Length; index++) Assert.Equal(dates[1] - dates[0], dates[index] - dates[index - 1]);
         AssertPortable(prepared, labels, "axis-x-label", $"compact-calendar-iso-{width}-{mode}");
     }

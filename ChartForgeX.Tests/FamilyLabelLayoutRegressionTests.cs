@@ -103,6 +103,10 @@ public sealed class FamilyLabelLayoutRegressionTests {
         Assert.Contains(Texts(prepared, "map-scale-label"), text => text.Text.Lines[0].Text == "More · 91");
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "map-scale-step");
         var ramp = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "map-scale-step").ToArray();
+        var low = Assert.Single(Texts(prepared, "map-scale-label"), text => text.Id == "map-scale-low");
+        var high = Assert.Single(Texts(prepared, "map-scale-label"), text => text.Id == "map-scale-high");
+        Assert.Equal(ramp.Min(step => step.Bounds.Left), low.LineLeft(low.Text.Lines[0]), 6);
+        Assert.Equal(ramp.Max(step => step.Bounds.Right), high.LineLeft(high.Text.Lines[0]) + high.Text.Lines[0].Width, 6);
         var textTop = caption.Baseline - caption.Text.Ascent;
         Assert.True(swatch.Bounds.Left >= ramp.Max(step => step.Bounds.Right) + 2
             || textTop + caption.Text.Metrics.Height <= Texts(prepared, "map-scale-label").Min(text => text.Baseline - text.Text.Ascent) - 2

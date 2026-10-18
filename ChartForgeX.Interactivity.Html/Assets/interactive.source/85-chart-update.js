@@ -76,7 +76,7 @@
     for (const property of Array.from(root.style)) if (property.startsWith('--cfx-')) root.style.removeProperty(property);
     for (const attribute of Array.from(next.attributes)) {
       if (attribute.name.startsWith('data-cfx-') && attribute.name !== 'data-cfx-runtime-bound'
-        || attribute.name === 'role' || attribute.name === 'aria-label') root.setAttribute(attribute.name, attribute.value);
+        || attribute.name === 'role' || attribute.name === 'aria-label' || attribute.name === 'lang' || attribute.name === 'dir') root.setAttribute(attribute.name, attribute.value);
     }
     for (const property of Array.from(next.style)) if (property.startsWith('--cfx-'))
       root.style.setProperty(property, next.style.getPropertyValue(property), next.style.getPropertyPriority(property));

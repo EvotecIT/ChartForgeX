@@ -24,6 +24,14 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
     private static Task WaitForTipAsync(IPage page) => page.WaitForFunctionAsync("() => !document.querySelector('.cfx-tooltip').hidden", null, new PageWaitForFunctionOptions { Timeout = 5000 });
     private static Task<JsonElement> TraceStateAsync(IPage page) => page.EvaluateAsync<JsonElement>("() => window.delayTrace");
 
+    private static Task SettleCameraAsync(IPage page) => page.Locator(".cfx-stage svg").EvaluateAsync("""
+        async svg => {
+            await new Promise(resolve=>requestAnimationFrame(resolve));
+            await Promise.all(svg.getAnimations().map(animation=>animation.finished));
+            await new Promise(resolve=>requestAnimationFrame(resolve));
+        }
+        """);
+
     private static async Task<double[]> PointerAsync(IPage page, string selector) {
         var box = await BoxAsync(page, selector);
         var position = new double[] { box.X + box.Width / 2, box.Y + box.Height / 2 };

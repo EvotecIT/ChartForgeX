@@ -32,7 +32,7 @@ internal static partial class VisualScalarProgressCompiler {
             ["data-cfx-track-opacity"] = N(chart.Options.ProgressTrackOpacity), ["data-cfx-series-key"] = series.InteractionIdentityKey
         })) for (var index = 0; index < series.RenderPoints.Count; index++) {
             var raw = series.RenderPoints[index].Y; var ratio = VisualRadialPrimitives.Clamp(raw / chart.Options.ProgressMaximum);
-            var y = plot.Top + rowHeight * (index + .5); var color = ChartSeriesColours.Point(series, index, index, colors);
+            var y = plot.Top + rowHeight * (index + .5); var color = ChartSeriesColours.CategoryPoint(series, index, colors);
             var bounds = new ChartRect(plot.Left, plot.Top + rowHeight * index, plot.Width, rowHeight);
             builder.AddRegion(new VisualSemanticRegion(Id(0, index), "progress-row", bounds, labels[index] + ": " + values[index]));
             using (builder.PushGroup(Id(0, index), "progress-row", new Dictionary<string, string> {

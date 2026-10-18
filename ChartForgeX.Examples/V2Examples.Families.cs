@@ -169,7 +169,7 @@ public static partial class V2Examples {
         ChartSeriesKind.Funnel => "Horizontal cone; stage lines encode values including zero",
         ChartSeriesKind.Waterfall => "An opening balance, changes and checkpoints retain the running balance on reversed axes",
         ChartSeriesKind.Scatter => "Nine marker shapes with source labels",
-        ChartSeriesKind.Bubble => "Equal request volumes share a radius; values above 100 retain their facts",
+        ChartSeriesKind.Bubble => "Equal request volumes share a filled area; values above 100 retain their facts",
         ChartSeriesKind.DottedMap => "Location keys retain coordinates and optional weights",
         ChartSeriesKind.Candlestick => "Hollow rising bodies, filled falling bodies and independent wick strokes",
         ChartSeriesKind.Ohlc => "Rising and falling stroke colors, alpha and width retain source prices",

@@ -101,7 +101,7 @@ internal static partial class VisualRadialCompiler {
     private static IReadOnlyList<RadialSlice> GetSlices(Chart chart, VisualThemeColors colors) {
         var series = chart.Series[0];
         var slices = series.RenderPoints.Select((point, index) => new RadialSlice(index, new[] { index },
-            Label(chart, point, index), point.Y, ChartSeriesColours.Point(series, index, index, colors),
+            Label(chart, point, index), point.Y, ChartSeriesColours.CategoryPoint(series, index, colors),
             index < series.PointFillPatterns.Count && series.PointFillPatterns[index].HasValue ? series.PointFillPatterns[index]!.Value : series.FillPattern)).ToList();
         var positive = slices.Where(slice => slice.Value > 0).ToList();
         if (positive.Count <= chart.Options.MaximumPieSlices)

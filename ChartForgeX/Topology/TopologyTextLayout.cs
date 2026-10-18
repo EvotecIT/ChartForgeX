@@ -64,12 +64,18 @@ internal sealed class TopologyTextLayout {
                 report?.Invoke("topology.label-truncated", "A topology label exceeds its measured bounds; complete source text remains in semantic interchange.");
                 continue;
             }
+            var wrappingRow = options.WrapNodeLabels && lines.Count + 1 < maxLines;
+            var suffix = wrappingRow ? string.Empty : "…";
             var elements = StringInfo.ParseCombiningCharacters(text); var count = elements.Length;
-            while (count > 0 && measure(text.Substring(0, count == elements.Length ? text.Length : elements[count]) + "…", size, weight).Width > width) count--;
+            while (count > 0 && measure(text.Substring(0, count == elements.Length ? text.Length : elements[count]) + suffix, size, weight).Width > width) count--;
             var length = count == 0 ? 0 : count == elements.Length ? text.Length : elements[count];
-            if (options.WrapNodeLabels && lines.Count + 1 < maxLines && length > 0) {
-                var separator = text.LastIndexOf(' ', length - 1, length); if (separator > 0) length = separator;
-                lines.Add(text.Substring(0, length));
+            if (wrappingRow && length > 0) {
+                // A complete fitting word before whitespace belongs on this row. An
+                // intermediate row paints no ellipsis, so neither should its fit probe.
+                if (length < text.Length && !char.IsWhiteSpace(text[length])) {
+                    var separator = text.LastIndexOf(' ', length - 1, length); if (separator > 0) length = separator;
+                }
+                lines.Add(text.Substring(0, length).TrimEnd());
                 queue = new Queue<string>(new[] { text.Substring(length).TrimStart() }.Concat(queue));
             } else {
                 lines.Add(length == 0 ? string.Empty : text.Substring(0, length) + "…"); overflow = true;

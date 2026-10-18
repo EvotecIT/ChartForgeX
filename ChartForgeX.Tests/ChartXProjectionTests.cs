@@ -58,8 +58,6 @@ public sealed class ChartXProjectionTests {
     [Theory]
     [InlineData(ChartSeriesKind.Bar)]
     [InlineData(ChartSeriesKind.HorizontalBar)]
-    [InlineData(ChartSeriesKind.Area)]
-    [InlineData(ChartSeriesKind.Scatter)]
     public void UnsupportedFamiliesKeepOrdinaryPreparationButRejectAnXViewport(ChartSeriesKind kind) {
         var points = new[] { new ChartPoint(1, 2), new ChartPoint(3, 4) };
         var chart = kind switch {
@@ -73,12 +71,12 @@ public sealed class ChartXProjectionTests {
     }
 
     [Fact]
-    public void NonlinearSmoothMixedAndSparklineChartsDoNotAdvertiseThisProjection() {
-        var time = Line().WithXAxisScale(ChartScaleKind.Time);
-        var smooth = Line(); smooth.Series[0].WithSmooth();
+    public void NonlinearMixedAndSparklineChartsDoNotAdvertiseThisProjection() {
+        var nonlinear = Chart.Create().AddLine("Positive", new[] { new ChartPoint(1, 2), new ChartPoint(10, 4) })
+            .WithXAxisBounds(1, 10).WithXAxisScale(ChartScaleKind.Logarithmic);
         var mixed = Line().AddBar("Other", new[] { new ChartPoint(1, 2) });
         var sparkline = Line(); sparkline.Options.IsSparkline = true;
-        foreach (var chart in new[] { time, smooth, mixed, sparkline }) {
+        foreach (var chart in new[] { nonlinear, mixed, sparkline }) {
             Assert.Null(chart.Prepare(Context()).XProjection);
             Assert.Throws<NotSupportedException>(() => chart.Prepare(Context(), new ChartXViewport(1, 2)));
         }

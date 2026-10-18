@@ -60,6 +60,20 @@ internal static class ChartPathBuilder {
         return new ChartPath(commands);
     }
 
+    /// <summary>Builds an open cubic curve without borrowing tangents across missing observations.</summary>
+    internal static ChartPath OpenCurve(IReadOnlyList<ChartPoint> points, double tension) {
+        ChartGuards.UnitInterval(tension, nameof(tension));
+        if (tension == 0 || points.Count < 3) return FromPoints(points);
+        var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(points[0].X, points[0].Y) };
+        for (var index = 0; index + 1 < points.Count; index++) {
+            var previous = points[Math.Max(0, index - 1)]; var current = points[index];
+            var next = points[index + 1]; var after = points[Math.Min(points.Count - 1, index + 2)];
+            commands.Add(ChartPathCommand.CubicTo(current.X + (next.X - previous.X) * tension, current.Y + (next.Y - previous.Y) * tension,
+                next.X - (after.X - current.X) * tension, next.Y - (after.Y - current.Y) * tension, next.X, next.Y));
+        }
+        return new ChartPath(commands);
+    }
+
     private static void AddStepSegments(List<ChartPathCommand> commands, IReadOnlyList<ChartPoint> points, ChartStepPosition position) {
         for (var i = 1; i < points.Count; i++) {
             var transition = StepTransitionX(points[i - 1].X, points[i].X, position);

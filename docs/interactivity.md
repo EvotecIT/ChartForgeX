@@ -588,9 +588,33 @@ chart.dispatchEvent(new CustomEvent('cfx-clear-scenario'));
 
 These commands preserve the same host events, deep-link updates, synchronized chart behavior, focus trails, and reveal labels as the built-in controls.
 
+## Exporting interactive charts
+
+Enable `ChartInteractionFeatures.Export` to offer SVG and PNG downloads. Both export the committed native scene, including an accepted connected X window. Downloads retain selection, legend mute/isolation and resolved host colors. Hover emphasis, focus outlines and focus trails stay in the browser; standalone geometric zoom and pan do not change the exported native canvas.
+
+SVG downloads include the resolved presentation needed to display the chart without the adapter stylesheet or runtime. PNG downloads rasterize that SVG in the browser at the device pixel ratio. This browser PNG path is separate from ChartForgeX's native `ToPng` rendering; fonts and rasterization can differ between them.
+
 ## State Bookmarks
 
 Standalone zoom and pan controls transform the complete rendered SVG, including its axes and labels. Connected hosts can use native X windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
+
+## Translated controls and text direction
+
+`Localization` supplies HTML control labels, tooltips on controls, comparison text, scenario playback text, pinned-tooltip status and highlight announcements. Unspecified messages use English. The page and chart inherit the native chart's accessibility language unless `Localization.Language` overrides it. A dashboard copies its configured bundle into every child chart.
+
+```csharp
+chart.SaveInteractiveHtml("measurements.html", options => {
+    options.Localization.Language = "pl-PL";
+    options.Localization[HtmlChartText.ChartControls] = "Narzędzia wykresu";
+    options.Localization[HtmlChartText.ResetView] = "Przywróć widok";
+    options.Localization[HtmlChartText.Compare] = "Porównaj {count}";
+    options.Localization[HtmlChartText.Clear] = "Wyczyść";
+});
+```
+
+Templates use named placeholders such as `{count}` and `{current}`. Messages are displayed as text, including literal angle brackets. Updating a mounted chart installs its replacement bundle while retaining surviving selected observations. The Graphite gallery includes a complete Polish controls example.
+
+For right-to-left controls, set `Localization.Direction = HtmlChartTextDirection.RightToLeft` and an appropriate language tag. Adapter chrome follows that direction; the native SVG keeps the authored axis order. Data labels, number/date formatting and native font shaping remain properties of the chart and its render context. Translate chart headings and dimension names through those native APIs. These browser contracts do not establish physical screen-reader or bidirectional font-shaping qualification.
 
 ## Connected native X windows
 
@@ -613,7 +637,7 @@ HtmlChartSection PrepareWindow(HtmlChartSection basis, string kind, double left,
 
 `left` and `right` are logical SVG positions sent by the browser. `ConstrainViewport` uses the captured native projection, handles a reversed X axis, and shifts an edge-crossing window into the full bounds while retaining its span. It returns null when the request covers the full span. Reset also uses null, restoring ordinary preparation. Explicit `ChartXViewport` values remain strict and must lie within the full resolved bounds.
 
-Connect the mounted controller to an application callback that returns the new section's HTML. The callback is the response path; `cfxviewportrequest` is a notification. Each request contains `chartId`, an opaque `requestId`, the committed `sceneRevision`, and `kind` (`zoom`, `pan`, or `reset`). Zoom and pan also contain logical `left` and `right`; reset omits them.
+Connect the mounted controller to an application callback that returns the new section's HTML. The callback is the response path; `cfxviewportrequest` is a notification. Each request contains `chartId`, an opaque `requestId`, the committed `sceneRevision`, and `kind` (`zoom`, `pan`, `window`, or `reset`). All except reset contain logical `left` and `right`; reset omits them. Toolbar zoom uses the plot centre; wheel zoom keeps the source coordinate beneath the pointer as its anchor.
 
 Keep native preparation associated with the committed scene. A mutable "latest rendered section" is insufficient when renders finish out of order. In this example, `renderNativeWindow` is the application's C# bridge. It resolves `basis` to an immutable `HtmlChartSection`, calls `PrepareWindow`, stores the result under a fresh opaque token, and returns `{ token, html }`. The browser seeds its association with the token for `initial` and advances it only after a commit:
 
@@ -651,7 +675,17 @@ The native callback chooses `basis.NarrowPreparedVisual` for a narrow request an
 
 Only the latest request for the current scene and connection can commit. A newer request, ordinary update, reconnect, disconnect, disposal, removal, or Escape aborts pending work. A rejected, invalid or stale reply leaves the committed SVG and export intact. `cfxviewportchange` carries the accepted `requestId`, new `sceneRevision` and `kind`. A failed current reply emits `cfxviewporterror` with its request identity and message. Pass null to `connectXViewport` to disconnect.
 
-Native X windows support vertical, non-sparkline Line and StepLine charts with the existing linear X projection and supported interpolation. The adapter disables native zoom/pan controls while a connected section lacks that projection, including empty and unsupported charts. A window can contain no observations while a line still crosses it. Native preparation keeps the full source facts and authored observation identities, excludes off-window marks from pointer and keyboard access, regenerates X ticks and keeps the full-data Y bounds. A native commit clears transient brush and tooltip state and removes the previous whole-SVG transform. Export uses the committed native window. Bookmark and synchronization transforms retain their existing geometric meaning; they do not request native domains.
+Native X windows support vertical, non-sparkline Line, StepLine, Area, StepArea, StackedArea, Scatter and Bubble charts on linear or time X axes, including smooth Line and Area interpolation. The adapter disables native zoom/pan controls while a connected section lacks that projection, including empty and unsupported charts. A window can contain no observations while a connected path still crosses it. Native preparation keeps the full source facts and authored observation identities, excludes off-window marks from pointer and keyboard access, regenerates X ticks and keeps the full-data Y bounds. A native commit clears transient brush and tooltip state and removes the previous whole-SVG transform. Export uses the committed native window.
+
+`controller.getXWindow()` returns a detached `{ minimum, maximum, scale }` snapshot of the committed native scene, or null when no native projection is available. `controller.setXWindow(minimum, maximum)` requests finite, increasing source bounds through the same callback, with `kind: "window"`. It returns the controller immediately; `cfxviewportchange` signals the accepted scene and `cfxviewporterror` reports failure. A connection and supported projection are required. The host still calls `ConstrainViewport`, so edge-crossing source requests retain their span within the full domain. Time bounds use the chart's OLE Automation date coordinates, as in `ChartXViewport`, rather than JavaScript epoch milliseconds.
+
+```javascript
+const current = controller.getXWindow();
+const inset = (current.maximum - current.minimum) / 4;
+controller.setXWindow(current.minimum + inset, current.maximum - inset);
+```
+
+Bookmarks captured from a connected chart include `xWindow`. Applying one requests that source domain through the native callback; wait for `cfxviewportchange` before treating its native scene as committed. Connected synchronized peers exchange source bounds with a matching scale, so different plot sizes and reversed X directions retain the same source window. Each host constrains the request against its own full domain. Link charts whose source coordinates have the same meaning and units.
 
 Enable `ChartInteractionFeatures.StateBookmarks` when a host wants to save and replay user exploration state. The adapter captures only reusable chart state:
 
@@ -681,5 +715,7 @@ chart.dispatchEvent(new CustomEvent('cfx-apply-state', {
   detail: { snapshot }
 }));
 ```
+
+For a connected native window, replay copies the snapshot and waits for its matching prepared reply before restoring selection, mode and scenario playback or emitting `cfxstateapplied`. Rejected, canceled or superseded replies leave the committed state intact. A native replay keeps the geometric camera at its base scale; source bounds determine the data view.
 
 When synchronized charts are enabled, state payloads use the same `cfxsync` channel with action `state`; each chart applies only the target identities and scenario ids it understands.

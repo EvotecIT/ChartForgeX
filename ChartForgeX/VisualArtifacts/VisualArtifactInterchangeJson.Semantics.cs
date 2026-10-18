@@ -193,6 +193,7 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.Property("flow");
         writer.StartObject();
         String(writer, "kind", flow.Kind.ToString());
+        Boolean(writer, "fitLabelToContent", flow.FitLabelToContent);
         writer.EndObject();
     }
 
@@ -388,7 +389,9 @@ internal static partial class VisualArtifactInterchangeJson {
 
     private static VisualArtifactInterchangeFlowNode? ReadFlowNode(Dictionary<string, GeoJsonValue> root) {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "flow");
-        return item == null ? null : new VisualArtifactInterchangeFlowNode { Kind = RequiredEnum<FlowArtifactStepKind>(item, "kind") };
+        return item == null ? null : new VisualArtifactInterchangeFlowNode {
+            Kind = RequiredEnum<FlowArtifactStepKind>(item, "kind"), FitLabelToContent = OptionalBool(item, "fitLabelToContent") ?? true
+        };
     }
 
     private static VisualArtifactInterchangeFlowEdge? ReadFlowEdge(Dictionary<string, GeoJsonValue> root) {

@@ -19,7 +19,9 @@ public sealed class MermaidFlowchartCaptionLayoutTests {
     [InlineData(true, 640)]
     [InlineData(true, 1100)]
     public async Task ShapeOnlyFlowchartsCenterMeasuredCaptionsWithoutInfrastructureGlyphs(bool dark, int width) {
-        var source = (dark ? "%%{init: {'theme':'dark'}}%%\n" : "") + (dark ? Source.Replace("#d6e7fa", "#25354a", StringComparison.Ordinal) : Source);
+        var source = "%%{init: {'fontFamily':'" + BrowserProofFonts.Family + "'"
+            + (dark ? ",'theme':'dark'" : "") + "}}%%\n"
+            + (dark ? Source.Replace("#d6e7fa", "#25354a", StringComparison.Ordinal) : Source);
         var options = new MermaidRenderOptions { Flowchart = new MermaidFlowchartRenderOptions { Width = width, Height = 480 } };
         var result = MermaidRenderer.Render(source, options);
         Assert.Empty(result.Diagnostics);
@@ -30,7 +32,7 @@ public sealed class MermaidFlowchartCaptionLayoutTests {
         var svg = artifact.ToSvg(); var png = artifact.ToPng();
         Assert.Equal(svg, fencedArtifact.ToSvg());
         Assert.Equal(png, fencedArtifact.ToPng());
-        await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, 480);
+        await using var session = await BrowserProofFonts.OpenAsync(svg, width, 480);
         await Capture(session, svg, png, "shape-captions-" + width + (dark ? "-dark" : "-light"));
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
 

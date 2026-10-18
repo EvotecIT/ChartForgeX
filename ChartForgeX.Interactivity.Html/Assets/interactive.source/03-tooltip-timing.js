@@ -5,6 +5,17 @@
   const tooltipObservedNodes = new Map();
   const pointerReadoutSuspended = root => root._cfxPointerReadoutSuspended === true;
   const resumePointerReadout = root => { delete root._cfxPointerReadoutSuspended; };
+  // A native pointer entry can be caused by layout or replacement beneath a stationary mouse.
+  // Keyboard focus keeps its readout until the reader moves or presses a pointer again.
+  const keyboardReadoutOwnsPointer = root => {
+    const node = root._cfxKeyboardReadout;
+    return !!node && node.isConnected && root.contains(node)
+      && root.getRootNode().activeElement === targetFocusNode(node);
+  };
+  const resumePointerHover = root => {
+    delete root._cfxKeyboardReadout;
+    resumePointerReadout(root);
+  };
   const suspendPointerReadout = root => {
     // Reset can animate native marks beneath a stationary pointer. Passive entry
     // must not undo its dismissal; only fresh pointer or keyboard input resumes it.

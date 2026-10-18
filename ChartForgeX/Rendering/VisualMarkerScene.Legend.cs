@@ -28,7 +28,8 @@ internal static partial class VisualMarkerScene {
         };
         var connected = series.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.Area
             or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.RangeArea or ChartSeriesKind.RangeBand;
-        var radarArea = series.Kind == ChartSeriesKind.Radar && series.Radar.Form == ChartLineAreaForm.Area;
+        var radarArea = series.Kind == ChartSeriesKind.Radar && series.Radar.Form == ChartLineAreaForm.Area
+            && ChartRadarGeometry.HasClosedArea(chart, series);
         // Retain ordinary area/line swatches until their marker or radar paint is explicitly configured.
         if (!series.Markers.IsConfigured && (connected || radarArea && !series.Radar.FillOpacity.HasValue && series.Radar.OutlineStroke == null)) return null;
         return (builder, bounds, context) => {

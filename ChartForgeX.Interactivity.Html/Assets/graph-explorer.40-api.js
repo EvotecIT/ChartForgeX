@@ -123,9 +123,12 @@
       secondary.setAttribute('y', String(card ? 14 : shape === 'text' ? 18 : size + 32)); secondary.textContent = card ? graphCardText(node.secondaryLabel, size, true) : node.secondaryLabel; details.appendChild(secondary);
     }
     if (node.badge) {
-      const badge = svgElement(root, 'g'); badge.classList.add('cfx-graph-node-badge'); badge.setAttribute('transform', card ? `translate(${(size * 1.45 - 18).toFixed(3)} ${(-cardHalfHeight + 18).toFixed(3)})` : `translate(${(size * .82).toFixed(3)} ${(-size * .82).toFixed(3)})`);
-      const circle = svgElement(root, 'circle'); circle.setAttribute('r', '8'); circle.setAttribute('style', 'fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2'); badge.appendChild(circle);
-      const text = svgElement(root, 'text'); text.setAttribute('y', '3.5'); text.setAttribute('style', 'fill:var(--cfx-color-paper);stroke:none'); text.textContent = String(node.badge).slice(0, 5); badge.appendChild(text); details.appendChild(badge);
+      const geometry = graphBadgeGeometry({ ...node, size });
+      const badge = svgElement(root, 'g'); badge.classList.add('cfx-graph-node-badge'); badge.setAttribute('transform', `translate(${geometry.x} ${geometry.y})`);
+      const surface = svgElement(root, geometry.width <= 16 ? 'circle' : 'rect');
+      Object.entries(geometry.width <= 16 ? { r: 8 } : { x: -geometry.width / 2, y: -8, width: geometry.width, height: 16, rx: 8 }).forEach(([key, value]) => surface.setAttribute(key, String(value)));
+      surface.setAttribute('style', 'fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2'); badge.appendChild(surface);
+      const text = svgElement(root, 'text'); text.setAttribute('y', '3.5'); text.setAttribute('style', 'fill:var(--cfx-color-paper);stroke:none'); text.textContent = geometry.text; badge.appendChild(text); details.appendChild(badge);
     }
     const status = String(node.status || '').toLowerCase();
     if (status && status !== 'unknown') {

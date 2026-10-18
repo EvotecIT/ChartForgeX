@@ -320,10 +320,14 @@ public sealed class FlowArtifactStep {
     /// <summary>Gets or sets the static preview height.</summary>
     public double Height { get; set; } = 68;
 
+    /// <summary>Gets or sets whether preparation may grow the step to contain its complete measured content. Default: true.</summary>
+    /// <remarks>When true, Width and Height are minimum dimensions. Set false to retain fixed dimensions and fit or diagnose crowded content.</remarks>
+    public bool FitLabelToContent { get; set; } = true;
+
     internal FlowArtifactStep Clone() {
         var copy = new FlowArtifactStep(Id, Label, Kind) {
             LaneId = LaneId, Status = Status, Subtitle = Subtitle, Icon = Icon, Symbol = Symbol,
-            Color = Color, Badge = Badge, Width = Width, Height = Height
+            Color = Color, Badge = Badge, Width = Width, Height = Height, FitLabelToContent = FitLabelToContent
         };
         foreach (var pair in Metadata) copy.Metadata.Add(pair.Key, pair.Value);
         return copy;

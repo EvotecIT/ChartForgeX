@@ -97,6 +97,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .Append(",\"fullMaximum\":").Append(projection.FullMaximum.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"minimum\":").Append(projection.Minimum.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"maximum\":").Append(projection.Maximum.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"scale\":").Append(HtmlJsonString.Encode(projection.Scale.ToString().ToLowerInvariant()))
                 .Append(",\"reversed\":").Append(projection.Reversed ? "true" : "false")
                 .Append(",\"plotBounds\":{\"x\":").Append(plot.X.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"y\":").Append(plot.Y.ToString("R", CultureInfo.InvariantCulture))

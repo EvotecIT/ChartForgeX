@@ -210,11 +210,9 @@ internal static partial class SmokeTests {
 
         var reorderedHistogram = Chart.Create().WithTheme(VisualTheme.Report()).AddHistogram("Reordered", new[] { 0d, 1d }, ChartHistogramBinLayout.FromCount(0, 1, 2, roundBounds: false));
         var reorderedPoints = reorderedHistogram.Series[0].Points;
-        (reorderedPoints[0], reorderedPoints[1]) = (reorderedPoints[1], reorderedPoints[0]);
-        AssertThrows<InvalidOperationException>(() => reorderedHistogram.ToSvg(), "Histogram rendering should reject point order that no longer matches the stored layout.");
+        AssertThrows<NotSupportedException>(() => reorderedPoints[0] = reorderedPoints[1], "Derived histogram points reject edits before changing their layout or provenance.");
         var resizedHistogram = Chart.Create().WithTheme(VisualTheme.Report()).AddHistogram("Resized", new[] { 0d, 1d }, ChartHistogramBinLayout.FromCount(0, 1, 2, roundBounds: false));
-        resizedHistogram.Series[0].Points.RemoveAt(0);
-        AssertThrows<InvalidOperationException>(() => resizedHistogram.ToPng(), "Histogram rendering should reject point counts that no longer match the stored layout.");
+        AssertThrows<NotSupportedException>(() => resizedHistogram.Series[0].Points.RemoveAt(0), "Derived histogram points reject removal before changing their bin provenance.");
 
         var constantLayout = ChartHistogramBinLayout.FromCount(5, 5, 1, roundBounds: false);
         var constant = Chart.Create().WithTheme(VisualTheme.Report())

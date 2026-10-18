@@ -176,7 +176,7 @@ internal static partial class VisualCartesianCompiler {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
                         DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index], clipMarks, xViewport);
-                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index]);
+                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index], xViewport);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
@@ -196,7 +196,7 @@ internal static partial class VisualCartesianCompiler {
             DrawDataLabels(context, builder, labelBounds, labels, obstacles);
         CaptureReadouts(chart, builder, range, secondaryRange, axisLabels, horizontal, secondaryOnly);
         return hasProjection
-            ? new ChartXProjection(fullMinimum, fullMaximum, range.MinX, range.MaxX, plot, chart.Options.XAxis.Reversed) : null;
+            ? new ChartXProjection(fullMinimum, fullMaximum, range.MinX, range.MaxX, plot, chart.Options.XAxis.Reversed, chart.Options.XAxis.Scale) : null;
     }
 
     private static void Validate(Chart chart) {

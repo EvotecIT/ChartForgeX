@@ -27,6 +27,7 @@ public static class LinkedChartViewsExamples {
     /// <param name="dark">Whether to use the dark theme.</param>
     /// <returns>A page that uses ChartForgeX's public browser API without another library.</returns>
     public static string CreatePage(bool dark = false) {
+        ExampleTypography.Register();
         void ConfigureTime(HtmlChartInteractionOptions options) {
             Configure(options, "linked-time", "linked-time");
             options.Interaction.Enable(ChartInteractionFeatures.Brush);
@@ -52,7 +53,7 @@ public static class LinkedChartViewsExamples {
         var summary = CreateTotalsChart(0, Api.Length - 1, dark).ToInteractiveHtmlFragmentWithoutAssets(ConfigureTotals);
         var controls = "<div class='linked-controls'><button type='button' id='linked-reset'>Show every day</button>"
             + "<p id='linked-status' role='status'>Showing every day. Brush a date range, then select a service below.</p></div>";
-        var style = "<style>main{display:grid;gap:20px;width:min(100%,1100px);min-width:0}"
+        var style = ExampleTypography.EmbeddedStyle + "<style>main{display:grid;gap:20px;width:min(100%,1100px);min-width:0}"
             + ".linked-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px}"
             + ".linked-controls p{margin:0;font-size:14px}.linked-controls button{font:inherit;padding:8px 12px;"
             + "border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;cursor:pointer}"
@@ -134,5 +135,6 @@ public static class LinkedChartViewsExamples {
 
     private static Chart Frame(bool dark) => Chart.Create().WithSize(800, 360)
         .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        .WithFontFamily(ExampleTypography.FontFamily)
         .WithYAxis("Requests").WithDataLabels(false);
 }

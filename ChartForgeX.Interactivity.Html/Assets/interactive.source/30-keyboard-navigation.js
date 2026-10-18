@@ -8,7 +8,7 @@
   const keyboardAvailabilityMutation = (record, stage, ancestry) => {
     if (record.type === 'attributes' && record.attributeName === 'class'
       && keyboardNativeClasses(record.oldValue) === keyboardNativeClasses(record.target.getAttribute('class'))) return false;
-    if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline]')) return false;
+    if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline]')) return false;
     if (record.type === 'attributes' && record.attributeName === 'style' && record.target.matches('[data-cfx-highlight-paint]')
       && keyboardNativeStyle(record.oldValue) === keyboardNativeStyle(record.target.getAttribute('style'))) return false;
     // Tooltip, brush, guide and compare UI repaint while the pointer moves. They are not SVG
@@ -16,7 +16,7 @@
     const svg = stage.querySelector('svg');
     if (record.type === 'attributes') return record.target === stage || !!svg?.contains(record.target) || ancestry.nodes.includes(record.target);
     const changes = [...record.addedNodes, ...record.removedNodes];
-    const adapterPaint = node => node.nodeType === 1 && node.matches('[data-cfx-highlight-outline],.cfx-prepared-point-marker,[data-cfx-browser-hit-area]');
+    const adapterPaint = node => node.nodeType === 1 && node.matches('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],.cfx-prepared-point-marker,[data-cfx-browser-hit-area]');
     if (changes.length && changes.every(adapterPaint)) return false;
     return !!svg?.contains(record.target) || changes.some(node => node.contains(stage) || svg && node.contains(svg)
       || ancestry.nodes.some(boundary => node.contains(boundary)));
@@ -126,6 +126,7 @@
         focusKeyboardTarget(root, replacement, passive);
       }
     }
+    refreshKeyboardFocusPaint(root);
     return state;
   };
   const bindKeyboardNavigationAvailability = (root) => {
@@ -194,7 +195,9 @@
   };
   const scrollKeyboardTargetIntoView = (root, node) => {
     const stage = root.querySelector('.cfx-stage');
-    if (!stage || !stage.contains(node)) return;
+    const tray = root.querySelector('[data-cfx-compare-tray]');
+    const owner = stage?.contains(node) ? stage : tray?.contains(node) ? tray : null;
+    if (!owner) return;
     const scrollAxis = (overflow, extent, available, offset, start, end, itemStart, itemEnd) => {
       if (!['auto', 'scroll', 'hidden'].includes(overflow) || extent <= available) return offset;
       const center = (itemStart + itemEnd) / 2;
@@ -220,7 +223,7 @@
         left: scrollAxis(style.overflowX, clip.scrollWidth, clip.clientWidth, clip.scrollLeft, left, left + clip.clientWidth - 16, start.x, end.x),
         top: scrollAxis(style.overflowY, clip.scrollHeight, clip.clientHeight, clip.scrollTop, top, top + clip.clientHeight - 16, start.y, end.y) });
     }
-    const box = node.getBoundingClientRect(), viewport = stage.getBoundingClientRect();
+    const box = node.getBoundingClientRect(), viewport = owner.getBoundingClientRect();
     // Native scrolling can reveal a small focus mark through an opaque slot's internal scroller.
     // Preserve the precise manual policy for wide marks that already have a visible portion.
     if (!preserveVisiblePortion && box.width <= viewport.width - 16 && box.height <= viewport.height - 16)

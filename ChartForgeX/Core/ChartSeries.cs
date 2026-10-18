@@ -27,14 +27,20 @@ public sealed partial class ChartSeries {
     public ChartSeriesKind Kind { get; }
 
     /// <summary>
-    /// Gets mutable numeric X/Y observations. Typed observation families expose an empty read-only view here.
+    /// Gets owner-controlled mutable numeric X/Y observations. Insert/remove operations keep point identities and presentation with their observations.
+    /// Derived decimation, histogram and regression points are read-only. Typed observation families expose an empty read-only view here.
     /// </summary>
-    public IList<ChartPoint> Points => UsesTypedObservations || IsRelationshipKind(Kind) ? Array.Empty<ChartPoint>() : _points;
+    public IList<ChartPoint> Points => UsesTypedObservations || IsRelationshipKind(Kind) ? Array.Empty<ChartPoint>() : _numericPoints ??= new NumericPointList(this);
     private readonly List<ChartPoint> _points = new();
+    private IList<ChartPoint>? _numericPoints;
 
     /// <summary>Gets the authored source count, or the retained original-input count for explicit derivation APIs such as histogram, regression, raw-sample box plot and decimation.</summary>
     /// <remarks>Calendar and map ingestion normalize duplicate keys before storing authored observations. Use <see cref="ObservationCount"/> for the current authored display items.</remarks>
-    public int SourcePointCount { get; private set; }
+    public int SourcePointCount {
+        get => UsesTypedObservations || IsRelationshipKind(Kind) || HasSourceIndexedObservationIds ? _sourcePointCount : _points.Count;
+        private set => _sourcePointCount = value;
+    }
+    private int _sourcePointCount;
 
     /// <summary>Gets the explicit decimation algorithm, or null when the series was not created through a decimating API.</summary>
     public ChartDecimationMode? DecimationMode { get; private set; }
@@ -522,7 +528,7 @@ public sealed partial class ChartSeries {
         _points.AddRange(ChartGuards.Points(points, nameof(points)));
         if (UsesTypedObservations && _points.Count > 0) throw new ArgumentException("This series kind requires typed observations. Use its typed series factory or chart Add method.", nameof(points));
         if (IsRelationshipKind(kind) && _points.Count > 0) throw new ArgumentException("Relationship series use typed nodes, links or items. Use AddSankey, AddChord, AddTree, AddSunburst or AddTreemap.", nameof(points));
-        SourcePointCount = Points.Count;
+        SourcePointCount = _points.Count;
     }
 
     internal void SetDecimation(ChartDecimationResult result) {

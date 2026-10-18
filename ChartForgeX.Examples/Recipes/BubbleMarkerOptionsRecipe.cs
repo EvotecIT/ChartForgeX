@@ -15,6 +15,10 @@ public static class BubbleMarkerOptionsRecipe {
         }).ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
         return Chart.Create().WithXAxis("Workload batches").WithYAxis("Time (minutes)")
             .AddSeries(standard).AddSeries(priority)
-            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 3; bubble.MaximumRadius = 24; });
+            .ConfigureBubble(bubble => {
+                bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 0; bubble.MaximumRadius = 24;
+                bubble.SizeEncoding = ChartBubbleSizeEncoding.Area;
+                bubble.SizeDimension.Name = "Requests"; bubble.SizeDimension.ShowLegend = true;
+            });
     }
 }

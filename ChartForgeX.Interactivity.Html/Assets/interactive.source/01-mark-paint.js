@@ -74,16 +74,8 @@
     // Native paired fills need a connected span; isolated observations can still paint their own markers or caps.
     return !!(previous && followsPrevious(node) || followsPrevious(next));
   };
-  const pairedExtentScreenBox = (node) => {
-    const region = node._cfxPairedRegion, matrix = node.getScreenCTM();
-    if (!region || !matrix) return null;
-    // Use the captured native extent, excluding the minimum-size transparent browser hit area.
-    const corners = [[region.x, region.y], [region.x + region.width, region.y],
-      [region.x, region.y + region.height], [region.x + region.width, region.y + region.height]]
-      .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
-    return { left: Math.min(...corners.map(p => p.x)), right: Math.max(...corners.map(p => p.x)),
-      top: Math.min(...corners.map(p => p.y)), bottom: Math.max(...corners.map(p => p.y)) };
-  };
+  // Use the captured native extent, excluding the minimum-size transparent browser hit area.
+  const pairedExtentScreenBox = (node) => nativeRegionScreenBox(node, node._cfxPairedRegion);
   // Native producers use rectangular user-space clips, in the live transform of their owning group.
   const nativePaintClips = (node) => {
     const clips = [];
@@ -93,8 +85,12 @@
       const clip = parent.ownerSVGElement.getElementById(reference[1]);
       if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
         || !clip.firstElementChild.matches('rect')) continue;
-      const matrix = parent.getScreenCTM(), rect = clip.firstElementChild.getBBox();
-      if (!matrix || !(rect.width > 0 && rect.height > 0)) return null;
+      // Firefox returns an empty bounding box for geometry inside the non-rendered clipPath tree.
+      // Native rectangular clips expose their resolved user-space geometry through SVG lengths.
+      const shape = clip.firstElementChild, matrix = parent.getScreenCTM();
+      const rect = { x: shape.x.baseVal.value, y: shape.y.baseVal.value,
+        width: shape.width.baseVal.value, height: shape.height.baseVal.value };
+      if (!matrix || !Object.values(rect).every(Number.isFinite) || !(rect.width > 0 && rect.height > 0)) return null;
       clips.push({ rect, matrix });
     }
     return clips;
@@ -112,7 +108,8 @@
       const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
       // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
       const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
-      box ||= paired ? pairedExtentScreenBox(subject) : subject.getBoundingClientRect();
+      box ||= paired ? pairedExtentScreenBox(subject)
+        : subject !== node ? nativeRegionScreenBox(subject) || subject.getBoundingClientRect() : subject.getBoundingClientRect();
       if (!box) return false;
       if (subject !== node) {
         // Connected paired fills use their own extent. Single-point line/radar paint keeps its source-location contract.

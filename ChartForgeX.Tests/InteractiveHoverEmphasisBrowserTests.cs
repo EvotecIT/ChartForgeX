@@ -57,13 +57,14 @@ public sealed class InteractiveHoverEmphasisBrowserTests {
         var page = session.Page;
 
         await page.Keyboard.PressAsync("Tab");
-        var first = await page.EvaluateAsync<string[]>("() => { const node = document.activeElement; const s = getComputedStyle(node); return [node.dataset.cfxTargetId || '', s.outlineStyle, s.outlineWidth]; }");
-        Assert.NotEqual(string.Empty, first[0]);
-        Assert.Equal(new[] { "solid", "2px" }, first.Skip(1).ToArray());
+        var first = await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId || ''");
+        Assert.NotEqual(string.Empty, first);
+        await AssertNativeKeyboardFocusAsync(page);
 
         await page.Keyboard.PressAsync("ArrowRight");
         var next = await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId || ''");
-        Assert.NotEqual(first[0], next);
+        Assert.NotEqual(first, next);
         Assert.NotEqual(string.Empty, await TooltipTextAsync(page));
+        await AssertNativeKeyboardFocusAsync(page);
     }
 }

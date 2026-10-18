@@ -12,6 +12,7 @@ internal static class Program {
         PackageAssertions.CoreFixtures();
         ThemeSnapshots();
         TypedSeriesLifecycle();
+        NumericOwnershipAndWindowDimensions();
         CallbackOwnership();
         PolarPaint();
         PackageAssertions.Payload("ChartForgeX");
@@ -75,6 +76,31 @@ internal static class Program {
             "Typed replacement retained stale observation metadata or configuration-slot counts.");
         PackageAssertions.Require(prepared.ToSvg() == capturedSvg, "Typed replacement changed an already prepared artifact.");
         PackageAssertions.Png(prepared.ToPng()); PackageAssertions.Png(chart.ToPng());
+    }
+
+    private static void NumericOwnershipAndWindowDimensions() {
+        var origin = new DateTime(2026, 1, 28).ToOADate();
+        var readings = ChartSeries.CreateLine(new ChartSeriesId("readings"), "Readings",
+            new[] { new ChartPoint(origin, 2), new ChartPoint(origin + 10, 8) })
+            .WithObservationId(1, new ChartObservationId("last"));
+        readings.Points.Insert(0, new ChartPoint(origin - 1, 1));
+        PackageAssertions.Require(readings.SourcePointCount == 3 && readings.ObservationIds[2].Value == "last"
+            && readings.Points[2].X == origin + 10, "Packed numeric insertion detached an identity or source count.");
+        var chart = Chart.Create().WithSize(420, 280).WithXAxisScale(ChartScaleKind.Time).AddSeries(readings)
+            .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("volume"), "Volume", new[] { new ChartBubble(origin + 5, 4, 9) })
+                .ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Star))
+            .ConfigureBubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280))), new ChartXViewport(origin + 2, origin + 8));
+        PackageAssertions.Require(prepared.XProjection != null && prepared.XProjection.Scale == ChartScaleKind.Time
+            && prepared.XProjection.Minimum == origin + 2, "Packed time/Bubble window lost its native projection.");
+        PackageAssertions.Png(prepared.ToPng());
+        var derived = ChartSeries.CreateTrendLine(new ChartSeriesId("fit"), "Fit", readings.Points);
+        PackageAssertions.Require(derived.Points.IsReadOnly, "Packed derived points permit provenance-changing mutation.");
+        var radar = Chart.Create().AddRadar("Categories", new[] { new ChartPoint(1, 3), new ChartPoint(2, 3), new ChartPoint(3, 3) })
+            .AddRadar("Observed", new[] { new ChartPoint(1, 2), new ChartPoint(3, 4) })
+            .WithXLabels("First", "Missing", "Third");
+        radar.Series[1].ConfigureRadar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
+        PackageAssertions.Png(radar.ToPng());
     }
 
     private static void CallbackOwnership() {

@@ -1,6 +1,8 @@
 using System;
 using System.Text;
 using ChartForgeX.Interactivity;
+using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -48,13 +50,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         if (includeText && !string.IsNullOrWhiteSpace(node.BadgeText)) {
-            var badge = node.BadgeText!.Length > 5 ? node.BadgeText.Substring(0, 5) : node.BadgeText;
+            var bounds = NodeBadgeBounds(node, size);
             writer.Append("<g class=\"cfx-graph-node-badge\" transform=\"translate(");
-            writer.Append(Number(cardNode ? BoxHalfWidth(size) - 18 : size * 0.82));
+            writer.Append(Number(bounds.Left + bounds.Width / 2));
             writer.Append(' ');
-            writer.Append(Number(cardNode ? -BoxHalfHeight(size) + 18 : -size * 0.82));
-            writer.Append(")\"><circle r=\"8\" style=\"fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2\"></circle><text y=\"3.5\" style=\"fill:var(--cfx-color-paper);stroke:none\">");
-            writer.Append(Text(badge));
+            writer.Append(Number(bounds.Top + 8));
+            writer.Append(")\">");
+            if (bounds.Width <= 16) writer.Append("<circle r=\"8\"");
+            else writer.Append("<rect x=\"").Append(Number(-bounds.Width / 2)).Append("\" y=\"-8\" width=\"").Append(Number(bounds.Width)).Append("\" height=\"16\" rx=\"8\"");
+            writer.Append(" style=\"fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2\"></").Append(bounds.Width <= 16 ? "circle" : "rect").Append('>');
+            writer.Append("<text y=\"3.5\" style=\"fill:var(--cfx-color-paper);stroke:none\">");
+            writer.Append(Text(node.BadgeText!));
             writer.Append("</text></g>");
         }
 
@@ -70,6 +76,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "style", "fill:" + NodeStatusColor(node.Status) + ";stroke:var(--cfx-color-paper);stroke-width:2");
             writer.Append("></circle>");
         }
+    }
+
+    /// <summary>Measures the complete badge text and reserves padding without changing its corner anchor.</summary>
+    private static ChartRect NodeBadgeBounds(GraphSceneNode node, double size) {
+        var font = FontSpec.FromFamily("Inter, Segoe UI, Arial, sans-serif");
+        font.Weight = 800;
+        var width = Math.Max(16, TextLayoutEngine.Measure(node.BadgeText ?? string.Empty, new TextStyle { Font = font, FontSize = 7 }).Width + 8);
+        var x = IsCardNode(node) ? BoxHalfWidth(size) - 18 : size * .82;
+        var y = IsCardNode(node) ? -BoxHalfHeight(size) + 18 : -size * .82;
+        return new ChartRect(x - width / 2, y - 8, width, 16);
     }
 
     private static string NodeStatusColor(string? status) {

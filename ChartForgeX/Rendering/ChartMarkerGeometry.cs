@@ -6,7 +6,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 /// <summary>Owns normalized marker contours for scene marks, pattern clipping and legend glyphs.</summary>
-internal static class ChartMarkerGeometry {
+internal static partial class ChartMarkerGeometry {
     internal static ChartPath Path(ChartMarkerShape shape, double x, double y, double radius) {
         if (shape == ChartMarkerShape.Circle) return ChartPathBuilder.Ellipse(x, y, radius, radius);
         var commands = new List<ChartPathCommand>();

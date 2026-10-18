@@ -16,10 +16,12 @@ internal static partial class VisualNumericRadialCompiler {
             var series = chart.Series[index];
             var tension = series.Radar.CurveTension ?? 0;
             if (series.Kind != ChartSeriesKind.Radar || tension == 0 || series.RenderPoints.Count == 0) continue;
-            var (points, _) = RadarPoints(chart, unit, index, coordinates, categories, scales[series.YAxis]);
-            var bounds = ChartPathBuilder.ClosedCurve(points, tension).Bounds();
-            extent = Math.Max(extent, Math.Max(Math.Max(Math.Abs(bounds.Left), Math.Abs(bounds.Right)),
-                Math.Max(Math.Abs(bounds.Top), Math.Abs(bounds.Bottom))));
+            var (points, sources) = RadarPoints(chart, unit, index, coordinates, categories, scales[series.YAxis]);
+            foreach (var path in ChartRadarGeometry.Paths(series.Radar, points, sources)) {
+                var bounds = path.Path.Bounds();
+                extent = Math.Max(extent, Math.Max(Math.Max(Math.Abs(bounds.Left), Math.Abs(bounds.Right)),
+                    Math.Max(Math.Abs(bounds.Top), Math.Abs(bounds.Bottom))));
+            }
         }
         return extent <= 1 ? geometry : new RadialSeriesGeometry(geometry.Cx, geometry.Cy, geometry.Outer / extent,
             geometry.Inner / extent, geometry.Start, geometry.Sweep, geometry.TickLane);

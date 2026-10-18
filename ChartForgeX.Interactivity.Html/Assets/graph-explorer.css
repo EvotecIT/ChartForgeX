@@ -825,7 +825,9 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 }
 
 .cfx-graph-node .cfx-graph-node-badge circle,
-.cfx-graph-node-details .cfx-graph-node-badge circle {
+.cfx-graph-node-details .cfx-graph-node-badge circle,
+.cfx-graph-node .cfx-graph-node-badge rect,
+.cfx-graph-node-details .cfx-graph-node-badge rect {
   fill: var(--cfx-color-text);
   stroke: var(--cfx-color-paper);
   stroke-width: 2;
@@ -837,6 +839,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   stroke: none;
   font-size: 7px;
   font-weight: 800;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
   paint-order: normal;
 }
 
