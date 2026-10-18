@@ -40,6 +40,7 @@
   "UpdateVersions": true,
   "Build": true,
   "PackStrategy": "PerProject",
+  "IncludeSymbols": true,
   "PublishNuget": false,
   "PublishGitHub": false,
   "CreateReleaseZip": true,
