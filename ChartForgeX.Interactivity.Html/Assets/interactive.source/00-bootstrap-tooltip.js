@@ -181,7 +181,7 @@
     if (financialRows) rows.push(...financialRows);
     else if (data.cfxWaterfallKind) rows.push(...waterfallTooltipRows(node));
     else if (data.cfxEmpty !== 'true') {
-      const name = data.cfxValue !== undefined ? rowName(node, 'value', 'Value') : 'Y';
+      const name = data.cfxValue !== undefined || data.cfxValueOverflow === 'true' ? rowName(node, 'value', 'Value') : 'Y';
       const value = capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue !== undefined ? data.cfxValue : data.cfxY));
       if (data.cfxFormattedValue !== undefined) rows.push({ name, value });
       else push(name, value);
@@ -284,70 +284,6 @@
     return items;
   };
   const selectedTargets = (root) => compareItems(root).map((item) => item.target);
-  const renderCompare = (root) => {
-    (root._cfxCompareCleanup || []).forEach(release => release());
-    root._cfxCompareCleanup = [];
-    const tray = root.querySelector('[data-cfx-compare-tray]');
-    if (!tray || !hasFeature(root, 'CompareMarkers')) return [];
-    const items = compareItems(root);
-    tray.replaceChildren();
-    if (!items.length) {
-      tray.hidden = true;
-      root.removeAttribute('data-cfx-compare-count');
-      return items;
-    }
-    tray.hidden = false;
-    root.dataset.cfxCompareCount = String(items.length);
-    const summary = document.createElement('div');
-    summary.className = 'cfx-compare-tray__summary';
-    summary.textContent = uiText(root, 'Compare', 'Compare {count}', { count: items.length });
-    tray.appendChild(summary);
-    items.slice(0, 6).forEach((item, index) => {
-      const chip = document.createElement('button');
-      chip.className = 'cfx-compare-chip';
-      chip.type = 'button';
-      chip.textContent = item.label;
-      chip.dataset.cfxCompareIndex = String(index);
-      chip.title = item.label;
-      root._cfxCompareCleanup.push(listenChart(root, chip, 'click', () => {
-        clearHover(root, false, false);
-        if (applyHoverByTarget(root, item.target)) {
-          recordFocusTrail(root, item.target, true, true);
-          const node = interactiveTargets(root).find(node => matchesTargetIdentity(node, item.target)), tip = root.querySelector('.cfx-tooltip');
-          if (node && tip) {
-            if (!tooltipSourceInView({ node, tip })) scrollKeyboardTargetIntoView(root, targetFocusNode(node));
-            if (root.dataset.cfxPinOnSelect === 'false') showTip(root, tip, node);
-            else pinTip(root, tip, node, undefined, false);
-          }
-          emitHostEvent(root, 'cfxhover', { label: item.label, target: item.target });
-        }
-      }));
-      tray.appendChild(chip);
-    });
-    if (items.length > 6) {
-      const more = document.createElement('span');
-      more.className = 'cfx-compare-tray__more';
-      more.textContent = '+' + (items.length - 6);
-      tray.appendChild(more);
-    }
-    const clear = document.createElement('button');
-    clear.className = 'cfx-compare-clear';
-    clear.type = 'button';
-    clear.textContent = uiText(root, 'Clear', 'Clear');
-    clear.setAttribute('data-cfx-compare-clear', 'true');
-    root._cfxCompareCleanup.push(listenChart(root, clear, 'click', () => {
-      const returnFocus = tray.contains(document.activeElement);
-      clearSelections(root);
-      publishSelectionChange(root, 'clear');
-      publishCompare(root, true);
-      if (returnFocus) {
-        if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
-        try { root.focus({ preventScroll: true }); } catch { root.focus(); }
-      }
-    }));
-    tray.appendChild(clear);
-    return items;
-  };
   const publishCompare = (root, sync) => {
     const items = renderCompare(root);
     if (!hasFeature(root, 'CompareMarkers')) return items;

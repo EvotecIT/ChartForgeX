@@ -19,7 +19,7 @@
   const visibleCartesianPlot = (root, stage, plot = root._cfxCartesianPlot) => {
     const svg = stage.querySelector('svg');
     if (!plot || !svg || stage.clientWidth <= 0 || stage.clientHeight <= 0) return null;
-    const matrix = svg.getScreenCTM();
+    const matrix = svgScreenMatrix(svg);
     // stagePoint supports positive axis-aligned host scaling, not rotated/skewed/perspective hosts.
     if (!matrix || matrix.is2D === false || matrix.b !== 0 || matrix.c !== 0 || matrix.a <= 0 || matrix.d <= 0) return null;
     const corners = [[plot.x, plot.y], [plot.x + plot.width, plot.y],

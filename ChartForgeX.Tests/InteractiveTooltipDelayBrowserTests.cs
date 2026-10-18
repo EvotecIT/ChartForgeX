@@ -108,6 +108,9 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             if (!keyboard) options.Interaction.Disable(ChartInteractionFeatures.KeyboardNavigation);
         }), 950, 760);
         var page = session.Page;
+        var clockStart = DateTime.UtcNow;
+        await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = clockStart });
+        await page.Clock.PauseAtAsync(clockStart.AddHours(1));
         await TraceAsync(page);
         await PointerAsync(page, Point(0, 0));
         Assert.True(await TipHiddenAsync(page));
@@ -126,7 +129,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         var pinned = await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-pinned-target");
         Assert.Contains(id!, pinned!, StringComparison.Ordinal);
         Assert.False(await TipHiddenAsync(page));
-        await Task.Delay(Delay + 60);
+        await page.Clock.RunForAsync(Delay + 60);
         Assert.Equal(pinned, await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-pinned-target"));
         Assert.Equal("6", await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = "Y" }).Locator("+ dd").InnerTextAsync());
         await CaptureDelayAsync(page, "delay-immediate-" + (keyboard ? "keyboard" : "pointer-pin"), await TraceStateAsync(page));

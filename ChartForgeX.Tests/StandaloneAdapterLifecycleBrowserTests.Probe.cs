@@ -24,7 +24,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         for(const [name,target] of [['window',window],['document',document]]){
             const add=target.addEventListener.bind(target),remove=target.removeEventListener.bind(target);
             target.addEventListener=(type,listener,options)=>{
-                if(lifetimeProbe.recordGlobals&&['pointerup','pointercancel','blur','fullscreenchange'].includes(type))
+                if(lifetimeProbe.recordGlobals&&['pointerup','pointercancel','blur','fullscreenchange','beforeprint','afterprint'].includes(type))
                     lifetimeProbe.globals.push({target:name,type,listener,active:true});
                 return add(type,listener,options);
             };

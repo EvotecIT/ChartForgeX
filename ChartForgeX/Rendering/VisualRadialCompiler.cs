@@ -11,15 +11,17 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Compiles pie and donut data directly into the shared numeric scene.</summary>
 internal static partial class VisualRadialCompiler {
+    private static readonly string OverflowValueText = "> " + double.MaxValue.ToString("G17", CultureInfo.InvariantCulture);
+
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         if (!chart.Series[0].ShowInLegend) return Array.Empty<VisualLegendEntry>();
-        var slices = GetSlices(chart, colors); var total = slices.Sum(slice => slice.Value);
+        var slices = GetSlices(chart, colors); var total = Total(chart, slices);
         return slices.Select(slice => new VisualLegendEntry(slice.Label, slice.Color, SliceId(slice),
                 chart.Series[0].Kind, slice.Pattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey,
                 paint: VisualChartPaint.Series(chart.Series[0], slice.Color, slice.PointIndex),
-                value: ChartNumericFormatter.FormatValue(chart.Options, slice.Value),
-                percentage: (total > 0 ? slice.Value / total : 0).ToString("0.#%", CultureInfo.InvariantCulture),
-                metadata: Metadata(chart, slice, total > 0 ? slice.Value / total : 0, null))).ToArray();
+                value: DisplayValue(chart, slice),
+                percentage: Fraction(chart, slice, total).ToString("0.#%", CultureInfo.InvariantCulture),
+                metadata: Metadata(chart, slice, Fraction(chart, slice, total), null, !total.FiniteTotal.HasValue))).ToArray();
     }
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
@@ -30,9 +32,12 @@ internal static partial class VisualRadialCompiler {
             builder.AddDiagnostic(new VisualDiagnostic("radial.aggregate-offsets", "An aggregate Other slice uses the default position; its source slice offsets remain available in the original data."));
         if (slices.Any(slice => slice.SourcePatterns.Distinct().Count() > 1))
             builder.AddDiagnostic(new VisualDiagnostic("radial.aggregate-patterns", "The Other slice combines different source patterns and uses a solid fill; source patterns remain in its metadata."));
-        var total = slices.Sum(slice => slice.Value);
-        if (double.IsInfinity(total)) throw new ArgumentException("The sum of pie values must be finite.", nameof(chart));
-        if (total <= 0) {
+        var total = Total(chart, slices);
+        if (!total.FiniteTotal.HasValue)
+            builder.AddDiagnostic(new VisualDiagnostic("radial.total-overflow", "The total exceeds the finite numeric range. Proportions and authored source values remain available; the default total caption shows a lower bound."));
+        if (slices.Any(slice => !ChartMath.IsFinite(slice.Value)))
+            builder.AddDiagnostic(new VisualDiagnostic("radial.aggregate-overflow", "The Other aggregate exceeds the finite numeric range. Its numeric aggregate is omitted, its contributors remain exact, and its value and slice formatters are skipped in favor of a lower-bound readout."));
+        if (!total.HasPositiveValues) {
             builder.AddDiagnostic(new VisualDiagnostic("radial.no-data", "Pie and donut charts need at least one positive value."));
             builder.Text(chart.Options.Labels.NoData, plot.Left + plot.Width / 2, plot.Top + plot.Height / 2,
                 context.Theme.Typography.DataLabelSize, colors.MutedForeground, role: "no-data", alignment: TextAlignment.Center, paint: SvgPaint.Of(colors.MutedForeground, SvgColorRole.Text));
@@ -61,7 +66,7 @@ internal static partial class VisualRadialCompiler {
         using (builder.PushClip(plot)) {
             foreach (var slice in slices) {
                 if (slice.Value <= 0) continue;
-                var percent = slice.Value / total;
+                var percent = Fraction(chart, slice, total);
                 var sweep = percent * Math.PI * 2;
                 var mid = start + sweep / 2;
                 var offset = slice.PointIndex >= 0 && slice.PointIndex < series.PointSliceOffsets.Count
@@ -69,9 +74,9 @@ internal static partial class VisualRadialCompiler {
                 var sliceX = cx + Math.Cos(mid) * offset;
                 var sliceY = cy + Math.Sin(mid) * offset;
                 var role = inner > 0 ? "donut-slice" : "pie-slice";
-                var formattedValue = ChartNumericFormatter.FormatValue(chart.Options, slice.Value);
-                var resolvedLabel = (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) ? FormatLabel(chart, slice, total, formattedValue) : null;
-                using (builder.PushGroup(null, "radial-point", Metadata(chart, slice, percent, resolvedLabel))) {
+                var formattedValue = DisplayValue(chart, slice);
+                var resolvedLabel = (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) ? FormatLabel(chart, slice, percent, formattedValue) : null;
+                using (builder.PushGroup(null, "radial-point", Metadata(chart, slice, percent, resolvedLabel, !total.FiniteTotal.HasValue))) {
                     builder.Slice(sliceX, sliceY, radius, inner, start, sweep, slice.Color, colors.Surface, 2, role, SliceId(slice),
                         paint: new VisualScenePaintBinding(VisualChartPaint.Series(series, slice.Color, slice.PointIndex), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                     if (slice.Pattern != ChartFillPattern.None)
@@ -86,16 +91,28 @@ internal static partial class VisualRadialCompiler {
                 if (!string.IsNullOrWhiteSpace(resolvedLabel)) {
                     // The associated slice extent is descriptive, including when its visible label is omitted.
                     builder.AddRegion(new VisualSemanticRegion(SliceId(slice) + "-label", "radial-data-label", bounds, resolvedLabel));
-                    AddLabel(chart, context, builder, plot, labels, slice, resolvedLabel!, total, mid, sliceX, sliceY, cx, cy, radius, inner, placement);
+                    AddLabel(chart, context, builder, plot, labels, slice, resolvedLabel!, percent, mid, sliceX, sliceY, cx, cy, radius, inner, placement);
                 }
                 start += sweep;
             }
             if (vertical) DrawVerticalLabels(chart, context, builder, plot, labels, radius, cy, maximumOffset, placement);
             else DrawOutsideLabels(chart, context, builder, plot, labels, radius);
             if (inner > 0 && chart.Options.ShowDonutCenterLabel && series.ShowDataLabels != false)
-                DrawCenter(chart, context, builder, cx, cy, inner, total);
+                DrawCenter(chart, context, builder, cx, cy, inner, total.FiniteTotal);
         }
     }
+
+    private static ChartPositiveSum Total(Chart chart, IReadOnlyList<RadialSlice> slices) =>
+        // Retain the existing sorted/aggregated summation order for ordinary finite output.
+        new(slices.All(slice => ChartMath.IsFinite(slice.Value)) ? slices.Select(slice => slice.Value)
+            : chart.Series[0].RenderPoints.Select(point => point.Y));
+
+    private static double Fraction(Chart chart, RadialSlice slice, ChartPositiveSum total) => ChartMath.IsFinite(slice.Value)
+        ? total.Fraction(slice.Value)
+        : slice.SourcePointIndices.Sum(index => total.Fraction(chart.Series[0].RenderPoints[index].Y));
+
+    private static string DisplayValue(Chart chart, RadialSlice slice) => ChartMath.IsFinite(slice.Value)
+        ? ChartNumericFormatter.FormatValue(chart.Options, slice.Value) : OverflowValueText;
 
     /// <summary>Uses the explicit aggregation budget independently of theme or label placement.</summary>
     private static IReadOnlyList<RadialSlice> GetSlices(Chart chart, VisualThemeColors colors) {
@@ -126,7 +143,7 @@ internal static partial class VisualRadialCompiler {
 
     private static string SliceId(RadialSlice slice) => slice.PointIndex < 0 ? "series-0-point-other" : "series-0-point-" + slice.PointIndex.ToString(CultureInfo.InvariantCulture);
 
-    private static IReadOnlyDictionary<string, string> Metadata(Chart chart, RadialSlice slice, double percent, string? resolvedLabel) {
+    private static IReadOnlyDictionary<string, string> Metadata(Chart chart, RadialSlice slice, double percent, string? resolvedLabel, bool totalOverflow) {
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = "0",
             ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && chart.Series[0].StateRole != ChartSeriesState.None ? "true" : "false",
@@ -135,18 +152,24 @@ internal static partial class VisualRadialCompiler {
             ["data-cfx-source-points"] = string.Join(",", slice.SourcePointIndices),
             ["data-cfx-label"] = slice.Label,
             ["data-cfx-pattern"] = slice.Pattern.ToString(),
-            ["data-cfx-source-patterns"] = string.Join(",", slice.SourcePatterns),
-            ["data-cfx-value"] = slice.Value.ToString("G17", CultureInfo.InvariantCulture),
-            ["data-cfx-percent"] = percent.ToString("G17", CultureInfo.InvariantCulture)
+            ["data-cfx-source-patterns"] = string.Join(",", slice.SourcePatterns)
         };
+        if (ChartMath.IsFinite(slice.Value)) {
+            metadata.Add("data-cfx-value", slice.Value.ToString("G17", CultureInfo.InvariantCulture));
+        } else {
+            metadata.Add("data-cfx-value-overflow", "true");
+            metadata.Add("data-cfx-formatted-value", OverflowValueText);
+            metadata.Add("data-cfx-source-values", string.Join(",", slice.SourcePointIndices.Select(index => chart.Series[0].RenderPoints[index].Y.ToString("R", CultureInfo.InvariantCulture))));
+        }
+        metadata.Add("data-cfx-percent", percent.ToString("G17", CultureInfo.InvariantCulture));
+        if (totalOverflow) metadata.Add("data-cfx-total-overflow", "true");
         if (!string.IsNullOrWhiteSpace(resolvedLabel)) metadata.Add("data-cfx-full-label", resolvedLabel!);
         return metadata;
     }
 
-    private static string FormatLabel(Chart chart, RadialSlice slice, double total, string value) {
-        var percent = slice.Value / total;
+    private static string FormatLabel(Chart chart, RadialSlice slice, double percent, string value) {
         var percentage = percent.ToString("0.#%", CultureInfo.InvariantCulture);
-        if (chart.Options.PieSliceLabelFormatter != null)
+        if (chart.Options.PieSliceLabelFormatter != null && ChartMath.IsFinite(slice.Value))
             return chart.Options.PieSliceLabelFormatter(new ChartPieSliceLabelContext(chart.Series[0].Name, slice.Label,
                 slice.Value, percent, value, percentage, slice.PointIndex)) ?? string.Empty;
         return chart.Options.PieSliceLabelContent switch {

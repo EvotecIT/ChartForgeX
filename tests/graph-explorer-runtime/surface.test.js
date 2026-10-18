@@ -3,7 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const { adapterLifetimes } = require('../helpers/adapter-lifetime');
-const source = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/graph-explorer.00-core.js'), 'utf8');
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
+const source = graphRuntimeSource('return { graphSurfaceFit, scenePoint, canvasContext };');
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`);
 function fixture(width, height, ratio, renderer = 'canvas') {
   const transforms = [], rect = {left:17, top:31, width, height};
@@ -13,7 +14,7 @@ function fixture(width, height, ratio, renderer = 'canvas') {
   const values = {'data-cfx-viewport-x':'35','data-cfx-viewport-y':'-21','data-cfx-viewport-scale':'1.7'};
   const root = {dataset:{cfxGraphRendererActive:renderer}, getAttribute:name=>values[name]||'',
     querySelector:selector=>selector.includes('graph-scene')?svg:selector.includes('graph-canvas')||selector.includes('graph-webgl')?canvas:null};
-  const runtime = new Function('window', source+'\nreturn { graphSurfaceFit, scenePoint, canvasContext };')({devicePixelRatio:ratio});
+  const runtime = new Function('document', 'window', source)({ readyState: 'loading', addEventListener() {} }, { devicePixelRatio: ratio });
   return {runtime, root, canvas, transforms, rect};
 }
 test('painting and pointer inversion share centered aspect-preserving geometry at every viewport and pixel ratio', () => {

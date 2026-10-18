@@ -85,6 +85,7 @@
     element.appendChild(mark);
     if ((shape === 'image' || shape === 'imageRect') && node.imageUrl) {
       const image = svgElement(root, 'image');
+      setGraphAttribute(image, 'preserveAspectRatio', 'none');
       const width = shape === 'imageRect' ? size * 2.6 - 6 : size * 2;
       const height = shape === 'imageRect' ? size * 1.8 - 6 : size * 2;
       setGraphAttribute(image, 'x', -width / 2); setGraphAttribute(image, 'y', -height / 2); setGraphAttribute(image, 'width', width); setGraphAttribute(image, 'height', height); setGraphAttribute(image, 'href', node.imageUrl); setGraphAttribute(image, 'aria-label', node.imageAlt || node.label || node.id);
@@ -279,4 +280,4 @@
     fit: target => { const root = graphApiRoot(target); if (!root) return false; fitViewport(root); return true; },
     export: (target, format) => { const root = graphApiRoot(target); return root ? exportGraph(root, format || 'json') : Promise.resolve(); }
   };
-  window.ChartForgeXGraphExplorer = Object.freeze(graphExplorerApi);
+  window.ChartForgeXGraphExplorer = window[Symbol.for('ChartForgeX.graphRuntime')] = Object.freeze(graphExplorerApi);

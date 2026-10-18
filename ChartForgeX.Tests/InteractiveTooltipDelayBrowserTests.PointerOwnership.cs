@@ -1,5 +1,6 @@
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
 
@@ -79,6 +80,11 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         if (!Enabled) return;
         await using var session = await OpenAsync(HostFragment(), 950, 760);
         var page = session.Page;
+        if (!shown) {
+            var clockStart = DateTime.UtcNow;
+            await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = clockStart });
+            await page.Clock.PauseAtAsync(clockStart.AddHours(1));
+        }
         await MountFragmentAsync(page, "light");
         await page.EvaluateAsync("""
             () => {
@@ -93,6 +99,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             }
             """);
         if (shown) await WaitForTipAsync(page);
+        else Assert.True(await TipHiddenAsync(page));
         await page.EvaluateAsync("""
             action => {
                 const root=window.hostedChart, old=root.querySelector('[data-cfx-role=point][data-cfx-series="0"][data-cfx-point="0"]');
@@ -101,7 +108,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
                 surface.dispatchEvent(window.oldContactEvent(type));
             }
             """, action);
-        if (!shown) await Task.Delay(Delay + 80);
+        if (!shown) await page.Clock.RunForAsync(Delay + 80);
         var receipt = await HostReceiptAsync(page);
         await CaptureDelayAsync(page, "delay-contact-owner-" + action + "-" + shown, receipt, session);
         Assert.False(await TipHiddenAsync(page));

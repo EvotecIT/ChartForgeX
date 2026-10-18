@@ -26,7 +26,7 @@ internal static class ChartTreeLayout {
         var root = facts.Root;
         ApplyDepths(nodes, children, root, 0);
         LayoutNodes(nodes, children, root, plot, fitViewport, out var nodeWidth, out var nodeHeight, out var maxDepth);
-        var maxLinkValue = links.Max(link => link.Value);
+        var maxLinkValue = links.Count == 0 ? 1 : links.Max(link => link.Value);
         return new ChartTreeModel(nodes, links, nodeWidth, nodeHeight, maxDepth, maxLinkValue);
     }
 
@@ -36,7 +36,7 @@ internal static class ChartTreeLayout {
     }
 
     private static void LayoutNodes(IReadOnlyList<ChartTreeNode> nodes, IReadOnlyList<int>[] children, int root, ChartRect plot, bool fitViewport, out double nodeWidth, out double nodeHeight, out int maxDepth) {
-        maxDepth = Math.Max(1, nodes.Max(node => node.Depth));
+        maxDepth = nodes.Max(node => node.Depth);
         var leafCount = Math.Max(1, nodes.Count(node => children[node.Index].Count == 0));
         nodeWidth = Math.Max(ChartVisualPrimitives.TreeNodeMinWidth, Math.Min(ChartVisualPrimitives.TreeNodeMaxWidth, plot.Width / (maxDepth + 1) * ChartVisualPrimitives.TreeNodeWidthFactor));
         nodeHeight = Math.Max(ChartVisualPrimitives.TreeNodeMinHeight, Math.Min(ChartVisualPrimitives.TreeNodeMaxHeight, plot.Height / Math.Max(1, leafCount) * ChartVisualPrimitives.TreeNodeHeightFactor));

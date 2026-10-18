@@ -57,6 +57,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.css" />
     <EmbeddedResource Include="Assets\graph-explorer.chrome.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.chrome.css" />
     <EmbeddedResource Include="Assets\graph-explorer.editor.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.editor.css" />
+    <EmbeddedResource Include="Assets\graph-explorer.print.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.print.css" />
     <EmbeddedResource Include="Assets\graph-explorer.00-core.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js" />
     <EmbeddedResource Include="Assets\graph-explorer.01-document.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.01-document.js" />
     <EmbeddedResource Include="Assets\graph-explorer.02-geometry.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-geometry.js" />
@@ -94,6 +95,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.28-svg-export.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.28-svg-export.js" />
     <EmbeddedResource Include="Assets\graph-explorer.29-export-styles.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-export-styles.js" />
     <EmbeddedResource Include="Assets\graph-explorer.29-selection.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-selection.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.29-print.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-print.js" />
     <EmbeddedResource Include="Assets\graph-explorer.30-bindings.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js" />
     <EmbeddedResource Include="Assets\graph-explorer.31-physics-configurator.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js" />
     <EmbeddedResource Include="Assets\graph-explorer.32-manipulation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js" />

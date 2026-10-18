@@ -45,7 +45,9 @@ public sealed partial class SvgFactBlockRenderer {
     private static void RenderCompositionStrip(SvgMarkupWriter writer, SegmentedMetricBlock card, double x, double y, double width, double height) {
         var theme = card.Options.ResolvedTheme;
         var total = VisualFactBlockRendering.SegmentedTotal(card);
-        writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-composition-strip").Attribute("data-cfx-total", total).EndStartElement().Line();
+        writer.StartElement("g").Attribute("data-cfx-role", "segmented-metric-composition-strip")
+            .OptionalAttribute("data-cfx-total", total.FiniteTotal)
+            .Attribute("data-cfx-total-overflow", total.FiniteTotal.HasValue ? null : "true").EndStartElement().Line();
         foreach (var segment in VisualFactBlockRendering.SegmentedStackSegments(card, x, y, width, height, 4)) {
             var color = VisualFactBlockRendering.SegmentedItemColor(theme, segment.Item, segment.Index);
             writer.StartElement("rect")

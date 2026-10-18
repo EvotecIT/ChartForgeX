@@ -1,23 +1,20 @@
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const test = require('node:test');
 const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 
-const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const source = ['00-core', '00-lifetime', '01-document', '10-layout', '29-selection', '36-host-commands', '40-api']
-  .map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
+const source = graphRuntimeSource('return { graphVirtualElement, graphState, selectedItems, bindGraphItemSelection };');
 
-const lifetimes = adapterLifetimes();
-test.afterEach(() => lifetimes.dispose());
 function fixture(features = 'Selection') {
+  const lifetimes = adapterLifetimes();
+  test.after(() => lifetimes.dispose());
   const window = lifetimes.window;
   const events = [];
   const announcer = { textContent: '' };
   const tooltip = { hidden: false };
-  const runtime = new Function('window', 'CustomEvent', 'syncSelectedEdgeLabels', 'syncSelectionTooltip', source +
-    '\nreturn { graphVirtualElement, graphState, selectedItems, bindGraphItemSelection };')(
-    window, class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, () => {}, () => {});
+  const runtime = new Function('document', 'window', 'CustomEvent', source)(
+    { readyState: 'loading', addEventListener() {} }, window,
+    class { constructor(type, options) { this.type = type; this.detail = options.detail; } });
   const node = runtime.graphVirtualElement('graph-node', { 'data-node-id': 'shared' });
   const peer = runtime.graphVirtualElement('graph-node', { 'data-node-id': 'peer' });
   const edge = runtime.graphVirtualElement('graph-edge', {
@@ -31,8 +28,8 @@ function fixture(features = 'Selection') {
   root.querySelectorAll = () => [];
   root.querySelector = selector => selector.includes('announcer') ? announcer : selector === '.cfx-graph-tooltip' ? tooltip : null;
   root.dispatchEvent = event => { events.push(event); return true; };
-  root.__cfxGraphState = runtime.graphState(root);
   lifetimes.mount(root);
+  root.__cfxGraphState = runtime.graphState(root);
   const activate = (item, type, modifiers = {}) => {
     const handlers = new Map();
     // Ordinary clicks target a DOM-backed mark; model-only items use the shared accelerated surface.

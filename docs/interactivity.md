@@ -6,7 +6,7 @@ The HTML adapter works from renderer metadata such as `data-cfx-series`, `data-c
 
 The selected-target compare tray appears below the chart viewport, preserving axes, outer labels, and pointer access to marks. Its controls scroll horizontally inside compact hosts, including when reached by keyboard. Clearing the selection returns focus to the chart when the clear button held focus. Graphite charts use the chart's surface, text, and accent colors for these controls.
 
-The tray offers inspection chips for the first six selected targets and summarizes additional selections with a count. Activating a chip inspects its target without changing the selection. With `Tooltip.PinOnSelect` enabled, inspection switches the pinned readout; activating the same chip keeps it pinned. With pinning disabled, the inspection readout closes when pointer and keyboard focus leave the tray. When enough viewport space is available, the readout stays above the visible tray so its controls remain usable.
+The tray pages through every selected target, showing up to six inspection chips at a time. Previous and next buttons and a translated range caption keep larger selections reachable without changing the selection. The current page survives resizing and clamps to the available targets after an update. Activating a chip inspects its target without changing the selection. With `Tooltip.PinOnSelect` enabled, inspection switches the pinned readout; activating the same chip keeps it pinned. With pinning disabled, the inspection readout closes when pointer and keyboard focus leave the tray. When enough viewport space is available, the readout stays above the visible tray so its controls remain usable.
 
 Native painted marks retain their observation identity when pointed at. Cartesian producers declare `data-cfx-coordinate-system="cartesian"` on their series groups; inferred observations and crosshair guides require that scope. A producer declares polar geometry with `data-cfx-coordinate-system="polar"` on the SVG or a containing semantic group. Polar and other native-only families use SVG hit testing, leave empty stage space without an inferred target, and suppress the Cartesian crosshair. Nested observations inherit their containing series identity.
 
@@ -624,7 +624,7 @@ Standalone zoom and pan controls transform the complete rendered SVG, including 
 
 ## Translated controls and text direction
 
-`Localization` supplies HTML control labels, tooltips on controls, comparison text, scenario playback text, pinned-tooltip status and highlight announcements. Unspecified messages use English. The page and chart inherit the native chart's accessibility language unless `Localization.Language` overrides it. A dashboard copies its configured bundle into every child chart.
+`Localization` supplies HTML control labels, tooltips on controls, comparison text, scenario playback text, pinned-tooltip status, the default scalar `Value` caption and highlight announcements. A native dimension label takes precedence over that default caption. Unspecified messages use English. The page and chart inherit the native chart's accessibility language unless `Localization.Language` overrides it. A dashboard copies its configured bundle into every child chart.
 
 ```csharp
 chart.SaveInteractiveHtml("measurements.html", options => {
@@ -633,6 +633,7 @@ chart.SaveInteractiveHtml("measurements.html", options => {
     options.Localization[HtmlChartText.ResetView] = "Przywróć widok";
     options.Localization[HtmlChartText.Compare] = "Porównaj {count}";
     options.Localization[HtmlChartText.Clear] = "Wyczyść";
+    options.Localization[HtmlChartText.Value] = "Wartość";
 });
 ```
 

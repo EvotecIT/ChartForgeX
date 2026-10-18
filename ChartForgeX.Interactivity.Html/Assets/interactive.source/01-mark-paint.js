@@ -85,8 +85,7 @@
       const clip = parent.ownerSVGElement.getElementById(reference[1]);
       if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
         || !clip.firstElementChild.matches('rect')) continue;
-      // Firefox returns an empty bounding box for geometry inside the non-rendered clipPath tree.
-      // Native rectangular clips expose their resolved user-space geometry through SVG lengths.
+      // SVG lengths resolve clip geometry even when a non-rendered clipPath has an empty box.
       const shape = clip.firstElementChild, matrix = parent.getScreenCTM();
       const rect = { x: shape.x.baseVal.value, y: shape.y.baseVal.value,
         width: shape.width.baseVal.value, height: shape.height.baseVal.value };
@@ -96,20 +95,22 @@
     return clips;
   };
   // A retained fact or a path's box can lie outside the native clips.
-  const paintWithinNativeClips = (node, subject = node) => {
+  const paintWithinNativeClips = (node, subject = node, styles) => {
     const paired = subject !== node && pairedExtentObservation(subject);
     const clips = nativePaintClips(node);
     if (!clips) return false;
+    const projection = clips.length && svgScreenProjection(node.ownerSVGElement, styles);
+    if (projection) for (const clip of clips) clip.matrix = projection.multiply(clip.matrix);
     let box;
     for (const { rect, matrix } of clips) {
       const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
         .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
       const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
       const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
-      // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
+      // Prepared facts can exceed the native coordinate precision.
       const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
-      box ||= paired ? pairedExtentScreenBox(subject)
-        : subject !== node ? nativeRegionScreenBox(subject) || subject.getBoundingClientRect() : subject.getBoundingClientRect();
+      box ||= paired ? nativeRegionScreenBox(subject, subject._cfxPairedRegion, projection)
+        : subject !== node ? nativeRegionScreenBox(subject, subject._cfxNativeRegion, projection) || subject.getBoundingClientRect() : subject.getBoundingClientRect();
       if (!box) return false;
       if (subject !== node) {
         // Connected paired fills use their own extent. Single-point line/radar paint keeps its source-location contract.
@@ -159,7 +160,7 @@
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
     const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
-      || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node)) return null;
+      || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node, node, styles)) return null;
     // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
     if (node.matches('circle,ellipse')) {
       const box = node.getBBox();
@@ -178,14 +179,14 @@
       return stroke && cartesianFillStrokeInk(node, subject, paint) ? stroke : null;
     }
     const resolved = fill || stroke;
-    return resolved && (subject === node || paintWithinNativeClips(node, subject)) ? resolved : null;
+    return resolved && (subject === node || paintWithinNativeClips(node, subject, styles)) ? resolved : null;
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
     // Text is the mark for a word-cloud term or annotation caption; ordinary point labels are decoration.
     if (role !== 'word-cloud-term' && role !== 'annotation' && !(decoration && role === 'legend-item')) return null;
     for (const text of node.querySelectorAll('text')) {
-      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text)
+      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text, text, styles)
         || !decoration && text.closest('[data-cfx-label-decoration]')) continue;
       const style = paintStyle(text, styles);
       if (!(parseFloat(style.fontSize) > 0)) continue;

@@ -7,7 +7,8 @@ internal static class HtmlGraphExplorerAssets {
     private static readonly string[] StyleResourceNames = {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.css",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.chrome.css",
-        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.editor.css"
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.editor.css",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.print.css"
     };
     private static readonly string[] ScriptResourceNames = {
         "ChartForgeX.Interactivity.Html.Assets.adapter-lifetime.js",
@@ -49,6 +50,7 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.28-svg-export.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-export-styles.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-selection.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.29-print.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.36-host-commands.js",

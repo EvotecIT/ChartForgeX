@@ -30,7 +30,7 @@
     pending.abort.abort();
   };
   const logicalXPointer = (root, event) => {
-    const matrix = root.querySelector('.cfx-stage svg')?.getScreenCTM();
+    const matrix = svgScreenMatrix(root.querySelector('.cfx-stage svg'));
     if (!matrix) return null;
     const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
     return Number.isFinite(point.x) ? point.x : null;

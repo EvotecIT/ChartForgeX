@@ -12,6 +12,35 @@ public sealed class MapCalendarObservationLifecycleTests {
     private static readonly DateTime First = new(2026, 1, 5);
 
     [Theory]
+    [InlineData(ChartSeriesKind.DottedMap)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap)]
+    [InlineData(ChartSeriesKind.RegionMap)]
+    [InlineData(ChartSeriesKind.TileMap)]
+    public void EmptyConvenienceFactoriesKeepGeometryAndCanRefillTheAttachedSeries(ChartSeriesKind kind) {
+        var chart = Chart.Create().WithSize(480, 280);
+        switch (kind) {
+            case ChartSeriesKind.DottedMap: chart.AddDottedMap("Items", Array.Empty<ChartMapPoint>()); break;
+            case ChartSeriesKind.CalendarHeatmap: chart.AddCalendarHeatmap("Items", Array.Empty<ChartCalendarHeatmapItem>()); break;
+            case ChartSeriesKind.RegionMap: chart.AddRegionMap("Items", Regions(), Array.Empty<ChartRegionMapItem>()); break;
+            default: chart.AddTileMap("Items", Tiles(), Array.Empty<ChartRegionMapItem>()); break;
+        }
+        var series = Assert.Single(chart.Series); var id = series.Id;
+        var regions = series.RegionMapDefinition; var tiles = series.TileMapDefinition;
+        Assert.Equal(0, series.ObservationCount); Assert.Equal(0, series.SourcePointCount);
+        var empty = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var svg = empty.ToSvg();
+        var png = empty.ToPng(new VisualRenderOptions(supersampling: 1));
+        Refill(series); series.WithObservationId(0, new ChartObservationId("arrived"));
+        var filled = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var mark = Assert.Single(Marks(chart), item => item.Attribute("data-cfx-observation-id")?.Value == "arrived");
+        Assert.Equal("4", mark.Attribute("data-cfx-value")?.Value);
+        Assert.Same(series, Assert.Single(chart.Series)); Assert.Equal(id, series.Id);
+        Assert.Same(regions, series.RegionMapDefinition); Assert.Same(tiles, series.TileMapDefinition);
+        Assert.Equal(1, series.ObservationCount); Assert.Equal(1, series.SourcePointCount);
+        Assert.NotEqual(svg, filled.ToSvg()); Assert.NotEmpty(filled.ToPng(new VisualRenderOptions(supersampling: 1)));
+        Assert.Equal(svg, empty.ToSvg()); Assert.Equal(png, empty.ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void DefinitionsRejectUninitializedRegionSlotsAtConstruction(bool tileMap) {

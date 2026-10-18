@@ -163,6 +163,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("lang", options.Localization.ResolveLanguage(chart.Accessibility.Language))
             .Attribute("dir", options.Localization.DirectionAttribute)
             .Attribute("data-cfx-ui", options.Localization.ToJson())
+            .Attribute("data-cfx-label-value", options.Localization[HtmlChartText.Value])
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-cfx-chart-id", chartId)
             .Attribute("data-cfx-prepared-chart", PreparedChartMetadata(chart, prepared))

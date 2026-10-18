@@ -73,7 +73,8 @@ public static class ExampleRecipes {
         ["comparison"] = new(nameof(ComparisonRecipe), ComparisonRecipe.Create),
         ["findings"] = new(nameof(FindingsRecipe), FindingsRecipe.Create),
         ["line-viewport"] = new(nameof(LineViewportRecipe), LineViewportRecipe.Create),
-        ["step-line-viewport"] = new(nameof(StepLineViewportRecipe), StepLineViewportRecipe.Create)
+        ["step-line-viewport"] = new(nameof(StepLineViewportRecipe), StepLineViewportRecipe.Create),
+        ["keyed-point-changes"] = new(nameof(KeyedPointChangesRecipe), KeyedPointChangesRecipe.Create)
     });
 
     private static readonly IReadOnlyDictionary<(ChartSeriesKind Kind, string Variant), ExampleRecipe> Options = OptionRecipes();

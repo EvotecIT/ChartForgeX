@@ -72,4 +72,12 @@ public enum HtmlChartText {
     ScenarioTimelineStep,
     /// <summary>The badge on a pinned observation tooltip.</summary>
     Pinned,
+    /// <summary>Accessible name for the previous page of selected targets.</summary>
+    ComparePrevious,
+    /// <summary>Accessible name for the next page of selected targets.</summary>
+    CompareNext,
+    /// <summary>Visible selected-target range, using {first}, {last} and {count}.</summary>
+    CompareRange,
+    /// <summary>Default tooltip caption for a scalar value without a native dimension label.</summary>
+    Value,
 }

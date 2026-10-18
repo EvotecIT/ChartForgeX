@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Data;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Tests;
 
@@ -52,6 +53,34 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(
             () => Chart.Create().AddSeries("Invalid trend", ChartSeriesKind.TrendLine, rows, row => row.Order, row => row.Value),
             "Typed point mapping should reject derived trend lines that require least-squares calculation.");
+
+        var emptyRows = rows.Filter(_ => false);
+        var emptyValues = emptyRows.Select(row => row.Value);
+        var emptyPoints = ChartPoints.FromXY(emptyRows.Select(row => row.Order), emptyValues);
+        Assert(emptyPoints.Length == 0, "A matching filtered-empty X/Y pipeline retains no observations.");
+        var emptyCharts = new[] {
+            Chart.Create().AddLine("Filtered", ChartPoints.FromValues(emptyValues)),
+            Chart.Create().AddBubble("Filtered", ChartBubbles.FromXYSize(emptyValues, emptyValues, emptyValues))
+        };
+        foreach (var emptyChart in emptyCharts) {
+            var series = emptyChart.Series[0]; var id = series.Id;
+            var empty = emptyChart.Prepare(new VisualRenderContext()); var svg = empty.ToSvg(); var png = empty.ToPng();
+            Assert(series.ObservationCount == 0 && series.SourcePointCount == 0, "Filtered-empty helpers must not invent a numeric or bubble observation.");
+            Assert(empty.Diagnostics.Any(item => item.Code == "cartesian.no-data"), "Empty mapped data reaches the native no-data scene.");
+            if (series.Kind == ChartSeriesKind.Bubble) series.ReplaceBubbles(ChartBubbles.FromXYSize(new[] { 1d }, new[] { 2d }, new[] { 3d }));
+            else foreach (var point in ChartPoints.FromXY(new[] { 1d }, new[] { 2d })) series.Points.Add(point);
+            series.WithObservationId(0, new ChartObservationId("arrived"));
+            var filled = emptyChart.Prepare(new VisualRenderContext());
+            Assert(series.Id == id && series.ObservationCount == 1 && series.SourcePointCount == 1, "A filtered-empty chart refills through its retained series.");
+            Assert(filled.ToSvg().Contains("data-cfx-observation-id=\"arrived\"", StringComparison.Ordinal) && filled.ToPng().Length > 200,
+                "Refilled pipeline values reach identified SVG marks and native PNG.");
+            Assert(empty.ToSvg() == svg && empty.ToPng().SequenceEqual(png), "Refill must leave the earlier empty prepared exports detached.");
+        }
+        AssertThrows<ArgumentNullException>(() => ChartPoints.FromValues((double[])null!), "Empty support must not accept null point sequences.");
+        AssertThrows<ArgumentException>(() => ChartPoints.FromXY(Array.Empty<double>(), new[] { 1d }), "Empty X must not hide a mismatched Y sequence.");
+        AssertThrows<ArgumentException>(() => ChartBubbles.FromXYSize(Array.Empty<double>(), Array.Empty<double>(), new[] { 1d }), "Empty X/Y must not hide mismatched bubble sizes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartPoints.FromValues(double.NaN), "Point helpers still reject non-finite values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ChartBubbles.FromXYSize(new[] { 1d }, new[] { 2d }, new[] { 0d }), "Bubble helpers still require positive sizes.");
     }
 
     private static void FacetsBuildDeterministicSmallMultiples() {

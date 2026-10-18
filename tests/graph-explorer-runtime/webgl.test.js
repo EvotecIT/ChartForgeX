@@ -5,12 +5,11 @@ const test = require('node:test');
 const vm = require('node:vm');
 const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const manifest = fs.readFileSync(path.join(assets, '../HtmlGraphExplorerAssets.cs'), 'utf8');
-const source = [...manifest.matchAll(/"ChartForgeX\.Interactivity\.Html\.Assets\.(graph-explorer\.[^"]+\.js)"/g)]
-  .map(match => fs.readFileSync(path.join(assets, match[1]), 'utf8')).join('\n');
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
+const source = graphRuntimeSource('this.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, edgeArrowGeometry, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails, drawAcceleratedSvgRuntime, materializeAcceleratedSvg };');
 function runtime() {
   const host = { document: { readyState: 'loading', addEventListener() {}, querySelectorAll: () => [] }, window: {}, setTimeout, clearTimeout };
-  vm.runInNewContext(source + '\nthis.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, edgeArrowGeometry, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails, drawAcceleratedSvgRuntime, materializeAcceleratedSvg };', host);
+  vm.runInNewContext(source, host);
   const api = host.api, root = api.graphVirtualElement('root', { 'data-cfx-graph-theme-active': 'light' }, []);
   const node = (id, x, y) => ({ id, x, y, size: 12, shape: 'circle', el: api.graphVirtualElement('graph-node', { 'data-node-label': id }, []) });
   const a = node('a', 100, 100), b = node('b', 300, 100);
@@ -196,6 +195,7 @@ test('materialized virtual SVG card details use the same readable colours as phy
   const element = () => {
     const properties = {};
     return { children: [], attributes: {}, properties, classList: { add() {} },
+      querySelector: () => null,
       setAttribute(name, value) { this.attributes[name] = value; }, appendChild(child) { this.children.push(child); },
       style: { setProperty(name, value) { properties[name] = value; } } };
   };

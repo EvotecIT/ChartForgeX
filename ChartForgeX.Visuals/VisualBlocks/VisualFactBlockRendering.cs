@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -77,7 +78,7 @@ internal static partial class VisualFactBlockRendering {
                 if (segmentedMetric.Style == SegmentedMetricStyle.FunnelColumns && (item.Segments < 1 || item.Segments > 120)) throw new InvalidOperationException("Segmented metric funnel segment counts must be between one and one hundred twenty.");
             }
 
-            if (SegmentedMetricRequiresPositiveTotal(segmentedMetric.Style) && SegmentedTotal(segmentedMetric) <= 0) throw new InvalidOperationException("Segmented metric composition styles must include at least one positive item value.");
+            if (SegmentedMetricRequiresPositiveTotal(segmentedMetric.Style) && !SegmentedTotal(segmentedMetric).HasPositiveValues) throw new InvalidOperationException("Segmented metric composition styles must include at least one positive item value.");
             return;
         }
 
@@ -237,35 +238,30 @@ internal static partial class VisualFactBlockRendering {
             samples.Values[0].HasValue, samples.Values[samples.Values.Count - 1].HasValue);
     }
 
-    public static double SegmentedTotal(SegmentedMetricBlock block) {
-        var total = 0.0;
-        foreach (var item in block.Items) total += item.Value;
-        return total;
-    }
+    public static ChartPositiveSum SegmentedTotal(SegmentedMetricBlock block) => new(block.Items.Select(item => item.Value));
 
     public static int FilledSegments(SegmentedMetricItem item) => Math.Max(0, Math.Min(item.Segments, (int)Math.Round(item.Segments * SegmentRatio(item.Value, item.Maximum))));
 
     public static ChartColor SegmentedItemColor(ResolvedVisualTheme theme, SegmentedMetricItem item, int index) =>
         item.Color ?? (item.Status == VisualStatus.None ? PaletteAt(theme, index) : StatusColor(theme, item.Status));
 
-    public static double SegmentedShare(SegmentedMetricItem item, double total) =>
-        total <= 0 ? 0 : Math.Max(0, item.Value / total);
+    public static double SegmentedShare(SegmentedMetricItem item, ChartPositiveSum total) => total.Fraction(item.Value);
 
-    public static string SegmentedShareText(SegmentedMetricItem item, double total, string format) =>
+    public static string SegmentedShareText(SegmentedMetricItem item, ChartPositiveSum total, string format) =>
         (SegmentedShare(item, total) * 100).ToString(format, CultureInfo.InvariantCulture) + "%";
 
-    public static string SegmentedCompositionValueText(SegmentedMetricBlock block, SegmentedMetricItem item, double total) {
+    public static string SegmentedCompositionValueText(SegmentedMetricBlock block, SegmentedMetricItem item, ChartPositiveSum total) {
         var value = item.DisplayValue.Length > 0
             ? item.DisplayValue
             : item.Value.ToString("0.##", CultureInfo.InvariantCulture) + (block.Unit.Length > 0 ? " " + block.Unit : string.Empty);
-        return total <= 0 ? value : value + "  " + SegmentedShareText(item, total, "0");
+        return !total.HasPositiveValues ? value : value + "  " + SegmentedShareText(item, total, "0");
     }
 
-    public static string SegmentedCapsuleLegendValue(SegmentedMetricBlock block, SegmentedMetricItem item, double total) {
+    public static string SegmentedCapsuleLegendValue(SegmentedMetricBlock block, SegmentedMetricItem item, ChartPositiveSum total) {
         if (item.DisplayValue.Length > 0) return item.DisplayValue;
         var value = item.Value.ToString("0.##", CultureInfo.InvariantCulture);
         if (block.Unit.Length > 0) value += " " + block.Unit;
-        else if (total > 0) value += " (" + SegmentedShareText(item, total, "0") + ")";
+        else if (total.HasPositiveValues) value += " (" + SegmentedShareText(item, total, "0") + ")";
         return value;
     }
 
@@ -295,11 +291,11 @@ internal static partial class VisualFactBlockRendering {
     public static IReadOnlyList<SegmentedMetricSlice> SegmentedSlices(SegmentedMetricBlock block) {
         var total = SegmentedTotal(block);
         var slices = new List<SegmentedMetricSlice>(block.Items.Count);
-        if (total <= 0) return slices;
+        if (!total.HasPositiveValues) return slices;
         var cursor = 0.0;
         for (var i = 0; i < block.Items.Count; i++) {
-            var share = Math.Max(0, block.Items[i].Value / total);
-            var end = i == block.Items.Count - 1 ? 1 : Math.Min(1, cursor + share);
+            var share = total.Fraction(block.Items[i].Value);
+            var end = i == total.LastPositiveIndex ? 1 : Math.Min(1, cursor + share);
             slices.Add(new SegmentedMetricSlice(block.Items[i], i, cursor, end, share));
             cursor = end;
         }
@@ -310,13 +306,15 @@ internal static partial class VisualFactBlockRendering {
     public static IReadOnlyList<SegmentedStackSegment> SegmentedStackSegments(SegmentedMetricBlock block, double x, double y, double width, double height, double preferredGap) {
         var total = SegmentedTotal(block);
         var segments = new List<SegmentedStackSegment>(block.Items.Count);
-        if (total <= 0) return segments;
-        var gap = EffectiveStackGap(block.Items.Count, width, preferredGap);
-        var segmentArea = Math.Max(0, width - gap * Math.Max(0, block.Items.Count - 1));
+        if (!total.HasPositiveValues) return segments;
+        var gap = EffectiveStackGap(total.PositiveCount, width, preferredGap);
+        var segmentArea = Math.Max(0, width - gap * Math.Max(0, total.PositiveCount - 1));
         var cursor = x;
         for (var i = 0; i < block.Items.Count; i++) {
             var item = block.Items[i];
-            var segmentWidth = i == block.Items.Count - 1 ? x + width - cursor : Math.Max(0, segmentArea * item.Value / total);
+            if (item.Value <= 0) continue;
+            var share = total.Fraction(item.Value);
+            var segmentWidth = i == total.LastPositiveIndex ? x + width - cursor : Math.Max(0, segmentArea * share);
             if (segmentWidth <= 0) continue;
             segments.Add(new SegmentedStackSegment(item, i, cursor, y, segmentWidth, height, SegmentedShare(item, total)));
             cursor += segmentWidth + gap;

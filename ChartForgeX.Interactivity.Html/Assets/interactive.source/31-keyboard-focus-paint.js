@@ -8,7 +8,7 @@
     if (!hasFeature(root, 'KeyboardNavigation') || root._cfxPointerFocus === true) { clearKeyboardFocusPaint(root); return; }
     const focused = root.getRootNode().activeElement;
     const node = interactiveTargets(root).find(node => targetFocusNode(node) === focused);
-    const svg = node?.ownerSVGElement, matrix = svg?.getScreenCTM();
+    const svg = node?.ownerSVGElement, matrix = svgScreenMatrix(svg);
     if (!node || !focused.matches(':focus-visible') || !matrix || !keyboardTargetAvailable(node)) {
       clearKeyboardFocusPaint(root); return;
     }

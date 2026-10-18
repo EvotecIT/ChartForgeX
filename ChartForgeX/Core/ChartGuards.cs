@@ -267,8 +267,8 @@ internal static class ChartGuards {
 
     private static void ValidateSpecializedShape(Chart chart, ChartSeriesKind kind, bool preparing) {
         if (kind == ChartSeriesKind.Heatmap || kind == ChartSeriesKind.HexbinHeatmap) {
-            // Fully masked rows keep their position (for example a weekday with no samples) when the column span is known.
-            if (!preparing || chart.Series.Any(series => series.RenderPoints.Count > 0))
+            // Native matrices retain empty peers and masked column spans without inventing cells.
+            if (!preparing)
                 ValidateMinimumPointCount(chart.Series.Where(series => !series.HeatmapColumnCount.HasValue).ToArray(), kind, 1);
             // A categorical matrix may list entities nothing is known about, so it can be empty; a numeric one cannot.
             if (!preparing && !chart.Series.Any(series => series.RenderPoints.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
@@ -298,7 +298,7 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.Bullet) {
             if (!preparing || chart.Series.Any(series => series.HasSourceData)) ValidateBullets(chart.Series);
         }
-        else if (kind == ChartSeriesKind.Timeline) ValidateMinimumPointCount(chart.Series, kind, 1);
+        else if (kind == ChartSeriesKind.Timeline && !preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
         else if (kind == ChartSeriesKind.StateTimeline) ValidateStateTimeline(chart, preparing);
         else if (kind == ChartSeriesKind.GanttLane) ValidateGanttLanes(chart, preparing);
         else if (kind == ChartSeriesKind.Gantt) {

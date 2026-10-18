@@ -326,7 +326,7 @@ public sealed partial class TopologyHtmlRenderer {
         stylesheet += TopologyHtmlAssets.Style.Replace("__CFX_FONT_FAMILY__", fontFamily);
         if (includePageShell) {
             stylesheet += HtmlSurfacePolish.ResponsiveCenteredBodyCss;
-            stylesheet += HtmlSurfacePolish.PrintBodyCss("0", ".cfx-topology-wrapper{width:100%;max-width:none}.cfx-topology-wrapper svg{width:100%;height:auto}.cfx-topology-scenarios,.cfx-topology-scenario-panel{display:none}");
+            stylesheet += HtmlSurfacePolish.PrintBodyCss("0", string.Empty);
         }
 
         return stylesheet

@@ -63,7 +63,7 @@
     const sourceInverse = sourceMatrix.inverse(), shapeInverse = shapeMatrix.inverse();
     const paired = pairedExtentObservation(subject), x = region.x + region.width / 2;
     // Scalar sources retain their source-location clip contract, even when their footprint overlaps paint.
-    if (!paired && !paintWithinNativeClips(node, subject)) return false;
+    if (!paired && !paintWithinNativeClips(node, subject, styles)) return false;
     const low = paired ? region.y + region.width / 2 : region.y + region.height / 2;
     const high = paired ? region.y + region.height - region.width / 2 : low;
     // Native SVG uses three decimals. Interior probes below that quantum distinguish a real held

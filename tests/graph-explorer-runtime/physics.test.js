@@ -1,13 +1,9 @@
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const vm = require('node:vm');
 const test = require('node:test');
 
-const adapter = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html');
-const manifest = fs.readFileSync(path.join(adapter, 'HtmlGraphExplorerAssets.cs'), 'utf8');
-const files = [...manifest.matchAll(/"ChartForgeX\.Interactivity\.Html\.Assets\.(graph-explorer\.[^"]+\.js)"/g)].map(match => match[1]);
-const code = files.map(file => fs.readFileSync(path.join(adapter, 'Assets', file), 'utf8')).join('\n');
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
+const code = graphRuntimeSource('this.api = { workerPhysicsSource, profile, startWorkerPhysics, stopWorkerPhysics, updatePhysicsNodes, updateDraggedPhysicsNode, releaseDraggedPhysicsNode, graphVirtualElement, webGlUpload };');
 
 function runtime() {
   const frames = new Map();
@@ -21,7 +17,7 @@ function runtime() {
     cancelAnimationFrame: id => frames.delete(id), performance: { now: () => 0 },
     CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } }
   });
-  vm.runInContext(code + '\nthis.api = { workerPhysicsSource, profile, startWorkerPhysics, stopWorkerPhysics, updatePhysicsNodes, updateDraggedPhysicsNode, releaseDraggedPhysicsNode, graphVirtualElement, webGlUpload };', context);
+  vm.runInContext(code, context);
   const root = context.api.graphVirtualElement('root', {}, []);
   root.dataset = { cfxGraphPhysicsState: 'running', cfxGraphRendererActive: 'canvas' };
   root.isConnected = true;

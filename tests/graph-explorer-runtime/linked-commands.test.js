@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const source = names => names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
 function element(role, id) {
@@ -15,7 +16,8 @@ const items = (root, selector) => root.elements.filter(item => selector.split(',
   return (!role || attr(item,'data-cfx-role') === role[1]) && (!part.includes('.cfx-graph-selected') || item.classList.contains('cfx-graph-selected'));
 }));
 function fixture() {
-  const visible = new Function(source(['00-core'])+'\nreturn visible;')();
+  const visible = new Function('document', 'window', graphRuntimeSource('return visible;'))(
+    { readyState: 'loading', addEventListener() {} }, {});
   const node = element('graph-node','shared'), peer = element('graph-node','peer'), edge = element('graph-edge','shared');
   edge.setAttribute('data-source-node-id','shared'); edge.setAttribute('data-target-node-id','peer');
   const events=[],announcer={textContent:''};

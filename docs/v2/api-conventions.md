@@ -9,6 +9,7 @@ These rules govern the shared prepared-rendering contracts and their model entry
 | `With*` | Set a scalar value or configuration object on a mutable model builder and return that builder. Do not add data. | `chart.WithTitle("Capacity")`, `chart.WithBarVisualStyle(style)` |
 | `Add*` | Add model data or a semantic child and return the builder. Do not silently replace configuration. | `chart.AddLine("Used", points)` |
 | `Configure*` | Configure a sub-object through a typed callback, preserving the operation's ownership rules, then return the builder. | `chart.ConfigureXAxis(axis => axis.Minimum = 0)` |
+| `ApplyPointChanges` | Commit a bounded keyed numeric data transaction while retaining surviving observations' presentation. | `series.ApplyPointChanges(changes, maximumObservations: 500)` |
 | `Prepare` | Validate and compile a model with an explicit render context; return a detached prepared result. | `chart.Prepare(context)` |
 | `To*` | Return an in-memory representation without writing a file or changing the model. | `prepared.ToSvg()`, `prepared.ToPng()`, `prepared.ToRgba()` |
 | `Save*` | Write to an explicitly supplied path or stream. Keep file ownership and format options visible. | File-saving helpers are outside the Phase 1 prepared contract. |
@@ -128,6 +129,24 @@ to assign or replace one ID independently.
 
 Ordinary numeric `Points` keeps its `IList<ChartPoint>` surface. Replacing an item by index preserves its identity and overrides. Insert/remove operations shift observation IDs, labels, colors, patterns, text styles and slice offsets with the existing observations; a new inserted observation starts without those overrides. `Clear` clears both data and observation metadata, and `SourcePointCount` follows the current ordinary point count. A retained numeric list becomes read-only if its series switches to typed waterfall data.
 
+For keyed live updates, use `ApplyPointChanges` after assigning an explicit ID to every observation:
+
+```csharp
+completed.WithObservationIds(new[] {
+    new ChartObservationId("mon"), new ChartObservationId("tue"),
+    new ChartObservationId("wed"), new ChartObservationId("thu"), new ChartObservationId("fri")
+});
+completed.ApplyPointChanges(new[] {
+    ChartPointChange.Remove(new ChartObservationId("mon")),
+    ChartPointChange.Replace(new ChartObservationId("fri"), new ChartPoint(5, 39)),
+    ChartPointChange.Append(new ChartObservationId("sat"), new ChartPoint(6, 45))
+}, maximumObservations: 5);
+```
+
+Append requires a new key; replacement and removal require existing keys. A key occurs at most once in a batch. Surviving values retain their source order, IDs, labels, colors, patterns, text styles and slice offsets. The optional rolling limit removes the oldest surviving observations in source order. Enumeration, key, capacity and cancellation failures leave installed data unchanged; prepared results remain detached. The default `maximumChanges` is 4,096, with rejection after at most one additional input item. Hosts can set a deliberate capacity, coalesce or split incoming work and pass a cancellation token. They own collection cadence and asynchronous queues, and serialize access to the mutable model.
+
+This operation supports the eleven point-mapped families: Line, StepLine, Area, StepArea, StackedArea, Scatter, Bar, HorizontalBar, RadialBar, RadialColumn and Lollipop. Typed observations and derived sources retain their existing update APIs. The [compiled rolling-window recipe](../../ChartForgeX.Examples/Recipes/KeyedPointChangesRecipe.cs) shows the complete model workflow. Browser hosts prepare a new section and call the existing controller's `update`; surviving explicit identities retain selection and legend state, while accepted replacement clears transient screen-space brush and readout state. A canceled batch leaves the committed model and browser scene intact.
+
 Decimation, histogram and regression factories expose read-only derived `Points`. Change complete source observations and rebuild the derived series rather than editing a reduced point, bin aggregate or fitted endpoint independently of its source provenance. Original-input counts, mappings and source snapshots remain consistent. Presentation overrides remain configurable.
 
 Lane factories and full replacements order items by start, end and input order. `UpdateStateTimelineSegment` and `UpdateGanttLaneItem` retain the observation index even when a changed time moves the item in the rendered order. State, category, label and detail stay with that complete item. Adjacent timeline intervals with the same state and detail may render as one run; its contributor metadata lists only the intervals actually combined. A combined run keeps derived identity; a one-interval run retains its authored observation ID.
@@ -138,7 +157,7 @@ Categorical `HeatmapCells` includes null masked cells in column order. Observati
 
 `WithPointLegend()` gives dotted maps one key per typed location, using that location's label and resolved dot color. The keys retain observation IDs, coordinates and optional values, including for locations outside the selected viewport. HTML legend actions address the corresponding location and reconcile authored IDs through updates. Region and tile maps retain their independent numeric color keys.
 
-Calendar factories and `ReplaceCalendarItems` sum duplicate dates and sort by date. Region/tile factories and `ReplaceRegionValues` resolve codes, names and aliases through the owned definition, sum duplicate canonical regions and sort by code. Both keep the last explicit input color. Their counts and observation indices refer to normalized items. Single-item updates preserve their ordinal, even when the date or region changes, and reject collisions with another observation. Empty retained series export their no-data state and can be refilled. The fluent map/calendar `Add*` conveniences require nonempty input and accept an optional named `id`.
+Calendar factories and `ReplaceCalendarItems` sum duplicate dates and sort by date. Region/tile factories and `ReplaceRegionValues` resolve codes, names and aliases through the owned definition, sum duplicate canonical regions and sort by code. Both keep the last explicit input color. Their counts and observation indices refer to normalized items. Single-item updates preserve their ordinal, even when the date or region changes, and reject collisions with another observation. Empty retained series export their no-data state and can be refilled. The fluent map/calendar `Add*` conveniences accept empty observations with their required geometry and accept an optional named `id`; they prepare the same no-data state as an emptied retained series.
 
 `ChartOptions.Calendar` owns week layout, localized day/month names and cell geometry. Use `ConfigureCalendar` independently of creating, updating or replacing the calendar series. A zero gap and Sunday week start are explicit values. Null names restore invariant abbreviations; null size settings restore automatic layout. Route conveniences between dotted-map labels capture the current coordinates when the route is added; later observation updates do not move that route.
 

@@ -1,11 +1,11 @@
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const test = require('node:test');
-const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const names = ['00-core', '01-document', '02-geometry', '05-viewport', '09-edge-bundles', '10-layout', '11-state-sync', '15-edge-hit-index', '15-hit-testing'];
-const code = names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
-const runtime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphState, applyLayout, applyFilters, hitNodeAt, hitEdgeAt, edgeHitCandidates, quadraticPoint, cubicPoint, edgeControl, edgeRenderEndpoints, selfLoopGeometry };')({}, {}, class {});
+const { adapterLifetimes } = require('../helpers/adapter-lifetime');
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
+const lifetimes = adapterLifetimes();
+test.after(() => lifetimes.dispose());
+const code = graphRuntimeSource('return { graphVirtualElement, graphState, applyLayout, applyFilters, hitNodeAt, hitEdgeAt, edgeHitCandidates, quadraticPoint, cubicPoint, edgeControl, edgeRenderEndpoints, selfLoopGeometry };');
+const runtime = new Function('document', 'window', 'CustomEvent', code)({ readyState: 'loading', addEventListener() {} }, lifetimes.window, class {});
 function scene(count, edgeSpecs = []) {
   const root = runtime.graphVirtualElement('root', {}, []);
   root.dataset = { cfxGraphRendererActive: 'canvas' };
@@ -22,6 +22,7 @@ function scene(count, edgeSpecs = []) {
     'data-edge-id': `e${i}`, 'data-source-node-id': `n${a}`, 'data-target-node-id': `n${b}`, ...extras
   }, []));
   root.__cfxGraphVirtualItems = [...nodes, ...edges];
+  lifetimes.mount(root);
   const state = runtime.graphState(root);
   runtime.applyLayout(root, state);
   return { root, state };

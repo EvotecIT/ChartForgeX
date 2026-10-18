@@ -103,7 +103,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         // A real new pointerenter after reinsertion owns a fresh request, independently of the canceled timer.
         Assert.True(await TipHiddenAsync(page));
         await PointerAsync(page, Point(0, 0));
-        Assert.True(await TipHiddenAsync(page));
+        await AssertDelayedNativeEntryAsync(page);
         await WaitForTipAsync(page);
         Assert.Contains("Reading", await TooltipTextAsync(page), StringComparison.Ordinal);
         AssertNoConsoleErrors(session);
@@ -186,7 +186,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         // Acquire the final native paint, rather than a camera position sampled mid-transition.
         await SettleCameraAsync(page);
         await PointerAsync(page, Point(0, 0));
-        Assert.True(await TipHiddenAsync(page));
+        await AssertDelayedNativeEntryAsync(page);
         try {
             await WaitForTipAsync(page);
         } finally {

@@ -1,5 +1,48 @@
   const imageCache = new Map();
   const imageLoadCallbacks = new Map();
+  const imageConsumers = new Map();
+  const graphImageUrls = nodes => new Set(nodes.filter(node => (node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl).map(node => node.imageUrl));
+  const retainGraphImageUrl = url => imageConsumers.set(url, (imageConsumers.get(url) || 0) + 1);
+  const releaseGraphImageUrl = url => {
+    const count = imageConsumers.get(url) || 0;
+    if (count > 1) imageConsumers.set(url, count - 1);
+    else {
+      imageConsumers.delete(url); imageCache.delete(url); imageLoadCallbacks.delete(url);
+    }
+  };
+  const releaseGraphImageRedraw = (root, url) => {
+    const callbacks = imageLoadCallbacks.get(url);
+    callbacks?.delete(root.__cfxGraphImageRedraw);
+    if (callbacks && !callbacks.size) imageLoadCallbacks.delete(url);
+  };
+  // Scene ownership changes only when canonical nodes are reconstructed. Paints
+  // reuse their images, and a peer scene can keep the same URL alive independently.
+  const syncGraphImageOwnership = (root, nodes) => {
+    const lifetime = graphLifetime(root);
+    if (!lifetime?.active) return;
+    let owned = root.__cfxGraphImageUrls;
+    if (!owned) {
+      owned = root.__cfxGraphImageUrls = new Set();
+      lifetime.own(() => {
+        for (const url of owned) { releaseGraphImageRedraw(root, url); releaseGraphImageUrl(url); }
+        delete root.__cfxGraphImageUrls;
+      });
+    }
+    const next = graphImageUrls(nodes);
+    for (const url of owned) if (!next.has(url)) {
+      releaseGraphImageRedraw(root, url); releaseGraphImageUrl(url); owned.delete(url);
+    }
+    for (const url of next) if (!owned.has(url)) { retainGraphImageUrl(url); owned.add(url); }
+  };
+  // An asynchronous PNG export can still need its captured scene after a patch
+  // replaces that scene. Its lease ends at export completion or root disposal.
+  const leaseGraphImages = (root, state) => {
+    const lifetime = graphLifetime(root);
+    if (!lifetime?.active) return () => {};
+    const urls = graphImageUrls(state.nodes);
+    urls.forEach(retainGraphImageUrl);
+    return lifetime.own(() => urls.forEach(releaseGraphImageUrl));
+  };
   const graphImageRedraw = (root) => {
     if (root.__cfxGraphImageRedraw) return root.__cfxGraphImageRedraw;
     const redraw = () => { if (graphLifetime(root)?.active && root.isConnected) drawCanvas(root, root.__cfxGraphState || graphState(root)); };
@@ -21,7 +64,10 @@
       }
       return cached;
     }
+    const image = new Image();
     const notify = () => {
+      // An abandoned load can finish after this URL has acquired a new image.
+      if (imageCache.get(url) !== image) return;
       const callbacks = imageLoadCallbacks.get(url);
       imageLoadCallbacks.delete(url);
       if (callbacks) callbacks.forEach(callback => callback());
@@ -29,7 +75,6 @@
     const callbacks = new Set();
     if (onload) callbacks.add(onload);
     imageLoadCallbacks.set(url, callbacks);
-    const image = new Image();
     image.addEventListener('load', notify, { once: true });
     image.addEventListener('error', notify, { once: true });
     image.src = url;

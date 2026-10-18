@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { Point, identitySvg, getComputedStyle } = require('../helpers/identity-svg');
 const source = name => fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source', name + '.js'), 'utf8');
 
 function readouts() {
@@ -73,18 +74,14 @@ test('comparison tooltip rows use captured value-axis bounds and preserve their 
 });
 
 function brushes() {
-  class Point {
-    constructor(x,y) { this.x=x;this.y=y; }
-    matrixTransform() { return this; }
-  }
-  return new Function('DOMPoint','dataValue','clamp', source('43-brush-projection') + '\nreturn {projectBrushSelection,validDataProjection};')(
-    Point, (value,time) => time ? new Date((value-25569)*86400000).toISOString() : value,
+  return new Function('DOMPoint','getComputedStyle','dataValue','clamp', source('00-svg-coordinate-precision') + '\n' + source('43-brush-projection') + '\nreturn {projectBrushSelection,validDataProjection};')(
+    Point, getComputedStyle, (value,time) => time ? new Date((value-25569)*86400000).toISOString() : value,
     (value,min,max) => Math.max(min,Math.min(max,value)));
 }
 const axis = (minimum,maximum,scale,displayTicks) => ({minimum,maximum,transformedMinimum:minimum,transformedMaximum:maximum,
   scale,threshold:1,reversed:false,displayTicks});
 const root = projection => ({_cfxDataProjection:projection,dataset:{cfxBrushAxis:'x',cfxPreparedChart:'{"xLabels":[]}'},
-  querySelector:()=>({getScreenCTM:()=>({a:1,d:1,is2D:true,inverse:()=>({})})})});
+  querySelector:identitySvg});
 test('brush labels and filtering bounds use the same enclosing prepared axis ticks', () => {
   const runtime = brushes(), minimum = 46266;
   const projection = {horizontal:false,plotBounds:{x:0,y:0,width:100,height:100},x:axis(minimum,minimum+10,'time',

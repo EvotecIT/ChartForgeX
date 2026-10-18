@@ -144,8 +144,8 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                     if(ChartForgeXGraphExplorer.mount(retainedGraph).length!==1||ChartForgeXGraphExplorer.mount('graph-lifetime').length!==1)
                         throw new Error('Idempotent mount lost its graph');
                     lifetimeProbe.recordGlobals=false;lifetimeProbe.recordObservers=false;
-                    if(lifetimeProbe.media.reduce((count,entry)=>count+entry.listeners.filter(listener=>listener.active).length,0)!==3)
-                        throw new Error('Mount duplicated preference listeners');
+                    if(lifetimeProbe.media.reduce((count,entry)=>count+entry.listeners.filter(listener=>listener.active).length,0)!==4)
+                        throw new Error('Mount duplicated media listeners');
                     ChartForgeXGraphExplorer.clearSelection(retainedGraph);
                     graphSelections=0;
                     ChartForgeXGraphExplorer.select(retainedGraph,[{role:'graph-node',id:'a'}],{emit:true});

@@ -1,3 +1,12 @@
+if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
+  // Self-contained fragments may register these assets repeatedly. The first
+  // runtime owns every graph's cache, callbacks and public command closures.
+  const installed = window[Symbol.for('ChartForgeX.graphRuntime')];
+  window.ChartForgeXGraphExplorer = installed;
+  const mountInstalled = () => installed.mount(document);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountInstalled, { once: true });
+  else mountInstalled();
+} else {
   const roots = (target = document) => target?.matches?.('.cfx-graph-explorer') ? [target] : Array.from(target.querySelectorAll('.cfx-graph-explorer'));
   const attr = (node, name) => node ? node.getAttribute(name) || '' : '';
   const num = (node, name, fallback) => {
@@ -126,6 +135,7 @@
       edge.source.degree += 1;
       edge.target.degree += 1;
     });
+    syncGraphImageOwnership(root, nodes);
     return { nodes, edges, clusters, byId, clusterById };
   };
   const graphLinkOpacity = el => el.classList.contains('cfx-graph-link-dim') ? .3 : 1;
@@ -198,6 +208,8 @@
   };
   const drawCanvas = (root, state, options) => {
     if (typeof syncNodeDetailLayers === 'function') syncNodeDetailLayers(state);
+    if ((root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer')) === 'svg' && !options?.force &&
+      typeof syncPhysicalSvgEdgePaint === 'function') syncPhysicalSvgEdgePaint(root, state);
     if ((root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer')) === 'svg' && attr(root, 'data-cfx-graph-accelerated-markup') === 'true' && !options?.force) {
       if (typeof drawAcceleratedSvgRuntime === 'function' && drawAcceleratedSvgRuntime(root, state)) return;
     }

@@ -58,17 +58,23 @@
     } else if (format === 'png') {
       const canvas = root.querySelector('[data-cfx-role="graph-canvas"]');
       const state = (root.__cfxGraphState || graphState(root));
-      await preloadCanvasImages(root, state);
-      if (!lifetime.active || !root.isConnected) return;
-      drawCanvas(root, state, { force: true, exportDisclosure: true });
+      const releaseImages = leaseGraphImages(root, state);
+      let rendered = false;
       try {
-        content = canvas ? canvas.toDataURL('image/png') : '';
-      } catch (error) {
-        root.dataset.cfxGraphLastExportError = error?.name || 'export-error';
-        emit(root, 'cfxgraphexporterror', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, error: root.dataset.cfxGraphLastExportError });
-        return;
+        await preloadCanvasImages(root, state);
+        if (!lifetime.active || !root.isConnected) return;
+        rendered = true;
+        drawCanvas(root, state, { force: true, exportDisclosure: true });
+        try {
+          content = canvas ? canvas.toDataURL('image/png') : '';
+        } catch (error) {
+          root.dataset.cfxGraphLastExportError = error?.name || 'export-error';
+          emit(root, 'cfxgraphexporterror', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, error: root.dataset.cfxGraphLastExportError });
+          return;
+        }
       } finally {
-        drawCanvas(root, root.__cfxGraphState || graphState(root));
+        releaseImages();
+        if (rendered && lifetime.active && root.isConnected) drawCanvas(root, root.__cfxGraphState || graphState(root));
       }
       mime = 'image/png';
     }
@@ -298,6 +304,7 @@
     if (!restoredInteractionState && hasFeature(root, 'RuntimePhysics') && hasFeature(root, 'Stabilization') && attr(root, 'data-cfx-physics-stabilization-enabled') !== 'false') startPhysics(root, { reason: 'initial-stabilization' });
     syncPhysicsControls(root);
     syncPhysicsConfigurator(root);
+    bindGraphPrint(root);
     emit(root, 'cfxgraphready', {
       graphId: attr(root, 'data-cfx-graph-id'),
       renderer: root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer'),
@@ -314,3 +321,4 @@
   const start = () => mountGraph();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
+}

@@ -98,11 +98,11 @@ A host can edit artifact titles, metadata and accessibility without mutating pre
 
 Existing topology/flow/sequence interchange readers keep their explicit schema-version policy. Family/source IDs and entity relationships are retained for native Office consumers. Generic static artifacts may use SVG/PNG fallback; that fallback cannot be described as editable native diagram fidelity.
 
-The [consumer capability ledger](consumer-capabilities.csv) covers [PowerBGInfo](https://github.com/EvotecIT/PowerBGInfo), [ImagePlayground](https://github.com/EvotecIT/ImagePlayground), [OfficeIMO.ChartForgeX](https://github.com/EvotecIT/OfficeIMO), a private HTML adapter and a private reporting consumer. Public documentation records the private consumers' technical requirements; their identities and exact source evidence stay in the private planning audit. Owner fixtures and later consumer/package qualification are separate gates. Read-only inspection does not count as executing a consumer. No downstream source or dependency pins change in Phases 0–1.
+The [consumer capability ledger](consumer-capabilities.csv) covers [PowerBGInfo](https://github.com/EvotecIT/PowerBGInfo), [ImagePlayground](https://github.com/EvotecIT/ImagePlayground), [OfficeIMO.ChartForgeX](https://github.com/EvotecIT/OfficeIMO), a private HTML adapter and a private reporting consumer. Public documentation records the private consumers' technical requirements; their identities and exact source evidence stay in the private planning audit. Owner fixtures and later consumer/package qualification are separate gates. Read-only inspection does not count as executing a consumer.
 
 ## API and catalog closure
 
-The [API conventions](api-conventions.md) define meaningful fluent verbs and purposeful exceptions. The [public member inventory](api-ledger.md) records the integrated source, exact overloads/defaults and planned ownership. The original inventory describes six baseline runtime assemblies. Phase 4 adds a separate eight-assembly source inventory and an assembly/signature diff; packed dependency, resource and execution qualification remains independent evidence.
+The [API conventions](api-conventions.md) define current authoring and update contracts. The [public member inventory](api-ledger.md) records the earlier migration signatures and assembly moves. It is historical migration evidence rather than an exhaustive qualification of current public options. Packed dependency, resource and execution qualification remains independent evidence.
 
 The [chart capability roadmap](chart-capabilities.csv) explicitly maps all native series kinds through `NativeKinds`, alongside compound workflows. It records existing capabilities, missing options, priority lanes, dependencies and representative acceptance fixtures. `Verification` and `QualificationStatus` bound the current evidence; `FutureAcceptance` describes work that is not established by those fixtures. Priority is driven by real use and architectural reuse. Browser interaction, maps and advanced financial tooling have separate scope from static chart quality. Chart names alone do not establish completeness.
 
@@ -110,23 +110,28 @@ The [chart capability roadmap](chart-capabilities.csv) explicitly maps all nativ
 
 Every migrated family needs typed data/geometry, shared frame/theme/text, SVG/native PNG proof, meaningful edge cases, catalog examples, semantics and performance evidence. Do not implement every catalog gap before the common pipeline has qualified.
 
-## Phases and stop point
+## Delivery and acceptance
 
-| Phase | Work | Gate |
+The shared native pipeline and peer-package extraction are implemented. The active implementation and acceptance checklist lives in [TODO.md](../../TODO.md); consumer requirements live in the [consumer capability ledger](consumer-capabilities.csv) and [migration guide](migration.md). Keep implementation, visual acceptance, package qualification, publication and installed-consumer execution separate. A pending external gate holds only work that depends on it.
+
+## Composition and animation coverage
+
+These capabilities extend beyond the native chart-kind catalog. Each row has its own producer, export and qualification boundary.
+
+| Capability | Owner and current contract | Qualification boundary |
 | --- | --- | --- |
-| 0 | Architecture/conventions, full API inventory, consumer mapping, integrated baseline | Exact source identities; explained API differences; reproducible baseline |
-| 1 | Shared pipeline; Cartesian and donut proof; tiny topology/sequence; artifact handoff; isolated light/dark gallery | Build/tests, observed SVG+PNG, framework/package/AOT checks and performance comparison; reassess before expansion |
-| 2 | Complete Cartesian/radial migration and unified formatting/sparkline policy | Supported option closure; remove replaced legacy family paths |
-| 3 | Diagram and remaining family migration | Shared contracts plus family-specific semantic/visual closure |
-| 4 | Extract Visuals and Stories; remove decorative static dashboard controls | Full package dependency/asset closure and preserved composition/animation capabilities |
-| Visual acceptance | Finish the shared visual system and curated family gallery before consumer migration | Observed SVG/PNG light/dark compact/wide output; coherent typography, spacing, labels and legends; usable theme/filter/example/export navigation; qualified performance and package boundaries |
-| 5 | Consumer migrations and release qualification | Published-package-only consumer builds and real document/module/wallpaper execution |
+| Factual blocks | Visuals owns the twelve factual table, list, metric, timeline, strip and header families. Shared paint and label owners produce static SVG and native pixels. Segmented proportions retain finite source values and distinguish an unrepresentable aggregate from zero. | Individual primitive and numeric regressions complement complete report acceptance. Dense layouts, arbitrary option combinations, fonts and actual assistive technology remain separate. |
+| Mixed grids | Visuals owns chart/factual children, spans, fit modes, panel frames and stable composition target IDs. | Detached child/artifact and layout fixtures do not establish every span, density or native document placement. Mutable builders require serialized use. |
+| Layered canvases | Visuals owns backdrops, text runs, tiles, images and completed-state marks. TechHorizon shares its exact cubic outline across SVG and density-aware native painting; authored halo colors include transparency. | SVG blur and native bounded halos retain different kernels. Effect parity, every local style combination and arbitrary font substitution are not implied. |
+| Image composition | Visuals reuses core image, text, shape and transform services for ordered immediate composition and static raster containers. | Alpha, fit and placement need representative artifact proof; a public primitive inventory does not qualify every combination. |
+| Visual stories | Stories owns ordered scenes, media, source/terminal/replay panels, outcomes, detached clocks and complete transcripts. | Actual exported frames and timings are checked independently of model construction. Arbitrary tokenizers, script shaping, assistive technology and physical print remain separate. |
+| Terminal stories and replay | Stories owns commands, output, waits, viewport state, terminal tables and recorded playback. | The supported replay model does not promise arbitrary terminal control-language or installed-host compatibility. |
+| Animation and motion | Stories owns repeatable frame sources, GIF palette encoding, lossless RGBA APNG, streamed output and ordered motion. Topology uses resolved core routes. | Container decoding, frame timing, caller stream ownership and native/browser motion have distinct proof. GIF quantization remains lossy; optical quality and platform playback need their own assessment. |
+| Static artifacts and watermarks | Producer-owned static sources pass through the common artifact boundary; Visuals owns ordered text/image watermark decoration. | Existing-SVG decoration is a trusted-input operation, not sanitization. Native Office/print and all transform, font or image combinations remain separate qualification. |
 
-The active checklist lives in [TODO.md](../../TODO.md). Visual acceptance precedes Phase 5. Package extraction qualifies ownership and retained capabilities; the gallery and rendered chart layouts require their own observed acceptance. Package publication and consumer migration require separate authority.
+The current review accounts for the public types in both optional owners and their export routes. Source inspection, targeted contracts, actual artifact execution and independent decoding are different evidence levels; none establishes universal option-combination coverage.
 
 ## Validation and performance
-
-The integrated baseline is commit `fdb8fe16df11037c1228168c6984ed31316ae04f`: main `20e3443da9521bcd3371f68b232406596564191b` plus label-placement `5d2c4ada0f7b4aa1fb8704e9ba150ff3b9f0d5bb`. Its test run passed 2,384 tests on net8.0. The frozen net8 assembly SHA-256 is `43AE57D902E428A3A84674B16EA9DC6FB1C6D1194B3C60CB9E2F48D30FFE010E`. Build/test evidence is separate from the open prerequisite PR and from published package state.
 
 Use `dotnet test ChartForgeX.sln -c Release` for code checks and `./Build.ps1 -Configuration Release` for the stable quality/package loop. Keep net472, netstandard2.0, net8.0 and net10.0 compile/assets checks; netstandard is not an executable test runtime. Native AOT and browser execution are separate evidence.
 
@@ -140,31 +145,7 @@ Use the existing PowerForge benchmark orchestration, paired/rotated warm samples
 
 Generated SVG must be inspected in a browser and native PNG viewed directly. Numeric health checks and XML assertions complement that inspection. The single published catalog at `Website/static/examples/generated/catalog.html` provides uniform family examples. The maintained curated tour also includes source-linked compositions and interactive scenarios; regenerate its selected assets from the same source. Dense review fixtures and numeric diagnostic pages remain build output. Baseline refresh follows observed approval.
 
-The stable Phase 1 runtime is commit `913245cd0d6e34d3e9fb5a7a02c6fe6ae00aa67c`, net8.0 assembly SHA-256 `F9E6C9DE9137BA37698FC73539CF7554D9DF60A82DAF5F47EFA542D64D5A9DC4`. Its complete local quality loop passed 2,491 tests, 42 Mermaid conformance fixtures, Native AOT execution, 317 healthy visual pairs, all four target-framework assets and isolated consumption of the six packed libraries. The 56-case gallery and 16 checked-in selections remain byte-identical after the bounded opaque-background raster optimization; the earlier 14 executed browser cases and direct PNG/SVG inspection therefore cover those same outputs.
-
-Final performance qualification uses 30 warmups and nine retained samples per case, paired/rotated PowerForge ordering and recorded processor affinity/priority. Across 84 cases and 756 samples there are no correctness failures. All 18 complete prepared-scene comparisons improve elapsed time by 7.9–71.2% and reduce allocations. The 12 unchanged-output comparisons preserve exact SVG/PNG bytes and range from 5.1% faster to 8.6% slower, within the 10% gate. Earlier timing flags and every confirmation remain in the private evidence; no pooled averages or removed outliers override them. Concurrent unrelated builds/tests were observed, so these are qualified local comparisons, not a quiet-host or cross-platform performance guarantee. Output-size changes remain separate costs below.
-
-## Phase 1 reassessment
-
-Retain the prepared-scene boundary and the core/Visuals/Stories ownership plan. The implemented fixtures establish detached geometry, shared frame and theme resolution, reusable native raster export, descriptive source alternatives and scoped SVG embedding. The fixed-size proof is sufficient to guide family migration; it does not establish every existing option or composition primitive.
-
-The Phase 1 expansion plan included formatting and time semantics, missing observations versus zero, disconnected paths, normalized and independent stack groups, aggregation provenance, label and legend density, explicit style overrides and unsupported-option closure. The migration implements shared formatting/sparkline policies, missing-data ingestion and axis-isolated stacks. Series geometry options add authored stack-group keys, signed normalization targets, selectable interpolation and step placement through shared stack and path layouts. The [chart roadmap](chart-capabilities.csv) records remaining family options, including a separately authored missing-observation policy for stacked areas. Severity, outcome and operational state retain separate meanings and presentation policies.
-
-Prepared output adds semantic metadata and embedding isolation. In the measured 500-point scatter fixture, raw SVG grows from 139,591 to 285,201 bytes; repeated metadata, scoped identities and redundant paint attributes account for most of the increase. Redesigned scene fixtures also produce larger PNGs, ranging from about 4% to 50% above their legacy counterparts despite equal dimensions and quality settings. Lower rendering time does not erase those transfer/storage costs. Reduce redundant serialization in later work while retaining full source alternatives, stable identities and geometry, and compare compressed as well as raw sizes.
-
-Composition migration must adopt the shared image, transform and gradient owners while preserving the measured effects used by wallpapers. Stories must retain both visual-story workflows, terminal playback/transcripts, ordered watermark decoration and animated topology. Owner fixtures do not qualify downstream execution: PowerBGInfo needs actual wallpaper proof, ImagePlayground needs installed-module proof on PowerShell 5.1 and 7, and OfficeIMO needs picture/DPI/accessibility and editable-diagram qualification. Native source coordinates and prepared display regions remain distinct until exact document placement is proven.
-
-## Phases 2–3 reassessment
-
-Retain the shared native scene as the owner for every migrated chart and diagram. Integrated local qualification passes 3,016 tests, 42 Mermaid fixtures, all four framework assets without warnings, 317 healthy SVG/PNG/HTML outputs and isolated consumption of all six existing packages. Fresh Native AOT publication and execution cover the corrected production implementation. The same portable test assembly also passes all 3,016 tests under Linux with Linux fonts; hosted platform builds remain a separate gate. Resolved-font measurements protect rotated heatmap labels, topology symbols and badges, stack totals and endpoint callouts. Compact dots retain their readable logical font size and report fitted prefixes without losing source symbols. The full Linux gallery passes both baseline evaluators: reviewed natural-height exports record resolved outer-frame font provenance; fixed canvases, widths, scale and actual raster allocation remain strict. The checked-in selected catalog contains 122 artifacts, covers all 49 chart kinds in light and dark, and passes compact/wide browser checks with registered regular/bold fonts. This qualifies owner behavior; it does not establish downstream execution, package publication or website deployment.
-
-The migration measurements exercise complete exports and retain preparation and reused-scene export as separate diagnostics. Historical public exporters can map frame and typography requests differently, and the former scenario naming did not guarantee first/second alternation within each engine pair. Those results are historical evidence rather than the current controlled timing budget. The maintained suites use explicit shared render requests and pair Baseline/Candidate engines within one fixture and operation, with balanced execution positions.
-
-These are representative local measurements, not an all-family, dense-layout or cross-platform guarantee. Topology retains legacy typography versus the candidate common frame. Flow and sequence are excluded from this paired performance set because the frozen public exporters cannot accept equivalent token/font inputs. Redesigned payload size remains a separate tradeoff: measured Phase 3 SVG changes range from 47.72% smaller to 111.38% larger, while PNG changes range from 49.41% smaller to 38.52% larger. Preserve source semantics and embedding isolation when reducing serialization overhead.
-
-The package boundary separates static compositions and animation into the peer owners described below. Native producer coverage does not close the family option roadmap. Stack groups, normalization, interpolation and step placement share canonical geometry owners; other family contracts and their qualification remain tracked separately. Keep consumer repositories read-only until their migration phase, and retain the package-only, installed-module, saved-document and wallpaper execution gates described below.
-
-## Family migration and extraction boundary
+## Native and optional producer boundaries
 
 All supported chart kinds, chart grids, topology, flow and sequence have native prepared-scene producers. Convenience exports use those producers, and replaced static chart/diagram renderers are retired. This establishes common rendering ownership; per-chart options and their acceptance fixtures remain in the [capability roadmap](chart-capabilities.csv). Integrated quality, observed output and representative performance qualify the combined implementation separately, with current gates in [TODO.md](../../TODO.md).
 
@@ -180,17 +161,7 @@ Visuals and Stories are peers depending on core. Their ownership boundaries are:
 
 Retain semantic completion markers and deliberate progress handles when removing decorative static controls. Keep genuine browser interaction in its adapter and product shells/data collection in consumers. The extraction introduces no additional runtime dependency or public scene framework.
 
-## Phase 4 reassessment
-
-Retain the peer package split. Core-only charts and static diagrams load independently of Visuals and Stories. Wallpapers and factual layouts use Visuals; animation, transcripts and GIF/APNG output use Stories. Markup explicitly takes Visuals for its table preview. Shared text, pixels, image fitting and resolved topology geometry stay in core, while optional producers pass completed output through `IStaticVisualSource` without concrete core dispatch.
-
-Assembly moves require compiled callers to rebuild against package version `2.0.0`, even where domain namespaces stay stable. The separate [Phase 4 API inventory](api-ledger.md) records those moves and replacements. Isolated packed probes verify all four target assets, resources and dependency boundaries; execution covers net472, net8.0 and net10.0 for the three core/presentation lanes. The adapter lane executes on net8.0 and net10.0. Owner wallpapers, factual layouts, terminal output and animated stories have observed visual fixtures. This qualification preserves the retained producers' export contracts; it does not convert their legacy layouts into native chart scenes.
-
-Topology measurements retain 22 supported comparisons with identical full diagnostics and SVG; mixed-scene SVG cases are explicitly excluded where the baseline cannot produce them. The maintained suite pairs engines within every fixture/operation and records processor placement. Historical extraction runs and their timing flags remain available, but do not establish quiet-host or cross-platform performance.
-
-Visual acceptance closes the shared presentation and gallery work in [TODO.md](../../TODO.md) before Phase 5. Phase 5 closes the downstream contracts in the [consumer migration guide](migration.md). PowerBGInfo needs actual wallpaper execution, ImagePlayground needs installed-module static and animated workflows in both PowerShell runtimes, and OfficeIMO needs saved-document and editable-diagram proof. Owner source, local packages and owner fixtures do not establish those results or package publication. The chart option roadmap remains separate future work.
-
-## Visual acceptance reassessment
+## Visual acceptance
 
 Charts and diagrams share the paired canonical colors, measured frame, typography roles and label-placement services. The default heading is 17px bold, outer padding is 24px, and scalar values have a separate 34px role. Frame legend settings resolve consistently across families; authored sizes, colors, axis bounds and family-specific scale switches remain effective. Automatic Cartesian and schedule ranges reserve room for endpoint marks. Annotation placement accounts for data marks, including the appointment chart's peak-window caption.
 

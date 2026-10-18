@@ -133,7 +133,7 @@ internal static class VisualFrameLayout {
             if (top > headingTop) top += gap * 5 / 6;
         }
         if (context.Frame.ShowLegend && entries.Count > 0) {
-            Dictionary<VisualLegendEntry, (double Value, double Percentage)>? numericWidths = null;
+            Dictionary<VisualLegendEntry, (string Text, double Value, double Percentage, double Gap)>? numericWidths = null;
             var position = context.Frame.LegendPosition;
             var side = position == ChartLegendPosition.Left || position == ChartLegendPosition.Right;
             var above = position is ChartLegendPosition.Top or ChartLegendPosition.TopLeft or ChartLegendPosition.TopRight;
@@ -243,14 +243,15 @@ internal static class VisualFrameLayout {
                             builder.Text(label, anchor, baseline, legendStyle, role: "legend-label", paint: paints?.Foreground ?? VisualChartPaint.Text(legendStyle));
                             if (valueWidth > 0) {
                                 var valueStyle = legendStyle.Clone(); valueStyle.Alignment = TextAlignment.Right;
-                                var percentageWidth = NumericWidths(entry).Percentage;
+                                var numeric = NumericWidths(entry);
+                                var percentageWidth = numeric.Percentage;
                                 var valueRight = cursor + width - 4;
                                 if (percentageWidth > 0) {
                                     var percentageStyle = valueStyle.Clone(); percentageStyle.Color = colors.MutedForeground;
                                     builder.Text(entry.Percentage!, valueRight, baseline, percentageStyle, role: "legend-percentage", paint: paints?.MutedForeground ?? VisualChartPaint.Text(percentageStyle));
-                                    valueRight -= percentageWidth + gap * 2 / 3;
+                                    valueRight -= percentageWidth + numeric.Gap;
                                 }
-                                builder.Text(Fit(entry.Value!, Math.Max(0, valueRight - cursor - (isSummary ? 0 : 22)), valueStyle), valueRight, baseline, valueStyle, role: "legend-value", paint: paints?.Foreground ?? VisualChartPaint.Text(valueStyle));
+                                builder.Text(numeric.Text, valueRight, baseline, valueStyle, role: "legend-value", paint: paints?.Foreground ?? VisualChartPaint.Text(valueStyle));
                             }
                         }
                         builder.AddRegion(new VisualSemanticRegion("legend-" + entry.Id, "legend", new ChartRect(cursor, y + titleHeight + r * lineHeight, width, lineHeight), entry.Description));
@@ -280,15 +281,35 @@ internal static class VisualFrameLayout {
             double ValueWidth(VisualLegendEntry entry) {
                 if (string.IsNullOrEmpty(entry.Value)) return 0;
                 var widths = NumericWidths(entry);
-                return widths.Value + (string.IsNullOrEmpty(entry.Percentage) ? 0 : widths.Percentage + gap * 2 / 3);
+                return widths.Value + (string.IsNullOrEmpty(entry.Percentage) ? 0 : widths.Percentage + widths.Gap);
             }
-            (double Value, double Percentage) NumericWidths(VisualLegendEntry entry) {
+            (string Text, double Value, double Percentage, double Gap) NumericWidths(VisualLegendEntry entry) {
                 if (string.IsNullOrEmpty(entry.Value)) return default;
-                numericWidths ??= new Dictionary<VisualLegendEntry, (double Value, double Percentage)>();
+                numericWidths ??= new Dictionary<VisualLegendEntry, (string Text, double Value, double Percentage, double Gap)>();
                 if (!numericWidths.TryGetValue(entry, out var widths)) {
-                    // Wrapping, row alignment and paint placement share this frame's unchanged legend style.
-                    widths = (builder.MeasureText(entry.Value!, legendStyle).Width,
-                        string.IsNullOrEmpty(entry.Percentage) ? 0 : builder.MeasureText(entry.Percentage!, legendStyle).Width);
+                    var overflowValue = entry.Metadata != null && entry.Metadata.TryGetValue("data-cfx-value-overflow", out var overflowFlag)
+                        && overflowFlag == "true";
+                    // An overflow bound is longer than an ordinary value. Its browser-selected fallback
+                    // face can consume a small advance-only gap, so keep a full line of clearance.
+                    var numericGap = overflowValue ? Math.Max(gap * 2 / 3, legendStyle.EffectiveFontSize * 1.5) : gap * 2 / 3;
+                    var percentageWidth = string.IsNullOrEmpty(entry.Percentage) ? 0 : builder.MeasureText(entry.Percentage!, legendStyle).Width;
+                    var textWidth = Math.Max(0, legendWidth - 28 - gap - percentageWidth - (percentageWidth > 0 ? numericGap : 0));
+                    var labelWidth = builder.MeasureText(OneLine(entry.Label), legendStyle).Width;
+                    // Reserve a readable label before fitting the value. A long authored numeric caption
+                    // must not erase the category or paint through its separately allocated column.
+                    var labelReserve = Math.Min(labelWidth, Math.Max(builder.MeasureText("…", legendStyle).Width, textWidth / 3));
+                    var valueMaximum = Math.Max(0, textWidth - labelReserve);
+                    var value = entry.Value!;
+                    if (builder.MeasureText(value, legendStyle).Width > valueMaximum) {
+                        if (overflowValue) {
+                            value = string.Empty;
+                            foreach (var candidate in new[] { "> 1.79E308", ">1E308" })
+                                if (builder.MeasureText(candidate, legendStyle).Width <= valueMaximum) { value = candidate; break; }
+                            builder.AddDiagnostic(new VisualDiagnostic("frame.legend-value-compacted", "An overflow bound was shortened or omitted to fit its legend column; its complete bound remains in semantic metadata."));
+                        } else value = Fit(value, valueMaximum, legendStyle);
+                    }
+                    // Wrapping, row alignment and painting share these resolved text allocations.
+                    widths = (value, builder.MeasureText(value, legendStyle).Width, percentageWidth, numericGap);
                     numericWidths.Add(entry, widths);
                 }
                 return widths;

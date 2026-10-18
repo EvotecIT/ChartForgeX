@@ -561,7 +561,7 @@ body {
 }
 
 .cfx-compare-tray__summary,
-.cfx-compare-tray__more {
+.cfx-compare-tray__range {
   flex: 0 0 auto;
   color: #7dd3fc;
   font-size: 11px;
@@ -571,6 +571,7 @@ body {
 }
 
 .cfx-compare-chip,
+.cfx-compare-page,
 .cfx-compare-clear {
   min-width: 0;
   border: 1px solid rgba(56, 189, 248, .34);
@@ -594,10 +595,15 @@ body {
 }
 
 .cfx-compare-chip:hover,
-.cfx-compare-chip:focus-visible {
+.cfx-compare-chip:focus-visible,
+.cfx-compare-page:hover:not(:disabled),
+.cfx-compare-page:focus-visible {
   border-color: #7dd3fc;
   color: #bae6fd;
 }
+
+.cfx-compare-page { flex: 0 0 auto; white-space: nowrap; }
+.cfx-compare-page:disabled { cursor: default; opacity: .5; }
 
 .cfx-compare-clear {
   flex: 0 0 auto;
@@ -801,13 +807,16 @@ body {
   box-shadow: none; font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__summary,
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__more { color: var(--cfx-tooltip-muted); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__range { color: var(--cfx-tooltip-muted); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:hover,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:focus-visible,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page:hover:not(:disabled),
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page:focus-visible,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:hover,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:focus-visible { border-color: var(--cfx-host-accent); }
 .cfx-dashboard { gap: 16px; }

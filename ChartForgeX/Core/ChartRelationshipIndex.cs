@@ -111,7 +111,7 @@ internal sealed partial class ChartRelationshipIndex {
         var snapshot = SnapshotNodes(nodes, out var indexes, allowEmpty: true);
         if (links == null) throw new ArgumentNullException(nameof(links));
         var branches = links.ToArray();
-        if (snapshot.Length > 0 && branches.Length == 0) throw new ArgumentException("Hierarchy charts require at least one link.", nameof(links));
+        if (snapshot.Length > 1 && branches.Length == 0) throw new ArgumentException("Hierarchy charts with multiple nodes require at least one link.", nameof(links));
         var sources = new int[branches.Length];
         var targets = new int[branches.Length];
         var children = new HashSet<string>(StringComparer.Ordinal);

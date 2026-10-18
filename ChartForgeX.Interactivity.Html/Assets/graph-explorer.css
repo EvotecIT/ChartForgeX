@@ -35,6 +35,8 @@
   box-sizing: inherit;
 }
 
+.cfx-graph-explorer[hidden] { display: none; }
+
 .cfx-graph-explorer {
   --cfx-color-canvas: #f8fafc;
   --cfx-color-surface: rgba(255, 255, 255, .88);
@@ -782,7 +784,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 .cfx-graph-node polygon,
 .cfx-graph-node path {
   fill: var(--cfx-node-fill, #2563eb);
-  stroke: var(--cfx-node-stroke, #60a5fa);
+  stroke: var(--cfx-node-stroke, #eff6ff);
   stroke-width: 3;
 }
 

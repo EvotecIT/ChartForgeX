@@ -20,10 +20,12 @@ public sealed partial class SvgFactBlockRenderer {
         y += 8;
 
         var layout = VisualFactBlockRendering.CapsuleLoopLayout(options, content, y);
+        var total = VisualFactBlockRendering.SegmentedTotal(card);
 
         writer.StartElement("g")
             .Attribute("data-cfx-role", "segmented-metric-capsule-loop")
-            .Attribute("data-cfx-total", VisualFactBlockRendering.SegmentedTotal(card))
+            .OptionalAttribute("data-cfx-total", total.FiniteTotal)
+            .Attribute("data-cfx-total-overflow", total.FiniteTotal.HasValue ? null : "true")
             .Attribute("data-cfx-bottom", layout.Bottom)
             .Attribute("data-cfx-loop-y", layout.RingY)
             .Attribute("data-cfx-loop-height", layout.RingHeight)

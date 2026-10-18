@@ -25,7 +25,6 @@ public sealed partial class Chart {
     /// </remarks>
     public Chart AddCalendarHeatmap(string name, IEnumerable<ChartCalendarHeatmapItem> items, ChartColor? color = null, ChartSeriesId? id = null) {
         var series = id.HasValue ? ChartSeries.CreateCalendarHeatmap(id.Value, name, items, color) : ChartSeries.CreateCalendarHeatmap(name, items, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("Calendar heatmaps must contain at least one dated value.", nameof(items));
         return AddSeries(series);
     }
 }

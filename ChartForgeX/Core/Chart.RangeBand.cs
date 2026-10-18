@@ -14,7 +14,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddRangeBand(string name, IEnumerable<ChartRangeBand> bands, ChartColor? color = null) {
         var series = ChartSeries.CreateRangeBand(name, bands, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(bands));
         AppendSeries(series);
         return this;
     }

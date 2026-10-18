@@ -27,6 +27,7 @@ internal static partial class VisualScalarProgressCompiler {
         var left = plot.Left + labelWidth + handleClearance; var width = Math.Max(0, plot.Width - labelWidth - valueWidth - handleClearance * 2);
         if (width <= 0 || thickness <= 0) { builder.AddDiagnostic(new VisualDiagnostic("progress.insufficient-space", "No space remains for progress tracks and handles.")); return; }
         using (builder.PushGroup(Id(0), "progress-bar-chart", new Dictionary<string, string> {
+            ["data-cfx-series"] = "0",
             ["data-cfx-maximum"] = N(chart.Options.ProgressMaximum), ["data-cfx-show-values"] = chart.Options.ShowProgressValues ? "true" : "false",
             ["data-cfx-show-handles"] = chart.Options.ShowProgressHandles ? "true" : "false", ["data-cfx-bar-thickness-ratio"] = N(chart.Options.ProgressBarThicknessRatio),
             ["data-cfx-track-opacity"] = N(chart.Options.ProgressTrackOpacity), ["data-cfx-series-key"] = series.InteractionIdentityKey
@@ -36,6 +37,7 @@ internal static partial class VisualScalarProgressCompiler {
             var bounds = new ChartRect(plot.Left, plot.Top + rowHeight * index, plot.Width, rowHeight);
             builder.AddRegion(new VisualSemanticRegion(Id(0, index), "progress-row", bounds, labels[index] + ": " + values[index]));
             using (builder.PushGroup(Id(0, index), "progress-row", new Dictionary<string, string> {
+                ["data-cfx-series"] = "0",
                 ["data-cfx-point"] = N(index), ["data-cfx-label"] = labels[index], ["data-cfx-value"] = N(raw), ["data-cfx-ratio"] = N(ratio), ["data-cfx-full-label"] = values[index]
             })) {
                 Text(chart, context, builder, series, -1, labels[index], new ChartRect(plot.Left, bounds.Top, Math.Max(0, labelWidth - gap / 2), rowHeight), "progress-label", Id(0, index) + "-label", colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);

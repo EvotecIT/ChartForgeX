@@ -64,7 +64,9 @@ test('successful host document updates clear stale undo snapshots and rejected u
 
 test('export preserves inherited edge width and explicit widths', () => {
   const {edge,root}=fixture();
-  const exportJson=new Function('items','attr','metadataDetail','viewport','graphFocusSnapshot','exportGraphPerformance','routePoints','idList','graphState','document',source(['30-bindings'])+'\nreturn exportGraphJson;')(
+  const bindings=source(['30-bindings']);
+  const exportSource=bindings.slice(bindings.indexOf('  const exportGraphJson ='), bindings.indexOf('  const bindCommandMenus ='));
+  const exportJson=new Function('items','attr','metadataDetail','viewport','graphFocusSnapshot','exportGraphPerformance','routePoints','idList','graphState','document',exportSource+'\nreturn exportGraphJson;')(
     items,attr,()=>({}),()=>({}),()=>null,()=>({}),()=>[],value=>value.split(',').filter(Boolean),root=>root.state,{readyState:'loading',addEventListener(){}});
   assert.equal(exportJson(root).edges[0].style.width,null);
   edge.setAttribute('data-edge-width',2.5); assert.equal(exportJson(root).edges[0].style.width,2.5);

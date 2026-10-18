@@ -169,6 +169,10 @@ chart.ConfigureBubble(bubble => {
 
 The key is off by default. Enabling it keeps categorical series entries and color keys in one measured layout budget. Captured size captions also govern native default size labels and HTML size readouts; raw source sizes, shared geometry and selection IDs retain their existing meaning. Explicitly empty formatted text remains empty. Full size-key semantics survive a constrained layout, with `cartesian.size-scale-overflow` explaining an omitted key.
 
+## Graph image sizing
+
+Graph image nodes stretch the complete source image to the configured image rectangle before circular clipping. Native SVG/PNG, accelerated SVG, browser PNG and patched nodes use the same scaling. Earlier SVG paths could letterbox or crop a non-square source while Canvas stretched it. Supply an image with the intended mark's aspect ratio when its original proportions must be preserved; exports no longer choose a different fit based on the backend.
+
 ## HTML tooltip options
 
 Configure tooltip content through `HtmlChartInteractionOptions.Tooltip.Mode` and `HtmlInteractiveDashboardOptions.Tooltip.Mode`; these replace the flat `TooltipMode` property. The existing `HtmlChartTooltipMode.Single` and `.SharedX` values are unchanged. Getter-owned `Tooltip` options also expose `Range`: `Exact`, `Nearest`, or `HtmlChartTooltipRange.WithinDistance(cssPixels)`.

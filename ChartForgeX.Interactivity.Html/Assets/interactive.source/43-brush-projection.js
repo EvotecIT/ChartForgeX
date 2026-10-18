@@ -47,7 +47,7 @@
   };
   const projectBrushSelection = (root, rect) => {
     const projection = root._cfxDataProjection, svg = root.querySelector('.cfx-stage svg');
-    const matrix = svg?.getScreenCTM();
+    const matrix = svgScreenMatrix(svg);
     if (!projection || !matrix || matrix.is2D === false || !matrix.a || !matrix.d) return { data: {} };
     let inverse;
     try { inverse = matrix.inverse(); } catch { return { data: {} }; }

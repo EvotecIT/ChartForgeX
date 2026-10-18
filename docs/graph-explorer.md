@@ -58,6 +58,8 @@ var html = graph.ToGraphExplorerHtmlPage(options => {
 File.WriteAllText("service-estate.html", html);
 ```
 
+Image nodes stretch the complete source image to their image rectangle; circular nodes then clip it to a circle. SVG and PNG use the same scaling. Supply an image with a matching aspect ratio when its original proportions must be preserved.
+
 Double-clicking a node with children enters that node. Double-clicking empty graph space returns one level; `Escape`, `Backspace`, and Left Arrow do the same from the graph. Every breadcrumb segment is clickable, while `Overview` and `Up` remain explicit accessible controls. Search Enter selects and centers the first match. Semantic zoom reduces labels in overview mode and reveals secondary labels and badges in detail mode.
 
 `ParentId` is a real validated contract: missing parents, self-parenting, and cycles fail before rendering. `ParentClusterId` provides the same structural relationship for nested cluster descriptions.
@@ -128,6 +130,8 @@ WebGL supports node and edge labels, secondary labels, badges, status indicators
 During dense motion, strokes below one physical pixel use opacity proportional to their width. Zooming into the scene or settling physics restores full stroke geometry.
 
 Panning and zooming reuse retained GPU geometry. Position changes, selection, filters, patches, theme changes and surface resizing invalidate the affected rendering state. If a WebGL context is lost, the explorer switches to Canvas and retains its viewport, selection and graph document; restoration rebuilds the GPU resources. PNG export uses the complete shared Canvas renderer, then restores the current interactive graph, including updates received while images load.
+
+The adapter shares decoded node images between active scenes. Replacing or removing image URLs releases entries after their last scene consumer leaves; disposal releases that scene's entries. An asynchronous PNG export retains its captured images until it finishes or is disposed, so a concurrent host patch cannot evict them. This bounds adapter cache retention by active scenes and exports; it does not impose an image-size limit or control the browser's own image cache.
 
 The generated `graph-rich-rendering-svg.html`, `graph-rich-rendering-canvas.html` and `graph-rich-rendering-webgl.html` examples show the same scene in all three backends, including route updates and WebGL context loss/restoration.
 
@@ -337,6 +341,8 @@ Set `HtmlGraphExplorerOptions.PersistInteractionState = true` to restore positio
 Captured selection uses `{ role, id }` entries, so a node and edge may share an id without changing each other's selection on replay. Older plain-id entries restore only when the id identifies one graph item; ambiguous entries are skipped. The generated `graph-state-replay-svg.html`, `graph-state-replay-canvas.html`, and `graph-state-replay-webgl.html` examples expose capture and restore controls over the same scene.
 
 The API also exposes `export(target, "svg" | "png" | "json")`. Export remains interceptable through the cancelable `cfxgraphexport` event.
+
+SVG and PNG exports use the same node paint rules as the interactive graph, including authored colors, selection and highlighting. Browser printing materializes the complete visible scene from the committed graph into a separate SVG, with its camera reset and bounds expanded to include nodes, labels, badges and edge captions outside the original viewport. The heading remains with the scene; controls, inspectors and navigation chrome stay out of the printed graph. Printing leaves the live camera, positions and selection intact, and its temporary surface is removed after printing or disposal. The same print policy applies to SVG, Canvas and WebGL backends.
 
 ## Interaction and host events
 

@@ -16,7 +16,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await MountFragmentAsync(page, "nested-closed");
         await RecordHostExpiryAsync(page);
         var position = await MoveToHostTargetAsync(page, Point(0, 0));
-        Assert.True(await HostedTipHiddenAsync(page));
+        await AssertDelayedNativeEntryAsync(page);
         var offset = await page.EvaluateAsync<double>("""
             () => {
                 const root=window.hostedChart, own=root.querySelector('[data-cfx-role=point][data-cfx-series="0"][data-cfx-point="0"]').getBoundingClientRect();
@@ -65,7 +65,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             }
             """, selector);
         await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
-        Assert.True(await HostedTipHiddenAsync(page));
+        await AssertDelayedHostAcquisitionAsync(page);
         await WaitForHostExpiryAsync(page);
         var receipt = await HostReceiptAsync(page);
         await CaptureDelayAsync(page, "delay-shadow-" + (legend ? "legend" : "caption"), receipt, session);

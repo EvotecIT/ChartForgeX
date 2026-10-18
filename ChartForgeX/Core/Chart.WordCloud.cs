@@ -26,7 +26,6 @@ public sealed partial class Chart {
             index++;
         }
 
-        if (points.Count == 0) throw new ArgumentException("Word clouds must contain at least one term.", nameof(items));
         Options.XAxisLabels.Clear();
         Options.XAxisLabels.AddRange(labels);
         Add(name, ChartSeriesKind.WordCloud, points, color);

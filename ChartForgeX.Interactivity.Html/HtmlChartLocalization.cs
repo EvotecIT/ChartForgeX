@@ -49,6 +49,10 @@ public sealed class HtmlChartLocalization {
         [HtmlChartText.CopyScenarioLink] = "Copy scenario link",
         [HtmlChartText.ScenarioTimelineStep] = "Scenario timeline step",
         [HtmlChartText.Pinned] = "Pinned",
+        [HtmlChartText.ComparePrevious] = "Previous selected targets",
+        [HtmlChartText.CompareNext] = "Next selected targets",
+        [HtmlChartText.CompareRange] = "{first}–{last} of {count}",
+        [HtmlChartText.Value] = "Value",
     };
 
     /// <summary>Gets or sets the HTML language tag, or null to inherit the chart's accessibility language.</summary>

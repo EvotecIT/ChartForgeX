@@ -102,3 +102,20 @@
 .cfx-topology-wrapper[data-cfx-narrow-minimum-height]{container-type:inline-size}
 @container (max-width:640px){.cfx-topology-wrapper[data-cfx-narrow-minimum-height] .cfx-topology-viewport>svg{width:max(100%,calc(var(--cfx-topology-narrow-minimum-height) * var(--cfx-topology-aspect,1)));max-width:none!important;height:auto}}
 .cfx-topology-html-highlighted{filter:drop-shadow(0 0 3px var(--cfx-topology-accent,#2563eb))}
+
+@media print {
+  .cfx-topology-wrapper {
+    width:100%!important;max-width:100%!important;height:auto!important;min-height:0!important;
+    margin:0!important;padding:0!important;break-inside:avoid;
+  }
+  .cfx-topology-controls,.cfx-topology-selection-panel,.cfx-topology-force-controls,
+  .cfx-topology-scenarios,.cfx-topology-scenario-panel {display:none!important}
+  .cfx-topology-wrapper .cfx-topology-viewport {
+    padding:0!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:visible!important;
+  }
+  .cfx-topology-wrapper .cfx-topology-viewport>svg {
+    width:100%!important;min-width:0!important;max-width:100%!important;height:auto!important;
+    transform:none!important;transition:none!important;will-change:auto;
+  }
+  .cfx-topology-wrapper svg :focus {outline:none!important}
+}

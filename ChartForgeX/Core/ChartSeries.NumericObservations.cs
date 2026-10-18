@@ -7,6 +7,13 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
+    private void RequireMutableNumericObservations() {
+        if (HasSourceIndexedObservationIds)
+            throw new NotSupportedException("Derived points retain source provenance. Rebuild this series from complete source observations to change its data.");
+        if (UsesTypedObservations || IsRelationshipKind(Kind))
+            throw new NotSupportedException("This series now owns typed observations; use its typed update/replacement API.");
+    }
+
     /// <summary>Keeps ordinary observation identities and presentation aligned after structural edits.</summary>
     private void NumericPointInserted(int index) {
         InsertDefault(PointColors, index); InsertDefault(PointFillPatterns, index); InsertDefault(PointLabels, index);
@@ -68,10 +75,6 @@ public sealed partial class ChartSeries {
         public void CopyTo(ChartPoint[] array, int arrayIndex) => _owner._points.CopyTo(array, arrayIndex);
         public IEnumerator<ChartPoint> GetEnumerator() => _owner._points.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        private void Writable() {
-            if (_owner.HasSourceIndexedObservationIds)
-                throw new NotSupportedException("Derived points retain source provenance. Rebuild this series from complete source observations to change its data.");
-            if (IsReadOnly) throw new NotSupportedException("This series now owns typed observations; use its typed update/replacement API.");
-        }
+        private void Writable() => _owner.RequireMutableNumericObservations();
     }
 }

@@ -29,8 +29,8 @@ internal static partial class VisualScheduleCompiler {
             throw new NotSupportedException("Schedule layouts do not support reversed axes.");
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("Schedule families cannot mix different layout kinds.");
-        if (kind == ChartSeriesKind.Gantt && chart.Series.All(series => !series.HasSourceData)) {
-            builder.AddDiagnostic(new VisualDiagnostic("schedule.no-data", "Gantt charts need a schedule item.")); return;
+        if ((kind is ChartSeriesKind.Gantt or ChartSeriesKind.Timeline) && chart.Series.All(series => !series.HasSourceData)) {
+            builder.AddDiagnostic(new VisualDiagnostic("schedule.no-data", "Range schedules need a schedule item.")); return;
         }
         if (kind == ChartSeriesKind.StateTimeline) StateLanes(chart, context, builder, viewport);
         else if (kind == ChartSeriesKind.GanttLane) GanttLanes(chart, context, builder, viewport);

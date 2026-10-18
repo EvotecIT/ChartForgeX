@@ -1,3 +1,4 @@
+  const graphNodePrimaryRingPaint = node => ({ radius: node.size + 9, color: '#0f766e', width: 3 });
   const drawCanvasNodeDetails = (context, root, node, compact, moving, gpuNodes) => {
     if (!visible(node.el)) return;
     const dimmed = node.el.classList.contains('cfx-graph-neighborhood-dim');
@@ -43,10 +44,11 @@
       context.fillText(badge.text, badgeX, badgeY + .5);
     }
     if (primary) {
+      const ring = graphNodePrimaryRingPaint(node);
       context.beginPath();
-      context.arc(node.x, node.y, node.size + 9, 0, Math.PI * 2);
-      context.strokeStyle = '#0f766e';
-      context.lineWidth = 3;
+      context.arc(node.x, node.y, ring.radius, 0, Math.PI * 2);
+      context.strokeStyle = ring.color;
+      context.lineWidth = ring.width;
       context.stroke();
     }
     if (labels) {
@@ -77,7 +79,7 @@
       }
       context.strokeText(label, labelX, labelY);
       context.fillText(label, labelX, labelY);
-      if (node.secondaryLabel && root.classList.contains('cfx-graph-semantic-detail')) {
+      if (node.secondaryLabel && (!hasFeature(root, 'LevelOfDetail') || root.classList.contains('cfx-graph-semantic-detail'))) {
         context.font = card ? '10px Inter, Segoe UI, Arial, sans-serif' : '9.5px Inter, Segoe UI, Arial, sans-serif';
         context.fillStyle = nodeColors.secondary;
         context.lineWidth = 3;

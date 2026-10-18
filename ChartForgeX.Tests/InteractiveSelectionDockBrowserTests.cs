@@ -7,7 +7,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 
 namespace ChartForgeX.Tests;
 
-public sealed class InteractiveSelectionDockBrowserTests {
+public sealed partial class InteractiveSelectionDockBrowserTests {
     [BrowserTheory]
     [Trait("BrowserSuite", "Compatibility")]
     [InlineData(false, true)]
@@ -200,7 +200,7 @@ public sealed class InteractiveSelectionDockBrowserTests {
         }
         Assert.Equal("7", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-compare-count"));
         Assert.Equal(6, await page.Locator(".cfx-compare-chip").CountAsync());
-        Assert.Equal("+1", await page.Locator(".cfx-compare-tray__more").InnerTextAsync());
+        Assert.Equal("1–6 of 7", await page.Locator(".cfx-compare-tray__range").InnerTextAsync());
         var after = await BoxAsync(page, ".cfx-stage svg");
         Assert.Equal(before.Width, after.Width, 1);
         Assert.Equal(before.Height, after.Height, 1);
@@ -276,7 +276,7 @@ public sealed class InteractiveSelectionDockBrowserTests {
         Assert.True(dock.Y >= stage.Y + stage.Height, "Selection controls must not cover chart labels, marks or viewport scrollbars.");
         var box = await root.BoundingBoxAsync() ?? throw new InvalidOperationException("No chart host.");
         Assert.True(dock.X >= box.X - 1 && dock.X + dock.Width <= box.X + box.Width + 1, "The dock must remain inside its host width.");
-        var controls = await root.Locator(".cfx-compare-chip,[data-cfx-compare-clear]").AllAsync();
+        var controls = await root.Locator(".cfx-compare-chip,.cfx-compare-page:enabled,[data-cfx-compare-clear]").AllAsync();
         foreach (var control in controls) {
             // The dock is one stable row; keyboard focus scrolls each complete control into view.
             await control.FocusAsync();

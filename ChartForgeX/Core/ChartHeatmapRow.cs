@@ -12,7 +12,7 @@ public sealed class ChartHeatmapRow {
     private readonly IReadOnlyList<double> _values;
 
     /// <summary>
-    /// Initializes a heatmap row.
+    /// Initializes a heatmap row. Empty values represent a row with no observations.
     /// </summary>
     /// <param name="name">The row name.</param>
     /// <param name="values">The row values. Values are assigned to columns one through N.</param>
@@ -35,7 +35,6 @@ public sealed class ChartHeatmapRow {
             finiteValues.Add(value);
         }
 
-        if (finiteValues.Count == 0) throw new ArgumentException("Heatmap rows must contain at least one visible cell value.", nameof(values));
         _cells = Array.AsReadOnly(cells);
         _values = Array.AsReadOnly(finiteValues.ToArray());
     }
@@ -69,7 +68,8 @@ public sealed class ChartHeatmapRow {
     public static ChartHeatmapRow Create(string name, params double[] values) => new(name, values);
 
     /// <summary>
-    /// Creates a heatmap row with optional masked cells. Null cells reserve their column position but do not render.
+    /// Creates a heatmap row with optional masked cells. Null cells reserve their column position but do not render,
+    /// including when every cell is null.
     /// </summary>
     /// <param name="name">The row name.</param>
     /// <param name="values">The row cells. Null entries are skipped while later values keep their one-based column positions.</param>

@@ -17,6 +17,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "y", Number(-size));
         Attribute(writer, "width", Number(size * 2));
         Attribute(writer, "height", Number(size * 2));
+        Attribute(writer, "preserveAspectRatio", "none");
         writer.Append("></image>");
     }
 
@@ -42,6 +43,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "y", Number(-height / 2 + 3));
         Attribute(writer, "width", Number(Math.Max(1, width - 6)));
         Attribute(writer, "height", Number(Math.Max(1, height - 6)));
+        Attribute(writer, "preserveAspectRatio", "none");
         writer.Append("></image>");
     }
 }
