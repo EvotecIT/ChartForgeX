@@ -51,6 +51,7 @@ public sealed class RuntimeLinkedForegroundHoverBrowserTests {
         await MoveToAsync(page, Mark(2));
         var hovered = await State(page);
         await Capture(session, kind, graphite, dark, width, "hover", hovered, errors);
+        Assert.Contains("cfx-hovered", hovered.GetProperty("marks")[2].GetProperty("classes").GetString()!.Split(' '));
         Assert.Equal(new[] { "1", "1", "0.3" }, await Opacities(page));
         Assert.Equal(identities[0], Assert.Single(hovered.GetProperty("selection").EnumerateArray()).GetString());
         Assert.Equal(identities[1], Assert.Single(hovered.GetProperty("highlights").EnumerateArray()).GetString());
