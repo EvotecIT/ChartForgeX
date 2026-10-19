@@ -54,7 +54,7 @@ public sealed class InteractiveChordColorBrowserTests {
         await AssertRowAsync("Value", "18"); await AssertRowAsync("Illustrative latency", "180 ms");
         await CaptureAsync("native-hover");
         await page.Mouse.ClickAsync((float)point[0], (float)point[1]);
-        var selected = await page.EvaluateAsync<JsonElement>("()=>colorChordEvents.findLast(event=>event.name==='cfxselect').target");
+        var selected = await ReadTargetAsync(selectedEvent: true);
         AssertTarget(selected, "north-south", 18);
         Assert.Equal("true", await root.GetAttributeAsync("data-cfx-tooltip-pinned"));
         Assert.Equal(nativePaint, await NativePaintAsync(page));
@@ -64,7 +64,7 @@ public sealed class InteractiveChordColorBrowserTests {
         await AssertRowAsync("Value", "9"); await AssertRowAsync("Illustrative latency", "0 ms");
         Assert.Equal("0", await page.Locator(Flow("support-south")).GetAttributeAsync("data-cfx-color-value"));
         await page.Keyboard.PressAsync("Space");
-        AssertTarget(await page.EvaluateAsync<JsonElement>("()=>colorChord.getSelection()[0]"), "support-south", 9);
+        AssertTarget(await ReadTargetAsync(), "support-south", 9);
         await page.Keyboard.PressAsync("Space");
         await FocusWithKeyboardAsync(page, page.Locator(Flow("south-support")));
         await AssertRowAsync("Value", "14"); await AssertRowAsync("Illustrative latency", "Not sampled");
@@ -74,7 +74,7 @@ public sealed class InteractiveChordColorBrowserTests {
         await AssertRowAsync("Value", "0"); await AssertRowAsync("Illustrative latency", "210 ms");
         Assert.Equal(0, await page.Locator(Flow("zero-transfer") + " [data-cfx-role=chord-ribbon]").CountAsync());
         await page.Keyboard.PressAsync("Space");
-        AssertTarget(await page.EvaluateAsync<JsonElement>("()=>colorChord.getSelection()[0]"), "zero-transfer", 0);
+        AssertTarget(await ReadTargetAsync(), "zero-transfer", 0);
         await CaptureAsync("semantic-zero"); await page.Keyboard.PressAsync("Space");
 
         await FocusWithKeyboardAsync(page, page.Locator(Flow("north-priority")));
@@ -90,7 +90,7 @@ public sealed class InteractiveChordColorBrowserTests {
         Assert.Equal("true", await priority.GetAttributeAsync("aria-selected"));
         Assert.Equal(0, await page.Locator("[data-cfx-role=chord-color-scale] [data-cfx-target-kind]").CountAsync());
         Assert.Equal(sourceStops, await StopFactsAsync());
-        AssertTarget(await page.EvaluateAsync<JsonElement>("()=>colorChord.getSelection()[0]"), "north-priority", 5);
+        AssertTarget(await ReadTargetAsync(), "north-priority", 5);
         Assert.NotEqual(oldPath, await priority.Locator("[data-cfx-role=chord-ribbon]").GetAttributeAsync("d"));
         // A replacement dismisses the old readout while retaining the authored focus/selection. New input inspects the new scene.
         Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip=>tip.hidden"));
@@ -120,6 +120,15 @@ public sealed class InteractiveChordColorBrowserTests {
             expected=>{const tip=document.querySelector('.cfx-tooltip');return tip&&!tip.hidden&&[...tip.querySelectorAll('dt')]
                 .some(term=>term.textContent===expected.name&&term.nextElementSibling.textContent===expected.value);}
             """, new { name, value }, new PageWaitForFunctionOptions { Timeout = 5000 });
+        Task<JsonElement> ReadTargetAsync(bool selectedEvent = false) => page.EvaluateAsync<JsonElement>("""
+            selectedEvent=>{
+                const target=selectedEvent?colorChordEvents.findLast(event=>event.name==='cfxselect').target:colorChord.getSelection()[0],
+                    observed=[target,...colorChordEvents.filter(event=>event.target?.targetKind==='link').map(event=>event.target)];
+                if(observed.some(item=>item.point!==undefined||item.sourcePoint!==undefined))
+                    throw Error('Native Chord links must not invent point or source-point ordinals.');
+                return target;
+            }
+            """, selectedEvent);
         Task<string[]> StopFactsAsync() => stops.Locator("[data-cfx-stop]").EvaluateAllAsync<string[]>("""
             nodes=>nodes.map(node=>JSON.stringify(['data-cfx-source-id','data-cfx-stop','data-cfx-value','data-cfx-color','data-cfx-label']
                 .map(name=>node.getAttribute(name))))
@@ -148,7 +157,10 @@ public sealed class InteractiveChordColorBrowserTests {
     private static void AssertTarget(JsonElement target, string id, double weight) {
         Assert.Equal("link", target.GetProperty("targetKind").GetString()); Assert.Equal(id, target.GetProperty("targetId").GetString());
         Assert.Equal("transfer-source", target.GetProperty("seriesKey").GetString()); Assert.Equal(weight, target.GetProperty("numericValue").GetDouble());
-        Assert.False(target.TryGetProperty("point", out _)); Assert.False(target.TryGetProperty("sourcePoint", out _));
+        Assert.Equal("shared", target.GetProperty("seriesScope").GetString());
+        // The browser transport can materialize JavaScript undefined fields as JSON null.
+        foreach (var name in new[] { "point", "sourcePoint" })
+            if (target.TryGetProperty(name, out var point)) Assert.Equal(JsonValueKind.Null, point.ValueKind);
     }
     private static string Flow(string id) => "[data-cfx-role=chord-link][data-cfx-target-id='" + id + "']";
     private static Task<string> NativePaintAsync(IPage page) => page.Locator("[data-cfx-role=chord-series]").EvaluateAsync<string>("""
@@ -160,7 +172,6 @@ public sealed class InteractiveChordColorBrowserTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Chord, width == 360 ? "compact-color-dimension" : "color-dimension")
             .WithSize(width, width == 360 ? 360 : 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithTitle("Transfer volume and latency");
-        chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         if (updated) {
             var series = chart.Series[0];
             series.ReplaceFlowData(series.Nodes, series.FlowLinks.Reverse().Select(flow => new ChartFlowLink(flow.Id, flow.SourceId, flow.TargetId,
