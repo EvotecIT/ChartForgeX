@@ -52,7 +52,13 @@ public sealed class ScenarioReadabilityBrowserTests {
         await page.Locator("[data-cfx-scenario='route']").ClickAsync();
         var observations = new List<JsonElement>();
         for (var step = 0; step <= 2; step++) {
-            if (step > 0) await page.Locator(".cfx-scenario-panel__steps li").Nth(step - 1).ClickAsync();
+            if (step > 0) {
+                await page.Locator(".cfx-topology-scenario-panel [data-cfx-scenario-panel-steps] li").Nth(step - 1).ClickAsync();
+                await page.Locator(".cfx-scenario-panel__steps li").Nth(step - 1).ClickAsync();
+                var progress = page.Locator(".cfx-scenario-progress__text");
+                await Microsoft.Playwright.Assertions.Expect(progress).ToBeVisibleAsync();
+                await Microsoft.Playwright.Assertions.Expect(progress).ToHaveTextAsync($"Step {step} / 2");
+            }
             await page.Locator(".cfx-scenario-progress__bar").EvaluateAsync("node => { void getComputedStyle(node).width; }");
             await page.WaitForFunctionAsync("() => document.querySelector('.cfx-scenario-progress__bar').getAnimations().every(animation => animation.playState !== 'running')");
             observations.Add(await page.EvaluateAsync<JsonElement>("""
@@ -69,9 +75,10 @@ public sealed class ScenarioReadabilityBrowserTests {
                     let ratio=(Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05);
                     let progressOverlapsText=false;
                     if(progress){const bar=document.querySelector('.cfx-scenario-progress__bar'),fillBox=bar.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(node);const textBox=range.getBoundingClientRect();progressOverlapsText=Math.min(fillBox.right,textBox.right)>Math.max(fillBox.left,textBox.left)&&Math.min(fillBox.bottom,textBox.bottom)>Math.max(fillBox.top,textBox.top);if(progressOverlapsText){const fill=over(rgba(getComputedStyle(bar).backgroundColor),bg),fl=luminance(over(ink,fill)),bl=luminance(fill);ratio=Math.min(ratio,(Math.max(fl,bl)+.05)/(Math.min(fl,bl)+.05));}}
-                    return {selector,text:node.textContent,ratio,ink,background:bg,progressOverlapsText};
+                    const box=node.getBoundingClientRect(),visible=box.width>0&&box.height>0&&chain.every(p=>{const s=getComputedStyle(p);return s.display!=='none'&&s.visibility!=='hidden'&&s.visibility!=='collapse'&&Number(s.opacity)>0;});
+                    return {selector,text:node.textContent,ratio,ink,background:bg,progressOverlapsText,visible};
                   }
-                  return {step,labels:[facts('.cfx-topology-scenario-panel__title',false),facts('.cfx-scenario-panel__title',false),facts('.cfx-scenario-panel__meta',false),...Array.from(document.querySelectorAll('.cfx-scenario-panel__steps li'),node=>facts('.cfx-scenario-panel__steps li',false,node)),facts('.cfx-scenario-progress__text',true)]};
+                  return {step,labels:[facts('.cfx-topology-scenario-panel__title',false),facts('.cfx-topology-scenario-panel__meta',false),...Array.from(document.querySelectorAll('.cfx-topology-scenario-panel [data-cfx-scenario-panel-steps] li'),node=>facts('.cfx-topology-scenario-panel [data-cfx-scenario-panel-steps] li',false,node)),facts('.cfx-scenario-panel__title',false),facts('.cfx-scenario-panel__meta',false),...Array.from(document.querySelectorAll('.cfx-scenario-panel__steps li'),node=>facts('.cfx-scenario-panel__steps li',false,node)),facts('.cfx-scenario-progress__text',true)]};
                 }
                 """, step));
         }
@@ -87,8 +94,12 @@ public sealed class ScenarioReadabilityBrowserTests {
             var labels = observation.GetProperty("labels").EnumerateArray().ToArray();
             var stepCaptions = labels.Where(label => label.GetProperty("selector").GetString() == ".cfx-scenario-panel__steps li").ToArray();
             Assert.Equal(new[] { "Observe", "Confirm" }, stepCaptions.Select(label => label.GetProperty("text").GetString()?.Trim()).ToArray());
-            foreach (var label in labels)
+            var topologyCaptions = labels.Where(label => label.GetProperty("selector").GetString() == ".cfx-topology-scenario-panel [data-cfx-scenario-panel-steps] li").ToArray();
+            Assert.Equal(new[] { "a", "b" }, topologyCaptions.Select(label => label.GetProperty("text").GetString()?.Trim()).ToArray());
+            foreach (var label in labels) {
+                Assert.True(label.GetProperty("visible").GetBoolean(), label.GetRawText());
                 Assert.True(label.GetProperty("ratio").GetDouble() >= 4.5, label.GetRawText());
+            }
         }
         Assert.Empty(errors);
         AssertNoConsoleErrors(session);
