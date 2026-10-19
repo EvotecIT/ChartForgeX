@@ -87,7 +87,7 @@ public sealed class ChartAxis {
         }
     }
 
-    /// <summary>Gets or sets the preferred number of generated ticks. An explicit value also limits automatic time-axis density; the default lets measured time labels use the available room.</summary>
+    /// <summary>Gets or sets the preferred number of generated ticks. An explicit value limits automatic fitting; the default lets measured horizontal numeric and time labels use the available room.</summary>
     public int TickCount {
         get => _tickCount;
         set {
@@ -99,7 +99,7 @@ public sealed class ChartAxis {
 
     internal bool HasExplicitTickCount => _hasExplicitTickCount;
 
-    /// <summary>Restores automatic tick density, including measured time-axis spacing.</summary>
+    /// <summary>Restores automatic tick density, including measured horizontal numeric and time-axis spacing.</summary>
     /// <returns>The current axis.</returns>
     public ChartAxis WithAutomaticTickCount() { _tickCount = 6; _hasExplicitTickCount = false; return this; }
 

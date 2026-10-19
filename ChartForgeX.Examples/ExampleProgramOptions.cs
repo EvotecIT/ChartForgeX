@@ -11,6 +11,10 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--numeric-axis-only")) {
+            NumericAxisExamples.Write(output, pngOutputScale);
+            return true;
+        }
         if (HasArg(args, "--grouped-categories-only")) {
             CartesianCategoryExamples.WriteGrouped(output, pngOutputScale);
             Console.WriteLine("Generated grouped category examples in: " + output);
