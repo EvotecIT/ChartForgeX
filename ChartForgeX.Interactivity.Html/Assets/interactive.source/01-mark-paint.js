@@ -256,7 +256,6 @@
   });
   const retainedGeometryFact = (node) => {
     const data = node.dataset || {};
-    // An empty aggregate retains its interval and contributors without becoming a zero-valued mark.
     return ['zero', 'precision-collapse', 'layout-collapse'].includes(data.cfxGeometryStatus)
       || data.cfxDerived === 'histogram-bin' && data.cfxBinHasValue === 'false';
   };

@@ -982,7 +982,6 @@
   });
   const retainedGeometryFact = (node) => {
     const data = node.dataset || {};
-    // An empty aggregate retains its interval and contributors without becoming a zero-valued mark.
     return ['zero', 'precision-collapse', 'layout-collapse'].includes(data.cfxGeometryStatus)
       || data.cfxDerived === 'histogram-bin' && data.cfxBinHasValue === 'false';
   };
@@ -3660,7 +3659,6 @@
       removed ||= projected.some(targets => !targets.length);
     }
     if (match.observationIds) {
-      // Keep authored observation intent even before its first source value arrives.
       const references = observationReferences(match.observationIds, match.seriesKey);
       const unique = new Map(references.map(item => [JSON.stringify([item.seriesKey, item.observationId]), item]));
       match.targets = [...(match.targets || []), ...unique.values()];

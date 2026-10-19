@@ -189,7 +189,6 @@
       removed ||= projected.some(targets => !targets.length);
     }
     if (match.observationIds) {
-      // Keep authored observation intent even before its first source value arrives.
       const references = observationReferences(match.observationIds, match.seriesKey);
       const unique = new Map(references.map(item => [JSON.stringify([item.seriesKey, item.observationId]), item]));
       match.targets = [...(match.targets || []), ...unique.values()];
