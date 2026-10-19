@@ -63,7 +63,9 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
                 Assert.Equal(1, await target.Locator("[data-cfx-browser-hit-area]").CountAsync());
             }
         }
-        await MoveToAsync(page, Point(0, 0));
+        var pointer = await NativeInteriorPointAsync(page, Point(0, 0),
+            kind == ChartSeriesKind.Candlestick ? "[data-cfx-role=candlestick-body]" : "[data-cfx-role=ohlc-stem]", clearance: 0);
+        await page.Mouse.MoveAsync((float)pointer[0], (float)pointer[1], new MouseMoveOptions { Steps = 4 });
         Assert.Contains("cfx-hovered", await target.GetAttributeAsync("class"));
         Assert.NotEmpty(await TooltipTextAsync(page));
         if (dashed) await CaptureAsync(page, directory, name + ".hover.png");
@@ -73,7 +75,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
             Assert.Contains(part, priceRows);
             Assert.Equal(price, await page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = part }).Locator("+ dd").InnerTextAsync());
         }
-        await target.ClickAsync();
+        await page.Mouse.ClickAsync((float)pointer[0], (float)pointer[1]);
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         Assert.Contains("cfx-tooltip--pinned", await page.Locator(".cfx-tooltip").GetAttributeAsync("class"));
         await target.FocusAsync(); await page.Keyboard.PressAsync("ArrowRight");

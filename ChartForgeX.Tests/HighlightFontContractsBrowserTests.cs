@@ -14,9 +14,11 @@ namespace ChartForgeX.Tests;
 /// <summary>Retained linked intent dims marks only when it has a current foreground, without altering independent selection.</summary>
 public sealed class HighlightFontContractsBrowserTests {
     [BrowserTheory]
-    [InlineData(false, 1440)]
-    [InlineData(true, 390)]
-    public async Task ChartHighlightUsesCurrentAvailableForegroundAndPageFontsStayInsideTheirDeclarations(bool dark, int width) {
+    [InlineData(false, 1440, false)]
+    [InlineData(true, 390, false)]
+    [InlineData(false, 1440, true)]
+    [InlineData(true, 390, true)]
+    public async Task ChartHighlightUsesCurrentAvailableForegroundAndPageFontsStayInsideTheirDeclarations(bool dark, int width, bool descriptor) {
         if (!Enabled) return;
         var renderer = new HtmlInteractiveChartRenderer();
         void Options(HtmlChartInteractionOptions options) { options.IdScope = "highlight-availability"; options.Highlight.DimOthersWhileSelected = true; }
@@ -28,11 +30,11 @@ public sealed class HighlightFontContractsBrowserTests {
         Assert.Equal("", await page.EvaluateAsync<string>("()=>document.body.style.getPropertyValue('outline')"));
         Assert.Equal("", await page.Locator(".cfx-interactive-chart").EvaluateAsync<string>("root=>root.style.getPropertyValue('outline')"));
         await page.EvaluateAsync("""
-            ()=>{window.chartHighlightEvents=[];const root=document.querySelector('.cfx-interactive-chart');
+            descriptor=>{window.chartHighlightEvents=[];const root=document.querySelector('.cfx-interactive-chart');
               window.highlightController=ChartForgeXCharts.get(root);
               root.addEventListener('cfxselectionchange',e=>chartHighlightEvents.push(e.detail));
-              highlightController.highlight({observationIds:['missing']},{dim:true});}
-            """);
+              highlightController.highlight(descriptor ? {targets:[{seriesKey:'primary',observationId:'missing'}]} : {observationIds:['missing']},{dim:true});}
+            """, descriptor);
         Assert.Equal(0, await page.Locator(".cfx-linked-dim").CountAsync());
         await page.EvaluateAsync("()=>highlightController.select({observationIds:['present']})");
         Assert.True(await page.Locator(Point(0, 0)).EvaluateAsync<bool>("node=>node.classList.contains('cfx-selected')&&!node.classList.contains('cfx-linked-dim')"));
@@ -40,7 +42,7 @@ public sealed class HighlightFontContractsBrowserTests {
         await page.EvaluateAsync("html=>highlightController.update(html)", renderer.RenderFragmentWithoutAssets(Bars("missing", dark), Options));
         Assert.Equal(1, await page.Locator("[data-cfx-highlighted=true]").CountAsync());
         Assert.True(await page.Locator(".cfx-linked-dim").CountAsync() > 0);
-        await Capture(page, "chart-later-match-" + width + "-" + dark);
+        await Capture(page, "chart-later-match-" + width + "-" + dark + "-" + descriptor);
         await page.EvaluateAsync("html=>highlightController.update(html)", renderer.RenderFragmentWithoutAssets(Bars("present", dark), Options));
         Assert.Equal(0, await page.Locator("[data-cfx-highlighted=true],.cfx-linked-dim").CountAsync());
         await page.EvaluateAsync("()=>highlightController.highlight({observationIds:['present']},{dim:true})");
@@ -59,7 +61,7 @@ public sealed class HighlightFontContractsBrowserTests {
         await page.EvaluateAsync("()=>highlightController.clearHighlight()");
         Assert.Equal(0, await page.Locator("[data-cfx-highlighted=true],.cfx-linked-dim").CountAsync());
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>chartHighlightEvents.length"));
-        await Capture(page, "chart-cleared-" + width + "-" + dark);
+        await Capture(page, "chart-cleared-" + width + "-" + dark + "-" + descriptor);
         AssertNoConsoleErrors(session);
     }
 

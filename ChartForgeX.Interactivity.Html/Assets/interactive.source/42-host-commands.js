@@ -161,6 +161,16 @@
     const match = state.match, nodes = dataTargets(root);
     const sharedKeys = new Set(JSON.parse(root.dataset.cfxPreparedChart).series.filter(series => !series.local).map(series => series.key));
     const retainTarget = synchronize ? target => target.seriesScope !== 'local' : durableChartTarget;
+    const observationReferences = (ids, seriesKey) => {
+      const resolved = resolveHostTargets(root, { observationIds: ids, seriesKey });
+      return ids.flatMap(observationId => {
+        const matching = resolved.filter(target => target.observationId === observationId || target.observationIds?.includes(observationId));
+        const keys = matching.length
+          ? matching.filter(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey)).map(target => target.seriesKey)
+          : Array.from(sharedKeys).filter(key => !seriesKey || key === seriesKey);
+        return keys.map(seriesKey => ({ seriesKey, observationId }));
+      });
+    };
     let removed = false;
     const retain = (key, predicate) => {
       if (!match[key]) return;
@@ -171,21 +181,16 @@
     if (match.targets) {
       const original = match.targets;
       const projected = original.map(item => {
-        const resolved = nodes.filter(node => item && matchesTargetIdentity(node, item)).map(targetIdentity);
         if (item?.observationId !== undefined && !item.targetId)
-          return resolved.some(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey)) ? [item] : [];
-        return resolved.filter(retainTarget);
+          return observationReferences([item.observationId], item.seriesKey);
+        return nodes.filter(node => item && matchesTargetIdentity(node, item)).map(targetIdentity).filter(retainTarget);
       });
       match.targets = projected.flat();
       removed ||= projected.some(targets => !targets.length);
     }
     if (match.observationIds) {
-      const resolved = resolveHostTargets(root, { observationIds: match.observationIds, seriesKey: match.seriesKey })
-        .filter(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey));
-      // Keep authored observation intent when aggregate membership or peer partitioning changes.
-      const references = resolved.flatMap(target => match.observationIds
-        .filter(id => target.observationId === id || target.observationIds?.includes(id))
-        .map(observationId => ({ seriesKey: target.seriesKey, observationId })));
+      // Keep authored observation intent even before its first source value arrives.
+      const references = observationReferences(match.observationIds, match.seriesKey);
       const unique = new Map(references.map(item => [JSON.stringify([item.seriesKey, item.observationId]), item]));
       match.targets = [...(match.targets || []), ...unique.values()];
       delete match.observationIds;
