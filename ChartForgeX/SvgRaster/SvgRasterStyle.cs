@@ -196,22 +196,6 @@ internal sealed class SvgRasterStyle {
     private static bool ContainsDecoration(string value, string decoration) =>
         value.IndexOf(decoration, StringComparison.OrdinalIgnoreCase) >= 0;
 
-    public static IReadOnlyDictionary<string, string> ResolveCustomProperties(SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterElement element) {
-        var properties = new Dictionary<string, string>(StringComparer.Ordinal);
-        for (var i = 0; i < ancestors.Count; i++) {
-            var ancestorDeclarations = new List<SvgStyleDeclaration>();
-            ancestorDeclarations.AddRange(styleSheet.DeclarationsFor(ancestors[i], AncestorsBefore(ancestors, i)));
-            AddInline(ancestorDeclarations, ancestors[i]);
-            ApplyCustomProperties(properties, ancestorDeclarations);
-        }
-
-        var declarations = new List<SvgStyleDeclaration>();
-        declarations.AddRange(styleSheet.DeclarationsFor(element, ancestors));
-        AddInline(declarations, element);
-        ApplyCustomProperties(properties, declarations);
-        return properties;
-    }
-
     public ChartColor FillColor() => WithOpacity(Fill.Color ?? ChartColor.Transparent, Opacity * FillOpacity);
 
     public ChartColor StrokeColor() => WithOpacity(Stroke.Color ?? ChartColor.Transparent, Opacity * StrokeOpacity);
@@ -312,11 +296,6 @@ internal sealed class SvgRasterStyle {
 
     private static void AddAttribute(List<SvgStyleDeclaration> declarations, SvgRasterElement element, string name) {
         if (element.TryGet(name, out var value)) declarations.Add(new SvgStyleDeclaration(name, value));
-    }
-
-    private static void AddInline(List<SvgStyleDeclaration> declarations, SvgRasterElement element) {
-        var inline = element.Get("style");
-        if (!string.IsNullOrWhiteSpace(inline)) declarations.AddRange(SvgStyleDeclarationList.Parse(inline!).Declarations);
     }
 
     private static IReadOnlyList<SvgRasterElement> AncestorsBefore(IReadOnlyList<SvgRasterElement> ancestors, int count) {
