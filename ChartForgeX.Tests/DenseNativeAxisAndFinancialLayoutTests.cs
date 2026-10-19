@@ -3,12 +3,45 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using ChartForgeX.Typography;
 using Xunit;
 
 namespace ChartForgeX.Tests;
 
 /// <summary>Protects usable dense category allocation and automatic financial mark separation.</summary>
 public sealed class DenseNativeAxisAndFinancialLayoutTests {
+    [Theory]
+    [InlineData(ChartSeriesKind.Line)]
+    [InlineData(ChartSeriesKind.StepLine)]
+    [InlineData(ChartSeriesKind.Area)]
+    [InlineData(ChartSeriesKind.RangeArea)]
+    public void SparseNamedPointFamiliesKeepCompleteStyledTicksBesideALargeAxisTitle(ChartSeriesKind kind) {
+        var names = new[] { "mmmm one", "mmmm two", "mmmm three", "mmmm four", "mmmm five", "mmmm six", "mmmm seven", "mmmm eight", "mmmm nine" };
+        var points = Enumerable.Range(1, names.Length).Select(value => new ChartPoint(value, value)).ToArray();
+        var series = kind == ChartSeriesKind.RangeArea
+            ? ChartSeries.CreateRangeArea(new ChartSeriesId("observed"), "Values", points.Select(point => new ChartRangeBand(point.X, point.Y - 1, point.Y + 1)), smooth: false)
+            : new ChartSeries(new ChartSeriesId("observed"), "Values", kind, points);
+        var chart = Chart.Create().WithSize(900, 300).WithXAxis("delivery status").WithXLabels(names).AddSeries(series)
+            .ConfigureTickLabelStyle(style => style.WithFontFamily("monospace").WithFontSize(18).WithItalic().WithTextCase(TextCaseTransform.Uppercase))
+            .ConfigureAxisTitleStyle(style => style.WithFontFamily("serif").WithFontSize(32).WithItalic().WithTextCase(TextCaseTransform.Uppercase));
+        var source = series.Points.ToArray();
+        var prepared = Prepare(chart);
+        var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "axis-x-label").ToArray();
+        Assert.NotEmpty(captions);
+        Assert.All(captions, caption => {
+            Assert.Equal(18, caption.Text.Size);
+            Assert.Equal("monospace", caption.Text.Style.Font.Family);
+            Assert.True(caption.Text.Style.Font.Italic);
+            Assert.Contains(Assert.Single(caption.Text.Lines).Text, names.Select(name => name.ToUpperInvariant()));
+        });
+        var facts = prepared.Regions.Where(region => region.Role == "axis-x-label").ToArray();
+        Assert.Equal(names.Length, facts.Length);
+        foreach (var name in names) Assert.Contains(facts, fact => fact.Label!.StartsWith(name.ToUpperInvariant() + " (", StringComparison.Ordinal));
+        Assert.Equal(source, series.Points);
+        Assert.Equal(names.Length, series.SourcePointCount);
+        Assert.Equal(names, chart.Options.XAxis.Labels.Select(label => label.Text));
+    }
+
     [Theory]
     [InlineData(ChartSeriesKind.StepLine)]
     [InlineData(ChartSeriesKind.Area)]

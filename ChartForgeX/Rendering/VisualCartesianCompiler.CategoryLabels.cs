@@ -33,6 +33,12 @@ internal static partial class VisualCartesianCompiler {
         var sources = new Dictionary<double, string>();
         foreach (var tick in ticks) sources[tick] = labels.Format(axis, tick, null, ticks);
         if (!sources.Values.Any(CanWrapCategory)) return;
+        var named = sources.Values.Where(source => source.Length > 0).ToArray();
+        var exceedsFrame = named.Length > 0 && named.All(source => builder.MeasureText(source, style).Width > frame.Width);
+        // Point and area catalogs retain their complete-caption stride unless none of
+        // their full names can fit the frame. Ordinary sparse labels must not acquire
+        // a second line that competes with an explicitly styled axis title.
+        if (chart.Series.Any(series => !ChartCartesianCategoryLabels.IsCategoricalKind(series.Kind)) && !exceedsFrame) return;
         var positions = ticks.Select(tick => ChartScaleTransform.Normalize(tick, range.MinX, range.MaxX, axis) * track.Width).ToArray();
         var gap = AxisLabelGap(axis, context.Theme.Spacing);
         var displays = new Dictionary<double, (string Text, bool Shortened)>();
@@ -59,8 +65,7 @@ internal static partial class VisualCartesianCompiler {
         // A complete explicit category catalog can name point/area observations too. If every
         // nonempty caption is wider than the entire frame, reserving its full width cannot
         // produce any ink. Plan a coarse regular rhythm before the monotonic frame is reserved.
-        var named = sources.Values.Where(source => source.Length > 0).ToArray();
-        if (displays.Count == 0 && named.Length > 0 && named.All(source => builder.MeasureText(source, style).Width > frame.Width)) {
+        if (displays.Count == 0 && exceedsFrame) {
             for (var stride = 1; stride <= ticks.Count; stride++) {
                 var selected = ticks.Where((_, index) => index % stride == 0).ToArray();
                 var candidates = new Dictionary<double, (string Text, bool Shortened)>();
