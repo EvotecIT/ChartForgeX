@@ -126,6 +126,7 @@ try {
         'StandaloneAdapterLifecycleBrowserTests.GraphRemovalReleasesPreferencesAndRemountRestoresOneSelectionHandler',
         'StandaloneAdapterLifecycleBrowserTests.GraphBadgeMeasurementsReusePaintWorkAndRefreshWithFontLoadingAndRemount',
         'StandaloneAdapterLifecycleBrowserTests.GraphEnvironmentPreferencesKeepControlsPaintPrintAndTeardownUsable',
+        'StandaloneAdapterLifecycleBrowserTests.GraphCardIconsAndBadgesKeepReadablePaintAcrossBackends',
         'StandaloneAdapterLifecycleBrowserTests.GraphHierarchyDoubleClickAndBreadcrumbsRemainOperableAfterRemount',
         'StandaloneAdapterLifecycleBrowserTests.AcceleratedGraphRemountPreservesDraggedPositionsSelectionAndExportsAndClearsHostHover',
         'StandaloneAdapterLifecycleBrowserTests.PendingPngImageCompletesAcrossDocumentMutationsWithoutItsTimeoutFallback',

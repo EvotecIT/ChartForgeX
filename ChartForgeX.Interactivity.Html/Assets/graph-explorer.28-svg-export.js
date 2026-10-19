@@ -3,15 +3,15 @@
     Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
     return element;
   };
-  const exportedNodeStyle = (node, root) => {
+  const exportedNodeStyle = (node, root, palette) => {
     const selected = node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted');
     const compact = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview');
-    const paint = graphNodeMarkPaint(node, selected, compact, graphThemePalette(root).selected);
+    const paint = graphNodeMarkPaint(node, selected, compact, palette.selected);
     return `fill:${paint.fill};stroke:${paint.stroke};stroke-width:${paint.width}`;
   };
-  const appendExportedNodeMark = (document, group, node, root) => {
+  const appendExportedNodeMark = (document, group, node, root, palette = graphThemePalette(root)) => {
     const size = node.size;
-    const style = exportedNodeStyle(node, root);
+    const style = exportedNodeStyle(node, root, palette);
     if ((node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl) {
       const rectangular = node.shape === 'imageRect';
       if (rectangular) {
@@ -52,6 +52,7 @@
       const card = node.card === true;
       const icon = svgNode(document, 'text', { class: card ? 'cfx-graph-node-icon cfx-graph-node-card-icon' : 'cfx-graph-node-icon', x: card ? -node.size * 1.45 + 28 : 0, y: 4 });
       icon.textContent = node.icon;
+      icon.style.setProperty('--cfx-node-icon-adaptive', graphNodeIconColor(root, node.el, palette, node.backgroundColor));
       group.appendChild(icon);
     }
   };
@@ -103,6 +104,7 @@
     applySvgNodeDetailPaint(root, group, node, palette);
   };
   const applySvgNodeDetailPaint = (root, group, node, palette) => {
+    group.querySelector('.cfx-graph-node-icon')?.style.setProperty('--cfx-node-icon-adaptive', graphNodeIconColor(root, node.el, palette, node.backgroundColor));
     const badge = group.querySelector('.cfx-graph-node-badge');
     const surface = badge?.firstElementChild, text = badge?.querySelector('text');
     if (surface) { surface.style.fill = palette.text; surface.style.stroke = palette.halo; surface.style.strokeWidth = '2'; }
@@ -218,6 +220,7 @@
             surface.style.removeProperty('stroke'); surface.style.removeProperty('stroke-width');
           }
         }
+        mark.querySelector('.cfx-graph-node-icon')?.style.setProperty('--cfx-node-icon-adaptive', graphNodeIconColor(root, node.el, palette, paint.fill));
         mark.__cfxSvgPaintStamp = stamp; mark.__cfxSvgPaintSurface = surface;
       }
       if (detail && (detail.__cfxSvgPaintStamp !== stamp || detail.__cfxSvgPaintSurface !== detail.firstElementChild)) {
@@ -266,7 +269,7 @@
         'aria-label': node.label
       });
       group.style.opacity = String((node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1) * graphLinkOpacity(node.el));
-      appendExportedNodeMark(document, group, node, root);
+      appendExportedNodeMark(document, group, node, root, palette);
       marks.appendChild(group);
       const detail = svgNode(document, 'g', {
         class: `${attr(node.el, 'class') || 'cfx-graph-node'} cfx-graph-node-details`,

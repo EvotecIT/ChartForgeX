@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
-const source = graphRuntimeSource('this.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, edgeArrowGeometry, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails, drawAcceleratedSvgRuntime, materializeAcceleratedSvg };');
+const source = graphRuntimeSource('this.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphNodeIconColor, graphBadgeGeometry, graphColorContrast, graphEdgePaint, edgeArrowGeometry, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails, drawAcceleratedSvgRuntime, materializeAcceleratedSvg };');
 function runtime() {
   const host = { document: { readyState: 'loading', addEventListener() {}, querySelectorAll: () => [] }, window: {}, setTimeout, clearTimeout };
   vm.runInNewContext(source, host);
@@ -19,6 +19,33 @@ function runtime() {
   return { api, root, a, b, edge, state, palette: api.graphThemePalette(root) };
 }
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`);
+
+test('shared Canvas/WebGL icon paint contrasts with the actual mark fill, including translucent cards', () => {
+  const { api, root, a, palette } = runtime();
+  for (const [card, fill] of [[true, '#ffffff'], [true, '#0f172a'], [false, '#ffffff'], [true, '#ffffff40']]) {
+    a.card = card; a.icon = 'DOM'; a.backgroundColor = fill;
+    a.el.setAttribute('data-node-card', String(card));
+    a.el.setAttribute('data-node-background-color', fill);
+    const ink = [], context = new Proxy({ fillText(text) { ink.push({ text, fill: this.fillStyle }); } }, {
+      get: (target, key) => key in target ? target[key] : () => {}, set: (target, key, value) => (target[key] = value, true)
+    });
+    api.drawNodeMark(context, a, false, false, root, false, palette.selected);
+    assert.equal(ink[0].text, 'DOM');
+    const background = card && fill === '#ffffff40' ? '#ffffff' : fill;
+    assert.ok(api.graphColorContrast(ink[0].fill, background) >= 4.5, `${card}/${fill}`);
+    assert.equal(ink[0].fill, api.graphNodeIconColor(root, a.el, palette, fill));
+  }
+});
+
+test('card badges retain the complete count above the title and ordinary badge anchors stay unchanged', () => {
+  const { api, root, a } = runtime();
+  Object.assign(a, { card: true, size: 62, badge: '+1234567890' });
+  const badge = api.graphBadgeGeometry(a, root);
+  assert.equal(badge.text, '+1234567890'); assert.ok(badge.width > 16);
+  assert.ok(badge.y + 8 < -5 - 12.5, 'Badge paint must end above the primary card title');
+  a.card = false;
+  close(api.graphBadgeGeometry(a, root).y, -a.size * .82);
+});
 
 test('GPU stroke geometry preserves explicit width, round caps and finite vertices', () => {
   const { api } = runtime(), mesh = { positions: [], colors: [] };

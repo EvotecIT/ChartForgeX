@@ -64,7 +64,7 @@
     }
     return { text, width: Math.max(16, width + 8), height: 16,
       x: node.card ? node.size * 1.45 - 18 : node.size * .82,
-      y: node.card ? -Math.min(node.size * 1.05, 36) + 18 : -node.size * .82 };
+      y: node.card ? -Math.min(node.size * 1.05, 36) + 8 : -node.size * .82 };
   };
   const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database', 'text'].includes(node?.shape);
   const nodePolygonPoints = (shape, size) => {

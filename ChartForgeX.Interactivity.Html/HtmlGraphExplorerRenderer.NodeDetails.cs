@@ -84,7 +84,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         font.Weight = 800;
         var width = Math.Max(16, TextLayoutEngine.Measure(node.BadgeText ?? string.Empty, new TextStyle { Font = font, FontSize = 7 }).Width + 8);
         var x = IsCardNode(node) ? BoxHalfWidth(size) - 18 : size * .82;
-        var y = IsCardNode(node) ? -BoxHalfHeight(size) + 18 : -size * .82;
+        var y = IsCardNode(node) ? -BoxHalfHeight(size) + 8 : -size * .82;
         return new ChartRect(x - width / 2, y - 8, width, 16);
     }
 

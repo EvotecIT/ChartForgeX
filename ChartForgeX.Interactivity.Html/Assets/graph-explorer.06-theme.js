@@ -100,6 +100,14 @@
     if (!value) return fallback;
     return graphColorContrast(value, graphThemePalette(root).paper) >= 4.5 ? value : fallback;
   };
+  const graphNodeIconColor = (root, node, palette, fill) => {
+    const card = attr(node, 'data-node-card') === 'true';
+    const surface = fill || attr(node, 'data-node-background-color') || (card ? palette.card : '#2563eb');
+    const background = graphCompositeColor(surface, palette.paper);
+    const preferred = card ? attr(node, 'data-node-border-color') || palette.text : '#ffffff';
+    if (graphColorContrast(preferred, background) >= 4.5) return preferred;
+    return graphColorContrast('#000000', background) >= graphColorContrast('#ffffff', background) ? '#000000' : '#ffffff';
+  };
   const graphReadableNodeColors = (root, node, palette) => {
     const card = attr(node, 'data-node-card') === 'true';
     const requestedBackground = attr(node, card ? 'data-node-background-color' : 'data-node-label-background-color');
@@ -134,6 +142,7 @@
         node.firstElementChild?.style.removeProperty('--cfx-node-fill');
       }
       const colors = graphReadableNodeColors(root, node, palette);
+      node.querySelector('.cfx-graph-node-icon')?.style.setProperty('--cfx-node-icon-adaptive', graphNodeIconColor(root, node, palette, fill));
       node.style.setProperty('--cfx-node-label-adaptive', colors.label);
       node.style.setProperty('--cfx-node-secondary-adaptive', colors.secondary);
       node.style.setProperty('--cfx-node-label-halo', colors.halo);

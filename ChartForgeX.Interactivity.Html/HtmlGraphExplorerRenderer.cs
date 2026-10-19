@@ -429,6 +429,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append("\"");
             if (IsCardNode(node)) Attribute(writer, "x", Number(-BoxHalfWidth(size) + 28));
             Attribute(writer, "y", "4");
+            var iconStyle = NodeIconStyle(node);
+            if (iconStyle.Length > 0) Attribute(writer, "style", iconStyle);
             writer.Append('>');
             writer.Append(Text(node.IconText!));
             writer.Append("</text>");

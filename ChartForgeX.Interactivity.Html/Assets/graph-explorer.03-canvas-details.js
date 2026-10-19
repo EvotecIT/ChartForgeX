@@ -95,7 +95,7 @@
       if (!visible(node.el) || gpuNodes?.has(node)) return;
       context.save();
       context.globalAlpha = (node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1) * graphLinkOpacity(node.el);
-      drawNodeMark(context, node, node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact, root, moving, palette.selected);
+      drawNodeMark(context, node, node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact, root, moving, palette.selected, palette);
       context.restore();
     });
     nodes.forEach(node => drawCanvasNodeDetails(context, root, node, compact, moving, gpuNodes));
