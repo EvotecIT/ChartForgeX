@@ -230,6 +230,57 @@ public sealed class FunnelGeometryTests {
         Assert.NotEmpty(prepared.ToPng());
     }
 
+    [Fact]
+    public void DenseConeKeepsCaptionsWhenTwoRatioLinesFitTheSharedRail() {
+        var values = Enumerable.Range(1, 16).Select(index => 105d - index * 5).ToArray();
+        var names = values.Select((_, index) => "Region " + (index + 1) + ": international distribution").ToArray();
+        var chart = Chart.Create().WithDataLabels().WithXLabels(names)
+            .ConfigureDataLabelStyle(style => style.WithFontSize(8))
+            .ConfigureFunnel(options => options.Form = ChartFunnelForm.Cone)
+            .AddFunnel("Ordered stages", values.Select((value, index) => new ChartPoint(index + 1, value)));
+        RoundedRadialSeriesTests.UseFixtureFont(chart);
+        var context = VisualExportRequest.ForChart(chart).Context;
+        var style = new TextStyle { Font = context.Font, FontSize = 8 };
+        var measure = new VisualSceneBuilder(new VisualSize(390, 420), context.Font);
+        var lineHeight = measure.MeasureText("Mg", style).Height;
+        // This is a real text-allocation boundary: one caption line cannot fit above its stage,
+        // while two ratio lines fit the reserved rail. Smaller text must not erase every caption.
+        var plot = new ChartRect(0, 0, 390, values.Length * (2 * lineHeight + 1));
+        var layout = ChartFunnelLayout.Compute(chart.Series[0].Points.ToArray(), plot, chart.Options.Funnel, context.Theme.Spacing, true);
+        Assert.All(layout.Stages, stage => {
+            Assert.True(stage.LabelBounds.Height < lineHeight);
+            Assert.True(stage.MetricsBounds.Height >= 2 * lineHeight);
+        });
+        var builder = new VisualSceneBuilder(new VisualSize(plot.Width, plot.Height), context.Font);
+        VisualSpecialtyCompiler.Build(chart, context, builder, plot);
+        var scene = builder.Build();
+        Assert.Equal(values.Length, scene.Nodes.OfType<VisualSceneGroup>().Count(node => node.Role == "funnel-stage"));
+        Assert.Equal(names.Select((name, index) => name + ": " + values[index].ToString("0", CultureInfo.InvariantCulture)),
+            scene.Regions.Where(region => region.Role == "funnel-label").Select(region => region.Label));
+        Assert.Equal(values.Length - 1, scene.Regions.Count(region => region.Role == "funnel-ratio"));
+        Assert.Contains(scene.Regions, region => region.Role == "funnel-ratio" && region.Label!.Contains("retained", StringComparison.Ordinal));
+        var captions = scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "funnel-label").ToArray();
+        Assert.NotEmpty(captions);
+        var painted = scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role is "funnel-label" or "funnel-ratio").ToArray();
+        ChartRect Footprint(VisualSceneText text) => new(text.LineLeft(text.Text.Lines[0]), text.Baseline - text.Text.Ascent,
+            text.Text.Metrics.Width, text.Text.Metrics.Height);
+        for (var index = 0; index < painted.Length; index++) {
+            var text = painted[index]; var box = Footprint(text);
+            Assert.Equal(8, text.Text.Size);
+            Assert.True(LabelPlacementService.Contains(scene.Regions.Single(region => region.Id == text.Id).Bounds, box));
+            if (text.Role == "funnel-label") {
+                var source = int.Parse(text.Id!.Substring("series-0-point-".Length).Replace("-label", "", StringComparison.Ordinal), CultureInfo.InvariantCulture);
+                Assert.EndsWith(": " + values[source].ToString("0", CultureInfo.InvariantCulture), string.Join("", text.Text.Lines.Select(line => line.Text)));
+            }
+            for (var other = index + 1; other < painted.Length; other++) {
+                var second = Footprint(painted[other]);
+                Assert.False(Math.Min(box.Right, second.Right) - Math.Max(box.Left, second.Left) > .0001
+                    && Math.Min(box.Bottom, second.Bottom) - Math.Max(box.Top, second.Top) > .0001,
+                    "A caption taking shared rail space must not overprint an accepted ratio or another caption.");
+            }
+        }
+    }
+
     private static Chart Funnel(double[] values, ChartFunnelForm form, ChartOrientation orientation) {
         var chart = Chart.Create().WithXLabels(values.Select((_, index) => "Stage " + index).ToArray())
             .ConfigureFunnel(options => { options.Form = form; options.Orientation = orientation; })

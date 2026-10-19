@@ -140,16 +140,19 @@ public sealed class GroupedCategoryAxisLayoutTests {
 
     [Fact]
     public void TinyBandsOmitOrdinaryCaptionsWithoutLosingFullPathsOrConsumingThePlot() {
-        var chart = CatalogChart(false).WithSize(150, 130).ConfigureTickLabelStyle(style => style.FontSize = 18);
+        var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        Assert.True(File.Exists(font));
+        var chart = CatalogChart(false).WithSize(150, 130).WithPngFont(font).ConfigureTickLabelStyle(style => style.FontSize = 18);
         var prepared = Prepare(chart);
         Assert.True(Plot(prepared).Width > 0); Assert.True(Plot(prepared).Height > 0);
         Assert.Equal(5, Groups(prepared).Length);
-        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.category-group-overflow");
-        Assert.All(ParentCaptions(prepared), caption => Assert.Equal(18, caption.Text.Size));
+        Assert.Empty(ParentCaptions(prepared));
         Assert.Contains(prepared.Regions, region => region.Role == "axis-x-category-group" && region.Label == "2026 / Q1");
         Assert.All(prepared.Regions.Where(region => region.Role == "axis-x-category-group"), region => {
             Assert.True(double.IsFinite(region.Bounds.Width)); Assert.True(double.IsFinite(region.Bounds.Height));
+            Assert.True(region.Bounds.Width > 0); Assert.Equal(0, region.Bounds.Height);
         });
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.category-group-overflow");
     }
 
     [Fact]

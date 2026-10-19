@@ -129,13 +129,10 @@ internal static partial class VisualSpecialtyCompiler {
         var railCaption = false;
         if (form == ChartFunnelForm.Cone && chart.Options.Funnel.Orientation == ChartOrientation.Vertical && metricsBounds.Width > 0) {
             var readable = style.Clone(); readable.FontSize = Math.Min(10, style.EffectiveFontSize);
-            var readableMetrics = metricsStyle.Clone(); readableMetrics.FontSize = Math.Min(10, metricsStyle.EffectiveFontSize);
             var lineHeight = builder.MeasureText(text, readable).Height;
-            // A dense stage can fit one caption line even when neither its half-slot
-            // caption nor the two ratio lines fit. Reuse the reserved rail, retain the
-            // complete descriptors, and keep the numeric value in the visible caption.
-            if (lineHeight > bounds.Height && lineHeight <= metricsBounds.Height
-                && builder.MeasureText(metrics, readableMetrics).Height > metricsBounds.Height) {
+            // A dense stage gives a useful category and raw value first use of its rail.
+            // Ratio descriptors remain available when that space cannot paint both.
+            if (lineHeight > bounds.Height && lineHeight <= metricsBounds.Height) {
                 var suffix = ": " + value;
                 var category = ChartTextFitting.FitEnd(Category(chart, index),
                     prefix => builder.MeasureText(prefix + suffix, readable).Width <= metricsBounds.Width, "…");
@@ -153,7 +150,10 @@ internal static partial class VisualSpecialtyCompiler {
                 : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "funnel",
             displayedText: railCaption ? displayed : null);
         if (index > 0 && metricsBounds.Width > 0 && metricsBounds.Height > 0) {
-            StageText(builder, metrics, metricsBounds, metricsStyle,
+            var ratioBounds = railCaption
+                ? new ChartRect(metricsBounds.Left, metricsBounds.Top, metricsBounds.Width, 0)
+                : metricsBounds;
+            StageText(builder, metrics, ratioBounds, metricsStyle,
                 "funnel-ratio", Id(index) + "-ratio", TextAlignment.Left,
                 VisualChartPaint.Text(metricsStyle), "funnel");
         }

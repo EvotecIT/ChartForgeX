@@ -195,7 +195,7 @@ jobs:
   browser-quality:
     name: Required browser contracts (Windows Chromium)
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"

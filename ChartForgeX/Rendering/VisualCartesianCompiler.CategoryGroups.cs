@@ -77,11 +77,13 @@ internal static partial class VisualCartesianCompiler {
             Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground
         });
         var spacing = context.Theme.Spacing;
-        var paint = chart.Options.ShowAxes && axis.Visible && band.Width > 0 && band.Height > 0;
+        var axisVisible = chart.Options.ShowAxes && axis.Visible;
+        var paint = axisVisible && band.Width > 0 && band.Height > 0;
         var sizes = measuredBandSizes ?? (horizontal ? CategoryGroupBandSizes(builder, cache, style, spacing,
             minimum, maximum, band.Height, band.Width)
             : CategoryGroupBandSizes(builder, cache, style, spacing, minimum, maximum, band.Width, band.Height));
         var shortened = false;
+        var hasVisibleGroup = false;
         var consumed = 0d;
         var index = 0;
         for (var depth = groups.Depth - 1; depth >= 0; depth--) {
@@ -93,6 +95,7 @@ internal static partial class VisualCartesianCompiler {
             foreach (var span in groups.Spans.Where(span => span.Run.Depth == depth)) {
                 var id = role + "-" + Number(depth) + "-" + Number(index++);
                 var visible = TryVisibleGroupSpan(span, minimum, maximum, coordinate, out var start, out var end);
+                hasVisibleGroup |= visible;
                 var bounds = !visible ? default : horizontal
                     ? new ChartRect(tier.Left, start, tier.Width, end - start)
                     : new ChartRect(start, tier.Top, end - start, tier.Height);
@@ -137,7 +140,7 @@ internal static partial class VisualCartesianCompiler {
                 }
             }
         }
-        if (paint && (shortened || sizes.Any(size => size <= 0))) builder.AddDiagnostic(new VisualDiagnostic(
+        if (axisVisible && hasVisibleGroup && (shortened || sizes.Any(size => size <= 0))) builder.AddDiagnostic(new VisualDiagnostic(
             "cartesian.category-group-overflow", "A category parent caption was shortened or omitted inside its measured axis band; complete paths and source spans are retained."));
     }
 
