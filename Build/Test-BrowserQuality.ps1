@@ -92,6 +92,7 @@ try {
         'RuntimeSelectionCueBrowserTests.PersistentSelectionAndHostHighlightsPaintWithoutFiltersAndFollowCurrentNativeGeometry',
         'RuntimeSelectionCueBrowserTests.CollapsedFilledMarksHaveNoCueWhileNativeStrokesAndConnectedPointCuesRemainAvailable',
         'RuntimeSelectionCueBrowserTests.BranchSelectionAndHostHighlightKeepIndependentNativeCuesAcrossPeerHover',
+        'InteractiveChordColorBrowserTests.IndependentFlowColorRetainsNativeReadoutsIdentityAndCurrentExportAcrossReplacement',
         'RuntimeSelectionCueBrowserTests.NativeTextOnlySelectionKeepsItsPaintedCueAndIdentityWithoutFilters',
         'WordCloudTargetOwnershipBrowserTests.PublicSelectionResolvesOnePaintedOwnerPerTermInMultipleAndSingleModes',
         'WordCloudTargetOwnershipBrowserTests.LimitedAndZeroWeightTermsRetainExactInventoryWithoutBecomingInteractiveDuplicates',

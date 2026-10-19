@@ -220,15 +220,41 @@ Grouped labels require an ordinary Cartesian chart with a linear category axis. 
 
 An inferred endpoint cannot cross its fixed counterpart. If all observations lie at or below a sole fixed minimum, they use `LowColor`; at or above a sole fixed maximum, they use `HighColor`. Automatic constant domains retain `LowColor`. With no observations, an inferred endpoint stays unresolved: retained keys show missing data without a fabricated numeric extent. Fully fixed continuous ranges and discrete bands retain their authored key domain. `ColorFor(value)` requires two fixed continuous endpoints; partial ranges use `ColorFor(value, sourceMinimum, sourceMaximum)`.
 
-`ChartColorDimensionOptions` owns nullable `Name` and `ValueFormat`, `ShowLegend` (default true), and validated `LegendStyle` (`Auto`, `Gradient`, `Swatches`). Each supported owner exposes one getter-owned instance: `ChartSeries.ColorDimension` for Scatter/Bubble, `ChartOptions.MapColorDimension` for RegionMap/TileMap, `ChartOptions.HeatmapColorDimension` for numeric matrices/calendars, and the Treemap/Sunburst options' `ColorDimension`. Configure those instances with the corresponding `ConfigureColorDimension`, `ConfigureMapColorDimension`, `ConfigureHeatmapColorDimension` or existing hierarchy callback. Unsupported family combinations fail preparation.
+`ChartColorDimensionOptions` owns nullable `Name` and `ValueFormat`, `ShowLegend` (default true), and validated `LegendStyle` (`Auto`, `Gradient`, `Swatches`). Each supported owner exposes one getter-owned instance: `ChartSeries.ColorDimension` for Scatter/Bubble, `ChartOptions.MapColorDimension` for RegionMap/TileMap, `ChartOptions.HeatmapColorDimension` for numeric matrices/calendars, and the Treemap/Sunburst/Chord options' `ColorDimension`. Configure those instances with the corresponding `ConfigureColorDimension`, `ConfigureMapColorDimension`, `ConfigureHeatmapColorDimension` or family callback. Unsupported family combinations fail preparation.
 
-Null restores each name/format property's family default independently. A supplied name must contain non-whitespace text. Scatter/Bubble color uses `ChartLabels.Color` and neutral numeric formatting by default. Map, heatmap and hierarchy color retain their existing value-format defaults, including the chart's `ValueFormat`. Explicit color formatting changes their numeric labels, keys and readouts. It leaves Cartesian Y, Bubble size, hierarchy size, explicit point labels and authored secondary captions unchanged. A map or heatmap observation has one numeric value, so its readout does not add a duplicate Color row.
+Null restores each name/format property's family default independently. A supplied name must contain non-whitespace text. Scatter/Bubble and Chord color use `ChartLabels.Color` and neutral numeric formatting by default. Map, heatmap and hierarchy color retain their existing value-format defaults, including the chart's `ValueFormat`. Explicit color formatting changes their numeric labels, keys and readouts. It leaves Cartesian Y, Bubble size, hierarchy size, Chord weight, explicit point labels and authored secondary captions unchanged. A map or heatmap observation has one numeric value, so its readout does not add a duplicate Color row.
 
 The shared prepared presentation captures names and display strings. An explicit format runs once per distinct finite measurement during preparation; measurement, SVG/PNG export and HTML readouts reuse the result. Missing measurements retain localized no-data text without invoking a numeric formatter. Custom empty output remains authoritative, and formatter exceptions propagate. Raw observations, numeric scale mapping and selection identities remain separate from display text.
 
 `ShowLegend` controls numeric keys independently of categorical `ChartSeries.ShowInLegend` entries. `Options.ShowLegend` remains the all-legends master for convenience exports; an explicit preparation context retains its frame visibility precedence. Hiding a numeric key leaves mark paint, the observed domain and raw facts intact. Categorical heatmap keys use `ShowHeatmapCategoryLegend` / `WithHeatmapCategoryLegend`.
 
 `LegendStyle.Auto` preserves the family's existing presentation. `Gradient` draws the continuous mapping through all reachable authored stops, with numeric positions and alpha; a constant domain draws one mapped color without inventing bounds. `Swatches` uses the shared bounded sampling policy for continuous scales and exact named intervals for discrete scales. Style does not select a sampling mode or change the scale. Explicit styles require a resolved `ChartColorScale` (including an inferred hierarchy scale); legacy map/heatmap policies support `Auto`. `Gradient` with `Discrete` fails preparation because unbounded bands do not define a continuous gradient. Legend styling alone does not enable formatted color-text overrides.
+
+`ChartColorScale.WithCaptions` adds named captions at absolute numeric positions independently of the color anchors:
+
+```csharp
+var scale = ChartColorScale.Sequential(ChartColor.FromHex("#164b75"), ChartColor.FromHex("#f1c75b"))
+    .WithValueRange(-20, 80)
+    .WithCaptions(new[] {
+        new ChartColorScaleCaption(0, "Freezing"),
+        new ChartColorScaleCaption(35, "Operating limit")
+    });
+```
+
+The scale copies and sorts the catalog, rejects duplicate or non-finite positions and blank text, and retains it through later scale copies. Empty input clears it; discrete scales use their named bands. Captions never expand the domain or alter value-to-color mapping. On gradients they follow numeric position; on swatches they follow the actual sampled values. An authored caption takes visible priority over a low, midpoint or high caption at the same value. All captions remain descriptive facts, including those outside the domain or omitted by fitting. Outside captions do not clamp to an endpoint. Horizontal keys use up to two measured caption lanes; right-hand map keys retain their inverted value direction. Neither layout shrinks ordinary captions below the shared key font floor.
+
+Chord flows accept an independent nullable color measurement through the five-argument `ChartFlowLink` constructor:
+
+```csharp
+var flow = new ChartFlowLink("west-east", "west", "east", 42, colorValue: -3);
+chart.ConfigureChord(options => {
+    options.ColorScale = scale;
+    options.ColorDimension.Name = "Temperature";
+    options.ColorDimension.LegendStyle = ChartColorLegendStyle.Gradient;
+});
+```
+
+Weight continues to control ribbon allocation and node totals. Color values may be signed or zero; null means missing. Finite values infer the theme's sequential scale unless an explicit scale is supplied. Every flow contributes its color fact, including zero-weight or collapsed flows and flows with manual paint. ID-keyed fill, source-point fill and series fill keep precedence over the color mapping; node arcs retain their categorical paint. Numeric color facts, the separate key and readouts remain available under paint overrides. Hiding the key leaves the observed domain and mapping unchanged. Sankey rejects independent flow color because it has no quantitative color policy.
 
 ## Configuration precedence
 

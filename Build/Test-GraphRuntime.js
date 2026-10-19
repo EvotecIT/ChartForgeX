@@ -16,6 +16,7 @@ const tests = [
   'tests/interactive-runtime/linked-paint.test.js',
   'tests/interactive-runtime/target-resolution.test.js',
   'tests/interactive-runtime/peer-hover-ownership.test.js',
+  'tests/interactive-runtime/highlight-intent.test.js',
   'tests/chart-runtime/readable-values.test.js',
   'tests/chart-runtime/brush-scale.test.js',
   'tests/graph-neighborhood/planner.test.js',
