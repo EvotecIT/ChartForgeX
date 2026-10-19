@@ -153,7 +153,7 @@ internal sealed class SvgRasterStyle {
         }
 
         ApplyCustomProperties(style, declarations);
-        foreach (var declaration in declarations) {
+        foreach (var declaration in SvgStyleDeclarationList.InCascadeOrder(declarations)) {
             if (SvgRasterCssVariables.IsCustomProperty(declaration.Name)) continue;
             Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties), parent.FontWeight);
         }
@@ -315,11 +315,11 @@ internal sealed class SvgRasterStyle {
         return before;
     }
 
-    private static void ApplyCustomProperties(SvgRasterStyle style, IEnumerable<SvgStyleDeclaration> declarations) =>
+    private static void ApplyCustomProperties(SvgRasterStyle style, IReadOnlyList<SvgStyleDeclaration> declarations) =>
         ApplyCustomProperties(style.CustomProperties, declarations);
 
-    private static void ApplyCustomProperties(Dictionary<string, string> properties, IEnumerable<SvgStyleDeclaration> declarations) {
-        foreach (var declaration in declarations) {
+    private static void ApplyCustomProperties(Dictionary<string, string> properties, IReadOnlyList<SvgStyleDeclaration> declarations) {
+        foreach (var declaration in SvgStyleDeclarationList.InCascadeOrder(declarations)) {
             if (SvgRasterCssVariables.IsCustomProperty(declaration.Name)) properties[declaration.Name] = declaration.Value;
         }
     }
