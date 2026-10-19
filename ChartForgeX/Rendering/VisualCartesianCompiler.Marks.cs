@@ -79,7 +79,7 @@ internal static partial class VisualCartesianCompiler {
             var pointColor = PointColor(series, index, pointIndex, colors);
             var pointPaint = VisualChartPaint.Series(series, pointColor, pointIndex);
             if (colorSurface != null) (pointColor, pointPaint) = colorSurface.Paint(series, index, pointIndex, colors);
-            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null, colorSurface, visible: insideSourceX)) {
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, chart.Options.Labels, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null, colorSurface, visible: insideSourceX)) {
                 if (visible) {
                     var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                         ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
@@ -124,7 +124,7 @@ internal static partial class VisualCartesianCompiler {
             var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
             if (!series.IsHistogramDensity) bounds = VisibleSegmentBounds(chart, bounds, direction);
             var resolvedLabel = ((CartesianLabels)labels).PointLabel(chart, series, pointIndex, labelStyle);
-            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stack)) {
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, chart.Options.Labels, stack)) {
                 if (series.IsHistogramDensity) DrawDensityHistogramSurface(chart, context, builder, series, index, pointIndex, bounds, colors);
                 else DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors, direction: direction);
             }

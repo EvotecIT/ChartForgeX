@@ -254,7 +254,12 @@
     if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
     return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
   });
-  const retainedGeometryFact = (node) => ['zero', 'precision-collapse', 'layout-collapse'].includes((node.dataset || {}).cfxGeometryStatus);
+  const retainedGeometryFact = (node) => {
+    const data = node.dataset || {};
+    // An empty aggregate retains its interval and contributors without becoming a zero-valued mark.
+    return ['zero', 'precision-collapse', 'layout-collapse'].includes(data.cfxGeometryStatus)
+      || data.cfxDerived === 'histogram-bin' && data.cfxBinHasValue === 'false';
+  };
   // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
   // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
   const pointerTargetPaint = (node, styles = new Map()) => {

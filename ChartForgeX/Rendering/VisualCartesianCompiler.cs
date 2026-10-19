@@ -244,7 +244,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-fill-point-start"] = Number(start), ["data-cfx-fill-point-count"] = Number(count)
         });
 
-    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null, bool visible = true) {
+    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartLabels chartLabels, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null, bool visible = true) {
         var point = series.RenderPoints[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
         var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + ChartNumericFormatter.FormatCoordinate(point.X) + ", " + ChartNumericFormatter.FormatCoordinate(point.Y) + ")";
@@ -267,7 +267,7 @@ internal static partial class VisualCartesianCompiler {
         metadata["aria-label"] = label;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));
         if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
-        if (series.HistogramBinLayout != null) AddHistogramMetadata(metadata, series, pointIndex);
+        if (series.HistogramBinLayout != null) AddHistogramMetadata(metadata, series, pointIndex, chartLabels);
         return builder.PushGroup(id, "point", metadata);
     }
 

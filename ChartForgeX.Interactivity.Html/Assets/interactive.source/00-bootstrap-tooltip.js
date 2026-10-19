@@ -150,6 +150,13 @@
       { name: rowName(node, 'end', ''), value: numericFactText(data, 'End') }]
       .filter((row) => row.value !== undefined && row.value !== null);
   };
+  const emptyHistogramTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxDerived !== 'histogram-bin' || data.cfxBinHasValue !== 'false') return null;
+    return [{ name: rowName(node, 'value', 'Value'), value: rowName(node, 'no-data', 'No data') },
+      { name: rowName(node, 'sample-count', 'Sample count'), value: numericDisplayText(data.cfxBinCount) }]
+      .filter((row) => row.value !== undefined && row.value !== null);
+  };
   const differenceTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'differencearea') return null;
@@ -179,6 +186,8 @@
     if (boxPlotRows) return rows.concat(boxPlotRows, metadataRows(node));
     const rangeBarRows = rangeBarTooltipRows(node);
     if (rangeBarRows) return rows.concat(rangeBarRows, metadataRows(node));
+    const emptyHistogramRows = emptyHistogramTooltipRows(node);
+    if (emptyHistogramRows) return rows.concat(emptyHistogramRows, metadataRows(node));
     const differenceRows = differenceTooltipRows(node);
     if (differenceRows) {
       pushX();
