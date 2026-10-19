@@ -58,6 +58,12 @@ internal static class ChartGuards {
             throw new InvalidOperationException("Treemap color presentation requires a Treemap chart.");
         if (chart.Options.Sunburst.ColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst color presentation requires a Sunburst chart.");
+        if ((chart.Options.Chord.ColorScale != null || chart.Options.Chord.ColorDimension.HasOverrides)
+            && chart.Series.Any(series => series.Kind != ChartSeriesKind.Chord))
+            throw new InvalidOperationException("Chord flow color presentation requires a Chord chart.");
+        if (chart.Series.Count > 0 && chart.Series[0].Kind == ChartSeriesKind.Chord)
+            chart.Options.Chord.ColorDimension.ValidateLegend(chart.Options.Chord.ColorScale,
+                chart.Series[0].FlowLinks.Any(link => link.ColorValue.HasValue));
         chart.Options.MapColorDimension.ValidateLegend(chart.Options.MapColorScale);
         chart.Options.HeatmapColorDimension.ValidateLegend(chart.Options.HeatmapColorScale);
         if (chart.Series.Count > 0 && chart.Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {

@@ -70,7 +70,7 @@ internal static class VisualChartCompiler {
             case VisualChartFamily.Map: VisualMapCompiler.Build(chart, context, builder, content, colorScales?.Map, mapLegendInset); break;
             case VisualChartFamily.Hierarchy: VisualHierarchyCompiler.Build(chart, context, builder, content, colorScales); break;
             case VisualChartFamily.Sankey: VisualSankeyCompiler.Build(chart, context, builder, content); break;
-            case VisualChartFamily.Chord: VisualChordCompiler.Build(chart, context, builder, content); break;
+            case VisualChartFamily.Chord: VisualChordCompiler.Build(chart, context, builder, content, colorScales); break;
             default: VisualSpecialtyCompiler.Build(chart, context, builder, content); break;
         }
         return null;

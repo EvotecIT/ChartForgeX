@@ -12,6 +12,7 @@ internal sealed class ChartColorPresentationSet {
     private readonly ChartSeriesColorSurface?[] _series;
     private readonly Dictionary<ChartValueFormat, Dictionary<double, string>> _values = new();
     private ChartHierarchySurface? _hierarchy;
+    private ChartChordColorSurface? _chord;
     internal ChartColorPresentationSet(Chart chart) {
         _chart = chart;
         var labels = chart.Options.Labels;
@@ -19,6 +20,8 @@ internal sealed class ChartColorPresentationSet {
         Heatmap = new ChartColorPresentation(chart.Options.HeatmapColorDimension, labels, labels.Value, chart.Options.ValueFormat, preparation: this);
         var hierarchy = chart.Series.FirstOrDefault()?.Kind == ChartSeriesKind.Sunburst ? chart.Options.Sunburst.ColorDimension : chart.Options.Treemap.ColorDimension;
         Hierarchy = new ChartColorPresentation(hierarchy, labels, labels.Color, chart.Options.ValueFormat, preparation: this);
+        Chord = new ChartColorPresentation(chart.Options.Chord.ColorDimension, labels, labels.Color,
+            ChartValueFormat.InvariantCompact, compactDefault: true, preparation: this);
         _series = chart.Series.Select(series => series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble
             ? new ChartSeriesColorSurface(series, new ChartColorPresentation(series.ColorDimension, labels, labels.Color, ChartValueFormat.InvariantCompact, compactDefault: true, preparation: this)) : null).ToArray();
     }
@@ -26,8 +29,11 @@ internal sealed class ChartColorPresentationSet {
     internal ChartColorPresentation Map { get; }
     internal ChartColorPresentation Heatmap { get; }
     internal ChartColorPresentation Hierarchy { get; }
+    internal ChartColorPresentation Chord { get; }
     internal ChartHierarchySurface HierarchySurface(VisualThemeColors colors) =>
         _hierarchy ??= new ChartHierarchySurface(_chart, colors, Hierarchy);
+    internal ChartChordColorSurface ChordSurface(VisualThemeColors colors) =>
+        _chord ??= new ChartChordColorSurface(_chart, colors, Chord);
     internal Dictionary<double, string> Values(ChartValueFormat format) {
         if (!_values.TryGetValue(format, out var values)) _values.Add(format, values = new Dictionary<double, string>());
         return values;
