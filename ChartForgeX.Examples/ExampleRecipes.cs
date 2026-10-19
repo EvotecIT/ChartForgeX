@@ -108,6 +108,7 @@ public static class ExampleRecipes {
             foreach (var variant in variants) recipes.Add((kind, variant), recipe);
         }
         Add(ChartSeriesKind.Sankey, nameof(SankeyOptionsRecipe), SankeyOptionsRecipe.Create, "options");
+        Add(ChartSeriesKind.Chord, nameof(ChordRecipe), ChordRecipe.Create, "color-dimension");
         Add(ChartSeriesKind.Scatter, nameof(ScatterMarkerShapesRecipe), ScatterMarkerShapesRecipe.Create, "options");
         Add(ChartSeriesKind.Scatter, nameof(ScatterColorScaleRecipe), ScatterColorScaleRecipe.Create, "color-scale");
         Add(ChartSeriesKind.Scatter, nameof(ScatterPositionedColorScaleRecipe), ScatterPositionedColorScaleRecipe.Create, "positioned-color-scale");

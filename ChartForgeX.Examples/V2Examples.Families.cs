@@ -33,7 +33,7 @@ public static partial class V2Examples {
             if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter) {
                 variants.Add("positioned-color-scale"); variants.Add("compact-positioned-color-scale");
             }
-            if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble) {
+            if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Chord) {
                 variants.Add("color-dimension"); variants.Add("compact-color-dimension");
             }
             if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter) {
@@ -79,6 +79,7 @@ public static partial class V2Examples {
                     : variant is "color-dimension" or "compact-color-dimension" or "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend" ? kind switch {
                         ChartSeriesKind.TileMap => "Temperature by state", ChartSeriesKind.Heatmap => "Temperature by grid position",
                         ChartSeriesKind.CalendarHeatmap => "Daily average temperature", ChartSeriesKind.Treemap => "Team workload and temperature",
+                        ChartSeriesKind.Chord => "Transfer volume and latency",
                         ChartSeriesKind.Scatter => "Temperature by workload", _ => "Workload, requests and temperature"
                     } : V2GalleryModels.Title(kind);
                 if (!chart.Series.Any(series => series.Kind == kind)) throw new InvalidOperationException("The gallery factory did not create its declared chart kind: " + kind);
@@ -116,7 +117,8 @@ public static partial class V2Examples {
                         ? "Zero stays fixed; the color peak follows reported counts" : "The color ceiling stays at 100%; the lower bound follows observations"
                     : variant is "gradient-color-legend" or "compact-gradient-color-legend" ? "A continuous key retains every authored color anchor"
                     : variant is "swatch-color-legend" or "compact-swatch-color-legend" ? "A sampled key keeps the continuous measurement and its color domain"
-                    : variant is "color-dimension" or "compact-color-dimension" ? "Temperature captions use their own format and culture"
+                    : variant is "color-dimension" or "compact-color-dimension" ? kind == ChartSeriesKind.Chord
+                        ? "Illustrative latency colors flows; transfer counts retain their weights" : "Temperature captions use their own format and culture"
                     : variant is "positioned-color-scale" or "compact-positioned-color-scale" ? "Absolute color anchors use uneven numeric intervals"
                     : variant is "color-scale" or "compact-color-scale" ? kind == ChartSeriesKind.Scatter ? "Temperature has its own fixed color domain; processing time stays independent"
                         : kind == ChartSeriesKind.Bubble ? "Size shows requests; named color bands show temperature"
