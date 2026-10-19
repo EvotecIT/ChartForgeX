@@ -187,7 +187,7 @@ public sealed class GroupedCategoryAxisBrowserTests {
         var download = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var svg = await File.ReadAllTextAsync(await download.PathAsync() ?? throw new InvalidOperationException("Missing grouped SVG export."));
         var nodes = XDocument.Parse(svg).Descendants().ToArray();
-        Assert.NotEmpty(nodes.Where(node => (string?)node.Attribute("data-cfx-role") is "axis-x-category-group" or "axis-y-category-group"));
+        Assert.Contains(nodes, node => (string?)node.Attribute("data-cfx-role") is "axis-x-category-group" or "axis-y-category-group");
         var first = Assert.Single(nodes, node => (string?)node.Attribute("data-cfx-observation-id") == "first");
         Assert.Contains("North", (string?)first.Attribute("aria-label") ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains("cfx-selected", (string?)first.Attribute("class") ?? string.Empty, StringComparison.Ordinal);

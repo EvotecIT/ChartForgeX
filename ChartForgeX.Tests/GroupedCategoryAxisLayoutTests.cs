@@ -49,9 +49,14 @@ public sealed class GroupedCategoryAxisLayoutTests {
         var outer = Assert.Single(prepared.Regions, region => region.Role == GroupRole(horizontal) && region.Label == "2026");
         Assert.True(horizontal ? nearest.Bounds.Left > outer.Bounds.Left : nearest.Bounds.Top < outer.Bounds.Top);
         Assert.All(captions, caption => {
-            Assert.InRange(caption.X, 0, prepared.Size.Width);
-            Assert.InRange(caption.Y, 0, prepared.Size.Height);
-            Assert.True(horizontal ? caption.X + caption.Text.Metrics.Width <= plot.Left : caption.Y >= plot.Bottom);
+            var left = caption.Text.Lines.Min(caption.LineLeft);
+            var right = caption.Text.Lines.Max(line => caption.LineLeft(line) + line.Width);
+            var top = caption.Baseline - caption.Text.Ascent;
+            Assert.InRange(left, 0, prepared.Size.Width);
+            Assert.InRange(right, 0, prepared.Size.Width);
+            Assert.InRange(top, 0, prepared.Size.Height);
+            Assert.InRange(top + caption.Text.Metrics.Height, 0, prepared.Size.Height);
+            Assert.True(horizontal ? right <= plot.Left : top >= plot.Bottom);
         });
         var points = PointGroups(prepared);
         Assert.Equal(new[] { "1.5", "7.5", "11" }, points.Select(point => (string?)point.Attribute("data-cfx-x")));
