@@ -155,8 +155,11 @@ internal sealed class SvgRasterStyle {
         ApplyCustomProperties(style, declarations);
         foreach (var declaration in SvgStyleDeclarationList.InCascadeOrder(declarations)) {
             if (SvgRasterCssVariables.IsCustomProperty(declaration.Name)) continue;
-            Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties), parent.FontWeight);
+            Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties), parent.FontWeight, parent.Color);
         }
+
+        style.Fill = style.Fill.ResolveCurrentColor(style.Color);
+        style.Stroke = style.Stroke.ResolveCurrentColor(style.Color);
 
         if (declarations.Any(declaration => string.Equals(declaration.Name, "text-decoration", StringComparison.OrdinalIgnoreCase))) {
             var localDecoration = style.TextDecoration;
@@ -319,16 +322,20 @@ internal sealed class SvgRasterStyle {
         ApplyCustomProperties(style.CustomProperties, declarations);
 
     private static void ApplyCustomProperties(Dictionary<string, string> properties, IReadOnlyList<SvgStyleDeclaration> declarations) {
+        var compute = false;
         foreach (var declaration in SvgStyleDeclarationList.InCascadeOrder(declarations)) {
-            if (SvgRasterCssVariables.IsCustomProperty(declaration.Name)) properties[declaration.Name] = declaration.Value;
+            if (!SvgRasterCssVariables.IsCustomProperty(declaration.Name)) continue;
+            properties[declaration.Name] = declaration.Value;
+            compute |= declaration.Value.IndexOf("var(", StringComparison.OrdinalIgnoreCase) >= 0;
         }
+        if (compute) SvgRasterCssVariables.Compute(properties);
     }
 
-    private static void Apply(SvgRasterStyle style, string name, string value, int inheritedFontWeight) {
+    private static void Apply(SvgRasterStyle style, string name, string value, int inheritedFontWeight, ChartColor inheritedColor) {
         if (string.IsNullOrWhiteSpace(value)) return;
         switch (name) {
             case "color":
-                var colorPaint = SvgRasterPaint.Parse(value, style.Color, SvgRasterPaint.Solid(style.Color));
+                var colorPaint = SvgRasterPaint.Parse(value, inheritedColor, SvgRasterPaint.Solid(style.Color));
                 style.Color = colorPaint.Color ?? style.Color;
                 break;
             case "fill":

@@ -10,6 +10,20 @@ internal static class SvgRasterCssVariables {
     public static string Resolve(string value, IReadOnlyDictionary<string, string> properties) =>
         Resolve(value, properties, 0);
 
+    /// <summary>Freezes aliases against this element's winning values before they can be inherited.</summary>
+    public static void Compute(Dictionary<string, string> properties) {
+        // Read one snapshot so declaration/dictionary order cannot change alias meaning.
+        var specified = new Dictionary<string, string>(properties, StringComparer.Ordinal);
+        foreach (var property in specified) {
+            if (property.Value.IndexOf("var(", StringComparison.OrdinalIgnoreCase) < 0) continue;
+            var computed = Resolve(property.Value, specified);
+            // Missing or cyclic substitutions remain unavailable, rather than rebinding in a child.
+            // Resolve retains the existing bounded substitution depth and fallback handling.
+            if (computed.IndexOf("var(", StringComparison.OrdinalIgnoreCase) >= 0) properties.Remove(property.Key);
+            else properties[property.Key] = computed;
+        }
+    }
+
     private static string Resolve(string value, IReadOnlyDictionary<string, string> properties, int depth) {
         if (string.IsNullOrWhiteSpace(value) || depth >= 8 || value.IndexOf("var(", StringComparison.OrdinalIgnoreCase) < 0) return value;
         var result = new System.Text.StringBuilder(value.Length);
