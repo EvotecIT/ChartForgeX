@@ -44,8 +44,9 @@
       rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
-      // Native annotation ordinals are local to this source; an authored ID or scope can opt into sharing.
-      seriesScope: data.cfxSeriesScope ?? (targetKind === 'annotation' && !data.cfxId ? 'local' : undefined),
+      // Only the validated native annotation catalog opts into sharing; ordinals and caller hints stay local.
+      seriesScope: targetKind === 'annotation' ? node._cfxAnnotationId === undefined ? 'local' : 'shared' : data.cfxSeriesScope,
+      annotationId: node._cfxAnnotationId,
       observationId: data.cfxObservationId,
       observationIds: contributorObservationIds(node),
       category: targetCategory(node),
@@ -285,7 +286,8 @@
     updateTooltipPointer(tip, node, event);
     positionTooltip(tip, event, node);
   };
-  const targetKey = (target) => target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
+  const targetKey = (target) => target?.annotationId !== undefined ? JSON.stringify(['annotation', target.annotationId])
+    : target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
   const compareItems = (root) => {
     const items = [];
     const seen = new Set();

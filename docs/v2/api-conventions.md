@@ -105,6 +105,14 @@ completed.WithName("Completed orders");
 
 `Series` is a read-only view of paint order. Use `RemoveSeries`, `MoveSeries` and `ClearSeries` for membership changes; these operations validate ownership. A series can belong to one chart at a time, and IDs must be unique there. Fluent `Add*` conveniences allocate deterministic local IDs. Local IDs remain stable in that chart and are excluded from cross-chart synchronization; explicit IDs identify equivalent series across charts. The `cfx:auto:` prefix is reserved. Automatically identified series remain owned by their original chart; construct a series with an explicit ID when it must move between charts.
 
+Line and band annotations accept an immutable `ChartAnnotationId` at construction or through the four typed `AddHorizontalLine`, `AddVerticalLine`, `AddHorizontalBand` and `AddVerticalBand` overloads:
+
+```csharp
+chart.AddHorizontalLine(new ChartAnnotationId("threshold.warning"), 15, "Limit");
+```
+
+Annotation IDs are trimmed, case-sensitive and unique within one chart, independently of kind, caption, coordinates and collection order. Typed additions reject duplicates before changing the collection; preparation also validates direct `Annotations` list edits. Rebuilding an annotation with the same ID preserves its native semantic identity. Existing constructors and overloads create anonymous annotations with source-local ordinal identities. Statistical and focus helpers continue creating anonymous annotations. Annotation IDs do not change native geometry or paint.
+
 An explicit series ID also selects its categorical palette slot deterministically. Renaming, reordering, rebuilding the same ID, or adding/removing another series does not change that slot. A finite palette can reuse colors for different IDs; use `WithColor` when distinct authored colors are required. Explicit series/point colors and semantic states retain precedence. Fluent `Add*` series keep their ordinal palette behavior. Pie, donut and other part-to-whole categories retain their separate per-observation palette.
 
 Specialized observations remain in their typed collections: `Bubbles`, `FinancialValues`, `Ranges`, `Intervals`, `ErrorBars`, `BoxPlots`, `Dumbbells`, `DifferencePoints`, `GanttItems`, `GaugeValues`, `BulletValues`, `StateTimelineSegments`, `GanttLaneItems`, `MapPoints`, `CalendarItems`, `RegionValues` and categorical `HeatmapCells`. Layered radial series expose `RadialLayers`. Each item represents one complete observation or layer. `Points` contains genuine numeric XY points and is an empty read-only view for these specialized families. Renderer projections are internal and do not define public source ordinals. Gauge and bullet series accept at most one value; empty replacements produce their no-data state.

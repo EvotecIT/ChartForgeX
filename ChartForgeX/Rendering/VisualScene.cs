@@ -14,6 +14,7 @@ internal sealed class VisualScene {
         var copy = new VisualSceneNode[nodes.Count];
         for (var i = 0; i < copy.Length; i++) copy[i] = nodes[i];
         Nodes = Array.AsReadOnly(copy);
+        Annotations = VisualAnnotationIdentity.Capture(Nodes);
         var diagnosticCopy = new VisualDiagnostic[diagnostics.Count];
         for (var i = 0; i < diagnosticCopy.Length; i++) diagnosticCopy[i] = diagnostics[i];
         Diagnostics = Array.AsReadOnly(diagnosticCopy);
@@ -25,6 +26,7 @@ internal sealed class VisualScene {
     internal VisualSize Size { get; }
     internal ChartDataProjection? DataProjection { get; }
     internal IReadOnlyList<VisualSceneNode> Nodes { get; }
+    internal IReadOnlyList<VisualAnnotationIdentity> Annotations { get; }
     internal IReadOnlyList<VisualDiagnostic> Diagnostics { get; }
     internal IReadOnlyList<VisualSemanticRegion> Regions { get; }
 }

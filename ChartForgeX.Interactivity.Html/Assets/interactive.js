@@ -230,8 +230,9 @@
       rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
-      // Native annotation ordinals are local to this source; an authored ID or scope can opt into sharing.
-      seriesScope: data.cfxSeriesScope ?? (targetKind === 'annotation' && !data.cfxId ? 'local' : undefined),
+      // Only the validated native annotation catalog opts into sharing; ordinals and caller hints stay local.
+      seriesScope: targetKind === 'annotation' ? node._cfxAnnotationId === undefined ? 'local' : 'shared' : data.cfxSeriesScope,
+      annotationId: node._cfxAnnotationId,
       observationId: data.cfxObservationId,
       observationIds: contributorObservationIds(node),
       category: targetCategory(node),
@@ -471,7 +472,8 @@
     updateTooltipPointer(tip, node, event);
     positionTooltip(tip, event, node);
   };
-  const targetKey = (target) => target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
+  const targetKey = (target) => target?.annotationId !== undefined ? JSON.stringify(['annotation', target.annotationId])
+    : target ? [target.targetKind || '', target.targetId || '', target.id || '', target.role || '', target.label || '', target.series ?? '', target.point ?? '', target.value || '', target.kind || ''].join('|') : '';
   const compareItems = (root) => {
     const items = [];
     const seen = new Set();
@@ -599,6 +601,30 @@
       .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
     return { left: Math.min(...corners.map(point => point.x)), right: Math.max(...corners.map(point => point.x)),
       top: Math.min(...corners.map(point => point.y)), bottom: Math.max(...corners.map(point => point.y)) };
+  };
+  // A declared native binding, rather than a caller scope hint, makes an annotation durable.
+  const annotationCatalog = (svg, metadata) => {
+    const entries = metadata.annotations ?? [], ids = new Set(), sources = new Set(), bindings = new Map();
+    const nodes = Array.from(svg.querySelectorAll('[data-cfx-role^="annotation"],[data-cfx-target-kind="annotation"]'));
+    const invalid = () => { throw new TypeError('The chart scene does not match its prepared annotation metadata.'); };
+    if (!Array.isArray(entries) || nodes.filter(node => node.dataset.cfxAnnotationId !== undefined).length !== entries.length) invalid();
+    for (const item of entries) {
+      if (!item || typeof item.id !== 'string' || !item.id.trim() || item.id !== item.id.trim()
+        || typeof item.sourceId !== 'string' || !item.sourceId.startsWith('annotation-id-')
+        || !['HorizontalLine', 'VerticalLine', 'HorizontalBand', 'VerticalBand'].includes(item.kind)
+        || ids.has(item.id) || sources.has(item.sourceId)) invalid();
+      const node = nodes.find(node => node.dataset.cfxSourceId === item.sourceId), data = node?.dataset;
+      if (!data || data.cfxAnnotationId !== item.id || data.cfxKind !== item.kind
+        || data.cfxId !== undefined && data.cfxId !== item.sourceId
+        || data.cfxTargetId !== undefined && data.cfxTargetId !== item.sourceId
+        || data.cfxTargetKind !== undefined && data.cfxTargetKind !== 'annotation'
+        || metadata.regions.filter(region => region.id === item.sourceId && region.role === 'annotation').length !== 1) invalid();
+      ids.add(item.id); sources.add(item.sourceId); bindings.set(node, item.id);
+    }
+    // The authored namespace belongs only to the catalog's exact native node, including alternate target IDs.
+    for (const node of nodes) if (!bindings.has(node) && (node.dataset.cfxAnnotationId !== undefined
+      || [node.dataset.cfxSourceId, node.dataset.cfxId, node.dataset.cfxTargetId].some(id => id?.startsWith('annotation-id-')))) invalid();
+    return bindings;
   };
   const cartesianFillObservation = (node, subject) => subject !== node && subject.hasAttribute('data-cfx-point')
     && ['area', 'steparea', 'stackedarea', 'differencearea', 'rangearea', 'rangeband'].includes((subject.dataset.cfxKind || '').toLowerCase())
@@ -1597,6 +1623,10 @@
     let metadata;
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch (_) { return; }
     const series = metadata.series || [];
+    const annotations = annotationCatalog(svg, metadata);
+    svg.querySelectorAll('[data-cfx-role="annotation"]').forEach(node => {
+      node._cfxAnnotationId = annotations.get(node);
+    });
     root._cfxDataProjection = metadata.dataProjection || null;
     root._cfxObservationIds = series.map(item => new Map((item.observationIds || []).map(value => [value.index, value.id])));
     const xLabels = new Map((metadata.categoryLabels || metadata.xLabels || []).map((item) => [item.value, item.text]));
@@ -3276,6 +3306,9 @@
     if (!target) return false;
     if (target.seriesKey && seriesKey(node) !== target.seriesKey) return false;
     const data = node.dataset || {};
+    if (target.annotationId !== undefined) return renderedTargetKind(node) === 'annotation'
+      && node._cfxAnnotationId === target.annotationId && (!target.targetKind || target.targetKind === 'annotation')
+      && (!target.targetId || renderedTargetId(node, 'annotation') === target.targetId);
     if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
     if (target.observationId !== undefined && !target.targetId) {
       if (!target.seriesKey || data.cfxSeriesScope !== 'shared' || target.targetKind && renderedTargetKind(node) !== target.targetKind) return false;
@@ -3324,7 +3357,7 @@
     }
     return { nodes, resolve: target => {
       if (!target) return [];
-      const candidates = target.targetKind && target.targetId
+      const candidates = target.annotationId === undefined && target.targetKind && target.targetId
         ? identities.get(JSON.stringify([target.targetKind, target.targetId])) || [] : nodes.filter(node => matchesTargetIdentity(node, target));
       return target.seriesKey ? candidates.filter(node => seriesKey(node) === target.seriesKey) : candidates;
     } };
@@ -4170,6 +4203,7 @@
     const kind = step.targetKind || '';
     const target = step.targetId || '';
     if (renderedTargetKind(node) === kind && renderedTargetId(node, kind) === target) return true;
+    if (kind === 'annotation' && target.startsWith('annotation-id-')) return false;
     if (kind === 'series') return seriesKey(node) === target;
     if (kind === 'point' && data.cfxPoint === target) return true;
     if (kind === 'point' && data.cfxSeries !== undefined && data.cfxPoint !== undefined && (data.cfxSeries + ':' + data.cfxPoint === target || data.cfxSeries + '.' + data.cfxPoint === target)) return true;
@@ -4865,12 +4899,14 @@
       const index = Number(node.dataset.cfxSeries);
       return !Number.isInteger(index) || index < 0 || index >= metadata.series.length;
     })) throw new TypeError('The chart scene does not match its prepared series metadata.');
+    annotationCatalog(svg, metadata);
     return section;
   };
-  const durableChartTarget = target => !!target && target.seriesScope === 'shared' && !!target.seriesKey
+  const durableChartTarget = target => !!target && target.seriesScope === 'shared'
+    && (target.targetKind === 'annotation' ? target.annotationId !== undefined : !!target.seriesKey
     && (target.targetKind !== 'point' || target.observationId !== undefined || target.derived === 'five-number-summary' && target.groupId !== undefined)
     && (target.targetKind !== 'legend' || target.point === undefined || target.observationId !== undefined
-      || target.derived === 'five-number-summary' && target.groupId !== undefined);
+      || target.derived === 'five-number-summary' && target.groupId !== undefined));
   const chartLegendStateTargets = (root, isolated) => {
     // A narrow native legend may omit an entry while its data owner remains painted and muted.
     // Capture that owner's identity too; presentation density must not erase reader state.

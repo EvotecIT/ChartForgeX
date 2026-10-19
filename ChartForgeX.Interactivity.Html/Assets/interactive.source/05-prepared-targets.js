@@ -12,6 +12,10 @@
     let metadata;
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch (_) { return; }
     const series = metadata.series || [];
+    const annotations = annotationCatalog(svg, metadata);
+    svg.querySelectorAll('[data-cfx-role="annotation"]').forEach(node => {
+      node._cfxAnnotationId = annotations.get(node);
+    });
     root._cfxDataProjection = metadata.dataProjection || null;
     root._cfxObservationIds = series.map(item => new Map((item.observationIds || []).map(value => [value.index, value.id])));
     const xLabels = new Map((metadata.categoryLabels || metadata.xLabels || []).map((item) => [item.value, item.text]));

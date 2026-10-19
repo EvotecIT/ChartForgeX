@@ -46,7 +46,7 @@ Core commands:
 | `values <number...>` | Adds one unnamed/default series. |
 | `value <label> <number>` | Adds one labeled value to the default series. |
 | `series <name> type <kind> values <number...> [color <hex>]` | Adds or extends a named series. |
-| `annotation <kind> <start> [end] [label] [color=<hex>] [opacity=<number>]` | Adds a line or band annotation. |
+| `annotation <kind> <start> [end] [label] [id=<source-id>] [color=<hex>] [opacity=<number>]` | Adds a line or band annotation. An optional ID uses the native trimmed, case-sensitive identity and must be unique within the chart. |
 | `option <name> <value>` | Applies a supported chart render option. |
 
 Pipe-table data is supported. If a table has a `value` column, it becomes a single-series chart. Otherwise the first label/category/name column becomes the x-axis and numeric columns become named series.

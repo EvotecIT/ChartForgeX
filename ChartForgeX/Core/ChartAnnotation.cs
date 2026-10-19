@@ -7,6 +7,9 @@ namespace ChartForgeX.Core;
 /// Represents a static line or band annotation on a chart.
 /// </summary>
 public sealed class ChartAnnotation {
+    /// <summary>Gets the authored source identity, or null for an anonymous annotation local to the current chart source.</summary>
+    public ChartAnnotationId? Id { get; }
+
     // Statistical helpers describe source Y values; preparation resolves their physical axis.
     internal bool FollowsSeriesValueAxis { get; set; }
     // Default reference lines follow the prepared theme; explicitly authored colors remain authoritative.
@@ -80,5 +83,20 @@ public sealed class ChartAnnotation {
         ShowLabel = showLabel;
         Color = color;
         Opacity = opacity;
+    }
+
+    /// <summary>Creates an annotation whose identity survives source replacement and collection reordering.</summary>
+    /// <param name="id">The authored identity, unique among annotations within one chart.</param>
+    /// <param name="kind">The annotation kind.</param>
+    /// <param name="value">The first annotation value.</param>
+    /// <param name="endValue">The second annotation value for bands.</param>
+    /// <param name="label">The annotation caption, independent of its identity.</param>
+    /// <param name="color">The annotation color.</param>
+    /// <param name="opacity">The band fill opacity.</param>
+    /// <param name="showLabel">Whether to paint the caption while retaining its semantic content.</param>
+    public ChartAnnotation(ChartAnnotationId id, ChartAnnotationKind kind, double value, double? endValue, string label,
+        ChartColor color, double opacity, bool showLabel = true) : this(kind, value, endValue, label, color, opacity, showLabel) {
+        id.Validate();
+        Id = id;
     }
 }

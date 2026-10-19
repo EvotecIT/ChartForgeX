@@ -37,12 +37,14 @@
       const index = Number(node.dataset.cfxSeries);
       return !Number.isInteger(index) || index < 0 || index >= metadata.series.length;
     })) throw new TypeError('The chart scene does not match its prepared series metadata.');
+    annotationCatalog(svg, metadata);
     return section;
   };
-  const durableChartTarget = target => !!target && target.seriesScope === 'shared' && !!target.seriesKey
+  const durableChartTarget = target => !!target && target.seriesScope === 'shared'
+    && (target.targetKind === 'annotation' ? target.annotationId !== undefined : !!target.seriesKey
     && (target.targetKind !== 'point' || target.observationId !== undefined || target.derived === 'five-number-summary' && target.groupId !== undefined)
     && (target.targetKind !== 'legend' || target.point === undefined || target.observationId !== undefined
-      || target.derived === 'five-number-summary' && target.groupId !== undefined);
+      || target.derived === 'five-number-summary' && target.groupId !== undefined));
   const chartLegendStateTargets = (root, isolated) => {
     // A narrow native legend may omit an entry while its data owner remains painted and muted.
     // Capture that owner's identity too; presentation density must not erase reader state.

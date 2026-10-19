@@ -15,6 +15,7 @@ const tests = [
   'tests/graph-explorer-runtime/selection-policy.test.js',
   'tests/interactive-runtime/linked-paint.test.js',
   'tests/interactive-runtime/target-resolution.test.js',
+  'tests/interactive-runtime/annotation-identity.test.js',
   'tests/interactive-runtime/peer-hover-ownership.test.js',
   'tests/interactive-runtime/highlight-intent.test.js',
   'tests/chart-runtime/readable-values.test.js',
