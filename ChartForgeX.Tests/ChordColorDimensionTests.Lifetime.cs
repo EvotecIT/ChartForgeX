@@ -83,7 +83,11 @@ public sealed partial class ChordColorDimensionTests {
         Assert.Equal(9, Links(prepared).Length); Assert.Equal(4, PreparedChordTests.Role(prepared, "chord-node").Length);
         Assert.Equal("0", (string?)Link(prepared, "support-south").Attribute("data-cfx-color-value"));
         Assert.Equal("true", (string?)Link(prepared, "south-support").Attribute("data-cfx-color-missing"));
-        Assert.NotEmpty(PreparedChordTests.Role(prepared, "chord-color-scale-caption-source"));
+        var captions = PreparedChordTests.Role(prepared, "chord-color-scale-caption-source");
+        var visible = captions.Where(node => (string?)node.Attribute("data-cfx-caption-visible") == "true").ToArray();
+        Assert.True(visible.Length >= 2, "The public numeric key needs at least two readable positions in the compact and wide examples.");
+        Assert.True(visible.Select(node => (string?)node.Attribute("data-cfx-caption-value")).Distinct().Count() >= 2);
+        Assert.All(visible, node => Assert.NotEmpty(node.Descendants().Where(child => child.Name.LocalName == "text")));
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.All(prepared.Regions, region => {
             Assert.True(double.IsFinite(region.Bounds.Left)); Assert.True(double.IsFinite(region.Bounds.Top));

@@ -15,7 +15,7 @@ internal static partial class VisualChordCompiler {
             Font = context.Font, FontSize = context.Theme.Typography.LegendSize, Color = colors.Foreground
         };
         var presentation = surface.Presentation;
-        var gap = context.Theme.Spacing;
+        var gap = context.Theme.Spacing / 2;
         var maximum = Math.Max(0, plot.Height * .35);
         var height = VisualColorScaleLegendScene.Height(builder, surface.Scale, presentation.Labels, style,
             gap, plot.Width, maximum, surface.HasMissing, presentation.ScaleValues, hasDomain: surface.HasDomain,
