@@ -157,6 +157,9 @@
     if (!target) return false;
     if (target.seriesKey && seriesKey(node) !== target.seriesKey) return false;
     const data = node.dataset || {};
+    if (target.annotationId !== undefined) return renderedTargetKind(node) === 'annotation'
+      && node._cfxAnnotationId === target.annotationId && (!target.targetKind || target.targetKind === 'annotation')
+      && (!target.targetId || renderedTargetId(node, 'annotation') === target.targetId);
     if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
     if (target.observationId !== undefined && !target.targetId) {
       if (!target.seriesKey || data.cfxSeriesScope !== 'shared' || target.targetKind && renderedTargetKind(node) !== target.targetKind) return false;
@@ -205,7 +208,7 @@
     }
     return { nodes, resolve: target => {
       if (!target) return [];
-      const candidates = target.targetKind && target.targetId
+      const candidates = target.annotationId === undefined && target.targetKind && target.targetId
         ? identities.get(JSON.stringify([target.targetKind, target.targetId])) || [] : nodes.filter(node => matchesTargetIdentity(node, target));
       return target.seriesKey ? candidates.filter(node => seriesKey(node) === target.seriesKey) : candidates;
     } };

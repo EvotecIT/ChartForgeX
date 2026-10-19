@@ -16,6 +16,17 @@ Every rendered interaction surface is normalized to `data-cfx-target-kind` and `
 
 For native annotation lines and bands, use the opaque `targetId` returned by `resolveTargets()`. Captions can repeat; each returned target addresses its own annotation. Automatic annotation IDs belong to the current chart source, remain local to that chart, and clear on full source replacement. They do not establish identity across reordering. Code that constructed annotation target IDs from captions should resolve current targets and filter their `label` fields before passing them to `select`. Annotation scenario steps retain label, kind and value aliases; an exact annotation ID takes precedence over another annotation's matching caption.
 
+Supply a `ChartAnnotationId` when an authored line or band must retain selection, host highlight or keyboard focus across native source replacement. The same ID identifies the annotation when its caption, coordinates or collection position change. IDs must be unique within one chart. Resolved authored targets expose `annotationId`, and snapshots retain that identity. A removed ID clears its state; another annotation with the same caption or value does not inherit it. Equal explicit IDs share interactions only when both charts enable `SynchronizedCharts` and use the same nonempty group.
+
+```csharp
+var threshold = new ChartAnnotationId("threshold.warning");
+chart.AddHorizontalLine(threshold, 15, "Limit");
+options.Interaction.AddScenario("warning", "Warning limit",
+    route => route.AddAnnotationStep(threshold));
+```
+
+The typed scenario overload lives in `ChartForgeX.Interactivity.Html` and uses the native identity formatter. The `annotation-id-` target namespace is reserved for exact authored references; a missing target in that namespace never falls back to a caption, kind or value alias. Hosts can also match `{ targets: [{ targetKind: 'annotation', annotationId: 'threshold.warning' }] }` through the ordinary command API. Native catalog bindings determine durability and sharing; caller-provided scope hints do not promote anonymous annotations. This contract covers existing native line/band render paths, including schedule vertical lines. Statistical/focus helpers continue creating anonymous annotations; other diagram annotation models have their own owners.
+
 Each painted word-cloud term owns one interaction target. Its descriptive source record remains available with the complete source inventory, including terms omitted by weight or layout limits. Those records do not create duplicate selections or keyboard stops.
 
 Explicitly decimated series keep their original point identity. `data-cfx-point` remains the rendered ordinal, while the series source-index map and each host event's `sourcePoint` identify the caller's original point.

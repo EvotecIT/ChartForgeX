@@ -52,6 +52,7 @@
     const kind = step.targetKind || '';
     const target = step.targetId || '';
     if (renderedTargetKind(node) === kind && renderedTargetId(node, kind) === target) return true;
+    if (kind === 'annotation' && target.startsWith('annotation-id-')) return false;
     if (kind === 'series') return seriesKey(node) === target;
     if (kind === 'point' && data.cfxPoint === target) return true;
     if (kind === 'point' && data.cfxSeries !== undefined && data.cfxPoint !== undefined && (data.cfxSeries + ':' + data.cfxPoint === target || data.cfxSeries + '.' + data.cfxPoint === target)) return true;

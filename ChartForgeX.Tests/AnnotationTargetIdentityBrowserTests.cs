@@ -15,7 +15,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Annotation captions describe facts; returned opaque identities address individual native targets.</summary>
 [Trait("BrowserSuite", "Compatibility")]
-public sealed class AnnotationTargetIdentityBrowserTests {
+public sealed partial class AnnotationTargetIdentityBrowserTests {
     private const string Root = ".cfx-interactive-chart";
     private static string Annotation(int index) => "[data-cfx-role=annotation][data-cfx-source-id=annotation-" + index + "]";
 

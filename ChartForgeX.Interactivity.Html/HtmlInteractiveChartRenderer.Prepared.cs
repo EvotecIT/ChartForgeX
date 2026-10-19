@@ -34,7 +34,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
             }
             json.Append("]}");
         }
-        json.Append("],\"xLabels\":[");
+        json.Append(']');
+        AppendPreparedAnnotations(json, prepared);
+        json.Append(",\"xLabels\":[");
         var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
         for (var index = 0; index < categoryLabels.Count; index++) {
             if (index > 0) json.Append(',');

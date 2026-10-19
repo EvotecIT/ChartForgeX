@@ -101,6 +101,8 @@ try {
         'AnnotationTargetIdentityBrowserTests.RepeatedAnnotationCaptionsAndValuesRoundTripIndividualCommandAndActivationTargets',
         'AnnotationTargetIdentityBrowserTests.AnnotationScenarioOpaqueIdentityWinsBeforeLegacyCaptionAliases',
         'AnnotationTargetIdentityBrowserTests.AutomaticAnnotationIdentitiesStayLocalToPeersAndClearOnFullReplacement',
+        'AnnotationTargetIdentityBrowserTests.AuthoredAnnotationsRetainStateAcrossReplacementAndRejectInvalidCatalogsAtomically',
+        'AnnotationTargetIdentityBrowserTests.AuthoredAnnotationPeersShareOnlyInsideTheExistingEnabledGroup',
         'AnnotationTargetIdentityBrowserTests.SharedObservationHighlightFollowsItsCurrentAggregateAcrossPeersAndRepeatedReplacement',
         'NamedTargetIdentityBrowserTests.NamedNativeTargetsSynchronizeOnlyWithinTheirExplicitSeries',
         'PeerHoverOwnershipBrowserTests.MissingSharedObservationPreservesPeersOwnKeyboardAffordancesThroughPointerAndClear',
