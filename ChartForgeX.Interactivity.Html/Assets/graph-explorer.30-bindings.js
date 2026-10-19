@@ -6,7 +6,6 @@
       best = best || hitGraphItemAt(root, scenePoint(root, event));
       if (!best) return false;
       select(root, best.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
-      root.__cfxGraphCanvasSelectionTick = Date.now();
       return true;
     };
     listenGraph(root, canvas, 'click', event => {
@@ -17,7 +16,6 @@
         event.preventDefault();
         return;
       }
-      if (Date.now() - (root.__cfxGraphCanvasSelectionTick || 0) < 250) return;
       if (Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
       selectCanvasNode(event, best);
     });
@@ -179,7 +177,10 @@
     }));
     menus.forEach(menu => {
       const summary = menu.querySelector('summary');
-      const sync = () => summary?.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
+      const sync = () => {
+        summary?.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
+        if (menu.open) menu.querySelector('.cfx-graph-command-menu-panel')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      };
       listenGraph(root, menu, 'toggle', sync);
       sync();
       listenGraph(root, menu, 'keydown', event => {

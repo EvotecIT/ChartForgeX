@@ -210,7 +210,15 @@
 
 .cfx-graph-command-rail .cfx-graph-toolbar-group {
   position: relative;
+  flex-shrink: 0;
   gap: 2px;
+}
+
+.cfx-graph-command-scroll {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
 }
 
 .cfx-graph-command-rail .cfx-graph-toolbar-group + .cfx-graph-toolbar-group {
@@ -540,11 +548,16 @@
     left: 12px;
     justify-content: flex-start;
     max-width: none;
+    overflow: visible;
+  }
+
+  .cfx-graph-command-scroll {
+    padding: 5px;
     overflow-x: auto;
     scrollbar-width: none;
   }
 
-  .cfx-graph-command-rail::-webkit-scrollbar {
+  .cfx-graph-command-scroll::-webkit-scrollbar {
     display: none;
   }
 

@@ -49,12 +49,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void WriteStageControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyList<GraphSceneCluster> clusters) {
         WriteHierarchyNavigation(writer, scene);
-        writer.Append("<div class=\"cfx-graph-command-rail\" role=\"toolbar\" aria-label=\"Graph commands\">");
+        writer.Append("<div class=\"cfx-graph-command-rail\" role=\"toolbar\" aria-label=\"Graph commands\"><div class=\"cfx-graph-command-scroll\">");
         WriteExploreControls(writer, scene, options, clusters);
         WriteSelectionControls(writer, scene);
         WriteViewportControls(writer, scene, options);
         WritePhysicsControls(writer, scene, options);
         WriteManipulationControls(writer, scene, options);
+        writer.Append("</div>");
         WriteExportControls(writer, scene);
         writer.Append("</div>");
     }
