@@ -54,6 +54,11 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
         await target.Locator("text").First.EvaluateAsync("node=>{const style=node.dataset.cueOldStyle;delete node.dataset.cueOldStyle;if(style)node.setAttribute('style',style);else node.removeAttribute('style');}");
         await page.WaitForFunctionAsync("()=>cueRoot.querySelectorAll('[data-cfx-state-outline]').length===1");
         await page.SetViewportSizeAsync(820, 680);
+        // The resize commits a new native drawing asynchronously. Establish keyboard input
+        // on that committed drawing, rather than racing its replacement of the old target.
+        await page.WaitForFunctionAsync("()=>cueRoot.dataset.cfxAdaptiveDrawing==='wide'");
+        Assert.Equal(id, await target.GetAttributeAsync("data-cfx-target-id"));
+        Assert.Equal(kind, await target.GetAttributeAsync("data-cfx-target-kind"));
         await FocusWithKeyboardAsync(page, target);
         await AssertNativeKeyboardFocusAsync(page);
         await page.EvaluateAsync("()=>cueController.clearSelection()");
