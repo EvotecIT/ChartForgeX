@@ -34,6 +34,7 @@
     return false;
   };
   const clearHover = (root, emit, sync, preservePaint = false) => {
+    delete root._cfxPeerHoverSource;
     clearRootBranchHighlight(root);
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
@@ -118,13 +119,15 @@
     });
   };
   const applyFocusTrail = (root, trail) => {
+    const incoming = (trail || []).slice(0, 5), nodes = interactiveTargets(root);
+    const targets = incoming.filter(target => nodes.some(node => matchesTargetIdentity(node, target)));
+    if (incoming.length && !targets.length) return root._cfxFocusTrail || [];
     clearFocusTrail(root);
-    const targets = (trail || []).slice(0, 5);
     if (!targets.length || !hasFeature(root, 'FocusTrail')) return [];
     root._cfxFocusTrail = targets;
     root.dataset.cfxTrailCount = String(targets.length);
     targets.forEach((target, index) => {
-      interactiveTargets(root).forEach((node) => {
+      nodes.forEach((node) => {
         if (!matchesTargetIdentity(node, target)) return;
         node.classList.add('cfx-trail');
         node.dataset.cfxTrailIndex = String(index + 1);
@@ -152,11 +155,15 @@
   };
   const matchesTargetIdentity = (node, target) => {
     if (!target) return false;
+    if (target.seriesKey && seriesKey(node) !== target.seriesKey) return false;
     const data = node.dataset || {};
     if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
+    if (target.observationId !== undefined && !target.targetId) {
+      if (!target.seriesKey || data.cfxSeriesScope !== 'shared' || target.targetKind && renderedTargetKind(node) !== target.targetKind) return false;
+      return data.cfxObservationId === target.observationId || contributorObservationIds(node)?.includes(target.observationId) === true;
+    }
     if (target.id) return node.id === target.id || data.cfxId === target.id;
     if (target.seriesKey) {
-      if (seriesKey(node) !== target.seriesKey) return false;
       if (target.point !== undefined) return data.cfxPoint === String(target.point);
       return !target.role || data.cfxRole === target.role;
     }
@@ -283,6 +290,12 @@
   };
   const applySync = (root, detail) => {
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
+    if (['hover', 'crosshair', 'navigate'].includes(detail.action)
+      && !interactiveTargets(root).some(node => matchesTargetIdentity(node, detail.target))) {
+      // An absent identity retires only this sender's previously accepted hover.
+      if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
+      return;
+    }
     if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
     else if (detail.action === 'viewport' && detail.state && !connectedXViewport(root)) applyViewport(root, detail.state);
     else if (detail.action === 'brush') {
@@ -307,12 +320,15 @@
     }
     else if (detail.action === 'hover') {
       clearHover(root, false, false, true);
-      applyHoverByTarget(root, detail.target);
+      if (applyHoverByTarget(root, detail.target)) root._cfxPeerHoverSource = detail.chartId;
       revealTargets(root, [detail.target], false, false, detail.source || 'hover');
-    } else if (detail.action === 'hover-clear') clearHover(root, false, false);
+    } else if (detail.action === 'hover-clear') {
+      // A peer retires only its accepted hover; a local pointer or keyboard move takes ownership.
+      if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
+    }
     else if (detail.action === 'crosshair' || detail.action === 'navigate') {
       clearHover(root, false, false, true);
-      applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series');
+      if (applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series')) root._cfxPeerHoverSource = detail.chartId;
       revealTargets(root, [detail.target], false, false, detail.action);
     }
     else if (detail.action === 'trail') applyFocusTrail(root, detail.trail || []);

@@ -417,9 +417,9 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart WithXLabels(params string[] labels) {
         if (labels == null) throw new ArgumentNullException(nameof(labels));
-        Options.XAxisLabels.Clear();
-        for (var i = 0; i < labels.Length; i++) Options.XAxisLabels.Add(new ChartAxisLabel(i + 1, labels[i] ?? throw new ArgumentNullException(nameof(labels))));
-        return this;
+        var materialized = new ChartAxisLabel[labels.Length];
+        for (var i = 0; i < labels.Length; i++) materialized[i] = new ChartAxisLabel(i + 1, labels[i] ?? throw new ArgumentNullException(nameof(labels)));
+        return WithXLabels(materialized);
     }
 
     /// <summary>
@@ -429,13 +429,13 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart WithXLabels(IEnumerable<ChartAxisLabel> labels) {
         if (labels == null) throw new ArgumentNullException(nameof(labels));
-        Options.XAxisLabels.Clear();
         var materialized = labels.ToArray();
         foreach (var label in materialized) {
             ChartGuards.Finite(label.Value, nameof(labels));
             if (label.Text == null) throw new ArgumentException("Axis label text must not be null.", nameof(labels));
         }
 
+        Options.XAxisLabels.Clear();
         Options.XAxisLabels.AddRange(materialized);
         return this;
     }
@@ -451,9 +451,7 @@ public sealed partial class Chart {
     public Chart WithXDateLabels(IEnumerable<DateTime> dates, string format = "MMM d") {
         if (dates == null) throw new ArgumentNullException(nameof(dates));
         if (format == null) throw new ArgumentNullException(nameof(format));
-        Options.XAxisLabels.Clear();
-        foreach (var date in dates) Options.XAxisLabels.Add(new ChartAxisLabel(date, date.ToString(format, CultureInfo.InvariantCulture)));
-        return this;
+        return WithXLabels(dates.Select(date => new ChartAxisLabel(date, date.ToString(format, CultureInfo.InvariantCulture))));
     }
 
     /// <summary>

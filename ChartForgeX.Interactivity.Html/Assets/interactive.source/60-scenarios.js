@@ -83,8 +83,13 @@
     const matches = new Set();
     if (!route) return matches;
     const steps = stepIndex === undefined || stepIndex === null ? route.steps : route.steps.filter((_, index) => index === Number(stepIndex));
-    scenarioTargetCandidates(root, route).forEach((node) => {
-      if (steps.some((step) => scenarioTargetMatches(node, step))) matches.add(node);
+    const candidates = scenarioTargetCandidates(root, route);
+    // An exact annotation identity wins over a different annotation's ID-looking caption.
+    const exactAnnotations = steps.map(step => step.targetKind === 'annotation' ? candidates.filter(node =>
+      renderedTargetKind(node) === 'annotation' && renderedTargetId(node, 'annotation') === step.targetId) : []);
+    candidates.forEach((node) => {
+      if (steps.some((step, index) => exactAnnotations[index].length
+        ? exactAnnotations[index].includes(node) : scenarioTargetMatches(node, step))) matches.add(node);
     });
     return matches;
   };

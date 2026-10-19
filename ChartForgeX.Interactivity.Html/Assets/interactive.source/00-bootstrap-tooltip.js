@@ -35,7 +35,8 @@
       rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
-      seriesScope: data.cfxSeriesScope,
+      // Native annotation ordinals are local to this source; an authored ID or scope can opt into sharing.
+      seriesScope: data.cfxSeriesScope ?? (targetKind === 'annotation' && !data.cfxId ? 'local' : undefined),
       observationId: data.cfxObservationId,
       observationIds: contributorObservationIds(node),
       category: targetCategory(node),

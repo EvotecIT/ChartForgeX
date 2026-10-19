@@ -103,6 +103,7 @@
         nodes.push(node);
       });
     });
+    if (!nodes.length) return [];
     return revealNodes(root, nodes, emit, sync, source);
   };
   const setHover = (root, node, emit, sync, mode) => {

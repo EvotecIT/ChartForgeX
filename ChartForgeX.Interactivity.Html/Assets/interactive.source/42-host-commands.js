@@ -154,11 +154,13 @@
     clearBrushCommand(root, options);
     return runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
   };
-  const captureHostHighlight = (root, sameSource = false) => {
-    const state = copyHostValue(root._cfxHostHighlight || null);
-    if (!state || sameSource) return state;
+  // Replacement retains durable facts; live synchronization can also address current observations in shared series.
+  const projectHostHighlight = (root, source, synchronize = false) => {
+    const state = copyHostValue(source);
+    if (!state) return state;
     const match = state.match, nodes = dataTargets(root);
     const sharedKeys = new Set(JSON.parse(root.dataset.cfxPreparedChart).series.filter(series => !series.local).map(series => series.key));
+    const retainTarget = synchronize ? target => target.seriesScope !== 'local' : durableChartTarget;
     let removed = false;
     const retain = (key, predicate) => {
       if (!match[key]) return;
@@ -168,20 +170,38 @@
     retain('seriesKeys', key => sharedKeys.has(key));
     if (match.targets) {
       const original = match.targets;
-      match.targets = original.flatMap(item => nodes.filter(node => item && (!item.seriesKey || item.seriesKey === seriesKey(node))
-        && matchesTargetIdentity(node, item)).map(targetIdentity).filter(durableChartTarget)
-        .map(target => ({ targetKind: target.targetKind, targetId: target.targetId, seriesKey: target.seriesKey })));
-      removed ||= original.some(item => !nodes.some(node => item && (!item.seriesKey || item.seriesKey === seriesKey(node))
-        && matchesTargetIdentity(node, item) && durableChartTarget(targetIdentity(node))));
+      const projected = original.map(item => {
+        const resolved = nodes.filter(node => item && matchesTargetIdentity(node, item)).map(targetIdentity);
+        if (item?.observationId !== undefined && !item.targetId)
+          return resolved.some(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey)) ? [item] : [];
+        return resolved.filter(retainTarget);
+      });
+      match.targets = projected.flat();
+      removed ||= projected.some(targets => !targets.length);
+    }
+    if (match.observationIds) {
+      const resolved = resolveHostTargets(root, { observationIds: match.observationIds, seriesKey: match.seriesKey })
+        .filter(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey));
+      // Keep authored observation intent when aggregate membership or peer partitioning changes.
+      const references = resolved.flatMap(target => match.observationIds
+        .filter(id => target.observationId === id || target.observationIds?.includes(id))
+        .map(observationId => ({ seriesKey: target.seriesKey, observationId })));
+      const unique = new Map(references.map(item => [JSON.stringify([item.seriesKey, item.observationId]), item]));
+      match.targets = [...(match.targets || []), ...unique.values()];
+      delete match.observationIds;
+      removed = true;
     }
     // Ordinals describe the previous source order; explicit IDs and value filters describe durable intent.
-    if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
+    if (synchronize) retain('sourcePoints', item => item && sharedKeys.has(item.seriesKey));
+    else if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
     if (match.seriesKey && !sharedKeys.has(match.seriesKey)) {
-      for (const key of ['observationIds', 'ranges']) if (match[key]?.length) { match[key] = []; removed = true; }
+      for (const key of ['sourcePoints', 'ranges']) if (match[key]?.length) { match[key] = []; removed = true; }
       delete match.seriesKey;
     }
-    return removed && !['targets', 'observationIds', 'categories', 'seriesKeys', 'ranges'].some(key => match[key]?.length) ? null : state;
+    return removed && !['targets', 'observationIds', 'categories', 'seriesKeys', 'sourcePoints', 'ranges'].some(key => match[key]?.length) ? null : state;
   };
+  const captureHostHighlight = (root, sameSource = false) => sameSource
+    ? copyHostValue(root._cfxHostHighlight || null) : projectHostHighlight(root, root._cfxHostHighlight || null);
   const applyHostHighlight = (root, state) => {
     root._cfxHostHighlight = state ? copyHostValue(state) : null;
     const nodes = dataTargets(root), highlighted = state ? nodes.filter(node => matchesHostTarget(node, state.match)) : [];
@@ -202,7 +222,7 @@
     const state = { match: hostMatch(match), dim: options.dim === true, source: options.source || '' };
     const targets = applyHostHighlight(root, state);
     if (options.emit === true) emitHostEvent(root, 'cfxhighlight', { count: targets.length, targets, source: state.source });
-    if (options.sync === true) emitSync(root, { action: 'highlight', state });
+    if (options.sync === true) emitSync(root, { action: 'highlight', state: projectHostHighlight(root, state, true) });
     return targets;
   };
   const clearHighlightCommand = (root, options = {}) => {

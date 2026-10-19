@@ -177,7 +177,7 @@
       if (previousSelection !== selectedTargets(root).map(targetKey).join('\n')) publishSelectionChange(root, 'command');
       emitHostEvent(root, 'cfxstateapplied', { snapshot });
     }
-    if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
+    if (sync !== false) emitSync(root, { action: 'state', state: { ...snapshot, selectedTargets: selectedTargets(root) } });
   };
   const zoomBy = (root, factor, logicalX) => {
     if (!hasFeature(root, 'Zoom')) return;

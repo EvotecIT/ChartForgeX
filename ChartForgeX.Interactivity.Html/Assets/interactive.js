@@ -169,7 +169,8 @@
       if (reference) return JSON.stringify([seriesKey(node) || data.cfxSeries || 'series', reference.targetKind, reference.targetId]);
       return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : pointTargetId(node);
     }
-    if (kind === 'annotation') return data.cfxId || data.cfxLabel || [data.cfxKind, data.cfxValue].filter(Boolean).join(':');
+    // Captions and values can repeat; native source identity addresses one annotation in this scene.
+    if (kind === 'annotation') return data.cfxId || data.cfxSourceId || node.id || '';
     return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
   };
   const applyRenderedTargetContract = (root) => {
@@ -220,7 +221,8 @@
       rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
-      seriesScope: data.cfxSeriesScope,
+      // Native annotation ordinals are local to this source; an authored ID or scope can opt into sharing.
+      seriesScope: data.cfxSeriesScope ?? (targetKind === 'annotation' && !data.cfxId ? 'local' : undefined),
       observationId: data.cfxObservationId,
       observationIds: contributorObservationIds(node),
       category: targetCategory(node),
@@ -2501,7 +2503,7 @@
       if (previousSelection !== selectedTargets(root).map(targetKey).join('\n')) publishSelectionChange(root, 'command');
       emitHostEvent(root, 'cfxstateapplied', { snapshot });
     }
-    if (sync !== false) emitSync(root, { action: 'state', state: snapshot });
+    if (sync !== false) emitSync(root, { action: 'state', state: { ...snapshot, selectedTargets: selectedTargets(root) } });
   };
   const zoomBy = (root, factor, logicalX) => {
     if (!hasFeature(root, 'Zoom')) return;
@@ -3125,6 +3127,7 @@
     return false;
   };
   const clearHover = (root, emit, sync, preservePaint = false) => {
+    delete root._cfxPeerHoverSource;
     clearRootBranchHighlight(root);
     root.removeAttribute('data-cfx-hovering');
     root.removeAttribute('data-cfx-hover-label');
@@ -3209,13 +3212,15 @@
     });
   };
   const applyFocusTrail = (root, trail) => {
+    const incoming = (trail || []).slice(0, 5), nodes = interactiveTargets(root);
+    const targets = incoming.filter(target => nodes.some(node => matchesTargetIdentity(node, target)));
+    if (incoming.length && !targets.length) return root._cfxFocusTrail || [];
     clearFocusTrail(root);
-    const targets = (trail || []).slice(0, 5);
     if (!targets.length || !hasFeature(root, 'FocusTrail')) return [];
     root._cfxFocusTrail = targets;
     root.dataset.cfxTrailCount = String(targets.length);
     targets.forEach((target, index) => {
-      interactiveTargets(root).forEach((node) => {
+      nodes.forEach((node) => {
         if (!matchesTargetIdentity(node, target)) return;
         node.classList.add('cfx-trail');
         node.dataset.cfxTrailIndex = String(index + 1);
@@ -3243,11 +3248,15 @@
   };
   const matchesTargetIdentity = (node, target) => {
     if (!target) return false;
+    if (target.seriesKey && seriesKey(node) !== target.seriesKey) return false;
     const data = node.dataset || {};
     if (target.targetKind && target.targetId) return renderedTargetKind(node) === target.targetKind && renderedTargetId(node, target.targetKind) === target.targetId;
+    if (target.observationId !== undefined && !target.targetId) {
+      if (!target.seriesKey || data.cfxSeriesScope !== 'shared' || target.targetKind && renderedTargetKind(node) !== target.targetKind) return false;
+      return data.cfxObservationId === target.observationId || contributorObservationIds(node)?.includes(target.observationId) === true;
+    }
     if (target.id) return node.id === target.id || data.cfxId === target.id;
     if (target.seriesKey) {
-      if (seriesKey(node) !== target.seriesKey) return false;
       if (target.point !== undefined) return data.cfxPoint === String(target.point);
       return !target.role || data.cfxRole === target.role;
     }
@@ -3374,6 +3383,12 @@
   };
   const applySync = (root, detail) => {
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
+    if (['hover', 'crosshair', 'navigate'].includes(detail.action)
+      && !interactiveTargets(root).some(node => matchesTargetIdentity(node, detail.target))) {
+      // An absent identity retires only this sender's previously accepted hover.
+      if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
+      return;
+    }
     if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
     else if (detail.action === 'viewport' && detail.state && !connectedXViewport(root)) applyViewport(root, detail.state);
     else if (detail.action === 'brush') {
@@ -3398,12 +3413,15 @@
     }
     else if (detail.action === 'hover') {
       clearHover(root, false, false, true);
-      applyHoverByTarget(root, detail.target);
+      if (applyHoverByTarget(root, detail.target)) root._cfxPeerHoverSource = detail.chartId;
       revealTargets(root, [detail.target], false, false, detail.source || 'hover');
-    } else if (detail.action === 'hover-clear') clearHover(root, false, false);
+    } else if (detail.action === 'hover-clear') {
+      // A peer retires only its accepted hover; a local pointer or keyboard move takes ownership.
+      if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
+    }
     else if (detail.action === 'crosshair' || detail.action === 'navigate') {
       clearHover(root, false, false, true);
-      applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series');
+      if (applyHoverByTarget(root, detail.target, detail.action === 'crosshair' ? detail.mode || 'shared' : 'series')) root._cfxPeerHoverSource = detail.chartId;
       revealTargets(root, [detail.target], false, false, detail.action);
     }
     else if (detail.action === 'trail') applyFocusTrail(root, detail.trail || []);
@@ -3580,11 +3598,13 @@
     clearBrushCommand(root, options);
     return runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
   };
-  const captureHostHighlight = (root, sameSource = false) => {
-    const state = copyHostValue(root._cfxHostHighlight || null);
-    if (!state || sameSource) return state;
+  // Replacement retains durable facts; live synchronization can also address current observations in shared series.
+  const projectHostHighlight = (root, source, synchronize = false) => {
+    const state = copyHostValue(source);
+    if (!state) return state;
     const match = state.match, nodes = dataTargets(root);
     const sharedKeys = new Set(JSON.parse(root.dataset.cfxPreparedChart).series.filter(series => !series.local).map(series => series.key));
+    const retainTarget = synchronize ? target => target.seriesScope !== 'local' : durableChartTarget;
     let removed = false;
     const retain = (key, predicate) => {
       if (!match[key]) return;
@@ -3594,20 +3614,38 @@
     retain('seriesKeys', key => sharedKeys.has(key));
     if (match.targets) {
       const original = match.targets;
-      match.targets = original.flatMap(item => nodes.filter(node => item && (!item.seriesKey || item.seriesKey === seriesKey(node))
-        && matchesTargetIdentity(node, item)).map(targetIdentity).filter(durableChartTarget)
-        .map(target => ({ targetKind: target.targetKind, targetId: target.targetId, seriesKey: target.seriesKey })));
-      removed ||= original.some(item => !nodes.some(node => item && (!item.seriesKey || item.seriesKey === seriesKey(node))
-        && matchesTargetIdentity(node, item) && durableChartTarget(targetIdentity(node))));
+      const projected = original.map(item => {
+        const resolved = nodes.filter(node => item && matchesTargetIdentity(node, item)).map(targetIdentity);
+        if (item?.observationId !== undefined && !item.targetId)
+          return resolved.some(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey)) ? [item] : [];
+        return resolved.filter(retainTarget);
+      });
+      match.targets = projected.flat();
+      removed ||= projected.some(targets => !targets.length);
+    }
+    if (match.observationIds) {
+      const resolved = resolveHostTargets(root, { observationIds: match.observationIds, seriesKey: match.seriesKey })
+        .filter(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey));
+      // Keep authored observation intent when aggregate membership or peer partitioning changes.
+      const references = resolved.flatMap(target => match.observationIds
+        .filter(id => target.observationId === id || target.observationIds?.includes(id))
+        .map(observationId => ({ seriesKey: target.seriesKey, observationId })));
+      const unique = new Map(references.map(item => [JSON.stringify([item.seriesKey, item.observationId]), item]));
+      match.targets = [...(match.targets || []), ...unique.values()];
+      delete match.observationIds;
+      removed = true;
     }
     // Ordinals describe the previous source order; explicit IDs and value filters describe durable intent.
-    if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
+    if (synchronize) retain('sourcePoints', item => item && sharedKeys.has(item.seriesKey));
+    else if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
     if (match.seriesKey && !sharedKeys.has(match.seriesKey)) {
-      for (const key of ['observationIds', 'ranges']) if (match[key]?.length) { match[key] = []; removed = true; }
+      for (const key of ['sourcePoints', 'ranges']) if (match[key]?.length) { match[key] = []; removed = true; }
       delete match.seriesKey;
     }
-    return removed && !['targets', 'observationIds', 'categories', 'seriesKeys', 'ranges'].some(key => match[key]?.length) ? null : state;
+    return removed && !['targets', 'observationIds', 'categories', 'seriesKeys', 'sourcePoints', 'ranges'].some(key => match[key]?.length) ? null : state;
   };
+  const captureHostHighlight = (root, sameSource = false) => sameSource
+    ? copyHostValue(root._cfxHostHighlight || null) : projectHostHighlight(root, root._cfxHostHighlight || null);
   const applyHostHighlight = (root, state) => {
     root._cfxHostHighlight = state ? copyHostValue(state) : null;
     const nodes = dataTargets(root), highlighted = state ? nodes.filter(node => matchesHostTarget(node, state.match)) : [];
@@ -3628,7 +3666,7 @@
     const state = { match: hostMatch(match), dim: options.dim === true, source: options.source || '' };
     const targets = applyHostHighlight(root, state);
     if (options.emit === true) emitHostEvent(root, 'cfxhighlight', { count: targets.length, targets, source: state.source });
-    if (options.sync === true) emitSync(root, { action: 'highlight', state });
+    if (options.sync === true) emitSync(root, { action: 'highlight', state: projectHostHighlight(root, state, true) });
     return targets;
   };
   const clearHighlightCommand = (root, options = {}) => {
@@ -3864,6 +3902,7 @@
         nodes.push(node);
       });
     });
+    if (!nodes.length) return [];
     return revealNodes(root, nodes, emit, sync, source);
   };
   const setHover = (root, node, emit, sync, mode) => {
@@ -4123,8 +4162,13 @@
     const matches = new Set();
     if (!route) return matches;
     const steps = stepIndex === undefined || stepIndex === null ? route.steps : route.steps.filter((_, index) => index === Number(stepIndex));
-    scenarioTargetCandidates(root, route).forEach((node) => {
-      if (steps.some((step) => scenarioTargetMatches(node, step))) matches.add(node);
+    const candidates = scenarioTargetCandidates(root, route);
+    // An exact annotation identity wins over a different annotation's ID-looking caption.
+    const exactAnnotations = steps.map(step => step.targetKind === 'annotation' ? candidates.filter(node =>
+      renderedTargetKind(node) === 'annotation' && renderedTargetId(node, 'annotation') === step.targetId) : []);
+    candidates.forEach((node) => {
+      if (steps.some((step, index) => exactAnnotations[index].length
+        ? exactAnnotations[index].includes(node) : scenarioTargetMatches(node, step))) matches.add(node);
     });
     return matches;
   };
