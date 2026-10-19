@@ -2,7 +2,7 @@
   // kind, and direction. The original edges remain in the document for expansion.
   const syncBundledEdgePresentation = (root, state) => {
     if (!state) return;
-    state.edges.forEach(edge => { edge.label = attr(edge.el, 'data-cfx-bundle-label') || attr(edge.el, 'data-edge-label'); });
+    state.edges.forEach(edge => { edge.label = graphLabelText(attr(edge.el, 'data-cfx-bundle-label')) || graphLabelText(attr(edge.el, 'data-edge-label')); });
   };
   const bundleArrows = edge => ({
     source: attr(edge, 'data-edge-source-arrow') === 'true',

@@ -40,7 +40,7 @@ test('successful host document updates clear stale undo snapshots and rejected u
   const {root}=fixture();
   const events=[];
   const apiSource=source(['40-api']);
-  const patchSource=apiSource.slice(apiSource.indexOf('  const applyGraphRuntimePatch ='),apiSource.indexOf('  const graphExplorerApi ='));
+  const patchSource=apiSource.slice(apiSource.indexOf('  const syncGraphEdgeAccessibleNames ='),apiSource.indexOf('  const graphExplorerApi ='));
   const ignored=['stopWorkerPhysics','stopMainPhysics','upsertGraphCluster','upsertGraphEdge','syncSvgThemeColors','performanceGate','applyLayout','syncGraphItemTabStops'];
   let observeHostUpdate=false;
   const environment={...graphMessageHelpers(),...Object.fromEntries(ignored.map(name=>[name,()=>{}])),graphApiRoot:target=>target,

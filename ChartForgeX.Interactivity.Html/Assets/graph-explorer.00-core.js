@@ -10,6 +10,8 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
   const uiText = window[Symbol.for('ChartForgeX.uiText')];
   const roots = (target = document) => target?.matches?.('.cfx-graph-explorer') ? [target] : Array.from(target.querySelectorAll('.cfx-graph-explorer'));
   const attr = (node, name) => node ? node.getAttribute(name) || '' : '';
+  // Match native IsNullOrWhiteSpace while retaining authored nonblank padding.
+  const graphLabelText = value => value != null && /\P{White_Space}/u.test(String(value)) ? String(value) : '';
   const num = (node, name, fallback) => {
     const raw = attr(node, name);
     if (raw === '') return fallback;
@@ -116,7 +118,7 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
         targetCluster: clusterById.get(attr(el, 'data-target-cluster-id') || target?.cluster || ''),
         weight: Math.max(0.1, num(el, 'data-edge-weight', 1)),
         length: Math.max(0, num(el, 'data-edge-length', 0)),
-        label: attr(el, 'data-cfx-bundle-label') || attr(el, 'data-edge-label'),
+        label: graphLabelText(attr(el, 'data-cfx-bundle-label')) || graphLabelText(attr(el, 'data-edge-label')),
         directed: attr(el, 'data-edge-directed') === 'true',
         sourceArrow: attr(el, 'data-edge-source-arrow') === 'true',
         targetArrow: attr(el, 'data-edge-target-arrow') === 'true',

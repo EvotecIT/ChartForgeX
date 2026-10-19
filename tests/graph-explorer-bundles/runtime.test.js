@@ -6,7 +6,7 @@ const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
-const code = graphRuntimeSource('return { graphVirtualElement, graphVirtualClassList, graphVirtualMatches, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, applyFilters, applyNeighborhoodFocus, applyClusterState, applyHierarchyView, clearHiddenSelections, appendExportedEdgeLabel, graphThemePalette, attr };');
+const code = graphRuntimeSource('return { graphVirtualElement, graphVirtualClassList, graphVirtualMatches, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, syncGraphEdgeAccessibleNames, applyFilters, applyNeighborhoodFocus, applyClusterState, applyHierarchyView, clearHiddenSelections, appendExportedEdgeLabel, graphThemePalette, attr };');
 const loadRuntime = new Function('document', 'window', 'CustomEvent', code);
 const lifetimes = adapterLifetimes();
 test.after(() => lifetimes.dispose());
@@ -486,4 +486,29 @@ test('host export includes numeric worker and picking counters', () => {
   assert.equal(performance.edgeHitIndexBuilds, 1);
   assert.equal(performance.edgeHitIndexRefits, 4);
   assert.equal(performance.edgeHitIndexLastMs, .75);
+});
+
+
+test('blank authored edge labels retain current endpoint names through patching and bundle restoration', () => {
+  const { root, edges } = scene(2, [[0, 1, ' \t\u0085 ', 'critical'], [0, 1, '  Authored flow  ', 'healthy']]);
+  root.setAttribute('data-cfx-graph-accelerated-markup', 'true');
+  runtime.syncGraphEdgeAccessibleNames(root);
+  assert.equal(runtime.attr(edges[0], 'aria-label'), 'Node 0 to Node 1');
+  assert.equal(runtime.attr(edges[1], 'aria-label'), '  Authored flow  ');
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(runtime.attr(edges[0], 'data-cfx-bundle-count'), '2');
+  root.__cfxGraphVirtualItems.find(item => runtime.attr(item, 'data-node-id') === 'node-1').setAttribute('data-node-label', 'Renamed {source}');
+  runtime.syncGraphEdgeAccessibleNames(root);
+  root.__cfxGraphVirtualItems.filter(item => runtime.attr(item, 'data-cfx-role') === 'graph-cluster').forEach(cluster => cluster.setAttribute('data-cluster-collapsed', 'false'));
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(runtime.attr(edges[0], 'aria-label'), 'Node 0 to Renamed {source}');
+  assert.equal(runtime.attr(edges[1], 'aria-label'), '  Authored flow  ');
+  runtime.upsertGraphEdge(root, { id: 'edge-0', source: 'node-0', target: 'node-1', label: ' \t ' });
+  runtime.syncGraphEdgeAccessibleNames(root);
+  assert.equal(runtime.attr(edges[0], 'aria-label'), 'Node 0 to Renamed {source}');
+  const state = runtime.graphState(root);
+  runtime.syncBundledEdgePresentation(root, state);
+  assert.equal(state.edges[0].label, '');
+  assert.equal(runtime.exportGraphJson(root).edges[0].label, ' \t ');
+  assert.equal(runtime.exportGraphJson(root).edges[1].label, '  Authored flow  ');
 });

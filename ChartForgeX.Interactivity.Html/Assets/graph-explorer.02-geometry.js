@@ -278,7 +278,7 @@
       && Math.abs(point.y - 4 - node.y) < 10 + extents.y + 6;
   };
   const avoidEdgeLabelNodeCollisions = (edge, candidate) => {
-    const label = edge.label || attr(edge.el, 'data-edge-label');
+    const label = graphLabelText(edge.label) || graphLabelText(attr(edge.el, 'data-edge-label'));
     if (!label || (!edgeLabelIntersectsNode(candidate, label, edge.source) && !edgeLabelIntersectsNode(candidate, label, edge.target))) return candidate;
     if (edgeHasRoute(edge)) {
       const points = routeRenderPoints(edge);

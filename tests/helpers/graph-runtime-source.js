@@ -20,7 +20,7 @@ function graphRuntimeSource(probe) {
 }
 
 function graphMessageHelpers() {
-  return new Function('document', 'window', graphRuntimeSource('return { uiText, graphUiError };'))(
+  return new Function('document', 'window', graphRuntimeSource('return { uiText, graphUiError, graphLabelText };'))(
     { readyState: 'loading', addEventListener() {} }, {});
 }
 module.exports = { graphRuntimeSource, graphMessageHelpers };

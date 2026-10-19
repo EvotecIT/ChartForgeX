@@ -94,7 +94,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
                 roots:[...document.querySelectorAll('[data-cfx-ui]')].map(root=>({language:root.lang,direction:getComputedStyle(root).direction,
                     bundle:JSON.parse(root.dataset.cfxUi),renderer:root.dataset.cfxGraphRendererActive})),
                 nativeDirections:[...document.querySelectorAll('[data-cfx-role=graph-scene],canvas,.cfx-topology-viewport>svg,.diagram svg')].map(node=>({role:node.dataset.cfxRole,direction:getComputedStyle(node).direction})),
-                input:window.localizationInput||[],pageOverflow:document.documentElement.scrollWidth-innerWidth})
+                input:window.localizationInput||[],readouts:window.readoutObservations||[],pageOverflow:document.documentElement.scrollWidth-innerWidth})
             """);
         await File.WriteAllTextAsync(Path.Combine(directory, "localized-" + name + ".json"), facts.GetRawText());
     }
