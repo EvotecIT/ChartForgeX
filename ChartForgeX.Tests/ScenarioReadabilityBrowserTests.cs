@@ -62,8 +62,8 @@ public sealed class ScenarioReadabilityBrowserTests {
                   function rgba(color) {ctx.clearRect(0,0,1,1);ctx.fillStyle=color;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data].map((v,i)=>i===3?v/255:v);}
                   function over(top,base) {return top.slice(0,3).map((v,i)=>v*top[3]+base[i]*(1-top[3]));}
                   function luminance(c) {return c.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);}
-                  function facts(selector,progress) {
-                    const node=document.querySelector(selector), chain=[];for(let p=node;p;p=p.parentElement)chain.unshift(p);
+                  function facts(selector,progress,node=document.querySelector(selector)) {
+                    const chain=[];for(let p=node;p;p=p.parentElement)chain.unshift(p);
                     let bg=[255,255,255];for(const p of chain)bg=over(rgba(getComputedStyle(p).backgroundColor),bg);
                     const ink=rgba(getComputedStyle(node).color),fg=over(ink,bg),l1=luminance(fg),l2=luminance(bg);
                     let ratio=(Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05);
@@ -71,7 +71,7 @@ public sealed class ScenarioReadabilityBrowserTests {
                     if(progress){const bar=document.querySelector('.cfx-scenario-progress__bar'),fillBox=bar.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(node);const textBox=range.getBoundingClientRect();progressOverlapsText=Math.min(fillBox.right,textBox.right)>Math.max(fillBox.left,textBox.left)&&Math.min(fillBox.bottom,textBox.bottom)>Math.max(fillBox.top,textBox.top);if(progressOverlapsText){const fill=over(rgba(getComputedStyle(bar).backgroundColor),bg),fl=luminance(over(ink,fill)),bl=luminance(fill);ratio=Math.min(ratio,(Math.max(fl,bl)+.05)/(Math.min(fl,bl)+.05));}}
                     return {selector,text:node.textContent,ratio,ink,background:bg,progressOverlapsText};
                   }
-                  return {step,labels:[facts('.cfx-topology-scenario-panel__title',false),facts('.cfx-scenario-panel__title',false),facts('.cfx-scenario-panel__meta',false),facts('.cfx-scenario-panel__steps li',false),facts('.cfx-scenario-progress__text',true)]};
+                  return {step,labels:[facts('.cfx-topology-scenario-panel__title',false),facts('.cfx-scenario-panel__title',false),facts('.cfx-scenario-panel__meta',false),...Array.from(document.querySelectorAll('.cfx-scenario-panel__steps li'),node=>facts('.cfx-scenario-panel__steps li',false,node)),facts('.cfx-scenario-progress__text',true)]};
                 }
                 """, step));
         }
@@ -83,9 +83,13 @@ public sealed class ScenarioReadabilityBrowserTests {
             File.WriteAllText(Path.Combine(folder, name + ".html"), html);
             File.WriteAllText(Path.Combine(folder, name + ".json"), JsonSerializer.Serialize(observations));
         }
-        foreach (var observation in observations)
-            foreach (var label in observation.GetProperty("labels").EnumerateArray())
+        foreach (var observation in observations) {
+            var labels = observation.GetProperty("labels").EnumerateArray().ToArray();
+            var stepCaptions = labels.Where(label => label.GetProperty("selector").GetString() == ".cfx-scenario-panel__steps li").ToArray();
+            Assert.Equal(new[] { "Observe", "Confirm" }, stepCaptions.Select(label => label.GetProperty("text").GetString()?.Trim()).ToArray());
+            foreach (var label in labels)
                 Assert.True(label.GetProperty("ratio").GetDouble() >= 4.5, label.GetRawText());
+        }
         Assert.Empty(errors);
         AssertNoConsoleErrors(session);
     }
