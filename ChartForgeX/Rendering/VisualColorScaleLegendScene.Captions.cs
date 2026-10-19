@@ -50,7 +50,7 @@ internal static partial class VisualColorScaleLegendScene {
                 }
                 PaintCaptionPlan(builder, plan, captionArea, strip, prefix, gap, vertical);
                 if (missingHeight > 0) CaptionedMissing(builder, labels, style,
-                    new ChartRect(body.Left, body.Bottom - missingHeight, body.Width, Math.Min(row, missingHeight)), prefix, missingBlend);
+                    new ChartRect(body.Left, body.Bottom - Math.Min(row, missingHeight), body.Width, Math.Min(row, missingHeight)), prefix, missingBlend);
             }
             if (missing && missingBounds.HasValue) using (builder.PushClip(missingBounds.Value))
                 CaptionedMissing(builder, labels, style, missingBounds.Value, prefix, missingBlend);

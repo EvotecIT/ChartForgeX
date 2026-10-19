@@ -87,6 +87,11 @@ public sealed partial class ColorScalePositionedNativeTests {
         Assert.Contains(facts, node => (string?)node.Attribute("data-cfx-caption-visible") == "false");
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "color-scale.caption-overflow");
         AssertCaptionInkBounds(prepared, "heatmap-scale");
+        var text = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-scale-label").ToArray();
+        var missing = Assert.Single(text, node => node.Id == "heatmap-scale-label-missing");
+        var captionBottom = text.Where(node => node != missing).Max(node => node.Baseline - node.Text.Ascent + node.Text.Metrics.Height);
+        Assert.True(missing.Baseline - missing.Text.Ascent - captionBottom > 1,
+            "The missing-data row needs visible space after the numeric captions.");
         Assert.All(facts, node => {
             Assert.Null(node.Attribute("data-cfx-target-id")); Assert.Null(node.Attribute("data-cfx-series")); Assert.Null(node.Attribute("tabindex"));
         });
@@ -180,7 +185,7 @@ public sealed partial class ColorScalePositionedNativeTests {
         var key = prepared.Regions.Single(region => region.Role == prefix).Bounds;
         var text = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == prefix + "-label").ToArray();
         Assert.NotEmpty(text);
-        var boxes = text.Select(node => new ChartRect(node.LineLeft(node.Text.Lines[0]), node.Baseline - node.Text.Metrics.LineHeight,
+        var boxes = text.Select(node => new ChartRect(node.LineLeft(node.Text.Lines[0]), node.Baseline - node.Text.Ascent,
             node.Text.Metrics.Width, node.Text.Metrics.Height)).ToArray();
         for (var index = 0; index < text.Length; index++) {
             Assert.True(text[index].Text.Size >= 10); var box = boxes[index];
