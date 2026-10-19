@@ -5,6 +5,18 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed partial class StandaloneAdapterLifecycleBrowserTests {
+    private static async Task CaptureGraphEnvironmentWideHoverAsync(IPage page, string name) {
+        var zoom = page.GetByRole(AriaRole.Button, new() { Name = "Zoom out", Exact = true });
+        await zoom.HoverAsync();
+        await page.WaitForFunctionAsync("()=>getComputedStyle(retainedGraph.querySelector('[data-cfx-graph-action=zoom-out]'),'::before').opacity==='1'");
+        await WriteReceiptAsync(name + "-wide-hover", await zoom.EvaluateAsync<JsonElement>("""
+            node=>{const hint=getComputedStyle(node,'::before');return{label:hint.content,opacity:hint.opacity,
+                colour:hint.color,background:hint.backgroundColor,control:node.getBoundingClientRect().toJSON()};}
+            """));
+        await CaptureAsync(page, name + "-wide-hover");
+        await page.Mouse.MoveAsync(2, 2);
+    }
+
     private static Task<JsonElement> GraphEnvironmentControlWitnessAsync(ILocator target) => target.EvaluateAsync<JsonElement>("""
         target=>{
             const box=target.getBoundingClientRect(),x=box.x+box.width/2,y=box.y+box.height/2,hit=document.elementFromPoint(x,y);

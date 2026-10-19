@@ -30,12 +30,15 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                     window.hostSizingExports=[];retainedGraph.addEventListener('cfxgraphexport',event=>{event.preventDefault();hostSizingExports.push(event.detail.format);});
                     lifetimeProbe.recordGlobals=false;lifetimeProbe.recordObservers=false;}
                 """);
-            foreach (var size in new[] { (Width: 980, Height: 900), (Width: 390, Height: 900), (Width: 980, Height: 390) }) {
+            var sizes = new List<(int Width, int Height, int ParentWidth)> { (980, 900, 0), (390, 900, 0), (980, 390, 0) };
+            if (host == "fragment") sizes.Add((980, 900, 390));
+            foreach (var size in sizes) {
                 await page.SetViewportSizeAsync(size.Width, size.Height);
+                if (host == "fragment") await page.EvaluateAsync("width=>document.querySelector('main').style.width=width?width+'px':'calc(100% - 24px)'", size.ParentWidth);
                 await page.EvaluateAsync("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
-                var name = "graph-host-sizing-" + backend + "-" + host + "-" + size.Width + "x" + size.Height;
+                var name = "graph-host-sizing-" + backend + "-" + host + "-" + size.Width + "x" + size.Height + (size.ParentWidth > 0 ? "-parent-" + size.ParentWidth : "");
                 await page.GetByRole(AriaRole.Button, new() { Name = "Fit graph to view", Exact = true }).ClickAsync();
-                var facts = await page.EvaluateAsync<JsonElement>("""
+                Task<JsonElement> ObserveAsync() => page.EvaluateAsync<JsonElement>("""
                     ()=>{
                         const root=retainedGraph,stage=root.querySelector('.cfx-graph-stage'),parent=root.closest('main'),box=root.getBoundingClientRect(),
                             stageBox=stage.getBoundingClientRect(),hostBox=(parent||document.documentElement).getBoundingClientRect(),
@@ -50,22 +53,31 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                             controls:controls.map(node=>({name:node.getAttribute('aria-label')||node.textContent,box:node.getBoundingClientRect().toJSON()}))};
                     }
                     """);
+                var facts = await ObserveAsync();
                 await WriteReceiptAsync(name, facts);
                 await CaptureAsync(page, name);
                 foreach (var property in new[] { "pageOverflow", "physicalParentOverflow", "stageOverflow", "controlOverflow", "fillVerticalOverflow" }) {
                     Assert.InRange(facts.GetProperty(property).GetDouble(), 0, 1);
                 }
+                if (host == "page" && size.Width == 980 && size.Height == 900) await CaptureGraphEnvironmentWideHoverAsync(page, name);
                 await ClickGraphEnvironmentPointAsync(page, "a");
                 Assert.Equal("a", await GraphEnvironmentPrimaryAsync(page));
+                if (size.ParentWidth > 0) {
+                    var scale = await page.EvaluateAsync<double>("()=>ChartForgeXGraphExplorer.captureState(retainedGraph).viewport.scale");
+                    await ClickGraphEnvironmentControlAsync(page, page.GetByRole(AriaRole.Button, new() { Name = "Zoom out", Exact = true }), name + "-zoom-out");
+                    Assert.True(await page.EvaluateAsync<double>("()=>ChartForgeXGraphExplorer.captureState(retainedGraph).viewport.scale") < scale);
+                }
                 var export = page.GetByRole(AriaRole.Button, new() { Name = "Export graph", Exact = true });
                 await ReachGraphEnvironmentControlAsync(page, export);
+                var menuState = await GraphCommittedStateAsync(page);
                 await page.Keyboard.PressAsync("Enter");
                 await WaitForGraphEnvironmentExportAsync(page, expanded: true);
+                Assert.Equal(menuState, await GraphCommittedStateAsync(page));
                 await AssertGraphEnvironmentMenuPaintAsync(page, name);
                 await page.GetByRole(AriaRole.Button, new() { Name = "Export SVG document", Exact = true }).ClickAsync();
                 Assert.Equal("svg", await page.EvaluateAsync<string>("()=>hostSizingExports.at(-1)"));
                 await WaitForGraphEnvironmentExportAsync(page, expanded: false);
-                if (size.Width == 980 && size.Height == 900) {
+                if (size.Width == 980 && size.Height == 900 && size.ParentWidth == 0) {
                     await AssertGraphEnvironmentPrintAsync(page, name, await GraphCommittedStateAsync(page));
                     await SetGraphEnvironmentPreferencesAsync(page, enabled: false);
                 }

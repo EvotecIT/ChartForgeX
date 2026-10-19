@@ -179,7 +179,10 @@
     }));
     menus.forEach(menu => {
       const summary = menu.querySelector('summary');
-      const sync = () => summary?.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
+      const sync = () => {
+        summary?.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
+        if (menu.open) menu.querySelector('.cfx-graph-command-menu-panel')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      };
       listenGraph(root, menu, 'toggle', sync);
       sync();
       listenGraph(root, menu, 'keydown', event => {
