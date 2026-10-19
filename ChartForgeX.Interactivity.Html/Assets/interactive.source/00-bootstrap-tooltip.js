@@ -4,6 +4,14 @@
   // Source metadata stays exact; fallback captions use the browser's shortest round-trip number.
   const numericDisplayText = (value) => tooltipNumber(value) ? String(Number(value)) : value;
   const numericFactText = (data, member) => capturedText(data, 'cfxFormatted' + member, numericDisplayText(data['cfx' + member]));
+  // Native observed bindings retain full category context independently of fitted axis ink.
+  const targetCategoryPath = node => {
+    const root = node.closest?.('.cfx-interactive-chart'), paths = root?._cfxCategoryPaths;
+    if (!paths) return undefined;
+    const data = node.dataset || {}, path = data.cfxX === undefined ? undefined : paths.get(Number(data.cfxX));
+    return path?.slice();
+  };
+  const categoryReadoutText = (node, fallback) => targetCategoryPath(node)?.join(' / ') ?? fallback;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     if (tooltipTitle && ['rangebar', 'boxplot', 'boxplotoutlier'].includes((data.cfxKind || '').toLowerCase()))
@@ -26,6 +34,7 @@
     const targetKind = renderedTargetKind(node);
     const state = (data.cfxKind || '').toLowerCase() === 'statetimeline';
     const rawValue = (data.cfxKind || '').toLowerCase() === 'boxplot' ? data.cfxMedian : data.cfxValue ?? data.cfxY ?? data.cfxEnd;
+    const categoryPath = targetCategoryPath(node);
     return {
       targetKind,
       targetId: renderedTargetId(node, targetKind),
@@ -40,6 +49,7 @@
       observationId: data.cfxObservationId,
       observationIds: contributorObservationIds(node),
       category: targetCategory(node),
+      ...(categoryPath ? { categoryPath } : {}),
       x: targetRawX(node),
       numericValue: !state && tooltipNumber(rawValue) ? Number(rawValue) : undefined,
       range: targetDataRange(node),
@@ -105,7 +115,7 @@
     const data = node.dataset || {};
     const kind = (data.cfxKind || '').toLowerCase();
     if (!['boxplot', 'boxplotoutlier'].includes(kind)) return null;
-    const rows = [{ name: rowName(node, 'category', 'Category'), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel ?? data.cfxX }];
+    const rows = [{ name: rowName(node, 'category', 'Category'), value: categoryReadoutText(node, data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel ?? data.cfxX) }];
     if (kind === 'boxplotoutlier') {
       rows.push({ name: rowName(node, 'outlier', 'Outlier'), value: capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue ?? data.cfxY)) });
       return rows.filter(row => row.value !== undefined && row.value !== null);
@@ -135,7 +145,7 @@
   const rangeBarTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
-    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
+    return [{ name: rowName(node, 'category', ''), value: categoryReadoutText(node, data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX) },
       { name: rowName(node, 'start', ''), value: numericFactText(data, 'Start') },
       { name: rowName(node, 'end', ''), value: numericFactText(data, 'End') }]
       .filter((row) => row.value !== undefined && row.value !== null);
@@ -160,7 +170,7 @@
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     const pushX = () => {
-      const value = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || capturedText(data, 'cfxFormattedStart', data.cfxStart)));
+      const value = categoryReadoutText(node, capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || capturedText(data, 'cfxFormattedStart', data.cfxStart))));
       if (data.cfxXLabel !== undefined || data.cfxFormattedX !== undefined) rows.push({ name: 'X', value });
       else push('X', value);
     };
@@ -176,7 +186,7 @@
       metadataRows(node).forEach((row) => push(row.name, row.value));
       return rows;
     }
-    if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
+    if (data.cfxWaterfallKind) push('Category', categoryReadoutText(node, data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX));
     else pushX();
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);

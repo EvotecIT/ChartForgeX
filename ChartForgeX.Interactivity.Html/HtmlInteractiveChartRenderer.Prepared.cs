@@ -74,7 +74,16 @@ public sealed partial class HtmlInteractiveChartRenderer {
                     if (index > 0) json.Append(',');
                     var label = dataProjection.CategoryLabels[index];
                     json.Append("{\"value\":").Append(label.Value.ToString("R", CultureInfo.InvariantCulture))
-                        .Append(",\"text\":").Append(HtmlJsonString.Encode(label.Text)).Append('}');
+                        .Append(",\"text\":").Append(HtmlJsonString.Encode(label.Text));
+                    if (label.Groups.Count > 0) {
+                        json.Append(",\"groups\":[");
+                        for (var group = 0; group < label.Groups.Count; group++) {
+                            if (group > 0) json.Append(',');
+                            json.Append(HtmlJsonString.Encode(label.Groups[group]));
+                        }
+                        json.Append(']');
+                    }
+                    json.Append('}');
                 }
                 json.Append(']');
             }
