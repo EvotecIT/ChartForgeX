@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Xml.Linq;
 using ChartForgeX.Core;
@@ -33,6 +34,17 @@ public sealed class InteractiveChordColorBrowserTests {
         Assert.Equal(4, await page.Locator("[data-cfx-target-kind=node]").CountAsync());
         Assert.Equal(0, await page.Locator("[data-cfx-role=chord-color-scale] [data-cfx-target-kind]").CountAsync());
         Assert.Equal(3, await page.Locator("[data-cfx-role=chord-color-scale-caption-source][data-cfx-caption-origin=authored]").CountAsync());
+        var stops = page.Locator("[data-cfx-role=chord-color-scale-stops]");
+        var scale = chart.Options.Chord.ColorScale!;
+        Assert.Equal(scale.Stops.Count.ToString(CultureInfo.InvariantCulture), await stops.GetAttributeAsync("data-cfx-stop-count"));
+        Assert.Equal(0, await stops.Locator("[data-cfx-target-kind], [tabindex]").CountAsync());
+        for (var index = 0; index < scale.Stops.Count; index++) {
+            var stop = stops.Locator("[data-cfx-stop='" + index + "']");
+            Assert.Equal(scale.Stops[index].Value.ToString("R", CultureInfo.InvariantCulture), await stop.GetAttributeAsync("data-cfx-value"));
+            Assert.Equal(scale.Stops[index].Color.ToHexRgba(), await stop.GetAttributeAsync("data-cfx-color"));
+            Assert.Contains(scale.Stops[index].Color.ToHexRgba(), await stop.GetAttributeAsync("aria-label"));
+        }
+        var sourceStops = await StopFactsAsync();
         var nativePaint = await NativePaintAsync(page);
         var selector = Flow("north-south");
         var point = await NativeInteriorPointAsync(page, selector, "[data-cfx-role=chord-ribbon]", clearance: 2);
@@ -76,6 +88,8 @@ public sealed class InteractiveChordColorBrowserTests {
         Assert.Equal("5", await priority.GetAttributeAsync("data-cfx-value"));
         Assert.Equal("5", await priority.GetAttributeAsync("data-cfx-source-link-index"));
         Assert.Equal("true", await priority.GetAttributeAsync("aria-selected"));
+        Assert.Equal(0, await page.Locator("[data-cfx-role=chord-color-scale] [data-cfx-target-kind]").CountAsync());
+        Assert.Equal(sourceStops, await StopFactsAsync());
         AssertTarget(await page.EvaluateAsync<JsonElement>("()=>colorChord.getSelection()[0]"), "north-priority", 5);
         Assert.NotEqual(oldPath, await priority.Locator("[data-cfx-role=chord-ribbon]").GetAttributeAsync("d"));
         // A replacement dismisses the old readout while retaining the authored focus/selection. New input inspects the new scene.
@@ -93,6 +107,9 @@ public sealed class InteractiveChordColorBrowserTests {
         Assert.Equal("5", (string?)exportedPriority.Attribute("data-cfx-value"));
         Assert.Equal("80", (string?)exportedPriority.Attribute("data-cfx-color-value"));
         Assert.Equal("transfer-source", (string?)exportedPriority.Attribute("data-cfx-series-key"));
+        var exportedStops = document.Descendants().Where(node => node.Attribute("data-cfx-stop") != null).ToArray();
+        Assert.Equal(scale.Stops.Count, exportedStops.Length);
+        Assert.All(exportedStops, stop => { Assert.Null(stop.Attribute("data-cfx-target-kind")); Assert.Null(stop.Attribute("tabindex")); });
         Assert.DoesNotContain(document.Descendants(), node => node.Name.LocalName == "script");
         Assert.True(await page.EvaluateAsync<bool>("()=>document.documentElement.scrollWidth<=innerWidth+1"));
         Assert.Empty(errors); AssertNoConsoleErrors(session);
@@ -103,6 +120,10 @@ public sealed class InteractiveChordColorBrowserTests {
             expected=>{const tip=document.querySelector('.cfx-tooltip');return tip&&!tip.hidden&&[...tip.querySelectorAll('dt')]
                 .some(term=>term.textContent===expected.name&&term.nextElementSibling.textContent===expected.value);}
             """, new { name, value }, new PageWaitForFunctionOptions { Timeout = 5000 });
+        Task<string[]> StopFactsAsync() => stops.Locator("[data-cfx-stop]").EvaluateAllAsync<string[]>("""
+            nodes=>nodes.map(node=>JSON.stringify(['data-cfx-source-id','data-cfx-stop','data-cfx-value','data-cfx-color','data-cfx-label']
+                .map(name=>node.getAttribute(name))))
+            """);
         string Name() => "chord-color-" + width + "-" + (dark ? "dark" : "light");
         async Task CaptureAsync(string stage) {
             var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

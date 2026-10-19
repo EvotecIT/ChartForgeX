@@ -63,8 +63,10 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
                 Assert.Equal(1, await target.Locator("[data-cfx-browser-hit-area]").CountAsync());
             }
         }
-        var pointer = await NativeInteriorPointAsync(page, Point(0, 0),
-            kind == ChartSeriesKind.Candlestick ? "[data-cfx-role=candlestick-body]" : "[data-cfx-role=ohlc-stem]", clearance: 0);
+        // Hollow candles deliberately route physical input through their prepared observation surface.
+        var pointer = kind == ChartSeriesKind.Candlestick
+            ? await PreparedHitAreaPointAsync(page, Point(0, 0))
+            : await NativeInteriorPointAsync(page, Point(0, 0), "[data-cfx-role=ohlc-stem]", clearance: 0);
         await page.Mouse.MoveAsync((float)pointer[0], (float)pointer[1], new MouseMoveOptions { Steps = 4 });
         Assert.Contains("cfx-hovered", await target.GetAttributeAsync("class"));
         Assert.NotEmpty(await TooltipTextAsync(page));
