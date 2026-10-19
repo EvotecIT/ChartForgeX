@@ -46,6 +46,10 @@ public static class MermaidGitGraphRendering {
         artifact.Metadata["mermaid.header"] = document.Header;
         artifact.Metadata["mermaid.branches"] = document.Branches.Count.ToString(CultureInfo.InvariantCulture);
         artifact.Metadata["mermaid.commits"] = document.Commits.Count.ToString(CultureInfo.InvariantCulture);
+        for (var index = 0; index < document.Commits.Count; index++) {
+            var parent = document.Commits[index].SourceParentCommitId;
+            if (parent.Length > 0) artifact.Metadata["mermaid.gitgraph.commit." + index.ToString(CultureInfo.InvariantCulture) + ".sourceParent"] = parent;
+        }
         artifact.Metadata["render.model"] = nameof(GitGraphBlock);
         return MermaidPresentation.Apply(artifact, document);
     }

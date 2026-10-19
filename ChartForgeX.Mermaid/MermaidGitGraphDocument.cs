@@ -59,12 +59,26 @@ public sealed class MermaidGitGraphCommit {
     private readonly List<string> _parentIds = new();
 
     /// <summary>Initializes a Mermaid git graph commit.</summary>
-    public MermaidGitGraphCommit(string id, string branchName, IEnumerable<string>? parentIds, GitGraphCommitType type, string label, string tag, string sourceCommitId, MermaidSourceSpan span) {
+    public MermaidGitGraphCommit(string id, string branchName, IEnumerable<string>? parentIds, GitGraphCommitType type, string label, string tag, string sourceCommitId, MermaidSourceSpan span)
+        : this(id, branchName, parentIds, type, label, tag, sourceCommitId, span, string.Empty) { }
+
+    /// <summary>Initializes a Mermaid git graph commit with its selected cherry-pick source parent.</summary>
+    /// <param name="id">The new commit identity.</param>
+    /// <param name="branchName">The branch receiving this commit.</param>
+    /// <param name="parentIds">Graph edges to earlier commits, independently from the selected source parent.</param>
+    /// <param name="type">The displayed commit type.</param>
+    /// <param name="label">The commit caption.</param>
+    /// <param name="tag">The tag caption.</param>
+    /// <param name="sourceCommitId">The cherry-picked source identity, or an empty string.</param>
+    /// <param name="span">The source statement location.</param>
+    /// <param name="sourceParentCommitId">The authored immediate parent selected for a cherry-pick, or an empty string.</param>
+    public MermaidGitGraphCommit(string id, string branchName, IEnumerable<string>? parentIds, GitGraphCommitType type, string label, string tag, string sourceCommitId, MermaidSourceSpan span, string sourceParentCommitId) {
         _id = id ?? throw new ArgumentNullException(nameof(id));
         _branchName = branchName ?? throw new ArgumentNullException(nameof(branchName));
         _label = label ?? throw new ArgumentNullException(nameof(label));
         _tag = tag ?? throw new ArgumentNullException(nameof(tag));
         _sourceCommitId = sourceCommitId ?? throw new ArgumentNullException(nameof(sourceCommitId));
+        SourceParentCommitId = sourceParentCommitId ?? throw new ArgumentNullException(nameof(sourceParentCommitId));
         if (parentIds != null) foreach (var parentId in parentIds) _parentIds.Add(parentId ?? throw new ArgumentNullException(nameof(parentIds)));
         Type = type;
         Span = span;
@@ -90,6 +104,9 @@ public sealed class MermaidGitGraphCommit {
 
     /// <summary>Gets or sets the cherry-pick source commit id.</summary>
     public string SourceCommitId { get => _sourceCommitId; set => _sourceCommitId = value ?? throw new ArgumentNullException(nameof(value)); }
+
+    /// <summary>Gets the authored immediate parent selected when cherry-picking the source commit; this is not a graph parent edge of the new commit.</summary>
+    public string SourceParentCommitId { get; }
 
     /// <summary>Gets the source span for the commit statement.</summary>
     public MermaidSourceSpan Span { get; }

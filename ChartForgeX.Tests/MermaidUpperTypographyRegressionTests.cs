@@ -56,7 +56,8 @@ public sealed class MermaidUpperTypographyRegressionTests {
             (venn ? "venn-beta\nset API [\"API\"] : 60\nset UI [\"UI\"] : 55\nunion API,UI [\"Shared\"] : 18\ntext API note [\"Data\"]"
                 : "pie\n\"API\": 2\n\"UI\": 1");
         var parsed = new MermaidParser().Parse(source);
-        Assert.Empty(parsed.Diagnostics);
+        if (venn) Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, Assert.Single(parsed.Diagnostics).Code);
+        else Assert.Empty(parsed.Diagnostics);
         string svg; byte[] png;
         if (venn) {
             var block = Assert.IsType<MermaidVennDocument>(parsed.Document).ToVennDiagramBlock();

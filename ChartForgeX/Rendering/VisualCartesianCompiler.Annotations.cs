@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     // Use the text already shaped for paint, including axis rotations, rather than
     // measuring an authored title again or treating its whole reserved strip as ink.
-    private static void CaptureAnnotationAxisText(VisualScene axes, List<LabelObstacle> obstacles) {
+    private static void CaptureAxisTextObstacles(VisualScene axes, List<LabelObstacle> obstacles) {
         var transforms = new Stack<VisualSceneTransform>();
         var transform = VisualSceneTransform.Identity;
         foreach (var node in axes.Nodes) {
@@ -35,7 +35,7 @@ internal static partial class VisualCartesianCompiler {
                     x = Math.Min(x, point.X); y = Math.Min(y, point.Y);
                     endX = Math.Max(endX, point.X); endY = Math.Max(endY, point.Y);
                 }
-                obstacles.Add(new LabelObstacle("annotation-axis-text-" + obstacles.Count,
+                obstacles.Add(new LabelObstacle("axis-text-" + obstacles.Count,
                     new ChartRect(x, y, endX - x, endY - y)));
             }
         }

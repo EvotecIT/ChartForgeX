@@ -509,15 +509,25 @@
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
     },
     "fixtures/mindmap-branch-uneven.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
-      "expectedByReference": { "10": "mindmap-branch-uneven.expected.10.json" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "expectedByReference": {
+        "10": "mindmap-branch-uneven.expected.10.json"
+      },
       "notes": {
         "10": "Mermaid 10 exposes the parsed hierarchy but assigns color sections only while rendering; this parser/model fixture checks labels and parents without claiming section rendering."
       },
       "provenance": "Authored uneven-indentation branch-color fixture based on the documented mindmap hierarchy contract and upstream regression https://github.com/mermaid-js/mermaid/pull/8394; selected model facts verified with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0."
     },
     "fixtures/mindmap-depth-uneven.mmd": {
-      "syntax": { "10": "accepted", "11": "accepted", "12": "accepted" },
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
       "expectedByReference": {
         "10": "mindmap-depth-uneven.expected.10.json",
         "11": "mindmap-depth-uneven.expected.11.json"
@@ -931,6 +941,86 @@
         "12": "accepted"
       },
       "provenance": "Authored ChartForgeX conformance example; verified with the pinned official Mermaid parser."
+    },
+    "fixtures/flowchart-class-styles.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored regression from documented flowchart class and style precedence; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "fixtures/gitgraph-cherry-pick-parent.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "invalid/flowchart-empty-class.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored regression from documented flowchart class and style precedence; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "invalid/flowchart-repeated-class.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored regression from documented flowchart class and style precedence; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "invalid/gitgraph-missing-merge-parent.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "invalid/gitgraph-invalid-merge-parent.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "invalid/gitgraph-same-head-merge.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "invalid/gitgraph-empty-merge-destination.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "invalid/gitgraph-unknown-attribute.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "invalid/gitgraph-invalid-order.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
     }
   }
 }

@@ -13,7 +13,7 @@ internal static partial class MermaidFlowchartParser {
             }
             if (StartsWith(text, position, "@{")) ReadNodeProperties(text, ref position, node, span, result);
             SkipWhitespace(text, ref position);
-            ParseClassSuffix(text, ref position, node.Classes);
+            ParseClassSuffix(text, ref position, node.Classes, span, result);
             if (subgraph != null) { node.SubgraphId = subgraph.Id; AddNodeToSubgraph(subgraph, node.Id); }
             AddOrUpdateNode(document, nodes, node);
             group.Add(node);

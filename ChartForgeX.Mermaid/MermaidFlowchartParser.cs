@@ -18,17 +18,17 @@ internal static partial class MermaidFlowchartParser {
             document.Statements.Add(statement);
             if (TryParseSubgraphStart(document, trimmed, span, subgraphs)) continue;
             if (IsSubgraphEnd(trimmed, subgraphs, span, result)) continue;
-            if (TryParseClassDefinition(document, trimmed, span)) continue;
+            if (TryParseClassDefinition(document, trimmed, span, result)) continue;
             if (TryParseClassAssignment(document, nodes, trimmed, span)) continue;
-            if (TryParseStyleAssignment(document, nodes, trimmed, span)) continue;
+            if (TryParseStyleAssignment(document, nodes, trimmed, span, result)) continue;
             if (TryParseClickAssignment(document, nodes, trimmed, span)) continue;
-            if (TryParseLinkStyle(document, trimmed, span)) continue;
+            if (TryParseLinkStyle(document, trimmed, span, result)) continue;
             ParseStatement(document, nodes, trimmed, span, subgraphs.Count == 0 ? null : subgraphs.Peek(), result);
         }
 
         foreach (var subgraph in subgraphs) MermaidParserUtilities.Add(result, subgraph.Span, MermaidDiagnosticSeverity.Error, "Flowchart subgraph '" + subgraph.Id + "' must close with 'end'.");
         ApplyClassDefinitions(document);
-        ApplyLinkStyles(document);
+        ApplyLinkStyles(document, result);
     }
 
     private static void ParseStatement(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string text, MermaidSourceSpan span, MermaidFlowchartSubgraph? subgraph, MermaidParseResult<MermaidDocument> result) {
@@ -65,7 +65,7 @@ internal static partial class MermaidFlowchartParser {
         if (candidate.Href != null) existing.Href = candidate.Href;
         if (candidate.Tooltip != null) existing.Tooltip = candidate.Tooltip;
         foreach (var property in candidate.Properties) existing.Properties[property.Key] = property.Value;
-        foreach (var className in candidate.Classes) AddUnique(existing.Classes, className);
+        foreach (var className in candidate.Classes) existing.Classes.Add(className);
         foreach (var style in candidate.Styles) existing.Styles[style.Key] = style.Value;
     }
 
@@ -88,7 +88,6 @@ internal static partial class MermaidFlowchartParser {
         }
 
         SkipWhitespace(text, ref position);
-        ParseClassSuffix(text, ref position, node.Classes);
         return true;
     }
 
@@ -124,17 +123,6 @@ internal static partial class MermaidFlowchartParser {
         return true;
     }
 
-    private static bool TryParseClassDefinition(MermaidFlowchartDocument document, string text, MermaidSourceSpan span) {
-        if (!text.StartsWith("classDef ", StringComparison.Ordinal)) return false;
-        var body = text.Substring("classDef ".Length).Trim();
-        var split = body.IndexOfAny(new[] { ' ', '\t' });
-        if (split <= 0) return false;
-        var classDefinition = new MermaidFlowchartClassDefinition(body.Substring(0, split), span);
-        AddStyles(classDefinition.Styles, body.Substring(split + 1));
-        document.ClassDefinitions.Add(classDefinition);
-        return true;
-    }
-
     private static bool TryParseClassAssignment(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string text, MermaidSourceSpan span) {
         if (!text.StartsWith("class ", StringComparison.Ordinal)) return false;
         var body = text.Substring("class ".Length).Trim();
@@ -144,20 +132,9 @@ internal static partial class MermaidFlowchartParser {
         var classNames = SplitCsv(body.Substring(split + 1));
         foreach (var nodeId in nodeIds) {
             var node = GetOrAddNode(document, nodes, nodeId, span);
-            foreach (var className in classNames) AddUnique(node.Classes, className);
+            foreach (var className in classNames) node.Classes.Add(className);
         }
 
-        return true;
-    }
-
-    private static bool TryParseStyleAssignment(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string text, MermaidSourceSpan span) {
-        if (!text.StartsWith("style ", StringComparison.Ordinal)) return false;
-        var body = text.Substring("style ".Length).Trim();
-        var split = body.IndexOfAny(new[] { ' ', '\t' });
-        if (split <= 0) return false;
-        var nodeId = body.Substring(0, split);
-        var node = GetOrAddNode(document, nodes, nodeId, span);
-        AddStyles(node.Styles, body.Substring(split + 1));
         return true;
     }
 
@@ -185,17 +162,6 @@ internal static partial class MermaidFlowchartParser {
             if (node.Tooltip == null && token.Length > 0 && !string.Equals(token, "_blank", StringComparison.OrdinalIgnoreCase) && !string.Equals(token, "_self", StringComparison.OrdinalIgnoreCase)) node.Tooltip = token;
         }
 
-        return true;
-    }
-
-    private static bool TryParseLinkStyle(MermaidFlowchartDocument document, string text, MermaidSourceSpan span) {
-        if (!text.StartsWith("linkStyle ", StringComparison.Ordinal)) return false;
-        var body = text.Substring("linkStyle ".Length).Trim();
-        var split = body.IndexOfAny(new[] { ' ', '\t' });
-        if (split <= 0) return false;
-        var style = new MermaidFlowchartLinkStyle(body.Substring(0, split), span);
-        AddStyles(style.Styles, body.Substring(split + 1));
-        document.LinkStyles.Add(style);
         return true;
     }
 
@@ -362,60 +328,6 @@ internal static partial class MermaidFlowchartParser {
         nodes[id] = node;
         document.Nodes.Add(node);
         return node;
-    }
-
-    private static void ParseClassSuffix(string text, ref int position, List<string> classes) {
-        while (StartsWith(text, position, ":::")) {
-            position += 3;
-            var start = position;
-            while (position < text.Length && !char.IsWhiteSpace(text[position]) && !IsOperatorCharacter(text[position])) position++;
-            foreach (var className in SplitCsv(text.Substring(start, position - start))) AddUnique(classes, className);
-            SkipWhitespace(text, ref position);
-        }
-    }
-
-    private static void ApplyClassDefinitions(MermaidFlowchartDocument document) {
-        foreach (var node in document.Nodes) {
-            foreach (var className in node.Classes) {
-                var classDefinition = document.ClassDefinitions.Find(item => string.Equals(item.Name, className, StringComparison.Ordinal));
-                if (classDefinition == null) continue;
-                foreach (var style in classDefinition.Styles) {
-                    if (!node.Styles.ContainsKey(style.Key)) node.Styles[style.Key] = style.Value;
-                }
-            }
-        }
-    }
-
-    private static void ApplyLinkStyles(MermaidFlowchartDocument document) {
-        foreach (var linkStyle in document.LinkStyles) {
-            if (string.Equals(linkStyle.Selector, "default", StringComparison.OrdinalIgnoreCase)) {
-                foreach (var edge in document.Edges) AddStyles(edge.Styles, linkStyle.Styles);
-                continue;
-            }
-
-            foreach (var selector in SplitCsv(linkStyle.Selector)) {
-                if (!int.TryParse(selector, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var edgeIndex)) continue;
-                if (edgeIndex < 0 || edgeIndex >= document.Edges.Count) continue;
-                AddStyles(document.Edges[edgeIndex].Styles, linkStyle.Styles);
-            }
-        }
-    }
-
-    private static void AddStyles(Dictionary<string, string> styles, string text) {
-        foreach (var item in SplitCssDeclarations(text)) {
-            var split = item.IndexOf(':');
-            if (split <= 0) continue;
-            styles[item.Substring(0, split).Trim()] = item.Substring(split + 1).Trim().TrimEnd(';');
-        }
-    }
-
-    private static void AddStyles(Dictionary<string, string> styles, Dictionary<string, string> source) {
-        foreach (var item in source) styles[item.Key] = item.Value;
-    }
-
-    private static List<string> SplitCssDeclarations(string text) {
-        var normalized = text.Replace(';', ',');
-        return SplitCsv(normalized);
     }
 
     private static List<string> SplitCsv(string text) {

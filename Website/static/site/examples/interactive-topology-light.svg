@@ -35,6 +35,8 @@
   box-sizing: inherit;
 }
 
+.cfx-graph-explorer[hidden] { display: none; }
+
 .cfx-graph-explorer {
   --cfx-color-canvas: #f8fafc;
   --cfx-color-surface: rgba(255, 255, 255, .88);
@@ -624,7 +626,10 @@
 }
 
 .cfx-graph-stage {
+  box-sizing: border-box;
   position: relative;
+  min-width: 0;
+  max-width: 100%;
   min-height: clamp(440px, 68vh, 820px);
   overflow: hidden;
   aspect-ratio: 12 / 7;
@@ -751,7 +756,7 @@
 
 .cfx-graph-node-card-icon {
   font-size: 15px !important;
-  fill: var(--cfx-node-stroke, var(--cfx-color-graph-text)) !important;
+  --cfx-node-icon-fallback: var(--cfx-color-graph-text);
 }
 
 .cfx-graph-node {
@@ -782,7 +787,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 .cfx-graph-node polygon,
 .cfx-graph-node path {
   fill: var(--cfx-node-fill, #2563eb);
-  stroke: var(--cfx-node-stroke, #60a5fa);
+  stroke: var(--cfx-node-stroke, #eff6ff);
   stroke-width: 3;
 }
 
@@ -811,10 +816,22 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 }
 
 .cfx-graph-node .cfx-graph-node-icon {
-  fill: #ffffff;
+  fill: var(--cfx-node-icon-adaptive, var(--cfx-node-icon-light, var(--cfx-node-icon-fallback, #ffffff)));
   stroke: none;
   font-weight: 750;
   paint-order: normal;
+}
+
+.cfx-graph-explorer.cfx-graph-theme-dark .cfx-graph-node-icon,
+.cfx-graph-explorer[data-cfx-graph-theme="dark"] .cfx-graph-node-icon,
+.cfx-graph-explorer[data-cfx-graph-theme-active="dark"] .cfx-graph-node-icon {
+  fill: var(--cfx-node-icon-adaptive, var(--cfx-node-icon-dark, var(--cfx-node-icon-fallback, #ffffff)));
+}
+
+@media (prefers-color-scheme: dark) {
+  .cfx-graph-explorer[data-cfx-graph-theme="system"]:not([data-cfx-graph-theme-active]) .cfx-graph-node-icon {
+    fill: var(--cfx-node-icon-adaptive, var(--cfx-node-icon-dark, var(--cfx-node-icon-fallback, #ffffff)));
+  }
 }
 
 .cfx-graph-node .cfx-graph-node-secondary,
@@ -825,7 +842,9 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 }
 
 .cfx-graph-node .cfx-graph-node-badge circle,
-.cfx-graph-node-details .cfx-graph-node-badge circle {
+.cfx-graph-node-details .cfx-graph-node-badge circle,
+.cfx-graph-node .cfx-graph-node-badge rect,
+.cfx-graph-node-details .cfx-graph-node-badge rect {
   fill: var(--cfx-color-text);
   stroke: var(--cfx-color-paper);
   stroke-width: 2;
@@ -837,6 +856,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   stroke: none;
   font-size: 7px;
   font-weight: 800;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
   paint-order: normal;
 }
 
@@ -1287,6 +1307,12 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 .cfx-graph-highlighted.cfx-graph-node path,
 .cfx-graph-highlighted.cfx-graph-edge,
 .cfx-graph-highlighted.cfx-graph-cluster circle { stroke: var(--cfx-color-selected); stroke-width: 4; }
+.cfx-graph-explorer {
+  --cfx-command-size: 40px;
+  --cfx-command-padding: 5px;
+  --cfx-command-inset: 12px;
+}
+
 .cfx-graph-header {
   position: relative;
   display: grid;
@@ -1488,7 +1514,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   align-items: center;
   gap: 3px;
   min-height: 50px;
-  padding: 5px;
+  padding: var(--cfx-command-padding);
   border: 1px solid color-mix(in srgb, var(--cfx-color-border-strong) 70%, transparent);
   border-radius: 15px;
   background: color-mix(in srgb, var(--cfx-color-surface-solid) 88%, transparent);
@@ -1499,7 +1525,15 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 
 .cfx-graph-command-rail .cfx-graph-toolbar-group {
   position: relative;
+  flex-shrink: 0;
   gap: 2px;
+}
+
+.cfx-graph-command-scroll {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
 }
 
 .cfx-graph-command-rail .cfx-graph-toolbar-group + .cfx-graph-toolbar-group {
@@ -1523,8 +1557,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-width: 40px;
-  min-height: 40px;
+  min-width: var(--cfx-command-size);
+  min-height: var(--cfx-command-size);
   padding: 0 11px;
   border: 1px solid transparent;
   border-radius: 10px;
@@ -1537,7 +1571,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 }
 
 .cfx-graph-tool--compact {
-  width: 40px;
+  width: var(--cfx-command-size);
   padding: 0;
 }
 
@@ -1678,7 +1712,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 .cfx-graph-command-menu-panel .cfx-graph-tool {
   width: 100%;
   justify-content: flex-start;
-  min-height: 40px;
+  min-height: var(--cfx-command-size);
 }
 
 .cfx-graph-breadcrumbs {
@@ -1692,7 +1726,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   width: auto;
   max-width: calc(100% - 580px);
   min-height: 50px;
-  padding: 5px;
+  padding: var(--cfx-command-padding);
   border: 1px solid color-mix(in srgb, var(--cfx-color-border-strong) 70%, transparent);
   border-radius: 15px;
   background: color-mix(in srgb, var(--cfx-color-surface-solid) 88%, transparent);
@@ -1702,7 +1736,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 }
 
 .cfx-graph-breadcrumbs .cfx-graph-tool {
-  min-height: 40px;
+  min-height: var(--cfx-command-size);
   padding: 0;
   font-size: 11px;
 }
@@ -1711,7 +1745,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   display: flex;
   align-items: center;
   min-width: 0;
-  min-height: 40px;
+  min-height: var(--cfx-command-size);
   padding: 0 8px;
   overflow: hidden;
   border-radius: 10px;
@@ -1824,16 +1858,25 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 
   .cfx-graph-command-rail {
     top: auto;
-    right: 12px;
-    bottom: 12px;
-    left: 12px;
+    right: var(--cfx-command-inset);
+    bottom: var(--cfx-command-inset);
+    left: var(--cfx-command-inset);
     justify-content: flex-start;
     max-width: none;
+    overflow: visible;
+  }
+
+  .cfx-graph-tooltip {
+    bottom: calc(var(--cfx-command-inset) + var(--cfx-command-size) + 4 * var(--cfx-command-padding) + 2px + var(--cfx-command-inset));
+  }
+
+  .cfx-graph-command-scroll {
+    padding: var(--cfx-command-padding);
     overflow-x: auto;
     scrollbar-width: none;
   }
 
-  .cfx-graph-command-rail::-webkit-scrollbar {
+  .cfx-graph-command-scroll::-webkit-scrollbar {
     display: none;
   }
 
@@ -1918,6 +1961,12 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   color: var(--cfx-color-text-muted);
   font-size: 12px;
   line-height: 1.5;
+}
+
+/* Each standalone message keeps its reading order inside the surrounding chrome. */
+.cfx-graph-explorer :where([data-cfx-role="graph-search-status"], [data-cfx-role="graph-announcer"], [data-cfx-role="graph-neighborhood-summary"], [data-cfx-role="graph-physics-status"], [data-cfx-graph-editor-status]) {
+  unicode-bidi: plaintext;
+  text-align: match-parent;
 }
 .cfx-graph-selection-box {
   position: absolute;
@@ -2107,6 +2156,61 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
     border: 2px solid Highlight;
     background: Canvas;
     box-shadow: none;
+  }
+}
+.cfx-graph-print-surface { display: none; }
+
+@media print {
+  .cfx-graph-shell,
+  .cfx-graph-shell.cfx-graph-shell-embedded {
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    background: none;
+  }
+
+  .cfx-graph-explorer[data-cfx-graph-print-ready="true"] {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    break-after: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  [data-cfx-graph-print-ready="true"] > .cfx-graph-stage,
+  [data-cfx-graph-print-ready="true"] > output,
+  [data-cfx-graph-print-ready="true"] > nav,
+  [data-cfx-graph-print-ready="true"] .cfx-graph-toolbar,
+  [data-cfx-graph-print-ready="true"] [data-cfx-role="graph-physics-configurator"] {
+    display: none !important;
+  }
+
+  .cfx-graph-print-surface {
+    display: block;
+    width: 100%;
+    max-width: 1480px;
+    margin: 0 auto;
+    break-inside: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .cfx-graph-print-surface > svg {
+    display: block !important;
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    max-height: max(1px, calc(100vh - var(--cfx-graph-print-reserved-height, 16px))) !important;
+    margin-inline: auto;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: none;
   }
 }
 </style><g class="cfx-graph-explorer cfx-graph-svg cfx-graph-static-export" data-cfx-graph-theme="light"><title>Global estate</title><defs><marker id="estate-static-static-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs><rect class="cfx-graph-bg" width="960" height="560" style="fill:var(--cfx-color-paper,#ffffff)"></rect><g data-cfx-role="graph-viewport" transform="translate(-158.373 -95.12) scale(1.3397129186602872)"><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="global-europe" data-source-node-id="global" data-target-node-id="europe" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Global to Europe" d="M 480 160 L 627.222 270.971" marker-end="url(#estate-static-static-arrow)"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="global-americas" data-source-node-id="global" data-target-node-id="americas" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Global to Americas" d="M 480 160 L 332.778 270.971" marker-end="url(#estate-static-static-arrow)"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="global-apac" data-source-node-id="global" data-target-node-id="apac" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Global to Asia Pacific" d="M 480 160 L 480 265" marker-end="url(#estate-static-static-arrow)"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="europe-apac" data-edge-label="replication" data-cfx-status="warning" data-source-node-id="europe" data-target-node-id="apac" data-edge-weight="1" data-edge-length="0" data-edge-directed="false" data-edge-source-arrow="false" data-edge-target-arrow="false" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="replication" d="M 639.2 280 L 480 280"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="europe-warsaw" data-source-node-id="europe" data-target-node-id="warsaw" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Europe to Warsaw" d="M 639.2 280 L 748.402 389.385" marker-end="url(#estate-static-static-arrow)"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="europe-london" data-source-node-id="europe" data-target-node-id="london" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Europe to London" d="M 639.2 280 L 663.615 385.387" marker-end="url(#estate-static-static-arrow)"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="europe-frankfurt" data-source-node-id="europe" data-target-node-id="frankfurt" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Europe to Frankfurt" d="M 639.2 280 L 581.619 386.797" marker-end="url(#estate-static-static-arrow)"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="americas-new-york" data-source-node-id="americas" data-target-node-id="new-york" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Americas to New York" d="M 320.8 280 L 211.598 389.385" marker-end="url(#estate-static-static-arrow)"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="americas-toronto" data-source-node-id="americas" data-target-node-id="toronto" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Americas to Toronto" d="M 320.8 280 L 296.827 385.374" marker-end="url(#estate-static-static-arrow)"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="apac-sydney" data-source-node-id="apac" data-target-node-id="sydney" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Asia Pacific to Sydney" d="M 480 280 L 481.75 385.002" marker-end="url(#estate-static-static-arrow)"></path><path class="cfx-graph-edge" tabindex="-1" data-cfx-role="graph-edge" data-edge-id="apac-singapore" data-source-node-id="apac" data-target-node-id="singapore" data-edge-weight="1" data-edge-length="0" data-edge-directed="true" data-edge-source-arrow="false" data-edge-target-arrow="true" data-edge-shape="line" data-edge-curvature="0" data-edge-dashed="false" data-edge-show-label="true" data-edge-physics="true" data-edge-hidden="false" aria-label="Asia Pacific to Singapore" d="M 480 280 L 398.532 388.024" marker-end="url(#estate-static-static-arrow)"></path><text class="cfx-graph-edge-label" data-cfx-role="graph-edge-label" data-edge-label-for="europe-apac" x="559.6" y="273">replication</text><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="global" data-node-label="Global" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-badge="42" data-node-shadow="false" data-node-x="480" data-node-y="160" transform="translate(480 160)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="europe" data-node-label="Europe" data-node-parent="global" data-cfx-status="warning" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-secondary-label="4 sites &#183; 18 workloads" data-node-shadow="false" data-node-x="639.2" data-node-y="280" transform="translate(639.2 280)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="americas" data-node-label="Americas" data-node-parent="global" data-cfx-status="healthy" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-secondary-label="3 sites &#183; 14 workloads" data-node-shadow="false" data-node-x="320.8" data-node-y="280" transform="translate(320.8 280)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="apac" data-node-label="Asia Pacific" data-node-parent="global" data-cfx-status="healthy" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-secondary-label="2 sites &#183; 10 workloads" data-node-shadow="false" data-node-x="480" data-node-y="280" transform="translate(480 280)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="warsaw" data-node-label="Warsaw" data-node-parent="europe" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-shadow="false" data-node-x="759" data-node-y="400" transform="translate(759 400)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="london" data-node-label="London" data-node-parent="europe" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-shadow="false" data-node-x="667" data-node-y="400" transform="translate(667 400)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="frankfurt" data-node-label="Frankfurt" data-node-parent="europe" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-shadow="false" data-node-x="574.5" data-node-y="400" transform="translate(574.5 400)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="new-york" data-node-label="New York" data-node-parent="americas" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-shadow="false" data-node-x="201" data-node-y="400" transform="translate(201 400)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="toronto" data-node-label="Toronto" data-node-parent="americas" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-shadow="false" data-node-x="293.5" data-node-y="400" transform="translate(293.5 400)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="sydney" data-node-label="Sydney" data-node-parent="apac" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-shadow="false" data-node-x="482" data-node-y="400" transform="translate(482 400)"><circle r="8"></circle></g><g class="cfx-graph-node" tabindex="-1" data-cfx-role="graph-node" data-node-id="singapore" data-node-label="Singapore" data-node-parent="apac" data-node-size="8" data-node-card="false" data-node-fixed="false" data-node-hidden="false" data-node-shape="circle" data-node-shadow="false" data-node-x="389.5" data-node-y="400" transform="translate(389.5 400)"><circle r="8"></circle></g><g class="cfx-graph-node-details-layer" data-cfx-role="graph-node-details-layer" pointer-events="none"><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="global" transform="translate(480 160)"><text class="cfx-graph-node-label" y="26">Global</text><g class="cfx-graph-node-badge" transform="translate(6.56 -6.56)"><circle r="8" style="fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2"></circle><text y="3.5" style="fill:var(--cfx-color-paper);stroke:none">42</text></g></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="europe" data-cfx-status="warning" transform="translate(639.2 280)"><text class="cfx-graph-node-label" y="26">Europe</text><text class="cfx-graph-node-secondary" y="40">4 sites &#183; 18 workloads</text><circle class="cfx-graph-node-status" cx="-6.4" cy="-6.4" r="2.24" style="fill:#f59e0b;stroke:var(--cfx-color-paper);stroke-width:2"></circle></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="americas" data-cfx-status="healthy" transform="translate(320.8 280)"><text class="cfx-graph-node-label" y="26">Americas</text><text class="cfx-graph-node-secondary" y="40">3 sites &#183; 14 workloads</text><circle class="cfx-graph-node-status" cx="-6.4" cy="-6.4" r="2.24" style="fill:#22c55e;stroke:var(--cfx-color-paper);stroke-width:2"></circle></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="apac" data-cfx-status="healthy" transform="translate(480 280)"><text class="cfx-graph-node-label" y="26">Asia Pacific</text><text class="cfx-graph-node-secondary" y="40">2 sites &#183; 10 workloads</text><circle class="cfx-graph-node-status" cx="-6.4" cy="-6.4" r="2.24" style="fill:#22c55e;stroke:var(--cfx-color-paper);stroke-width:2"></circle></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="warsaw" transform="translate(759 400)"><text class="cfx-graph-node-label" y="26">Warsaw</text></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="london" transform="translate(667 400)"><text class="cfx-graph-node-label" y="26">London</text></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="frankfurt" transform="translate(574.5 400)"><text class="cfx-graph-node-label" y="26">Frankfurt</text></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="new-york" transform="translate(201 400)"><text class="cfx-graph-node-label" y="26">New York</text></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="toronto" transform="translate(293.5 400)"><text class="cfx-graph-node-label" y="26">Toronto</text></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="sydney" transform="translate(482 400)"><text class="cfx-graph-node-label" y="26">Sydney</text></g><g class="cfx-graph-node-details" data-cfx-role="graph-node-details" data-node-details-for="singapore" transform="translate(389.5 400)"><text class="cfx-graph-node-label" y="26">Singapore</text></g></g></g></g></svg>

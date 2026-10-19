@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { isSyntaxRejection } from './reference-errors.mjs';
+import { isReferenceRejection } from './reference-errors.mjs';
+import { gitGraphFacts, flowchartStyleFacts } from './reference-facts.mjs';
 import { useReferenceClock } from './reference-clock.mjs';
 import { timeFormat } from 'd3-time-format';
 import * as calendar from 'd3-time';
@@ -110,7 +111,7 @@ for (const { folder, file, hasExpected } of files) {
   catch (error) { syntaxFailed = true; syntaxError = error; }
   if (contract.syntax[referenceId] === 'rejected') {
     if (!syntaxFailed) failures.push(`${folder}/${file}: reference ${reference.version} unexpectedly accepts syntax marked rejected.`);
-    else if (isSyntaxRejection(syntaxError, reference.version)) rejected++;
+    else if (isReferenceRejection(syntaxError, reference.version, /^gitGraph\b/m.test(source) ? 'gitGraph' : '')) rejected++;
     else failures.push(`${folder}/${file}: unexpected engine failure, not a qualified syntax rejection: ${syntaxError?.message ?? syntaxError}`);
     continue;
   }
@@ -161,6 +162,8 @@ for (const { folder, file, hasExpected } of files) {
         for (const path of expected.configurationAbsent)
           assert.equal(path.split('.').reduce((current, key) => current?.[key], configuration), undefined, `Configuration ${path} is unavailable`);
       }
+      if (expected.flowchartStyles) assert.deepEqual(flowchartStyleFacts(diagram.db), expected.flowchartStyles);
+      if (expected.gitgraph) assert.deepEqual(gitGraphFacts(diagram.db, expected.gitgraph), expected.gitgraph);
       if (expected.nodes) {
         const vertices = diagram.db.getVertices();
         assert.deepEqual(vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices), expected.nodes);
@@ -264,7 +267,7 @@ if (failures.length > 0) {
   throw new Error(`Mermaid.js rejected ${failures.length} fixture(s):\n${failures.join('\n')}`);
 }
 
-console.log(`Mermaid.js ${reference.version}: ${accepted} accepted, ${rejected} documented syntax rejections, ${semanticVariants} explicit semantic variant(s).`);
+console.log(`Mermaid.js ${reference.version}: ${accepted} accepted, ${rejected} documented source rejections, ${semanticVariants} explicit semantic variant(s).`);
 
 // The parsed hierarchy is available in every pinned engine. Color sections become
 // model facts in 11/12; the 10 expectations omit those renderer-only facts.

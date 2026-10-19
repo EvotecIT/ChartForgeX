@@ -1,0 +1,16 @@
+flowchart LR
+classDef default fill:#dbeafe,stroke:#1e3a8a,color:#172554
+classDef color,box fill:#fed7aa,color:#7c2d12
+classDef color stroke:#c2410c
+classDef color fill:#bbf7d0
+start[Default] --> work[Colored]:::color-->box[Box]:::box
+work --> finish[External]:::external-xml
+classDef external-xml color:#14532d
+style work fill:#fef3c7
+style work fill:#fef9c3
+class work box
+linkStyle 0 stroke:#dc2626
+linkStyle default stroke:#475569
+linkStyle 1 stroke:#16a34a
+classDef read-only stroke:#0f766e
+finish:::read-only

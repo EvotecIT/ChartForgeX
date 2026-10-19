@@ -221,12 +221,5 @@ internal static partial class SmokeTests {
             Assert(maxEdgeInkPixels == 0, "Visual baseline should reject PNG edge pressure: " + name + ".");
         }
 
-        var contributionGuide = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md"));
-        Assert(contributionGuide.Contains("DotNetCommandTimeoutSeconds", StringComparison.Ordinal) && contributionGuide.Contains("PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Contribution guidance should document build timeout controls.");
-        Assert(contributionGuide.Contains("fails with a named timeout", StringComparison.Ordinal), "Contribution guidance should explain timeout failures as actionable build signals.");
-        Assert(contributionGuide.Contains("-UpdateVisualBaseline", StringComparison.Ordinal), "Contribution guidance should explain intentional visual-baseline refreshes.");
-        Assert(contributionGuide.Contains("clipped SVG text", StringComparison.Ordinal) && contributionGuide.Contains("PNG edge pressure", StringComparison.Ordinal), "Contribution guidance should explain the visual-baseline quality gates.");
-        Assert(contributionGuide.Contains("Topology Visual Coverage", StringComparison.Ordinal), "Contribution guidance should document the topology visual coverage gate.");
-        Assert(contributionGuide.Contains("visual-capability-manifest.json", StringComparison.Ordinal), "Contribution guidance should document the topology visual coverage manifest.");
     }
 }

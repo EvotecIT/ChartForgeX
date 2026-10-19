@@ -87,6 +87,8 @@ ExpectFailure("markup bad version", "chartforgex", "```chartforgex chart v2\nval
 ExpectFailure("markup bad option", "chartforgex", "```chartforgex chart v1\ntype bar\nvalues 1 2\noption legend maybe\n```", "dark", true);
 var fenced = Render("mermaid", "```mermaid\npie\n  \"A\" : 1\n  \"B\" : 2\n```", "light");
 if (!fenced.GetProperty("ok").GetBoolean()) failures.Add("a pasted ```mermaid fence should render");
+var themeProofIndex = Array.IndexOf(args, "--theme-proof");
+PlaygroundThemeContracts.Check(failures, themeProofIndex >= 0 && themeProofIndex + 1 < args.Length ? args[themeProofIndex + 1] : null);
 
 // Optional: every Mermaid fixture, to document which families or constructs the playground cannot render.
 var fixtureIndex = Array.IndexOf(args, "--fixtures");

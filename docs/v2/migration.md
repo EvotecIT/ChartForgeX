@@ -396,7 +396,7 @@ Paths in this guide and the CSV are repository-relative. Resolve the repository 
 
 ## Optional package migration
 
-V2 moves public types between assemblies and uses package version `2.0.0`. Rebuild compiled callers. Domain namespaces stay stable for canvas, factual blocks, stories and terminal models; add the owning package reference rather than copying types or using forwarding shims.
+Package separation was introduced in `2.0.0`; the unified authoring contracts use the coordinated `3.0.0` package family. Rebuild compiled callers against the same package family. Domain namespaces stay stable for canvas, factual blocks, stories and terminal models; add the owning package reference rather than copying types or using forwarding shims.
 
 | Existing capability | Owning package and migration |
 | --- | --- |

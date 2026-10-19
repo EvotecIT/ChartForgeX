@@ -123,6 +123,7 @@ public sealed partial class MermaidParser {
         document.Configuration = configuration;
         if (document is MermaidMindMapDocument mindMap && configuration.MindMap != null) mindMap.ColorBy = configuration.MindMap.ColorBy;
         ReportRadarCurvePolicy(document, result);
+        ReportApproximateMapping(document, result);
         result.Document = document;
         return result;
     }
@@ -545,12 +546,7 @@ public sealed partial class MermaidParser {
     }
 
     private static void Add<TDocument>(MermaidParseResult<TDocument> result, int line, int column, int length, MermaidDiagnosticSeverity severity, string message, string code = "") where TDocument : MermaidDocument {
-        result.Diagnostics.Add(new MermaidDiagnostic {
-            Span = new MermaidSourceSpan(line, column, length),
-            Severity = severity,
-            Message = message,
-            Code = code
-        });
+        MermaidParserUtilities.Add(result, new MermaidSourceSpan(line, column, length), severity, message, code);
     }
 
     private readonly struct FrontMatterResult {

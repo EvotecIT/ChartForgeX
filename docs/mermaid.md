@@ -36,7 +36,9 @@ Flowchart, sequence, class, state, entity relationship, requirement, architectur
 
 ZenUML (`zenuml`), Agentflow (`agentflow-beta`) and Railroad (`railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta`) produce an inspectable `MermaidDocument` with retained raw body statements and `IsDiagnosticOnly` set to `true`. They return warning `CFXM002` and no visual artifact while their semantic parser and native renderer are unavailable. Recognition does not validate the retained body grammar.
 
-Diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for an authored layout that uses the native static fallback, `CFXM004` for native conversion failure, `CFXM005` for configuration retained without native application, `CFXM006` for invalid or over-limit configuration, `CFXM007` for a retained statement without native notation, and `CFXM008` for an invalid direction or unmatched state/ER boundary. The Markdown bridge preserves these codes and maps source lines into the host document. Other parser diagnostics keep their located messages with an empty code until they are classified.
+Library-produced diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for an authored layout that uses the native static fallback, `CFXM004` for native conversion failure, `CFXM005` for configuration retained without native application, `CFXM006` for invalid or over-limit configuration, `CFXM007` for a retained statement or styling without native application, `CFXM008` for malformed or invalid notation, and `CFXM009` for a deliberately approximate native mapping. The Markdown bridge preserves the codes and maps source lines into the host document. Use codes and severity for host policy; messages explain the specific source statement or rendering limit.
+
+Journey scores render as bars, timeline periods as ordinal event ranges, Venn regions without value-proportional areas, and C4 through generic topology. These families produce `CFXM009` while retaining their source models and renderable artifacts. They do not provide Mermaid's reference layout or browser runtime. This warning describes a semantic projection, independently of source theme or unsupported statements. An artifact means that native output is available; inspect warnings before accepting it for a workflow that requires exact notation. Errors prevent the shared renderer and Markdown bridge from producing an artifact.
 
 Unknown diagram families produce a parser error.
 
@@ -142,6 +144,10 @@ Supported flowchart parsing includes:
 - `linkStyle` declarations, including numeric selectors and `default`.
 
 Flowcharts accept semicolon-separated statements, including statements on the header line. Semicolons inside quoted labels, node shapes, and pipe edge labels stay inside that label. Every retained statement carries its original line and column. Incomplete shapes, missing edge targets, and unmatched `subgraph`/`end` declarations produce located errors; unsupported trailing syntax is diagnosed instead of being silently discarded.
+
+Flowchart node styles apply `classDef default` and `classDef node` first, then assigned classes in assignment order. `classDef color,box fill:#fed7aa` defines both classes. Repeated definitions merge their properties, with later values winning; repeated assignments retain their place in the source order. Direct `style` declarations override class properties regardless of where the class is defined. Inline names such as `color`, `box` and `external-box` remain intact before compact links (`A:::color-->B`). Each node declaration accepts one inline suffix; use `class A color,box` to assign several classes. A comma inside `A:::color,box` belongs to one literal class name.
+
+Native node paint maps `fill`, `stroke` and text `color`; links map `stroke` and line style. Nonzero numeric `stroke-dasharray` patterns select the shared native dashed pattern and report `CFXM007` because authored dash lengths are retained without exact application. `none` and all-zero patterns select a solid line. The last `linkStyle default` declaration supplies the base, and the last declaration for an edge index overrides it, even when the default appears later. Unsupported properties or paint values remain inspectable with `CFXM007`. Invalid edge selectors and empty or repeated inline suffixes report `CFXM008`; the shared renderer and Markdown bridge produce no artifact for those errors.
 
 The compact, quoted-shape, and modern flowchart fixtures compare node ids and edge endpoints with Mermaid.js. The calendar fixtures compare task dates. Renderable fixtures in `fixtures/` also exercise static SVG and PNG export, Markdown fences, and deterministic interchange JSON in .NET. The `recognition/` corpus instead proves preserved source, diagnostic-only outcomes and upstream syntax acceptance.
 
@@ -1155,12 +1161,12 @@ Git graph diagrams are parsed into `MermaidGitGraphDocument` and converted to th
 Supported git graph parsing includes:
 
 - `gitGraph` headers, including orientation tokens such as `LR:`.
-- `commit` statements with `id`, `tag`, and `type` attributes.
+- `commit` statements with `id`, `tag`, `type` and display-message `msg` attributes.
 - `branch` statements with optional `order` attributes.
-- `checkout` branch switching.
-- `merge` statements with generated or explicit merge commit ids.
-- `cherry-pick` statements that retain the source commit id.
-- Source spans and retained unsupported statements for diagnostics.
+- `checkout` and `switch` branch switching.
+- `merge` statements with optional `id`, `tag` and `type` attributes.
+- `cherry-pick` statements with source `id`, optional `tag`, and a validated immediate `parent`.
+- Source spans, semicolon-separated commands and located errors for invalid commands.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -1185,6 +1191,10 @@ var artifact = document!.ToVisualArtifact(new MermaidGitGraphRenderOptions {
     Height = 460
 });
 ```
+
+Each command accepts only its listed attributes. String attributes (`id`, `tag`, `msg` and `parent`) require complete quoted values. Commit types are unquoted `NORMAL`, `REVERSE` or `HIGHLIGHT`; branch `order` is an unquoted non-negative integer. Unknown arguments, extra tokens, malformed quotes, invalid types and invalid order values report `CFXM008` instead of becoming default commits.
+
+Merges require two existing branches with commits and different head commits. A branch cannot merge into itself. Cherry-picks require an existing source commit from another branch and a current branch with a commit. A supplied `parent` must be an immediate parent of that source; cherry-picking a merge requires it. The selected parent remains available as `MermaidGitGraphCommit.SourceParentCommitId` and artifact metadata. These validation errors prevent `MermaidRenderer` and the Markdown bridge from producing an artifact.
 
 The conversion target for git graph diagrams is `GitGraphBlock`. Branches become lanes, commits become typed markers, and parent/merge/cherry-pick relationships become static connector lines. Mermaid config/theme details and alternate orientation-specific layout are retained or represented as metadata for future support; they are not silently treated as pixel-perfect Mermaid rendering.
 
@@ -1488,7 +1498,7 @@ Fence attributes such as `id`, `title`, `subtitle`, `width`, `height`, and famil
 
 ## Mermaid.js Conformance Fixtures
 
-The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. Shared expectations cover selected flowchart nodes/edges and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. The harness does not render upstream reference images.
+The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. The corpus contains 102 native fixture sources, five recognition-only sources and 11 invalid sources, with 62 shared semantic expectation files. Shared facts include flowchart classes and resolved node/link paints, GitGraph relationships and cherry-pick parent selection, and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. The harness does not render upstream reference images.
 
 ```powershell
 Set-Location .\tests\mermaid-conformance
@@ -1496,9 +1506,9 @@ npm ci --ignore-scripts --no-audit --no-fund --engine-strict
 npm run validate
 ```
 
-`Build.ps1` runs the same three-reference validation after the .NET test suite. The default command validates both `fixtures/` and `recognition/`; use `node validate-mermaid.mjs fixtures --reference 10` for a focused folder/version run. New fixtures require version metadata. Syntax rejection is checked independently of semantic expectations, so a failed semantic comparison cannot be counted as an expected syntax rejection.
+`Build.ps1` runs the same three-reference validation before the solution build and .NET test suite. The default command validates `fixtures/`, `recognition/` and `invalid/`; use `node validate-mermaid.mjs fixtures --reference 10` for a focused folder/version run. New fixtures require version metadata. Documented syntax and semantic rejections are checked independently of accepted-source facts, so a failed semantic comparison cannot be counted as an expected source rejection.
 
-These lanes qualify the checked examples rather than every syntax form in those major versions. Older sequence autonumber and requirement sources have dedicated fixtures; newer families and spellings are marked unavailable on references that reject them. Mermaid 10 also handles an excluded Gantt endpoint differently: an interval ending January 5 with January 5 excluded schedules its successor on January 5, while Mermaid 11/12 schedules it on January 6. ChartForgeX uses the current result and keeps the older expectation visible in the corpus instead of introducing a version-dependent renderer.
+The 12.2.0 reference accepts all 107 positive sources and rejects all 11 invalid sources. These lanes qualify the checked examples rather than every syntax form in those major versions. Older sequence autonumber and requirement sources have dedicated fixtures; newer families and spellings are marked unavailable on references that reject them. Mermaid 10 also handles an excluded Gantt endpoint differently: an interval ending January 5 with January 5 excluded schedules its successor on January 5, while Mermaid 11/12 schedules it on January 6. ChartForgeX uses the current result and keeps the older expectation visible in the corpus instead of introducing a version-dependent renderer.
 
 ````markdown
 ```mermaid {#incident-flow title="Incident Flow" subtitle="Static preview" width=1180 height=720}
