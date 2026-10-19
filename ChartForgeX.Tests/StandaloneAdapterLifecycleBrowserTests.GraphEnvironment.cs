@@ -56,6 +56,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         await SetGraphEnvironmentPreferencesAsync(page, enabled: true);
         await page.EvaluateAsync("()=>document.documentElement.style.zoom='1.5'");
         var search = page.GetByRole(AriaRole.Searchbox, new() { Name = "Search graph", Exact = true });
+        await TraceGraphEnvironmentFocusAsync(search);
         await ReachGraphEnvironmentControlAsync(page, search);
         await AssertGraphEnvironmentFocusPaintAsync(page, search, name + "-search-focus");
         await AssertGraphEnvironmentTextContrastAsync(page, search);

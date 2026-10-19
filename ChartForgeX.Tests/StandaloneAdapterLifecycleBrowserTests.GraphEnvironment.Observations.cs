@@ -27,12 +27,35 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             """, enabled);
     }
 
+    // Observe only the first search navigation; keep the native input and scroll sequence unchanged.
+    private static Task TraceGraphEnvironmentFocusAsync(ILocator target) => target.EvaluateAsync("""
+        node=>{
+            window.graphEnvironmentFocusTrace?.stop();
+            const events=[],describe=value=>({tag:value===window?'window':value?.localName,id:value?.id,
+                role:value?.getAttribute?.('data-cfx-role'),name:value?.getAttribute?.('aria-label')});
+            const record=(phase,event)=>{
+                events.push({phase,time:performance.now(),type:event?.type,key:event?.key,alt:event?.altKey,shift:event?.shiftKey,
+                    trusted:event?.isTrusted,eventTarget:describe(event?.target),activeElement:describe(document.activeElement),
+                    targetActive:node===document.activeElement,focusVisible:node.matches(':focus-visible'),
+                    documentFocused:document.hasFocus(),targetConnected:node.isConnected,scroll:{x:scrollX,y:scrollY}});
+                if(events.length>96)events.shift();
+            };
+            const types=['keydown','keyup','focus','blur','focusin','focusout','scroll'],listener=event=>record('event',event);
+            const stop=()=>types.forEach(type=>removeEventListener(type,listener,true));
+            window.graphEnvironmentFocusTrace={node,events,record,stop};
+            types.forEach(type=>addEventListener(type,listener,true));record('before-reach');
+        }
+        """);
+
     // Traverse the real tab order: programmatic focus alone does not qualify navigation or keyboard modality.
     private static async Task ReachGraphEnvironmentControlAsync(IPage page, ILocator target) {
         // macOS WebKit excludes native buttons from Tab even in library-free HTML.
         var modifier = Engine == HtmlTinkerX.HtmlBrowserEngine.WebKit && OperatingSystem.IsMacOS() ? "Alt+" : "";
         for (var step = 0; step < 64; step++) {
-            if (await target.EvaluateAsync<bool>("node=>node===document.activeElement&&node.matches(':focus-visible')")) return;
+            if (await target.EvaluateAsync<bool>("""
+                node=>{const reached=node===document.activeElement&&node.matches(':focus-visible');
+                    if(reached)window.graphEnvironmentFocusTrace?.record('reach-return');return reached;}
+                """)) return;
             var preceding = await target.EvaluateAsync<bool>("node=>!!(document.activeElement.compareDocumentPosition(node)&Node.DOCUMENT_POSITION_PRECEDING)");
             await page.Keyboard.PressAsync(modifier + (preceding ? "Shift+" : "") + "Tab");
         }

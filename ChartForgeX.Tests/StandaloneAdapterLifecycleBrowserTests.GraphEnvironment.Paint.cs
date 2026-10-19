@@ -69,6 +69,8 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         await target.ScrollIntoViewIfNeededAsync();
         var facts = await target.EvaluateAsync<JsonElement>("""
             node=>{
+                const trace=window.graphEnvironmentFocusTrace;trace?.record('after-scroll');trace?.stop();
+                delete window.graphEnvironmentFocusTrace;
                 const style=getComputedStyle(node),box=node.getBoundingClientRect(),scale=box.width/node.offsetWidth;
                 const backgrounds=[];for(let owner=node.parentElement;owner;owner=owner.parentElement)backgrounds.unshift(getComputedStyle(owner).backgroundColor);
                 const pad=(parseFloat(style.outlineWidth)+parseFloat(style.outlineOffset))*scale,clips=[];
@@ -77,19 +79,30 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                     clips.push({owner:owner.className,x:outside.test(clip.overflowX)?Math.max(0,rect.left-box.left+pad,box.right+pad-rect.right):0,
                         y:outside.test(clip.overflowY)?Math.max(0,rect.top-box.top+pad,box.bottom+pad-rect.bottom):0});
                 }
-                return {ownsFocus:node===document.activeElement&&node.matches(':focus-visible'),box:box.toJSON(),
+                const describe=value=>({tag:value?.localName,id:value?.id,role:value?.getAttribute?.('data-cfx-role'),name:value?.getAttribute?.('aria-label')});
+                return {ownsFocus:node===document.activeElement&&node.matches(':focus-visible'),
+                    targetActive:node===document.activeElement,focusVisible:node.matches(':focus-visible'),documentFocused:document.hasFocus(),
+                    targetConnected:node.isConnected,target:describe(node),activeElement:describe(document.activeElement),
+                    traceTargetSame:trace?trace.node===node:null,traceTargetConnected:trace?trace.node.isConnected:null,
+                    observedAt:performance.now(),chronology:trace?.events||[],box:box.toJSON(),
                     width:parseFloat(style.outlineWidth),offset:parseFloat(style.outlineOffset),scale,colour:style.outlineColor,
                     backgrounds,clips,transitionSeconds:Math.max(...style.transitionDuration.split(',').map(parseFloat))};
             }
             """);
-        Assert.True(facts.GetProperty("ownsFocus").GetBoolean());
+        await WriteReceiptAsync(name + "-before-assert", JsonSerializer.SerializeToElement(new { focus = facts }));
+        var screenshot = await page.ScreenshotAsync(new() { Animations = ScreenshotAnimations.Disabled });
+        if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
+            Assert.True(Path.IsPathRooted(output), "Graph environment captures need an absolute task-owned folder.");
+            Directory.CreateDirectory(output);
+            await File.WriteAllBytesAsync(Path.Combine(output, name + ".png"), screenshot);
+        }
+        Assert.True(facts.GetProperty("ownsFocus").GetBoolean(), "Focus facts: " + name + "-before-assert.json " + facts.GetRawText());
         Assert.True(facts.GetProperty("width").GetDouble() > 0);
         Assert.InRange(facts.GetProperty("transitionSeconds").GetDouble(), 0, .001);
         foreach (var clip in facts.GetProperty("clips").EnumerateArray()) {
             Assert.InRange(clip.GetProperty("x").GetDouble(), 0, 1);
             Assert.InRange(clip.GetProperty("y").GetDouble(), 0, 1);
         }
-        var screenshot = await page.ScreenshotAsync(new() { Animations = ScreenshotAnimations.Disabled });
         var painted = await page.EvaluateAsync<bool>("""
             async({png,facts})=>{
                 facts=JSON.parse(facts);
@@ -114,11 +127,6 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             }
             """, new { png = Convert.ToBase64String(screenshot), facts = facts.GetRawText() });
         await WriteReceiptAsync(name, JsonSerializer.SerializeToElement(new { focus = facts, painted }));
-        if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
-            Assert.True(Path.IsPathRooted(output), "Graph environment captures need an absolute task-owned folder.");
-            Directory.CreateDirectory(output);
-            await File.WriteAllBytesAsync(Path.Combine(output, name + ".png"), screenshot);
-        }
         Assert.True(painted, "The actual screenshot must contain the keyboard focus outline under host scaling.");
     }
 }
