@@ -1082,8 +1082,8 @@ body {
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
-  // Complete word-cloud source inventory describes facts; the painted term owns interaction.
-  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"],[data-cfx-role="word-cloud-source"]');
+  // Complete source catalogs describe facts; their painted observations own interaction.
+  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"],[data-cfx-role="word-cloud-source"],[data-cfx-positioning="absolute"][data-cfx-stop-count]');
   const isInteractiveTarget = (node) => {
     if (isPassiveTarget(node)) return false;
     const role = (node.dataset || {}).cfxRole;
@@ -1257,6 +1257,14 @@ body {
   // Source metadata stays exact; fallback captions use the browser's shortest round-trip number.
   const numericDisplayText = (value) => tooltipNumber(value) ? String(Number(value)) : value;
   const numericFactText = (data, member) => capturedText(data, 'cfxFormatted' + member, numericDisplayText(data['cfx' + member]));
+  // Native observed bindings retain full category context independently of fitted axis ink.
+  const targetCategoryPath = node => {
+    const root = node.closest?.('.cfx-interactive-chart'), paths = root?._cfxCategoryPaths;
+    if (!paths) return undefined;
+    const data = node.dataset || {}, path = data.cfxX === undefined ? undefined : paths.get(Number(data.cfxX));
+    return path?.slice();
+  };
+  const categoryReadoutText = (node, fallback) => targetCategoryPath(node)?.join(' / ') ?? fallback;
   const text = (node, tooltipTitle = false) => {
     const data = node.dataset || {};
     if (tooltipTitle && ['rangebar', 'boxplot', 'boxplotoutlier'].includes((data.cfxKind || '').toLowerCase()))
@@ -1279,6 +1287,7 @@ body {
     const targetKind = renderedTargetKind(node);
     const state = (data.cfxKind || '').toLowerCase() === 'statetimeline';
     const rawValue = (data.cfxKind || '').toLowerCase() === 'boxplot' ? data.cfxMedian : data.cfxValue ?? data.cfxY ?? data.cfxEnd;
+    const categoryPath = targetCategoryPath(node);
     return {
       targetKind,
       targetId: renderedTargetId(node, targetKind),
@@ -1293,6 +1302,7 @@ body {
       observationId: data.cfxObservationId,
       observationIds: contributorObservationIds(node),
       category: targetCategory(node),
+      ...(categoryPath ? { categoryPath } : {}),
       x: targetRawX(node),
       numericValue: !state && tooltipNumber(rawValue) ? Number(rawValue) : undefined,
       range: targetDataRange(node),
@@ -1358,7 +1368,7 @@ body {
     const data = node.dataset || {};
     const kind = (data.cfxKind || '').toLowerCase();
     if (!['boxplot', 'boxplotoutlier'].includes(kind)) return null;
-    const rows = [{ name: rowName(node, 'category', 'Category'), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel ?? data.cfxX }];
+    const rows = [{ name: rowName(node, 'category', 'Category'), value: categoryReadoutText(node, data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel ?? data.cfxX) }];
     if (kind === 'boxplotoutlier') {
       rows.push({ name: rowName(node, 'outlier', 'Outlier'), value: capturedText(data, 'cfxFormattedValue', numericDisplayText(data.cfxValue ?? data.cfxY)) });
       return rows.filter(row => row.value !== undefined && row.value !== null);
@@ -1388,9 +1398,16 @@ body {
   const rangeBarTooltipRows = (node) => {
     const data = node.dataset || {};
     if ((data.cfxKind || '').toLowerCase() !== 'rangebar') return null;
-    return [{ name: rowName(node, 'category', ''), value: data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX },
+    return [{ name: rowName(node, 'category', ''), value: categoryReadoutText(node, data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxX) },
       { name: rowName(node, 'start', ''), value: numericFactText(data, 'Start') },
       { name: rowName(node, 'end', ''), value: numericFactText(data, 'End') }]
+      .filter((row) => row.value !== undefined && row.value !== null);
+  };
+  const emptyHistogramTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if (data.cfxDerived !== 'histogram-bin' || data.cfxBinHasValue !== 'false') return null;
+    return [{ name: rowName(node, 'value', 'Value'), value: rowName(node, 'no-data', 'No data') },
+      { name: rowName(node, 'sample-count', 'Sample count'), value: numericDisplayText(data.cfxBinCount) }]
       .filter((row) => row.value !== undefined && row.value !== null);
   };
   const differenceTooltipRows = (node) => {
@@ -1413,7 +1430,7 @@ body {
       if (value !== undefined && value !== null && value !== '') rows.push({ name, value: String(value) });
     };
     const pushX = () => {
-      const value = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || capturedText(data, 'cfxFormattedStart', data.cfxStart)));
+      const value = categoryReadoutText(node, capturedText(data, 'cfxXLabel', capturedText(data, 'cfxFormattedX', numericDisplayText(data.cfxX) || data.cfxCategory || data.cfxDate || capturedText(data, 'cfxFormattedStart', data.cfxStart))));
       if (data.cfxXLabel !== undefined || data.cfxFormattedX !== undefined) rows.push({ name: 'X', value });
       else push('X', value);
     };
@@ -1422,6 +1439,8 @@ body {
     if (boxPlotRows) return rows.concat(boxPlotRows, metadataRows(node));
     const rangeBarRows = rangeBarTooltipRows(node);
     if (rangeBarRows) return rows.concat(rangeBarRows, metadataRows(node));
+    const emptyHistogramRows = emptyHistogramTooltipRows(node);
+    if (emptyHistogramRows) return rows.concat(emptyHistogramRows, metadataRows(node));
     const differenceRows = differenceTooltipRows(node);
     if (differenceRows) {
       pushX();
@@ -1429,7 +1448,7 @@ body {
       metadataRows(node).forEach((row) => push(row.name, row.value));
       return rows;
     }
-    if (data.cfxWaterfallKind) push('Category', data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX);
+    if (data.cfxWaterfallKind) push('Category', categoryReadoutText(node, data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX));
     else pushX();
     const financialRows = financialTooltipRows(node);
     if (financialRows) rows.push(...financialRows);
@@ -2028,7 +2047,11 @@ body {
     if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
     return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
   });
-  const retainedGeometryFact = (node) => ['zero', 'precision-collapse', 'layout-collapse'].includes((node.dataset || {}).cfxGeometryStatus);
+  const retainedGeometryFact = (node) => {
+    const data = node.dataset || {};
+    return ['zero', 'precision-collapse', 'layout-collapse'].includes(data.cfxGeometryStatus)
+      || data.cfxDerived === 'histogram-bin' && data.cfxBinHasValue === 'false';
+  };
   // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
   // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
   const pointerTargetPaint = (node, styles = new Map()) => {
@@ -2175,7 +2198,7 @@ body {
     if (!rows.length) return false;
     tip.replaceChildren();
     const header = document.createElement('div');
-    header.className = 'cfx-tooltip__title'; header.textContent = capturedText(data, 'cfxXLabel', capturedText(data, 'cfxDisplayLabel', numericFactText(data, 'X'))); tip.appendChild(header);
+    header.className = 'cfx-tooltip__title'; header.textContent = categoryReadoutText(node, capturedText(data, 'cfxXLabel', capturedText(data, 'cfxDisplayLabel', numericFactText(data, 'X')))); tip.appendChild(header);
     const list = document.createElement('dl'); list.className = 'cfx-tooltip__meta';
     rows.forEach((row) => {
       const name = document.createElement('dt'); const value = document.createElement('dd');
@@ -2644,6 +2667,9 @@ body {
     root._cfxDataProjection = metadata.dataProjection || null;
     root._cfxObservationIds = series.map(item => new Map((item.observationIds || []).map(value => [value.index, value.id])));
     const xLabels = new Map((metadata.categoryLabels || metadata.xLabels || []).map((item) => [item.value, item.text]));
+    const grouped = (metadata.categoryLabels || []).filter(item => Array.isArray(item.groups) && item.groups.length);
+    if (grouped.length) root._cfxCategoryPaths = new Map(grouped.map(item => [item.value, Object.freeze([...item.groups, item.text])]));
+    else delete root._cfxCategoryPaths;
     const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
     // Only the renderer's unambiguous final Cartesian map can bound a guide.
     const plots = (metadata.regions || []).filter(region => region.role === 'cartesian-plot');
@@ -4509,8 +4535,7 @@ body {
       setScenarioStep(root, detail.index, false, false);
     }
   };
-  // Native links, annotations and scalar series are selectable facts too. A series wrapper
-  // has no value of its own; its separately identified children own the observations.
+  // Identified leaves own selectable values; series wrappers do not.
   const isDataTarget = node => isInteractiveTarget(node) && renderedTargetKind(node) !== 'legend'
     && (renderedTargetKind(node) !== 'series' || node.dataset.cfxValue !== undefined);
   const dataTargets = root => interactiveTargets(root).filter(isDataTarget);
@@ -4538,7 +4563,7 @@ body {
     const lower = data.cfxRangeStart;
     const upper = data.cfxRangeEnd;
     if (lower === undefined || upper === undefined) return undefined;
-    // A range has one unit: native negative OLE coordinates cannot mix with Unix-millisecond ISO instants.
+    // Do not mix OLE dates and Unix milliseconds in one range.
     const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
     const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
     const to = time ? data.cfxRangeInclusiveEndInstant ?? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
@@ -4558,8 +4583,7 @@ body {
     root.toggleAttribute('data-cfx-has-selection', selected);
     if (selected) root.dataset.cfxHasSelection = 'true';
     nodes.forEach(node => {
-      // Selection and external highlights are independent foregrounds. Their combined dim policy
-      // keeps either active mark at full strength instead of letting the two layers dim each other.
+      // Selection and host highlights share foreground; neither dims the other.
       const active = node.classList.contains('cfx-selected') || node.classList.contains('cfx-highlighted');
       node.classList.toggle('cfx-selection-dim', selectionForeground && root.dataset.cfxDimOthersSelected === 'true' && !active);
       node.classList.toggle('cfx-linked-dim', highlightForeground && root._cfxHostHighlight?.dim === true && !active);
@@ -4589,8 +4613,7 @@ body {
     const a = intervalNumber(left), b = intervalNumber(right);
     if (a !== b) return a < b ? -1 : 1;
     if (typeof left !== 'string') return 0;
-    // Date.parse normalizes offsets but truncates fractional milliseconds. Compare that remainder
-    // separately so precise instants never round together in a Unix-millisecond floating-point value.
+    // Compare fractional milliseconds separately from Date.parse's truncated value.
     const remainder = value => (value.match(/\.(\d+)(?:Z|[+-]\d\d:\d\d)$/)?.[1] || '').slice(3);
     const x = remainder(left), y = remainder(right), length = Math.max(x.length, y.length);
     const paddedX = x.padEnd(length, '0'), paddedY = y.padEnd(length, '0');
@@ -4665,13 +4688,35 @@ body {
     clearBrushCommand(root, options);
     return runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
   };
-  // Replacement retains durable facts; live synchronization can also address current observations in shared series.
+  // Retain durable identity for replacement and shared peers.
   const projectHostHighlight = (root, source, synchronize = false) => {
     const state = copyHostValue(source);
     if (!state) return state;
     const match = state.match, nodes = dataTargets(root);
-    const sharedKeys = new Set(JSON.parse(root.dataset.cfxPreparedChart).series.filter(series => !series.local).map(series => series.key));
+    const series = JSON.parse(root.dataset.cfxPreparedChart).series;
+    const sharedKeys = new Set(series.filter(series => !series.local).map(series => series.key));
     const retainTarget = synchronize ? target => target.seriesScope !== 'local' : durableChartTarget;
+    let observationOwners;
+    const observationReferences = (ids, seriesKey) => {
+      // The source catalog also owns omitted samples.
+      if (!observationOwners) {
+        observationOwners = new Map();
+        series.forEach(owner => (owner.observationIds || []).forEach(({ id }) => {
+          if (!observationOwners.has(id)) observationOwners.set(id, []);
+          observationOwners.get(id).push(owner);
+        }));
+      }
+      const resolved = resolveHostTargets(root, { observationIds: ids, seriesKey });
+      return ids.flatMap(observationId => {
+        const matching = resolved.filter(target => target.observationId === observationId || target.observationIds?.includes(observationId));
+        const declared = (observationOwners.get(observationId) || []).filter(owner => !seriesKey || owner.key === seriesKey);
+        const keys = matching.length || declared.length
+          ? [...matching.filter(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey)).map(target => target.seriesKey),
+            ...declared.filter(owner => !owner.local).map(owner => owner.key)]
+          : Array.from(sharedKeys).filter(key => !seriesKey || key === seriesKey);
+        return Array.from(new Set(keys)).map(seriesKey => ({ seriesKey, observationId }));
+      });
+    };
     let removed = false;
     const retain = (key, predicate) => {
       if (!match[key]) return;
@@ -4682,27 +4727,21 @@ body {
     if (match.targets) {
       const original = match.targets;
       const projected = original.map(item => {
-        const resolved = nodes.filter(node => item && matchesTargetIdentity(node, item)).map(targetIdentity);
         if (item?.observationId !== undefined && !item.targetId)
-          return resolved.some(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey)) ? [item] : [];
-        return resolved.filter(retainTarget);
+          return observationReferences([item.observationId], item.seriesKey);
+        return nodes.filter(node => item && matchesTargetIdentity(node, item)).map(targetIdentity).filter(retainTarget);
       });
       match.targets = projected.flat();
       removed ||= projected.some(targets => !targets.length);
     }
     if (match.observationIds) {
-      const resolved = resolveHostTargets(root, { observationIds: match.observationIds, seriesKey: match.seriesKey })
-        .filter(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey));
-      // Keep authored observation intent when aggregate membership or peer partitioning changes.
-      const references = resolved.flatMap(target => match.observationIds
-        .filter(id => target.observationId === id || target.observationIds?.includes(id))
-        .map(observationId => ({ seriesKey: target.seriesKey, observationId })));
+      const references = observationReferences(match.observationIds, match.seriesKey);
       const unique = new Map(references.map(item => [JSON.stringify([item.seriesKey, item.observationId]), item]));
       match.targets = [...(match.targets || []), ...unique.values()];
       delete match.observationIds;
       removed = true;
     }
-    // Ordinals describe the previous source order; explicit IDs and value filters describe durable intent.
+    // Source ordinals expire on replacement; IDs and value filters persist.
     if (synchronize) retain('sourcePoints', item => item && sharedKeys.has(item.seriesKey));
     else if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
     if (match.seriesKey && !sharedKeys.has(match.seriesKey)) {
@@ -5882,7 +5921,8 @@ body {
       || metadata.dataProjection !== undefined && !validDataProjection(metadata.dataProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
       || metadata.categoryLabels !== undefined && (!Array.isArray(metadata.categoryLabels)
-        || metadata.categoryLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string'))
+        || metadata.categoryLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string'
+          || item.groups !== undefined && (!Array.isArray(item.groups) || item.groups.some(group => typeof group !== 'string' || !group.trim()))))
       || metadata.regions.some(item => !item || typeof item.id !== 'string' || typeof item.role !== 'string'
         || ![item.x, item.y, item.width, item.height].every(Number.isFinite) || item.width < 0 || item.height < 0
         || item.fillInteriors !== undefined && (!Array.isArray(item.fillInteriors)

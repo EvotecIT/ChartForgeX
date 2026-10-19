@@ -52,6 +52,22 @@ public static class ChordRecipe {
                     fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex("#764415"), strokeWidth: 1))
                 .WithFlowState("north-priority", ChartSeriesState.Warning).WithFlowStyle("support-internal", new ChartFlowStyle(strokeWidth: 1));
         }
+        if (variant is "color-dimension" or "compact-color-dimension") {
+            // Illustrative measurements color the existing transfers; they are not additional flow weights.
+            var latency = new double?[] { 180, 95, 125, 40, 0, null, 65, 110, 210 };
+            transfers.ReplaceFlowData(transfers.Nodes, transfers.FlowLinks.Select((flow, index) =>
+                new ChartFlowLink(flow.Id, flow.SourceId, flow.TargetId, flow.Value, latency[index])));
+            transfers.ShowInLegend = false;
+            chart.WithLegend(true).ConfigureLabels(labels => labels.NoData = "Not sampled").ConfigureChord(options => {
+                options.ColorScale = ChartColorScale.Sequential(new[] {
+                    new ChartColorStop(0, ChartColor.FromHex("#2166AC")), new ChartColorStop(50, ChartColor.FromHex("#67A9CF")),
+                    new ChartColorStop(150, ChartColor.FromHex("#D9A441")), new ChartColorStop(240, ChartColor.FromHex("#B2182B"))
+                }).WithCaptions(new[] { new ChartColorScaleCaption(50, "Prompt"), new ChartColorScaleCaption(100, "Expected"), new ChartColorScaleCaption(200, "Delayed") });
+                options.ColorDimension.Name = "Illustrative latency";
+                options.ColorDimension.ValueFormat = ChartValueFormat.Number("0 'ms'", CultureInfo.InvariantCulture);
+                options.ColorDimension.LegendStyle = ChartColorLegendStyle.Gradient;
+            });
+        }
         return chart;
     }
 }
