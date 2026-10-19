@@ -68,14 +68,14 @@ jobs:
           GIT_CONFIG_VALUE_0: 'false'
         with:
           repository: EvotecIT/PSPublishModule
-          ref: f6a704092041a81841ec5154eb4fd028912f375e
+          ref: 77bb1364bd4e21a23200189504c6805f8c13c8dc
           path: Ignore/PowerForgeSource
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: Ignore/PowerForgeSource/global.json
       - name: Build shared benchmark module without publication
         run: |
-          & ./Ignore/PowerForgeSource/Build/Build-Project.ps1 -ModuleOnly -RunMode Build -ModuleVersion 3.0.155 -ModuleFramework net8.0 -ModuleNoSign -ModuleSkipInstall -SourceRepositoryRoot (Resolve-Path ./Ignore/PowerForgeSource).Path -ExpectedSourceRevision f6a704092041a81841ec5154eb4fd028912f375e
+          & ./Ignore/PowerForgeSource/Build/Build-Project.ps1 -ModuleOnly -RunMode Build -ModuleVersion 3.0.169 -ModuleFramework net8.0 -ModuleNoSign -ModuleSkipInstall -SourceRepositoryRoot (Resolve-Path ./Ignore/PowerForgeSource).Path -ExpectedSourceRevision 77bb1364bd4e21a23200189504c6805f8c13c8dc
           if (!$?) { throw 'Shared module build failed.' }
       - name: Restore only accepted main history
         if: env.HISTORY_MODE == 'Verify' || env.HISTORY_MODE == 'AcceptReference'
