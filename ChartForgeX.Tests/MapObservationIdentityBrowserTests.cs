@@ -1,5 +1,6 @@
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Primitives;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
@@ -14,6 +15,9 @@ public sealed class MapObservationIdentityBrowserTests {
     [InlineData(ChartSeriesKind.TileMap)]
     public async Task SelectionAndReadoutsRetainObservationIdsAfterTypedUpdates(ChartSeriesKind kind) {
         if (!Enabled) return;
+        var signedMap = kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap;
+        var expectedRaw = signedMap ? "-7" : "7";
+        var expectedDisplay = signedMap ? "-7.0 °C" : "7";
         var chart = Chart.Create().WithSize(640, 360).WithTitle("Observed activity");
         switch (kind) {
             case ChartSeriesKind.CalendarHeatmap:
@@ -45,23 +49,31 @@ public sealed class MapObservationIdentityBrowserTests {
                 series.UpdateMapPoint(0, new ChartMapPoint("Warsaw", 21, 52, 7));
                 break;
             default:
-                series.UpdateRegionValue(0, new ChartRegionMapItem("Alpha", 7));
+                series.UpdateRegionValue(0, new ChartRegionMapItem("Alpha", -7));
                 break;
         }
+        if (signedMap) chart.WithMapColorScale(ChartColorScale.Diverging(ChartColor.Black, ChartColor.FromHex("#808080"), ChartColor.White, 0)
+                .WithValueRange(-10, 10))
+            .ConfigureMapColorDimension(options => {
+                options.Name = "Temperature";
+                options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", System.Globalization.CultureInfo.InvariantCulture);
+            });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 540);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var target = page.Locator("[data-cfx-observation-id='observed-a']");
         Assert.Equal(1, await target.CountAsync());
         Assert.Equal(chart.Series[0].Id.Value, await target.GetAttributeAsync("data-cfx-series-key"));
-        Assert.Equal("7", await target.GetAttributeAsync("data-cfx-value"));
+        Assert.Equal(expectedRaw, await target.GetAttributeAsync("data-cfx-value"));
         await page.EvaluateAsync("() => document.querySelector('.cfx-interactive-chart').addEventListener('cfxselect', event => window.mapIdentitySelection = event.detail.target)");
         await MoveToAsync(page, "[data-cfx-observation-id='observed-a']");
-        Assert.Contains("7", await TooltipTextAsync(page));
+        Assert.Contains(expectedDisplay, await TooltipTextAsync(page));
         await target.FocusAsync(); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         Assert.Equal("observed-a", await page.EvaluateAsync<string>("() => window.mapIdentitySelection.observationId"));
         Assert.Equal(chart.Series[0].Id.Value, await page.EvaluateAsync<string>("() => window.mapIdentitySelection.seriesKey"));
-        Assert.Equal("7", await page.EvaluateAsync<string>("() => window.mapIdentitySelection.value"));
+        Assert.Equal(expectedDisplay, await page.EvaluateAsync<string>("() => window.mapIdentitySelection.value"));
+        Assert.Equal(signedMap ? -7 : 7, await page.EvaluateAsync<double>("() => window.mapIdentitySelection.numericValue"));
+        if (signedMap) Assert.Equal("A", await page.EvaluateAsync<string>("() => window.mapIdentitySelection.targetId"));
         if (kind == ChartSeriesKind.CalendarHeatmap) {
             Assert.Equal("2026-01-05", await page.EvaluateAsync<string>("() => window.mapIdentitySelection.targetId"));
             Assert.Equal(new[] { 0 }, await page.EvaluateAsync<int[]>("() => window.mapIdentitySelection.sourcePoints"));

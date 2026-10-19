@@ -33,7 +33,7 @@ public static partial class V2Examples {
             if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter) {
                 variants.Add("positioned-color-scale"); variants.Add("compact-positioned-color-scale");
             }
-            if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Chord) {
+            if (kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.CalendarHeatmap or ChartSeriesKind.Treemap or ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Chord) {
                 variants.Add("color-dimension"); variants.Add("compact-color-dimension");
             }
             if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap or ChartSeriesKind.Scatter) {
@@ -77,7 +77,7 @@ public static partial class V2Examples {
                     : variant is "positioned-color-scale" or "compact-positioned-color-scale" && kind is ChartSeriesKind.TileMap or ChartSeriesKind.Heatmap
                         ? kind == ChartSeriesKind.TileMap ? "Temperature by state" : "Temperature across service areas"
                     : variant is "color-dimension" or "compact-color-dimension" or "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend" ? kind switch {
-                        ChartSeriesKind.TileMap => "Temperature by state", ChartSeriesKind.Heatmap => "Temperature by grid position",
+                        ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap => "Temperature by state", ChartSeriesKind.Heatmap => "Temperature by grid position",
                         ChartSeriesKind.CalendarHeatmap => "Daily average temperature", ChartSeriesKind.Treemap => "Team workload and temperature",
                         ChartSeriesKind.Chord => "Transfer volume and latency",
                         ChartSeriesKind.Scatter => "Temperature by workload", _ => "Workload, requests and temperature"

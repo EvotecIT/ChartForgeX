@@ -291,7 +291,6 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.DottedMap && !preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
         else if (kind == ChartSeriesKind.TileMap || kind == ChartSeriesKind.RegionMap) {
             if (!preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
-            ValidateNonNegativeValues(chart.Series[0], kind);
         }
         else if (kind == ChartSeriesKind.Gauge || kind == ChartSeriesKind.Circle) {
             if (!preparing || chart.Series[0].HasSourceData) ValidateScalePair(chart.Series[0], kind.ToString());

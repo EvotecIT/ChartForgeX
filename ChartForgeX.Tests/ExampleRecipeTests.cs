@@ -64,6 +64,39 @@ public sealed class ExampleRecipeTests {
         Assert.Equal("Processing time (minutes)", chart.YAxisTitle);
     }
 
+    [Theory]
+    [InlineData(ChartSeriesKind.RegionMap, false, VisualThemeMode.Light)]
+    [InlineData(ChartSeriesKind.RegionMap, true, VisualThemeMode.Light)]
+    [InlineData(ChartSeriesKind.RegionMap, false, VisualThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.RegionMap, true, VisualThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.TileMap, false, VisualThemeMode.Light)]
+    [InlineData(ChartSeriesKind.TileMap, true, VisualThemeMode.Light)]
+    [InlineData(ChartSeriesKind.TileMap, false, VisualThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.TileMap, true, VisualThemeMode.Dark)]
+    public void MapColorRecipesKeepSignedTemperaturesZeroAndMissingRegions(ChartSeriesKind kind, bool compact, VisualThemeMode mode) {
+        var variant = compact ? "compact-color-dimension" : "color-dimension";
+        var recipe = ExampleRecipes.ForKind(kind, variant);
+        var chart = Assert.IsType<Chart>(recipe.Create(variant, mode)).WithSize(compact ? 360 : 800, compact ? 360 : 440)
+            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Temperature by state")
+            .WithSubtitle("Temperature captions use their own format and culture");
+        Assert.Equal("Temperature", chart.Options.MapColorDimension.Name);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = XDocument.Parse(prepared.ToSvg());
+        var role = kind == ChartSeriesKind.RegionMap ? "region-map-region-source" : "tile-map-region-source";
+        var sources = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role)
+            .ToDictionary(element => element.Attribute("data-cfx-region")!.Value);
+        Assert.Equal("-25", sources["CA"].Attribute("data-cfx-value")!.Value);
+        Assert.Equal("-25,0 °C", sources["CA"].Attribute("data-cfx-formatted-value")!.Value);
+        Assert.Equal("0", sources["NY"].Attribute("data-cfx-value")!.Value);
+        Assert.Equal("false", sources["NY"].Attribute("data-cfx-empty")!.Value);
+        Assert.Equal("55", sources["CO"].Attribute("data-cfx-value")!.Value);
+        Assert.Equal("true", sources["AK"].Attribute("data-cfx-empty")!.Value);
+        Assert.Equal("Not sampled", sources["AK"].Attribute("data-cfx-formatted-value")!.Value);
+        Assert.Equal("state-temperatures", sources["CA"].Attribute("data-cfx-series-key")!.Value);
+        ScatterBubbleColorRenderingTests.Capture(prepared, "signed-map-" + kind.ToString().ToLowerInvariant()
+            + (compact ? "-compact-" : "-wide-") + mode.ToString().ToLowerInvariant());
+    }
+
     [Fact]
     public void GalleryTypographyIsAnExplicitCompleteAlternative() {
         var recipe = ExampleRecipes.ForKind(ChartSeriesKind.Bar);

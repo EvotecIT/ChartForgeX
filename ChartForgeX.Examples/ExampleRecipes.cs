@@ -126,6 +126,7 @@ public static class ExampleRecipes {
         Add(ChartSeriesKind.HexbinHeatmap, nameof(HexbinHeatmapColorScaleRecipe), HexbinHeatmapColorScaleRecipe.Create, "color-scale");
         Add(ChartSeriesKind.CalendarHeatmap, nameof(CalendarHeatmapColorScaleRecipe), CalendarHeatmapColorScaleRecipe.Create, "color-scale");
         Add(ChartSeriesKind.CalendarHeatmap, nameof(CalendarHeatmapColorDimensionRecipe), CalendarHeatmapColorDimensionRecipe.Create, "color-dimension");
+        Add(ChartSeriesKind.RegionMap, nameof(RegionMapRecipe), RegionMapRecipe.Create, "color-dimension");
         Add(ChartSeriesKind.TileMap, nameof(TileMapOptionsRecipe), TileMapOptionsRecipe.Create, "options");
         Add(ChartSeriesKind.TileMap, nameof(TileMapPositionedColorScaleRecipe), TileMapPositionedColorScaleRecipe.Create, "positioned-color-scale");
         Add(ChartSeriesKind.TileMap, nameof(TileMapColorDimensionRecipe), TileMapColorDimensionRecipe.Create, "color-dimension", "gradient-color-legend", "swatch-color-legend");
