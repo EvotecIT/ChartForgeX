@@ -35,6 +35,24 @@ test('Runtime, initialization and unqualified errors cannot count as expected sy
   }
 });
 
+test('Forward linkStyle bounds failures require the qualified family, version and exact error shape', () => {
+  const bounds = new Error('The index 0 for linkStyle is out of bounds. Valid indices for linkStyle are between 0 and -1. (Help: Ensure that the index is within the range of existing edges.)');
+  const missingEdge = new TypeError("Cannot set properties of undefined (setting 'style')");
+  assert.equal(isReferenceRejection(bounds, '10.9.8', 'flowchart'), true);
+  assert.equal(isReferenceRejection(bounds, '11.17.2', 'flowchart'), false);
+  for (const version of ['11.17.2', '12.2.0']) {
+    assert.equal(isReferenceRejection(missingEdge, version, 'flowchart'), true);
+    assert.equal(isReferenceRejection(missingEdge, version, 'gitGraph'), false);
+    assert.equal(isReferenceRejection(missingEdge, version), false);
+    assert.equal(isReferenceRejection(new TypeError("Cannot set properties of undefined (setting 'label')"), version, 'flowchart'), false);
+    assert.equal(isReferenceRejection(new Error(missingEdge.message), version, 'flowchart'), false);
+    assert.equal(isReferenceRejection(new TypeError(bounds.message), version, 'flowchart'), false);
+  }
+  assert.equal(isReferenceRejection(bounds, '10.9.8', 'gitGraph'), false);
+  assert.equal(isReferenceRejection(missingEdge, '10.9.8', 'flowchart'), false);
+  assert.equal(isReferenceRejection(missingEdge, '13.0.0', 'flowchart'), false);
+});
+
 
 test('Pinned GitGraph grammar and semantic failures are scoped to their source family', () => {
   const semantic = new Error('Incorrect usage of "merge". Both branches have same head');

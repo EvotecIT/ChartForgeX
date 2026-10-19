@@ -111,7 +111,8 @@ for (const { folder, file, hasExpected } of files) {
   catch (error) { syntaxFailed = true; syntaxError = error; }
   if (contract.syntax[referenceId] === 'rejected') {
     if (!syntaxFailed) failures.push(`${folder}/${file}: reference ${reference.version} unexpectedly accepts syntax marked rejected.`);
-    else if (isReferenceRejection(syntaxError, reference.version, /^gitGraph\b/m.test(source) ? 'gitGraph' : '')) rejected++;
+    else if (isReferenceRejection(syntaxError, reference.version, /^gitGraph\b/m.test(source) ? 'gitGraph'
+      : /^(?:flowchart(?:-elk)?|graph)\b/m.test(source) ? 'flowchart' : '')) rejected++;
     else failures.push(`${folder}/${file}: unexpected engine failure, not a qualified syntax rejection: ${syntaxError?.message ?? syntaxError}`);
     continue;
   }

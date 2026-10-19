@@ -28,7 +28,7 @@ internal static partial class MermaidFlowchartParser {
 
         foreach (var subgraph in subgraphs) MermaidParserUtilities.Add(result, subgraph.Span, MermaidDiagnosticSeverity.Error, "Flowchart subgraph '" + subgraph.Id + "' must close with 'end'.");
         ApplyClassDefinitions(document);
-        ApplyLinkStyles(document, result);
+        ApplyLinkStyles(document);
     }
 
     private static void ParseStatement(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string text, MermaidSourceSpan span, MermaidFlowchartSubgraph? subgraph, MermaidParseResult<MermaidDocument> result) {

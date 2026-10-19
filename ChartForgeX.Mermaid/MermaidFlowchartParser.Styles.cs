@@ -68,6 +68,15 @@ internal static partial class MermaidFlowchartParser {
         var split = body.IndexOfAny(new[] { ' ', '\t' });
         if (split <= 0) return false;
         var style = new MermaidFlowchartLinkStyle(body.Substring(0, split), span);
+        if (style.Selector != "default") {
+            foreach (var selector in style.Selector.Split(',')) {
+                if (!int.TryParse(selector, NumberStyles.None, CultureInfo.InvariantCulture, out var index) || index >= document.Edges.Count) {
+                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                        "Flowchart linkStyle must select an existing zero-based edge index or 'default'.", MermaidDiagnosticCodes.InvalidStatement);
+                    return true;
+                }
+            }
+        }
         ReadStyles(style.Styles, body.Substring(split + 1), span, result, edge: true);
         document.LinkStyles.Add(style);
         return true;
@@ -95,17 +104,14 @@ internal static partial class MermaidFlowchartParser {
         }
     }
 
-    private static void ApplyLinkStyles(MermaidFlowchartDocument document, MermaidParseResult<MermaidDocument> result) {
+    private static void ApplyLinkStyles(MermaidFlowchartDocument document) {
         MermaidFlowchartLinkStyle? defaults = null;
         var selected = new Dictionary<int, MermaidFlowchartLinkStyle>();
         foreach (var style in document.LinkStyles) {
             if (style.Selector == "default") { defaults = style; continue; }
             foreach (var selector in SplitCsv(style.Selector)) {
-                if (!int.TryParse(selector, NumberStyles.None, CultureInfo.InvariantCulture, out var index) || index >= document.Edges.Count) {
-                    MermaidParserUtilities.Add(result, style.Span, MermaidDiagnosticSeverity.Error,
-                        "Flowchart linkStyle must select an existing zero-based edge index or 'default'.", MermaidDiagnosticCodes.InvalidStatement);
-                    continue;
-                }
+                // Numeric selectors are validated against the edges present at their declaration.
+                var index = int.Parse(selector, NumberStyles.None, CultureInfo.InvariantCulture);
                 selected[index] = style;
             }
         }

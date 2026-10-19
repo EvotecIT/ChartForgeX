@@ -114,6 +114,46 @@ public sealed class MermaidFlowchartStyleTests {
         Assert.Empty(fenced.Artifacts);
     }
 
+    [Theory]
+    [InlineData("A --> B\nlinkStyle 1 stroke:#f00\nB --> C", 3)]
+    [InlineData("A --> B\nlinkStyle 0,1 stroke:#f00\nB --> C", 3)]
+    [InlineData("A --> B\nlinkStyle -1 stroke:#f00", 3)]
+    [InlineData("A --> B\nlinkStyle 0,-1 stroke:#f00", 3)]
+    [InlineData("A --> B\nlinkStyle 0,,0 stroke:#f00", 3)]
+    public void LinkStyleIndicesMustExistWhenTheirStatementIsParsed(string body, int line) {
+        var source = "flowchart LR\n" + body;
+        var direct = MermaidRenderer.Render(source);
+        Assert.True(direct.HasErrors);
+        Assert.Null(direct.Artifact);
+        var error = Assert.Single(direct.Diagnostics);
+        Assert.Equal(MermaidDiagnosticCodes.InvalidStatement, error.Code);
+        Assert.Equal(line, error.Span.Line);
+        Assert.Equal(1, error.Span.Column);
+
+        var fenced = new MermaidVisualMarkupParser().Parse("Intro\n\n```mermaid\n" + source + "\n```");
+        Assert.True(fenced.HasErrors);
+        Assert.Empty(fenced.Artifacts);
+        var fenceError = Assert.Single(fenced.Diagnostics);
+        Assert.Equal(error.Code, fenceError.Code);
+        Assert.Equal(line + 3, fenceError.Line);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("0,0")]
+    [InlineData("0,1")]
+    public void DefaultLinkStylesReachFutureEdgesWhileExistingIndicesKeepTheirOverride(string selectors) {
+        var source = "flowchart LR\nlinkStyle default stroke:#f00\nA --> B\nB --> C\nlinkStyle " + selectors + " stroke:#0f0\nC --> D";
+        var direct = MermaidRenderer.Render(source);
+        Assert.Empty(direct.Diagnostics);
+        var colors = new[] { "#0f0", selectors.Contains('1') ? "#0f0" : "#f00", "#f00" };
+        var chart = Assert.IsType<TopologyChart>(Assert.IsType<VisualArtifact>(direct.Artifact).Model);
+        Assert.Equal(colors, chart.Edges.Select(edge => edge.Color));
+        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        Assert.False(fenced.HasErrors);
+        Assert.Equal(colors, Assert.IsType<TopologyChart>(Assert.Single(fenced.Artifacts).Model).Edges.Select(edge => edge.Color));
+    }
+
     [Trait("Category", "Browser")]
     [Theory]
     [InlineData(false)]

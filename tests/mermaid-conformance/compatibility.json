@@ -1021,6 +1021,14 @@
         "12": "rejected"
       },
       "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+    },
+    "invalid/flowchart-forward-link-style.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored invalid-source regression applying linkStyle 0 before its edge declaration. Qualified against pinned official Mermaid 10.9.8 (explicit edge-bounds error), 11.17.2 and 12.2.0 (exact missing-edge style assignment error). Numeric selectors must refer to existing edges at declaration time; default remains valid before edges."
     }
   }
 }

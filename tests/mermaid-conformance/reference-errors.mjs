@@ -7,7 +7,14 @@ export function isReferenceRejection(error, version, family = '') {
   if (error?.name === 'UnknownDiagramError' && error?.constructor?.name === 'UnknownDiagramError') {
     return typeof error.message === 'string' && error.message.startsWith('No diagram type detected matching given configuration for text:');
   }
+  // Mermaid 11/12 dereference an absent edge for a forward linkStyle index.
+  // This exact, source-reproduced failure is qualified only for flowcharts.
+  if (family === 'flowchart' && version !== '10.9.8' && error?.name === 'TypeError'
+      && error.constructor?.name === 'TypeError'
+      && error.message === "Cannot set properties of undefined (setting 'style')") return true;
   if (error?.name !== 'Error' || typeof error.message !== 'string') return false;
+  if (family === 'flowchart' && version === '10.9.8' && error.constructor?.name === 'Error'
+      && /^The index \d+ for linkStyle is out of bounds\. Valid indices for linkStyle are between 0 and -?\d+\. \(Help: Ensure that the index is within the range of existing edges\.\)$/.test(error.message)) return true;
   if (family === 'gitGraph') {
     // Captured GitGraph semantic failures are not generic engine exceptions.
     const semantic = [
