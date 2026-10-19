@@ -6,7 +6,7 @@ const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
-const code = graphRuntimeSource('return { graphVirtualElement, graphVirtualClassList, graphVirtualMatches, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, syncGraphEdgeAccessibleNames, applyFilters, applyNeighborhoodFocus, applyClusterState, applyHierarchyView, clearHiddenSelections, appendExportedEdgeLabel, graphThemePalette, attr };');
+const code = graphRuntimeSource('return { graphVirtualElement, graphVirtualClassList, graphVirtualMatches, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, syncGraphEdgeAccessibleNames, select, applyFilters, applyNeighborhoodFocus, applyClusterState, applyHierarchyView, clearHiddenSelections, appendExportedEdgeLabel, graphThemePalette, attr };');
 const loadRuntime = new Function('document', 'window', 'CustomEvent', code);
 const lifetimes = adapterLifetimes();
 test.after(() => lifetimes.dispose());
@@ -511,4 +511,19 @@ test('blank authored edge labels retain current endpoint names through patching 
   assert.equal(state.edges[0].label, '');
   assert.equal(runtime.exportGraphJson(root).edges[0].label, ' \t ');
   assert.equal(runtime.exportGraphJson(root).edges[1].label, '  Authored flow  ');
+  const announcer = { textContent: '' }, tip = { textContent: '', hidden: true }, events = [];
+  const originalQuery = root.querySelector;
+  root.querySelector = selector => selector.includes('graph-announcer') ? announcer : selector === '.cfx-graph-tooltip' ? tip : originalQuery(selector);
+  root.dispatchEvent = event => { events.push(event); return true; };
+  root.setAttribute('data-cfx-graph-features', 'Selection,MultiSelection');
+  runtime.select(root, edges[0], { activateBundle: false });
+  assert.equal(announcer.textContent, 'Node 0 to Renamed {source} selected. 1 item selected.');
+  assert.equal(tip.textContent, 'Node 0 to Renamed {source}');
+  assert.equal(tip.hidden, false);
+  assert.equal(events.findLast(event => event.type === 'cfxgraphselect').detail.label, ' \t ');
+  assert.equal(events.findLast(event => event.type === 'cfxgraphselection').detail.items[0].label, ' \t ');
+  runtime.select(root, edges[0], { additive: true, toggle: true, activateBundle: false });
+  assert.equal(announcer.textContent, 'Node 0 to Renamed {source} removed from selection.');
+  assert.equal(tip.hidden, true);
+  assert.equal(events.findLast(event => event.type === 'cfxgraphselect').detail.label, ' \t ');
 });

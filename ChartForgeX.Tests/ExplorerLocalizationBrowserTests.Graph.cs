@@ -55,7 +55,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         await page.WaitForFunctionAsync("()=>!!document.querySelector('[data-cfx-graph-bound=true]')");
         Assert.Equal("rtl", await root.EvaluateAsync<string>("root=>getComputedStyle(root).direction"));
         Assert.Equal("البحث عن عنصر", await page.Locator("[data-cfx-graph-search]").GetAttributeAsync("placeholder"));
-        await page.EvaluateAsync("()=>{window.graphRoot=document.querySelector('.cfx-graph-explorer');window.exports=[];graphRoot.addEventListener('cfxgraphexport',event=>{event.preventDefault();exports.push(event.detail)});}");
+        await page.EvaluateAsync("()=>{window.graphRoot=document.querySelector('.cfx-graph-explorer');window.exports=[];window.graphSelectionEvents=[];graphRoot.addEventListener('cfxgraphselect',event=>graphSelectionEvents.push(event.detail));graphRoot.addEventListener('cfxgraphexport',event=>{event.preventDefault();exports.push(event.detail)});}");
         await ClickGraphNodeAsync(page, "a");
         await AssertCurrentEndpointNamesAsync(page, "Authored destination", false);
         await AssertReadoutClearOfControlsAsync(page);
@@ -76,6 +76,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
             await page.Keyboard.PressAsync("End");
             Assert.Contains("صلة Source {target} / Authored destination", await focus.GetAttributeAsync("aria-label"));
             Assert.Equal("blank", await page.EvaluateAsync<string>("()=>ChartForgeXGraphExplorer.get(graphRoot).selection.primary"));
+            await AssertBlankSelectionPresentationAsync(page, "Authored destination", true, "accelerated-end-" + backend);
             await ClickGraphNodeAsync(page, "a");
         }
         await AssertReadoutClearOfControlsAsync(page);
@@ -101,6 +102,17 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         await AssertCurrentEndpointNamesAsync(page, "Node-only update");
         await page.EvaluateAsync("()=>{ChartForgeXGraphExplorer.update(graphRoot,{upsertNodes:[{id:'b',label:'Authored update',x:500,y:170}],upsertEdges:[{id:'plain',source:'a',target:'b'},{id:'flow',source:'a',target:'b',label:'  Authored relationship  '},{id:'blank',source:'a',target:'b',label:' \\t '}]});ChartForgeXGraphExplorer.theme(graphRoot,'dark');}");
         await AssertCurrentEndpointNamesAsync(page, "Authored update", blankPatched: true);
+        if (actual == "svg") {
+            var blank = root.Locator("[data-cfx-role=graph-edge][data-edge-id=blank]");
+            await FocusWithKeyboardAsync(page, blank);
+            await page.Keyboard.PressAsync("Enter");
+            await AssertBlankSelectionPresentationAsync(page, "Authored update", true, "physical-enter");
+            await page.Keyboard.PressAsync("Shift+Space");
+            await AssertBlankSelectionPresentationAsync(page, "Authored update", false, "physical-remove");
+            await page.Keyboard.PressAsync("Space");
+            await AssertBlankSelectionPresentationAsync(page, "Authored update", true, "physical-space");
+            await ClickGraphNodeAsync(page, "a");
+        }
         await AssertGraphChromeContrastAsync(page);
         await AssertReadoutClearOfControlsAsync(page);
         Assert.Contains("داكن", await root.Locator("[data-cfx-graph-action=theme]").GetAttributeAsync("aria-label"));
@@ -120,6 +132,32 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         await CaptureAsync(page, "graph-" + backend + "-updated");
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.dispose(graphRoot)");
         AssertNoConsoleErrors(session);
+    }
+
+    private static async Task AssertBlankSelectionPresentationAsync(IPage page, string targetLabel, bool selected, string capture) {
+        var facts = await page.Locator(".cfx-graph-explorer").EvaluateAsync<JsonElement>("""
+            async root=>{await document.fonts.ready;await Promise.all(root.getAnimations({subtree:true})
+                .filter(animation=>animation.effect?.getComputedTiming().endTime!==Infinity).map(animation=>animation.finished.catch(()=>{})));
+                const event=graphSelectionEvents.at(-1),tip=root.querySelector('.cfx-graph-tooltip');
+                return {announcement:root.querySelector('[data-cfx-role=graph-announcer]').textContent,
+                    tip:tip.textContent,tipHidden:tip.hidden,event,
+                    raw:ChartForgeXGraphExplorer.get(root).edges.find(edge=>edge.id==='blank').label,
+                    focusVisible:document.activeElement.matches(':focus-visible')};}
+            """);
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory)) await File.WriteAllTextAsync(Path.Combine(directory, "blank-selection-" + capture + ".json"), facts.GetRawText());
+        await CaptureAsync(page, "blank-selection-" + capture);
+        Assert.True(facts.GetProperty("focusVisible").GetBoolean(), facts.GetRawText());
+        var currentName = "صلة Source {target} / " + targetLabel;
+        Assert.Equal(currentName + (selected ? " selected. 1 item selected." : " removed from selection."), facts.GetProperty("announcement").GetString());
+        var detail = facts.GetProperty("event");
+        Assert.Equal("blank", detail.GetProperty("id").GetString());
+        Assert.Equal("graph-edge", detail.GetProperty("role").GetString());
+        Assert.Equal(" \t ", detail.GetProperty("label").GetString());
+        Assert.Equal(" \t ", facts.GetProperty("raw").GetString());
+        Assert.Equal(selected, detail.GetProperty("selected").GetBoolean());
+        Assert.Equal(!selected, facts.GetProperty("tipHidden").GetBoolean());
+        if (selected) Assert.Equal(currentName, facts.GetProperty("tip").GetString());
     }
 
     private static async Task AssertReadoutClearOfControlsAsync(IPage page) {
