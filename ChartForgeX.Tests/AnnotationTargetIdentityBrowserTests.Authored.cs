@@ -57,16 +57,18 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
         Assert.Equal(original.GetProperty("targetId").GetString(), await SelectedId(page));
         Assert.True(await warning.EvaluateAsync<bool>("node=>node.getRootNode().activeElement===node"));
         var atomic = await page.EvaluateAsync<JsonElement>("""
-            fragment=>['catalog','data-cfx-source-id','data-cfx-id','data-cfx-target-id'].map(field=>{
+            fragment=>[{role:'catalog'},...['annotation','annotation-line','annotation-band',
+                'annotation-label','annotation-label-backplate'].flatMap(role=>
+                    ['data-cfx-source-id','data-cfx-id','data-cfx-target-id'].map(field=>({role,field})))].map(({role,field})=>{
                 const template=document.createElement('template');template.innerHTML=fragment;
                 const next=template.content.firstElementChild,metadata=JSON.parse(next.dataset.cfxPreparedChart);
-                if(field==='catalog'){
+                if(role==='catalog'){
                     metadata.annotations[1].id=metadata.annotations[0].id;next.dataset.cfxPreparedChart=JSON.stringify(metadata);
-                }else next.querySelector('[data-cfx-role=annotation]:not([data-cfx-annotation-id])')
+                }else next.querySelector('[data-cfx-role="'+role+'"]'+(role==='annotation'?':not([data-cfx-annotation-id])':''))
                     .setAttribute(field,next.querySelector('[data-cfx-annotation-id=warning]').dataset.cfxSourceId);
                 const before=annotationRoot.innerHTML,revision=annotationController.sceneRevision,focus=annotationRoot.getRootNode().activeElement;
                 let rejected=false;try{annotationController.update(next);}catch(error){rejected=error instanceof TypeError;}
-                return{field,rejected,unchanged:before===annotationRoot.innerHTML,revision:revision===annotationController.sceneRevision,
+                return{field:role+'/'+field,rejected,unchanged:before===annotationRoot.innerHTML,revision:revision===annotationController.sceneRevision,
                     focus:focus===annotationRoot.getRootNode().activeElement,selected:annotationController.getSelection()};})
             """, replacement);
         Assert.All(atomic.EnumerateArray(), outcome => {

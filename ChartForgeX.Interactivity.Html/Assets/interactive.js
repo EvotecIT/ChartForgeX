@@ -605,7 +605,7 @@
   // A declared native binding, rather than a caller scope hint, makes an annotation durable.
   const annotationCatalog = (svg, metadata) => {
     const entries = metadata.annotations ?? [], ids = new Set(), sources = new Set(), bindings = new Map();
-    const nodes = Array.from(svg.querySelectorAll('[data-cfx-role="annotation"],[data-cfx-target-kind="annotation"]'));
+    const nodes = Array.from(svg.querySelectorAll('[data-cfx-role^="annotation"],[data-cfx-target-kind="annotation"]'));
     const invalid = () => { throw new TypeError('The chart scene does not match its prepared annotation metadata.'); };
     if (!Array.isArray(entries) || nodes.filter(node => node.dataset.cfxAnnotationId !== undefined).length !== entries.length) invalid();
     for (const item of entries) {

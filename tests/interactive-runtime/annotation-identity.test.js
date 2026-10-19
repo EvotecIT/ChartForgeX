@@ -11,9 +11,12 @@ function fixture() {
     // The next canonical fragment completes bindChart; these contracts exercise the preceding scenario owner.
     return name === '60-scenarios' ? text.slice(0, text.indexOf('  const bindChart = (root) => {')) : text;
   };
-  const nodes = [], svg = { querySelectorAll: selector => selector.includes('data-cfx-role="annotation"')
-    ? nodes.filter(node => selector.includes('data-cfx-annotation-id') ? node.dataset.cfxAnnotationId !== undefined : true)
-    : selector === '[data-cfx-source-id]' ? nodes : [], getAttribute: () => null };
+  const nodes = [], svg = { querySelectorAll: selector => {
+    if (selector.includes('data-cfx-role="annotation"') || selector.includes('data-cfx-role^="annotation"')) return nodes.filter(node =>
+      (selector.includes('data-cfx-role^=') ? node.dataset.cfxRole.startsWith('annotation') : node.dataset.cfxRole === 'annotation')
+      || selector.includes('data-cfx-target-kind') && node.dataset.cfxTargetKind === 'annotation');
+    return selector === '[data-cfx-source-id]' ? nodes.filter(node => node.dataset.cfxSourceId !== undefined) : [];
+  }, getAttribute: () => null };
   const root = { dataset: {}, querySelector: () => svg, querySelectorAll: () => nodes, closest: () => null };
   const mark = (sourceId, annotationId, label = 'Limit', value = '4') => {
     const node = { id: sourceId + '-dom', parentElement: root,
@@ -58,16 +61,20 @@ test('native annotation catalogs reject missing, duplicate and mismatched bindin
   assert.equal(JSON.stringify(f.nodes), before);
 });
 
-test('anonymous annotations cannot claim registered or unknown authored namespaces through any target ID', () => {
-  for (const field of ['cfxSourceId', 'cfxId', 'cfxTargetId']) {
-    for (const registered of [true, false]) {
-      const f = fixture();
-      f.anonymous.dataset[field] = registered ? f.warning.dataset.cfxSourceId : 'annotation-id-unknown';
-      const before = JSON.stringify(f.nodes), binding = f.anonymous._cfxAnnotationId;
-      assert.throws(() => f.api.prepareChartTargets(f.root), /prepared annotation metadata/);
-      assert.equal(JSON.stringify(f.nodes), before);
-      assert.equal(f.anonymous._cfxAnnotationId, binding);
-      assert.equal(f.warning._cfxAnnotationId, 'warning');
+test('anonymous annotation groups and native children cannot claim authored namespaces through any target ID', () => {
+  for (const role of ['annotation', 'annotation-line', 'annotation-band', 'annotation-label', 'annotation-label-backplate', 'annotation-label-leader']) {
+    for (const field of ['cfxSourceId', 'cfxId', 'cfxTargetId']) {
+      for (const registered of [true, false]) {
+        const f = fixture(), node = role === 'annotation' ? f.anonymous
+          : { ...f.anonymous, id: '', dataset: { cfxRole: role }, parentElement: f.anonymous };
+        if (node !== f.anonymous) f.nodes.push(node);
+        node.dataset[field] = registered ? f.warning.dataset.cfxSourceId : 'annotation-id-unknown';
+        const before = JSON.stringify(f.nodes), binding = node._cfxAnnotationId;
+        assert.throws(() => f.api.prepareChartTargets(f.root), /prepared annotation metadata/);
+        assert.equal(JSON.stringify(f.nodes), before);
+        assert.equal(node._cfxAnnotationId, binding);
+        assert.equal(f.warning._cfxAnnotationId, 'warning');
+      }
     }
   }
 });
