@@ -86,9 +86,25 @@ public sealed class HeatmapColorScaleLegendTests {
             VisualTheme.Graphite(), mode, new VisualFrame("Service coverage in hexagonal cells", "Named numeric intervals keep their exact boundaries"),
             FontSpec.FromFamily(family)));
         var document = XDocument.Parse(prepared.ToSvg());
-        var captions = Role(document, "heatmap-scale-label").SelectMany(group => group.Descendants().Where(element => element.Name.LocalName == "text")).ToArray();
+        var labelGroups = Role(document, "heatmap-scale-label");
+        var captions = labelGroups.Where(group => ((string?)group.Attribute("data-cfx-source-id"))?.StartsWith("heatmap-scale-label-band-", StringComparison.Ordinal) == true)
+            .SelectMany(group => group.Descendants().Where(element => element.Name.LocalName == "text")).ToArray();
         Assert.Equal(new[] { "Low · < 40", "Medium · 40 ≤ value < 80", "High · ≥ 80" }, captions.Select(caption => caption.Value));
-        Assert.All(captions, caption => Assert.True(double.Parse(caption.Attribute("font-size")!.Value, CultureInfo.InvariantCulture) >= 8));
+        Assert.All(captions, caption => Assert.True(double.Parse(caption.Attribute("font-size")!.Value, CultureInfo.InvariantCulture) >= 10));
+        var missing = Assert.Single(labelGroups, group => (string?)group.Attribute("data-cfx-source-id") == "heatmap-scale-label-missing");
+        Assert.Equal("No data", Assert.Single(missing.Descendants(), element => element.Name.LocalName == "text").Value);
+        var key = prepared.Regions.Single(region => region.Role == "heatmap-scale").Bounds;
+        var text = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-scale-label").ToArray();
+        Assert.Equal(4, text.Length);
+        var boxes = text.Select(node => new ChartRect(node.LineLeft(node.Text.Lines[0]), node.Baseline - node.Text.Ascent,
+            node.Text.Metrics.Width, node.Text.Metrics.Height)).ToArray();
+        for (var index = 0; index < text.Length; index++) {
+            Assert.True(text[index].Text.Size >= 10);
+            Assert.InRange(boxes[index].Left, key.Left - .01, key.Right); Assert.InRange(boxes[index].Right, key.Left, key.Right + .01);
+            Assert.InRange(boxes[index].Top, key.Top - .01, key.Bottom); Assert.InRange(boxes[index].Bottom, key.Top, key.Bottom + .01);
+            for (var other = 0; other < index; other++) Assert.False(boxes[index].Left < boxes[other].Right && boxes[index].Right > boxes[other].Left
+                && boxes[index].Top < boxes[other].Bottom && boxes[index].Bottom > boxes[other].Top, "Full band captions and NoData must not overlap.");
+        }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "matrix.scale-overflow" or "text.overflow");
         var colors = chart.Options.HeatmapColorScale!.Bands.Select(band => band.Color).ToArray();
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-scale-swatch").ToArray();
@@ -97,7 +113,15 @@ public sealed class HeatmapColorScaleLegendTests {
         for (var index = 0; index < swatches.Length; index++) {
             Assert.Equal(12, swatches[index].Bounds.Height, 6);
             Assert.Equal(colors[index], Pixel(image, swatches[index].Bounds));
+            Assert.InRange(swatches[index].Bounds.Top, key.Top, key.Bottom);
+            Assert.InRange(swatches[index].Bounds.Bottom, key.Top, key.Bottom + .01);
         }
+        var missingSwatch = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "heatmap-scale-missing-swatch");
+        Assert.True(missingSwatch.Bounds.Height > 0);
+        Assert.InRange(missingSwatch.Bounds.Left, key.Left, key.Right); Assert.InRange(missingSwatch.Bounds.Right, key.Left, key.Right + .01);
+        Assert.InRange(missingSwatch.Bounds.Top, key.Top, key.Bottom); Assert.InRange(missingSwatch.Bounds.Bottom, key.Top, key.Bottom + .01);
+        Assert.Equal(missingSwatch.Fill!.Value, Pixel(image, missingSwatch.Bounds));
+        ScatterBubbleColorRenderingTests.Capture(prepared, "legacy-key-compact-hexbin-" + (dark ? "dark" : "light"));
     }
 
     [Theory]

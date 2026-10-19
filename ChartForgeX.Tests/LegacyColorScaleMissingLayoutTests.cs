@@ -58,16 +58,49 @@ public sealed class LegacyColorScaleMissingLayoutTests {
         ScatterBubbleColorRenderingTests.Capture(prepared, "legacy-key-" + variant + "-wide-" + (dark ? "dark" : "light"));
     }
 
-    private static PreparedVisual Prepare(Chart chart, string variant, bool dark, int width) {
+    [Fact]
+    public void CompleteLocalizedMissingEntryKeepsASeparateRowWhenVerticalSpaceIsAvailable() {
+        const string missing = "Keine Messung für diese Region";
+        var chart = V2GalleryModels.Create(ChartSeriesKind.HexbinHeatmap, "compact-color-scale")
+            .ConfigureLabels(labels => labels.NoData = missing);
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 500)),
+            VisualTheme.Graphite(), VisualThemeMode.Light,
+            new VisualFrame("Service coverage in hexagonal cells", "Named numeric intervals keep their exact boundaries"), GalleryFont()));
+        var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-scale-label").ToArray();
+        var bands = labels.Where(node => node.Id!.StartsWith("heatmap-scale-label-band-", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(new[] { "Low · < 40", "Medium · 40 ≤ value < 80", "High · ≥ 80" }, bands.Select(node => node.Text.Lines[0].Text));
+        var noData = Assert.Single(labels, node => node.Id == "heatmap-scale-label-missing");
+        Assert.Equal(missing, noData.Text.Lines[0].Text);
+        Assert.True(Ink(noData).Top > bands.Max(node => Ink(node).Bottom));
+        var key = prepared.Regions.Single(region => region.Role == "heatmap-scale").Bounds;
+        Assert.All(labels, label => { Assert.True(label.Text.Size >= 10); AssertInside(Ink(label), key); });
+        var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-scale-swatch").ToArray();
+        Assert.Equal(3, swatches.Length);
+        Assert.True(noData.Text.Metrics.Width + noData.Text.Metrics.Height > swatches[0].Bounds.Width,
+            "This complete translation cannot share a single unused band cell.");
+        var image = RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
+        Assert.All(swatches, swatch => {
+            Assert.Equal(12, swatch.Bounds.Height, 6); AssertInside(swatch.Bounds, key);
+            Assert.Equal(swatch.Fill!.Value, Pixel(image, swatch.Bounds.Left + swatch.Bounds.Width / 2, swatch.Bounds.Top + 6));
+        });
+        Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "matrix.scale-overflow" or "text.overflow");
+        ScatterBubbleColorRenderingTests.Capture(prepared, "legacy-key-localized-missing-separate-row");
+    }
+
+    private static FontSpec GalleryFont() {
         const string family = "CFX Proof Carlito";
         var directory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         FontRegistry.Register(family, Path.Combine(directory, "Carlito-Regular.ttf"), 400);
         FontRegistry.Register(family, Path.Combine(directory, "Carlito-Bold.ttf"), 700);
+        return FontSpec.FromFamily(family);
+    }
+
+    private static PreparedVisual Prepare(Chart chart, string variant, bool dark, int width) {
         var subtitle = variant.Contains("gradient", StringComparison.Ordinal) ? "A continuous key retains every authored color anchor"
             : variant.Contains("swatch", StringComparison.Ordinal) ? "A sampled key keeps the continuous measurement and its color domain"
             : "Temperature captions use their own format and culture";
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, width == 360 ? 360 : 440)),
-            VisualTheme.Graphite(), Mode(dark), new VisualFrame("Temperature by grid position", subtitle), FontSpec.FromFamily(family)));
+            VisualTheme.Graphite(), Mode(dark), new VisualFrame("Temperature by grid position", subtitle), GalleryFont()));
     }
 
     private static VisualThemeMode Mode(bool dark) => dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
