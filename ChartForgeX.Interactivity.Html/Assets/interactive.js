@@ -3468,8 +3468,7 @@
       setScenarioStep(root, detail.index, false, false);
     }
   };
-  // Native links, annotations and scalar series are selectable facts too. A series wrapper
-  // has no value of its own; its separately identified children own the observations.
+  // Identified leaves own selectable values; series wrappers do not.
   const isDataTarget = node => isInteractiveTarget(node) && renderedTargetKind(node) !== 'legend'
     && (renderedTargetKind(node) !== 'series' || node.dataset.cfxValue !== undefined);
   const dataTargets = root => interactiveTargets(root).filter(isDataTarget);
@@ -3497,7 +3496,7 @@
     const lower = data.cfxRangeStart;
     const upper = data.cfxRangeEnd;
     if (lower === undefined || upper === undefined) return undefined;
-    // A range has one unit: native negative OLE coordinates cannot mix with Unix-millisecond ISO instants.
+    // Do not mix OLE dates and Unix milliseconds in one range.
     const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
     const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
     const to = time ? data.cfxRangeInclusiveEndInstant ?? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
@@ -3517,8 +3516,7 @@
     root.toggleAttribute('data-cfx-has-selection', selected);
     if (selected) root.dataset.cfxHasSelection = 'true';
     nodes.forEach(node => {
-      // Selection and external highlights are independent foregrounds. Their combined dim policy
-      // keeps either active mark at full strength instead of letting the two layers dim each other.
+      // Selection and host highlights share foreground; neither dims the other.
       const active = node.classList.contains('cfx-selected') || node.classList.contains('cfx-highlighted');
       node.classList.toggle('cfx-selection-dim', selectionForeground && root.dataset.cfxDimOthersSelected === 'true' && !active);
       node.classList.toggle('cfx-linked-dim', highlightForeground && root._cfxHostHighlight?.dim === true && !active);
@@ -3548,8 +3546,7 @@
     const a = intervalNumber(left), b = intervalNumber(right);
     if (a !== b) return a < b ? -1 : 1;
     if (typeof left !== 'string') return 0;
-    // Date.parse normalizes offsets but truncates fractional milliseconds. Compare that remainder
-    // separately so precise instants never round together in a Unix-millisecond floating-point value.
+    // Compare fractional milliseconds separately from Date.parse's truncated value.
     const remainder = value => (value.match(/\.(\d+)(?:Z|[+-]\d\d:\d\d)$/)?.[1] || '').slice(3);
     const x = remainder(left), y = remainder(right), length = Math.max(x.length, y.length);
     const paddedX = x.padEnd(length, '0'), paddedY = y.padEnd(length, '0');
@@ -3624,21 +3621,33 @@
     clearBrushCommand(root, options);
     return runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
   };
-  // Replacement retains durable facts; live synchronization can also address current observations in shared series.
+  // Retain durable identity for replacement and shared peers.
   const projectHostHighlight = (root, source, synchronize = false) => {
     const state = copyHostValue(source);
     if (!state) return state;
     const match = state.match, nodes = dataTargets(root);
-    const sharedKeys = new Set(JSON.parse(root.dataset.cfxPreparedChart).series.filter(series => !series.local).map(series => series.key));
+    const series = JSON.parse(root.dataset.cfxPreparedChart).series;
+    const sharedKeys = new Set(series.filter(series => !series.local).map(series => series.key));
     const retainTarget = synchronize ? target => target.seriesScope !== 'local' : durableChartTarget;
+    let observationOwners;
     const observationReferences = (ids, seriesKey) => {
+      // The source catalog also owns omitted samples.
+      if (!observationOwners) {
+        observationOwners = new Map();
+        series.forEach(owner => (owner.observationIds || []).forEach(({ id }) => {
+          if (!observationOwners.has(id)) observationOwners.set(id, []);
+          observationOwners.get(id).push(owner);
+        }));
+      }
       const resolved = resolveHostTargets(root, { observationIds: ids, seriesKey });
       return ids.flatMap(observationId => {
         const matching = resolved.filter(target => target.observationId === observationId || target.observationIds?.includes(observationId));
-        const keys = matching.length
-          ? matching.filter(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey)).map(target => target.seriesKey)
+        const declared = (observationOwners.get(observationId) || []).filter(owner => !seriesKey || owner.key === seriesKey);
+        const keys = matching.length || declared.length
+          ? [...matching.filter(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey)).map(target => target.seriesKey),
+            ...declared.filter(owner => !owner.local).map(owner => owner.key)]
           : Array.from(sharedKeys).filter(key => !seriesKey || key === seriesKey);
-        return keys.map(seriesKey => ({ seriesKey, observationId }));
+        return Array.from(new Set(keys)).map(seriesKey => ({ seriesKey, observationId }));
       });
     };
     let removed = false;
@@ -3665,7 +3674,7 @@
       delete match.observationIds;
       removed = true;
     }
-    // Ordinals describe the previous source order; explicit IDs and value filters describe durable intent.
+    // Source ordinals expire on replacement; IDs and value filters persist.
     if (synchronize) retain('sourcePoints', item => item && sharedKeys.has(item.seriesKey));
     else if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
     if (match.seriesKey && !sharedKeys.has(match.seriesKey)) {

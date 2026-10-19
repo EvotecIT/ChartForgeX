@@ -22,6 +22,11 @@ function fixture() {
   const state = match => ({ match, dim: true, source: 'host' });
   return {
     current(values) { identities = values; },
+    catalog(seriesKey, ids) {
+      const metadata = JSON.parse(root.dataset.cfxPreparedChart);
+      metadata.series.find(series => series.key === seriesKey).observationIds = ids.map((id, index) => ({ id, index }));
+      root.dataset.cfxPreparedChart = JSON.stringify(metadata);
+    },
     project(match) { const input = state(match), before = JSON.stringify(input);
       const projected = runtime.projectHostHighlight(root, input);
       assert.equal(JSON.stringify(input), before); return projected; },
@@ -44,6 +49,10 @@ test('unmatched observation descriptors retain a real shared-series scope and ig
   f.current([target('primary', 'future'), target('reference', 'future')]);
   assert.deepEqual(f.resolve(projected).map(item => item.seriesKey), ['primary']);
   assert.equal(f.project({ targets: [{ seriesKey: 'local', observationId: 'future', seriesScope: 'shared' }] }), null);
+  f.catalog('local', ['reading']);
+  const explicitlyScoped = f.project({ seriesKey: 'primary', observationIds: ['reading'] });
+  f.current([target('primary', 'reading'), target('reference', 'reading')]);
+  assert.deepEqual(f.resolve(explicitlyScoped).map(item => item.seriesKey), ['primary']);
 });
 
 test('an observed local identity does not become an unmatched shared identity during replacement', () => {
@@ -61,4 +70,26 @@ test('known shared contributor intent follows its new aggregate while retaining 
     assert.deepEqual(f.resolve(projected).map(item => item.targetId), ['new-bin']);
     f.current([{ seriesKey: 'primary', seriesScope: 'shared', targetKind: 'point', targetId: 'old-bin', observationIds: ['a', 'b'] }]);
   }
+});
+
+test('an unpainted authored observation retains its catalog series across replacement', () => {
+  const f = fixture();
+  f.catalog('primary', ['kept', 'omitted']);
+  for (const match of [{ observationIds: ['omitted'] }, { targets: [{ observationId: 'omitted' }] }]) {
+    f.current([target('primary', 'kept')]);
+    const projected = f.project(match);
+    f.current([target('primary', 'omitted'), target('reference', 'omitted')]);
+    assert.deepEqual(f.resolve(projected).map(item => item.seriesKey), ['primary']);
+  }
+});
+
+test('an unpainted local observation cannot become unscoped shared intent', () => {
+  const f = fixture();
+  f.catalog('local', ['kept', 'omitted']);
+  f.current([target('local', 'kept', 'local')]);
+  assert.equal(f.project({ observationIds: ['omitted'] }), null);
+  assert.equal(f.project({ targets: [{ observationId: 'omitted', seriesScope: 'shared' }] }), null);
+  const mixed = f.project({ observationIds: ['omitted', 'future'] });
+  f.current([target('primary', 'omitted'), target('primary', 'future')]);
+  assert.deepEqual(f.resolve(mixed).map(item => item.observationId), ['future']);
 });
