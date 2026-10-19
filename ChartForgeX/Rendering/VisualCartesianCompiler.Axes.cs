@@ -20,6 +20,7 @@ internal static partial class VisualCartesianCompiler {
         private readonly Dictionary<ChartAxis, Func<double, string>> _readoutFormatters = new();
         private readonly Dictionary<ChartAxis, HashSet<double>> _formattedValues = new();
         private readonly Dictionary<ChartAxis, Dictionary<double, (string Text, bool Shortened)>> _categoryDisplay = new();
+        private readonly Dictionary<ChartAxis, (IReadOnlyList<double> Ticks, double TrackLength)> _categoryPlan = new();
         private IReadOnlyList<double>? _regularTimeBarObservations;
         private bool _hasTimeBarObservations;
         internal ChartAxis? HorizontalValueAxis { get; set; }
@@ -33,9 +34,12 @@ internal static partial class VisualCartesianCompiler {
         }
         internal void Set(ChartAxis axis, double value, string text) => _labels.Set(axis, value, text);
         internal void SetCategoryDisplay(ChartAxis axis, Dictionary<double, (string Text, bool Shortened)>? captions) {
-            if (captions == null) _categoryDisplay.Remove(axis);
+            if (captions == null) { _categoryDisplay.Remove(axis); _categoryPlan.Remove(axis); }
             else _categoryDisplay[axis] = captions;
         }
+        internal void PlanCategoryTicks(ChartAxis axis, IReadOnlyList<double> ticks, double trackLength) => _categoryPlan[axis] = (ticks, trackLength);
+        internal IReadOnlyList<double>? PlannedCategoryTicks(ChartAxis axis) => _categoryPlan.TryGetValue(axis, out var plan) ? plan.Ticks : null;
+        internal double PlannedCategoryTrack(ChartAxis axis) => _categoryPlan[axis].TrackLength;
         internal string CategoryDisplay(ChartAxis axis, double value, string source) =>
             _categoryDisplay.TryGetValue(axis, out var captions) && captions.TryGetValue(value, out var display) ? display.Text : source;
         internal bool CategoryShortened(ChartAxis axis, double value) =>
@@ -120,8 +124,9 @@ internal static partial class VisualCartesianCompiler {
         top = Math.Min(top, viewport.Height * .25);
         // Axis tracks end at the data bounds; their centered captions occupy the
         // surrounding frame instead of moving inward toward a different value.
-        left = Math.Max(left, Math.Min(xMetrics.Width / 2, viewport.Width * .35));
-        right = Math.Max(right, Math.Min(xMetrics.Width / 2, viewport.Width * .35));
+        var xOverhang = CategoryCaptionOverhang(builder, chart.Options.XAxis, range.MinX, range.MaxX, style, labels);
+        left = Math.Max(left, Math.Min(xOverhang?.Left ?? xMetrics.Width / 2, viewport.Width * .35));
+        right = Math.Max(right, Math.Min(xOverhang?.Right ?? xMetrics.Width / 2, viewport.Width * .35));
         var halfHeight = Math.Max(yMetrics.Height, secondaryMetrics.Height) / 2;
         top = Math.Max(top, Math.Min(halfHeight, viewport.Height * .25));
         bottom = Math.Max(bottom, Math.Min(halfHeight, viewport.Height * .45));
@@ -131,7 +136,7 @@ internal static partial class VisualCartesianCompiler {
     private static TextMetrics TickMetrics(VisualSceneBuilder builder, ChartAxis axis, double minimum, double maximum, TextStyle style, Func<double, string>? fallback, AxisLabelCache labels) {
         var ticks = labels.Ticks(axis, minimum, maximum);
         var width = 0d; var height = 0d;
-        foreach (var tick in ticks) {
+        foreach (var tick in labels.PlannedCategoryTicks(axis) ?? ticks) {
             var text = labels.CategoryDisplay(axis, tick, labels.Format(axis, tick, fallback, ticks));
             var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), axis.LabelAngle);
             width = Math.Max(width, metrics.Width); height = Math.Max(height, metrics.Height);
@@ -249,7 +254,8 @@ internal static partial class VisualCartesianCompiler {
             return string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, bounds.Width,
                 (value, _) => builder.MeasureText(value, style).Width));
         }
-        var visible = SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
+        var visible = labels.PlannedCategoryTicks(axis) is { } planned ? new HashSet<double>(planned)
+            : SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
         var requests = new List<LabelPlacementRequest>();
         var role = horizontal ? "axis-x-label" : secondary ? "axis-secondary-y-label" : "axis-y-label";
         var index = 0;
