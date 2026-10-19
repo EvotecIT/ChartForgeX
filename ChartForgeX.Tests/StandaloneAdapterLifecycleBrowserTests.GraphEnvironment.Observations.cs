@@ -28,7 +28,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             if (await target.EvaluateAsync<bool>("node=>node===document.activeElement&&node.matches(':focus-visible')")) return;
             await page.Keyboard.PressAsync("Tab");
         }
-        Assert.True(false, "The graph target was not reachable through the fixture's bounded native Tab order.");
+        Assert.Fail("The graph target was not reachable through the fixture's bounded native Tab order.");
     }
 
     private static Task<string> GraphEnvironmentPrimaryAsync(IPage page) =>
