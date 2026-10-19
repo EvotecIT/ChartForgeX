@@ -7,6 +7,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 
 namespace ChartForgeX.Tests;
 
+[Trait("BrowserSuite", "Compatibility")]
 public sealed class MapObservationIdentityBrowserTests {
     [BrowserTheory]
     [InlineData(ChartSeriesKind.CalendarHeatmap)]

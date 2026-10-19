@@ -94,6 +94,7 @@ try {
         'RuntimeSelectionCueBrowserTests.BranchSelectionAndHostHighlightKeepIndependentNativeCuesAcrossPeerHover',
         'InteractiveChordColorBrowserTests.IndependentFlowColorRetainsNativeReadoutsIdentityAndCurrentExportAcrossReplacement',
         'HighlightObservationOwnershipBrowserTests.OmittedSourceObservationsRetainTheirCatalogOwnerAcrossReplacement',
+        'MapObservationIdentityBrowserTests.SelectionAndReadoutsRetainObservationIdsAfterTypedUpdates',
         'RuntimeSelectionCueBrowserTests.NativeTextOnlySelectionKeepsItsPaintedCueAndIdentityWithoutFilters',
         'WordCloudTargetOwnershipBrowserTests.PublicSelectionResolvesOnePaintedOwnerPerTermInMultipleAndSingleModes',
         'WordCloudTargetOwnershipBrowserTests.LimitedAndZeroWeightTermsRetainExactInventoryWithoutBecomingInteractiveDuplicates',

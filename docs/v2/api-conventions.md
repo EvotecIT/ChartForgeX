@@ -41,7 +41,7 @@ HTML interaction presentation stays in the optional adapter. `HtmlChartInteracti
 | `VisualRenderOptions` | Raster scale, supersampling and working pixel budget. These do not change logical layout. |
 | `VisualDiagnostic` | A stable code, human explanation and the existing shared `Diagnostics.VisualDiagnosticSeverity`. |
 | `VisualSemanticRegion` | Stable ID, role, descriptive rectangular extent and optional text. It is not an exact hit-test shape. |
-| `ChartNode` / `ChartFlowLink` | Immutable authored relationship identities and raw finite non-negative flow facts. Chart families validate their graph and weight constraints before adding a series. |
+| `ChartNode` / `ChartFlowLink` | Immutable authored relationship identities and finite nonnegative flow weights. Chord can also use an independent nullable signed color value. Chart families validate their graph and weight constraints before adding a series. |
 | `ChartSeries.WithNodeState(id, state)` | Mutable semantic styling keyed by an existing authored node ID, scoped to that series. `NodeStates` exposes a read-only view; preparation snapshots the resulting paint. |
 | `ChartFlowStyle` / `ChartSeries.WithFlowStyle(id, style)` | Immutable fill, opacity, pattern and outline overrides for an existing Sankey or Chord flow ID. `FlowStyles` is read-only; null removes an override. |
 | `ChartSeries.WithFlowState(id, state)` | Semantic state for an existing Sankey or Chord flow ID. `FlowStates` is read-only; null restores source-node/series inheritance and `None` suppresses it. |
@@ -158,6 +158,8 @@ Lane factories and full replacements order items by start, end and input order. 
 Categorical `HeatmapCells` includes null masked cells in column order. Observation indices and IDs refer to those columns. `UpdateHeatmapCell(index, null)` masks one cell while preserving later cells' identities; restoring the cell restores its existing ID. Use `CreateHeatmapCategoryRow` for categorical data and the numeric row APIs for numeric data.
 
 `MapPoints` keeps each dotted-map label, longitude, latitude, optional value and color together. Repeated coordinates retain separate observations. `CalendarItems` owns wall-clock dates, values and optional colors. `RegionValues` owns canonical region codes, values and optional colors for region and tile maps; their immutable geometry belongs to `series.RegionMapDefinition` or `series.TileMapDefinition`. Chart options own map viewport, paint, color scales, layers and routes. Changing Cartesian axis labels does not change map observations.
+
+`ChartRegionMapItem.Value` accepts any finite signed scalar, including temperatures or balances. Duplicate region observations can cancel to an observed zero; omitting a region means no data. Explicit color scales retain their signed domain, midpoint and formatting policies. Without an explicit scale, a range containing negative values uses its observed minimum and maximum with safe normalization. Dotted-map values remain nonnegative because they can control point radius.
 
 `WithPointLegend()` gives dotted maps one key per typed location, using that location's label and resolved dot color. The keys retain observation IDs, coordinates and optional values, including for locations outside the selected viewport. HTML legend actions address the corresponding location and reconcile authored IDs through updates. Region and tile maps retain their independent numeric color keys.
 
