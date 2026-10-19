@@ -15,7 +15,8 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
-  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"]');
+  // Complete word-cloud source inventory describes facts; the painted term owns interaction.
+  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"],[data-cfx-role="word-cloud-source"]');
   const isInteractiveTarget = (node) => {
     if (isPassiveTarget(node)) return false;
     const role = (node.dataset || {}).cfxRole;
@@ -865,9 +866,10 @@
     const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
       || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node, node, styles)) return null;
-    // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
-    if (node.matches('circle,ellipse')) {
-      const box = node.getBBox();
+    // SVG disables zero-sized basic shapes, including their otherwise visible stroke paint.
+    let box;
+    if (node.matches('rect,circle,ellipse')) {
+      box = node.getBBox();
       if (!(box.width > 0 && box.height > 0)) return null;
     }
     const paint = paintStyle(node, styles);
@@ -875,8 +877,13 @@
     // A series-wide boundary box cannot establish paint at this observation, connected or isolated.
     if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
     // Open line marks never paint their inherited default black fill.
-    const fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
+    let fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
       : paintValue(node, paint.fill, paint.fillOpacity, styles);
+    // A collapsed filled path has no interior ink. A real horizontal/vertical stroke or round cap still paints.
+    if (fill) {
+      box ||= node.getBBox();
+      if (!(box.width > 0 && box.height > 0)) fill = null;
+    }
     if (cartesianFillObservation(node, subject)) {
       if ((node.dataset.cfxRole || '').endsWith('-pattern')) return stroke && cartesianFillInk(node, subject, styles) ? stroke : null;
       if (fill && cartesianFillInk(node, subject, styles)) return fill;
@@ -896,7 +903,7 @@
       if (!(parseFloat(style.fontSize) > 0)) continue;
       const stroke = parseFloat(style.strokeWidth) > 0 ? paintValue(text, style.stroke, style.strokeOpacity, styles) : null;
       const paint = paintValue(text, style.fill, style.fillOpacity, styles) || stroke;
-      if (paint) return paint;
+      if (paint) return { ...paint, textNode: text };
     }
     return null;
   };
@@ -1664,7 +1671,7 @@
       node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
       node._cfxFillInteriors = Object.freeze((region.fillInteriors || []).map(candidate => Object.freeze(candidate.slice())));
       if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
-      if (data.cfxVisible === 'false') return;
+      if (isPassiveTarget(node) || data.cfxVisible === 'false') return;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -1777,6 +1784,20 @@
     outline.setAttribute('focusable', 'false');
     return outline;
   };
+  // Keyboard focus and text-only state cues share the same live native-to-SVG footprint.
+  const interactionOutlineFootprint = (node) => {
+    const svg = node?.ownerSVGElement, matrix = svgScreenMatrix(svg);
+    if (!matrix) return null;
+    const box = nativeRegionScreenBox(node) || nativeRegionScreenBox(node, node.getBBox());
+    if (!box || !Object.values(box).every(Number.isFinite)) return null;
+    const centerX = (box.left + box.right) / 2, centerY = (box.top + box.bottom) / 2;
+    const halfWidth = Math.max(5, (box.right - box.left) / 2 + 3), halfHeight = Math.max(5, (box.bottom - box.top) / 2 + 3);
+    const inverse = matrix.inverse();
+    const points = [[centerX - halfWidth, centerY - halfHeight], [centerX + halfWidth, centerY - halfHeight],
+      [centerX + halfWidth, centerY + halfHeight], [centerX - halfWidth, centerY + halfHeight]]
+      .map(([x, y]) => new DOMPoint(x, y).matrixTransform(inverse));
+    return { svg, path: points.map((point, index) => (index ? 'L ' : 'M ') + point.x + ' ' + point.y).join(' ') + ' Z' };
+  };
   const highlightOutline = (paint, style) => {
     const primary = paint.querySelector('[data-cfx-role="sunburst-segment-mark"]');
     let outline = paint.querySelector('[data-cfx-highlight-outline]');
@@ -1852,6 +1873,80 @@
     refreshRootBranchHighlightAvailability(root);
     return true;
   };
+  // Selection is persistent reader state. Its cue uses native geometry without changing authored mark ink.
+  const stateCueGeometry = ['x', 'y', 'width', 'height', 'rx', 'ry', 'cx', 'cy', 'r', 'x1', 'y1', 'x2', 'y2',
+    'd', 'points', 'transform', 'fill-rule', 'clip-path'];
+  const stateCueStyle = (node, name, value) => {
+    if (node.style.getPropertyValue(name) !== value) node.style.setProperty(name, value);
+  };
+  const createSelectionCuePaint = (kind) => {
+    const paint = interactionOutlineNode('g', 'data-cfx-state-outline');
+    for (const key of ['halo', 'ink']) {
+      const shape = interactionOutlineNode(kind, 'data-cfx-state-' + key);
+      shape.setAttribute('fill', 'none'); shape.setAttribute('vector-effect', 'non-scaling-stroke');
+      paint.appendChild(shape);
+    }
+    return paint;
+  };
+  const styleSelectionCuePaint = (paint, selected, width) => {
+    stateCueStyle(paint, '--cfx-state-color', selected ? 'rgb(56, 189, 248)' : 'var(--cfx-host-accent)');
+    stateCueStyle(paint, '--cfx-state-halo-width', String(width + 6));
+    stateCueStyle(paint, '--cfx-state-ink-width', String(width + 3));
+  };
+  const refreshSelectionCuePaint = (root, nodes) => {
+    let cache = root._cfxSelectionCuePaint;
+    if (!cache && !root.hasAttribute('data-cfx-has-selection') && !root._cfxHostHighlight) return;
+    cache ||= root._cfxSelectionCuePaint = new Map();
+    const desired = new Set(), styles = new Map();
+    for (const node of nodes || dataTargets(root)) {
+      const selected = node.classList.contains('cfx-selected');
+      if ((!selected && !node.classList.contains('cfx-highlighted')) || !pointerTargetPaint(node, styles)) continue;
+      const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
+      const primary = shapes.filter(shape => shape.matches('[data-cfx-role^="circle-value"],[data-cfx-role^="gauge-value"],[data-cfx-role="gauge-needle"],[data-cfx-role="bullet-value"],[data-cfx-role="sunburst-segment-mark"],[data-cfx-role="treemap-tile-mark"]'));
+      const geometryByParent = new Map();
+      let geometricCue = false;
+      for (const source of primary.length ? primary : shapes) {
+        if (!shapePaint(source, styles, node)) continue;
+        // Hatches and their base mark can share geometry. They need one cue, with every native layer retained.
+        const signature = source.localName + stateCueGeometry.map(key => source.getAttribute(key) || '').join('|');
+        let seen = geometryByParent.get(source.parentNode);
+        if (!seen) geometryByParent.set(source.parentNode, seen = new Set());
+        if (seen.has(signature)) continue;
+        seen.add(signature); desired.add(source); geometricCue = true;
+        let paint = cache.get(source);
+        if (!paint || paint.parentNode !== source.parentNode) {
+          paint?.remove(); paint = createSelectionCuePaint(source.localName);
+          source.parentNode.insertBefore(paint, source); cache.set(source, paint);
+        }
+        const native = paintStyle(source, styles), width = parseFloat(native.strokeWidth) || 0;
+        styleSelectionCuePaint(paint, selected, width);
+        for (const shape of paint.children) {
+          for (const key of stateCueGeometry) {
+            const value = source.getAttribute(key);
+            if (value === null) { if (shape.hasAttribute(key)) shape.removeAttribute(key); }
+            else if (shape.getAttribute(key) !== value) shape.setAttribute(key, value);
+          }
+          for (const key of ['stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin'])
+            stateCueStyle(shape, key, native.getPropertyValue(key));
+        }
+      }
+      if (!geometricCue) {
+        const text = primaryTextPaint(node, false, styles)?.textNode;
+        const footprint = text && interactionOutlineFootprint(text);
+        if (footprint) {
+          desired.add(node);
+          let paint = cache.get(node);
+          if (!paint || paint.parentNode !== footprint.svg) {
+            paint?.remove(); paint = createSelectionCuePaint('path');
+            paint.setAttribute('data-cfx-state-footprint', ''); footprint.svg.appendChild(paint); cache.set(node, paint);
+          }
+          styleSelectionCuePaint(paint, selected, 0);
+          for (const shape of paint.children) if (shape.getAttribute('d') !== footprint.path) shape.setAttribute('d', footprint.path);
+        }
+      }
+    }
+    for (const [source, paint] of cache) if (!desired.has(source)) { paint.remove(); cache.delete(source); }
+  };
   // One owner releases a chart's browser work. Source data and layout remain native prepared facts.
   const chartLifetimes = new WeakMap();
   const mountedCharts = new Set();
@@ -1904,7 +1999,7 @@
     root.querySelectorAll('.cfx-series-muted').forEach(node => node.classList.remove('cfx-series-muted'));
     root.querySelectorAll('[data-cfx-muted]').forEach(node => node.removeAttribute('data-cfx-muted'));
     syncResetControl(root);
-    root.querySelectorAll('.cfx-prepared-point-marker,[data-cfx-browser-hit-area],[data-cfx-highlight-outline]').forEach(node => node.remove());
+    root.querySelectorAll('.cfx-prepared-point-marker,[data-cfx-browser-hit-area],[data-cfx-highlight-outline],[data-cfx-state-outline]').forEach(node => node.remove());
     root.querySelectorAll('[data-cfx-highlight-paint]').forEach(paint => paint.replaceWith(...paint.childNodes));
     root.querySelectorAll('[data-cfx-highlight-managed]').forEach(node => {
       node.removeAttribute('data-cfx-highlight-managed'); node.removeAttribute('data-cfx-highlight-unavailable');
@@ -2541,14 +2636,14 @@
   const keyboardAvailabilityMutation = (record, stage, ancestry) => {
     if (record.type === 'attributes' && record.attributeName === 'class'
       && keyboardNativeClasses(record.oldValue) === keyboardNativeClasses(record.target.getAttribute('class'))) return false;
-    if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline]')) return false;
+    if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-state-outline]')) return false;
     if (record.type === 'attributes' && record.attributeName === 'style' && record.target.matches('[data-cfx-highlight-paint]')
       && keyboardNativeStyle(record.oldValue) === keyboardNativeStyle(record.target.getAttribute('style'))) return false;
     // Only SVG marks affect navigation; ResizeObserver handles chrome layout.
     const svg = stage.querySelector('svg');
     if (record.type === 'attributes') return record.target === stage || !!svg?.contains(record.target) || ancestry.nodes.includes(record.target);
     const changes = [...record.addedNodes, ...record.removedNodes];
-    const adapterPaint = node => node.nodeType === 1 && node.matches('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],.cfx-prepared-point-marker,[data-cfx-browser-hit-area]');
+    const adapterPaint = node => node.nodeType === 1 && node.matches('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-state-outline],.cfx-prepared-point-marker,[data-cfx-browser-hit-area]');
     if (changes.length && changes.every(adapterPaint)) return false;
     return !!svg?.contains(record.target) || changes.some(node => node.contains(stage) || svg && node.contains(svg)
       || ancestry.nodes.some(boundary => node.contains(boundary)));
@@ -2624,6 +2719,7 @@
   };
   const refreshKeyboardNavigation = (root, focused, passive = false) => {
     refreshRootBranchHighlightAvailability(root);
+    refreshSelectionCuePaint(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
     const activeElement = root.getRootNode().activeElement;
@@ -2716,7 +2812,7 @@
   };
   const prepareKeyboardNavigation = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation')) {
-      if (root._cfxBranchHighlights) bindKeyboardNavigationAvailability(root);
+      if (root._cfxBranchHighlights || hasFeature(root, 'Selection')) bindKeyboardNavigationAvailability(root);
       return;
     }
     root._cfxKeyboardNavigation = { owned: new Set() };
@@ -2850,20 +2946,12 @@
     if (!hasFeature(root, 'KeyboardNavigation') || root._cfxPointerFocus === true) { clearKeyboardFocusPaint(root); return; }
     const focused = root.getRootNode().activeElement;
     const node = interactiveTargets(root).find(node => targetFocusNode(node) === focused);
-    const svg = node?.ownerSVGElement, matrix = svgScreenMatrix(svg);
-    if (!node || !focused.matches(':focus-visible') || !matrix || !keyboardTargetAvailable(node)) {
+    if (!node || !focused.matches(':focus-visible') || !keyboardTargetAvailable(node)) {
       clearKeyboardFocusPaint(root); return;
     }
-    const box = nativeRegionScreenBox(node) || nativeRegionScreenBox(node, node.getBBox());
-    if (!box || !Object.values(box).every(Number.isFinite)) { clearKeyboardFocusPaint(root); return; }
-    // Keep compact marks visible without shrinking larger targets.
-    const centerX = (box.left + box.right) / 2, centerY = (box.top + box.bottom) / 2;
-    const halfWidth = Math.max(5, (box.right - box.left) / 2 + 3), halfHeight = Math.max(5, (box.bottom - box.top) / 2 + 3);
-    const inverse = matrix.inverse();
-    const points = [[centerX - halfWidth, centerY - halfHeight], [centerX + halfWidth, centerY - halfHeight],
-      [centerX + halfWidth, centerY + halfHeight], [centerX - halfWidth, centerY + halfHeight]]
-      .map(([x, y]) => new DOMPoint(x, y).matrixTransform(inverse));
-    const path = points.map((point, index) => (index ? 'L ' : 'M ') + point.x + ' ' + point.y).join(' ') + ' Z';
+    const footprint = interactionOutlineFootprint(node);
+    if (!footprint) { clearKeyboardFocusPaint(root); return; }
+    const { svg, path } = footprint;
     let paint = root._cfxKeyboardFocusPaint;
     if (!paint || paint.ownerSVGElement !== svg) {
       clearKeyboardFocusPaint(root);
@@ -3392,6 +3480,7 @@
       node.classList.toggle('cfx-linked-dim', highlightForeground && root._cfxHostHighlight?.dim === true && !active);
     });
     syncCartesianLinkedPaint(root, nodes);
+    refreshSelectionCuePaint(root, nodes);
   };
   const selectionSignature = root => selectedTargets(root).map(targetKey).join('\n');
   const publishSelectionChange = (root, reason, sync = false, previousTargets) => {

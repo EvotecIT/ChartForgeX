@@ -161,9 +161,10 @@
     const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
       || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node, node, styles)) return null;
-    // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
-    if (node.matches('circle,ellipse')) {
-      const box = node.getBBox();
+    // SVG disables zero-sized basic shapes, including their otherwise visible stroke paint.
+    let box;
+    if (node.matches('rect,circle,ellipse')) {
+      box = node.getBBox();
       if (!(box.width > 0 && box.height > 0)) return null;
     }
     const paint = paintStyle(node, styles);
@@ -171,8 +172,13 @@
     // A series-wide boundary box cannot establish paint at this observation, connected or isolated.
     if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
     // Open line marks never paint their inherited default black fill.
-    const fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
+    let fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
       : paintValue(node, paint.fill, paint.fillOpacity, styles);
+    // A collapsed filled path has no interior ink. A real horizontal/vertical stroke or round cap still paints.
+    if (fill) {
+      box ||= node.getBBox();
+      if (!(box.width > 0 && box.height > 0)) fill = null;
+    }
     if (cartesianFillObservation(node, subject)) {
       if ((node.dataset.cfxRole || '').endsWith('-pattern')) return stroke && cartesianFillInk(node, subject, styles) ? stroke : null;
       if (fill && cartesianFillInk(node, subject, styles)) return fill;
@@ -192,7 +198,7 @@
       if (!(parseFloat(style.fontSize) > 0)) continue;
       const stroke = parseFloat(style.strokeWidth) > 0 ? paintValue(text, style.stroke, style.strokeOpacity, styles) : null;
       const paint = paintValue(text, style.fill, style.fillOpacity, styles) || stroke;
-      if (paint) return paint;
+      if (paint) return { ...paint, textNode: text };
     }
     return null;
   };

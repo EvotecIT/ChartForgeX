@@ -8,20 +8,12 @@
     if (!hasFeature(root, 'KeyboardNavigation') || root._cfxPointerFocus === true) { clearKeyboardFocusPaint(root); return; }
     const focused = root.getRootNode().activeElement;
     const node = interactiveTargets(root).find(node => targetFocusNode(node) === focused);
-    const svg = node?.ownerSVGElement, matrix = svgScreenMatrix(svg);
-    if (!node || !focused.matches(':focus-visible') || !matrix || !keyboardTargetAvailable(node)) {
+    if (!node || !focused.matches(':focus-visible') || !keyboardTargetAvailable(node)) {
       clearKeyboardFocusPaint(root); return;
     }
-    const box = nativeRegionScreenBox(node) || nativeRegionScreenBox(node, node.getBBox());
-    if (!box || !Object.values(box).every(Number.isFinite)) { clearKeyboardFocusPaint(root); return; }
-    // Keep compact marks visible without shrinking larger targets.
-    const centerX = (box.left + box.right) / 2, centerY = (box.top + box.bottom) / 2;
-    const halfWidth = Math.max(5, (box.right - box.left) / 2 + 3), halfHeight = Math.max(5, (box.bottom - box.top) / 2 + 3);
-    const inverse = matrix.inverse();
-    const points = [[centerX - halfWidth, centerY - halfHeight], [centerX + halfWidth, centerY - halfHeight],
-      [centerX + halfWidth, centerY + halfHeight], [centerX - halfWidth, centerY + halfHeight]]
-      .map(([x, y]) => new DOMPoint(x, y).matrixTransform(inverse));
-    const path = points.map((point, index) => (index ? 'L ' : 'M ') + point.x + ' ' + point.y).join(' ') + ' Z';
+    const footprint = interactionOutlineFootprint(node);
+    if (!footprint) { clearKeyboardFocusPaint(root); return; }
+    const { svg, path } = footprint;
     let paint = root._cfxKeyboardFocusPaint;
     if (!paint || paint.ownerSVGElement !== svg) {
       clearKeyboardFocusPaint(root);

@@ -127,6 +127,13 @@ public sealed class LabelPlacementService {
             var displayedStyle = measureText == null ? null : request.Style.Clone();
             if (displayedStyle != null) displayedStyle.TextCase = TextCaseTransform.None;
             var result = TryPlace(request, text, bounds, occupied, measureText, displayedStyle, avoidLeaderLabels);
+            if (result == null && request.AllowWrapping && text.IndexOf(' ') >= 0
+                && text.IndexOf('\n') < 0 && text.IndexOf('\r') < 0) {
+                var lines = ChartLabelWrapping.BalancedTwoLine(text, request.Style.EffectiveFontSize, 0,
+                    (value, _) => (measureText != null ? measureText(value, displayedStyle!) : MeasureDisplayed(value, request.Style)).Width);
+                if (lines.Length == 2) result = TryPlace(request, string.Join("\n", lines), bounds, occupied,
+                    measureText, displayedStyle, avoidLeaderLabels, remeasure: true);
+            }
             if (result == null && request.Fallback == LabelFallbackRule.EllipsisThenDrop) {
                 // Text elements retain surrogate pairs and combining marks during shortening.
                 var elements = StringInfo.ParseCombiningCharacters(text);
@@ -146,9 +153,9 @@ public sealed class LabelPlacementService {
     }
 
     private PlacedLabel? TryPlace(LabelPlacementRequest request, string text, ChartRect scene, LabelSpatialIndex occupied,
-        Func<string, TextStyle, TextMetrics>? measureText, TextStyle? displayedStyle, bool avoidLeaderLabels, bool ellipsized = false) {
+        Func<string, TextStyle, TextMetrics>? measureText, TextStyle? displayedStyle, bool avoidLeaderLabels, bool ellipsized = false, bool remeasure = false) {
         if (text.Length == 0) return null;
-        var metrics = !ellipsized && request.MeasuredSize.HasValue ? request.MeasuredSize.Value
+        var metrics = !ellipsized && !remeasure && request.MeasuredSize.HasValue ? request.MeasuredSize.Value
             : measureText != null ? measureText(text, displayedStyle!) : MeasureDisplayed(text, request.Style);
         metrics = VisualAxisText.RotatedMetrics(metrics, request.RotationDegrees);
         var decoration = text != request.Text ? request.DecorationSize : null;

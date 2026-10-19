@@ -4,6 +4,8 @@ ChartForgeX keeps static SVG, PNG, and HTML output deterministic by default. Bro
 
 The HTML adapter works from renderer metadata such as `data-cfx-series`, `data-cfx-series-key`, `data-cfx-point`, `data-cfx-label`, `data-cfx-id`, and `data-cfx-role`. Chart families can expose their own shapes and still reuse the same hover, selection, keyboard traversal, compare tray, crosshair, lasso, focus trail, reveal label, scenario, and playback contracts.
 
+Selection and host highlights retain visible cues without changing native fill colors. Painted shapes use outlines, connected points retain their prepared markers, and text-only marks use a measured outline around their text. These cues follow the current drawing after resizing or replacement and disappear when their mark becomes hidden or their state clears. Interactive SVG and PNG downloads retain persistent selection and host-highlight cues; transient hover and keyboard-focus outlines are omitted.
+
 The selected-target compare tray appears below the chart viewport, preserving axes, outer labels, and pointer access to marks. Its controls scroll horizontally inside compact hosts, including when reached by keyboard. Clearing the selection returns focus to the chart when the clear button held focus. Graphite charts use the chart's surface, text, and accent colors for these controls.
 
 The tray pages through every selected target, showing up to six inspection chips at a time. Previous and next buttons and a translated range caption keep larger selections reachable without changing the selection. The current page survives resizing and clamps to the available targets after an update. Activating a chip inspects its target without changing the selection. With `Tooltip.PinOnSelect` enabled, inspection switches the pinned readout; activating the same chip keeps it pinned. With pinning disabled, the inspection readout closes when pointer and keyboard focus leave the tray. When enough viewport space is available, the readout stays above the visible tray so its controls remain usable.
@@ -11,6 +13,8 @@ The tray pages through every selected target, showing up to six inspection chips
 Native painted marks retain their observation identity when pointed at. Cartesian producers declare `data-cfx-coordinate-system="cartesian"` on their series groups; inferred observations and crosshair guides require that scope. A producer declares polar geometry with `data-cfx-coordinate-system="polar"` on the SVG or a containing semantic group. Polar and other native-only families use SVG hit testing, leave empty stage space without an inferred target, and suppress the Cartesian crosshair. Nested observations inherit their containing series identity.
 
 Every rendered interaction surface is normalized to `data-cfx-target-kind` and `data-cfx-target-id` before bindings run. The semantic target kinds are `series`, `point`, `annotation`, `region`, `node`, `link`, and `legend`. The adapter also retains `element` as the fallback for an identified native surface without one of those semantic kinds. Hosts can therefore route one scenario across Cartesian marks, topology nodes and links, annotations, map regions, and legend entries without depending on renderer-specific markup. Use `AddRegionStep`, `AddNodeStep`, `AddLinkStep`, or `AddLegendStep` when building those routes.
+
+Each painted word-cloud term owns one interaction target. Its descriptive source record remains available with the complete source inventory, including terms omitted by weight or layout limits. Those records do not create duplicate selections or keyboard stops.
 
 Explicitly decimated series keep their original point identity. `data-cfx-point` remains the rendered ordinal, while the series source-index map and each host event's `sourcePoint` identify the caller's original point.
 
@@ -649,6 +653,8 @@ These commands preserve the same host events, deep-link updates, synchronized ch
 Enable `ChartInteractionFeatures.Export` to offer SVG and PNG downloads. Both export the committed native scene, including an accepted connected X window. Downloads retain selection, legend mute/isolation and resolved host colors. Hover emphasis, focus outlines and focus trails stay in the browser; standalone geometric zoom and pan do not change the exported native canvas.
 
 SVG downloads include the resolved presentation needed to display the chart without the adapter stylesheet or runtime. PNG downloads rasterize that SVG in the browser at the device pixel ratio. This browser PNG path is separate from ChartForgeX's native `ToPng` rendering; fonts and rasterization can differ between them.
+
+The default theme lists Arial before the generic system font, keeping the browser on the same available fallback used by native preparation when Calibri, Carlito and Segoe UI are absent. For an exact font contract, register the chosen faces for native rendering and deliver those same faces to the browser through the host's font stylesheet. Native font registration alone does not make a font available to the browser.
 
 ## State Bookmarks
 

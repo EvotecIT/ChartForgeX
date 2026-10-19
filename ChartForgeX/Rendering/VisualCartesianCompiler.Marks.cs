@@ -161,7 +161,8 @@ internal static partial class VisualCartesianCompiler {
 
     private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle) {
         var value = series.RenderPoints[pointIndex].Y;
-        var numeric = !(pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null)
+        var authored = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null;
+        var numeric = !authored
             && !(series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue);
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
             ? series.PointLabels[pointIndex]! : series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
@@ -170,16 +171,17 @@ internal static partial class VisualCartesianCompiler {
         if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
             style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
         return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, System.Globalization.CultureInfo.InvariantCulture), style,
-            numeric && chart.Options.ValueFormatter != null ? new Dictionary<string, string> { ["y"] = text } : null);
+            numeric && chart.Options.ValueFormatter != null ? new Dictionary<string, string> { ["y"] = text } : null, authored);
     }
 
     private readonly struct ResolvedPointLabel {
-        internal ResolvedPointLabel(string text, string displayedText, TextStyle style, IReadOnlyDictionary<string, string>? numericCaptions = null) {
-            Text = text; DisplayedText = displayedText; Style = style; NumericCaptions = numericCaptions;
+        internal ResolvedPointLabel(string text, string displayedText, TextStyle style, IReadOnlyDictionary<string, string>? numericCaptions = null, bool authored = false) {
+            Text = text; DisplayedText = displayedText; Style = style; NumericCaptions = numericCaptions; Authored = authored;
         }
         internal string Text { get; }
         internal string DisplayedText { get; }
         internal TextStyle Style { get; }
+        internal bool Authored { get; }
         private IReadOnlyDictionary<string, string>? NumericCaptions { get; }
         internal string? NumericCaption(string member) => NumericCaptions != null && NumericCaptions.TryGetValue(member, out var text) ? text : null;
     }
@@ -308,7 +310,8 @@ internal static partial class VisualCartesianCompiler {
         }
         if (inside) { style = insideStyle; paint = insidePaint; }
         var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, style, candidates) {
-            AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint
+            AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint,
+            AllowWrapping = resolvedLabel.Authored && placement == ChartDataLabelPlacement.Auto
         };
         if (labelId != null) ((CartesianLabels)labels).LabelIds.Add(request, labelId);
         if (inside) request.Bounds = mark;

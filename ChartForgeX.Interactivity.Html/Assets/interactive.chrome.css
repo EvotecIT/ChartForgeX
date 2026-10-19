@@ -2,7 +2,7 @@
 /* Graphite keeps host controls separate from the chart's single frame. */
 .cfx-interactive-chart[data-cfx-look="graphite"] {
   background: var(--cfx-host-background, transparent); color: var(--cfx-tooltip-text);
-  font-family: var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+  font-family: var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, system-ui, sans-serif);
 }
 .cfx-interactive-chart .cfx-toolbar {
   background: var(--cfx-tooltip-surface); border-color: var(--cfx-tooltip-line);
@@ -56,12 +56,12 @@
 .cfx-interactive-chart[data-cfx-responsive-layout="adaptive"] .cfx-frame { width: 100%; max-width: var(--cfx-native-width); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-muted);
-  font: 400 13px/1 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+  font: 400 13px/1 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, system-ui, sans-serif);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset:hover { border-color: var(--cfx-crosshair-axis); color: var(--cfx-tooltip-text); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray {
   border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
-  box-shadow: none; font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+  box-shadow: none; font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, system-ui, sans-serif);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__summary,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__range { color: var(--cfx-tooltip-muted); }
@@ -81,7 +81,7 @@
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
   border: 1px solid var(--cfx-tooltip-line); border-radius: 6px;
   box-shadow: var(--cfx-tooltip-shadow); padding: 8px 12px;
-  font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", system-ui, sans-serif);
+  font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, system-ui, sans-serif);
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title { font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid var(--cfx-tooltip-line); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip__title--series:last-child { padding-bottom: 0; border-bottom: 0; }
@@ -263,3 +263,9 @@
 .cfx-legend-overflow__entry > .cfx-legend-overflow__toggle { flex: 1 1 auto; min-width: 0; white-space: normal; text-align: start; }
 .cfx-legend-overflow__toggle[aria-pressed="true"] > span { text-decoration: line-through; }
 .cfx-legend-overflow [data-cfx-legend-page]:disabled { cursor: default; opacity: .5; }
+
+/* Persistent selection and host highlights keep a native SVG cue when filters do not paint. */
+.cfx-interactive-chart [data-cfx-state-outline] { pointer-events: none; }
+.cfx-interactive-chart [data-cfx-state-halo] { stroke: var(--cfx-tooltip-surface); stroke-width: var(--cfx-state-halo-width); }
+.cfx-interactive-chart [data-cfx-state-ink] { stroke: var(--cfx-state-color); stroke-width: var(--cfx-state-ink-width); }
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-highlighted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1 !important; }

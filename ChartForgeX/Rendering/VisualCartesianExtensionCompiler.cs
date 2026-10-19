@@ -74,8 +74,9 @@ internal static partial class VisualCartesianCompiler {
                 (numericCaptions ??= new Dictionary<string, string>())[member] = caption;
             return caption;
         }
-        var text = observation < series.PointLabels.Count && series.PointLabels[observation] != null ? series.PointLabels[observation]! : fallback(Format);
-        return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture), style, numericCaptions);
+        var authored = observation < series.PointLabels.Count && series.PointLabels[observation] != null;
+        var text = authored ? series.PointLabels[observation]! : fallback(Format);
+        return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture), style, numericCaptions, authored);
     }
 
     private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,

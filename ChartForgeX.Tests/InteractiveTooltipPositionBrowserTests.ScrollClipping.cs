@@ -82,9 +82,12 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         // A native pointer event after scrolling may acquire a different visible source. Mon must never remain shown.
         if (!clipped.GetProperty("hidden").GetBoolean()) AssertVisibleThursdayFact(clipped);
         await CaptureAsync(page, "scroll-readable-light-pointer-clipped", clipped, session);
+        var priorPointerMoves = clipped.GetProperty("events").EnumerateArray().Count(evt => evt.GetProperty("type").GetString() == "pointermove");
+        await page.Mouse.MoveAsync((float)pointer[0] + 2, (float)pointer[1]);
         await page.Mouse.MoveAsync((float)pointer[0], (float)pointer[1]);
         await ScrollSettledAsync(page);
         var reacquired = await ReadablePointerFactAsync(page);
+        Assert.True(reacquired.GetProperty("events").EnumerateArray().Count(evt => evt.GetProperty("type").GetString() == "pointermove") > priorPointerMoves);
         Assert.False(reacquired.GetProperty("hidden").GetBoolean());
         AssertVisibleThursdayFact(reacquired);
         await CaptureAsync(page, "scroll-readable-light-pointer-reacquired", new { pointer, clipped, reacquired }, session);

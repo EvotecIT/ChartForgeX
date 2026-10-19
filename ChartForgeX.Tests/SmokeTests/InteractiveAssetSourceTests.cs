@@ -24,16 +24,16 @@ internal static partial class SmokeTests {
             Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.js"));
 
         // A shipping-artifact budget catches accidental bundled tools or repeated runtime copies.
-        // Read-only linked-target resolution adds 89 compressed bytes to the inspected
-        // 71,994-byte net8 runtime. Keep a 72,128-byte ceiling; further growth requires artifact review.
+        // Native persistent-state cues and passive word-cloud inventory share existing paint,
+        // target and lifetime owners. Keep the reviewed runtime within 72 KiB compressed.
         using var compressed = new MemoryStream();
         using (var gzip = new GZipStream(compressed, CompressionLevel.Optimal, leaveOpen: true)) {
             var script = Encoding.UTF8.GetBytes(HtmlInteractiveChartRenderer.BuildInteractionScript());
             gzip.Write(script, 0, script.Length);
         }
-        const int maximumGzipBytes = 72128;
+        const int maximumGzipBytes = 73728;
         Assert(compressed.Length <= maximumGzipBytes,
-            "Interactive runtime exceeds its 72,128-byte gzip budget: " + compressed.Length + " bytes. Review the shipped asset before increasing the budget.");
+            "Interactive runtime exceeds its 73,728-byte gzip budget: " + compressed.Length + " bytes. Review the shipped asset before increasing the budget.");
     }
 
     private static void GraphExplorerCanvasConsumersPreferLivePhysicsState() {
