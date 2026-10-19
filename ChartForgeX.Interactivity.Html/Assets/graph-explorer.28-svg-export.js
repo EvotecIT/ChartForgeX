@@ -3,15 +3,15 @@
     Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
     return element;
   };
-  const exportedNodeStyle = (node, root) => {
+  const exportedNodeStyle = (node, root, palette) => {
     const selected = node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted');
     const compact = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview');
-    const paint = graphNodeMarkPaint(node, selected, compact, graphThemePalette(root).selected);
+    const paint = graphNodeMarkPaint(node, selected, compact, palette.selected);
     return `fill:${paint.fill};stroke:${paint.stroke};stroke-width:${paint.width}`;
   };
-  const appendExportedNodeMark = (document, group, node, root) => {
+  const appendExportedNodeMark = (document, group, node, root, palette = graphThemePalette(root)) => {
     const size = node.size;
-    const style = exportedNodeStyle(node, root);
+    const style = exportedNodeStyle(node, root, palette);
     if ((node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl) {
       const rectangular = node.shape === 'imageRect';
       if (rectangular) {
@@ -52,6 +52,7 @@
       const card = node.card === true;
       const icon = svgNode(document, 'text', { class: card ? 'cfx-graph-node-icon cfx-graph-node-card-icon' : 'cfx-graph-node-icon', x: card ? -node.size * 1.45 + 28 : 0, y: 4 });
       icon.textContent = node.icon;
+      icon.style.setProperty('--cfx-node-icon-adaptive', graphNodeIconColor(root, node.el, palette, node.backgroundColor));
       group.appendChild(icon);
     }
   };
@@ -103,6 +104,7 @@
     applySvgNodeDetailPaint(root, group, node, palette);
   };
   const applySvgNodeDetailPaint = (root, group, node, palette) => {
+    group.querySelector('.cfx-graph-node-icon')?.style.setProperty('--cfx-node-icon-adaptive', graphNodeIconColor(root, node.el, palette, node.backgroundColor));
     const badge = group.querySelector('.cfx-graph-node-badge');
     const surface = badge?.firstElementChild, text = badge?.querySelector('text');
     if (surface) { surface.style.fill = palette.text; surface.style.stroke = palette.halo; surface.style.strokeWidth = '2'; }
@@ -127,23 +129,27 @@
     path.style.strokeDasharray = edge.dashed ? edge.dashPattern.join(' ') : 'none';
     path.removeAttribute('marker-start'); path.removeAttribute('marker-end');
   };
-  const appendExportedEdgeArrows = (document, group, edge, paint) => {
-    if (!paint.arrows || !edge.sourceArrow && !edge.targetArrow && !edge.directed) return;
-    const arrows = svgNode(document, 'g', {
+  const appendExportedEdgeArrows = (document, group, edge, paint, existing) => {
+    if (!paint.arrows || !edge.sourceArrow && !edge.targetArrow && !edge.directed) { existing?.remove(); return; }
+    const arrows = existing || svgNode(document, 'g');
+    Object.entries({
       class: attr(edge.el, 'class'), 'data-cfx-role': 'graph-edge-arrows',
       'data-cfx-runtime-overlay': 'true', 'data-edge-arrows-for': edge.id,
       style: `opacity:${paint.arrowAlpha};pointer-events:none`
-    });
+    }).forEach(([key, value]) => arrows.setAttribute(key, value));
     for (const side of ['source', 'target']) {
-      if (side === 'source' ? !edge.sourceArrow : !edge.targetArrow && !edge.directed) continue;
+      let polygon = arrows.querySelector(`[data-arrow-side="${side}"]`);
+      if (side === 'source' ? !edge.sourceArrow : !edge.targetArrow && !edge.directed) { polygon?.remove(); continue; }
       const arrow = edgeArrowGeometry(paint.rendered, paint.control, side);
-      arrows.appendChild(svgNode(document, 'polygon', {
-        'data-arrow-side': side,
-        points: [arrow.tip, arrow.left, arrow.right].map(point => `${point.x},${point.y}`).join(' '),
-        style: `fill:${paint.color};stroke:none`
-      }));
+      if (!polygon) {
+        polygon = svgNode(document, 'polygon', { 'data-arrow-side': side });
+        if (side === 'source' && arrows.firstElementChild) arrows.insertBefore(polygon, arrows.firstElementChild);
+        else arrows.appendChild(polygon);
+      }
+      polygon.setAttribute('points', [arrow.tip, arrow.left, arrow.right].map(point => `${point.x},${point.y}`).join(' '));
+      polygon.setAttribute('style', `fill:${paint.color};stroke:none`);
     }
-    group.appendChild(arrows);
+    if (!existing) group.appendChild(arrows);
     return arrows;
   };
   const applySvgEdgeLabelPaint = (root, label, edge, paint, palette) => {
@@ -190,9 +196,8 @@
       const label = labels.get(edge.id);
       if (path.__cfxSvgPaintStamp !== stamp || path.__cfxSvgPaintLabel !== label) {
         applySvgEdgePaint(path, edge, paint);
-        arrowGroups.get(edge.id)?.remove();
-        const arrows = appendExportedEdgeArrows(scene.ownerDocument, path.parentNode, edge, paint);
-        if (arrows) path.after(arrows);
+        const arrows = appendExportedEdgeArrows(scene.ownerDocument, path.parentNode, edge, paint, arrowGroups.get(edge.id));
+        if (arrows && path.nextElementSibling !== arrows) path.after(arrows);
         if (label) applySvgEdgeLabelPaint(root, label, edge, paint, palette);
         path.__cfxSvgPaintStamp = stamp; path.__cfxSvgPaintLabel = label;
       }
@@ -215,6 +220,7 @@
             surface.style.removeProperty('stroke'); surface.style.removeProperty('stroke-width');
           }
         }
+        mark.querySelector('.cfx-graph-node-icon')?.style.setProperty('--cfx-node-icon-adaptive', graphNodeIconColor(root, node.el, palette, paint.fill));
         mark.__cfxSvgPaintStamp = stamp; mark.__cfxSvgPaintSurface = surface;
       }
       if (detail && (detail.__cfxSvgPaintStamp !== stamp || detail.__cfxSvgPaintSurface !== detail.firstElementChild)) {
@@ -264,7 +270,7 @@
         'aria-label': node.label
       });
       group.style.opacity = String((node.el.classList.contains('cfx-graph-neighborhood-dim') ? .18 : 1) * graphLinkOpacity(node.el));
-      appendExportedNodeMark(document, group, node, root);
+      appendExportedNodeMark(document, group, node, root, palette);
       marks.appendChild(group);
       const detail = svgNode(document, 'g', {
         class: `${attr(node.el, 'class') || 'cfx-graph-node'} cfx-graph-node-details`,

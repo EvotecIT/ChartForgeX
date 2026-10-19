@@ -756,7 +756,7 @@
 
 .cfx-graph-node-card-icon {
   font-size: 15px !important;
-  fill: var(--cfx-node-stroke, var(--cfx-color-graph-text)) !important;
+  --cfx-node-icon-fallback: var(--cfx-color-graph-text);
 }
 
 .cfx-graph-node {
@@ -816,10 +816,22 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 }
 
 .cfx-graph-node .cfx-graph-node-icon {
-  fill: #ffffff;
+  fill: var(--cfx-node-icon-adaptive, var(--cfx-node-icon-light, var(--cfx-node-icon-fallback, #ffffff)));
   stroke: none;
   font-weight: 750;
   paint-order: normal;
+}
+
+.cfx-graph-explorer.cfx-graph-theme-dark .cfx-graph-node-icon,
+.cfx-graph-explorer[data-cfx-graph-theme="dark"] .cfx-graph-node-icon,
+.cfx-graph-explorer[data-cfx-graph-theme-active="dark"] .cfx-graph-node-icon {
+  fill: var(--cfx-node-icon-adaptive, var(--cfx-node-icon-dark, var(--cfx-node-icon-fallback, #ffffff)));
+}
+
+@media (prefers-color-scheme: dark) {
+  .cfx-graph-explorer[data-cfx-graph-theme="system"]:not([data-cfx-graph-theme-active]) .cfx-graph-node-icon {
+    fill: var(--cfx-node-icon-adaptive, var(--cfx-node-icon-dark, var(--cfx-node-icon-fallback, #ffffff)));
+  }
 }
 
 .cfx-graph-node .cfx-graph-node-secondary,

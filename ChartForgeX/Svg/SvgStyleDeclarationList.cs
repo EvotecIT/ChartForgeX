@@ -11,7 +11,7 @@ internal sealed class SvgStyleDeclarationList {
 
     public SvgStyleDeclarationList(IEnumerable<SvgStyleDeclaration>? declarations) {
         if (declarations == null) return;
-        foreach (var declaration in declarations) Set(declaration.Name, declaration.Value);
+        foreach (var declaration in declarations) Set(declaration, preservePriority: true);
     }
 
     public IReadOnlyList<SvgStyleDeclaration> Declarations => _declarations;
@@ -28,7 +28,7 @@ internal sealed class SvgStyleDeclarationList {
 
             var name = declaration.Substring(0, separator);
             var value = declaration.Substring(separator + 1);
-            list.Set(name, value);
+            list.Set(SvgStyleDeclaration.Parse(name, value), preservePriority: true);
         }
 
         return list;
@@ -44,15 +44,29 @@ internal sealed class SvgStyleDeclarationList {
 
     public SvgStyleDeclarationList Set(string name, string? value) {
         if (value == null) return Remove(name);
-        var declaration = new SvgStyleDeclaration(name, value);
+        return Set(SvgStyleDeclaration.Parse(name, value), preservePriority: false);
+    }
+
+    private SvgStyleDeclarationList Set(SvgStyleDeclaration declaration, bool preservePriority) {
         for (var i = 0; i < _declarations.Count; i++) {
             if (!string.Equals(_declarations[i].Name, declaration.Name, StringComparison.Ordinal)) continue;
+            if (preservePriority && _declarations[i].Important && !declaration.Important) return this;
             _declarations[i] = declaration;
             return this;
         }
 
         _declarations.Add(declaration);
         return this;
+    }
+
+    /// <summary>Retains specificity/source order within each author priority, with inline declarations supplied last.</summary>
+    internal static IEnumerable<SvgStyleDeclaration> InCascadeOrder(IReadOnlyList<SvgStyleDeclaration> declarations) {
+        var important = false;
+        foreach (var declaration in declarations) {
+            if (declaration.Important) important = true;
+            else yield return declaration;
+        }
+        if (important) foreach (var declaration in declarations) if (declaration.Important) yield return declaration;
     }
 
     public SvgStyleDeclarationList Remove(string name) {

@@ -153,10 +153,13 @@ internal sealed class SvgRasterStyle {
         }
 
         ApplyCustomProperties(style, declarations);
-        foreach (var declaration in declarations) {
+        foreach (var declaration in SvgStyleDeclarationList.InCascadeOrder(declarations)) {
             if (SvgRasterCssVariables.IsCustomProperty(declaration.Name)) continue;
-            Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties), parent.FontWeight);
+            Apply(style, declaration.Name, SvgRasterCssVariables.Resolve(declaration.Value, style.CustomProperties), parent.FontWeight, parent.Color);
         }
+
+        style.Fill = style.Fill.ResolveCurrentColor(style.Color);
+        style.Stroke = style.Stroke.ResolveCurrentColor(style.Color);
 
         if (declarations.Any(declaration => string.Equals(declaration.Name, "text-decoration", StringComparison.OrdinalIgnoreCase))) {
             var localDecoration = style.TextDecoration;
@@ -173,6 +176,14 @@ internal sealed class SvgRasterStyle {
 
     [ThreadStatic] private static List<SvgStyleDeclaration>? _declarations;
 
+    /// <summary>Reconstructs the computed style of a definition in its original element ancestry.</summary>
+    public static SvgRasterStyle ResolveWithAncestors(SvgRasterElement element, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors) {
+        var parent = Default;
+        for (var index = 0; index < ancestors.Count; index++)
+            parent = Resolve(parent, ancestors[index], styleSheet, AncestorsBefore(ancestors, index));
+        return Resolve(parent, element, styleSheet, ancestors);
+    }
+
     private static string MergeTextDecorations(string inherited, string local) {
         var underline = ContainsDecoration(inherited, "underline") || ContainsDecoration(local, "underline");
         var strikethrough = ContainsDecoration(inherited, "line-through") || ContainsDecoration(local, "line-through");
@@ -184,22 +195,6 @@ internal sealed class SvgRasterStyle {
 
     private static bool ContainsDecoration(string value, string decoration) =>
         value.IndexOf(decoration, StringComparison.OrdinalIgnoreCase) >= 0;
-
-    public static IReadOnlyDictionary<string, string> ResolveCustomProperties(SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterElement element) {
-        var properties = new Dictionary<string, string>(StringComparer.Ordinal);
-        for (var i = 0; i < ancestors.Count; i++) {
-            var ancestorDeclarations = new List<SvgStyleDeclaration>();
-            ancestorDeclarations.AddRange(styleSheet.DeclarationsFor(ancestors[i], AncestorsBefore(ancestors, i)));
-            AddInline(ancestorDeclarations, ancestors[i]);
-            ApplyCustomProperties(properties, ancestorDeclarations);
-        }
-
-        var declarations = new List<SvgStyleDeclaration>();
-        declarations.AddRange(styleSheet.DeclarationsFor(element, ancestors));
-        AddInline(declarations, element);
-        ApplyCustomProperties(properties, declarations);
-        return properties;
-    }
 
     public ChartColor FillColor() => WithOpacity(Fill.Color ?? ChartColor.Transparent, Opacity * FillOpacity);
 
@@ -303,11 +298,6 @@ internal sealed class SvgRasterStyle {
         if (element.TryGet(name, out var value)) declarations.Add(new SvgStyleDeclaration(name, value));
     }
 
-    private static void AddInline(List<SvgStyleDeclaration> declarations, SvgRasterElement element) {
-        var inline = element.Get("style");
-        if (!string.IsNullOrWhiteSpace(inline)) declarations.AddRange(SvgStyleDeclarationList.Parse(inline!).Declarations);
-    }
-
     private static IReadOnlyList<SvgRasterElement> AncestorsBefore(IReadOnlyList<SvgRasterElement> ancestors, int count) {
         if (count <= 0) return Array.Empty<SvgRasterElement>();
         var before = new SvgRasterElement[count];
@@ -315,20 +305,24 @@ internal sealed class SvgRasterStyle {
         return before;
     }
 
-    private static void ApplyCustomProperties(SvgRasterStyle style, IEnumerable<SvgStyleDeclaration> declarations) =>
+    private static void ApplyCustomProperties(SvgRasterStyle style, IReadOnlyList<SvgStyleDeclaration> declarations) =>
         ApplyCustomProperties(style.CustomProperties, declarations);
 
-    private static void ApplyCustomProperties(Dictionary<string, string> properties, IEnumerable<SvgStyleDeclaration> declarations) {
-        foreach (var declaration in declarations) {
-            if (SvgRasterCssVariables.IsCustomProperty(declaration.Name)) properties[declaration.Name] = declaration.Value;
+    private static void ApplyCustomProperties(Dictionary<string, string> properties, IReadOnlyList<SvgStyleDeclaration> declarations) {
+        var compute = false;
+        foreach (var declaration in SvgStyleDeclarationList.InCascadeOrder(declarations)) {
+            if (!SvgRasterCssVariables.IsCustomProperty(declaration.Name)) continue;
+            properties[declaration.Name] = declaration.Value;
+            compute |= declaration.Value.IndexOf("var(", StringComparison.OrdinalIgnoreCase) >= 0;
         }
+        if (compute) SvgRasterCssVariables.Compute(properties);
     }
 
-    private static void Apply(SvgRasterStyle style, string name, string value, int inheritedFontWeight) {
+    private static void Apply(SvgRasterStyle style, string name, string value, int inheritedFontWeight, ChartColor inheritedColor) {
         if (string.IsNullOrWhiteSpace(value)) return;
         switch (name) {
             case "color":
-                var colorPaint = SvgRasterPaint.Parse(value, style.Color, SvgRasterPaint.Solid(style.Color));
+                var colorPaint = SvgRasterPaint.Parse(value, inheritedColor, SvgRasterPaint.Solid(style.Color));
                 style.Color = colorPaint.Color ?? style.Color;
                 break;
             case "fill":

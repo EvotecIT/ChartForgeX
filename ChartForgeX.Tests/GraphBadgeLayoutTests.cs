@@ -33,6 +33,27 @@ public sealed class GraphBadgeLayoutTests {
         AssertPaddedBadge(XDocument.Parse(graph.ToGraphSvg()).Root!, "+1234567890");
     }
 
+    [Fact]
+    public void PreparedCardBadgeKeepsTheFullCountAboveItsTitleWhileCircleAnchorStaysOutside() {
+        var graph = GraphScene.Create("card-badge", "Counts")
+            .AddNode("card", "KERBEROS.MICROSOFTONLINE.COM😀", node => {
+                node.Shape = GraphNodeShape.Box; node.Size = 62; node.Metadata["topology.card"] = "true";
+                node.BadgeText = "+1234567890"; node.SecondaryLabel = "Domain";
+            })
+            .AddNode("circle", "Circle", node => { node.Size = 30; node.BadgeText = "+2"; });
+        var svg = XDocument.Parse(graph.ToGraphSvg());
+        var card = svg.Descendants().Single(element => (string?)element.Attribute("data-node-details-for") == "card");
+        var badge = card.Elements().Single(element => (string?)element.Attribute("class") == "cfx-graph-node-badge");
+        var coordinates = badge.Attribute("transform")!.Value.Replace("translate(", "", StringComparison.Ordinal).TrimEnd(')').Split(' ');
+        var badgeY = double.Parse(coordinates[1], CultureInfo.InvariantCulture);
+        var titleY = double.Parse(card.Elements().Single(element => ((string?)element.Attribute("class"))?.Split(' ').Contains("cfx-graph-node-label") == true).Attribute("y")!.Value, CultureInfo.InvariantCulture);
+        Assert.True(badgeY - 8 >= -36, "The badge remains inside the prepared card's upper edge.");
+        Assert.True(badgeY + 8 < titleY - 12.5, "The badge's surface ends above the primary title's ink.");
+        Assert.Equal("+1234567890", badge.Descendants().Single(element => element.Name.LocalName == "text").Value);
+        var circle = svg.Descendants().Single(element => (string?)element.Attribute("data-node-details-for") == "circle");
+        Assert.Equal("translate(24.6 -24.6)", circle.Elements().Single(element => (string?)element.Attribute("class") == "cfx-graph-node-badge").Attribute("transform")!.Value);
+    }
+
     [BrowserTheory]
     [InlineData(HtmlGraphRenderBackend.Svg, false)]
     [InlineData(HtmlGraphRenderBackend.Canvas, true)]
