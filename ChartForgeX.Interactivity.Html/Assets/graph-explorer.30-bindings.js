@@ -118,7 +118,7 @@
       background.setAttribute('width', String(Math.max(1, width - 24))); background.setAttribute('height', '48');
       background.setAttribute('style', 'fill:#102334');
       group.appendChild(background);
-      [disclosure, width < 480 ? 'Reduced view; expand or filter.' : 'Other relationships are hidden. Expand a site or filter to inspect all.'].forEach((line, index) => {
+      [disclosure, width < 480 ? uiText(root, 'GraphReducedViewShort', 'Reduced view; expand or filter.') : uiText(root, 'GraphReducedView', 'Other relationships are hidden. Expand a site or filter to inspect all.')].forEach((line, index) => {
         const label = document.createElementNS('http:' + '//www.w3.org/2000/svg', 'text');
         label.setAttribute('x', '22'); label.setAttribute('y', index ? '48' : '30');
         label.setAttribute('textLength', String(Math.min(Math.max(1, width - 44), line.length * (index ? 6 : 7))));
@@ -146,10 +146,10 @@
     const pressed = root.dataset.cfxGraphPhysicsState === 'running' ? 'true' : 'false';
     items(root, "[data-cfx-graph-action='physics']").forEach(button => {
       button.setAttribute('aria-pressed', pressed);
-      button.setAttribute('aria-label', pressed === 'true' ? 'Pause physics' : 'Start physics');
-      button.setAttribute('data-cfx-tooltip', pressed === 'true' ? 'Pause physics' : 'Start physics');
+      button.setAttribute('aria-label', pressed === 'true' ? uiText(root, 'GraphPausePhysics', 'Pause physics') : uiText(root, 'GraphStartPhysics', 'Start physics'));
+      button.setAttribute('data-cfx-tooltip', pressed === 'true' ? uiText(root, 'GraphPausePhysics', 'Pause physics') : uiText(root, 'GraphStartPhysics', 'Start physics'));
       const label = button.querySelector('.cfx-graph-tool-label');
-      if (label) label.textContent = pressed === 'true' ? 'Pause' : 'Physics';
+      if (label) label.textContent = pressed === 'true' ? uiText(root, 'Pause', 'Pause') : uiText(root, 'GraphPhysics', 'Physics');
     });
   };
   const exportGraphJson = (root) => ({

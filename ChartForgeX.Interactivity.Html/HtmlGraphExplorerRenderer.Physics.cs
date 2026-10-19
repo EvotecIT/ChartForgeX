@@ -45,36 +45,37 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void WritePhysicsConfigurator(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options) {
         if (!options.IncludePhysicsConfigurator || !CanRunRuntimePhysics(scene)) return;
-        writer.Append("<details class=\"cfx-graph-physics-configurator\" data-cfx-role=\"graph-physics-configurator\"><summary>Physics lab</summary><div class=\"cfx-graph-physics-grid\">");
-        writer.Append("<label>Solver<select data-cfx-physics-field=\"solver\">");
-        WriteSolverOption(writer, GraphPhysicsSolver.BarnesHut, scene.Options.Physics.Solver);
-        WriteSolverOption(writer, GraphPhysicsSolver.ForceAtlas2, scene.Options.Physics.Solver);
-        WriteSolverOption(writer, GraphPhysicsSolver.Repulsion, scene.Options.Physics.Solver);
-        WriteSolverOption(writer, GraphPhysicsSolver.HierarchicalRepulsion, scene.Options.Physics.Solver);
+        var text = options.Localization;
+        writer.Append("<details class=\"cfx-graph-physics-configurator\" data-cfx-role=\"graph-physics-configurator\"><summary>" + Text(text[HtmlChartText.GraphPhysicsLab]) + "</summary><div class=\"cfx-graph-physics-grid\">");
+        writer.Append("<label>" + Text(text[HtmlChartText.GraphSolver]) + "<select data-cfx-physics-field=\"solver\">");
+        WriteSolverOption(writer, GraphPhysicsSolver.BarnesHut, scene.Options.Physics.Solver, text);
+        WriteSolverOption(writer, GraphPhysicsSolver.ForceAtlas2, scene.Options.Physics.Solver, text);
+        WriteSolverOption(writer, GraphPhysicsSolver.Repulsion, scene.Options.Physics.Solver, text);
+        WriteSolverOption(writer, GraphPhysicsSolver.HierarchicalRepulsion, scene.Options.Physics.Solver, text);
         writer.Append("</select></label>");
-        WritePhysicsInput(writer, "Theta", "theta", 0.05, 2, 0.05);
-        WritePhysicsInput(writer, "Gravity constant", "gravitationalConstant", -100000, -0.01, 1);
-        WritePhysicsInput(writer, "Node distance", "nodeDistance", 1, 2000, 1);
-        WritePhysicsInput(writer, "Repulsion strength", "strength", 0.01, 20, 0.05);
-        WritePhysicsInput(writer, "Central gravity", "centralGravity", 0, 5, 0.005);
-        WritePhysicsInput(writer, "Spring length", "springLength", 1, 2000, 1);
-        WritePhysicsInput(writer, "Spring strength", "springConstant", 0.0001, 2, 0.005);
-        WritePhysicsInput(writer, "Damping", "damping", 0, 1, 0.01);
-        WritePhysicsInput(writer, "Avoid overlap", "avoidOverlap", 0, 1, 0.05);
-        WritePhysicsInput(writer, "Minimum velocity", "minVelocity", 0.001, 100, 0.01);
-        WritePhysicsInput(writer, "Maximum velocity", "maxVelocity", 0.01, 1000, 1);
-        WritePhysicsInput(writer, "Timestep", "timestep", 0.01, 5, 0.05);
-        WritePhysicsInput(writer, "Iterations", "iterations", 1, 100000, 1);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphTheta], "theta", 0.05, 2, 0.05);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphGravityConstant], "gravitationalConstant", -100000, -0.01, 1);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphNodeDistance], "nodeDistance", 1, 2000, 1);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphRepulsionStrength], "strength", 0.01, 20, 0.05);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphCentralGravity], "centralGravity", 0, 5, 0.005);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphSpringLength], "springLength", 1, 2000, 1);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphSpringStrength], "springConstant", 0.0001, 2, 0.005);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphDamping], "damping", 0, 1, 0.01);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphAvoidOverlap], "avoidOverlap", 0, 1, 0.05);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphMinimumVelocity], "minVelocity", 0.001, 100, 0.01);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphMaximumVelocity], "maxVelocity", 0.01, 1000, 1);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphTimestep], "timestep", 0.01, 5, 0.05);
+        WritePhysicsInput(writer, text[HtmlChartText.GraphIterations], "iterations", 1, 100000, 1);
         writer.Append("<label class=\"cfx-graph-physics-check\"><input type=\"checkbox\" data-cfx-physics-field=\"adaptiveTimestep\"");
         if (scene.Options.Physics.AdaptiveTimestep) writer.Append(" checked");
-        writer.Append(">Adaptive timestep</label></div><div class=\"cfx-graph-physics-actions\"><button type=\"button\" data-cfx-physics-action=\"reheat\">Reheat</button><button type=\"button\" data-cfx-physics-action=\"reset\">Reset</button><output data-cfx-role=\"graph-physics-status\" aria-live=\"polite\"></output></div></details>");
+        writer.Append(">" + Text(text[HtmlChartText.GraphAdaptiveTimestep]) + "</label></div><div class=\"cfx-graph-physics-actions\"><button type=\"button\" data-cfx-physics-action=\"reheat\">" + Text(text[HtmlChartText.GraphReheat]) + "</button><button type=\"button\" data-cfx-physics-action=\"reset\">" + Text(text[HtmlChartText.GraphReset]) + "</button><output data-cfx-role=\"graph-physics-status\" aria-live=\"polite\"></output></div></details>");
     }
 
-    private static void WriteSolverOption(StringBuilder writer, GraphPhysicsSolver solver, GraphPhysicsSolver selected) {
+    private static void WriteSolverOption(StringBuilder writer, GraphPhysicsSolver solver, GraphPhysicsSolver selected, HtmlChartLocalization text) {
         var name = PhysicsSolverName(solver);
         writer.Append("<option value=\"").Append(name).Append('"');
         if (solver == selected) writer.Append(" selected");
-        writer.Append('>').Append(name).Append("</option>");
+        writer.Append('>').Append(Text(text[solver == GraphPhysicsSolver.BarnesHut ? HtmlChartText.GraphSolverBarnesHut : solver == GraphPhysicsSolver.ForceAtlas2 ? HtmlChartText.GraphSolverForceAtlas2 : solver == GraphPhysicsSolver.Repulsion ? HtmlChartText.GraphSolverRepulsion : HtmlChartText.GraphSolverHierarchicalRepulsion])).Append("</option>");
     }
 
     private static void WritePhysicsInput(StringBuilder writer, string label, string field, double minimum, double maximum, double step) {

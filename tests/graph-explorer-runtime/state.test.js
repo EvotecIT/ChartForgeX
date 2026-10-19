@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { graphMessageHelpers } = require('../helpers/graph-runtime-source');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const source = names => names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
 function element(role, id, parent = '') {
@@ -42,7 +43,7 @@ test('successful host document updates clear stale undo snapshots and rejected u
   const patchSource=apiSource.slice(apiSource.indexOf('  const applyGraphRuntimePatch ='),apiSource.indexOf('  const graphExplorerApi ='));
   const ignored=['stopWorkerPhysics','stopMainPhysics','upsertGraphCluster','upsertGraphEdge','syncSvgThemeColors','performanceGate','applyLayout','syncGraphItemTabStops'];
   let observeHostUpdate=false;
-  const environment={...Object.fromEntries(ignored.map(name=>[name,()=>{}])),graphApiRoot:target=>target,
+  const environment={...graphMessageHelpers(),...Object.fromEntries(ignored.map(name=>[name,()=>{}])),graphApiRoot:target=>target,
     items,attr,setGraphAttribute:(item,name,value)=>{ if(value===undefined || value===null || value==='') delete item.attributes[name]; else item.setAttribute(name,value); },
     idList:value=>value.split(',').filter(Boolean),hasFeature:(_root,name)=>['IncrementalUpdates','History'].includes(name),
     graphState:root=>({...root.state,edges:[],clusters:[]}),
@@ -74,7 +75,7 @@ test('export preserves inherited edge width and explicit widths', () => {
 
 test('node and cluster parent cycles and invalid edge widths are rejected before mutation', () => {
   const {root}=fixture();
-  const validate=new Function('items','attr','idList',source(['39-patch-validation'])+'\nreturn validateGraphPatch;')(items,attr,value=>value.split(',').filter(Boolean));
+  const validate=new Function('graphUiError','items','attr','idList',source(['39-patch-validation'])+'\nreturn validateGraphPatch;')(graphMessageHelpers().graphUiError,items,attr,value=>value.split(',').filter(Boolean));
   const before=JSON.stringify(root.elements.map(item=>item.attributes));
   for (const patch of [
     {upsertNodes:[{id:'shared',parentId:'db'},{id:'db',parentId:'shared'}]},

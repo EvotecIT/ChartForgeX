@@ -8,7 +8,8 @@ namespace ChartForgeX.Interactivity.Html;
 
 public sealed partial class HtmlGraphExplorerRenderer {
     private static void WriteHeader(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyList<GraphSceneCluster> clusters, string domId) {
-        writer.Append("<header class=\"cfx-graph-header\"><div class=\"cfx-graph-heading\"><span class=\"cfx-graph-eyebrow\">Interactive topology</span><h1 class=\"cfx-graph-title\"");
+        var text = options.Localization;
+        writer.Append("<header class=\"cfx-graph-header\"><div class=\"cfx-graph-heading\"><span class=\"cfx-graph-eyebrow\">" + Text(text[HtmlChartText.GraphEyebrow]) + "</span><h1 class=\"cfx-graph-title\"");
         Attribute(writer, "id", domId + "-heading");
         writer.Append('>');
         writer.Append(Text(scene.Title));
@@ -19,11 +20,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append("</p>");
         }
 
-        writer.Append("</div><div class=\"cfx-graph-toolbar\" aria-label=\"Find and appearance controls\">");
+        writer.Append("</div><div class=\"cfx-graph-toolbar\" aria-label=\"" + Text(text[HtmlChartText.GraphFindAndAppearanceControls]) + "\">");
         WriteQueryControls(writer, scene, options, clusters, domId);
         if (options.IncludeThemeToggle) {
-            BeginControlGroup(writer, "Appearance", "cfx-graph-toolbar-group--appearance");
-            WriteButton(writer, "theme", "System", false, false, "Change color theme");
+            BeginControlGroup(writer, text[HtmlChartText.GraphAppearance], "cfx-graph-toolbar-group--appearance");
+            WriteButton(writer, "theme", text[HtmlChartText.GraphThemeSystem], false, false, text[HtmlChartText.GraphChangeTheme]);
             EndControlGroup(writer);
         }
 
@@ -36,41 +37,43 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("<output class=\"cfx-visually-hidden\" data-cfx-role=\"graph-announcer\" aria-live=\"polite\" aria-atomic=\"true\"></output>");
     }
 
-    private static void WriteNeighborhoodNavigation(StringBuilder writer, GraphScene scene) {
+    private static void WriteNeighborhoodNavigation(StringBuilder writer, GraphScene scene, HtmlChartLocalization text) {
         if (scene.Options.HasFeature(GraphSceneFeatures.NeighborhoodFocus)) {
-            writer.Append("<nav class=\"cfx-graph-neighborhood-navigation\" data-cfx-role=\"graph-neighborhood-navigation\" aria-label=\"Neighborhood navigation\" hidden>");
-            WriteButton(writer, "focus-home", "Overview", false, true);
-            WriteButton(writer, "focus-back", "Back", false, true);
-            WriteButton(writer, "focus-previous", "Previous neighbors", false, true);
-            WriteButton(writer, "focus-next", "Next neighbors", false, true);
+            writer.Append("<nav class=\"cfx-graph-neighborhood-navigation\" data-cfx-role=\"graph-neighborhood-navigation\" aria-label=\"" + Text(text[HtmlChartText.GraphNeighborhoodNavigation]) + "\" hidden>");
+            WriteButton(writer, "focus-home", text[HtmlChartText.ExplorerOverview], false, true);
+            WriteButton(writer, "focus-back", text[HtmlChartText.GraphBack], false, true);
+            WriteButton(writer, "focus-previous", text[HtmlChartText.GraphPreviousNeighbors], false, true);
+            WriteButton(writer, "focus-next", text[HtmlChartText.GraphNextNeighbors], false, true);
             writer.Append("<span data-cfx-role=\"graph-neighborhood-summary\" aria-live=\"polite\"></span></nav>");
         }
     }
 
     private static void WriteStageControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyList<GraphSceneCluster> clusters) {
-        WriteHierarchyNavigation(writer, scene);
-        writer.Append("<div class=\"cfx-graph-command-rail\" role=\"toolbar\" aria-label=\"Graph commands\"><div class=\"cfx-graph-command-scroll\">");
+        var text = options.Localization;
+        WriteHierarchyNavigation(writer, scene, text);
+        writer.Append("<div class=\"cfx-graph-command-rail\" role=\"toolbar\" aria-label=\"" + Text(text[HtmlChartText.GraphCommands]) + "\"><div class=\"cfx-graph-command-scroll\">");
         WriteExploreControls(writer, scene, options, clusters);
-        WriteSelectionControls(writer, scene);
+        WriteSelectionControls(writer, scene, text);
         WriteViewportControls(writer, scene, options);
         WritePhysicsControls(writer, scene, options);
         WriteManipulationControls(writer, scene, options);
         writer.Append("</div>");
-        WriteExportControls(writer, scene);
+        WriteExportControls(writer, scene, text);
         writer.Append("</div>");
     }
 
     private static void WriteQueryControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyList<GraphSceneCluster> clusters, string domId) {
+        var text = options.Localization;
         var includeSearch = options.IncludeSearch && scene.Options.HasFeature(GraphSceneFeatures.Search);
         var includeFilters = options.IncludeFilters && scene.Options.HasFeature(GraphSceneFeatures.Filtering);
         if (!includeSearch && !includeFilters) return;
-        BeginControlGroup(writer, "Find and filter", "cfx-graph-toolbar-group--query");
+        BeginControlGroup(writer, text[HtmlChartText.GraphFindAndFilter], "cfx-graph-toolbar-group--query");
         if (includeSearch) {
             writer.Append("<label class=\"cfx-graph-search-field\"");
             Attribute(writer, "for", domId + "-search");
-            writer.Append("><span class=\"cfx-visually-hidden\">Search graph</span>");
+            writer.Append("><span class=\"cfx-visually-hidden\">" + Text(text[HtmlChartText.GraphSearch]) + "</span>");
             WriteIcon(writer, "search");
-            writer.Append("<input class=\"cfx-graph-search\" type=\"search\" data-cfx-graph-search=\"true\" placeholder=\"Search nodes and edges\" autocomplete=\"off\"");
+            writer.Append("<input class=\"cfx-graph-search\" type=\"search\" data-cfx-graph-search=\"true\" placeholder=\"" + Text(text[HtmlChartText.GraphSearchPlaceholder]) + "\" autocomplete=\"off\"");
             Attribute(writer, "id", domId + "-search");
             Attribute(writer, "aria-describedby", domId + "-search-status");
             writer.Append("></label><output class=\"cfx-graph-search-status\" data-cfx-role=\"graph-search-status\" aria-live=\"polite\"");
@@ -79,72 +82,76 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
 
         if (includeFilters) {
-            WriteFilter(writer, "status", "Status", scene.Nodes.Select(node => node.Status).Concat(scene.Edges.Select(edge => edge.Status)));
+            WriteFilter(writer, "status", scene.Nodes.Select(node => node.Status).Concat(scene.Edges.Select(edge => edge.Status)), text);
             var kindValues = scene.Nodes.Select(node => node.Kind).Concat(scene.Edges.Select(edge => edge.Kind));
             if (scene.Options.HasFeature(GraphSceneFeatures.Clustering)) kindValues = kindValues.Concat(clusters.Select(cluster => cluster.Kind));
-            WriteFilter(writer, "kind", "Kind", kindValues);
+            WriteFilter(writer, "kind", kindValues, text);
         }
 
         EndControlGroup(writer);
     }
 
     private static void WriteExploreControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options, IReadOnlyList<GraphSceneCluster> clusters) {
+        var text = options.Localization;
         var clustersEnabled = options.IncludeClusterControls && clusters.Count > 0 && scene.Options.HasFeature(GraphSceneFeatures.Clustering);
         var focusEnabled = scene.Options.HasFeature(GraphSceneFeatures.Selection) && scene.Options.HasFeature(GraphSceneFeatures.NeighborhoodFocus);
         var selectionEnabled = scene.Options.HasFeature(GraphSceneFeatures.Selection);
         if (!clustersEnabled && !focusEnabled && !selectionEnabled) return;
-        BeginControlGroup(writer, "Explore", null);
-        if (clustersEnabled) WriteButton(writer, "clusters", "Clusters", true, true);
-        if (focusEnabled) WriteButton(writer, "focus", "Focus", true, true);
-        if (selectionEnabled) WriteButton(writer, "clear-selection", "Clear", false, true, "Clear selection");
+        BeginControlGroup(writer, text[HtmlChartText.GraphExplore], null);
+        if (clustersEnabled) WriteButton(writer, "clusters", text[HtmlChartText.GraphClusters], true, true);
+        if (focusEnabled) WriteButton(writer, "focus", text[HtmlChartText.ExplorerFocus], true, true);
+        if (selectionEnabled) WriteButton(writer, "clear-selection", text[HtmlChartText.Clear], false, true, text[HtmlChartText.GraphClearSelection]);
         EndControlGroup(writer);
     }
 
     private static void WriteViewportControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options) {
+        var text = options.Localization;
         if (!ShouldRenderViewportControls(scene, options)) return;
-        BeginControlGroup(writer, "View", null);
-        WriteButton(writer, "fit", "Fit", false, true, "Fit graph to view");
-        WriteButton(writer, "zoom-in", "Zoom in", false, true);
-        WriteButton(writer, "zoom-out", "Zoom out", false, true);
+        BeginControlGroup(writer, text[HtmlChartText.GraphView], null);
+        WriteButton(writer, "fit", text[HtmlChartText.GraphFit], false, true, text[HtmlChartText.GraphFitToView]);
+        WriteButton(writer, "zoom-in", text[HtmlChartText.ZoomIn], false, true);
+        WriteButton(writer, "zoom-out", text[HtmlChartText.ZoomOut], false, true);
         EndControlGroup(writer);
     }
 
-    private static void WriteSelectionControls(StringBuilder writer, GraphScene scene) {
+    private static void WriteSelectionControls(StringBuilder writer, GraphScene scene, HtmlChartLocalization text) {
         if (!scene.Options.HasFeature(GraphSceneFeatures.BoxSelection)) return;
-        BeginControlGroup(writer, "Select", null);
-        WriteButton(writer, "box-select", "Box select", true, true, "Toggle box selection");
+        BeginControlGroup(writer, text[HtmlChartText.GraphSelect], null);
+        WriteButton(writer, "box-select", text[HtmlChartText.GraphBoxSelect], true, true, text[HtmlChartText.GraphToggleBoxSelection]);
         EndControlGroup(writer);
     }
 
     private static void WriteManipulationControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options) {
+        var text = options.Localization;
         if (!options.IncludeManipulationControls || !scene.Options.HasFeature(GraphSceneFeatures.Manipulation)) return;
-        BeginControlGroup(writer, "Edit", null);
-        WriteButton(writer, "edit", "Edit", true, true, "Open graph editor");
+        BeginControlGroup(writer, text[HtmlChartText.GraphEdit], null);
+        WriteButton(writer, "edit", text[HtmlChartText.GraphEdit], true, true, text[HtmlChartText.GraphOpenEditor]);
         if (scene.Options.HasFeature(GraphSceneFeatures.History)) {
-            WriteButton(writer, "undo", "Undo", false, true, "Undo graph change");
-            WriteButton(writer, "redo", "Redo", false, true, "Redo graph change");
+            WriteButton(writer, "undo", text[HtmlChartText.GraphUndo], false, true, text[HtmlChartText.GraphUndoChange]);
+            WriteButton(writer, "redo", text[HtmlChartText.GraphRedo], false, true, text[HtmlChartText.GraphRedoChange]);
         }
-        if (scene.Options.Manipulation.CanPersistPositions) WriteButton(writer, "save-positions", "Save", false, true, "Publish current node positions");
+        if (scene.Options.Manipulation.CanPersistPositions) WriteButton(writer, "save-positions", text[HtmlChartText.GraphSave], false, true, text[HtmlChartText.GraphPublishPositions]);
         EndControlGroup(writer);
     }
 
     private static void WritePhysicsControls(StringBuilder writer, GraphScene scene, HtmlGraphExplorerOptions options) {
+        var text = options.Localization;
         if (!options.IncludePhysicsControls || !CanRunRuntimePhysics(scene)) return;
-        BeginControlGroup(writer, "Physics", null);
-        WriteButton(writer, "physics", "Physics", true, true);
-        if (scene.Options.HasFeature(GraphSceneFeatures.Stabilization)) WriteButton(writer, "stabilize", "Stabilize", false, true);
+        BeginControlGroup(writer, text[HtmlChartText.GraphPhysics], null);
+        WriteButton(writer, "physics", text[HtmlChartText.GraphPhysics], true, true);
+        if (scene.Options.HasFeature(GraphSceneFeatures.Stabilization)) WriteButton(writer, "stabilize", text[HtmlChartText.GraphStabilize], false, true);
         EndControlGroup(writer);
     }
 
-    private static void WriteExportControls(StringBuilder writer, GraphScene scene) {
+    private static void WriteExportControls(StringBuilder writer, GraphScene scene, HtmlChartLocalization text) {
         if (!scene.Options.HasFeature(GraphSceneFeatures.Export)) return;
-        BeginControlGroup(writer, "Export", null);
-        writer.Append("<details class=\"cfx-graph-command-menu\"><summary class=\"cfx-graph-tool cfx-graph-tool--compact\" role=\"button\" aria-label=\"Export graph\" aria-expanded=\"false\" data-cfx-tooltip=\"Export graph\">");
+        BeginControlGroup(writer, text[HtmlChartText.GraphExport], null);
+        writer.Append("<details class=\"cfx-graph-command-menu\"><summary class=\"cfx-graph-tool cfx-graph-tool--compact\" role=\"button\" aria-label=\"" + Text(text[HtmlChartText.GraphExportGraph]) + "\" aria-expanded=\"false\" data-cfx-tooltip=\"" + Text(text[HtmlChartText.GraphExportGraph]) + "\">");
         WriteIcon(writer, "download");
-        writer.Append("<span class=\"cfx-graph-tool-label\">Export</span></summary><div class=\"cfx-graph-command-menu-panel\" role=\"group\" aria-label=\"Export format\">");
-        WriteButton(writer, "export-svg", "SVG document", false, false, "Export SVG document");
-        WriteButton(writer, "export-png", "PNG image", false, false, "Export PNG image");
-        WriteButton(writer, "export-json", "JSON data", false, false, "Export JSON data");
+        writer.Append("<span class=\"cfx-graph-tool-label\">" + Text(text[HtmlChartText.GraphExport]) + "</span></summary><div class=\"cfx-graph-command-menu-panel\" role=\"group\" aria-label=\"" + Text(text[HtmlChartText.GraphExportFormat]) + "\">");
+        WriteButton(writer, "export-svg", text[HtmlChartText.GraphSvgDocument], false, false, text[HtmlChartText.GraphExportSvg]);
+        WriteButton(writer, "export-png", text[HtmlChartText.GraphPngImage], false, false, text[HtmlChartText.GraphExportPng]);
+        WriteButton(writer, "export-json", text[HtmlChartText.GraphJsonData], false, false, text[HtmlChartText.GraphExportJson]);
         writer.Append("</div></details>");
         EndControlGroup(writer);
     }
@@ -159,28 +166,20 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void EndControlGroup(StringBuilder writer) => writer.Append("</div>");
 
-    private static void WriteFilter(StringBuilder writer, string name, string label, IEnumerable<string?> values) {
+    private static void WriteFilter(StringBuilder writer, string name, IEnumerable<string?> values, HtmlChartLocalization text) {
         var options = values.Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value!).Distinct(StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal).ToArray();
         if (options.Length == 0) return;
-        writer.Append("<label class=\"cfx-graph-filter-field\"><span class=\"cfx-visually-hidden\">Filter by ");
-        writer.Append(Text(label.ToLowerInvariant()));
+        var label = text[name == "status" ? HtmlChartText.GraphFilterStatus : HtmlChartText.GraphFilterKind];
+        var all = text[name == "status" ? HtmlChartText.GraphAllStatus : HtmlChartText.GraphAllKind];
+        writer.Append("<label class=\"cfx-graph-filter-field\"><span class=\"cfx-visually-hidden\">").Append(Text(label));
         writer.Append("</span><select class=\"cfx-graph-filter\"");
-        Attribute(writer, "data-cfx-graph-filter", name);
-        Attribute(writer, "aria-label", "Filter by " + label.ToLowerInvariant());
-        writer.Append("><option value=\"\">All ");
-        writer.Append(Text(label.ToLowerInvariant()));
-        writer.Append("</option>");
+        Attribute(writer, "data-cfx-graph-filter", name); Attribute(writer, "aria-label", label);
+        writer.Append("><option value=\"\">").Append(Text(all)).Append("</option>");
         foreach (var value in options) {
-            writer.Append("<option");
-            Attribute(writer, "value", value);
-            writer.Append('>');
-            writer.Append(Text(value));
-            writer.Append("</option>");
+            writer.Append("<option"); Attribute(writer, "value", value);
+            writer.Append('>').Append(Text(value)).Append("</option>");
         }
-
-        writer.Append("</select>");
-        WriteIcon(writer, "chevron-down");
-        writer.Append("</label>");
+        writer.Append("</select></label>");
     }
 
     private static void WriteButton(StringBuilder writer, string action, string label, bool pressedState = false, bool compact = false, string? accessibleLabel = null) {

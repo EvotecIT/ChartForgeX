@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ChartForgeX.Topology;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -9,11 +10,18 @@ namespace ChartForgeX.Interactivity.Html;
 /// <remarks>Unspecified messages use English. Templates retain named placeholders such as {count}, {current} and {total}.
 /// Chart language is inherited when Language is null. Automatic direction inherits the host document.
 /// Direction affects adapter chrome, not native axis order.</remarks>
-public sealed class HtmlChartLocalization {
+public sealed partial class HtmlChartLocalization {
     private readonly Dictionary<HtmlChartText, string> _overrides = new Dictionary<HtmlChartText, string>();
     private string? _language;
     private HtmlChartTextDirection _direction;
-    private static readonly IReadOnlyDictionary<HtmlChartText, string> Defaults = new Dictionary<HtmlChartText, string> {
+    private static readonly IReadOnlyDictionary<HtmlChartText, string> Defaults;
+    private static readonly HtmlChartText[] ChartKeys;
+    private static readonly HtmlChartText[] GraphKeys;
+    private static readonly HtmlChartText[] TopologyKeys;
+    private static readonly HtmlChartText[] ReportKeys;
+
+    static HtmlChartLocalization() {
+        var chart = new Dictionary<HtmlChartText, string> {
         [HtmlChartText.ChartControls] = "Chart controls",
         [HtmlChartText.ZoomIn] = "Zoom in",
         [HtmlChartText.ZoomOut] = "Zoom out",
@@ -60,7 +68,19 @@ public sealed class HtmlChartLocalization {
         [HtmlChartText.LegendMute] = "Mute {label}",
         [HtmlChartText.LegendIsolate] = "Isolate {label}",
         [HtmlChartText.LegendIsolateButton] = "Isolate",
-    };
+        };
+        ChartKeys = chart.Keys.ToArray();
+        var graph = GraphDefaults();
+        var report = ReportDefaults();
+        var topology = TopologyHtmlText.Defaults.ToDictionary(pair => (HtmlChartText)Enum.Parse(typeof(HtmlChartText), pair.Key), pair => pair.Value);
+        var messages = new Dictionary<HtmlChartText, string>(chart);
+        foreach (var pair in graph.Concat(topology).Concat(report)) messages[pair.Key] = pair.Value;
+        Defaults = messages;
+        GraphKeys = graph.Keys.Concat(topology.Keys.Where(key => key.ToString().StartsWith("Explorer", StringComparison.Ordinal)))
+            .Concat(new[] { HtmlChartText.ZoomIn, HtmlChartText.ZoomOut, HtmlChartText.Clear, HtmlChartText.Pause }).Distinct().ToArray();
+        TopologyKeys = topology.Keys.ToArray();
+        ReportKeys = report.Keys.Concat(new[] { HtmlChartText.Next, HtmlChartText.ExplorerOverview }).ToArray();
+    }
 
     /// <summary>Gets or sets the HTML language tag, or null to inherit the chart's accessibility language.</summary>
     public string? Language {
@@ -96,11 +116,16 @@ public sealed class HtmlChartLocalization {
 
     internal string? DirectionAttribute => Direction == HtmlChartTextDirection.RightToLeft ? "rtl"
         : Direction == HtmlChartTextDirection.LeftToRight ? "ltr" : null;
-    internal string ResolveLanguage(string? inherited) => Language ?? inherited ?? "en";
-    internal string Format(HtmlChartText message, string name, int count) => this[message]
-        .Replace("{" + name + "}", count.ToString(CultureInfo.InvariantCulture));
-    internal string ToJson() => "{" + string.Join(",", Defaults.Select(item => HtmlJsonString.Encode(item.Key.ToString())
-        + ":" + HtmlJsonString.Encode(this[item.Key]))) + "}";
+    internal string ResolveLanguage(string? inherited) => Language ?? (string.IsNullOrWhiteSpace(inherited) ? "en" : inherited!);
+    internal string Format(HtmlChartText message, string name, int count) => Format(message, (name, count.ToString(CultureInfo.InvariantCulture)));
+    internal string Format(HtmlChartText message, params (string Name, string Value)[] values) => TopologyHtmlText.FormatTemplate(this[message], values);
+    internal string ToJson() => ToJson(ChartKeys);
+    internal string ToGraphJson() => ToJson(GraphKeys);
+    internal string ToReportJson() => ToJson(ReportKeys);
+    internal TopologyHtmlText ForTopology(string? inheritedLanguage) => new TopologyHtmlText(
+        TopologyKeys.ToDictionary(key => key.ToString(), key => this[key]), ToJson(TopologyKeys), ResolveLanguage(inheritedLanguage), DirectionAttribute);
+    private string ToJson(IEnumerable<HtmlChartText> keys) => "{" + string.Join(",", keys.Select(key => HtmlJsonString.Encode(key.ToString())
+        + ":" + HtmlJsonString.Encode(this[key]))) + "}";
     internal void CopyTo(HtmlChartLocalization target) {
         target.Language = Language; target.Direction = Direction;
         foreach (var item in _overrides) target[item.Key] = item.Value;

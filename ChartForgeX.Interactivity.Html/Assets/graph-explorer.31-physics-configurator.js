@@ -1,3 +1,4 @@
+  const graphPhysicsText = (root, value) => uiText(root, 'GraphPhysics' + value[0].toUpperCase() + value.slice(1), value);
   const physicsCommonFields = {
     minVelocity: 'data-cfx-physics-min-velocity',
     maxVelocity: 'data-cfx-physics-max-velocity',
@@ -31,7 +32,7 @@
       else if (supported && value !== '') input.value = value;
     });
     const status = panel.querySelector('[data-cfx-role="graph-physics-status"]');
-    if (status) status.textContent = `${solver} · ${root.dataset.cfxGraphPhysicsState || 'ready'} · ${root.dataset.cfxGraphPhysicsThread || 'idle'}`;
+    if (status) status.textContent = uiText(root, 'GraphPhysicsStatus', '{solver} · {state} · {thread}', { solver: uiText(root, 'GraphSolver' + solver, solver), state: graphPhysicsText(root, root.dataset.cfxGraphPhysicsState || 'ready'), thread: graphPhysicsText(root, root.dataset.cfxGraphPhysicsThread || 'idle') });
   };
   const physicsConfigurationAttributes = (root) => Array.from(root.attributes).filter(attribute => attribute.name === 'data-cfx-graph-physics' || attribute.name.startsWith('data-cfx-physics-')).map(attribute => [attribute.name, attribute.value]);
   const applyPhysicsConfiguration = (root, configuration) => {

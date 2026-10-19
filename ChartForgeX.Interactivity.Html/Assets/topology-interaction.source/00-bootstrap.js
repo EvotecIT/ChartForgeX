@@ -8,6 +8,7 @@
     const listen = (target, name, listener, options) => lifetime.listen(target, name, listener, options);
     lifetime.own(() => wrapper.removeAttribute('data-cfx-runtime-bound'));
     wrapper.setAttribute('data-cfx-runtime-bound', 'true');
+    const uiText = (message, fallback, values) => window[Symbol.for('ChartForgeX.uiText')](wrapper, message, fallback, values);
     const selectables = '[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-group"]';
     const viewportControls = wrapper.getAttribute('data-cfx-viewport-controls') === 'true';
     const exportControls = wrapper.getAttribute('data-cfx-export-controls') === 'true';

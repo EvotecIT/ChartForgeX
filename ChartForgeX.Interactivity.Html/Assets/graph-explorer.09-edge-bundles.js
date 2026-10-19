@@ -11,7 +11,7 @@
   const graphOverviewDisclosure = root => {
     const shown = root.dataset.cfxGraphOverviewShown;
     const total = root.dataset.cfxGraphOverviewTotal;
-    return shown && total ? `Priority overview: ${shown} routes from ${total} inspectable relationships` : '';
+    return shown && total ? uiText(root, 'GraphPriorityOverview', 'Priority overview: {shown} routes from {total} inspectable relationships', { shown, total }) : '';
   };
   const applyCollapsedEdgeBundles = (root) => {
     root.querySelector('[data-cfx-role="graph-overview-note"]')?.remove();
@@ -80,13 +80,14 @@
       const sourceName = clusterNames.get(sourceId) || sourceId;
       const targetName = clusterNames.get(targetId) || targetId;
       const { source: sourceArrow, target: targetArrow } = bundleArrows(lead);
+      const key = sourceArrow && targetArrow ? 'GraphBundleBoth' : sourceArrow ? 'GraphBundleFrom' : targetArrow ? 'GraphBundleTo' : 'GraphBundleUndirected';
       const direction = sourceArrow && targetArrow ? 'both directions with' : sourceArrow ? 'from' : targetArrow ? 'to' : 'and';
       const kind = attr(lead, 'data-edge-kind');
-      const summary = `${count} relationships: ${sourceName} ${direction} ${targetName}${kind ? `, ${kind}` : ''}. Activate this route to expand both sites and inspect individual relationships.`;
+      const summary = uiText(root, key, `{count} relationships: {source} ${direction} {target}{kind}. Activate this route to expand both sites and inspect individual relationships.`, { count, source: sourceName, target: targetName, kind: kind ? `, ${kind}` : '' });
       lead.setAttribute('data-cfx-bundle-count', String(count));
       lead.setAttribute('data-cfx-bundle-original-aria', attr(lead, 'aria-label'));
       lead.setAttribute('aria-label', summary);
-      lead.setAttribute('data-cfx-bundle-label', `${count} relationships`);
+      lead.setAttribute('data-cfx-bundle-label', uiText(root, 'GraphBundleCount', '{count} relationships', { count }));
       let label = labels.get(attr(lead, 'data-edge-id'));
       if (!label && attr(lead, 'data-edge-show-label') !== 'false' && root.dataset.cfxGraphRendererActive === 'svg' && attr(root, 'data-cfx-graph-accelerated-markup') !== 'true') {
         const viewport = root.querySelector('[data-cfx-role="graph-viewport"]');
@@ -113,7 +114,7 @@
       }
       if (label && attr(lead, 'data-edge-show-label') !== 'false') {
         if (!attr(label, 'data-cfx-bundle-generated')) label.setAttribute('data-cfx-bundle-original-text', label.textContent || '');
-        label.textContent = `${count} relationships`;
+        label.textContent = uiText(root, 'GraphBundleCount', '{count} relationships', { count });
       }
     });
     if (collapsed.size < 6 || leads.length <= collapsed.size * 2.5) return;
@@ -149,7 +150,7 @@
       const note = root.ownerDocument.createElement('div');
       note.className = 'cfx-graph-overview-note';
       note.setAttribute('data-cfx-role', 'graph-overview-note');
-      note.textContent = `Showing ${shown.size} priority routes from ${eligibleTotal} inspectable relationships. Select a route, expand a site, or filter to inspect all.`;
+      note.textContent = uiText(root, 'GraphPriorityRoutes', 'Showing {shown} priority routes from {total} inspectable relationships. Select a route, expand a site, or filter to inspect all.', { shown: shown.size, total: eligibleTotal });
       stage.appendChild(note);
     }
   };

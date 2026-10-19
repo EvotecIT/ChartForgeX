@@ -18,7 +18,7 @@
       context.setLineDash([]);
       if ((!moving && !metrics.expanded) || selected) {
         const memberCount = cluster.nodeIds.length;
-        const memberLabel = `${memberCount} ${memberCount === 1 ? 'object' : 'objects'}`;
+        const memberLabel = uiText(root, memberCount === 1 ? 'GraphOneObject' : 'GraphObjects', memberCount === 1 ? '{count} object' : '{count} objects', { count: memberCount });
         context.globalAlpha = (metrics.expanded ? .55 : 1) * graphLinkOpacity(cluster.el);
         context.font = '700 12px Segoe UI, Arial, sans-serif';
         context.textAlign = 'center';

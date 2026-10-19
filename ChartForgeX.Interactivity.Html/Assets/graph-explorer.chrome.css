@@ -643,3 +643,9 @@
   font-size: 12px;
   line-height: 1.5;
 }
+
+/* Each standalone message keeps its reading order inside the surrounding chrome. */
+.cfx-graph-explorer :where([data-cfx-role="graph-search-status"], [data-cfx-role="graph-announcer"], [data-cfx-role="graph-neighborhood-summary"], [data-cfx-role="graph-physics-status"], [data-cfx-graph-editor-status]) {
+  unicode-bidi: plaintext;
+  text-align: match-parent;
+}

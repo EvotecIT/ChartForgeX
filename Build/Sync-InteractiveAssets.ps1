@@ -7,10 +7,12 @@ $root = Split-Path -Parent $PSScriptRoot
 
 $assets = @(
     @{
+        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-localization.js'
         Source = 'ChartForgeX.Interactivity.Html/Assets/topology-interaction.source'
         Target = 'ChartForgeX.Interactivity.Html/Assets/topology-interaction.js'
     },
     @{
+        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-localization.js'
         Source = 'ChartForgeX.Interactivity.Html/Assets/interactive.source'
         Target = 'ChartForgeX.Interactivity.Html/Assets/interactive.js'
     }
@@ -37,6 +39,11 @@ foreach ($asset in $assets) {
     $sourcePath = Join-Path $root $asset.Source
     $targetPath = Join-Path $root $asset.Target
     $generated = Join-AssetSource -SourcePath $sourcePath
+    if ($asset.Prelude) {
+        $preludePath = Join-Path $root $asset.Prelude
+        $prelude = [System.IO.File]::ReadAllText($preludePath).Replace("`r`n", "`n").Replace("`r", "`n").TrimEnd("`n")
+        $generated = $prelude + "`n" + $generated
+    }
 
     if ($Check) {
         $current = [System.IO.File]::ReadAllText($targetPath).Replace("`r`n", "`n").Replace("`r", "`n")

@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
-const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
+const { graphRuntimeSource, graphMessageHelpers } = require('../helpers/graph-runtime-source');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const source = names => names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
 function element(role, id) {
@@ -22,8 +22,8 @@ function fixture() {
   edge.setAttribute('data-source-node-id','shared'); edge.setAttribute('data-target-node-id','peer');
   const events=[],announcer={textContent:''};
   const root={getAttribute:name=>name==='data-cfx-graph-id'?'fixture':null,elements:[node,peer,edge],dataset:{},querySelector:selector=>selector.includes('announcer')?announcer:null,state:{nodes:[],edges:[],clusters:[]}};
-  const runtime=new Function('items','attr','visible','graphKeyboardItemKey','hasFeature','graphState','drawCanvas','syncSelectedEdgeLabels','emit', source(['10-layout','36-host-commands'])+'\nreturn {selectGraphItems,highlightGraphItems,graphHover,selectedItems};')(
-    items,attr,visible,item=>`${attr(item,'data-cfx-role')}:${attr(item,'data-node-id') || attr(item,'data-edge-id')}`,()=>true,root=>root.state,()=>{},()=>{},(_root,name,detail)=>events.push({name,detail}));
+  const runtime=new Function('uiText','items','attr','visible','graphKeyboardItemKey','hasFeature','graphState','drawCanvas','syncSelectedEdgeLabels','emit', source(['10-layout','36-host-commands'])+'\nreturn {selectGraphItems,highlightGraphItems,graphHover,selectedItems};')(
+    graphMessageHelpers().uiText,items,attr,visible,item=>`${attr(item,'data-cfx-role')}:${attr(item,'data-node-id') || attr(item,'data-edge-id')}`,()=>true,root=>root.state,()=>{},()=>{},(_root,name,detail)=>events.push({name,detail}));
   return {node,peer,edge,root,runtime,events,announcer};
 }
 test('silent host selection is role-qualified and supports replacement, addition and removal',()=>{

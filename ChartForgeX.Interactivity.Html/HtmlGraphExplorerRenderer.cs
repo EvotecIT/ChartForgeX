@@ -26,7 +26,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var options = BuildOptions(configure);
         var title = string.IsNullOrWhiteSpace(options.PageTitle) ? scene.Title : options.PageTitle!;
         var writer = new StringBuilder();
-        writer.Append("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"icon\" href=\"data:,\"><title>");
+        writer.Append("<!doctype html><html");
+        Attribute(writer, "lang", options.Localization.ResolveLanguage(null));
+        Attribute(writer, "dir", options.Localization.DirectionAttribute);
+        writer.Append("><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"icon\" href=\"data:,\"><title>");
         writer.Append(Text(title));
         writer.Append("</title>");
         if (options.ExternalAssets == null) writer.Append("<style>").Append(BuildFragmentStyle()).Append("</style>");
@@ -98,6 +101,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append('"');
         if (options.IncludeHeader) Attribute(writer, "aria-labelledby", domId + "-heading");
         else Attribute(writer, "aria-label", scene.Title);
+        Attribute(writer, "lang", options.Localization.Language);
+        Attribute(writer, "dir", options.Localization.DirectionAttribute);
+        Attribute(writer, "data-cfx-ui", options.Localization.ToGraphJson());
         Attribute(writer, "data-cfx-graph-id", scene.Id);
         Attribute(writer, "data-cfx-graph-title", scene.Title);
         Attribute(writer, "data-cfx-metadata", MetadataJson(scene.Metadata));
@@ -131,7 +137,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append('>');
         if (options.IncludeHeader) WriteHeader(writer, scene, options, effectiveClusters, domId);
         WriteAnnouncer(writer);
-        WriteNeighborhoodNavigation(writer, scene);
+        WriteNeighborhoodNavigation(writer, scene, options.Localization);
         WriteStage(writer, scene, options, positions, domId, effectiveClusters, acceleratedMarkup);
         writer.Append("<output class=\"cfx-graph-tooltip\" hidden></output>");
         writer.Append("</section>");
@@ -153,23 +159,23 @@ public sealed partial class HtmlGraphExplorerRenderer {
             ? new Dictionary<string, double>(StringComparer.Ordinal)
             : BuildCollapsedNodeRenderRadii(scene, clusters, positions, clusterMembership, collapseClustersOnLoad);
         var focusableGraphItems = scene.Options.HasFeature(GraphSceneFeatures.Selection);
-        if (acceleratedMarkup) WriteGraphDocument(writer, scene, positions, clusterMembership, collapsedNodeIds, collapsedEdgeIds, graphId + "-arrow");
+        if (acceleratedMarkup) WriteGraphDocument(writer, scene, positions, clusterMembership, collapsedNodeIds, collapsedEdgeIds, graphId + "-arrow", options.Localization);
         writer.Append("<div class=\"cfx-graph-stage\" data-cfx-role=\"graph-stage\" role=\"region\"");
-        Attribute(writer, "aria-label", scene.Title + " interactive graph");
+        Attribute(writer, "aria-label", options.Localization.Format(HtmlChartText.GraphInteractiveName, ("title", scene.Title)));
         Attribute(writer, "aria-describedby", graphId + "-instructions");
         writer.Append("><p class=\"cfx-visually-hidden\"");
         Attribute(writer, "id", graphId + "-instructions");
-        writer.Append(">Use the graph controls to search, filter, fit, or export. In the graph, use arrow keys to move between items and Enter or Space to select. Drag nodes to rearrange the topology.</p>");
+        writer.Append('>').Append(Text(options.Localization[HtmlChartText.GraphInstructions])).Append("</p>");
         WriteStageControls(writer, scene, options, clusters);
         WriteManipulationPanel(writer, scene, options, graphId);
-        writer.Append("<canvas class=\"cfx-graph-underlay\" data-cfx-role=\"graph-underlay\" width=\"960\" height=\"560\" aria-hidden=\"true\"></canvas><canvas class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");
-        Attribute(writer, "aria-label", scene.Title + ". Interactive graph. Use arrow keys to move between nodes and Enter or Space to select.");
+        writer.Append("<canvas dir=\"ltr\" class=\"cfx-graph-underlay\" data-cfx-role=\"graph-underlay\" width=\"960\" height=\"560\" aria-hidden=\"true\"></canvas><canvas dir=\"ltr\" class=\"cfx-graph-canvas\" data-cfx-role=\"graph-canvas\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");
+        Attribute(writer, "aria-label", options.Localization.Format(HtmlChartText.GraphAcceleratedName, ("title", scene.Title)));
         Attribute(writer, "aria-describedby", graphId + "-instructions");
-        writer.Append("></canvas><canvas class=\"cfx-graph-webgl\" data-cfx-role=\"graph-webgl\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");
-        Attribute(writer, "aria-label", scene.Title + ". Interactive graph. Use arrow keys to move between nodes and Enter or Space to select.");
+        writer.Append("></canvas><canvas dir=\"ltr\" class=\"cfx-graph-webgl\" data-cfx-role=\"graph-webgl\" width=\"960\" height=\"560\" role=\"img\" aria-hidden=\"true\"");
+        Attribute(writer, "aria-label", options.Localization.Format(HtmlChartText.GraphAcceleratedName, ("title", scene.Title)));
         Attribute(writer, "aria-describedby", graphId + "-instructions");
-        writer.Append("></canvas><canvas class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas><div class=\"cfx-graph-selection-box\" data-cfx-role=\"graph-selection-box\" hidden></div>");
-        writer.Append("<svg class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"");
+        writer.Append("></canvas><canvas dir=\"ltr\" class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas><div class=\"cfx-graph-selection-box\" data-cfx-role=\"graph-selection-box\" hidden></div>");
+        writer.Append("<svg direction=\"ltr\" class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"");
         writer.Append(focusableGraphItems ? "group" : "img");
         writer.Append("\" aria-hidden=\"false\"");
         Attribute(writer, "aria-labelledby", graphId + "-title");
@@ -182,16 +188,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
         WriteArrowMarkers(writer, scene, graphId + "-arrow");
         writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\"></rect>");
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
-        if (clusteringEnabled) WriteClusters(writer, scene, clusters, positions, clusterMembership, collapseClustersOnLoad, focusableGraphItems);
+        if (clusteringEnabled) WriteClusters(writer, scene, clusters, positions, clusterMembership, collapseClustersOnLoad, focusableGraphItems, options.Localization);
         if (!acceleratedMarkup) {
-            WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, collapsedNodeRadii, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems);
+            WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, collapsedNodeRadii, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems, options.Localization);
             WriteEdgeLabels(writer, scene, positions, collapsedNodePositions, collapsedNodeRadii, collapsedEdgeIds);
             WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds, focusableGraphItems, false);
         }
         writer.Append("</g></svg></div>");
     }
 
-    private static void WriteClusters(StringBuilder writer, GraphScene scene, IReadOnlyList<GraphSceneCluster> clusters, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, bool collapseClustersOnLoad, bool focusableGraphItems) {
+    private static void WriteClusters(StringBuilder writer, GraphScene scene, IReadOnlyList<GraphSceneCluster> clusters, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, bool collapseClustersOnLoad, bool focusableGraphItems, HtmlChartLocalization? text = null) {
         foreach (var cluster in clusters) {
             var collapsed = cluster.Collapsed || collapseClustersOnLoad;
             var memberIds = ClusterMemberIds(scene, cluster, clusterMembership);
@@ -199,7 +205,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var x = members.Length == 0 ? Width / 2 : members.Average(point => point.X);
             var y = members.Length == 0 ? Height / 2 : members.Average(point => point.Y);
             var radius = CollapsedClusterRadius(members.Length);
-            var memberLabel = memberIds.Length == 1 ? "1 object" : memberIds.Length + " objects";
+            var memberLabel = text == null ? (memberIds.Length == 1 ? "1 object" : memberIds.Length + " objects")
+                : text.Format(memberIds.Length == 1 ? HtmlChartText.GraphOneObject : HtmlChartText.GraphObjects, "count", memberIds.Length);
             var status = ClusterStatus(cluster);
             writer.Append("<g class=\"cfx-graph-cluster");
             if (!collapsed) writer.Append(" cfx-graph-cluster-expanded");
@@ -435,11 +442,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
     }
 
-    private static string EdgeAccessibleName(GraphSceneEdge edge, GraphSceneNode? sourceNode, GraphSceneNode? targetNode) {
+    private static string EdgeAccessibleName(GraphSceneEdge edge, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, HtmlChartLocalization? text = null) {
         if (!string.IsNullOrWhiteSpace(edge.Label)) return edge.Label!;
         var source = string.IsNullOrWhiteSpace(sourceNode?.Label) ? edge.SourceNodeId : sourceNode!.Label;
         var target = string.IsNullOrWhiteSpace(targetNode?.Label) ? edge.TargetNodeId : targetNode!.Label;
-        return source + " to " + target;
+        return text?.Format(HtmlChartText.GraphEndpoints, ("source", source!), ("target", target!)) ?? source + " to " + target;
     }
 
     private static string SearchText(IReadOnlyDictionary<string, string> metadata) {

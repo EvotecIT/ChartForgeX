@@ -48,8 +48,8 @@
       if (!route) {
         scenarioPanel.removeAttribute('data-cfx-panel-active-scenario');
         scenarioPanel.style.removeProperty('--cfx-topology-scenario-color');
-        if (title) title.textContent = 'All';
-        if (meta) meta.textContent = 'All topology routes visible';
+        if (title) title.textContent = uiText('All', 'All');
+        if (meta) meta.textContent = uiText('TopologyAllRoutesVisible', 'All topology routes visible');
         if (stepsList) stepsList.replaceChildren();
         if (scrubber) { scrubber.disabled = true; scrubber.max = '1'; scrubber.value = '1'; }
         return;
@@ -61,7 +61,7 @@
       if (title) title.textContent = route.label || route.scenarioId;
       if (meta) {
         const metadata = Object.entries(route.metadata).slice(0, 2).map(([key, value]) => key + ': ' + value);
-        const summary = [route.description, route.stepCount ? route.stepCount + ' steps' : '', ...metadata].filter(value => value);
+        const summary = [route.description, route.stepCount ? uiText('Steps', '{count} steps', { count: route.stepCount }) : '', ...metadata].filter(value => value);
         meta.textContent = summary.join(' / ');
       }
       if (stepsList) {

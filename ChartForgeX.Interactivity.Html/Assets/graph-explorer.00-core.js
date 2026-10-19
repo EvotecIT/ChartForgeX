@@ -7,6 +7,7 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountInstalled, { once: true });
   else mountInstalled();
 } else {
+  const uiText = window[Symbol.for('ChartForgeX.uiText')];
   const roots = (target = document) => target?.matches?.('.cfx-graph-explorer') ? [target] : Array.from(target.querySelectorAll('.cfx-graph-explorer'));
   const attr = (node, name) => node ? node.getAttribute(name) || '' : '';
   const num = (node, name, fallback) => {

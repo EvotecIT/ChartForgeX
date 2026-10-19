@@ -146,15 +146,16 @@
     physical('[data-cfx-role="graph-edge"]').forEach(edge => edgeLabels.get(attr(edge, 'data-edge-id'))?.style.setProperty('--cfx-edge-label-adaptive', graphAdaptiveTextColor(root, attr(edge, 'data-edge-label-color'), palette.edgeLabel)));
   };
   const graphPrefersReducedMotion = (root) => attr(root, 'data-cfx-graph-reduced-motion') === 'true' || graphReducedMotionMedia?.matches === true;
+  const graphThemeText = (root, mode, lower = false) => uiText(root, 'GraphTheme' + mode[0].toUpperCase() + mode.slice(1) + (lower ? 'Lowercase' : ''), lower ? mode : mode[0].toUpperCase() + mode.slice(1));
   const syncGraphThemeControl = (root, mode, active) => {
     const button = root.querySelector("[data-cfx-graph-action='theme']");
     if (!button) return;
     const label = button.querySelector('.cfx-graph-tool-label');
-    const visible = mode[0].toUpperCase() + mode.slice(1);
+    const visible = graphThemeText(root, mode);
     const next = graphThemeModes[(graphThemeModes.indexOf(mode) + 1) % graphThemeModes.length];
     if (label) label.textContent = visible;
-    button.setAttribute('aria-label', `Color theme: ${visible}. Activate to use ${next} theme.`);
-    button.setAttribute('data-cfx-tooltip', `Color theme: ${visible} (${active} colors)`);
+    button.setAttribute('aria-label', uiText(root, 'GraphThemeInstruction', 'Color theme: {current}. Activate to use {next} theme.', { current: visible, next: graphThemeText(root, next, true) }));
+    button.setAttribute('data-cfx-tooltip', uiText(root, 'GraphThemeTooltip', 'Color theme: {current} ({active} colors)', { current: visible, active: graphThemeText(root, active, true) }));
     button.setAttribute('data-cfx-graph-theme-mode', mode);
   };
   const syncGraphThemeState = (root, state) => {
@@ -189,7 +190,7 @@
     const detail = { graphId: attr(root, 'data-cfx-graph-id'), mode, active };
     if (options?.announce !== false) {
       const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
-      if (announcer) announcer.textContent = `${active[0].toUpperCase() + active.slice(1)} color theme enabled.`;
+      if (announcer) announcer.textContent = uiText(root, 'GraphThemeEnabled', '{active} color theme enabled.', { active: graphThemeText(root, active) });
     }
     emit(root, 'cfxgraphthemechange', detail);
     return detail;

@@ -45,11 +45,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-graph-hierarchy-drill", scene.Options.Hierarchy.DrillDownOnActivate ? "true" : "false");
     }
 
-    private static void WriteHierarchyNavigation(StringBuilder writer, GraphScene scene) {
+    private static void WriteHierarchyNavigation(StringBuilder writer, GraphScene scene, HtmlChartLocalization text) {
         if (!scene.Options.HasFeature(GraphSceneFeatures.HierarchyNavigation) || !scene.Nodes.Any(node => !string.IsNullOrWhiteSpace(node.ParentId))) return;
-        writer.Append("<nav class=\"cfx-graph-breadcrumbs\" data-cfx-role=\"graph-breadcrumbs\" aria-label=\"Graph hierarchy\">");
-        WriteButton(writer, "hierarchy-home", "Overview", false, true);
-        WriteButton(writer, "hierarchy-up", "Up one level", false, true);
-        writer.Append("<span class=\"cfx-graph-breadcrumb-path\" data-cfx-role=\"graph-breadcrumb-path\" aria-live=\"polite\">Overview</span></nav>");
+        writer.Append("<nav class=\"cfx-graph-breadcrumbs\" data-cfx-role=\"graph-breadcrumbs\" aria-label=\"" + Text(text[HtmlChartText.GraphHierarchy]) + "\">");
+        WriteButton(writer, "hierarchy-home", text[HtmlChartText.ExplorerOverview], false, true);
+        WriteButton(writer, "hierarchy-up", text[HtmlChartText.GraphUpOneLevel], false, true);
+        writer.Append("<span class=\"cfx-graph-breadcrumb-path\" data-cfx-role=\"graph-breadcrumb-path\" aria-live=\"polite\">" + Text(text[HtmlChartText.ExplorerOverview]) + "</span></nav>");
     }
 }
