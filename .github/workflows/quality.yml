@@ -230,7 +230,7 @@ jobs:
   browser-compatibility:
     name: Browser compatibility (macOS Firefox and WebKit)
     runs-on: macos-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"

@@ -47,8 +47,9 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         await using var session = await OpenAsync(Instrument(graph.ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = backend; options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
             options.PersistThemePreference = false; options.FillAvailableHeight = true;
-        })), width, 720);
+        })).Replace("<head>", "<head><script>" + GraphPrintContextProbe + "</script>", StringComparison.Ordinal), width, 720);
         var page = session.Page;
+        await MarkGraphPrintContextPhaseAsync(page, "committed-state");
         await page.EvaluateAsync("""
             () => {
                 window.retainedGraph=document.querySelector('.cfx-graph-explorer');
@@ -61,10 +62,13 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         await WriteReceiptAsync("graph-print-" + backend + "-backend", JsonSerializer.SerializeToElement(new { requested = backend.ToString(), actual, engine = Engine.ToString() }));
         if (backend == HtmlGraphRenderBackend.WebGl) Assert.Contains(actual, new[] { "webgl", "canvas" });
         else Assert.Equal(backend.ToString().ToLowerInvariant(), actual);
+        await MarkGraphPrintContextPhaseAsync(page, "initial-artifacts");
         await AssertGraphEdgeUpdateAsync(page, backend, dark);
         await AssertGraphArtifactPaintAsync(page, backend, dark);
         var before = await GraphCommittedStateAsync(page);
+        await MarkGraphPrintContextPhaseAsync(page, "screen-before-print");
         await CaptureAsync(page, "graph-print-" + backend + "-screen");
+        await MarkGraphPrintContextPhaseAsync(page, "print-initial");
         await page.EmulateMediaAsync(new() { Media = Media.Print });
         await WaitForGraphPrintSurfaceAsync(page);
         var printed = await GraphPrintFactsAsync(page);
@@ -86,44 +90,104 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         AssertGraphEdgePaint(printed.GetProperty("edgePaint"), dark, false);
         AssertGraphDetailPaint(printed.GetProperty("detailPaint"), dark);
         Assert.Equal(before, await GraphCommittedStateAsync(page));
+        await MarkGraphPrintContextPhaseAsync(page, "print-before-pdf");
         await CaptureGraphPrintPdfAsync(page, backend);
 
+        await MarkGraphPrintContextPhaseAsync(page, "screen-initial-request");
         await page.EmulateMediaAsync(new() { Media = Media.Screen });
         await page.WaitForFunctionAsync("()=>!document.querySelector('[data-cfx-role=graph-print-surface]')");
         Assert.Equal(before, await GraphCommittedStateAsync(page));
+        await MarkGraphPrintContextPhaseAsync(page, "screen-restored");
         await CaptureAsync(page, "graph-print-" + backend + "-restored");
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.highlight(retainedGraph,[{role:'graph-node',id:'n2'},{role:'graph-edge',id:'e2'}],{dim:true})");
+        await MarkGraphPrintContextPhaseAsync(page, "dimmed-artifacts");
         await AssertGraphArtifactPaintAsync(page, backend, dark, true);
+        await MarkGraphPrintContextPhaseAsync(page, "print-dimmed-request");
         await page.EmulateMediaAsync(new() { Media = Media.Print });
         await WaitForGraphPrintSurfaceAsync(page);
+        await MarkGraphPrintContextPhaseAsync(page, "print-dimmed");
         var dimmed = await GraphPrintFactsAsync(page);
         await WriteReceiptAsync("graph-print-" + backend + "-dimmed", dimmed);
         AssertGraphEdgePaint(dimmed.GetProperty("edgePaint"), dark, true);
         AssertGraphDetailPaint(dimmed.GetProperty("detailPaint"), dark);
         await CaptureAsync(page, "graph-print-" + backend + "-dimmed");
+        await MarkGraphPrintContextPhaseAsync(page, "screen-dimmed-request");
         await page.EmulateMediaAsync(new() { Media = Media.Screen });
         await page.WaitForFunctionAsync("()=>!document.querySelector('[data-cfx-role=graph-print-surface]')");
+        await MarkGraphPrintContextPhaseAsync(page, "primary-print-and-artifacts");
         await AssertGraphPrimaryPaintAsync(page, backend, dark);
+        await MarkGraphPrintContextPhaseAsync(page, "hidden-print");
         await page.EvaluateAsync("()=>retainedGraph.hidden=true");
         Assert.False(await page.Locator(".cfx-graph-explorer").IsVisibleAsync());
+        await MarkGraphPrintContextPhaseAsync(page, "hidden-print-request");
         await page.EmulateMediaAsync(new() { Media = Media.Print });
         await page.EvaluateAsync("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
         Assert.Equal(0, await page.Locator("[data-cfx-role=graph-print-surface]").CountAsync());
+        await MarkGraphPrintContextPhaseAsync(page, "visible-beforeprint");
         await page.EvaluateAsync("()=>{retainedGraph.hidden=false;window.dispatchEvent(new Event('beforeprint'));}");
         await page.WaitForFunctionAsync("()=>document.querySelectorAll('[data-cfx-role=graph-print-surface]').length===1");
+        await MarkGraphPrintContextPhaseAsync(page, "dispose-in-print");
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.dispose(retainedGraph)");
         Assert.Equal(0, await page.Locator("[data-cfx-role=graph-print-surface]").CountAsync());
         await AssertReleasedAsync(page, "graph-print-" + backend + "-released");
         await page.EvaluateAsync("()=>window.dispatchEvent(new Event('beforeprint'))");
         Assert.Equal(0, await page.Locator("[data-cfx-role=graph-print-surface]").CountAsync());
+        await MarkGraphPrintContextPhaseAsync(page, "remount-in-print");
         await page.EvaluateAsync("()=>{lifetimeProbe.recordGlobals=true;lifetimeProbe.recordObservers=true;ChartForgeXGraphExplorer.mount(retainedGraph);lifetimeProbe.recordGlobals=false;lifetimeProbe.recordObservers=false;}");
         Assert.Equal(1, await page.Locator("[data-cfx-role=graph-print-surface]").CountAsync());
+        await MarkGraphPrintContextPhaseAsync(page, "screen-remount-request");
         await page.EmulateMediaAsync(new() { Media = Media.Screen });
         await page.WaitForFunctionAsync("()=>!document.querySelector('[data-cfx-role=graph-print-surface]')");
+        await MarkGraphPrintContextPhaseAsync(page, "dispose-after-remount");
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.dispose(retainedGraph)");
+        await MarkGraphPrintContextPhaseAsync(page, "disposed-after-remount");
         await AssertReleasedAsync(page, "graph-print-" + backend + "-remount-released");
+        var contextReceipt = await page.EvaluateAsync<JsonElement>("""
+            ()=>{const probe=window.graphPrintContextProbe;try{probe.mark('before-console-assert');return probe.read();}finally{probe.release();}}
+            """);
+        await WriteReceiptAsync("graph-print-" + backend + "-context-events",
+            JsonSerializer.SerializeToElement(new { engine = Engine.ToString(), requested = backend.ToString(), observation = contextReceipt }));
         AssertNoConsoleErrors(session);
     }
+
+    private static Task MarkGraphPrintContextPhaseAsync(IPage page, string phase) =>
+        page.EvaluateAsync("phase=>window.graphPrintContextProbe.mark(phase)", phase);
+
+    // Observe real events without creating a context, canceling loss, or requesting recovery.
+    // Capture starts before adapter scripts; losses with no DOM event remain unobserved.
+    // Listeners release before the final assertion; earlier failures close their owned page/session.
+    private const string GraphPrintContextProbe = """
+        (()=>{
+            const events=[],checkpoints=[],printMedia=window.matchMedia('print');
+            let phase='initial-runtime';
+            const sample=canvas=>{
+                const root=canvas?.closest('.cfx-graph-explorer')||document.querySelector('.cfx-graph-explorer');
+                canvas=canvas||root?.querySelector('[data-cfx-role=graph-webgl]');
+                const runtime=root?.__cfxGraphWebGl;
+                return {phase,time:performance.now(),printMedia:printMedia.matches,renderer:root?.dataset.cfxGraphRendererActive||null,
+                    requestedRenderer:root?.dataset.cfxGraphRenderer||null,fallback:root?.dataset.cfxGraphRendererFallback||null,
+                    bound:root?.hasAttribute('data-cfx-graph-bound')||false,
+                    lifetimeActive:root?(window[Symbol.for('ChartForgeX.adapterLifetimes')]?.get(root,'graph')?.active??false):false,
+                    rootConnected:root?.isConnected||false,rootHidden:root?.hidden||false,
+                    runtime:runtime===false?'unavailable':runtime?'allocated':'absent',contextLost:runtime?.gl?.isContextLost()??null,
+                    viewport:root?{x:root.dataset.cfxViewportX||null,y:root.dataset.cfxViewportY||null,scale:root.dataset.cfxViewportScale||null}:null,
+                    canvas:canvas?{connected:canvas.isConnected,width:canvas.width,height:canvas.height,
+                        clientWidth:canvas.clientWidth,clientHeight:canvas.clientHeight}:null};
+            };
+            const observe=event=>{
+                if(!event.target.matches?.('[data-cfx-role=graph-webgl]'))return;
+                events.push({...sample(event.target),type:event.type,trusted:event.isTrusted,statusMessage:event.statusMessage||''});
+            };
+            const options={capture:true,passive:true};
+            document.addEventListener('webglcontextlost',observe,options);
+            document.addEventListener('webglcontextrestored',observe,options);
+            window.graphPrintContextProbe={
+                mark(value){phase=value;checkpoints.push(sample());},
+                read(){return {coverage:'document capture before adapter scripts; attached-canvas DOM events only; event samples precede target handlers',events,checkpoints};},
+                release(){document.removeEventListener('webglcontextlost',observe,options);document.removeEventListener('webglcontextrestored',observe,options);}
+            };
+        })();
+        """;
 
     private static Task<string> GraphCommittedStateAsync(IPage page) => page.EvaluateAsync<string>("""
         ()=>{const state=ChartForgeXGraphExplorer.captureState(retainedGraph);return JSON.stringify({viewport:state.viewport,selection:state.selection,positions:state.positions});}

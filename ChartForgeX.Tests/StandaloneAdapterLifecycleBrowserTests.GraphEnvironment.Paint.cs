@@ -67,7 +67,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
 
     private static async Task AssertGraphEnvironmentFocusPaintAsync(IPage page, ILocator target, string name) {
         await target.ScrollIntoViewIfNeededAsync();
-        var facts = await target.EvaluateAsync<JsonElement>("""
+        Task<JsonElement> ReadFactsAsync() => target.EvaluateAsync<JsonElement>("""
             node=>{
                 const trace=window.graphEnvironmentFocusTrace;trace?.record('after-scroll');trace?.stop();
                 delete window.graphEnvironmentFocusTrace;
@@ -89,14 +89,18 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                     backgrounds,clips,transitionSeconds:Math.max(...style.transitionDuration.split(',').map(parseFloat))};
             }
             """);
-        await WriteReceiptAsync(name + "-before-assert", JsonSerializer.SerializeToElement(new { focus = facts }));
+        var initialFacts = await ReadFactsAsync();
+        await WriteReceiptAsync(name + "-before-assert", JsonSerializer.SerializeToElement(new { focus = initialFacts }));
+        Assert.True(initialFacts.GetProperty("ownsFocus").GetBoolean(), "Focus facts: " + name + "-before-assert.json " + initialFacts.GetRawText());
+        // Capture commits the focused control's paint; judge its style and geometry at that checkpoint.
         var screenshot = await page.ScreenshotAsync(new() { Animations = ScreenshotAnimations.Disabled });
+        var facts = await ReadFactsAsync();
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Assert.True(Path.IsPathRooted(output), "Graph environment captures need an absolute task-owned folder.");
             Directory.CreateDirectory(output);
             await File.WriteAllBytesAsync(Path.Combine(output, name + ".png"), screenshot);
         }
-        Assert.True(facts.GetProperty("ownsFocus").GetBoolean(), "Focus facts: " + name + "-before-assert.json " + facts.GetRawText());
+        Assert.True(facts.GetProperty("ownsFocus").GetBoolean(), "Focus after capture: " + facts.GetRawText());
         Assert.True(facts.GetProperty("width").GetDouble() > 0);
         Assert.InRange(facts.GetProperty("transitionSeconds").GetDouble(), 0, .001);
         foreach (var clip in facts.GetProperty("clips").EnumerateArray()) {
