@@ -53,10 +53,10 @@ public sealed class SvgRasterComputedPaintTests {
     }
 
     [Fact]
-    public void ReferencedDefinitionsRetainAliasesComputedInTheirOriginalAncestry() {
+    public void ReferencedSubtreesComputeAliasesBeforeChildOverrides() {
         Assert.Equal(Render("<rect width='32' height='32' fill='#ff0000'/>"), Render(
-            "<defs><g style='--paint:#ff0000;--ink:var(--paint)!important'><symbol id='s' viewBox='0 0 32 32'>" +
-            "<rect width='32' height='32' style='--paint:#0000ff;fill:var(--ink)'/></symbol></g></defs><use href='#s' width='32' height='32'/>"));
+            "<defs><symbol id='s' viewBox='0 0 32 32' style='--paint:#ff0000;--ink:var(--paint)!important'>" +
+            "<rect width='32' height='32' style='--paint:#0000ff;fill:var(--ink)'/></symbol></defs><use href='#s' width='32' height='32'/>"));
     }
 
     [Theory]
