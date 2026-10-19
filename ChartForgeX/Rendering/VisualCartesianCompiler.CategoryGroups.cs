@@ -67,7 +67,7 @@ internal static partial class VisualCartesianCompiler {
     /// <summary>Emits passive source facts and shared SVG/raster ink after intersecting source cells with the visible domain.</summary>
     private static void DrawCategoryGroups(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         AxisLabelCache cache, Func<double, double> coordinate, double minimum, double maximum, ChartRect band,
-        VisualThemeColors colors) {
+        VisualThemeColors colors, double[]? measuredBandSizes = null) {
         var groups = cache.CategoryGroups;
         if (groups == null) return;
         var horizontal = groups.Plan.Horizontal;
@@ -78,8 +78,9 @@ internal static partial class VisualCartesianCompiler {
         });
         var spacing = context.Theme.Spacing;
         var paint = chart.Options.ShowAxes && axis.Visible && band.Width > 0 && band.Height > 0;
-        var sizes = horizontal ? Enumerable.Repeat(band.Width / groups.Depth, groups.Depth).ToArray()
-            : CategoryGroupBandSizes(builder, cache, style, spacing, minimum, maximum, band.Width, band.Height);
+        var sizes = measuredBandSizes ?? (horizontal ? CategoryGroupBandSizes(builder, cache, style, spacing,
+            minimum, maximum, band.Height, band.Width)
+            : CategoryGroupBandSizes(builder, cache, style, spacing, minimum, maximum, band.Width, band.Height));
         var shortened = false;
         var consumed = 0d;
         var index = 0;

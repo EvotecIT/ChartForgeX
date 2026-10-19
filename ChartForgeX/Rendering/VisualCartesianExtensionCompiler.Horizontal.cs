@@ -99,8 +99,11 @@ internal static partial class VisualCartesianCompiler {
             widest = Math.Max(widest, metrics.Width); tallest = Math.Max(tallest, metrics.Height);
         }
         var left = chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .35, widest + spacing) : 0;
-        if (chart.Options.YAxis.Visible) left += CategoryGroupBandSizes(builder, cache, style, spacing,
-            range.MinY, range.MaxY, viewport.Height, Math.Max(0, viewport.Width * .35 - left)).Sum();
+        if (chart.Options.YAxis.Visible) {
+            cache.HorizontalGroupBandSizes = CategoryGroupBandSizes(builder, cache, style, spacing,
+                range.MinY, range.MaxY, viewport.Height, Math.Max(0, viewport.Width * .35 - left));
+            left += cache.HorizontalGroupBandSizes.Sum();
+        }
         var valueMetrics = chart.Options.XAxis.Visible ? TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache) : default;
         var bottom = chart.Options.XAxis.Visible ? valueMetrics.Height + spacing : 0;
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
@@ -155,12 +158,15 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.YAxis.Visible) {
             if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             var available = Math.Max(0, categoryLabelRight - viewport.Left - spacing);
-            var groupWidth = CategoryGroupBandSizes(builder, cache, style, spacing, range.MinY, range.MaxY,
-                plot.Height, available * (cache.CategoryGroups?.Depth ?? 0) / ((cache.CategoryGroups?.Depth ?? 0) + 1)).Sum();
+            // Retain the individual widths that reserved this frame. Redistributing their sum
+            // equally can starve an outer parent even when the complete stack already fits.
+            var groupSizes = cache.HorizontalGroupBandSizes ?? CategoryGroupBandSizes(builder, cache, style, spacing,
+                range.MinY, range.MaxY, plot.Height, available * (cache.CategoryGroups?.Depth ?? 0) / ((cache.CategoryGroups?.Depth ?? 0) + 1));
+            var groupWidth = groupSizes.Sum();
             DrawAxisLabels(builder, chart.Options, axes.Category, categories, map.Y, false, false,
                 new ChartRect(viewport.Left + groupWidth, viewport.Top, Math.Max(0, available - groupWidth), viewport.Height), style, spacing, null, cache, plot.Height);
             DrawCategoryGroups(chart, context, builder, cache, map.Y, range.MinY, range.MaxY,
-                new ChartRect(viewport.Left, plot.Top, groupWidth, plot.Height), colors);
+                new ChartRect(viewport.Left, plot.Top, groupWidth, plot.Height), colors, groupSizes);
             var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
             if (yTitle.Length > 0) DrawAxisTitle(chart, context, builder, yTitle,
                 new ChartRect(plot.Left, viewport.Top, plot.Width, Math.Max(0, plot.Top - viewport.Top - spacing)), colors, TextAlignment.Left, "axis-y-title");

@@ -25,6 +25,7 @@ internal static partial class VisualCartesianCompiler {
         internal ChartAxis? HorizontalValueAxis { get; set; }
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
         internal CategoryGroupSource? CategoryGroups { get; set; }
+        internal double[]? HorizontalGroupBandSizes { get; set; }
         internal AxisLabelCache(ChartAxisValueFormatter.Cache labels) => _labels = labels;
         internal IReadOnlyList<double>? TimeBarObservations(Chart chart) {
             if (!_hasTimeBarObservations) { _regularTimeBarObservations = RegularTimeBarObservations(chart); _hasTimeBarObservations = true; }
