@@ -83,7 +83,7 @@
     const tip = root.querySelector('.cfx-graph-tooltip');
     if (!tip) return;
     const tooltipDetail = details.length === 1 ? details[0] : fallback;
-    tip.textContent = details.length === 1 ? [graphLabelText(tooltipDetail.label) || tooltipDetail.id, tooltipDetail.secondaryLabel, tooltipDetail.kind, tooltipDetail.status, tooltipDetail.badge ? uiText(root, 'GraphBadge', 'Badge {badge}', { badge: tooltipDetail.badge }) : ''].filter(Boolean).join(' / ') : details.length ? uiText(root, 'GraphSelectedCount', '{count} selected', { count: details.length }) : '';
+    tip.textContent = details.length === 1 ? [graphSelectionName(root, tooltipDetail), tooltipDetail.secondaryLabel, tooltipDetail.kind, tooltipDetail.status, tooltipDetail.badge ? uiText(root, 'GraphBadge', 'Badge {badge}', { badge: tooltipDetail.badge }) : ''].filter(Boolean).join(' / ') : details.length ? uiText(root, 'GraphSelectedCount', '{count} selected', { count: details.length }) : '';
     tip.hidden = details.length === 0;
   };
   const syncClusterControls = (root) => {

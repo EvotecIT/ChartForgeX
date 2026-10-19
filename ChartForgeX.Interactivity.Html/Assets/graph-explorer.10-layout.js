@@ -151,6 +151,9 @@
       metadata: metadataDetail(node),
       ...(attr(node, 'data-cfx-role') === 'graph-edge' ? { sourceNodeId: attr(node, 'data-source-node-id'), targetNodeId: attr(node, 'data-target-node-id') } : {})
     });
+  // Raw selection labels remain authored facts; chrome uses the current canonical name.
+  const graphSelectionName = (root, detail, item) => graphLabelText(detail.label)
+    || graphLabelText(attr(item || graphRequestedItems(root, [detail])[0], 'aria-label')) || detail.id;
   const selectedItems = (root) => items(root, '[data-cfx-role="graph-node"].cfx-graph-selected,[data-cfx-role="graph-edge"].cfx-graph-selected,[data-cfx-role="graph-cluster"].cfx-graph-selected').map(node => selectionDetail(root, node));
   const updateSelectionState = (root, shouldEmit = true) => {
     syncSelectedEdgeLabels(root); const details = selectedItems(root);
@@ -206,7 +209,8 @@
     drawCanvas(root, state);
     if (typeof updateOverview === 'function') updateOverview(root, state);
     const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
-    if (announcer) announcer.textContent = node.classList.contains('cfx-graph-selected') ? uiText(root, details.length === 1 ? 'GraphSelectedOne' : 'GraphSelectedMany', details.length === 1 ? '{label} selected. {count} item selected.' : '{label} selected. {count} items selected.', { label: detail.label || detail.id, count: details.length }) : uiText(root, 'GraphRemovedFromSelection', '{label} removed from selection.', { label: detail.label || detail.id });
+    const name = graphSelectionName(root, detail, node);
+    if (announcer) announcer.textContent = node.classList.contains('cfx-graph-selected') ? uiText(root, details.length === 1 ? 'GraphSelectedOne' : 'GraphSelectedMany', details.length === 1 ? '{label} selected. {count} item selected.' : '{label} selected. {count} items selected.', { label: name, count: details.length }) : uiText(root, 'GraphRemovedFromSelection', '{label} removed from selection.', { label: name });
     emit(root, 'cfxgraphselect', { ...detail, selected: node.classList.contains('cfx-graph-selected'), selectionCount: details.length });
   };
   const selectedGraphNodeId = (root) => {
