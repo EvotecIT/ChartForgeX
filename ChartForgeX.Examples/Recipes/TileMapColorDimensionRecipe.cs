@@ -9,7 +9,7 @@ public static class TileMapColorDimensionRecipe {
 
         var colors = VisualTheme.Graphite().Resolve(mode);
         var codes = new[] { "CA", "TX", "NY", "FL", "WA", "IL", "CO" };
-        var values = new[] { 0d, 2.5, 5, 10, 22.5, 40, 55 };
+        var values = new[] { -25d, -3, 0, 2.5, 5, 22.5, 55 };
         var scale = ChartColorScale.Diverging(new[] {
             new ChartColorStop(-20, ChartColor.FromHex("#2166AC")), new ChartColorStop(-3, ChartColor.FromHex("#67A9CF"))
         }, new ChartColorStop(0, ChartColor.FromHex("#D1D5DB")), new[] {

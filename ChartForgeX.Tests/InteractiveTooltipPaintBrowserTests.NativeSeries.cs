@@ -99,7 +99,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     [BrowserFact]
     public async Task NativeSvgRoundingKeepsAPaintedBoundaryObservationAvailableAtItsScreenScale() {
         if (!Enabled) return;
-        // Control the clip's fractional origin without a font-dependent Y-axis label reserve.
+        // Keep the fixture compact without a font-dependent Y-axis label reserve.
         var chart = StatusLines(false).WithPadding(24.0006, 24, 24, 24).WithYAxisVisible(false);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             ExactFeatures(options);
@@ -107,7 +107,20 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         }), 340, 720);
         var page = session.Page;
         var target = page.Locator(Point(1, 0));
-        var boundary = await target.EvaluateAsync<double[]>("n => { const b=n.getBoundingClientRect(), line=n.closest('[data-cfx-role=series]').querySelector('[data-cfx-role=line]'), owner=line.parentElement, id=owner.getAttribute('clip-path').match(/#([^)]*)/)[1], clip=n.ownerSVGElement.getElementById(id).firstElementChild.getBBox(), matrix=owner.getScreenCTM(), edge=new DOMPoint(clip.x,clip.y).matrixTransform(matrix); return [edge.x-(b.x+b.width/2),matrix.a]; }");
+        var boundary = await target.EvaluateAsync<double[]>("""
+            node=>{
+                const region=node._cfxNativeRegion,line=node.closest('[data-cfx-role=series]').querySelector('[data-cfx-role=line]'),
+                    owner=line.parentElement,id=owner.getAttribute('clip-path').match(/#([^)]*)/)[1],
+                    clip=node.ownerSVGElement.getElementById(id).firstElementChild,matrix=owner.getScreenCTM(),
+                    source=new DOMPoint(region.x+region.width/2,region.y+region.height/2).matrixTransform(node.getScreenCTM());
+                // Pick the outward three-decimal SVG quantum explicitly; layout/font offsets must not
+                // decide whether this fixture actually exercises a source just outside its rounded clip.
+                const local=source.matrixTransform(matrix.inverse()),rounded=(Math.floor(local.x*1000)+1)/1000;
+                clip.setAttribute('x',rounded.toFixed(3));
+                const edge=new DOMPoint(clip.x.baseVal.value,clip.y.baseVal.value).matrixTransform(matrix);
+                return[edge.x-source.x,matrix.a];
+            }
+            """);
         Assert.InRange(boundary[0], double.Epsilon, .001 * boundary[1]);
         Assert.InRange(boundary[1], .1, .9);
         await MoveToAsync(page, Point(1, 0), offsetX: 1);

@@ -22,7 +22,7 @@ internal static partial class VisualCartesianCompiler {
             var useSecondary = !horizontal && secondaryOnly;
             var categoryAxis = horizontal ? y : x;
             var categoryTicks = horizontal ? yTicks : xTicks;
-            var categoryLabels = ChartCartesianCategoryLabels.CaptureBindings(chart, categoryAxis,
+            var categoryLabels = cache.CategoryGroups?.Plan.Bindings ?? ChartCartesianCategoryLabels.CaptureBindings(chart, categoryAxis,
                 number => cache.FormatDisplay(categoryAxis, number, categoryTicks));
             builder.DataProjection = builder.DataProjection.WithDisplayTicks(xTicks.Select(number => new ChartAxisLabel(number, cache.FormatDisplay(x, number, xTicks))).ToArray(),
                 (useSecondary ? secondaryTicks : yTicks).Select(number => new ChartAxisLabel(number, useSecondary
@@ -36,5 +36,6 @@ internal static partial class VisualCartesianCompiler {
             (series, number, numericCaption) => horizontal ? X(number, numericCaption)
                 : series.YAxis == ChartAxisSide.Secondary ? Secondary(number, numericCaption) : Y(number, numericCaption),
             (_, number) => horizontal ? cache.FormatDisplay(y, number, yTicks) : cache.FormatDisplay(x, number, xTicks));
+        if (cache.CategoryGroups != null) builder.CaptureCategoryGroupReadouts(cache.CategoryGroups.Plan.Bindings);
     }
 }

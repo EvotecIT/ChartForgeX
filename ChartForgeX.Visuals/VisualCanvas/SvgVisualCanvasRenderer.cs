@@ -64,9 +64,12 @@ public sealed class SvgVisualCanvasRenderer {
         writer.StartElement("stop").Attribute("offset", "100%").Attribute("stop-color", theme.HeroBadgeBottom.ToCss()).EndEmptyElement().Line();
         writer.EndElement().Line();
         writer.StartElement("filter").Attribute("id", id + "-soft-glow").Attribute("x", "-30%").Attribute("y", "-30%").Attribute("width", "160%").Attribute("height", "160%").EndStartElement().Line();
-        writer.StartElement("feGaussianBlur").Attribute("stdDeviation", 5).Attribute("result", "blur").EndEmptyElement().Line();
+        writer.StartElement("feGaussianBlur").Attribute("in", "SourceAlpha").Attribute("stdDeviation", 5).Attribute("result", "blur").EndEmptyElement().Line();
+        writer.StartElement("feFlood").Attribute("flood-color", theme.HeroBadgeGlowColor.WithAlpha(255).ToCss())
+            .Attribute("flood-opacity", theme.HeroBadgeGlowColor.A / 255d).Attribute("result", "glow-paint").EndEmptyElement().Line();
+        writer.StartElement("feComposite").Attribute("in", "glow-paint").Attribute("in2", "blur").Attribute("operator", "in").Attribute("result", "glow").EndEmptyElement().Line();
         writer.StartElement("feMerge").EndStartElement()
-            .StartElement("feMergeNode").Attribute("in", "blur").EndEmptyElement()
+            .StartElement("feMergeNode").Attribute("in", "glow").EndEmptyElement()
             .StartElement("feMergeNode").Attribute("in", "SourceGraphic").EndEmptyElement()
             .EndElement().Line();
         writer.EndElement().Line();
@@ -128,7 +131,7 @@ public sealed class SvgVisualCanvasRenderer {
 
         writer.StartElement("path")
             .Attribute("data-cfx-role", "visual-canvas-horizon")
-            .Attribute("d", "M 0 " + F(height * 0.78) + " C " + F(width * 0.20) + " " + F(height * 0.72) + ", " + F(width * 0.38) + " " + F(height * 0.82) + ", " + F(width * 0.55) + " " + F(height * 0.76) + " C " + F(width * 0.74) + " " + F(height * 0.70) + ", " + F(width * 0.84) + " " + F(height * 0.85) + ", " + F(width) + " " + F(height * 0.73) + " L " + F(width) + " " + F(height) + " L 0 " + F(height) + " Z")
+            .Attribute("d", VisualCanvasBackdropGeometry.HorizonSvg(width, height))
             .Attribute("fill", theme.TechHorizonFill.ToCss())
             .EndEmptyElement().Line();
         writer.EndElement().Line();

@@ -15,7 +15,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddRangeArea(string name, IEnumerable<ChartRangeBand> ranges, ChartColor? color = null, bool smooth = true) {
         var series = ChartSeries.CreateRangeArea(name, ranges, color, smooth);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(ranges));
         AppendSeries(series);
         return this;
     }

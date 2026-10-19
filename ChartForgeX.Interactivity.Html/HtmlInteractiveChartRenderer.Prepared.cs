@@ -34,7 +34,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
             }
             json.Append("]}");
         }
-        json.Append("],\"xLabels\":[");
+        json.Append(']');
+        AppendPreparedAnnotations(json, prepared);
+        json.Append(",\"xLabels\":[");
         var categoryLabels = ChartCartesianOrientation.CategoryLabels(chart);
         for (var index = 0; index < categoryLabels.Count; index++) {
             if (index > 0) json.Append(',');
@@ -74,7 +76,16 @@ public sealed partial class HtmlInteractiveChartRenderer {
                     if (index > 0) json.Append(',');
                     var label = dataProjection.CategoryLabels[index];
                     json.Append("{\"value\":").Append(label.Value.ToString("R", CultureInfo.InvariantCulture))
-                        .Append(",\"text\":").Append(HtmlJsonString.Encode(label.Text)).Append('}');
+                        .Append(",\"text\":").Append(HtmlJsonString.Encode(label.Text));
+                    if (label.Groups.Count > 0) {
+                        json.Append(",\"groups\":[");
+                        for (var group = 0; group < label.Groups.Count; group++) {
+                            if (group > 0) json.Append(',');
+                            json.Append(HtmlJsonString.Encode(label.Groups[group]));
+                        }
+                        json.Append(']');
+                    }
+                    json.Append('}');
                 }
                 json.Append(']');
             }
@@ -97,6 +108,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .Append(",\"fullMaximum\":").Append(projection.FullMaximum.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"minimum\":").Append(projection.Minimum.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"maximum\":").Append(projection.Maximum.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"scale\":").Append(HtmlJsonString.Encode(projection.Scale.ToString().ToLowerInvariant()))
                 .Append(",\"reversed\":").Append(projection.Reversed ? "true" : "false")
                 .Append(",\"plotBounds\":{\"x\":").Append(plot.X.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"y\":").Append(plot.Y.ToString("R", CultureInfo.InvariantCulture))

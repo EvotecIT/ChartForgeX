@@ -28,7 +28,6 @@ public sealed partial class Chart {
             index++;
         }
 
-        if (points.Count == 0) throw new ArgumentException("Pictorial charts must contain at least one item.", nameof(items));
         Options.PictorialShape = shape;
         Options.XAxisLabels.Clear();
         Options.XAxisLabels.AddRange(labels);

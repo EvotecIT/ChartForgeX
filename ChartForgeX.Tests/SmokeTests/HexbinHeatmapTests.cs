@@ -26,7 +26,6 @@ internal static partial class SmokeTests {
         var last = FamilyMetadata(svg, "hexbin-cell", ("series", "1"), ("point", "2"), ("value", "96"), ("status", "positive"));
         Assert(last.Tooltip() == "11:00, Wed: 96%", "Hexbin cells should expose native SVG hover titles while retaining semantic status metadata.");
         Assert(chart.ToPng().Length > 64, "Hexbin heatmaps should render PNG output.");
-        AssertThrows<System.ArgumentException>(() => Chart.Create().AddHexbinHeatmapRow("Empty", System.Array.Empty<ChartForgeX.Primitives.ChartPoint>()), "Hexbin heatmaps should reject empty row inputs.");
     }
 
     private static void HexbinHeatmapRowsAcceptOneBasedValues() {
@@ -47,7 +46,6 @@ internal static partial class SmokeTests {
         labeled.Series[0].WithPointLabel(1, "Peak");
         Assert(labeled.ToSvg().Contains(">Peak</text>", System.StringComparison.Ordinal), "Hexbin SVG data labels should honor point-level overrides.");
         Assert(labeled.ToPng().Length > 64, "Hexbin PNG data labels should honor point-level overrides without failing render.");
-        AssertThrows<System.ArgumentException>(() => Chart.Create().AddHexbinHeatmapRow("Empty", System.Array.Empty<double>()), "Hexbin value overloads should reject empty rows.");
         AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().AddHexbinHeatmapRow("Bad", new[] { 1d, double.NaN }), "Hexbin value overloads should reject non-finite values.");
     }
 
@@ -85,6 +83,5 @@ internal static partial class SmokeTests {
         Assert(!svg.Contains("<title>Morning, Mon:", System.StringComparison.Ordinal), "Masked leading cells should be absent from SVG titles.");
         Assert(svg.Contains("<title>Noon, Wed: 96</title>", System.StringComparison.Ordinal), "Visible masked-row cells should preserve values and labels.");
         Assert(chart.ToPng().Length > 64, "Masked hexbin heatmaps should render PNG output.");
-        AssertThrows<System.ArgumentException>(() => Chart.Create().AddHexbinHeatmapRows(new[] { ChartHeatmapRow.CreateMasked("Empty", null, null) }), "Masked rows should require at least one visible cell.");
     }
 }

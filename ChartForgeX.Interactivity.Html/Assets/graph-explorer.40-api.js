@@ -1,8 +1,9 @@
-  const graphApiRoot = (target) => {
-    if (target?.matches?.('.cfx-graph-explorer')) return target;
-    if (target?.closest) return target.closest('.cfx-graph-explorer');
-    if (typeof target !== 'string') return null;
-    return Array.from(document.querySelectorAll('.cfx-graph-explorer')).find(root => attr(root, 'data-cfx-graph-id') === target || root.id === target) || document.querySelector(target);
+  const graphApiRoot = (target, includeUnmounted = false) => {
+    let root = null;
+    if (target?.matches?.('.cfx-graph-explorer')) root = target;
+    else if (target?.closest) root = target.closest('.cfx-graph-explorer');
+    else if (typeof target === 'string') root = Array.from(document.querySelectorAll('.cfx-graph-explorer')).find(item => attr(item, 'data-cfx-graph-id') === target || item.id === target) || document.querySelector(target);
+    return root && (includeUnmounted || graphLifetime(root)?.active) ? root : null;
   };
   const svgElement = (root, name) => root.ownerDocument.createElementNS('http:' + '//www.w3.org/2000/svg', name);
   const setGraphAttribute = (element, name, value) => {
@@ -84,6 +85,7 @@
     element.appendChild(mark);
     if ((shape === 'image' || shape === 'imageRect') && node.imageUrl) {
       const image = svgElement(root, 'image');
+      setGraphAttribute(image, 'preserveAspectRatio', 'none');
       const width = shape === 'imageRect' ? size * 2.6 - 6 : size * 2;
       const height = shape === 'imageRect' ? size * 1.8 - 6 : size * 2;
       setGraphAttribute(image, 'x', -width / 2); setGraphAttribute(image, 'y', -height / 2); setGraphAttribute(image, 'width', width); setGraphAttribute(image, 'height', height); setGraphAttribute(image, 'href', node.imageUrl); setGraphAttribute(image, 'aria-label', node.imageAlt || node.label || node.id);
@@ -114,18 +116,21 @@
     }
     const label = svgElement(root, 'text'); label.classList.add('cfx-graph-node-label');
     if (card) { label.classList.add('cfx-graph-node-card-label'); label.setAttribute('x', String(cardX)); label.setAttribute('data-cfx-full-label', labelText); }
-    label.setAttribute('y', card ? '-5' : shape === 'text' ? '4' : String(size + 18)); label.textContent = card ? graphCardText(labelText, size) : labelText;
+    label.setAttribute('y', card ? String(graphCardCaptionBaseline(node)) : shape === 'text' ? '4' : String(size + 18)); label.textContent = card ? graphCardText(labelText, size) : labelText;
     if (node.style?.labelColor) label.setAttribute('style', `--cfx-node-label-explicit:${node.style.labelColor}`);
     details.appendChild(label);
     if (node.secondaryLabel) {
       const secondary = svgElement(root, 'text'); secondary.classList.add('cfx-graph-node-secondary');
       if (card) { secondary.classList.add('cfx-graph-node-card-secondary'); secondary.setAttribute('x', String(cardX)); secondary.setAttribute('data-cfx-full-label', node.secondaryLabel); }
-      secondary.setAttribute('y', String(card ? 14 : shape === 'text' ? 18 : size + 32)); secondary.textContent = card ? graphCardText(node.secondaryLabel, size, true) : node.secondaryLabel; details.appendChild(secondary);
+      secondary.setAttribute('y', String(card ? graphCardCaptionBaseline(node) + 19 : shape === 'text' ? 18 : size + 32)); secondary.textContent = card ? graphCardText(node.secondaryLabel, size, true) : node.secondaryLabel; details.appendChild(secondary);
     }
     if (node.badge) {
-      const badge = svgElement(root, 'g'); badge.classList.add('cfx-graph-node-badge'); badge.setAttribute('transform', card ? `translate(${(size * 1.45 - 18).toFixed(3)} ${(-cardHalfHeight + 18).toFixed(3)})` : `translate(${(size * .82).toFixed(3)} ${(-size * .82).toFixed(3)})`);
-      const circle = svgElement(root, 'circle'); circle.setAttribute('r', '8'); circle.setAttribute('style', 'fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2'); badge.appendChild(circle);
-      const text = svgElement(root, 'text'); text.setAttribute('y', '3.5'); text.setAttribute('style', 'fill:var(--cfx-color-paper);stroke:none'); text.textContent = String(node.badge).slice(0, 5); badge.appendChild(text); details.appendChild(badge);
+      const geometry = graphBadgeGeometry({ ...node, size }, root);
+      const badge = svgElement(root, 'g'); badge.classList.add('cfx-graph-node-badge'); badge.setAttribute('transform', `translate(${geometry.x} ${geometry.y})`);
+      const surface = svgElement(root, geometry.width <= 16 ? 'circle' : 'rect');
+      Object.entries(geometry.width <= 16 ? { r: 8 } : { x: -geometry.width / 2, y: -8, width: geometry.width, height: 16, rx: 8 }).forEach(([key, value]) => surface.setAttribute(key, String(value)));
+      surface.setAttribute('style', 'fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2'); badge.appendChild(surface);
+      const text = svgElement(root, 'text'); text.setAttribute('y', '3.5'); text.setAttribute('style', 'fill:var(--cfx-color-paper);stroke:none'); text.textContent = geometry.text; badge.appendChild(text); details.appendChild(badge);
     }
     const status = String(node.status || '').toLowerCase();
     if (status && status !== 'unknown') {
@@ -177,7 +182,7 @@
       element.removeAttribute('data-cfx-bundle-label');
     }
     const sourceArrow = edge.sourceArrow === true, targetArrow = edge.targetArrow === true || edge.directed === true;
-    setGraphAttribute(element, 'data-edge-id', edge.id); setGraphAttribute(element, 'data-source-node-id', edge.sourceNodeId || edge.source); setGraphAttribute(element, 'data-target-node-id', edge.targetNodeId || edge.target); setGraphAttribute(element, 'data-edge-label', edge.label); setGraphAttribute(element, 'data-edge-kind', edge.kind); setGraphAttribute(element, 'data-cfx-status', edge.status); setGraphAttribute(element, 'data-edge-weight', Number(edge.weight) || 1); setGraphAttribute(element, 'data-edge-length', Number(edge.length) || 0); setGraphAttribute(element, 'data-edge-shape', edge.shape || 'line'); setGraphAttribute(element, 'data-edge-curvature', Number(edge.curvature) || 0); setGraphAttribute(element, 'data-edge-route-points', graphPatchRoutePoints(edge.routePoints)); setGraphAttribute(element, 'data-edge-dashed', edge.dashed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-dash-pattern', style.dashPattern || edge.dashPattern); setGraphAttribute(element, 'data-edge-show-label', edge.showLabel === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-directed', edge.directed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-source-arrow', sourceArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-target-arrow', targetArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-physics', style.physics === false || edge.physics === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-color', style.color); setGraphAttribute(element, 'data-edge-label-color', style.labelColor); setGraphAttribute(element, 'data-edge-width', style.width); setGraphAttribute(element, 'data-edge-hidden', style.hidden === true || edge.hidden === true ? 'true' : 'false'); setGraphAttribute(element, 'data-cfx-search', graphSearchText(edge.metadata)); setGraphAttribute(element, 'data-cfx-metadata', graphMetadata(edge.metadata)); setGraphAttribute(element, 'role', 'button'); setGraphAttribute(element, 'aria-pressed', element.classList.contains('cfx-graph-selected') ? 'true' : 'false'); setGraphAttribute(element, 'aria-label', edge.label || `${edge.sourceNodeId || edge.source} to ${edge.targetNodeId || edge.target}`); setGraphAttribute(element, 'tabindex', '-1'); setGraphAttribute(element, 'style', graphPatchEdgeStyle(edge, style));
+    setGraphAttribute(element, 'data-edge-id', edge.id); setGraphAttribute(element, 'data-source-node-id', edge.sourceNodeId || edge.source); setGraphAttribute(element, 'data-target-node-id', edge.targetNodeId || edge.target); setGraphAttribute(element, 'data-edge-label', edge.label); setGraphAttribute(element, 'data-edge-kind', edge.kind); setGraphAttribute(element, 'data-cfx-status', edge.status); setGraphAttribute(element, 'data-edge-weight', Number(edge.weight) || 1); setGraphAttribute(element, 'data-edge-length', Number(edge.length) || 0); setGraphAttribute(element, 'data-edge-shape', edge.shape || 'line'); setGraphAttribute(element, 'data-edge-curvature', Number(edge.curvature) || 0); setGraphAttribute(element, 'data-edge-route-points', graphPatchRoutePoints(edge.routePoints)); setGraphAttribute(element, 'data-edge-dashed', edge.dashed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-dash-pattern', style.dashPattern || edge.dashPattern); setGraphAttribute(element, 'data-edge-show-label', edge.showLabel === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-directed', edge.directed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-source-arrow', sourceArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-target-arrow', targetArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-physics', style.physics === false || edge.physics === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-color', style.color); setGraphAttribute(element, 'data-edge-label-color', style.labelColor); setGraphAttribute(element, 'data-edge-width', style.width); setGraphAttribute(element, 'data-edge-hidden', style.hidden === true || edge.hidden === true ? 'true' : 'false'); setGraphAttribute(element, 'data-cfx-search', graphSearchText(edge.metadata)); setGraphAttribute(element, 'data-cfx-metadata', graphMetadata(edge.metadata)); setGraphAttribute(element, 'role', 'button'); setGraphAttribute(element, 'aria-pressed', element.classList.contains('cfx-graph-selected') ? 'true' : 'false'); setGraphAttribute(element, 'aria-label', graphLabelText(edge.label) || uiText(root, 'GraphEndpoints', '{source} to {target}', { source: edge.sourceNodeId || edge.source, target: edge.targetNodeId || edge.target })); setGraphAttribute(element, 'tabindex', '-1'); setGraphAttribute(element, 'style', graphPatchEdgeStyle(edge, style));
     const markerId = graphPatchArrowMarker(root, edge.id, style.color);
     setGraphAttribute(element, 'marker-start', sourceArrow && markerId ? `url(#${markerId})` : null);
     setGraphAttribute(element, 'marker-end', targetArrow && markerId ? `url(#${markerId})` : null);
@@ -187,7 +192,7 @@
     label?.removeAttribute('data-cfx-bundle-original-text');
     // Accelerated SVG materializes labels from the virtual edge state. A physical
     // label here would sit outside its runtime layer and can target a nested overlay.
-    if (edge.label && edge.showLabel !== false && attr(root, 'data-cfx-graph-accelerated-markup') !== 'true') {
+    if (graphLabelText(edge.label) && edge.showLabel !== false && attr(root, 'data-cfx-graph-accelerated-markup') !== 'true') {
       if (!label) { label = svgElement(root, 'text'); label.classList.add('cfx-graph-edge-label'); label.setAttribute('data-cfx-role', 'graph-edge-label'); viewportGroup?.insertBefore(label, viewportGroup.querySelector('[data-cfx-role="graph-node"]')); }
       label.setAttribute('data-edge-label-for', edge.id); label.textContent = edge.label; label.classList.toggle('cfx-graph-hidden', style.hidden === true || edge.hidden === true); setGraphAttribute(label, 'style', graphPatchEdgeLabelStyle(edge, style));
     } else label?.remove();
@@ -204,12 +209,23 @@
       const label = svgElement(root, 'text'); label.classList.add('cfx-graph-cluster-label'); label.setAttribute('y', '-2'); element.appendChild(label);
       const count = svgElement(root, 'text'); count.classList.add('cfx-graph-cluster-count'); count.setAttribute('y', '14'); element.appendChild(count);
     }
-    const memberCount = (cluster.nodeIds || []).length; const memberLabel = `${memberCount} ${memberCount === 1 ? 'object' : 'objects'}`; const clusterLabel = cluster.label || cluster.id; const clusterStatus = graphPatchClusterStatus(cluster);
+    const memberCount = (cluster.nodeIds || []).length; const memberLabel = uiText(root, memberCount === 1 ? 'GraphOneObject' : 'GraphObjects', memberCount === 1 ? '{count} object' : '{count} objects', { count: memberCount }); const clusterLabel = cluster.label || cluster.id; const clusterStatus = graphPatchClusterStatus(cluster);
     setGraphAttribute(element, 'data-cluster-id', cluster.id); setGraphAttribute(element, 'data-cluster-label', clusterLabel); setGraphAttribute(element, 'data-cluster-kind', cluster.kind); setGraphAttribute(element, 'data-cfx-status', clusterStatus); setGraphAttribute(element, 'data-cluster-parent', cluster.parentClusterId); setGraphAttribute(element, 'data-cluster-node-ids', (cluster.nodeIds || []).join(',')); setGraphAttribute(element, 'data-cluster-node-count', memberCount); setGraphAttribute(element, 'data-cluster-collapsed', cluster.collapsed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-cfx-search', graphSearchText(cluster.metadata)); setGraphAttribute(element, 'data-cfx-metadata', graphMetadata(cluster.metadata)); setGraphAttribute(element, 'role', 'button'); setGraphAttribute(element, 'aria-pressed', element.classList.contains('cfx-graph-selected') ? 'true' : 'false'); setGraphAttribute(element, 'aria-label', `${clusterLabel}, ${memberLabel}${clusterStatus ? `, ${clusterStatus}` : ''}`); setGraphAttribute(element, 'tabindex', '-1');
     const label = element.querySelector('.cfx-graph-cluster-label'); if (label) label.textContent = clusterLabel;
     const count = element.querySelector('.cfx-graph-cluster-count'); if (count) count.textContent = memberLabel;
     bindGraphItemSelection(root, element);
     return element;
+  };
+  // Names depend on the complete committed patch, including node-only renames.
+  // Keep the bundle's saved base name current before clustering restores it.
+  const syncGraphEdgeAccessibleNames = root => {
+    const names = new Map(items(root, '[data-cfx-role="graph-node"]').map(node => [attr(node, 'data-node-id'), graphLabelText(attr(node, 'data-node-label'))]));
+    items(root, '[data-cfx-role="graph-edge"]').forEach(edge => {
+      const source = attr(edge, 'data-source-node-id'), target = attr(edge, 'data-target-node-id');
+      const name = graphLabelText(attr(edge, 'data-edge-label')) || uiText(root, 'GraphEndpoints', '{source} to {target}', { source: names.get(source) || source, target: names.get(target) || target });
+      edge.setAttribute('aria-label', name);
+      if (attr(edge, 'data-cfx-bundle-count')) edge.setAttribute('data-cfx-bundle-original-aria', name);
+    });
   };
   const applyGraphRuntimePatch = (target, patch, options) => {
     const root = graphApiRoot(target);
@@ -233,6 +249,7 @@
     (patch.upsertClusters || []).forEach(cluster => upsertGraphCluster(root, cluster));
     (patch.upsertEdges || []).forEach(edge => upsertGraphEdge(root, edge));
     (patch.upsertNodes || []).forEach(node => upsertGraphNode(root, node));
+    if (graphChanged) syncGraphEdgeAccessibleNames(root);
     syncGraphPatchClusterMembership(root, patch.upsertNodes);
     syncSvgThemeColors(root);
     root.setAttribute('data-cfx-graph-node-count', String(items(root, '[data-cfx-role="graph-node"]').length)); root.setAttribute('data-cfx-graph-edge-count', String(items(root, '[data-cfx-role="graph-edge"]').length)); root.setAttribute('data-cfx-graph-cluster-count', String(items(root, '[data-cfx-role="graph-cluster"]').length));
@@ -252,6 +269,8 @@
     return { nodeCount: state.nodes.length, edgeCount: state.edges.length, clusterCount: state.clusters.length };
   };
   const graphExplorerApi = {
+    mount: target => { const host = typeof target === 'string' ? graphApiRoot(target, true) : target || document; return host ? mountGraph(host) : []; },
+    dispose: target => { const root = graphApiRoot(target); const lifetime = root && graphLifetime(root); if (!lifetime) return false; lifetime.dispose(); return true; },
     select: (target, requested, options) => { const root = graphApiRoot(target); return root ? selectGraphItems(root, requested, options) : false; },
     clearSelection: (target, options) => { const root = graphApiRoot(target); return root ? selectGraphItems(root, [], { ...options, mode: 'replace' }) : false; },
     highlight: (target, requested, options) => { const root = graphApiRoot(target); return root ? highlightGraphItems(root, requested, options) : false; },
@@ -273,4 +292,4 @@
     fit: target => { const root = graphApiRoot(target); if (!root) return false; fitViewport(root); return true; },
     export: (target, format) => { const root = graphApiRoot(target); return root ? exportGraph(root, format || 'json') : Promise.resolve(); }
   };
-  window.ChartForgeXGraphExplorer = Object.freeze(graphExplorerApi);
+  window.ChartForgeXGraphExplorer = window[Symbol.for('ChartForgeX.graphRuntime')] = Object.freeze(graphExplorerApi);

@@ -79,7 +79,7 @@ internal static partial class VisualCartesianCompiler {
             var pointColor = PointColor(series, index, pointIndex, colors);
             var pointPaint = VisualChartPaint.Series(series, pointColor, pointIndex);
             if (colorSurface != null) (pointColor, pointPaint) = colorSurface.Paint(series, index, pointIndex, colors);
-            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null, colorSurface, visible: insideSourceX)) {
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, chart.Options.Labels, stacks.IsStacked(index) ? stacks.Point(index, pointIndex) : null, colorSurface, visible: insideSourceX)) {
                 if (visible) {
                     var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                         ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
@@ -124,7 +124,7 @@ internal static partial class VisualCartesianCompiler {
             var bounds = new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y));
             if (!series.IsHistogramDensity) bounds = VisibleSegmentBounds(chart, bounds, direction);
             var resolvedLabel = ((CartesianLabels)labels).PointLabel(chart, series, pointIndex, labelStyle);
-            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, stack)) {
+            using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, chart.Options.Labels, stack)) {
                 if (series.IsHistogramDensity) DrawDensityHistogramSurface(chart, context, builder, series, index, pointIndex, bounds, colors);
                 else DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors, direction: direction);
             }
@@ -161,7 +161,8 @@ internal static partial class VisualCartesianCompiler {
 
     private static ResolvedPointLabel ResolvePointLabel(Chart chart, ChartSeries series, int pointIndex, TextStyle seriesStyle) {
         var value = series.RenderPoints[pointIndex].Y;
-        var numeric = !(pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null)
+        var authored = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null;
+        var numeric = !authored
             && !(series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue);
         var text = pointIndex < series.PointLabels.Count && series.PointLabels[pointIndex] != null
             ? series.PointLabels[pointIndex]! : series.HistogramBinLayout != null && !series.HistogramBins[pointIndex].Value.HasValue
@@ -170,16 +171,17 @@ internal static partial class VisualCartesianCompiler {
         if (pointIndex < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[pointIndex] != null)
             style = series.PointDataLabelStyles[pointIndex]!.Resolve(style);
         return new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, style.TextCase, System.Globalization.CultureInfo.InvariantCulture), style,
-            numeric && chart.Options.ValueFormatter != null ? new Dictionary<string, string> { ["y"] = text } : null);
+            numeric && chart.Options.ValueFormatter != null ? new Dictionary<string, string> { ["y"] = text } : null, authored);
     }
 
     private readonly struct ResolvedPointLabel {
-        internal ResolvedPointLabel(string text, string displayedText, TextStyle style, IReadOnlyDictionary<string, string>? numericCaptions = null) {
-            Text = text; DisplayedText = displayedText; Style = style; NumericCaptions = numericCaptions;
+        internal ResolvedPointLabel(string text, string displayedText, TextStyle style, IReadOnlyDictionary<string, string>? numericCaptions = null, bool authored = false) {
+            Text = text; DisplayedText = displayedText; Style = style; NumericCaptions = numericCaptions; Authored = authored;
         }
         internal string Text { get; }
         internal string DisplayedText { get; }
         internal TextStyle Style { get; }
+        internal bool Authored { get; }
         private IReadOnlyDictionary<string, string>? NumericCaptions { get; }
         internal string? NumericCaption(string member) => NumericCaptions != null && NumericCaptions.TryGetValue(member, out var text) ? text : null;
     }
@@ -249,7 +251,10 @@ internal static partial class VisualCartesianCompiler {
             // second lane before shortening the label, then the opposite vertical side.
             candidates.Add(new LabelCandidate(0, positive ? -spacing * 2 : spacing * 2, .5, positive ? 1 : 0));
             candidates.Add(new LabelCandidate(0, positive ? spacing : -spacing, .5, positive ? 0 : 1));
-            foreach (var alignment in new[] { .5, 0, 1 }) {
+            // A lollipop's mark includes its complete stem back to zero. Its value caption
+            // must stay beside the endpoint; a stem-edge fallback can cross the baseline
+            // and appear to label a different observation. Keep the full stem obstacle.
+            if (series.Kind != ChartSeriesKind.Lollipop) foreach (var alignment in new[] { .5, 0, 1 }) {
                 candidates.Add(new LabelCandidate(0, mark.Top - anchor.Y - spacing, alignment, 1));
                 candidates.Add(new LabelCandidate(0, mark.Bottom - anchor.Y + spacing, alignment, 0));
             }
@@ -305,7 +310,8 @@ internal static partial class VisualCartesianCompiler {
         }
         if (inside) { style = insideStyle; paint = insidePaint; }
         var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, style, candidates) {
-            AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint
+            AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint,
+            AllowWrapping = resolvedLabel.Authored && placement == ChartDataLabelPlacement.Auto
         };
         if (labelId != null) ((CartesianLabels)labels).LabelIds.Add(request, labelId);
         if (inside) request.Bounds = mark;

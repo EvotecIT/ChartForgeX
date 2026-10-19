@@ -40,7 +40,6 @@ internal static partial class SmokeTests {
         Verify.NotEmpty(prepared.ToPng());
         var dark = PreparedFamily(Chart.Create().WithTheme(VisualTheme.Report(), VisualThemeMode.Dark).AddDottedMap("Visited", new[] { new ChartMapPoint("Spain", -3.7038, 40.4168) }));
         Verify.Contains(dark.Scene.Nodes, node => node.Role == "dotted-map-land-dot");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddDottedMap("Empty", Array.Empty<ChartMapPoint>()), "Map inputs must not be empty.");
         AssertThrows<ArgumentException>(() => new ChartMapPoint(" ", 0, 0), "Map labels must be nonempty.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartMapPoint("Bad", 181, 0), "Longitude must remain geographic.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartMapPoint("Bad", 0, 91), "Latitude must remain geographic.");

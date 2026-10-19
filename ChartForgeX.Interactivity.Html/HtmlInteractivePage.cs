@@ -7,10 +7,11 @@ internal static class HtmlInteractivePage {
     internal static string ChartSurfaceStyle(Chart chart) => "background:" + chart.Options.ResolvedTheme.Background.ToCss()
         + ";color:" + chart.Options.ResolvedTheme.Text.ToCss() + ";font-family:" + HtmlChartRenderer.CssFontFamily(chart.Options.ResolvedTheme.FontFamily);
 
-    internal static HtmlMarkupWriter StartDocument(string title, HtmlAssetReferences? assets = null, string? bodyStyle = null) {
+    internal static HtmlMarkupWriter StartDocument(string title, HtmlAssetReferences? assets = null, string? bodyStyle = null,
+        string language = "en", string? direction = null) {
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
-            .StartElement("html").Attribute("lang", "en").EndStartElement().Line()
+            .StartElement("html").Attribute("lang", language).Attribute("dir", direction).EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
         var pageStyle = "body{" + HtmlSurfacePolish.BrowserTextPolishCss + "}"
             + HtmlSurfacePolish.PrintBodyCss("0", "body{background:transparent!important}.cfx-shell{min-height:auto;padding:0;background:transparent!important}");

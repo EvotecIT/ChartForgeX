@@ -1,5 +1,6 @@
 using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
@@ -22,6 +23,7 @@ internal static class DenseLegendExamples {
     private static void Save(Chart chart, string output, string name) {
         chart.SaveSvg(Path.Combine(output, name + ".svg"));
         chart.SavePng(Path.Combine(output, name + ".png"));
-        chart.SaveHtml(Path.Combine(output, name + ".html"));
+        File.WriteAllText(Path.Combine(output, name + ".html"), chart.ToInteractiveHtmlPage(options =>
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit));
     }
 }

@@ -12,6 +12,7 @@ void SaveChart(Chart chart, string name) => ExampleArtifactWriter.SaveChart(char
 var passed = ChartSeries.CreateArea(new ChartSeriesId("passed"), "Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230, 1260)).WithSmooth();
 var warnings = ChartSeries.CreateLine(new ChartSeriesId("warnings"), "Warnings", Points(120, 138, 132, 110, 98, 86, 72, 68), ChartColor.FromRgb(251, 191, 36)).WithSmooth();
 var failed = ChartSeries.CreateLine(new ChartSeriesId("failed"), "Failed", Points(22, 30, 28, 21, 18, 15, 13, 10), ChartColor.FromRgb(248, 113, 113)).WithSmooth();
+var warningTarget = new ChartAnnotationId("warning-target");
 var dnssec = Chart.Create()
     .WithTitle("Domain Security Checks")
     .WithSubtitle("Dependency-free SVG, HTML and PNG chart rendering")
@@ -24,7 +25,7 @@ var dnssec = Chart.Create()
     .AddSeries(passed)
     .AddSeries(warnings)
     .AddSeries(failed)
-    .AddHorizontalLine(100, "warning target", ChartColor.FromRgb(251, 191, 36))
+    .AddHorizontalLine(warningTarget, 100, "warning target", ChartColor.FromRgb(251, 191, 36))
     .AddVerticalBand(6, 7, "weekend", ChartColor.FromRgb(96, 165, 250), 0.10);
 
 SaveChart(dnssec, "domain-security-dark");
@@ -35,6 +36,7 @@ dnssec.SaveInteractiveHtml(Path.Combine(output, "domain-security-interactive.htm
     options.Interaction.GroupName = "example-gallery";
     options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.FocusTrail | ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.StateBookmarks);
     ExampleInteractiveScenarios.ConfigureDomainSecurity(options.Interaction, passed.Id, warnings.Id, failed.Id);
+    options.Interaction.AddScenario("warning-target", "Warning target", scenario => scenario.AddAnnotationStep(warningTarget));
 });
 
 MermaidExamples.Write(output);

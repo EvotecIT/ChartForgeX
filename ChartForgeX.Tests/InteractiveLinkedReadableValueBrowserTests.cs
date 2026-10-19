@@ -63,6 +63,18 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
         if (!Enabled) return;
         await using var session = await OpenAsync(LinkedChartViewsExamples.CreatePage(dark), width, 1000);
         var page = session.Page;
+        Assert.True(await page.EvaluateAsync<bool>("""
+            async () => {
+                const faces = await document.fonts.load('12px "CFX Proof Carlito"');
+                await document.fonts.ready;
+                const root=document.querySelector('[data-cfx-chart-id=linked-time]'),svg=root.querySelector('.cfx-stage svg');
+                const text=[...svg.querySelectorAll('text')].find(node=>node.textContent==='2026-03-05');
+                if(!faces.length||!text)return false;
+                const clip=text.closest('[clip-path]'),id=clip.getAttribute('clip-path').slice(5,-1);
+                const rect=svg.querySelector('#'+CSS.escape(id)+' rect'),box=text.getBBox();
+                return box.x>=rect.x.baseVal.value-.01&&box.x+box.width<=rect.x.baseVal.value+rect.width.baseVal.value+.01;
+            }
+            """), "The self-contained linked example must load its native font and keep the complete final date inside its text clip.");
         await page.EvaluateAsync("() => ChartForgeXCharts.get(document.querySelector('[data-cfx-chart-id=linked-time]')).select({observationIds:['api-2','worker-2']})");
         Assert.Equal(new[] { "API · 2026-03-04", "Worker · 2026-03-04" }, await page.Locator("[data-cfx-chart-id=linked-time] .cfx-compare-chip").AllTextContentsAsync());
         await CaptureAsync(page, "linked-compare-series-" + width);

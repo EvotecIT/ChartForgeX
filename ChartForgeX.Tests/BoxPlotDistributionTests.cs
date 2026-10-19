@@ -138,7 +138,6 @@ public sealed class BoxPlotDistributionTests {
         var empty = Chart.Create().AddSeries(series).Prepare(new VisualRenderContext());
         Assert.DoesNotContain(empty.Scene.Nodes, node => node.Role is "boxplot-body" or "boxplot-outlier");
         Assert.NotEmpty(empty.ToPng());
-        Assert.Throws<ArgumentException>(() => Chart.Create().AddBoxPlot("Empty", Array.Empty<ChartBoxPlotSampleGroup>()));
     }
 
     private static IEnumerable<ChartBoxPlotSampleGroup> BrokenGroups() { yield return new ChartBoxPlotSampleGroup(1, new[] { 1d }); throw new InvalidOperationException(); }

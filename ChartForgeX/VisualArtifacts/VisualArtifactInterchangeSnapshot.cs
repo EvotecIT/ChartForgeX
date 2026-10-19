@@ -390,6 +390,7 @@ internal static class VisualArtifactInterchangeSnapshot {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeFlowNode {
             Kind = source.Kind,
+            FitLabelToContent = source.FitLabelToContent,
         };
         return copy;
     }

@@ -11,29 +11,29 @@ import * as calendar from 'd3-time';
 // Reference calendar facts use the same deterministic UTC wall-clock interpretation as native Gantt dates.
 process.env.TZ = 'UTC';
 
-// Keep local calendar dates and epoch arithmetic identical on every reference host.
-process.env.TZ = 'UTC';
-
 const root = fileURLToPath(new URL('.', import.meta.url));
 const manifest = JSON.parse(await readFile(join(root, 'compatibility.json'), 'utf8'));
 assert.equal(manifest.schemaVersion, 1, 'Unsupported compatibility manifest schema.');
 const args = process.argv.slice(2);
 const referenceIndex = args.indexOf('--reference');
 const referenceId = referenceIndex < 0 ? null : args.splice(referenceIndex, 2)[1];
-assert.ok(args.length <= 1 && (!args[0] || ['fixtures', 'recognition'].includes(args[0])), 'Usage: node validate-mermaid.mjs [fixtures|recognition] [--reference 10|11|12]');
-const folders = args[0] ? [args[0]] : ['fixtures', 'recognition'];
+const corpusFolders = ['fixtures', 'recognition', 'invalid'];
+assert.ok(args.length <= 1 && (!args[0] || corpusFolders.includes(args[0])), 'Usage: node validate-mermaid.mjs [fixtures|recognition|invalid] [--reference 10|11|12]');
+const folders = args[0] ? [args[0]] : corpusFolders;
 const references = Object.keys(manifest.references);
 assert.deepEqual(references.sort(), ['10', '11', '12'], 'Declare the three qualified reference lanes.');
 assert.ok(referenceIndex < 0 || references.includes(referenceId), 'Select a declared reference after --reference.');
 const inventory = [];
-for (const folder of ['fixtures', 'recognition']) {
+for (const folder of corpusFolders) {
   inventory.push(...(await readdir(join(root, folder))).filter(file => file.endsWith('.mmd')).map(file => `${folder}/${file}`));
 }
 assert.deepEqual(Object.keys(manifest.fixtures).sort(), inventory.sort(), 'Every fixture needs version metadata; remove stale entries.');
 for (const [path, fixture] of Object.entries(manifest.fixtures)) {
   assert.deepEqual(Object.keys(fixture.syntax).sort(), references, `${path}: incomplete reference outcomes.`);
   for (const outcome of Object.values(fixture.syntax)) assert.ok(['accepted', 'rejected'].includes(outcome), `${path}: invalid syntax outcome.`);
-  assert.equal(fixture.syntax['12'], 'accepted', `${path}: current reference must accept the corpus.`);
+  const malformed = path.startsWith('invalid/');
+  assert.equal(fixture.syntax['12'], malformed ? 'rejected' : 'accepted',
+    `${path}: current reference must ${malformed ? 'reject malformed sources' : 'accept the positive corpus'}.`);
   assert.ok(fixture.provenance?.length > 0, `${path}: record source provenance.`);
   for (const [id, expected] of Object.entries(fixture.expectedByReference ?? {})) {
     assert.ok(references.includes(id) && fixture.syntax[id] === 'accepted', `${path}: invalid semantic reference.`);
@@ -109,7 +109,7 @@ for (const { folder, file, hasExpected } of files) {
   }
   catch (error) { syntaxFailed = true; syntaxError = error; }
   if (contract.syntax[referenceId] === 'rejected') {
-    if (!syntaxFailed) failures.push(`${folder}/${file}: reference ${reference.version} unexpectedly accepts syntax marked unavailable.`);
+    if (!syntaxFailed) failures.push(`${folder}/${file}: reference ${reference.version} unexpectedly accepts syntax marked rejected.`);
     else if (isSyntaxRejection(syntaxError, reference.version)) rejected++;
     else failures.push(`${folder}/${file}: unexpected engine failure, not a qualified syntax rejection: ${syntaxError?.message ?? syntaxError}`);
     continue;
@@ -257,6 +257,8 @@ for (const { folder, file, hasExpected } of files) {
   }
   } finally { restoreClock(); }
 }
+
+dom.window.close();
 
 if (failures.length > 0) {
   throw new Error(`Mermaid.js rejected ${failures.length} fixture(s):\n${failures.join('\n')}`);

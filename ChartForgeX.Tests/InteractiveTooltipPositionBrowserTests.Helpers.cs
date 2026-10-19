@@ -18,8 +18,31 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     private static async Task<double[]> PointerAsync(IPage page, string selector = Reading, double offsetX = 0, double offsetY = 0) {
         var box = await BoxAsync(page, selector);
         var position = new[] { box.X + box.Width / 2 + offsetX, box.Y + box.Height / 2 + offsetY };
-        await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
-        return position;
+        // Native engines may quantize pointer coordinates; assert the event delivered to the chart.
+        await page.EvaluateAsync("""
+            ()=>{
+                const capture=window.positionPointerCapture={};
+                capture.listener=event=>capture.point=[event.clientX,event.clientY];
+                document.addEventListener('pointermove',capture.listener,{capture:true,passive:true,once:true});
+            }
+            """);
+        try {
+            await page.Mouse.MoveAsync((float)position[0], (float)position[1]);
+            return await page.EvaluateAsync<double[]>("""
+                ()=>{
+                    const point=window.positionPointerCapture.point;
+                    if(!point)throw new Error('Native pointer movement was not observed.');
+                    return point;
+                }
+                """);
+        } finally {
+            await page.EvaluateAsync("""
+                ()=>{
+                    document.removeEventListener('pointermove',window.positionPointerCapture.listener,true);
+                    delete window.positionPointerCapture;
+                }
+                """);
+        }
     }
 
     private static Task CentreReadableTargetAsync(IPage page, string selector = Reading) => page.Locator(selector).EvaluateAsync("node => { const stage=node.closest('.cfx-stage'), b=node.getBoundingClientRect(), s=stage.getBoundingClientRect(); stage.scrollLeft += b.x+b.width/2-s.x-s.width/2; }");
@@ -30,8 +53,9 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         ({selector,hosted}) => {
             const node=(hosted?window.positionFocusChart:document).querySelector(selector), root=node.closest('.cfx-interactive-chart'), tip=root.querySelector('.cfx-tooltip');
             const rect=element=>{const b=element.getBoundingClientRect();return {x:b.left,y:b.top,width:b.width,height:b.height};};
+            const dock=root.querySelector('[data-cfx-compare-tray]');
             return {tip:rect(tip),node:rect(node),stage:rect(root.querySelector('.cfx-stage')),viewport:{width:innerWidth,height:innerHeight},
-                hidden:tip.hidden,pinned:root.dataset.cfxTooltipPinned==='true',text:tip.innerText,css:{left:tip.style.left,top:tip.style.top}};
+                dock:dock&&!dock.hidden?rect(dock):null,hidden:tip.hidden,pinned:root.dataset.cfxTooltipPinned==='true',text:tip.innerText,css:{left:tip.style.left,top:tip.style.top}};
         }
         """, new { selector, hosted });
 
@@ -45,6 +69,12 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             ? node : new ScreenRect(pointer?[0] ?? node.X + node.Width / 2, pointer?[1] ?? node.Y + node.Height / 2, 0, 0);
         var viewport = geometry.GetProperty("viewport");
         var width = viewport.GetProperty("width").GetDouble(); var height = viewport.GetProperty("height").GetDouble();
+        if (geometry.GetProperty("dock") is { ValueKind: JsonValueKind.Object } dockValue) {
+            var dock = ScreenRect.Read(dockValue);
+            // A visible comparison row reserves space when the full readout fits above it.
+            if (dock.Width > 0 && dock.Height > 0 && dock.X + dock.Width > 0 && dock.X < width
+                && dock.Y < height && dock.Y >= tip.Height + 16) height = dock.Y;
+        }
         var candidates = placements.Select(placement => Candidate(bounds, tip, placement, gap, offsetX, offsetY)).ToArray();
         var chosen = candidates.FirstOrDefault(candidate => candidate.X >= 8 && candidate.Y >= 8 && candidate.X + tip.Width <= width - 8 && candidate.Y + tip.Height <= height - 8, candidates[0]);
         var x = Math.Max(8, Math.Min(Math.Max(8, width - tip.Width - 8), chosen.X));

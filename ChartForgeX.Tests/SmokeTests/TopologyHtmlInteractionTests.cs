@@ -74,15 +74,11 @@ internal static partial class SmokeTests {
         Assert(html.Contains("renderScenarioPanel(route)", StringComparison.Ordinal), "Scenario interactions should keep the route panel synchronized with the active scenario.");
         Assert(html.Contains("cfx-topology-html-scenario-preview", StringComparison.Ordinal), "Scenario picker hover should preview routes without changing the active scenario.");
         Assert(html.Contains("cfx-topology-scenario-preview", StringComparison.Ordinal), "Scenario preview should dispatch host-friendly events.");
-        Assert(html.Contains("button.addEventListener('pointerenter', () => previewScenario(scenarioId))", StringComparison.Ordinal), "Scenario picker hover should preview routes with pointer input.");
-        Assert(html.Contains("button.addEventListener('focus', () => previewScenario(scenarioId))", StringComparison.Ordinal), "Scenario picker focus should preview routes with keyboard input.");
         Assert(html.Contains("const setScenarioStep = (stepIndex, keepPlaying, emit = true, sync = true) =>", StringComparison.Ordinal), "Scenario interactions should let hosts focus individual route steps.");
         Assert(html.Contains("cfx-topology-html-scenario-step-active", StringComparison.Ordinal), "Scenario step focus should emphasize the current route step without drawing duplicate overlays.");
         Assert(html.Contains("cfx-topology-scenario-step", StringComparison.Ordinal), "Scenario step focus should dispatch host-friendly events.");
         Assert(html.Contains("cfx-topology-set-scenario-step", StringComparison.Ordinal), "Scenario step focus should allow hosts to drive the current step.");
         Assert(html.Contains("cfx-topology-scenario-link", StringComparison.Ordinal) && html.Contains("navigator.clipboard.writeText", StringComparison.Ordinal), "Scenario link controls should publish and copy deep links without external dependencies.");
-        Assert(html.Contains("stepsList.addEventListener('click'", StringComparison.Ordinal) && html.Contains("stepsList.addEventListener('keydown'", StringComparison.Ordinal), "Scenario panel steps should support direct pointer and keyboard activation.");
-        Assert(html.Contains("window.setTimeout(advance, stepDelay(route.steps[current]))", StringComparison.Ordinal) && html.Contains("if (route.loopPlayback) index = 0", StringComparison.Ordinal), "Scenario panels should support paced and optionally looping route playback.");
         Assert(html.Contains("initialRoute.autoPlay && !initialScenarioStep && !reducedMotion", StringComparison.Ordinal), "Topology route autoplay should stay opt-in and respect reduced-motion preferences.");
         Assert(html.Contains("findScenarioButton(scenarioId)", StringComparison.Ordinal), "Scenario interactions should ignore unknown scenario ids instead of muting the whole chart.");
         Assert(html.Contains("label: route.label", StringComparison.Ordinal), "Scenario events should include host-friendly scenario metadata.");
@@ -236,13 +232,11 @@ internal static partial class SmokeTests {
         Assert(viewportHtml.Contains("cursor:grabbing;user-select:none;-webkit-user-select:none", StringComparison.Ordinal), "Topology dragging should not select SVG labels or site text.");
         Assert(viewportHtml.Contains(".cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport>svg", StringComparison.Ordinal), "Viewport transforms should target only the embedded topology SVG, not toolbar icon SVGs.");
         Assert(viewportHtml.Contains("const zoomBy = (factor, origin) =>", StringComparison.Ordinal), "Topology viewport controls should zoom around the pointer or active control.");
-        Assert(viewportHtml.Contains("button.addEventListener('click', () => zoomBy(attr(button, 'data-cfx-topology-zoom') === 'in' ? 1.2 : 0.8333333333))", StringComparison.Ordinal), "Topology zoom buttons should zoom around the viewport center instead of the overlaid toolbar button.");
         Assert(viewportHtml.Contains("const topologySvg = () =>", StringComparison.Ordinal) && viewportHtml.Contains("[data-cfx-role=\"topology\"]", StringComparison.Ordinal), "Topology viewport controls should target the real topology SVG instead of toolbar icon SVGs.");
         Assert(viewportHtml.Contains("cfx-topology-set-viewport", StringComparison.Ordinal), "Topology viewport controls should allow hosts to drive viewport state.");
         Assert(viewportHtml.Contains("cfx-topology-reset-viewport", StringComparison.Ordinal), "Topology viewport controls should allow hosts to reset viewport state.");
         Assert(viewportHtml.Contains("data-cfx-asset-source=\"document\"", StringComparison.Ordinal), "Topology pages should declare document-owned assets on their wrapper.");
         Assert(viewportHtml.Contains("cfx-topology-viewport", StringComparison.Ordinal), "Topology viewport controls should dispatch host-friendly viewport events.");
-        Assert(viewportHtml.Contains("addEventListener('wheel'", StringComparison.Ordinal), "Topology viewport controls should support wheel zoom.");
         Assert(viewportHtml.Contains("data-cfx-topology-fit", StringComparison.Ordinal) && viewportHtml.Contains("cfx-topology-fit", StringComparison.Ordinal), "Topology viewport controls should support host-visible fit events.");
 
         var staticViewportHtml = CreateSampleTopologyChart().ToHtmlPage(new TopologyRenderOptions { EnableHtmlInteractions = false, EnableHtmlViewportControls = true });

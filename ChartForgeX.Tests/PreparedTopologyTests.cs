@@ -294,7 +294,7 @@ public sealed class PreparedTopologyTests {
         string html = report.ToInteractiveHtmlPage();
         Assert.Equal("pl", report.Source.Language);
         Assert.Contains("<html lang=\"pl\">", html);
-        Assert.Contains("<main lang=\"en\">", html);
+        Assert.Matches(@"<main\b[^>]*\slang=""en""(?=\s|>)", html);
         Assert.Contains("<h1 lang=\"pl\">", html);
         var objects = ReportRecords(html, "objects");
         Assert.All(objects, record => Assert.Equal("pl", record[3]));

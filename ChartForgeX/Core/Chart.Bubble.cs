@@ -23,7 +23,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddBubble(string name, IEnumerable<ChartBubble> bubbles, ChartColor? color = null) {
         var series = ChartSeries.CreateBubble(name, bubbles, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(bubbles));
         AppendSeries(series);
         return this;
     }

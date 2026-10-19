@@ -1,0 +1,73 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = RegionMapRecipe.Create("compact-color-dimension", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Temperature by state", "Temperature captions use their own format and culture", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Creates a geographic map of regional service coverage or signed temperature measurements.</summary>
+public static class RegionMapRecipe {
+    /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "color-dimension" or "compact-color-dimension"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is "color-dimension" or "compact-color-dimension") return Temperature(mode);
+
+        var chart = Chart.Create().AddRegionMap("Observations", ChartMapCatalog.Get("us-states"), RegionValues(),
+            id: new ChartSeriesId("regional-observations")).WithMapLabels(false);
+        if (variant == "options") {
+            var colors = VisualTheme.Graphite().Resolve(mode);
+            chart.WithMapColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
+                    .WithValueRange(0, 100).WithLabels("Below target", "Target", "Above target").WithNoDataColor(colors.Border))
+                .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        }
+        return chart.WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    private static Chart Temperature(VisualThemeMode mode) {
+        var colors = VisualTheme.Graphite().Resolve(mode);
+        var values = new[] {
+            new ChartRegionMapItem("CA", -25), new ChartRegionMapItem("TX", -3), new ChartRegionMapItem("NY", 0),
+            new ChartRegionMapItem("FL", 2.5), new ChartRegionMapItem("WA", 5), new ChartRegionMapItem("IL", 22.5),
+            new ChartRegionMapItem("CO", 55)
+        };
+        return Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled")
+            .AddRegionHeatmap("Daily mean", ChartMapCatalog.Get("us-states"), values,
+                ChartColorScale.Diverging(ChartColor.FromHex("#2166AC"), ChartColor.FromHex("#D1D5DB"), ChartColor.FromHex("#B2182B"), 0)
+                    .WithValueRange(-20, 40).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border),
+                new ChartSeriesId("state-temperatures"))
+            .WithMapLabels(false).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
+            .ConfigureMapColorDimension(options => {
+                options.Name = "Temperature";
+                options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", System.Globalization.CultureInfo.GetCultureInfo("pl-PL"));
+            });
+    }
+
+    private static ChartRegionMapItem[] RegionValues() => new[] {
+        new ChartRegionMapItem("CA", 82), new ChartRegionMapItem("TX", 64),
+        new ChartRegionMapItem("NY", 91), new ChartRegionMapItem("FL", 47),
+        new ChartRegionMapItem("WA", 74), new ChartRegionMapItem("IL", 58),
+        new ChartRegionMapItem("CO", 39), new ChartRegionMapItem("NC", 66)
+    };
+}

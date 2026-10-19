@@ -174,7 +174,7 @@ public sealed class VisualTypography {
             scalarValueSize, centerValueSize, axisTitleSize, monospaceFamily, 14, 22, 13) { }
 
     /// <summary>Creates a validated immutable font scale including VisualCanvas tile sizes.</summary>
-    public VisualTypography(string family = "Calibri, Carlito, Segoe UI, system-ui, sans-serif",
+    public VisualTypography(string family = "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif",
         double titleSize = 17, double subtitleSize = 13.5, double axisSize = 12, double legendSize = 13, double dataLabelSize = 12,
         double scalarValueSize = 34, double centerValueSize = 20, double? axisTitleSize = null,
         string monospaceFamily = "Cascadia Mono, Consolas, monospace",

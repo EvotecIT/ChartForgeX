@@ -24,7 +24,7 @@
     const details = updateSelectionState(root, options?.emit === true);
     const tip = root.querySelector('.cfx-graph-tooltip'); if (tip) tip.hidden = true;
     const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
-    if (announcer) announcer.textContent = details.length + ' items selected.';
+    if (announcer) announcer.textContent = uiText(root, 'GraphItemsSelected', '{count} items selected.', { count: details.length });
     redrawGraphLinkedState(root);
     return details;
   };
@@ -56,7 +56,7 @@
       .map(item => ({ id: item.id, role: item.role })), dim: options?.dim === true };
     const matches = syncGraphHighlightAppearance(root);
     const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
-    if (announcer) announcer.textContent = matches.length + ' items highlighted.';
+    if (announcer) announcer.textContent = uiText(root, 'GraphItemsHighlighted', '{count} items highlighted.', { count: matches.length });
     redrawGraphLinkedState(root);
     return matches.map(item => selectionDetail(root, item));
   };

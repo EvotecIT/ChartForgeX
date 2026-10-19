@@ -12,6 +12,7 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     [BrowserTheory]
+    [Trait("BrowserSuite", "Compatibility")]
     [InlineData(false, 0.8, false)]
     [InlineData(true, 0.8, true)]
     [InlineData(false, 1, true)]
@@ -63,6 +64,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
                 mark:{left:mark.left,right:mark.right,top:mark.top,bottom:mark.bottom},
                 viewport:{left:left+margin,right:left+s.clientWidth*scale-margin,top:top+margin,bottom:top+s.clientHeight*scale-margin},
                 paintedHit:n.contains(document.elementFromPoint((mark.left+mark.right)/2,(mark.top+mark.bottom)/2)),
+                nativeHit:document.elementFromPoint((mark.left+mark.right)/2,(mark.top+mark.bottom)/2)?.outerHTML.slice(0,1800),
                 scrollLeft:s.scrollLeft,scrollTop:s.scrollTop,border:s.clientLeft,
                 clientWidth:s.clientWidth,clientHeight:s.clientHeight,scrollWidth:s.scrollWidth,scrollHeight:s.scrollHeight,
                 pageScroll:[window.scrollX,window.scrollY]};

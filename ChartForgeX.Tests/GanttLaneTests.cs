@@ -326,12 +326,20 @@ public sealed class GanttLaneTests {
         var chart = CreateChart().WithSize(900, 300).WithAxes(true).WithYAxisVisible(true)
             .AddGanttLane("Escalation lane", new[] { new ChartGanttLaneItem(Start, Start.AddMinutes(1), "high", "Investigate") });
         chart.AddGanttLane("Service A", new[] { new ChartGanttLaneItem(Start, Start.AddHours(1), "low") });
+        // This exact-fit layout fixture uses the same installed-independent face as the packed-caption contracts.
+        RoundedRadialSeriesTests.UseFixtureFont(chart);
 
-        var svg = XDocument.Parse(chart.ToSvg());
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var svg = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(5, ByRole(svg, "schedule-row-label").Length);
         Assert.Contains("Escalation lane", Texts(svg, "schedule-row-label"));
         Assert.Contains("Investigate", Texts(svg, "data-label"));
-        Assert.NotEmpty(chart.ToPng());
+        var item = ByRole(svg, "gantt-lane-item").Single(mark => (string?)mark.Attribute("data-cfx-series") == "3");
+        Assert.Equal(Start.ToOADate(), Number(item, "data-cfx-start"));
+        Assert.Equal(Start.AddMinutes(1).ToOADate(), Number(item, "data-cfx-end"));
+        Assert.Contains("Investigate", Title(item), StringComparison.Ordinal);
+        Assert.Contains(prepared.Regions, region => region.Id == "series-3-point-0-label" && region.Label == "Investigate");
+        Assert.NotEmpty(prepared.ToPng());
     }
 
     [Fact]

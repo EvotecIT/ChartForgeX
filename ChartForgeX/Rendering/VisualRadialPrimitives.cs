@@ -16,7 +16,7 @@ internal static class VisualRadialPrimitives {
     }
 
     internal static ChartColor Color(ChartSeries series, int index, VisualThemeColors colors) =>
-        ChartSeriesColours.Point(series, index, index, colors);
+        ChartSeriesColours.CategoryPoint(series, index, colors);
 
     internal static void Arc(VisualSceneBuilder builder, double cx, double cy, double radius, double width,
         double start, double sweep, ChartColor color, string role, string? id = null, bool round = false, SvgPaint? paint = null) {

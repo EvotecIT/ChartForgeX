@@ -15,7 +15,7 @@ internal static partial class VisualPolarCompiler {
         if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.PolarArea) {
             var series = chart.Series[0];
             return !series.ShowInLegend ? Array.Empty<VisualLegendEntry>() : series.RenderPoints.Select((point, index) =>
-                new VisualLegendEntry(Category(chart, point.X), ChartSeriesColours.Point(series, index, index, colors), Id(0, index),
+                new VisualLegendEntry(Category(chart, point.X), ChartSeriesColours.CategoryPoint(series, index, colors), Id(0, index),
                     series.Kind, Pattern(series, index), series.StateRole, series.InteractionIdentityKey)).ToArray();
         }
         return chart.Series.Select((series, index) => new { series, index }).Where(item => item.series.ShowInLegend).Select(item => {
@@ -68,16 +68,18 @@ internal static partial class VisualPolarCompiler {
                     var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, series.RenderPoints[raw[index]].X);
                     mapped[index] = On(geometry, angle, geometry.Radius * scale.Normalize(value));
                 }
-                var path = radar ? ChartPathBuilder.ClosedCurve(mapped, series.Radar.CurveTension ?? 0)
-                    : ChartPathBuilder.FromPoints(mapped, ChartInterpolation.Linear);
+                var paths = radar ? ChartRadarGeometry.Paths(series.Radar, mapped, raw)
+                    : new[] { new ChartRadarGeometry.RadarPath(ChartPathBuilder.FromPoints(mapped, ChartInterpolation.Linear), false) };
+                if (radar) ChartRadarGeometry.DiagnoseOpenArea(builder, series, paths);
                 using (builder.PushGroup(Id(seriesIndex), radar ? "radar-series" : "polar-series", new Dictionary<string, string> {
                     ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey, ["data-cfx-label"] = series.Name,
                     ["data-cfx-form"] = radar && series.Radar.Form == ChartLineAreaForm.Area ? "area" : "line",
-                    ["data-cfx-missing-policy"] = radar ? "zero" : "source"
+                    ["data-cfx-missing-policy"] = radar ? ChartRadarGeometry.MissingPolicy(series.Radar) : "source"
                 })) {
-                    VisualPolarSeriesScene.Draw(chart, context, builder, series, path, color, radar);
+                    foreach (var path in paths) VisualPolarSeriesScene.Draw(chart, context, builder, series, path.Path, color, radar, path.Closed);
                     for (var index = 0; index < mapped.Length; index++) {
                         var source = raw[index]; var value = source >= 0 ? series.RenderPoints[source].Y : 0;
+                        if (radar && source < 0 && series.Radar.MissingCategoryPolicy != ChartRadarMissingCategoryPolicy.Zero) continue;
                         var angle = radar ? CategoryAngle(chart.Options.XAxis, index, categories.Length) : PolarAngle(chart.Options.XAxis, series.RenderPoints[source].X);
                         var category = radar ? categories[index] : series.RenderPoints[source].X;
                         var formatted = source >= 0 && source < series.PointLabels.Count && series.PointLabels[source] != null

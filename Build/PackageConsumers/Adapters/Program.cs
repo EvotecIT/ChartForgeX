@@ -45,10 +45,15 @@ internal static class Program {
         if (!chart.ToHtmlFragment().Contains("<svg", StringComparison.Ordinal)) throw new InvalidOperationException("HTML render failed.");
         if (chart.ToPng().Length <= 64) throw new InvalidOperationException("PNG render failed.");
         var html = chart.ToInteractiveHtmlPage(options => {
+            options.Localization.Language = "pl-PL";
+            options.Localization[HtmlChartText.Pinned] = "Przypięte";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
             options.Interaction.AddScenario("package-series", "Selected series", scenario => scenario.AddSeriesStep(bubble.Id, "Bubble observation"));
             options.Interaction.WithActiveScenario("package-series");
         });
+        PackageAssertions.Require(html.Contains("lang=\"pl-PL\"", StringComparison.Ordinal)
+            && html.Contains("data-cfx-pinned-label=\"Przypięte\"", StringComparison.Ordinal),
+            "Packed HTML controls lost their language or translated pinned status.");
         PackageAssertions.Require(html.Contains("data-cfx-scenario-target-id=\"0\"", StringComparison.Ordinal) &&
             html.Contains("data-cfx-scenario-target-kind=\"series\"", StringComparison.Ordinal),
             "Packed HTML adapter did not accept the typed stable series ID in its scenario step.");

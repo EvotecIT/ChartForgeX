@@ -21,7 +21,6 @@ public sealed partial class Chart {
             materialized.Add(layer);
         }
 
-        if (materialized.Count == 0) throw new ArgumentException("Layered radial charts must contain at least one layer.", nameof(layers));
         AppendSeries(ChartSeries.CreateLayeredRadial(name, materialized));
         return this;
     }

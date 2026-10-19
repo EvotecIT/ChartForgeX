@@ -14,7 +14,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddDumbbell(string name, IEnumerable<ChartDumbbell> values, ChartColor? color = null) {
         var series = ChartSeries.CreateDumbbell(name, values, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(values));
         AppendSeries(series);
         return this;
     }

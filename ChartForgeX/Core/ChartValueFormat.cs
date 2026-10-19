@@ -43,10 +43,12 @@ public sealed class ChartValueFormat {
             var caption = value.ToString("#,0.##", Culture);
             return value != 0 && (caption == "0" || caption == "-0") ? FormatSignificant(value) : caption;
         }
-        if (magnitude >= 1000000000) return (value / 1000000000).ToString("0.#", Culture) + "B";
-        if (magnitude >= 1000000) return (value / 1000000).ToString("0.#", Culture) + "M";
-        if (magnitude >= 1000) return (value / 1000).ToString("0.#", Culture) + "k";
-        return value.ToString("0.##", Culture);
+        var compact = magnitude >= 1000000000 ? (value / 1000000000).ToString("0.#", Culture) + "B"
+            : magnitude >= 1000000 ? (value / 1000000).ToString("0.#", Culture) + "M"
+            : magnitude >= 1000 ? (value / 1000).ToString("0.#", Culture) + "k"
+            : value.ToString("0.##", Culture);
+        // Automatic captions stay bounded; explicit Number, Compact and callback policies remain authoritative.
+        return _notation == Notation.ExistingValue && compact.Length > 24 ? FormatSignificant(value) : compact;
     }
 
     internal static ChartValueFormat ExistingValue { get; } = new(Notation.ExistingValue, "0.##", null);

@@ -5,10 +5,14 @@ namespace ChartForgeX.Interactivity.Html;
 
 internal static class HtmlInteractiveAssets {
     private const string StyleResourceName = "ChartForgeX.Interactivity.Html.Assets.interactive.css";
+    private const string ChromeStyleResourceName = "ChartForgeX.Interactivity.Html.Assets.interactive.chrome.css";
     private const string ScriptResourceName = "ChartForgeX.Interactivity.Html.Assets.interactive.js";
 
-    private static readonly Lazy<string> StyleResource = new Lazy<string>(() => ReadResource(StyleResourceName));
+    private static readonly Lazy<string> StyleResource = new Lazy<string>(() =>
+        ReadResource(StyleResourceName) + ReadResource(ChromeStyleResourceName));
     private static readonly Lazy<string> ScriptResource = new Lazy<string>(() => ReadResource(ScriptResourceName));
+
+    internal static string LocalizationScript => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-localization.js");
 
     internal static string Style => StyleResource.Value;
 

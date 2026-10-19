@@ -23,13 +23,14 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.NotEqual("true", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
         Assert.False(await page.Locator(North).EvaluateAsync<bool>("node=>node.matches(':focus-visible')"));
         Assert.Equal("none", await page.Locator(North).EvaluateAsync<string>("node=>getComputedStyle(node).outlineStyle"));
+        Assert.Equal(0, await page.Locator("[data-cfx-keyboard-focus-outline]").CountAsync());
         await MoveAwayAsync(page);
         Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip=>tip.hidden"));
         await page.Keyboard.PressAsync("Tab");
         await page.Locator(North).FocusAsync();
         Assert.True(await page.Locator(North).EvaluateAsync<bool>("node=>node.matches(':focus-visible')"));
         Assert.NotEmpty(await TooltipTextAsync(page));
-        Assert.Equal("solid", await page.Locator(North).EvaluateAsync<string>("node=>getComputedStyle(node).outlineStyle"));
+        await AssertNativeKeyboardFocusAsync(page);
         await page.Keyboard.PressAsync("Space");
         Assert.NotEqual("true", await page.Locator(Root).GetAttributeAsync("data-cfx-tooltip-pinned"));
         await MoveAwayAsync(page);
@@ -248,7 +249,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task AdaptiveLegendBudgetsRetainCanonicalMuteAndIsolationWhenControlsAreOmitted(string family, bool isolated) {
         if (!Enabled) return;
         var labels = new[] { "Service request measures North", "Service request measures South", "Service request measures West" };
-        var chart = Chart.Create().WithSize(900, 360).WithTitle("Adaptive legend state").WithLegend().WithLegendBudget(maximumRows: 1);
+        var chart = Chart.Create().WithSize(1100, 360).WithTitle("Adaptive legend state").WithLegend().WithLegendBudget(maximumRows: 1)
+            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         string legend, mark;
         if (family is "series" or "local-series") {
             for (var index = 0; index < labels.Length; index++) {
@@ -274,6 +276,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Configure), 1440, 800);
         var page = session.Page;
         await BindControllerAsync(page);
+        Assert.Equal(1, await page.Locator(legend).CountAsync());
         await page.Locator(legend).FocusAsync();
         await page.Keyboard.PressAsync(isolated ? "i" : "Space");
         var stateClass = isolated ? "cfx-series-isolated-in" : "cfx-series-muted";

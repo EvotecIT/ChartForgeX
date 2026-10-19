@@ -13,8 +13,9 @@ internal static partial class VisualPolarCompiler {
         var radius = Math.Max(0, Math.Min(plot.Width, plot.Height) / 2 - context.Theme.Spacing - context.Theme.SeriesStrokeWidth / 2);
         if (radius <= 0) { builder.AddDiagnostic(new VisualDiagnostic("polar.insufficient-space", "No radius remains for the polar area chart.")); return; }
         var cx = plot.Left + plot.Width / 2; var cy = plot.Top + plot.Height / 2;
-        var max = series.RenderPoints.Max(point => point.Y); var total = series.RenderPoints.Sum(point => point.Y);
-        if (double.IsInfinity(total)) throw new InvalidOperationException("The sum of polar area values must be finite.");
+        var max = series.RenderPoints.Max(point => point.Y); var total = new ChartPositiveSum(series.RenderPoints.Select(point => point.Y));
+        if (!total.FiniteTotal.HasValue)
+            builder.AddDiagnostic(new VisualDiagnostic("polar-area.total-overflow", "The total exceeds the finite numeric range. Proportions and authored source values remain available."));
         var sweep = Math.PI * 2 / series.RenderPoints.Count;
         var labels = new List<PolarLabel>();
         using (builder.PushClip(plot)) {
@@ -22,18 +23,20 @@ internal static partial class VisualPolarCompiler {
                 builder.Ellipse(cx, cy, radius * ring / ChartVisualPrimitives.PolarAreaGridRings, radius * ring / ChartVisualPrimitives.PolarAreaGridRings,
                     null, colors.Border, context.Theme.GridStrokeWidth, "polar-area-ring", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Grid));
             for (var index = 0; index < series.RenderPoints.Count; index++) {
-                var point = series.RenderPoints[index]; var color = ChartSeriesColours.Point(series, index, index, colors);
+                var point = series.RenderPoints[index]; var color = ChartSeriesColours.CategoryPoint(series, index, colors);
                 var start = CategoryAngle(chart.Options.XAxis, index, series.RenderPoints.Count, sweep); var zero = point.Y == 0;
                 var r = zero ? radius : radius * Math.Sqrt(point.Y / max); var inner = zero ? radius * ChartVisualPrimitives.PolarAreaZeroSlotInnerRadiusFactor : 0;
                 var value = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : ChartNumericFormatter.FormatValue(chart.Options, point.Y);
                 var category = Category(chart, point.X); var role = zero ? "polar-area-zero-slot" : "polar-area-segment";
                 var bounds = new ChartRect(cx - r, cy - r, r * 2, r * 2);
                 builder.AddRegion(new VisualSemanticRegion(Id(0, index), role, bounds, category + ": " + value));
-                using (builder.PushGroup(Id(0, index), "polar-area-point-source", new Dictionary<string, string> {
+                var metadata = new Dictionary<string, string> {
                     ["data-cfx-series"] = "0",
                     ["data-cfx-point"] = N(index), ["data-cfx-label"] = category, ["data-cfx-full-label"] = value,
-                    ["data-cfx-value"] = N(point.Y), ["data-cfx-percent"] = N(total > 0 ? point.Y / total : 0)
-                })) {
+                    ["data-cfx-value"] = N(point.Y), ["data-cfx-percent"] = N(total.Fraction(point.Y))
+                };
+                if (!total.FiniteTotal.HasValue) metadata.Add("data-cfx-total-overflow", "true");
+                using (builder.PushGroup(Id(0, index), "polar-area-point-source", metadata)) {
                     builder.Slice(cx, cy, r, inner, start, sweep, zero ? ChartColorMath.WithOpacity(color, ChartVisualPrimitives.PolarAreaZeroSlotFillOpacity) : color,
                         zero ? color : colors.Surface, context.Theme.GridStrokeWidth, role,
                         paint: new VisualScenePaintBinding(zero ? VisualChartPaint.Series(series, color, index).WithOpacity(ChartColorMath.WithOpacity(color, ChartVisualPrimitives.PolarAreaZeroSlotFillOpacity), ChartVisualPrimitives.PolarAreaZeroSlotFillOpacity) : VisualChartPaint.Series(series, color, index),

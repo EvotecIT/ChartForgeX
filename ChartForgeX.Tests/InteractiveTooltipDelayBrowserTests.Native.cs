@@ -96,7 +96,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             }
             """);
         await page.Mouse.MoveAsync((float)positions[0], (float)positions[1]);
-        Assert.True(await TipHiddenAsync(page));
+        await AssertDelayedNativeEntryAsync(page);
         await Task.Delay(100);
         await page.Mouse.MoveAsync((float)positions[2], (float)positions[3]);
         await WaitForTipAsync(page);

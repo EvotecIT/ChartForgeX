@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source');
-const names = ['00-bootstrap-targets', '00-bootstrap-tooltip', '05-prepared-targets', '35-series-state',
+const names = ['00-bootstrap-targets', '00-bootstrap-tooltip', '01-annotation-identity', '05-prepared-targets', '35-series-state',
   '40-selection-hover-sync', '42-host-commands', '85-chart-update'];
 const source = names.map(name => fs.readFileSync(path.join(assets, name + '.js'), 'utf8')).join('\n').replace(/^\(\(\) => \{/, '');
 const runtime = new Function('window', 'document', source + '\nreturn { pointTargetId, targetIdentity, boxPlotTooltipRows, seriesTarget, matchesLocalSeriesTarget, inHoverUnit, durableChartTarget, matchesTargetIdentity, resolveSeriesTarget, prepareChartTargets };')({}, {});

@@ -10,6 +10,43 @@ namespace ChartForgeX.Tests;
 
 public sealed class RelationshipDataLifecycleTests {
     [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void ATreeWithOneRootNeedsNoBranchesAndCanClearAndRefillWithoutInventedLinks(VisualThemeMode mode) {
+        var nodes = new[] { new ChartNode("only", "Only node") };
+        var series = ChartSeries.CreateTree(new ChartSeriesId("one-root"), "Tree", nodes, Array.Empty<ChartTreeLink>());
+        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false).AddSeries(series);
+        var color = ChartColor.FromHex("#A42B71"); series.WithColor(color);
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(500, 320)), VisualTheme.Graphite(), mode,
+            frame: new VisualFrame(showLegend: false));
+        var single = chart.Prepare(context); var svg = single.ToSvg(); var png = single.ToPng(Raster());
+        var target = Assert.Single(Targets(svg));
+        Assert.Equal("node", target.Attribute("data-cfx-target-kind")?.Value);
+        Assert.Equal("only", target.Attribute("data-cfx-target-id")?.Value);
+        var bounds = Assert.Single(single.Regions, region => region.Role == "tree-node").Bounds;
+        Assert.Equal(250, bounds.Left + bounds.Width / 2, 8); Assert.Equal(160, bounds.Top + bounds.Height / 2, 8);
+        var image = single.ToRgba(Raster()); var offset = (160 * image.Width + 250) * 4;
+        Assert.Equal(color.R, image.Pixels[offset]); Assert.Equal(color.G, image.Pixels[offset + 1]); Assert.Equal(color.B, image.Pixels[offset + 2]);
+        var convenience = Chart.Create().AddTree("Tree", nodes, Array.Empty<ChartTreeLink>()).Prepare(context);
+        Assert.Single(Targets(convenience.ToSvg()));
+        series.ReplaceTreeData(Array.Empty<ChartNode>(), Array.Empty<ChartTreeLink>());
+        Assert.Empty(Targets(chart.Prepare(context).ToSvg()));
+        series.ReplaceTreeData(nodes, Array.Empty<ChartTreeLink>());
+        Assert.Single(Targets(chart.Prepare(context).ToSvg()));
+        Assert.Equal("one-root", series.Id.Value); Assert.Same(series, Assert.Single(chart.Series));
+        Assert.Equal(svg, single.ToSvg()); Assert.Equal(png, single.ToPng(Raster()));
+        Assert.Throws<ArgumentException>(() => series.ReplaceTreeData(Nodes(), Array.Empty<ChartTreeLink>()));
+        Assert.Throws<ArgumentException>(() => series.ReplaceTreeData(nodes, new[] { new ChartTreeLink("only", "only") }));
+        Assert.Throws<ArgumentException>(() => series.ReplaceTreeData(nodes, new[] { new ChartTreeLink("only", "missing") }));
+        Assert.Single(Targets(chart.Prepare(context).ToSvg()));
+        var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(capture)) {
+            Directory.CreateDirectory(capture); var stem = Path.Combine(capture, "tree-singleton-" + mode);
+            File.WriteAllText(stem + ".svg", svg); File.WriteAllBytes(stem + "-native.png", png);
+        }
+    }
+
+    [Theory]
     [InlineData(ChartSeriesKind.Sankey)]
     [InlineData(ChartSeriesKind.Chord)]
     [InlineData(ChartSeriesKind.Tree)]

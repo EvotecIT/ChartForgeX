@@ -15,7 +15,6 @@ public sealed partial class Chart {
     public Chart AddProgressRing(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) {
         if (points == null) throw new ArgumentNullException(nameof(points));
         var materialized = ChartGuards.Points(points, nameof(points));
-        if (materialized.Count == 0) throw new ArgumentException("Progress-ring charts must contain at least one value.", nameof(points));
         for (var i = 0; i < materialized.Count; i++) {
             var value = materialized[i].Y;
             if (value < 0 || value > 100) throw new ArgumentOutOfRangeException(nameof(points), value, "Progress-ring values must be between zero and 100.");

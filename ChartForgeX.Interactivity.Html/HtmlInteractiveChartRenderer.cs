@@ -32,7 +32,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chart);
-        var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle);
+        var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle,
+            options.Localization.ResolveLanguage(chart.Accessibility.Language), options.Localization.DirectionAttribute);
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
@@ -92,7 +93,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
     /// <summary>Prepares an asset-free interactive section and its matching detached native scene once.</summary>
     /// <param name="chart">The chart to prepare.</param>
-    /// <param name="viewport">An optional explicit numeric X window for supported vertical Line and StepLine charts.
+    /// <param name="viewport">An optional explicit numeric or time X window for supported vertical line, area, scatter and bubble charts.
     /// Null prepares the full domain, including when resetting a previous viewport.</param>
     /// <param name="configure">An optional callback configuring the HTML interaction adapter.</param>
     /// <returns>The section markup and the prepared scene used to render it.</returns>
@@ -159,6 +160,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-look", "graphite")
             .Attribute("role", "group")
             .Attribute("aria-label", ChartTitle(chart, titleFallback))
+            .Attribute("lang", options.Localization.ResolveLanguage(chart.Accessibility.Language))
+            .Attribute("dir", options.Localization.DirectionAttribute)
+            .Attribute("data-cfx-ui", options.Localization.ToJson())
+            .Attribute("data-cfx-label-value", options.Localization[HtmlChartText.Value])
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-cfx-chart-id", chartId)
             .Attribute("data-cfx-prepared-chart", PreparedChartMetadata(chart, prepared))
@@ -196,7 +201,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         writer.EndStartElement().Line();
         var toolbar = BuildToolbar(options);
         if (toolbar.Length > 0) {
-            writer.StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", "Chart controls").EndStartElement()
+            writer.StartElement("div").Attribute("class", "cfx-toolbar").Attribute("aria-label", options.Localization[HtmlChartText.ChartControls]).EndStartElement()
                 .RawTrusted(toolbar)
                 .EndElement().Line();
         }
@@ -220,7 +225,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .RawTrusted(BuildResetControl(options))
             .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()
-            .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line();
+            .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("data-cfx-pinned-label", options.Localization[HtmlChartText.Pinned])
+            .Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden").EndStartElement().EndElement().Line();
         HtmlChartSection? narrowSection = null;
         if (adaptive && !narrow) {
             var narrowContext = AdaptiveDrawingContext(context, options.Adaptive);
@@ -263,8 +269,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
     private static string BuildScenarioControls(HtmlChartInteractionOptions options) {
         var writer = new HtmlMarkupWriter();
-        writer.StartElement("div").Attribute("class", "cfx-scenarios").Attribute("aria-label", "Chart scenarios").EndStartElement();
-        AppendScenarioButton(writer, string.Empty, "All", "Show all scenarios", string.IsNullOrWhiteSpace(options.Interaction.ActiveScenarioId), null, null, null, null, null);
+        writer.StartElement("div").Attribute("class", "cfx-scenarios").Attribute("aria-label", options.Localization[HtmlChartText.ChartScenarios]).EndStartElement();
+        AppendScenarioButton(writer, string.Empty, options.Localization[HtmlChartText.All], options.Localization[HtmlChartText.ShowAllScenarios], string.IsNullOrWhiteSpace(options.Interaction.ActiveScenarioId), null, null, null, null, null);
         foreach (var scenario in options.Interaction.Scenarios) {
             var active = string.Equals(options.Interaction.ActiveScenarioId, scenario.Id, StringComparison.Ordinal);
             var title = string.IsNullOrWhiteSpace(scenario.Description) ? scenario.Label : scenario.Description!;
@@ -287,16 +293,16 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("style", scenario == null || string.IsNullOrWhiteSpace(scenario.Color) ? null : "--cfx-scenario-color:" + scenario.Color!.Trim())
             .EndStartElement().Line()
             .StartElement("div").Attribute("class", "cfx-scenario-panel__summary").EndStartElement()
-            .StartElement("div").Attribute("class", "cfx-scenario-panel__title").Attribute("data-cfx-scenario-panel-title", "true").EndStartElement().Text(scenario?.Label ?? "All").EndElement()
-            .StartElement("div").Attribute("class", "cfx-scenario-panel__meta").Attribute("data-cfx-scenario-panel-meta", "true").EndStartElement().Text(ScenarioSummary(scenario)).EndElement()
+            .StartElement("div").Attribute("class", "cfx-scenario-panel__title").Attribute("data-cfx-scenario-panel-title", "true").EndStartElement().Text(scenario?.Label ?? options.Localization[HtmlChartText.All]).EndElement()
+            .StartElement("div").Attribute("class", "cfx-scenario-panel__meta").Attribute("data-cfx-scenario-panel-meta", "true").EndStartElement().Text(ScenarioSummary(scenario, options.Localization)).EndElement()
             .EndElement().Line();
         if (stepPlayback) {
             writer.StartElement("div").Attribute("class", "cfx-scenario-panel__controls").Attribute("data-cfx-scenario-step-controls", "true").EndStartElement();
-            AppendToolbarButton(writer, "Prev", ("data-cfx-scenario-step-control", "previous"), ("title", "Previous step"));
-            AppendToolbarButton(writer, "Play", ("data-cfx-scenario-step-control", "play"), ("data-cfx-scenario-play-label", "Play"), ("data-cfx-scenario-pause-label", "Pause"), ("aria-pressed", "false"), ("title", "Play scenario"));
-            AppendToolbarButton(writer, "Next", ("data-cfx-scenario-step-control", "next"), ("title", "Next step"));
-            AppendToolbarButton(writer, "Clear", ("data-cfx-scenario-step-control", "reset"), ("title", "Clear step"));
-            if (options.Interaction.EnableDeepLinkState) AppendToolbarButton(writer, "Link", ("data-cfx-scenario-step-control", "link"), ("title", "Copy scenario link"));
+            AppendToolbarButton(writer, options.Localization[HtmlChartText.Previous], ("data-cfx-scenario-step-control", "previous"), ("title", options.Localization[HtmlChartText.PreviousStep]));
+            AppendToolbarButton(writer, options.Localization[HtmlChartText.Play], ("data-cfx-scenario-step-control", "play"), ("data-cfx-scenario-play-label", options.Localization[HtmlChartText.Play]), ("data-cfx-scenario-pause-label", options.Localization[HtmlChartText.Pause]), ("aria-pressed", "false"), ("title", options.Localization[HtmlChartText.PlayScenario]));
+            AppendToolbarButton(writer, options.Localization[HtmlChartText.Next], ("data-cfx-scenario-step-control", "next"), ("title", options.Localization[HtmlChartText.NextStep]));
+            AppendToolbarButton(writer, options.Localization[HtmlChartText.Clear], ("data-cfx-scenario-step-control", "reset"), ("title", options.Localization[HtmlChartText.ClearStep]));
+            if (options.Interaction.EnableDeepLinkState) AppendToolbarButton(writer, options.Localization[HtmlChartText.Link], ("data-cfx-scenario-step-control", "link"), ("title", options.Localization[HtmlChartText.CopyScenarioLink]));
             writer.EndElement().Line();
             writer.StartElement("div")
                 .Attribute("class", "cfx-scenario-progress")
@@ -308,7 +314,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .BooleanAttribute("hidden")
                 .EndStartElement()
                 .StartElement("span").Attribute("class", "cfx-scenario-progress__bar").Attribute("data-cfx-scenario-progress-bar", "true").EndStartElement().EndElement()
-                .StartElement("span").Attribute("class", "cfx-scenario-progress__text").Attribute("data-cfx-scenario-progress-text", "true").EndStartElement().Text("Step 0 / " + (scenario == null ? "0" : scenario.Steps.Count.ToString(CultureInfo.InvariantCulture))).EndElement()
+                .StartElement("span").Attribute("class", "cfx-scenario-progress__text").Attribute("data-cfx-scenario-progress-text", "true").EndStartElement().Text(options.Localization.Format(HtmlChartText.StepProgress, "current", 0).Replace("{count}", (scenario?.Steps.Count ?? 0).ToString(CultureInfo.InvariantCulture))).EndElement()
                 .EndElement().Line();
             writer.StartElement("input")
                 .Attribute("class", "cfx-scenario-scrubber")
@@ -318,7 +324,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .Attribute("value", "1")
                 .Attribute("step", "1")
                 .Attribute("data-cfx-scenario-scrubber", "true")
-                .Attribute("aria-label", "Scenario timeline step")
+                .Attribute("aria-label", options.Localization[HtmlChartText.ScenarioTimelineStep])
                 .BooleanAttribute("disabled", scenario == null || scenario.Steps.Count == 0)
                 .EndVoidElement().Line();
         }
@@ -377,10 +383,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
         return null;
     }
 
-    private static string ScenarioSummary(ChartInteractionScenario? scenario) {
-        if (scenario == null) return "All chart data visible";
+    private static string ScenarioSummary(ChartInteractionScenario? scenario, HtmlChartLocalization localization) {
+        if (scenario == null) return localization[HtmlChartText.AllDataVisible];
         if (!string.IsNullOrWhiteSpace(scenario.Description)) return scenario.Description!;
-        return scenario.Steps.Count.ToString("0", CultureInfo.InvariantCulture) + " steps";
+        return localization.Format(HtmlChartText.Steps, "count", scenario.Steps.Count);
     }
 
     private static string ScenarioStepsJson(ChartInteractionScenario scenario) {
@@ -445,21 +451,21 @@ public sealed partial class HtmlInteractiveChartRenderer {
     private static string BuildToolbar(HtmlChartInteractionOptions options) {
         var writer = new HtmlMarkupWriter();
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
-            AppendToolbarButton(writer, "Zoom +", ("data-cfx-zoom", "in"), ("title", "Zoom in"));
-            AppendToolbarButton(writer, "Zoom -", ("data-cfx-zoom", "out"), ("title", "Zoom out"));
+            AppendToolbarButton(writer, options.Localization[HtmlChartText.ZoomInButton], ("data-cfx-zoom", "in"), ("title", options.Localization[HtmlChartText.ZoomIn]));
+            AppendToolbarButton(writer, options.Localization[HtmlChartText.ZoomOutButton], ("data-cfx-zoom", "out"), ("title", options.Localization[HtmlChartText.ZoomOut]));
         }
 
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Pan)) {
-            AppendToolbarButton(writer, "Pan", ("data-cfx-mode-button", "pan"), ("aria-pressed", "false"), ("title", "Pan chart"));
+            AppendToolbarButton(writer, options.Localization[HtmlChartText.Pan], ("data-cfx-mode-button", "pan"), ("aria-pressed", "false"), ("title", options.Localization[HtmlChartText.PanChart]));
         }
 
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Brush)) {
-            AppendToolbarButton(writer, "Brush", ("data-cfx-mode-button", "brush"), ("aria-pressed", "false"), ("title", "Brush select region"));
+            AppendToolbarButton(writer, options.Localization[HtmlChartText.Brush], ("data-cfx-mode-button", "brush"), ("aria-pressed", "false"), ("title", options.Localization[HtmlChartText.BrushRegion]));
         }
 
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Export)) {
-            AppendToolbarButton(writer, "SVG", ("data-cfx-export", "svg"), ("title", "Download SVG"));
-            AppendToolbarButton(writer, "PNG", ("data-cfx-export", "png"), ("title", "Download PNG"));
+            AppendToolbarButton(writer, "SVG", ("data-cfx-export", "svg"), ("title", options.Localization[HtmlChartText.DownloadSvg]));
+            AppendToolbarButton(writer, "PNG", ("data-cfx-export", "png"), ("title", options.Localization[HtmlChartText.DownloadPng]));
         }
 
         return writer.Build();
@@ -478,7 +484,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-reset", "true")
             .BooleanAttribute("hidden")
             .EndStartElement()
-            .Text("Reset view")
+            .Text(options.Localization[HtmlChartText.ResetView])
             .EndElement()
             .Line();
         return writer.Build();

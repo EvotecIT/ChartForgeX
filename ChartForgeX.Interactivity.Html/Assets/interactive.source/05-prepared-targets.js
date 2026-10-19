@@ -12,9 +12,16 @@
     let metadata;
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch (_) { return; }
     const series = metadata.series || [];
+    const annotations = annotationCatalog(svg, metadata);
+    svg.querySelectorAll('[data-cfx-role="annotation"]').forEach(node => {
+      node._cfxAnnotationId = annotations.get(node);
+    });
     root._cfxDataProjection = metadata.dataProjection || null;
     root._cfxObservationIds = series.map(item => new Map((item.observationIds || []).map(value => [value.index, value.id])));
     const xLabels = new Map((metadata.categoryLabels || metadata.xLabels || []).map((item) => [item.value, item.text]));
+    const grouped = (metadata.categoryLabels || []).filter(item => Array.isArray(item.groups) && item.groups.length);
+    if (grouped.length) root._cfxCategoryPaths = new Map(grouped.map(item => [item.value, Object.freeze([...item.groups, item.text])]));
+    else delete root._cfxCategoryPaths;
     const regions = new Map((metadata.regions || []).map((region) => [region.id, region]));
     // Only the renderer's unambiguous final Cartesian map can bound a guide.
     const plots = (metadata.regions || []).filter(region => region.role === 'cartesian-plot');
@@ -34,13 +41,14 @@
           groupIndex: node.dataset.cfxGroupIndex, groupId: node.dataset.cfxGroupId }]));
     const observationIds = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-observation-id]'))
       .map(node => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint, node.dataset.cfxObservationId]));
-    svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"]').forEach((node) => {
+    svg.querySelectorAll('[data-cfx-role="legend-entry"],[data-cfx-role="legend-item"],[data-cfx-role="legend-entry-omitted"]').forEach((node) => {
       const data = node.dataset;
       const source = data.cfxSourceId || '';
       const match = source.match(/^legend-series-(\d+)(?:-point-(\d+|other))?$/);
       const index = match ? Number(match[1]) : series.findIndex((item) => item.key === data.cfxSeriesKey);
       if (index < 0) return;
-      data.cfxRole = 'legend-item'; data.cfxSeries = String(index);
+      if (data.cfxRole !== 'legend-entry-omitted') data.cfxRole = 'legend-item';
+      data.cfxSeries = String(index);
       const region = regions.get(source);
       data.cfxLabel = data.cfxLabel || (region ? region.label : node.getAttribute('aria-label') || '');
       const reference = legendTarget(node);
@@ -100,7 +108,7 @@
         const label = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : xLabels.get(Number(data.cfxX));
         if (label !== undefined) data.cfxXLabel = label;
       }
-      if (data.cfxRole === 'legend-item') return;
+      if (data.cfxRole === 'legend-item' || data.cfxRole === 'legend-entry-omitted') return;
       const region = regions.get(data.cfxSourceId || '');
       // A scalar series already has a native value and semantic label; it is not a range endpoint observation.
       if (region && data.cfxPoint === undefined && data.cfxValue !== undefined && data.cfxPercent !== undefined
@@ -110,7 +118,7 @@
       node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
       node._cfxFillInteriors = Object.freeze((region.fillInteriors || []).map(candidate => Object.freeze(candidate.slice())));
       if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
-      if (data.cfxVisible === 'false') return;
+      if (isPassiveTarget(node) || data.cfxVisible === 'false') return;
       const box = node.getBBox();
       if (['line', 'stepline', 'area', 'steparea', 'stackedarea', 'trendline', 'slope'].includes(item.kind)) {
         const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');

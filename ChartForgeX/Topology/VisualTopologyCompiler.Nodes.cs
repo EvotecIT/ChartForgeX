@@ -18,6 +18,7 @@ internal sealed partial class VisualTopologyCompiler {
         var mode = EffectiveNodeDisplayMode(node, _options);
         if (mode == TopologyNodeDisplayMode.Hidden) return;
         var bounds = Bounds(node.X, node.Y, node.Width, node.Height);
+        var shapeContent = UseEnclosedShapeContent(node, mode, _options);
         var active = _highlight.IsNodeHighlighted(node);
         var icon = ResolveNodeIcon(node, _options);
         if (_options.RequireResolvedIcons && !string.IsNullOrWhiteSpace(node.IconId) && icon == null) throw new InvalidOperationException("Unresolved topology icon: " + node.IconId);
@@ -54,14 +55,14 @@ internal sealed partial class VisualTopologyCompiler {
                 else if (node.Shape.HasValue) {
                     foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) _builder.Path(Transform(part.Path), part.Fill ? fill : null, accent, strokeWidth, role: "topology-node-surface", close: part.Close, paint: surfacePaint);
                 } else _builder.Rect(bounds, fill, accent, strokeWidth, mode == TopologyNodeDisplayMode.Pill ? bounds.Height / 2 : _context.Theme.BarRadius * _scale, role: "topology-node-surface", paint: surfacePaint);
-                if (UseNodeAccentBand(mode, _options)) _builder.Rect(new ChartRect(bounds.X + strokeWidth / 2, bounds.Y + strokeWidth / 2, 4 * _scale, Math.Max(0, bounds.Height - strokeWidth)), accent, role: "topology-node-accent", paint: new VisualScenePaintBinding(accentPaint));
-                var hasGlyph = node.Kind != TopologyNodeKind.Generic || !string.IsNullOrWhiteSpace(node.Symbol) || !string.IsNullOrWhiteSpace(node.IconId) || ResolveRenderableNodeArtwork(node, _options) != null
-                    || node.Shape != TopologyNodeShape.Actor && (mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork);
-                if (hasGlyph && mode != TopologyNodeDisplayMode.Dot) {
+                if (!shapeContent && UseNodeAccentBand(mode, _options)) _builder.Rect(new ChartRect(bounds.X + strokeWidth / 2, bounds.Y + strokeWidth / 2, 4 * _scale, Math.Max(0, bounds.Height - strokeWidth)), accent, role: "topology-node-accent", paint: new VisualScenePaintBinding(accentPaint));
+                var hasGlyph = HasInlineNodeGlyph(node, mode, _options);
+                if (shapeContent) BuildShapeContent(node, accent, active, accentRole);
+                if (!shapeContent && hasGlyph && mode != TopologyNodeDisplayMode.Dot) {
                     var center = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork;
                     BuildGlyph(node, center ? node.X + node.Width / 2 : node.X + 22, node.Y + (mode == TopologyNodeDisplayMode.Card && _options.IncludeNodeLabels && node.Details.Count > 0 ? 28 : node.Height / 2), accent, glyphRole: accentRole);
                 }
-                if (_options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)) {
+                if (!shapeContent && _options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)) {
                     var caption = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
                     var left = hasGlyph && !caption ? mode == TopologyNodeDisplayMode.Pill ? 34 : 44 : 10;
                     // A label-only card's heading sits above its glyph, so it can use the full heading row.
@@ -81,7 +82,7 @@ internal sealed partial class VisualTopologyCompiler {
                     else if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
                 }
             }
-            if (_options.IncludeStatusBadges && node.ShowStatusBadge && mode != TopologyNodeDisplayMode.Dot) {
+            if (!shapeContent && _options.IncludeStatusBadges && node.ShowStatusBadge && mode != TopologyNodeDisplayMode.Dot) {
                 var status = Highlight(Status(node.Status), active);
                 using var statusGroup = _builder.PushGroup(node.Id + "-status", "topology-node-status", new Dictionary<string, string> { ["data-node-id"] = node.Id });
                 var statusCenter = node.Shape == TopologyNodeShape.Cloud
@@ -89,11 +90,13 @@ internal sealed partial class VisualTopologyCompiler {
                     : new ChartPoint(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale);
                 using (PinnedState()) _builder.Ellipse(statusCenter.X, statusCenter.Y, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: new VisualScenePaintBinding(StatusPaint(node.Status, status, HighlightFactor(active))));
             }
-            if (!string.IsNullOrWhiteSpace(node.Badge)) {
+            if (!shapeContent && !string.IsNullOrWhiteSpace(node.Badge)) {
                 var reserved = NodeBadgeBounds(node, mode, _options);
                 var badge = Bounds(reserved.X, reserved.Y, reserved.Width, reserved.Height);
                 _builder.Rect(badge, accent, radius: 4 * _scale, role: "topology-node-badge-surface", paint: new VisualScenePaintBinding(accentPaint));
-                Text(NodeBadge(node), badge, _context.Theme.Typography.DataLabelSize * .75, _colors.Surface, 600, "topology-node-badge", 1, centered: true, paint: CardPaint(_colors.Surface), fitSingleLine: true);
+                var ink = ChartColorMath.AccessibleTextOnBackground(accent);
+                Text(NodeBadge(node), badge, _context.Theme.Typography.DataLabelSize * .75, ink, 600, "topology-node-badge", 1, centered: true,
+                    paint: SvgPaint.Contrast(accent, accentPaint), fitSingleLine: true);
             }
         }
         _builder.AddRegion(new VisualSemanticRegion(node.Id, "topology-node", bounds, node.Label));

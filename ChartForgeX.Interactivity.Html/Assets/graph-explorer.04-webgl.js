@@ -175,20 +175,20 @@
   const bindWebGlHitTesting = (root) => {
     const canvas = root.querySelector('[data-cfx-role="graph-webgl"]');
     if (!canvas) return;
-    canvas.addEventListener('webglcontextlost', event => {
+    listenGraph(root, canvas, 'webglcontextlost', event => {
       event.preventDefault();
       root.__cfxGraphWebGl = false;
       if (root.dataset.cfxGraphRendererActive !== 'webgl') return;
       setGraphRenderer(root, 'canvas');
       drawCanvas(root, root.__cfxGraphState || graphState(root));
     });
-    canvas.addEventListener('webglcontextrestored', () => {
+    listenGraph(root, canvas, 'webglcontextrestored', () => {
       root.__cfxGraphWebGl = null;
       if (hasFeature(root, 'LevelOfDetail')) applyLod(root);
       else if (attr(root, 'data-cfx-graph-renderer') === 'webgl') setGraphRenderer(root, webGlAvailable(root) ? 'webgl' : 'canvas');
       drawCanvas(root, root.__cfxGraphState || graphState(root));
     });
-    canvas.addEventListener('click', event => {
+    listenGraph(root, canvas, 'click', event => {
       if (root.dataset.cfxGraphRendererActive !== 'webgl') return;
       const best = hitGraphItemAt(root, scenePoint(root, event));
       if (!best) return;
@@ -201,7 +201,7 @@
       if (Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
       select(root, best.el, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
     });
-    canvas.addEventListener('keydown', event => {
+    listenGraph(root, canvas, 'keydown', event => {
       if (root.dataset.cfxGraphRendererActive !== 'webgl') return;
       if (moveAcceleratedGraphSelection(root, event)) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;

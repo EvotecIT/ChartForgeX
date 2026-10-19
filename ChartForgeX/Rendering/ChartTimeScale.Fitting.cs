@@ -28,9 +28,15 @@ internal static partial class ChartTimeScale {
             }
             var intervalTicks = ticks;
             if (selectTicks != null) ticks = selectTicks(ticks);
+            var tryFiveDays = false;
             if (ticks.Count > 0) {
                 var ordinaryInterval = axis.HasExplicitTickCount || interval.ApproximateDays + 1e-10 >= Math.Max(minimumStepDays, (max - min) / (limit - 1));
-                if (ordinaryInterval && ticks.Count <= limit && fits(ticks)) {
+                var completeFits = ordinaryInterval && ticks.Count <= limit && fits(ticks);
+                // Keep the broad weekly rhythm. A measured four-day failure may
+                // still fit five-day captions before jumping straight to a week.
+                tryFiveDays = regularObservations == null && interval.Unit == TimeUnit.Day && interval.Step == 4
+                    && ordinaryInterval && ticks.Count > 1 && ticks.Count <= limit && !completeFits;
+                if (completeFits) {
                     // A sparse coarse ladder step need not replace a readable
                     // stride of the preceding real calendar boundaries.
                     if (ticks.Count > 1) return !axis.HasExplicitTickCount && ticks.Count < 4 && cadenceFit is { Count: >= 4 }
@@ -54,7 +60,7 @@ internal static partial class ChartTimeScale {
             // No boundary at this interval means coarser steps cannot restore a useful
             // sequence. Keep the last real calendar boundary; never invent padded instants.
             if (ticks.Count == 0) break;
-            interval = ChooseInterval(interval.ApproximateDays * 1.01);
+            interval = tryFiveDays ? new TimeInterval(TimeUnit.Day, 5) : ChooseInterval(interval.ApproximateDays * 1.01);
         }
         if (regularObservations != null)
             return FitObservationCadence(regularObservations, axis, min, max, limit, fits, allowCompactDates)

@@ -4,8 +4,8 @@ using ChartForgeX.Html;
 namespace ChartForgeX.Topology;
 
 public sealed partial class TopologyHtmlRenderer {
-    private static void WriteScenarioControls(HtmlMarkupWriter writer, string scenariosClass, TopologyChart chart, string? activeScenarioId, TopologyHtmlScenarioControlMode mode) {
-        writer.StartElement("div").Attribute("class", scenariosClass).Attribute("aria-label", "Topology scenarios").EndStartElement();
+    private static void WriteScenarioControls(HtmlMarkupWriter writer, string scenariosClass, TopologyChart chart, string? activeScenarioId, TopologyHtmlScenarioControlMode mode, TopologyHtmlText messages) {
+        writer.StartElement("div").Attribute("class", scenariosClass).Attribute("aria-label", messages["TopologyScenarios"]).EndStartElement();
         if (mode == TopologyHtmlScenarioControlMode.Checkboxes) {
             foreach (var scenario in chart.Scenarios) {
                 var active = string.Equals(activeScenarioId, scenario.Id, StringComparison.Ordinal);
@@ -38,7 +38,7 @@ public sealed partial class TopologyHtmlRenderer {
             return;
         }
 
-        WriteButton(writer, "data-cfx-topology-scenario", string.Empty, "Show all", "Show all scenarios", string.IsNullOrWhiteSpace(activeScenarioId), "All");
+        WriteButton(writer, "data-cfx-topology-scenario", string.Empty, messages["TopologyShowAll"], messages["ShowAllScenarios"], string.IsNullOrWhiteSpace(activeScenarioId), messages["All"]);
         foreach (var scenario in chart.Scenarios) {
             var active = string.Equals(activeScenarioId, scenario.Id, StringComparison.Ordinal);
             writer.StartElement("button")
@@ -66,7 +66,7 @@ public sealed partial class TopologyHtmlRenderer {
         writer.EndElement();
     }
 
-    private static void WriteScenarioPanel(HtmlMarkupWriter writer, string panelClass, TopologyChart chart, string? activeScenarioId, bool enableScenarioUrlState) {
+    private static void WriteScenarioPanel(HtmlMarkupWriter writer, string panelClass, TopologyChart chart, string? activeScenarioId, bool enableScenarioUrlState, TopologyHtmlText messages) {
         TopologyScenario? activeScenario = null;
         foreach (var scenario in chart.Scenarios) {
             if (!string.Equals(scenario.Id, activeScenarioId, StringComparison.Ordinal)) continue;
@@ -74,10 +74,10 @@ public sealed partial class TopologyHtmlRenderer {
             break;
         }
 
-        var title = activeScenario == null ? "All" : activeScenario.Label;
+        var title = activeScenario == null ? messages["All"] : activeScenario.Label;
         var meta = activeScenario == null
-            ? "All topology routes visible"
-            : string.IsNullOrWhiteSpace(activeScenario.Description) ? activeScenario.Steps.Count.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " steps" : activeScenario.Description!;
+            ? messages["TopologyAllRoutesVisible"]
+            : string.IsNullOrWhiteSpace(activeScenario.Description) ? messages.Format("Steps", ("count", activeScenario.Steps.Count.ToString("0", System.Globalization.CultureInfo.InvariantCulture))) : activeScenario.Description!;
         writer.StartElement("section")
             .Attribute("class", panelClass)
             .Attribute("data-cfx-topology-scenario-panel", "true")
@@ -90,11 +90,11 @@ public sealed partial class TopologyHtmlRenderer {
         writer.StartElement("div").Attribute("class", panelClass + "__meta").Attribute("data-cfx-scenario-panel-meta", "true").EndStartElement().Text(meta).EndElement();
         writer.EndElement();
         writer.StartElement("div").Attribute("class", panelClass + "__controls").Attribute("data-cfx-scenario-step-controls", "true").EndStartElement();
-        WriteScenarioPanelButton(writer, "previous", "Previous step", "Prev");
-        WriteScenarioPanelButton(writer, "play", "Play route", "Play", pressed: false);
-        WriteScenarioPanelButton(writer, "next", "Next step", "Next");
-        WriteScenarioPanelButton(writer, "reset", "Clear step", "Clear");
-        if (enableScenarioUrlState) WriteScenarioPanelButton(writer, "link", "Copy route link", "Link");
+        WriteScenarioPanelButton(writer, "previous", messages["PreviousStep"], messages["Previous"]);
+        WriteScenarioPanelButton(writer, "play", messages["TopologyPlayRoute"], messages["Play"], pressed: false);
+        WriteScenarioPanelButton(writer, "next", messages["NextStep"], messages["Next"]);
+        WriteScenarioPanelButton(writer, "reset", messages["ClearStep"], messages["Clear"]);
+        if (enableScenarioUrlState) WriteScenarioPanelButton(writer, "link", messages["TopologyCopyRouteLink"], messages["Link"]);
         writer.EndElement();
         writer.StartElement("input")
             .Attribute("class", panelClass + "__scrubber")
@@ -104,7 +104,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("value", "1")
             .Attribute("step", "1")
             .Attribute("data-cfx-scenario-scrubber", "true")
-            .Attribute("aria-label", "Topology route timeline step")
+            .Attribute("aria-label", messages["TopologyTimelineStep"])
             .BooleanAttribute("disabled", activeScenario == null || activeScenario.Steps.Count == 0)
             .EndVoidElement();
         writer.StartElement("ol").Attribute("class", panelClass + "__steps").Attribute("data-cfx-scenario-panel-steps", "true").EndStartElement();

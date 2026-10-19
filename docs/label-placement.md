@@ -4,6 +4,8 @@ SVG and PNG charts use one final text scene. It measures the resolved family, we
 
 Labels are placed by descending priority, with stable input order breaking ties. Each tries its original position and then ordered alternative lanes. Plain labels shorten with `…` if no full-text candidate fits, and drop if shortening also fails. Rich multiline captions and grouped legend items remain intact or drop as a unit. Titles and legends take priority over data and route labels. Donut center lines share the measured budget inside the hole.
 
+Authored Cartesian point captions using automatic placement try a balanced two-line version after the full single-line positions, before shortening. Explicit placement and automatic numeric labels retain their existing fitting policy. Wrapping uses the same measured bounds and collision checks, and the original caption remains in source metadata.
+
 Cartesian and schedule axes choose numeric or calendar steps from the space available for complete measured captions. Every visible caption stays centered on its own tick; endpoint space comes from the surrounding frame. Authored tick positions and fixed schedule intervals remain intact, with a regular caption stride when needed. `ChartLabelDensity.All` keeps the caller's overlap policy. Ordinary fonts retain their requested size; explicitly oversized text fits its allocated strip.
 
 Crowded matrix column captions wrap at word boundaries or select a measured rotation. An explicit `WithXAxisLabelAngle(0)` keeps them horizontal, and other explicit angles remain authoritative. Restore automatic selection with `ConfigureXAxis(axis => axis.WithAutomaticLabelAngle())`. Complete captions remain in semantic regions when a fixed horizontal band requires shortening.

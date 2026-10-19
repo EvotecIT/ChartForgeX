@@ -14,8 +14,7 @@ internal static partial class VisualScheduleCompiler {
         var row = 0;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
-            if (gantt && series.GanttItems.Count == 0) continue;
-            if (!gantt && series.RenderPoints.Count == 0) throw new InvalidOperationException("Schedule series is missing its range.");
+            if (gantt ? series.GanttItems.Count == 0 : series.RenderPoints.Count == 0) continue;
             var task = gantt ? series.GanttItems[0] : default;
             var start = gantt ? task.Start : series.RenderPoints[0].X;
             var end = gantt ? task.End : series.RenderPoints[0].Y;

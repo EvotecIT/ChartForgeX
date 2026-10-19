@@ -63,7 +63,7 @@ internal static partial class VisualCartesianCompiler {
         var options = series.DifferenceArea;
         var configured = positive ? options.PositiveFill : options.NegativeFill;
         var color = configured ?? (positive || series.Color.HasValue || series.StateRole != ChartSeriesState.None
-            ? Color(series, index, colors) : colors.Palette[(index + 1) % colors.Palette.Count]);
+            ? Color(series, index, colors) : ChartSeriesColours.Palette(series, index, colors, 1));
         var opacity = (positive ? options.PositiveFillOpacity : options.NegativeFillOpacity) ?? context.Theme.AreaOpacity;
         var fill = ChartColorMath.WithOpacity(color, opacity);
         return (fill, VisualChartPaint.Series(series, color, explicitOverride: configured.HasValue).WithOpacity(fill, opacity));

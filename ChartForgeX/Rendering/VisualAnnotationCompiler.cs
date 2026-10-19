@@ -22,15 +22,18 @@ internal static class VisualAnnotationCompiler {
             var color = annotation.UsesThemeColor ? colors.MutedForeground : annotation.Color;
             var annotationColorRole = annotation.UsesThemeColor ? SvgColorRole.Text : colorRole;
             var bounds = horizontal ? new ChartRect(plot.Left, position, plot.Width, 0) : new ChartRect(position, plot.Top, 0, plot.Height);
-            var id = idPrefix + Number(index);
+            var id = annotation.Id is ChartAnnotationId authoredId && describeAnnotations
+                ? VisualAnnotationIdentity.SourceIdFor(authoredId) : idPrefix + Number(index);
             var description = kind + ": " + Number(annotation.Value)
                 + (annotation.EndValue.HasValue ? " to " + Number(annotation.EndValue.Value) : string.Empty)
                 + (annotation.Label.Length > 0 ? ": " + annotation.Label : string.Empty);
-            using (describeAnnotations ? builder.PushGroup(id, "annotation", new Dictionary<string, string> {
+            var metadata = new Dictionary<string, string> {
                 ["data-cfx-kind"] = kind.ToString(), ["data-cfx-value"] = Number(annotation.Value),
                 ["data-cfx-end-value"] = annotation.EndValue.HasValue ? Number(annotation.EndValue.Value) : string.Empty,
                 ["data-cfx-label"] = annotation.Label, ["data-cfx-show-label"] = annotation.ShowLabel ? "true" : "false", ["aria-label"] = description
-            }) : null) {
+            };
+            if (annotation.Id is ChartAnnotationId sourceId && describeAnnotations) metadata[VisualAnnotationIdentity.Attribute] = sourceId.Value;
+            using (describeAnnotations ? builder.PushGroup(id, "annotation", metadata) : null) {
             using (clipGeometry ? builder.PushClip(plot) : null) {
             if (annotation.EndValue.HasValue) {
                 var end = horizontal ? Math.Max(plot.Top, Math.Min(plot.Bottom, mapY(annotation.EndValue.Value))) : Math.Max(plot.Left, Math.Min(plot.Right, mapX(annotation.EndValue.Value)));

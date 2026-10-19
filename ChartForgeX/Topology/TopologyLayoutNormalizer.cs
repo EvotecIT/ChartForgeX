@@ -219,6 +219,7 @@ internal static class TopologyLayoutNormalizer {
         var displayMode = EffectiveNodeDisplayMode(node, options);
         if (displayMode == TopologyNodeDisplayMode.Hidden) return bounds;
         bounds = bounds.Include(node.X, node.Y, node.X + node.Width, node.Y + node.Height);
+        if (UseEnclosedShapeContent(node, displayMode, options)) return bounds;
         if (options.IncludeStatusBadges && ShouldRenderNodeStatusBadge(node, options)) {
             var cx = node.X + node.Width - 11;
             var cy = node.Y + 11;

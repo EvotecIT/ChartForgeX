@@ -31,22 +31,42 @@ internal static class TopologyMotionPlanner {
     private static TopologyMotionPlan? BuildScenarioPlan(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, TopologyScenario scenario, IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>>? resolvedRoutes) {
         var entries = new List<TopologyMotionEntry>();
         var nodeIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var step in scenario.Steps) {
-            if (step.Kind == TopologyScenarioStepKind.Edge) AddEdges(chart, nodes, entries, step.Id, resolvedRoutes);
+        for (var index = 0; index < scenario.Steps.Count; index++) {
+            var step = scenario.Steps[index];
+            if (step.Kind == TopologyScenarioStepKind.Edge) {
+                var previousNode = index > 0 && scenario.Steps[index - 1].Kind == TopologyScenarioStepKind.Node
+                    ? scenario.Steps[index - 1].Id : null;
+                var followingNode = index + 1 < scenario.Steps.Count && scenario.Steps[index + 1].Kind == TopologyScenarioStepKind.Node
+                    ? scenario.Steps[index + 1].Id : null;
+                AddEdges(chart, nodes, entries, step.Id, resolvedRoutes, previousNode, followingNode);
+            }
             else if (step.Kind == TopologyScenarioStepKind.Node) nodeIds.Add(step.Id);
         }
 
         return entries.Count == 0 ? null : new TopologyMotionPlan(scenario.Id, MotionSourceColor(scenario), entries, OrderedNodeIds(nodeIds));
     }
 
-    private static void AddEdges(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, List<TopologyMotionEntry> entries, string edgeId, IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>>? resolvedRoutes) {
+    private static void AddEdges(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, List<TopologyMotionEntry> entries, string edgeId,
+        IReadOnlyDictionary<TopologyEdge, IReadOnlyList<ChartPoint>>? resolvedRoutes, string? previousNode = null, string? followingNode = null) {
         foreach (var edge in chart.Edges.Where(candidate => string.Equals(candidate.Id, edgeId, StringComparison.Ordinal))) {
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
             var routePoints = resolvedRoutes != null && resolvedRoutes.TryGetValue(edge, out var resolved) ? resolved : RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes));
             if (routePoints.Count < 2) continue;
+            if (ReversesTraversal(edge, previousNode, followingNode)) {
+                var reversed = routePoints.ToArray();
+                Array.Reverse(reversed);
+                routePoints = reversed;
+            }
             entries.Add(new TopologyMotionEntry(edge, routePoints, PolylineLength(routePoints)));
         }
     }
+
+    /// <summary>Uses adjacent node steps only when all available hints agree on target-to-source traversal.</summary>
+    private static bool ReversesTraversal(TopologyEdge edge, string? previousNode, string? followingNode) =>
+        !string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)
+        && (previousNode != null || followingNode != null)
+        && (previousNode == null || string.Equals(previousNode, edge.TargetNodeId, StringComparison.Ordinal))
+        && (followingNode == null || string.Equals(followingNode, edge.SourceNodeId, StringComparison.Ordinal));
 
     private static void AddEndpointNodeIds(IEnumerable<TopologyMotionEntry> entries, HashSet<string> nodeIds) {
         foreach (var entry in entries) {

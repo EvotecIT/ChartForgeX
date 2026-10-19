@@ -75,18 +75,7 @@ public sealed class PngVisualCanvasRenderer {
             DrawCurve(canvas, width * 0.08, y, width * 0.28, y - 80, width * 0.48, y + 120, width * 0.68, y - 10, accent.WithOpacity(0.11), 1.1);
         }
 
-        var horizon = new[] {
-            new ChartPoint(0, height),
-            new ChartPoint(0, height * 0.78),
-            new ChartPoint(width * 0.20, height * 0.72),
-            new ChartPoint(width * 0.38, height * 0.82),
-            new ChartPoint(width * 0.55, height * 0.76),
-            new ChartPoint(width * 0.74, height * 0.70),
-            new ChartPoint(width * 0.84, height * 0.85),
-            new ChartPoint(width, height * 0.73),
-            new ChartPoint(width, height)
-        };
-        canvas.FillPolygon(horizon, theme.TechHorizonFill);
+        canvas.FillContours(VisualCanvasBackdropGeometry.HorizonContours(width, height, canvas.PixelsPerUnit), theme.TechHorizonFill);
     }
 
     // The same family and weight the SVG renderer writes, fitted, measured, and drawn with one face.

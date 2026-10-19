@@ -90,7 +90,7 @@ public sealed class AutomaticAxisPrecisionTests {
             Assert.Contains(captions[index], (string?)marks[index].Attribute("aria-label"));
         }
         chart.WithValueFormatter(_ => throw new InvalidOperationException("Late formatter"));
-        chart.Series[0].Points.Clear();
+        chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -108,7 +108,7 @@ public sealed class AutomaticAxisPrecisionTests {
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Equal(captions, Texts(svg, role));
         (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithLabelFormatter(_ => throw new InvalidOperationException("Late formatter"));
-        chart.Series[0].Points.Clear();
+        chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 

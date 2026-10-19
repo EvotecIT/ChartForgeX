@@ -33,6 +33,7 @@ public static class FlowArtifactRendering {
         for (var i = 0; i < flow.Steps.Count; i++) {
             var step = flow.Steps[i];
             chart.AddAutoNode(step.Id, step.Label, ToTopologyKind(step.Kind), ToTopologyStatus(step.Status), step.LaneId, step.Subtitle, width: step.Width, height: step.Height, symbol: step.Symbol, color: step.Color, iconId: step.Icon);
+            chart.Nodes[i].FitLabelToContent = step.FitLabelToContent;
             // Flow declaration order is the progression contract. Infrastructure node-kind ranks
             // would put starts, decisions and ends in one layer and then reorder them by id.
             chart.Nodes[i].Metadata["layer"] = i.ToString(CultureInfo.InvariantCulture);

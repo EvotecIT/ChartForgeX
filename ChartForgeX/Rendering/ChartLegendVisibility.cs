@@ -19,6 +19,8 @@ internal static class ChartLegendVisibility {
             if (colorScales.Heatmap.ShowLegend && (series.Kind == ChartSeriesKind.CalendarHeatmap
                 || (series.Kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap) && !series.IsCategoricalHeatmapRow)) return true;
             if (colorScales.Map.ShowLegend && series.Kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) return true;
+            if (series.Kind == ChartSeriesKind.Chord && colorScales.Chord.ShowLegend
+                && (chart.Options.Chord.ColorScale != null || System.Linq.Enumerable.Any(series.FlowLinks, link => link.ColorValue.HasValue))) return true;
             if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
                 var sunburst = series.Kind == ChartSeriesKind.Sunburst;
                 var showScale = colorScales.Hierarchy.ShowLegend;

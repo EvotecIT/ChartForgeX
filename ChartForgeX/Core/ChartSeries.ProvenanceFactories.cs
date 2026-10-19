@@ -55,18 +55,31 @@ public sealed partial class ChartSeries {
     private static ChartSeries TrendLine(ChartSeries series, IEnumerable<ChartPoint> observations) {
         var source = ChartGuards.Points(observations, nameof(observations));
         if (source.Count < 2) throw new ArgumentException("Trend lines require at least two points.", nameof(observations));
-        var sumX = 0d; var sumY = 0d; var sumXY = 0d; var sumXX = 0d;
         var minX = double.PositiveInfinity; var maxX = double.NegativeInfinity;
         foreach (var point in source) {
-            sumX += point.X; sumY += point.Y; sumXY += point.X * point.Y; sumXX += point.X * point.X;
             minX = Math.Min(minX, point.X); maxX = Math.Max(maxX, point.X);
         }
-        var denominator = source.Count * sumXX - sumX * sumX;
-        if (Math.Abs(denominator) < .000001) throw new ArgumentException("Trend lines require at least two distinct x values.", nameof(observations));
-        var slope = (source.Count * sumXY - sumX * sumY) / denominator;
-        var intercept = (sumY - slope * sumX) / source.Count;
-        series.Points.Add(new ChartPoint(minX, slope * minX + intercept));
-        series.Points.Add(new ChartPoint(maxX, slope * maxX + intercept));
+        if (minX == maxX) throw new ArgumentException("Trend lines require at least two distinct x values.", nameof(observations));
+        var span = maxX - minX;
+        ChartGuards.Finite(span, nameof(observations));
+        // Center before multiplying, and normalize X so timestamps and small coordinate units
+        // do not lose their variance in a subtraction of large, nearly equal squared sums.
+        var originY = source[0].Y; var meanX = 0d; var meanY = 0d;
+        foreach (var point in source) {
+            meanX += (point.X - minX) / span / source.Count;
+            meanY += (point.Y - originY) / source.Count;
+        }
+        var covariance = 0d; var variance = 0d;
+        foreach (var point in source) {
+            var x = (point.X - minX) / span - meanX;
+            covariance += x * (point.Y - originY - meanY);
+            variance += x * x;
+        }
+        var slope = covariance / variance;
+        // Evaluate in centered coordinates as well; slope * absoluteX + intercept can
+        // discard the fitted variation even after a stable regression calculation.
+        series.Points.Add(new ChartPoint(minX, originY + (meanY - slope * meanX)));
+        series.Points.Add(new ChartPoint(maxX, originY + (meanY + slope * (1 - meanX))));
         series.SetTrendLineSourcePoints(source);
         return series;
     }

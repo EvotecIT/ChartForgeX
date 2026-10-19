@@ -14,12 +14,15 @@ internal static partial class VisualChordCompiler {
         ? new[] { new VisualLegendEntry(chart.Series[0].Name, ChartSeriesColours.Resolve(chart.Series[0], 0, colors), "series-0", ChartSeriesKind.Chord,
             chart.Series[0].FillPattern, chart.Series[0].StateRole, chart.Series[0].InteractionIdentityKey) } : Array.Empty<VisualLegendEntry>();
 
-    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
+    internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
+        ChartColorPresentationSet? colorScales = null) {
         if (chart.Series.Count != 1 || chart.Series[0].Kind != ChartSeriesKind.Chord) throw new InvalidOperationException("Prepared chord charts require one weighted-flow series.");
         var series = chart.Series[0]; var options = chart.Options.Chord; var colors = context.Theme.Resolve(context.ThemeMode);
+        var colorSurface = (colorScales ?? new ChartColorPresentationSet(chart)).ChordSurface(colors);
+        plot = ColorScale(context, builder, plot, colorSurface, colors);
         var styles = series.Nodes.Select((_, index) => ChartRelationshipPaint.LabelStyle(chart, context, index, colors.Foreground)).ToArray();
         var labels = series.Nodes.Select((node, index) => Label(chart, index)).ToArray();
-        var showLabels = series.ShowDataLabels != false && options.LabelContent != ChartChordLabelContent.None;
+        var showLabels = series.ResolveDataLabels(chart.Options, defaultVisible: true) && options.LabelContent != ChartChordLabelContent.None;
         var model = ChartChordLayout.Compute(series, options, plot);
         // Semantic-only nodes have no rendered caption, including positive totals whose native arcs collapse.
         var captionNodes = showLabels ? model.Nodes.Where(node => node.IsVisible).ToArray() : Array.Empty<ChartChordNode>();
@@ -36,15 +39,17 @@ internal static partial class VisualChordCompiler {
             ["data-cfx-weight-reference"] = N(model.WeightReference), ["data-cfx-normalized-angular-scale"] = N(model.NormalizedAngularScale),
             ["data-cfx-node-order"] = "source", ["data-cfx-center-x"] = N(model.CenterX), ["data-cfx-center-y"] = N(model.CenterY)
         })) {
-            foreach (var link in model.Links) Link(chart, builder, model, link, colors);
+            foreach (var link in model.Links) Link(chart, builder, model, link, colors, colorSurface);
             foreach (var node in model.Nodes) Node(chart, builder, model, node, colors);
             if (showLabels && model.WeightReference > 0 && model.OuterRadius > 0) Labels(chart, context, builder, plot, model, styles, labels, colors);
         }
     }
 
-    private static void Link(Chart chart, VisualSceneBuilder builder, ChartChordModel model, ChartChordLink link, VisualThemeColors colors) {
+    private static void Link(Chart chart, VisualSceneBuilder builder, ChartChordModel model, ChartChordLink link,
+        VisualThemeColors colors, ChartChordColorSurface colorSurface) {
         var series = chart.Series[0]; var source = model.Nodes[link.Source]; var target = model.Nodes[link.Target];
-        var flow = ChartRelationshipPaint.Flow(series, link.Fact.Id, source.Index, colors, chart.Options.Chord.RibbonOpacity);
+        var flow = ChartRelationshipPaint.Flow(series, link.Fact.Id, source.Index, colors, chart.Options.Chord.RibbonOpacity,
+            colorBlend: colorSurface.Blend(link.Index, colors));
         var metadata = ChartRelationshipMetadata.Link(series, link.Fact.Id, source.Fact.Id, target.Fact.Id, source.Fact.Label, target.Fact.Label, link.Index, link.Fact.Value);
         metadata["data-cfx-coordinate-system"] = "polar";
         metadata["data-cfx-source-start-angle"] = N(link.SourceStart); metadata["data-cfx-source-sweep"] = N(link.Sweep);
@@ -52,6 +57,7 @@ internal static partial class VisualChordCompiler {
         metadata["data-cfx-direction"] = "source-to-target"; metadata["data-cfx-direction-cue"] = chart.Options.Chord.DirectionCue.ToString();
         metadata["data-cfx-state"] = flow.State.ToString();
         metadata["data-cfx-full-label"] = source.Fact.Label + " to " + target.Fact.Label + ": " + ChartNumericFormatter.FormatValue(chart.Options, link.Fact.Value);
+        metadata["data-cfx-full-label"] = colorSurface.AddFacts(metadata, link.Index, metadata["data-cfx-full-label"]);
         var visible = link.IsVisible && model.InnerRadius > 0;
         metadata["data-cfx-geometry-status"] = visible ? "visible" : link.Fact.Value == 0 ? "zero" : "precision-collapse";
         var id = ChartRelationshipMetadata.SourceId("link", link.Fact.Id);

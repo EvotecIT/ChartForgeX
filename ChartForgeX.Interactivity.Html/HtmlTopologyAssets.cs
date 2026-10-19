@@ -8,7 +8,7 @@ internal static class HtmlTopologyAssets {
     private const string IconStencilBrowserStyleResourceName = "ChartForgeX.Interactivity.Html.Assets.topology-icon-stencil-browser.css";
     private const string IconStencilBrowserScriptResourceName = "ChartForgeX.Interactivity.Html.Assets.topology-icon-stencil-browser.js";
 
-    private static readonly Lazy<string> InteractionScriptResource = new(() => ReadResource(InteractionScriptResourceName));
+    private static readonly Lazy<string> InteractionScriptResource = new(() => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-lifetime.js") + "\n" + ReadResource(InteractionScriptResourceName));
     private static readonly Lazy<string> IconStencilBrowserStyleResource = new(() => ReadResource(IconStencilBrowserStyleResourceName));
     private static readonly Lazy<string> IconStencilBrowserScriptResource = new(() => ReadResource(IconStencilBrowserScriptResourceName));
 

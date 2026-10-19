@@ -209,7 +209,7 @@ internal static partial class VisualGaugeCompiler {
     private static List<ChartRect> Summary(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         string value, string caption, out double height, bool atTop = false) {
         height = 0; var result = new List<ChartRect>();
-        if (chart.Series[0].ShowDataLabels == false) return result;
+        if (!chart.Series[0].ResolveDataLabels(chart.Options, defaultVisible: true)) return result;
         var gap = context.Theme.Spacing;
         var valueStyle = LabelStyle(chart, context, builder, value, plot.Height / 5, context.Theme.Typography.ScalarValueSize, 700,
             minimumDefaultSize: context.Theme.Typography.DataLabelSize);

@@ -41,9 +41,9 @@
     const current = state.byId.get(rootId);
     const ancestors = current && attr(root, 'data-cfx-graph-hierarchy-breadcrumbs') !== 'false' ? hierarchyAncestors(state, rootId) : [];
     const nodes = current ? [...ancestors, current] : [];
-    const labels = nodes.length ? nodes.map(node => node.label || node.id) : ['Overview'];
+    const labels = nodes.length ? nodes.map(node => node.label || node.id) : [uiText(root, 'ExplorerOverview', 'Overview')];
     path.replaceChildren();
-    if (!nodes.length) path.textContent = 'Overview';
+    if (!nodes.length) path.textContent = uiText(root, 'ExplorerOverview', 'Overview');
     nodes.forEach((node, index) => {
       if (index) {
         const separator = root.ownerDocument.createElement('span');
@@ -57,8 +57,8 @@
       button.className = 'cfx-graph-breadcrumb-link';
       button.textContent = node.label || node.id;
       button.setAttribute('data-cfx-hierarchy-node', node.id);
-      button.addEventListener('click', () => applyHierarchyView(root, node.id, Number(root.dataset.cfxGraphHierarchyDepth || num(root, 'data-cfx-graph-hierarchy-depth', 2))));
       path.appendChild(button);
+      listenGraph(root, button, 'click', () => applyHierarchyView(root, node.id, Number(root.dataset.cfxGraphHierarchyDepth || num(root, 'data-cfx-graph-hierarchy-depth', 2))));
     });
     path.title = labels.join(' / ');
     if (up) up.disabled = !current;
@@ -149,7 +149,7 @@
     if (!stage) return;
     const hierarchy = hierarchyIndex(root);
     hierarchy.state.nodes.forEach(node => node.el.setAttribute('data-node-has-children', (hierarchy.children.get(node.id) || []).length ? 'true' : 'false'));
-    stage.addEventListener('dblclick', event => {
+    listenGraph(root, stage, 'dblclick', event => {
       if (event.target.closest?.('.cfx-graph-command-rail,.cfx-graph-breadcrumbs')) return;
       let item = event.target.closest?.('[data-cfx-role="graph-node"],[data-cfx-role="graph-cluster"]');
       const recentPointerNode = Date.now() - (root.__cfxGraphLastPointerHitTick || 0) < 700 ? root.dataset.cfxGraphLastPointerHit : '';
@@ -163,7 +163,7 @@
       if (role === 'graph-node' && attr(root, 'data-cfx-graph-hierarchy-drill') !== 'false' && drillHierarchyNode(root, attr(item, 'data-node-id'))) { event.preventDefault(); event.stopPropagation(); }
       if (role === 'graph-cluster' && toggleGraphCluster(root, attr(item, 'data-cluster-id'))) { event.preventDefault(); event.stopPropagation(); }
     });
-    stage.addEventListener('keydown', event => {
+    listenGraph(root, stage, 'keydown', event => {
       if (event.defaultPrevented || event.target.closest?.('.cfx-graph-command-rail,.cfx-graph-breadcrumbs')) return;
       const item = event.target.closest?.('[data-cfx-role="graph-node"],[data-cfx-role="graph-cluster"]');
       const role = item ? attr(item, 'data-cfx-role') : '';

@@ -29,7 +29,6 @@ public sealed partial class Chart {
             index++;
         }
 
-        if (points.Count == 0) throw new ArgumentException("Progress-bar charts must contain at least one item.", nameof(items));
         Options.ProgressMaximum = maximum;
         Options.XAxisLabels.Clear();
         Options.XAxisLabels.AddRange(labels);

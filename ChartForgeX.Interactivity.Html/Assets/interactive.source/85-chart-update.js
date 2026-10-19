@@ -26,7 +26,8 @@
       || metadata.dataProjection !== undefined && !validDataProjection(metadata.dataProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
       || metadata.categoryLabels !== undefined && (!Array.isArray(metadata.categoryLabels)
-        || metadata.categoryLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string'))
+        || metadata.categoryLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string'
+          || item.groups !== undefined && (!Array.isArray(item.groups) || item.groups.some(group => typeof group !== 'string' || !group.trim()))))
       || metadata.regions.some(item => !item || typeof item.id !== 'string' || typeof item.role !== 'string'
         || ![item.x, item.y, item.width, item.height].every(Number.isFinite) || item.width < 0 || item.height < 0
         || item.fillInteriors !== undefined && (!Array.isArray(item.fillInteriors)
@@ -36,12 +37,14 @@
       const index = Number(node.dataset.cfxSeries);
       return !Number.isInteger(index) || index < 0 || index >= metadata.series.length;
     })) throw new TypeError('The chart scene does not match its prepared series metadata.');
+    annotationCatalog(svg, metadata);
     return section;
   };
-  const durableChartTarget = target => !!target && target.seriesScope === 'shared' && !!target.seriesKey
+  const durableChartTarget = target => !!target && target.seriesScope === 'shared'
+    && (target.targetKind === 'annotation' ? target.annotationId !== undefined : !!target.seriesKey
     && (target.targetKind !== 'point' || target.observationId !== undefined || target.derived === 'five-number-summary' && target.groupId !== undefined)
     && (target.targetKind !== 'legend' || target.point === undefined || target.observationId !== undefined
-      || target.derived === 'five-number-summary' && target.groupId !== undefined);
+      || target.derived === 'five-number-summary' && target.groupId !== undefined));
   const chartLegendStateTargets = (root, isolated) => {
     // A narrow native legend may omit an entry while its data owner remains painted and muted.
     // Capture that owner's identity too; presentation density must not erase reader state.
@@ -67,7 +70,8 @@
       isolated: chartLegendStateTargets(root, true).filter(target => sameSource || durableChartTarget(target)),
       focused: focused && (sameSource || durableChartTarget(targetIdentity(focused))) ? targetIdentity(focused) : null,
       highlight: captureHostHighlight(root, sameSource),
-      ownedFocus: !!active && root.contains(active), viewport: getState(root)
+      ownedFocus: !!active && root.contains(active), comparePage: root._cfxComparePage,
+      legendOverflow: captureLegendOverflow(root, sameSource), viewport: getState(root)
     };
   };
   const installChartSection = (root, next) => {
@@ -76,7 +80,7 @@
     for (const property of Array.from(root.style)) if (property.startsWith('--cfx-')) root.style.removeProperty(property);
     for (const attribute of Array.from(next.attributes)) {
       if (attribute.name.startsWith('data-cfx-') && attribute.name !== 'data-cfx-runtime-bound'
-        || attribute.name === 'role' || attribute.name === 'aria-label') root.setAttribute(attribute.name, attribute.value);
+        || attribute.name === 'role' || attribute.name === 'aria-label' || attribute.name === 'lang' || attribute.name === 'dir') root.setAttribute(attribute.name, attribute.value);
     }
     for (const property of Array.from(next.style)) if (property.startsWith('--cfx-'))
       root.style.setProperty(property, next.style.getPropertyValue(property), next.style.getPropertyPriority(property));
@@ -85,6 +89,7 @@
   const restoreChartUpdateState = (root, state, nativeCommit = false) => {
     // Explicit identity survives position changes; anonymous ordinal facts never inherit full-replacement state.
     applySelectionSetByTargets(root, state.selected, true);
+    root._cfxComparePage = state.comparePage;
     for (const target of state.muted) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesMuted(root, resolved, true); }
     for (const target of state.isolated) { const resolved = resolveSeriesTarget(root, target); if (resolved) setSeriesIsolation(root, resolved, true); }
     applyHostHighlight(root, state.highlight);
@@ -94,6 +99,7 @@
     const focused = state.focused && interactiveTargets(root).find(node => seriesKey(node) === state.focused.seriesKey && matchesTargetIdentity(node, state.focused));
     if (focused && keyboardTargetAvailable(focused)) focusKeyboardTarget(root, focused, pointerReadoutSuspended(root));
     else if (state.ownedFocus) { root.setAttribute('tabindex', '-1'); root.focus({ preventScroll: true }); }
+    restoreLegendOverflow(root, state.legendOverflow);
     // Focus recovery must not resurrect a pinned or stale readout from the previous scene.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
   };

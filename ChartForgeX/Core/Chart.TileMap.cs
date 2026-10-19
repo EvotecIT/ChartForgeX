@@ -14,7 +14,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddTileMap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColor? color = null, ChartSeriesId? id = null) {
         var series = id.HasValue ? ChartSeries.CreateTileMap(id.Value, name, definition, regions, color) : ChartSeries.CreateTileMap(name, definition, regions, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("Tile maps must contain at least one region value.", nameof(regions));
         return AddSeries(series);
     }
 

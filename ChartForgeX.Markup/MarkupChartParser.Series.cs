@@ -90,6 +90,7 @@ public sealed partial class MarkupChartParser {
         }
 
         var attributes = Attributes(tokens, next);
+        if (attributes.TryGetValue("id", out var id)) annotation.Id = new ChartAnnotationId(id);
         if (attributes.TryGetValue("end", out var end)) annotation.End = ParseDouble(end);
         if (attributes.TryGetValue("label", out var label)) annotation.Label = label;
         if (attributes.TryGetValue("color", out var color)) {
@@ -107,19 +108,23 @@ public sealed partial class MarkupChartParser {
             switch (NormalizeKey(annotation.Kind)) {
                 case "horizontalline":
                 case "hline":
-                    chart.AddHorizontalLine(annotation.Start, annotation.Label, color);
+                    if (annotation.Id is ChartAnnotationId horizontalLine) chart.AddHorizontalLine(horizontalLine, annotation.Start, annotation.Label, color);
+                    else chart.AddHorizontalLine(annotation.Start, annotation.Label, color);
                     break;
                 case "verticalline":
                 case "vline":
-                    chart.AddVerticalLine(annotation.Start, annotation.Label, color);
+                    if (annotation.Id is ChartAnnotationId verticalLine) chart.AddVerticalLine(verticalLine, annotation.Start, annotation.Label, color);
+                    else chart.AddVerticalLine(annotation.Start, annotation.Label, color);
                     break;
                 case "horizontalband":
                 case "hband":
-                    chart.AddHorizontalBand(annotation.Start, annotation.End ?? annotation.Start, annotation.Label, color, annotation.Opacity ?? 0.14);
+                    if (annotation.Id is ChartAnnotationId horizontalBand) chart.AddHorizontalBand(horizontalBand, annotation.Start, annotation.End ?? annotation.Start, annotation.Label, color, annotation.Opacity ?? .14);
+                    else chart.AddHorizontalBand(annotation.Start, annotation.End ?? annotation.Start, annotation.Label, color, annotation.Opacity ?? .14);
                     break;
                 case "verticalband":
                 case "vband":
-                    chart.AddVerticalBand(annotation.Start, annotation.End ?? annotation.Start, annotation.Label, color, annotation.Opacity ?? 0.14);
+                    if (annotation.Id is ChartAnnotationId verticalBand) chart.AddVerticalBand(verticalBand, annotation.Start, annotation.End ?? annotation.Start, annotation.Label, color, annotation.Opacity ?? .14);
+                    else chart.AddVerticalBand(annotation.Start, annotation.End ?? annotation.Start, annotation.Label, color, annotation.Opacity ?? .14);
                     break;
                 default:
                     throw new ArgumentException("Unknown chart annotation kind '" + annotation.Kind + "'.");

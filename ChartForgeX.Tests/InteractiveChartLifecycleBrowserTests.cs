@@ -101,8 +101,14 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Equal("true", await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=samples]").GetAttributeAsync("data-cfx-isolated"));
         Assert.True(await page.Locator("[data-cfx-role=series][data-cfx-series-key=reference]").EvaluateAsync<bool>("node=>node.classList.contains('cfx-series-isolated-out')"));
         await FocusWithKeyboardAsync(page, page.Locator(North));
+        // Native entry after a redraw beneath the stationary mouse must not replace the keyboard readout.
+        await page.EvaluateAsync("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
         Assert.Contains("17", await TooltipTextAsync(page));
         Assert.Contains("64", await TooltipTextAsync(page));
+        await MoveToAsync(page, "[data-cfx-role=legend-item][data-cfx-series-key=samples]");
+        Assert.Equal("Updated samples", await TooltipTextAsync(page));
+        await MoveAwayAsync(page);
+        Assert.Contains("17", await TooltipTextAsync(page));
         await page.Locator(North).PressAsync("Space");
         Assert.Equal("17", await page.EvaluateAsync<string>("()=>lifecycleSelections.at(-1).target.value"));
         Assert.Equal("north", await page.EvaluateAsync<string>("()=>lifecycleSelections.at(-1).target.observationId"));

@@ -188,6 +188,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
     }
 
     [BrowserTheory]
+    [Trait("BrowserSuite", "Compatibility")]
     [InlineData(24)]
     [InlineData(240)]
     public async Task SharedTooltipResolvesStylesOnlyForMatchingXCandidates(int observations) {
@@ -203,16 +204,17 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
             node => {
               const original = window.getComputedStyle;
               const x = Number(node.dataset.cfxX);
-              let total = 0, unrelatedPoints = 0;
+              let total = 0, projectionStyleReads = 0, unrelatedPoints = 0;
               window.getComputedStyle = function(element, pseudo) {
                 total++;
+                if (element instanceof SVGSVGElement && new Error().stack.includes('svgScreenProjection')) projectionStyleReads++;
                 if (element.dataset && element.dataset.cfxRole === 'point' && Number(element.dataset.cfxX) !== x) unrelatedPoints++;
                 return original.call(this, element, pseudo);
               };
               const box = node.getBoundingClientRect(), start = performance.now();
               try {
                 node.dispatchEvent(new PointerEvent('pointerenter', { clientX: box.x + box.width / 2, clientY: box.y + box.height / 2 }));
-                return { Total: total, UnrelatedPoints: unrelatedPoints, DurationMilliseconds: performance.now() - start };
+                return { Total: total, ProjectionStyleReads: projectionStyleReads, UnrelatedPoints: unrelatedPoints, DurationMilliseconds: performance.now() - start };
               } finally { window.getComputedStyle = original; }
             }
             """);
@@ -221,7 +223,9 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
         Assert.Equal(3 * observations, await page.Locator(PointTarget).CountAsync());
         Assert.Equal(3, rows.Length);
         Assert.Equal(0, measurement.UnrelatedPoints);
-        Assert.InRange(measurement.Total, 1, 60);
+        // Native SVG projection adds at most one viewport read, independent of observation count.
+        Assert.InRange(measurement.ProjectionStyleReads, 0, 1);
+        Assert.InRange(measurement.Total - measurement.ProjectionStyleReads, 1, 60);
         AssertNoConsoleErrors(session);
     }
 
@@ -240,6 +244,7 @@ public sealed class InteractiveTooltipVisibilityBrowserTests {
 
     public sealed class StyleMeasurement {
         public int Total { get; set; }
+        public int ProjectionStyleReads { get; set; }
         public int UnrelatedPoints { get; set; }
         public double DurationMilliseconds { get; set; }
     }

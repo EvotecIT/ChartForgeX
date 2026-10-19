@@ -38,6 +38,7 @@
     return ownChartWork(root, () => target.removeEventListener(name, listener, options));
   };
   const clearChartBrowserState = (root) => {
+    clearKeyboardFocusPaint(root);
     cancelTooltipRequest(root);
     hideTip(root, root.querySelector('.cfx-tooltip'), true);
     stopScenarioPlayback(root, 'paused', false);
@@ -49,7 +50,7 @@
     root.querySelectorAll('.cfx-series-muted').forEach(node => node.classList.remove('cfx-series-muted'));
     root.querySelectorAll('[data-cfx-muted]').forEach(node => node.removeAttribute('data-cfx-muted'));
     syncResetControl(root);
-    root.querySelectorAll('.cfx-prepared-point-marker,[data-cfx-browser-hit-area],[data-cfx-highlight-outline]').forEach(node => node.remove());
+    root.querySelectorAll('.cfx-prepared-point-marker,[data-cfx-browser-hit-area],[data-cfx-highlight-outline],[data-cfx-state-outline]').forEach(node => node.remove());
     root.querySelectorAll('[data-cfx-highlight-paint]').forEach(paint => paint.replaceWith(...paint.childNodes));
     root.querySelectorAll('[data-cfx-highlight-managed]').forEach(node => {
       node.removeAttribute('data-cfx-highlight-managed'); node.removeAttribute('data-cfx-highlight-unavailable');

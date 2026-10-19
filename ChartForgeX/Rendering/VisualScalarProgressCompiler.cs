@@ -49,7 +49,7 @@ internal static partial class VisualScalarProgressCompiler {
         var state = series.StateRole == ChartSeriesState.None ? RatioState(ratio) : series.StateRole;
         var color = CircleColor(series, colors);
         var value = Value(chart, series, 0, raw);
-        var statusHeight = series.ShowDataLabels != false && chart.Options.ShowCircleStatusLabel ? Math.Min(plot.Height * .2, context.Theme.Typography.DataLabelSize * 1.5 + context.Theme.Spacing) : 0;
+        var statusHeight = series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.ShowCircleStatusLabel ? Math.Min(plot.Height * .2, context.Theme.Typography.DataLabelSize * 1.5 + context.Theme.Spacing) : 0;
         var radius = Math.Max(0, Math.Min(plot.Width / 2 - context.Theme.Spacing, (plot.Height - statusHeight) / 2 - context.Theme.Spacing));
         var requested = Math.Min(plot.Width, plot.Height) * .28 * chart.Options.CircleRadiusScale;
         var halfStrokeFactor = .08 * chart.Options.CircleStrokeScale;
@@ -69,7 +69,7 @@ internal static partial class VisualScalarProgressCompiler {
             VisualRadialPrimitives.Arc(builder, cx, cy, radius, stroke, -Math.PI / 2, Math.PI * 2 * ratio, color, "circle-value", round: true, paint: valuePaint);
             var inner = Math.Max(0, radius - stroke * .82);
             builder.Ellipse(cx, cy, inner, inner, colors.Surface, colors.Border, role: "circle-center", paint: new VisualScenePaintBinding(SvgPaint.Of(colors.Surface, SvgColorRole.Surface), SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
-            if (series.ShowDataLabels != false) {
+            if (series.ResolveDataLabels(chart.Options, defaultVisible: true)) {
                 Text(chart, context, builder, series, 0, value, new ChartRect(cx - inner * .8, cy - inner * .7, inner * 1.6, inner * .7), "circle-label", Id(0) + "-value", colors.Foreground, context.Theme.Typography.TitleSize, 700);
                 Text(chart, context, builder, series, 0, series.Name, new ChartRect(cx - inner * .8, cy, inner * 1.6, inner * .7), "circle-title", Id(0) + "-title", colors.MutedForeground, context.Theme.Typography.DataLabelSize);
                 if (chart.Options.ShowCircleStatusLabel) {

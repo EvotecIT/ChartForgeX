@@ -109,6 +109,8 @@ connect review -> archive "store" kind:data status:warning
 
 Flow markup stays product-neutral. Hosts map their own business concepts into lanes, steps, and connectors, then use the artifact kind to decide where flow visuals belong in their own UI or document pipeline. Supported step commands include `step`, `process`, `decision`, `start`, `end`, `input`, `output`, `data`, `external`, `document`, `manual`, `delay`, and `event`. Connectors use `connect source -> target "label"` with optional `kind`, `direction`, `status`, and `color` attributes. Table sections are available as `lanes:`, `steps:`, and `connectors:` for larger flows.
 
+Step dimensions are minimum sizes by default: preparation grows the detached shape to contain its measured title, subtitle, badge and status. Set `fitLabelToContent:false` on a step, or add a `fitLabelToContent` table column with `false`, to keep `width` and `height` fixed. Crowded fixed shapes fit or shorten text within their outline and report a diagnostic; complete source text remains in semantic interchange.
+
 ## Sequence
 
 `chartforgex sequence v1` emits a typed `SequenceArtifact` wrapped as `VisualArtifactKind.Sequence`. Use it when the authored visual is an interaction, request/response flow, protocol exchange, or ordered collaboration. Native sequence markup uses the same artifact model as Mermaid sequence conversion, but keeps ChartForgeX-owned commands and table sections for editor tooling and host APIs.
@@ -209,7 +211,7 @@ Or with a review-friendly table. The first label/category column becomes the x-a
 | Jan   | 12      | 7    |
 | Feb   | 18      | 9    |
 | Mar   | 16      | 8    |
-annotation hLine 15 "Target" color:#16A34A
+annotation hLine 15 "Target" id:target color:#16A34A
 ```
 ````
 
@@ -235,6 +237,8 @@ options:
 ````
 
 Supported compact chart types include `bar`, `line`, `smoothLine`, `stepLine`, `area`, `smoothArea`, `stepArea`, `stackedArea`, `smoothStackedArea`, `scatter`, `lollipop`, `horizontalBar`, `waterfall`, `pie`, `donut`, `polar`, `polarArea`, `radar`, `funnel`, and `pyramid`. Pyramid markup uses height-proportional triangular partitions in source order. Series commands can choose their own `type`, `kind`, `color`, and `values`. For `polar`, values alternate angle in radians and radius, for example `values 0 12 1.57 18 3.14 9`; `polarArea` retains equal-angle radial segments. Annotation commands support horizontal and vertical lines or bands through `annotation hLine`, `annotation vLine`, `annotation hBand`, and `annotation vBand`, with optional label, color, and opacity values. Supported options include legend, point legend, data labels, header/card/plot background, transparent background, axes, axis lines, grid, legend position, tick count, axis titles, axis bounds, padding, sparkline, and overlay mode. Invalid option values produce line-aware diagnostics.
+
+Annotation commands also accept `id:<source-id>` or `id=<source-id>`. IDs use the native `ChartAnnotationId` policy: trimmed, case-sensitive and unique within the chart across all annotation kinds. Captions and coordinates do not define identity. Omitting `id` retains anonymous annotation behavior.
 
 The parser maps the fence to a `VisualArtifact` with `VisualArtifactKind.Chart` and a typed `Chart` model. Static SVG/PNG/HTML export remains deterministic and script-free.
 

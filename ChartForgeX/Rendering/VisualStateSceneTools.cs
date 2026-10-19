@@ -79,19 +79,20 @@ internal static class VisualStateSceneTools {
     }
 
     internal static void Text(VisualSceneBuilder builder, string text, ChartRect bounds, TextStyle style, string role,
-        string id, TextAlignment alignment = TextAlignment.Left, bool shrink = false, SvgPaint? paint = null) {
+        string id, TextAlignment alignment = TextAlignment.Left, bool shrink = false, SvgPaint? paint = null, string? displayedText = null) {
         builder.AddRegion(new VisualSemanticRegion(id, role, bounds, text));
-        if (bounds.Width <= 0 || bounds.Height <= 0 || text.Length == 0) return;
+        var displayed = displayedText ?? text;
+        if (bounds.Width <= 0 || bounds.Height <= 0 || displayed.Length == 0) return;
         style = style.Clone();
         if (shrink) {
-            var measured = builder.MeasureText(text, style);
+            var measured = builder.MeasureText(displayed, style);
             var ratio = Math.Min(1, Math.Min(bounds.Width / Math.Max(1, measured.Width), bounds.Height / Math.Max(1, measured.Height)));
             style.FontSize = Math.Max(1, style.EffectiveFontSize * ratio); style.Baseline = TextBaseline.Normal;
         } else if (style.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize) style = VisualTextFitting.FitOversized(builder, style, bounds.Height, fitted => {
-            var metrics = builder.MeasureText(text, fitted);
+            var metrics = builder.MeasureText(displayed, fitted);
             return metrics.Width <= bounds.Width && metrics.Height <= bounds.Height;
         });
-        var fit = ChartTextFitting.TrimEnd(text, style.EffectiveFontSize, bounds.Width, (value, _) => builder.MeasureText(value, style).Width);
+        var fit = ChartTextFitting.TrimEnd(displayed, style.EffectiveFontSize, bounds.Width, (value, _) => builder.MeasureText(value, style).Width);
         if (fit != text) builder.AddDiagnostic(new VisualDiagnostic("text.overflow", "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."));
         if (builder.MeasureText(fit, style).Height > bounds.Height + .000001) return;
         style.Alignment = alignment;

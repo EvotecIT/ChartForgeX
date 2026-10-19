@@ -23,7 +23,6 @@ internal static partial class SmokeTests {
 
         AssertMapCatalogSources(PreparedFamily(chart), "region-map", 4, 47, 95);
         AssertThrows<ArgumentNullException>(() => Chart.Create().AddRegionMap("Bad", null!, new[] { new ChartRegionMapItem("CA", 1) }), "Region maps should reject missing definitions.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddRegionMap("Empty", definition, Array.Empty<ChartRegionMapItem>()), "Region maps should reject empty inputs.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddRegionMap("Bad", definition, new[] { new ChartRegionMapItem("ZZ", 1) }), "Region maps should reject regions outside the map definition.");
     }
 
@@ -43,21 +42,19 @@ internal static partial class SmokeTests {
 
         AssertMapCatalogSources(PreparedFamily(chart), "tile-map", 5, 46, 100);
         AssertThrows<ArgumentNullException>(() => Chart.Create().AddTileMap("Bad", null!, new[] { new ChartRegionMapItem("CA", 1) }), "Tile maps should reject missing definitions.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddTileMap("Empty", definition, Array.Empty<ChartRegionMapItem>()), "Tile maps should reject empty inputs.");
         AssertThrows<ArgumentException>(() => Chart.Create().AddTileMap("Bad", definition, new[] { new ChartRegionMapItem("ZZ", 1) }), "Tile maps should reject regions outside the tile-map definition.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartRegionMapItem("CA", -1), "Region map values should reject negatives.");
     }
 
     private static void MapColorScaleRendersCustomChoroplethColors() {
         var scale = ChartColorScale
-            .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 50)
-            .WithValueRange(0, 100)
-            .WithLabels("0", "50 median", ">100")
+            .Diverging(ChartColor.FromHex("#F97316"), ChartColor.FromHex("#FFF7ED"), ChartColor.FromHex("#065F46"), 0)
+            .WithValueRange(-100, 100)
+            .WithLabels("-100", "0 midpoint", ">100")
             .WithNoDataColor(ChartColor.FromHex("#E5E7EB"));
 
         var regions = new[] {
-            new ChartRegionMapItem("CA", 0),
-            new ChartRegionMapItem("NY", 50),
+            new ChartRegionMapItem("CA", -100),
+            new ChartRegionMapItem("NY", 0),
             new ChartRegionMapItem("TX", 100)
         };
 
@@ -65,19 +62,19 @@ internal static partial class SmokeTests {
             .WithSize(760, 420)
             .WithMapLabels(false)
             .WithMapColorScale(scale)
-            .AddRegionMap("Births", ChartMapCatalog.Get("us-states"), regions);
+            .AddRegionMap("Change", ChartMapCatalog.Get("us-states"), regions);
         var tile = Chart.Create()
             .WithSize(760, 420)
             .WithMapColorScale(scale)
-            .AddTileMap("Births", ChartTileMapCatalog.Get("us-states"), regions);
+            .AddTileMap("Change", ChartTileMapCatalog.Get("us-states"), regions);
 
         foreach (var chart in new[] { region, tile }) {
             var prepared = PreparedFamily(chart);
             var marks = prepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneMark>().Where(mark => mark.Role is "region-map-region" or "tile-map-region").ToArray();
             foreach (var color in new[] { "#F97316", "#FFF7ED", "#065F46" })
                 Assert(marks.Any(mark => mark.Fill.Equals(ChartColor.FromHex(color))), "Custom diverging endpoints and midpoint should reach the map marks.");
-            Assert(FamilyGroups(prepared, "map-scale").Single().Metadata["data-cfx-midpoint-value"] == "50", "Map scales should retain the configured midpoint value.");
-            Assert(prepared.Regions.Any(region => region.Role == "map-scale-midpoint-label" && region.Label!.Contains("50")), "Map scales should retain their midpoint caption.");
+            Assert(FamilyGroups(prepared, "map-scale").Single().Metadata["data-cfx-midpoint-value"] == "0", "Map scales should retain the configured midpoint value.");
+            Assert(prepared.Regions.Any(region => region.Role == "map-scale-midpoint-label" && region.Label!.Contains("0 midpoint")), "Map scales should retain their midpoint caption.");
             Assert(FamilyGroups(prepared, "map-scale-step-source").Last().Metadata["data-cfx-value"] == "100", "Map scales should retain the configured maximum.");
             Assert(prepared.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Single(mark => mark.Role == "map-scale-no-data").Fill.Equals(ChartColor.FromHex("#E5E7EB")), "Missing data should retain its independent custom color.");
             Assert(prepared.Regions.Any(region => region.Role == "map-scale-label" && region.Label!.Contains(">100")), "High endpoint captions should retain custom comparison text.");

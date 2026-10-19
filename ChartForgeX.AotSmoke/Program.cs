@@ -7,6 +7,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualBlocks;
@@ -24,6 +25,17 @@ var chart = Chart.Create()
 AssertContains(chart.ToSvg(), "<svg", "SVG render failed.");
 AssertContains(chart.ToHtmlPage(), "<html", "HTML page render failed.");
 AssertPng(chart.ToPng(), "PNG render failed.");
+
+var origin = new DateTime(2026, 1, 28).ToOADate();
+var sized = Chart.Create().WithSize(420, 280).WithXAxisScale(ChartScaleKind.Time)
+    .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("requests"), "Requests", new[] {
+        new ChartBubble(origin, 2, 4), new ChartBubble(origin + 5, 4, 9), new ChartBubble(origin + 10, 8, 16)
+    }).ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Star))
+    .ConfigureBubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
+var window = sized.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280))), new ChartXViewport(origin + 2, origin + 8));
+if (window.XProjection?.Scale != ChartScaleKind.Time) throw new InvalidOperationException("AOT native time projection missing.");
+AssertContains(window.ToSvg(), "data-cfx-size=\"9\"", "AOT native window lost Bubble source facts.");
+AssertPng(window.ToPng(), "AOT area-sized marker failed.");
 
 foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
     var theme = VisualTheme.Graphite();
@@ -75,10 +87,13 @@ AssertPng(topology.ToPng(), "Topology PNG render failed.");
 var interactive = chart.ToInteractiveHtmlPage(options => {
     options.PageTitle = "AOT interactive";
     options.IdScope = "aot-chart";
+    options.Localization.Language = "pl-PL";
+    options.Localization[HtmlChartText.Pinned] = "Przypięte";
     options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
 });
 AssertContains(interactive, "data-cfx-export=\"png\"", "Interactive PNG export control missing.");
 AssertContains(interactive, "new CustomEvent('cfxsync'", "Interactive sync runtime missing.");
+AssertContains(interactive, "data-cfx-pinned-label=\"Przypięte\"", "AOT localized tooltip status missing.");
 
 var mermaidSources = new[] {
     "flowchart LR\nA@{ shape: cloud, label: \"API\" } & B --> C & D",

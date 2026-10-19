@@ -18,6 +18,7 @@ internal static partial class VisualCartesianCompiler {
         internal IReadOnlyDictionary<double, string>? CategoryCaptions { get; }
         internal IReadOnlyList<HorizontalStackTotal> HorizontalTotals { get; }
         internal IReadOnlyList<VerticalStackCaption>? VerticalTotals { get; }
+        internal CategoryGroupSource? CategoryGroups => AxisLabels.CategoryGroups;
 
         internal CartesianAxisLayout(ChartRect plot, ChartRect labelBounds, AxisLabelCache axisLabels, bool horizontal,
             IReadOnlyDictionary<double, string>? categoryCaptions, IReadOnlyList<HorizontalStackTotal> horizontalTotals,
@@ -30,11 +31,11 @@ internal static partial class VisualCartesianCompiler {
     private static CartesianAxisLayout? ResolveAxisLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, ChartRect viewport, bool measureAxes, ChartRange range, ChartRange? secondaryRange,
         ChartStackLayout stacks, ChartBarCoordinateMap coordinates, ChartBubbleSizeScale? bubbleScale, VisualThemeColors colors,
-        ChartAxisValueFormatter.Cache? categoryLabels, CartesianLabels labels, bool expandMarkers) {
+        ChartAxisValueFormatter.Cache? categoryLabels, CartesianLabels labels, CategoryGroupSource? categoryGroups, bool expandMarkers) {
         var dataRange = range.Copy();
         var secondaryDataRange = secondaryRange?.Copy();
         categoryLabels ??= new ChartAxisValueFormatter.Cache();
-        var axisLabels = new AxisLabelCache(categoryLabels);
+        var axisLabels = new AxisLabelCache(categoryLabels) { CategoryGroups = categoryGroups };
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
         if (!horizontal) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
@@ -53,6 +54,12 @@ internal static partial class VisualCartesianCompiler {
                 axisLabels.SetTicks(categoryAxis, categoryCaptions.Keys.OrderBy(value => value).ToArray());
             foreach (var category in categoryCaptions) axisLabels.Set(categoryAxis, category.Key, category.Value);
         }
+        if (categoryGroups != null) {
+            var categoryAxis = horizontal ? HorizontalAxes(chart, axisLabels).Category : chart.Options.XAxis;
+            axisLabels.SetTicks(categoryAxis, categoryGroups.Plan.Catalog.Select(label => label.Value).ToArray());
+            foreach (var category in categoryGroups.Plan.Catalog) axisLabels.Set(categoryAxis, category.Value, category.Text);
+        }
+        RefreshCategoryDisplay(chart, context, builder, viewport, viewport, range, colors, axisLabels);
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
             : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         if (expandMarkers && ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale)) {
@@ -60,6 +67,7 @@ internal static partial class VisualCartesianCompiler {
                 axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
                 if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
             }
+            RefreshCategoryDisplay(chart, context, builder, plot, viewport, range, colors, axisLabels);
             if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
                 : MeasurePlot(chart, context, builder, viewport, range, secondaryRange, colors, axisLabels);
         }
@@ -95,6 +103,7 @@ internal static partial class VisualCartesianCompiler {
                     if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
                 }
             }
+            RefreshCategoryDisplay(chart, context, builder, plot, viewport, range, colors, axisLabels);
             FitCartesianTicks(chart, context, builder, plot, range, secondaryRange, colors, axisLabels, horizontal);
             if (!measureAxes || pass == maximumAxisPasses) break;
             var measured = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
@@ -124,12 +133,11 @@ internal static partial class VisualCartesianCompiler {
 
     internal static bool SupportsXViewport(Chart chart) => chart.Series.Count > 0 && !chart.Options.IsSparkline
         && !ChartCartesianOrientation.IsHorizontal(chart)
-        && chart.Options.XAxis.Scale == ChartScaleKind.Linear
-        && chart.Series.All(series => (series.Kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine)
-            && (series.Interpolation is ChartInterpolation.Linear or ChartInterpolation.Step));
+        && (chart.Options.XAxis.Scale is ChartScaleKind.Linear or ChartScaleKind.Time)
+        && chart.Series.All(series => IsPointSeries(series.Kind) || series.Kind == ChartSeriesKind.Bubble);
 
     internal static void ValidateXViewport(Chart chart) {
-        if (!SupportsXViewport(chart)) throw new NotSupportedException("An X viewport requires ordinary vertical Line or StepLine series with linear X and linear or step interpolation.");
+        if (!SupportsXViewport(chart)) throw new NotSupportedException("An X viewport requires ordinary vertical line, area, scatter or bubble series with a linear or time X axis.");
         if (!chart.Series.Any(series => series.HasSourceData)) throw new InvalidOperationException("An X viewport requires source observations.");
     }
 }

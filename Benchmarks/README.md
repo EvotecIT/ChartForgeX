@@ -78,6 +78,25 @@ Qualify a stable candidate by first inspecting `-Plan`, then running a zero-warm
 
 PowerForge rejects measurements when source provenance changes during a run. Freeze the participating worktree and binaries before qualification. An immutable copy of the same suite/helper and hashed product, fixture, token and font inputs can exercise validation while other development continues, but a zero-warmup, one-sample smoke run establishes no performance result. Record source revisions, input hashes, SDK/runtime, CPU/OS, power policy and quality settings with paired results. Keep raw samples; investigate any requested complete-operation regression above 10% rather than treating the separate history noise allowance as that proof.
 
+## Browser acquisition
+
+`Invoke-InteractivityBenchmark.ps1` measures nearest-observation lookup on 1,000-point and 5,000-point Scatter charts. Each timed operation executes 16 deterministic queries in a persistent Chromium session owned by HtmlTinkerX. PowerForge owns warmups, rotated engine order, timing and result files. Chart preparation, browser startup, an independent geometry oracle and a real pointer-hover check run outside timing; every measured query must return the expected source observation.
+
+After building the Release test dependencies, supply their binary directory and an explicit scratch output directory:
+
+```powershell
+./Benchmarks/Invoke-InteractivityBenchmark.ps1 `
+    -ProductBinaryRoot ./ChartForgeX.Tests/bin/Release/net8.0 `
+    -OutputRoot /path/to/results `
+    -WarmupCount 2 -IterationCount 9
+```
+
+Use `-Plan` to inspect the matrix without opening browsers. The wrapper builds only its isolated benchmark fixture. `-SkipFixtureBuild` reuses that fixture. A paired comparison also takes `-BaselineBinaryRoot` and `-BaselineAcquisitionSourcePath`, pointing to frozen baseline DLLs and their matching `45-crosshair-reveal.js` source. The fixture verifies that the recorded acquisition implementation is present in each binary's embedded runtime before adding a disposable page hook. The shipped runtime exposes no benchmark API.
+
+Compare `Baseline` and `Candidate` rows for the same scenario in PowerForge's `comparison.md` and `summary.json`. `MedianMs` measures the complete query batch, including the Playwright round trip and serialization. Dividing by the query count gives an amortized lookup cost, not a per-event latency percentile. Hover styling, tooltip rendering and application event handlers have separate costs.
+
+Keep both source and adapter hashes, fixture hash, actual browser versions, policy flags, host activity and raw samples with the result. Freeze inputs during measurement; an immutable scratch copy lets ordinary implementation continue elsewhere. The suite is optional and adds no timing threshold to correctness CI.
+
 ## Accepted rendering history
 
 `Invoke-RenderingHistory.ps1` uses PowerForge's `Test-BenchmarkHistory` to verify three fixed 500 × 180 rendering cases: twelve composition labels with default and full hinting, and twelve imported SVG labels. The original portable font fixture avoids installed-font discovery. Every case checks dimensions and visible ink in all twelve rows outside timing. The benchmark fixture is excluded from solution and package builds.

@@ -84,7 +84,11 @@ internal sealed partial class ChartRelationshipIndex {
             if (chord) {
                 if (double.IsNaN(link.Value) || double.IsInfinity(link.Value) || link.Value < 0)
                     throw new ArgumentException("Chord flow weights must be finite and non-negative.", nameof(links));
-            } else ValidateWeight(link.Value);
+            } else {
+                ValidateWeight(link.Value);
+                if (link.ColorValue.HasValue)
+                    throw new NotSupportedException("Independent quantitative flow color requires a Chord chart.");
+            }
             (sources[i], targets[i]) = Resolve(indexes, link.SourceId, link.TargetId, allowSelf: chord);
             incoming[targets[i]] += link.Value;
             outgoing[sources[i]] += link.Value;
@@ -111,7 +115,7 @@ internal sealed partial class ChartRelationshipIndex {
         var snapshot = SnapshotNodes(nodes, out var indexes, allowEmpty: true);
         if (links == null) throw new ArgumentNullException(nameof(links));
         var branches = links.ToArray();
-        if (snapshot.Length > 0 && branches.Length == 0) throw new ArgumentException("Hierarchy charts require at least one link.", nameof(links));
+        if (snapshot.Length > 1 && branches.Length == 0) throw new ArgumentException("Hierarchy charts with multiple nodes require at least one link.", nameof(links));
         var sources = new int[branches.Length];
         var targets = new int[branches.Length];
         var children = new HashSet<string>(StringComparer.Ordinal);

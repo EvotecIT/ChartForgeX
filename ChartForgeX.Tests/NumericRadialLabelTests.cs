@@ -87,6 +87,52 @@ public sealed class NumericRadialLabelTests {
         Assert.Equal("0", Point(scene, "series-0-point-0").Metadata["data-cfx-y"]);
     }
 
+    [Theory]
+    [InlineData(ChartDataLabelPlacement.Auto)]
+    [InlineData(ChartDataLabelPlacement.Outside)]
+    public void OutsideCaptionsKeepTheCompleteValueWhenTheMarkEdgeHasRoom(ChartDataLabelPlacement placement) {
+        var chart = V2GalleryModels.Create(ChartSeriesKind.RadialColumn, "wide").WithDataLabelPlacement(placement);
+        var font = new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") };
+        var scene = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)),
+            VisualTheme.Graphite(), VisualThemeMode.Dark,
+            new VisualFrame("Regional service workload", "Explore the data, then download the chart", showLegend: null, showSurface: false), font)).Scene;
+        var label = Assert.Single(Captions(scene), text => text.Id == "series-0-point-1-label");
+        Assert.Equal("950", string.Join(" ", label.Text.Lines.Select(line => line.Text)));
+        Assert.Equal(12, label.Text.Size);
+        Assert.Equal("950", Point(scene, "series-0-point-1").Metadata["data-cfx-y"]);
+        Assert.Equal(8, scene.Regions.Count(region => region.Role == "point"));
+        Assert.All(NumericRadialSeriesTests.Marks(scene), mark => Assert.False(Shape(mark).Intersects(Bounds(label))));
+        Assert.InRange(Bounds(label).Left, 0, 800);
+        Assert.InRange(Bounds(label).Right, 0, 800);
+        Assert.InRange(Bounds(label).Top, 0, 440);
+        Assert.InRange(Bounds(label).Bottom, 0, 440);
+    }
+
+    [Fact]
+    public void StackTotalsUseTheSameCompleteOutsideCaptionWithoutChangingTheirContributors() {
+        var first = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialColumn,
+            new[] { new ChartPoint(1, 500) }).WithStackGroup("work");
+        var second = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.RadialColumn,
+            new[] { new ChartPoint(1, 450) }).WithStackGroup("work");
+        var chart = Chart.Create().WithSize(800, 440).WithHeader(false).WithLegend(false)
+            .WithAxes(false).WithGrid(false).WithDataLabels(false).WithXLabels("North")
+            .WithRadialGeometry(new(-90, 90, .25, 0, 0)).WithYAxisBounds(0, 1500)
+            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture))
+            .AddSeries(first).AddSeries(second);
+        chart.Options.ShowStackTotals = true;
+        var scene = Prepare(chart, 800, 440);
+        var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "stack-total");
+        Assert.Equal("950", string.Join(" ", label.Text.Lines.Select(line => line.Text)));
+        Assert.Equal("500", Point(scene, "series-0-point-0").Metadata["data-cfx-y"]);
+        Assert.Equal("450", Point(scene, "series-1-point-0").Metadata["data-cfx-y"]);
+        Assert.Equal(2, scene.Regions.Count(region => region.Role == "point"));
+        var source = Assert.Single(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "stack-total-source");
+        Assert.Equal("950", source.Metadata["data-cfx-y"]);
+        Assert.Equal("950", source.Metadata["data-cfx-source-total"]);
+        Assert.Equal("work", source.Metadata["data-cfx-stack-group"]);
+        Assert.All(NumericRadialSeriesTests.Marks(scene), mark => Assert.False(Shape(mark).Intersects(Bounds(label))));
+    }
+
     private static VisualScene Prepare(Chart chart, int width, int height) {
         var font = new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") };
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)),

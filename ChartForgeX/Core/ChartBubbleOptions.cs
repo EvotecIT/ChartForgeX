@@ -4,25 +4,35 @@ namespace ChartForgeX.Core;
 
 /// <summary>Controls one shared source-size domain and logical radius range for all bubble series in a chart.</summary>
 /// <remarks>
-/// Sizes use square-root interpolation of the radius range. Equal source sizes have equal logical radii;
-/// this does not promise proportional painted areas across marker shapes. A constant automatic domain uses
-/// the radius midpoint. Source observations remain finite and positive even when a domain starts at zero.
+/// The default preserves square-root interpolation of the radius range. Area encoding instead interpolates
+/// reference-circle areas and normalizes marker shapes. Source observations remain finite and positive even
+/// when a domain starts at zero.
 /// </remarks>
 public sealed class ChartBubbleOptions {
     private double _minimumRadius = 6;
     private double? _maximumRadius;
+    private ChartBubbleSizeEncoding _sizeEncoding;
+
+    /// <summary>Gets or sets the source-size encoding. The default preserves the existing square-root radius law.</summary>
+    public ChartBubbleSizeEncoding SizeEncoding {
+        get => _sizeEncoding;
+        set {
+            if (!Enum.IsDefined(typeof(ChartBubbleSizeEncoding), value)) throw new ArgumentOutOfRangeException(nameof(value));
+            _sizeEncoding = value;
+        }
+    }
 
     /// <summary>Gets independent name, number display and numeric key options for the shared source-size measurement.</summary>
     public ChartSizeDimensionOptions SizeDimension { get; private set; } = new();
 
-    /// <summary>Gets or sets the non-negative minimum logical radius in pixels. Default: six.</summary>
+    /// <summary>Gets or sets the non-negative minimum logical reference-circle radius in pixels. Default: six.</summary>
     public double MinimumRadius {
         get => _minimumRadius;
         set { NonNegative(value, nameof(value)); _minimumRadius = value; }
     }
 
     /// <summary>
-    /// Gets or sets the non-negative maximum logical radius in pixels. Null retains the responsive family default,
+    /// Gets or sets the non-negative maximum logical reference-circle radius in pixels. Null retains the responsive family default,
     /// bounded between 14 and 32 pixels and raised to the minimum radius when necessary.
     /// The explicit maximum must be at least <see cref="MinimumRadius"/> at preparation.
     /// </summary>

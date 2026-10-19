@@ -127,7 +127,7 @@ Events must be ordered and fit the declared duration. A replay supports 4,096 ev
 
 Run `dotnet run --project ChartForgeX.Examples -- --story-replay-only --output ./replay-output` for landscape, square and portrait demonstrations. These examples use authored resolved events so their timing and output remain reproducible.
 
-`WithFormat` supplies landscape, square and portrait sizes and stacks split panels in portrait. `WithSize` supplies exact dimensions. `WithPanelReflow` controls whether a tall viewport changes a split into a stack. Font size remains explicit, so choose a smaller readable size for a narrow source panel instead of relying on whole-image scaling.
+`WithFormat` supplies landscape, square and portrait sizes and stacks split panels in portrait. `WithSize` accepts logical widths from 480 to 3840 pixels and heights from 320 to 2160 pixels. It rejects dimensions outside those bounds; choose a supported artboard size before adapting it to a host. `WithPanelReflow` controls whether a tall viewport changes a split into a stack. Font size remains explicit, so choose a smaller readable size for a narrow source panel instead of relying on whole-image scaling.
 
 ## Streaming and browser controls
 

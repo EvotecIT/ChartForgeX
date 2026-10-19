@@ -27,9 +27,11 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         Assert.Equal(mode == ChartSelectionMode.Toggle ? 2 : 1, await LinkedSelectionCountAsync(page));
         Assert.Equal("click", await page.EvaluateAsync<string>("()=>linkedEvents.at(-1).detail.reason"));
         Assert.Equal(0, await page.Locator("[data-cfx-compare-tray]").CountAsync());
-        await page.Locator(LinkedPoint("north")).ClickAsync(new LocatorClickOptions { Modifiers = new[] { KeyboardModifier.Control } });
+        // Control-click opens the native context menu on macOS; use the platform's selection modifier.
+        var selectionModifier = OperatingSystem.IsMacOS() ? KeyboardModifier.Meta : KeyboardModifier.Control;
+        await page.Locator(LinkedPoint("north")).ClickAsync(new LocatorClickOptions { Modifiers = new[] { selectionModifier } });
         Assert.Equal(mode == ChartSelectionMode.Single ? 1 : mode == ChartSelectionMode.Replace ? 2 : 1, await LinkedSelectionCountAsync(page));
-        await page.Locator(LinkedPoint("north")).ClickAsync(new LocatorClickOptions { Modifiers = new[] { KeyboardModifier.Meta } });
+        await page.Locator(LinkedPoint("north")).ClickAsync(new LocatorClickOptions { Modifiers = new[] { selectionModifier } });
         Assert.Equal(mode == ChartSelectionMode.Single ? 1 : mode == ChartSelectionMode.Replace ? 1 : 2, await LinkedSelectionCountAsync(page));
         await page.Locator(LinkedPoint("west")).ClickAsync(new LocatorClickOptions { Modifiers = new[] { KeyboardModifier.Shift } });
         Assert.Equal(mode == ChartSelectionMode.Single ? 1 : mode == ChartSelectionMode.Replace ? 2 : 3, await LinkedSelectionCountAsync(page));

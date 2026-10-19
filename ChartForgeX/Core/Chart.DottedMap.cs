@@ -13,7 +13,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddDottedMap(string name, IEnumerable<ChartMapPoint> points, ChartColor? color = null, ChartSeriesId? id = null) {
         var series = id.HasValue ? ChartSeries.CreateDottedMap(id.Value, name, points, color) : ChartSeries.CreateDottedMap(name, points, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("Dotted maps must contain at least one map point.", nameof(points));
         return AddSeries(series);
     }
 }

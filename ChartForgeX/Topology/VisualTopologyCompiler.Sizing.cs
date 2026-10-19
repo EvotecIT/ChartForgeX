@@ -121,7 +121,7 @@ internal sealed partial class VisualTopologyCompiler {
                         IncludeStroked(shape.Left, shape.Top, shape.Right, shape.Bottom, stroke);
                     }
                 }
-                if (!string.IsNullOrWhiteSpace(node.Badge)) {
+                if (!UseEnclosedShapeContent(node, mode, _options) && !string.IsNullOrWhiteSpace(node.Badge)) {
                     var badge = NodeBadgeBounds(node, mode, _options);
                     Include(badge.X, badge.Y, badge.Right, badge.Bottom);
                 }

@@ -1,3 +1,9 @@
+.cfx-graph-explorer {
+  --cfx-command-size: 40px;
+  --cfx-command-padding: 5px;
+  --cfx-command-inset: 12px;
+}
+
 .cfx-graph-header {
   position: relative;
   display: grid;
@@ -199,7 +205,7 @@
   align-items: center;
   gap: 3px;
   min-height: 50px;
-  padding: 5px;
+  padding: var(--cfx-command-padding);
   border: 1px solid color-mix(in srgb, var(--cfx-color-border-strong) 70%, transparent);
   border-radius: 15px;
   background: color-mix(in srgb, var(--cfx-color-surface-solid) 88%, transparent);
@@ -210,7 +216,15 @@
 
 .cfx-graph-command-rail .cfx-graph-toolbar-group {
   position: relative;
+  flex-shrink: 0;
   gap: 2px;
+}
+
+.cfx-graph-command-scroll {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
 }
 
 .cfx-graph-command-rail .cfx-graph-toolbar-group + .cfx-graph-toolbar-group {
@@ -234,8 +248,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-width: 40px;
-  min-height: 40px;
+  min-width: var(--cfx-command-size);
+  min-height: var(--cfx-command-size);
   padding: 0 11px;
   border: 1px solid transparent;
   border-radius: 10px;
@@ -248,7 +262,7 @@
 }
 
 .cfx-graph-tool--compact {
-  width: 40px;
+  width: var(--cfx-command-size);
   padding: 0;
 }
 
@@ -389,7 +403,7 @@
 .cfx-graph-command-menu-panel .cfx-graph-tool {
   width: 100%;
   justify-content: flex-start;
-  min-height: 40px;
+  min-height: var(--cfx-command-size);
 }
 
 .cfx-graph-breadcrumbs {
@@ -403,7 +417,7 @@
   width: auto;
   max-width: calc(100% - 580px);
   min-height: 50px;
-  padding: 5px;
+  padding: var(--cfx-command-padding);
   border: 1px solid color-mix(in srgb, var(--cfx-color-border-strong) 70%, transparent);
   border-radius: 15px;
   background: color-mix(in srgb, var(--cfx-color-surface-solid) 88%, transparent);
@@ -413,7 +427,7 @@
 }
 
 .cfx-graph-breadcrumbs .cfx-graph-tool {
-  min-height: 40px;
+  min-height: var(--cfx-command-size);
   padding: 0;
   font-size: 11px;
 }
@@ -422,7 +436,7 @@
   display: flex;
   align-items: center;
   min-width: 0;
-  min-height: 40px;
+  min-height: var(--cfx-command-size);
   padding: 0 8px;
   overflow: hidden;
   border-radius: 10px;
@@ -535,16 +549,25 @@
 
   .cfx-graph-command-rail {
     top: auto;
-    right: 12px;
-    bottom: 12px;
-    left: 12px;
+    right: var(--cfx-command-inset);
+    bottom: var(--cfx-command-inset);
+    left: var(--cfx-command-inset);
     justify-content: flex-start;
     max-width: none;
+    overflow: visible;
+  }
+
+  .cfx-graph-tooltip {
+    bottom: calc(var(--cfx-command-inset) + var(--cfx-command-size) + 4 * var(--cfx-command-padding) + 2px + var(--cfx-command-inset));
+  }
+
+  .cfx-graph-command-scroll {
+    padding: var(--cfx-command-padding);
     overflow-x: auto;
     scrollbar-width: none;
   }
 
-  .cfx-graph-command-rail::-webkit-scrollbar {
+  .cfx-graph-command-scroll::-webkit-scrollbar {
     display: none;
   }
 
@@ -629,4 +652,10 @@
   color: var(--cfx-color-text-muted);
   font-size: 12px;
   line-height: 1.5;
+}
+
+/* Each standalone message keeps its reading order inside the surrounding chrome. */
+.cfx-graph-explorer :where([data-cfx-role="graph-search-status"], [data-cfx-role="graph-announcer"], [data-cfx-role="graph-neighborhood-summary"], [data-cfx-role="graph-physics-status"], [data-cfx-graph-editor-status]) {
+  unicode-bidi: plaintext;
+  text-align: match-parent;
 }

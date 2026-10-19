@@ -1,10 +1,27 @@
+window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
+  const source = root?.dataset.cfxUi || '';
+  let bundle = root?._cfxUi;
+  if (!bundle || bundle.source !== source) {
+    let messages;
+    try { messages = source ? JSON.parse(source) : {}; } catch { messages = {}; }
+    bundle = { source, messages };
+    if (root) root._cfxUi = bundle;
+  }
+  const value = bundle.messages?.[key];
+  if (typeof value === 'string') text = value;
+  return values ? text.replace(/\{([^{}]+)\}/g, (token, name) => Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : token) : text;
+};
 (() => {
   const selector = '.cfx-topology-wrapper[data-cfx-interactive="true"]';
   const mountForPrefix = root => {
     const wrappers = root?.matches?.(selector) ? [root] : Array.from((root || document).querySelectorAll(selector));
     for (const wrapper of wrappers) {
     if (wrapper.getAttribute('data-cfx-runtime-bound') === 'true') continue;
+    const lifetime = window[Symbol.for('ChartForgeX.adapterLifetimes')].create(wrapper, 'topology:' + selector);
+    const listen = (target, name, listener, options) => lifetime.listen(target, name, listener, options);
+    lifetime.own(() => wrapper.removeAttribute('data-cfx-runtime-bound'));
     wrapper.setAttribute('data-cfx-runtime-bound', 'true');
+    const uiText = (message, fallback, values) => window[Symbol.for('ChartForgeX.uiText')](wrapper, message, fallback, values);
     const selectables = '[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-group"]';
     const viewportControls = wrapper.getAttribute('data-cfx-viewport-controls') === 'true';
     const exportControls = wrapper.getAttribute('data-cfx-export-controls') === 'true';
@@ -127,8 +144,8 @@
       if (!route) {
         scenarioPanel.removeAttribute('data-cfx-panel-active-scenario');
         scenarioPanel.style.removeProperty('--cfx-topology-scenario-color');
-        if (title) title.textContent = 'All';
-        if (meta) meta.textContent = 'All topology routes visible';
+        if (title) title.textContent = uiText('All', 'All');
+        if (meta) meta.textContent = uiText('TopologyAllRoutesVisible', 'All topology routes visible');
         if (stepsList) stepsList.replaceChildren();
         if (scrubber) { scrubber.disabled = true; scrubber.max = '1'; scrubber.value = '1'; }
         return;
@@ -140,7 +157,7 @@
       if (title) title.textContent = route.label || route.scenarioId;
       if (meta) {
         const metadata = Object.entries(route.metadata).slice(0, 2).map(([key, value]) => key + ': ' + value);
-        const summary = [route.description, route.stepCount ? route.stepCount + ' steps' : '', ...metadata].filter(value => value);
+        const summary = [route.description, route.stepCount ? uiText('Steps', '{count} steps', { count: route.stepCount }) : '', ...metadata].filter(value => value);
         meta.textContent = summary.join(' / ');
       }
       if (stepsList) {
@@ -214,8 +231,17 @@
       if (scrubber) scrubber.value = '1';
       updateScenarioStepControls(false);
     };
+    lifetime.own(() => {
+      if (scenarioPlayback) lifetime.clearTimeout(scenarioPlayback);
+      if (forceGraphMotionTimer) lifetime.clearTimeout(forceGraphMotionTimer);
+      scenarioPlayback = null; forceGraphMotionTimer = null;
+      wrapper.removeAttribute('data-cfx-topology-dragging');
+      wrapper.removeAttribute('data-cfx-force-moving-edges');
+      wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
+      updateScenarioStepControls(false);
+    });
     const stopScenarioPlayback = () => {
-      if (scenarioPlayback) window.clearTimeout(scenarioPlayback);
+      if (scenarioPlayback) lifetime.clearTimeout(scenarioPlayback);
       scenarioPlayback = null;
       updateScenarioStepControls(false);
     };
@@ -269,7 +295,7 @@
         }
         const current = index++;
         setScenarioStep(current, true);
-        scenarioPlayback = window.setTimeout(advance, stepDelay(route.steps[current]));
+        scenarioPlayback = lifetime.timeout(advance, stepDelay(route.steps[current]));
       };
       advance();
     };
@@ -416,8 +442,8 @@
       if (!forceGraphControls || wrapper.getAttribute('data-cfx-force-hide-moving-edges') !== 'true') return;
       wrapper.setAttribute('data-cfx-force-moving-edges', 'true');
       wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => edge.classList.add('cfx-topology-html-force-moving'));
-      if (forceGraphMotionTimer) window.clearTimeout(forceGraphMotionTimer);
-      forceGraphMotionTimer = window.setTimeout(() => {
+      if (forceGraphMotionTimer) lifetime.clearTimeout(forceGraphMotionTimer);
+      forceGraphMotionTimer = lifetime.timeout(() => {
         wrapper.removeAttribute('data-cfx-force-moving-edges');
         wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
       }, 280);
@@ -591,6 +617,7 @@
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-export', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), format } }));
     };
     const downloadBlob = (blob, extension, format) => {
+      if (!lifetime.active || !wrapper.isConnected) return;
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -619,7 +646,9 @@
       const source = new Blob([serialized.data], { type: 'image/svg+xml;charset=utf-8' });
       const sourceUrl = URL.createObjectURL(source);
       const image = new Image();
+      const releaseImage = lifetime.own(() => { image.onload = null; image.onerror = null; URL.revokeObjectURL(sourceUrl); });
       image.onload = () => {
+        if (!lifetime.active || !wrapper.isConnected) { releaseImage(); return; }
         const size = svgSize(serialized.svg);
         const scale = Math.max(1, Math.ceil(window.devicePixelRatio || 1));
         const canvas = document.createElement('canvas');
@@ -627,18 +656,18 @@
         canvas.height = size.height * scale;
         const context = canvas.getContext('2d');
         if (!context) {
-          URL.revokeObjectURL(sourceUrl);
+          releaseImage();
           return;
         }
         context.setTransform(scale, 0, 0, scale, 0, 0);
         context.clearRect(0, 0, size.width, size.height);
         context.drawImage(image, 0, 0, size.width, size.height);
         canvas.toBlob(blob => {
-          URL.revokeObjectURL(sourceUrl);
-          if (blob) downloadBlob(blob, 'png', 'png');
+          releaseImage();
+          if (blob && lifetime.active) downloadBlob(blob, 'png', 'png');
         }, 'image/png');
       };
-      image.onerror = () => URL.revokeObjectURL(sourceUrl);
+      image.onerror = releaseImage;
       image.src = sourceUrl;
     };
     const edgeIdentity = edge => ({
@@ -730,8 +759,8 @@
       if (!detail) {
         selectionPanel.hidden = true;
         selectionPanel.style.removeProperty('--cfx-topology-selection-status-color');
-        if (title) title.textContent = 'No item selected';
-        if (kind) kind.textContent = 'Selection';
+        if (title) title.textContent = uiText('ExplorerNoItemSelected', 'No item selected');
+        if (kind) kind.textContent = uiText('ExplorerSelection', 'Selection');
         if (status) status.textContent = '';
         if (facts) facts.replaceChildren();
         if (meta) meta.replaceChildren();
@@ -746,15 +775,15 @@
         : detail.kind === 'edge'
           ? (detail.element ? attr(detail.element, 'data-edge-label') : '') || detail.id
           : (detail.element ? attr(detail.element, 'data-group-label') : '') || detail.id;
-      if (title) title.textContent = displayTitle || detail.id || 'Selection';
-      if (kind) kind.textContent = detail.kind === 'node' ? (detail.nodeKind || 'Node') : detail.kind === 'edge' ? (detail.edgeKind || 'Edge') : 'Group';
+      if (title) title.textContent = displayTitle || detail.id || uiText('ExplorerSelection', 'Selection');
+      if (kind) kind.textContent = detail.kind === 'node' ? (detail.nodeKind || uiText('ExplorerNode', 'Node')) : detail.kind === 'edge' ? (detail.edgeKind || uiText('ExplorerEdge', 'Edge')) : uiText('ExplorerGroup', 'Group');
       if (status) status.textContent = detail.status || '';
       setSelectionFacts(facts, [
-        ['ID', detail.id],
-        ['Status', detail.status],
-        ['Group', detail.groupId || detail.sourceGroupId || detail.targetGroupId],
-        ['Related nodes', (detail.related && detail.related.nodeIds || []).length],
-        ['Related edges', (detail.related && detail.related.edgeIds || []).length]
+        [uiText('ExplorerId', 'ID'), detail.id],
+        [uiText('ExplorerStatus', 'Status'), detail.status],
+        [uiText('ExplorerGroup', 'Group'), detail.groupId || detail.sourceGroupId || detail.targetGroupId],
+        [uiText('ExplorerRelatedNodes', 'Related nodes'), (detail.related && detail.related.nodeIds || []).length],
+        [uiText('ExplorerRelatedEdges', 'Related edges'), (detail.related && detail.related.edgeIds || []).length]
       ]);
       if (meta) {
         meta.replaceChildren();
@@ -764,7 +793,7 @@
       if (relatedPanel) {
         relatedPanel.replaceChildren();
         (detail.related && detail.related.edges || []).slice(0, 5).forEach(edge => {
-          const label = edge.kind || 'Edge';
+          const label = edge.kind || uiText('ExplorerEdge', 'Edge');
           const value = [edge.sourceNodeId, edge.targetNodeId].filter(Boolean).join(' -> ');
           addSelectionRow(relatedPanel, label, value || edge.id);
         });
@@ -795,6 +824,11 @@
       });
       restoreForceFocusLabels();
     };
+    lifetime.own(() => {
+      const hovered = wrapper.hasAttribute('data-cfx-hover-id');
+      clearHover(); clearScenarioPreview();
+      if (hovered) wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
+    });
     const identity = element => {
       const role = element.getAttribute('data-cfx-role') || '';
       const base = {
@@ -1118,13 +1152,14 @@
       let sharedTrunkFrame = 0;
       const sharedTrunkObserver = new MutationObserver(() => {
         if (sharedTrunkFrame) return;
-        sharedTrunkFrame = requestAnimationFrame(() => {
+        sharedTrunkFrame = lifetime.frame(() => {
           sharedTrunkFrame = 0;
           if (!wrapper.isConnected) { sharedTrunkObserver.disconnect(); return; }
           updateSharedTrunks();
         });
       });
       sharedTrunkObserver.observe(wrapper, { attributes: true, attributeFilter: ['class', 'style', 'hidden'], subtree: true });
+      lifetime.own(() => { sharedTrunkObserver.disconnect(); if (sharedTrunkFrame) lifetime.cancelFrame(sharedTrunkFrame); });
       updateSharedTrunks();
     }
     const topologyFilterSearchText = element => [
@@ -1236,7 +1271,7 @@
       };
       setTopologyFilterAttributes(detail);
       const summary = forceGraphPanel?.querySelector('[data-cfx-force-summary]');
-      if (summary) summary.textContent = detail.nodes + ' nodes / ' + detail.edges + ' edges visible';
+      if (summary) summary.textContent = uiText('TopologyVisibleSummary', '{nodes} nodes / {edges} edges visible', { nodes: detail.nodes, edges: detail.edges });
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, composed: true, detail }));
       return detail;
     };
@@ -1358,56 +1393,59 @@
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
       if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
-      element.addEventListener('pointerenter', () => hover(element));
-      element.addEventListener('pointerleave', () => {
+      listen(element, 'pointerenter', () => hover(element));
+      listen(element, 'pointerleave', () => {
         clearHover();
         wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
       });
-      element.addEventListener('focus', () => hover(element));
-      element.addEventListener('blur', () => {
+      listen(element, 'focus', () => hover(element));
+      listen(element, 'blur', () => {
         clearHover();
         wrapper.dispatchEvent(new CustomEvent('cfx-topology-hover-clear', { bubbles: true, composed: true }));
       });
     });
-    const initiallySelected = Array.from(wrapper.querySelectorAll(selectables)).find(element => attr(element, 'data-cfx-selected') === 'true');
+    const initiallySelected = Array.from(wrapper.querySelectorAll(selectables)).find(element => wrapper.__cfxTopologySelectionHydrated
+      ? element.getAttribute('aria-selected') === 'true' : attr(element, 'data-cfx-selected') === 'true');
+    wrapper.__cfxTopologySelectionHydrated = true;
     if (initiallySelected) hydrateSelected(initiallySelected);
     else renderSelectionPanel(null);
     if (viewportControls) {
       applyViewport(viewportState());
       wrapper.querySelectorAll('[data-cfx-topology-zoom]').forEach(button => {
-        button.addEventListener('click', () => zoomBy(attr(button, 'data-cfx-topology-zoom') === 'in' ? 1.2 : 0.8333333333));
+        listen(button, 'click', () => zoomBy(attr(button, 'data-cfx-topology-zoom') === 'in' ? 1.2 : 0.8333333333));
       });
       wrapper.querySelectorAll('[data-cfx-topology-mode]').forEach(button => {
-        button.addEventListener('click', () => setViewportMode(attr(button, 'data-cfx-topology-mode')));
+        listen(button, 'click', () => setViewportMode(attr(button, 'data-cfx-topology-mode')));
       });
       wrapper.querySelectorAll('[data-cfx-topology-fit]').forEach(button => {
-        button.addEventListener('click', () => fitViewport());
+        listen(button, 'click', () => fitViewport());
       });
       wrapper.querySelectorAll('[data-cfx-topology-reset]').forEach(button => {
-        button.addEventListener('click', () => resetViewport());
+        listen(button, 'click', () => resetViewport());
       });
       let drag = null;
       let suppressClick = false;
-      const endViewportDrag = (event, canceled = false) => {
+      const endViewportDrag = (event, canceled = false, emit = true) => {
         if (!drag || (event && drag.id !== event.pointerId)) return;
         const ended = drag;
         drag = null;
         suppressClick = ended.moved && !canceled;
         try { if (viewport.releasePointerCapture) viewport.releasePointerCapture(ended.id); } catch { }
-        if (forceGraphMotionTimer) window.clearTimeout(forceGraphMotionTimer);
+        if (forceGraphMotionTimer) lifetime.clearTimeout(forceGraphMotionTimer);
         forceGraphMotionTimer = null;
         wrapper.removeAttribute('data-cfx-force-moving-edges');
         wrapper.removeAttribute('data-cfx-topology-dragging');
         wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
-        if (ended.moved) emitViewport();
+        if (ended.moved && emit) emitViewport();
       };
+      lifetime.own(() => endViewportDrag(null, true, false));
       const isViewportChrome = target => target instanceof Element && target.closest('.cfx-topology-controls,.cfx-topology-scenarios,.cfx-topology-scenario-panel,.cfx-topology-selection-panel,.cfx-topology-force-controls');
-      viewport.addEventListener('wheel', event => {
+      listen(viewport, 'wheel', event => {
         if (isViewportChrome(event.target)) return;
         event.preventDefault();
         zoomBy(event.deltaY < 0 ? 1.08 : 0.92, event);
       }, { passive: false });
-      viewport.addEventListener('pointerdown', event => {
+      listen(viewport, 'pointerdown', event => {
         if (event.button !== 0) return;
         if (isViewportChrome(event.target)) return;
         if (!(event.target instanceof Element && event.target.closest(selectables))) event.preventDefault();
@@ -1416,7 +1454,7 @@
         drag = { id: event.pointerId, x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY, moved: false };
         wrapper.setAttribute('data-cfx-topology-dragging', 'true');
       });
-      viewport.addEventListener('pointermove', event => {
+      listen(viewport, 'pointermove', event => {
         if (!drag || drag.id !== event.pointerId) return;
         const dx = event.clientX - drag.x;
         const dy = event.clientY - drag.y;
@@ -1432,19 +1470,19 @@
         applyViewport({ zoom: viewportState().zoom, panX: drag.panX + dx, panY: drag.panY + dy });
       });
       // Before movement starts there is no capture, so release can occur outside this viewport.
-      window.addEventListener('pointerup', event => endViewportDrag(event), true);
-      window.addEventListener('pointercancel', event => endViewportDrag(event, true), true);
-      window.addEventListener('blur', () => endViewportDrag(null, true));
-      viewport.addEventListener('lostpointercapture', event => {
+      listen(window, 'pointerup', event => endViewportDrag(event), true);
+      listen(window, 'pointercancel', event => endViewportDrag(event, true), true);
+      listen(window, 'blur', () => endViewportDrag(null, true));
+      listen(viewport, 'lostpointercapture', event => {
         // A touch node's implicit capture can end when the viewport acquires the moving gesture.
         if (event.target === viewport) endViewportDrag(event, true);
       });
-      wrapper.addEventListener('cfx-topology-set-viewport', event => {
+      listen(wrapper, 'cfx-topology-set-viewport', event => {
         applyViewport(event.detail || {});
         emitViewport();
       });
-      wrapper.addEventListener('cfx-topology-reset-viewport', () => resetViewport());
-      wrapper.addEventListener('cfx-topology-fit-visible', event => {
+      listen(wrapper, 'cfx-topology-reset-viewport', () => resetViewport());
+      listen(wrapper, 'cfx-topology-fit-visible', event => {
         const detail = event.detail || {};
         if (detail.kind && detail.id) {
           const element = findSelection(detail);
@@ -1456,7 +1494,7 @@
 
         fitVisibleTopology();
       });
-      wrapper.addEventListener('click', event => {
+      listen(wrapper, 'click', event => {
         if (isViewportChrome(event.target)) return;
         if (!suppressClick) return;
         suppressClick = false;
@@ -1466,7 +1504,7 @@
     }
     if (exportControls) {
       wrapper.querySelectorAll('[data-cfx-topology-export]').forEach(button => {
-        button.addEventListener('click', () => {
+        listen(button, 'click', () => {
           if (attr(button, 'data-cfx-topology-export') === 'png') exportPng();
           else exportSvg();
         });
@@ -1474,9 +1512,9 @@
     }
     if (fullscreenControl) {
       wrapper.querySelectorAll('[data-cfx-topology-fullscreen]').forEach(button => {
-        button.addEventListener('click', () => toggleFullscreen());
+        listen(button, 'click', () => toggleFullscreen());
       });
-      document.addEventListener('fullscreenchange', setFullscreenState);
+      listen(document, 'fullscreenchange', setFullscreenState);
       setFullscreenState();
     }
     if (forceGraphControls && forceGraphPanel) {
@@ -1486,9 +1524,9 @@
           // Query changes reveal results; appearance toggles preserve the reader's viewport.
           if (control.matches('[data-cfx-force-search],[data-cfx-force-status],[data-cfx-force-group]')) fitVisibleTopology();
         };
-        control.addEventListener(control.tagName === 'SELECT' ? 'change' : 'input', filterAndReveal);
+        listen(control, control.tagName === 'SELECT' ? 'change' : 'input', filterAndReveal);
       });
-      wrapper.addEventListener('cfx-topology-force-filter-set', event => {
+      listen(wrapper, 'cfx-topology-force-filter-set', event => {
         const detail = event.detail || {};
         if (forceGraphPanel.querySelector('[data-cfx-force-search]') && detail.query !== undefined) forceGraphPanel.querySelector('[data-cfx-force-search]').value = detail.query || '';
         if (forceGraphPanel.querySelector('[data-cfx-force-status]') && detail.status !== undefined) forceGraphPanel.querySelector('[data-cfx-force-status]').value = detail.status || '';
@@ -1497,34 +1535,34 @@
       });
       applyForceGraphFilters();
     }
-    wrapper.addEventListener('cfx-topology-set-filter', event => applyTopologyFilter(event.detail || {}));
-    wrapper.addEventListener('cfx-topology-clear-filter', () => clearTopologyFilter());
+    listen(wrapper, 'cfx-topology-set-filter', event => applyTopologyFilter(event.detail || {}));
+    listen(wrapper, 'cfx-topology-clear-filter', () => clearTopologyFilter());
     if (scenarioControls) {
       if (scenarioControlMode === 'checkboxes') {
         wrapper.querySelectorAll('[data-cfx-topology-scenario-toggle]').forEach(input => {
           const scenarioId = attr(input, 'data-cfx-topology-scenario-toggle');
-          input.addEventListener('change', () => setScenarioFilters(Array.from(wrapper.querySelectorAll('[data-cfx-topology-scenario-toggle]:checked')).map(item => attr(item, 'data-cfx-topology-scenario-toggle'))));
-          input.addEventListener('pointerenter', () => previewScenario(scenarioId));
-          input.addEventListener('pointerleave', clearScenarioPreview);
-          input.addEventListener('focus', () => previewScenario(scenarioId));
-          input.addEventListener('blur', clearScenarioPreview);
+          listen(input, 'change', () => setScenarioFilters(Array.from(wrapper.querySelectorAll('[data-cfx-topology-scenario-toggle]:checked')).map(item => attr(item, 'data-cfx-topology-scenario-toggle'))));
+          listen(input, 'pointerenter', () => previewScenario(scenarioId));
+          listen(input, 'pointerleave', clearScenarioPreview);
+          listen(input, 'focus', () => previewScenario(scenarioId));
+          listen(input, 'blur', clearScenarioPreview);
         });
       } else {
         wrapper.querySelectorAll('[data-cfx-topology-scenario]').forEach(button => {
           const scenarioId = attr(button, 'data-cfx-topology-scenario');
-          button.addEventListener('click', () => setScenario(scenarioId));
-          button.addEventListener('pointerenter', () => previewScenario(scenarioId));
-          button.addEventListener('pointerleave', clearScenarioPreview);
-          button.addEventListener('focus', () => previewScenario(scenarioId));
-          button.addEventListener('blur', clearScenarioPreview);
+          listen(button, 'click', () => setScenario(scenarioId));
+          listen(button, 'pointerenter', () => previewScenario(scenarioId));
+          listen(button, 'pointerleave', clearScenarioPreview);
+          listen(button, 'focus', () => previewScenario(scenarioId));
+          listen(button, 'blur', clearScenarioPreview);
         });
       }
-      wrapper.addEventListener('cfx-topology-set-scenario', event => setScenario((event.detail || {}).scenarioId || ''));
-      wrapper.addEventListener('cfx-topology-set-scenario-filters', event => setScenarioFilters((event.detail || {}).scenarioIds || []));
-      wrapper.addEventListener('cfx-topology-clear-scenario', () => setScenario(''));
-      wrapper.addEventListener('cfx-topology-set-scenario-step', event => setScenarioStep((event.detail || {}).index, false));
+      listen(wrapper, 'cfx-topology-set-scenario', event => setScenario((event.detail || {}).scenarioId || ''));
+      listen(wrapper, 'cfx-topology-set-scenario-filters', event => setScenarioFilters((event.detail || {}).scenarioIds || []));
+      listen(wrapper, 'cfx-topology-clear-scenario', () => setScenario(''));
+      listen(wrapper, 'cfx-topology-set-scenario-step', event => setScenarioStep((event.detail || {}).index, false));
       wrapper.querySelectorAll('[data-cfx-scenario-step-control]').forEach(button => {
-        button.addEventListener('click', () => {
+        listen(button, 'click', () => {
           const action = attr(button, 'data-cfx-scenario-step-control');
           if (action === 'previous') stepScenario(-1);
           else if (action === 'next') stepScenario(1);
@@ -1534,12 +1572,12 @@
         });
       });
       const scrubber = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-scrubber]') : null;
-      if (scrubber) scrubber.addEventListener('input', () => { stopScenarioPlayback(); setScenarioStep(Number(scrubber.value) - 1, false); });
+      if (scrubber) listen(scrubber, 'input', () => { stopScenarioPlayback(); setScenarioStep(Number(scrubber.value) - 1, false); });
       const stepsList = scenarioPanel ? scenarioPanel.querySelector('[data-cfx-scenario-panel-steps]') : null;
       if (stepsList) {
         const focusStep = target => { const item = target instanceof Element ? target.closest('[data-cfx-scenario-step-index]') : null; if (item && stepsList.contains(item)) setScenarioStep(Number(attr(item, 'data-cfx-scenario-step-index')) - 1, false); };
-        stepsList.addEventListener('click', event => focusStep(event.target));
-        stepsList.addEventListener('keydown', event => { if (event.key !== 'Enter' && event.key !== ' ') return; event.preventDefault(); focusStep(event.target); });
+        listen(stepsList, 'click', event => focusStep(event.target));
+        listen(stepsList, 'keydown', event => { if (event.key !== 'Enter' && event.key !== ' ') return; event.preventDefault(); focusStep(event.target); });
       }
       const initialScenario = scenarioUrlParam('scenario') || attr(wrapper, 'data-cfx-active-scenario');
       const initialScenarioStep = scenarioUrlParam('scenarioStep');
@@ -1550,13 +1588,13 @@
       const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) playScenario();
     }
-    wrapper.addEventListener('click', event => {
+    listen(wrapper, 'click', event => {
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();
       select(element);
     });
-    wrapper.addEventListener('keydown', event => {
+    listen(wrapper, 'keydown', event => {
       if (event.key === 'Escape') {
         clear();
         wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true, composed: true }));
@@ -1575,17 +1613,17 @@
       event.preventDefault();
       select(element);
     });
-    wrapper.addEventListener('cfx-topology-set-selection', event => {
+    listen(wrapper, 'cfx-topology-set-selection', event => {
       setSelection(event.detail);
     });
-    wrapper.addEventListener('cfx-topology-clear-selection', event => {
+    listen(wrapper, 'cfx-topology-clear-selection', event => {
       clear();
       if (event.detail?.emit === true) wrapper.dispatchEvent(new CustomEvent('cfx-topology-clear', { bubbles: true, composed: true }));
       if (event.detail?.sync === true) emitSync('clear-selection', {});
     });
-    wrapper.addEventListener('cfx-topology-highlight', event => highlight(event.detail));
-    wrapper.addEventListener('cfx-topology-clear-highlight', () => highlight({}));
-    wrapper.addEventListener('cfx-topology-apply-sync', event => {
+    listen(wrapper, 'cfx-topology-highlight', event => highlight(event.detail));
+    listen(wrapper, 'cfx-topology-clear-highlight', () => highlight({}));
+    listen(wrapper, 'cfx-topology-apply-sync', event => {
       const detail = event.detail || {};
       if (!syncEnabled || !syncGroup || detail.group !== syncGroup) return;
       applyingSync = true;
@@ -1618,6 +1656,14 @@
   const mountsKey = Symbol.for('ChartForgeXTopology.mounts');
   const previous = window.ChartForgeXTopology?.mount;
   const prefixMounts = previous?.[mountsKey] instanceof Map ? previous[mountsKey] : new Map();
+  mountForPrefix.dispose = root => {
+    const wrappers = root?.matches?.(selector) ? [root] : Array.from((root || document).querySelectorAll(selector));
+    return wrappers.filter(wrapper => {
+      const lifetime = window[Symbol.for('ChartForgeX.adapterLifetimes')].get(wrapper, 'topology:' + selector);
+      if (!lifetime) return false;
+      lifetime.dispose(); return true;
+    });
+  };
   prefixMounts.set(selector, mountForPrefix);
   const mount = previous?.[mountsKey] === prefixMounts ? previous : root => {
     const wrappers = new Set();
@@ -1625,6 +1671,11 @@
     return Array.from(wrappers);
   };
   if (!mount[mountsKey]) Object.defineProperty(mount, mountsKey, { value: prefixMounts });
-  window.ChartForgeXTopology = Object.freeze({ mount });
+  const dispose = root => {
+    const wrappers = new Set();
+    for (const bind of prefixMounts.values()) for (const wrapper of bind.dispose?.(root) || []) wrappers.add(wrapper);
+    return Array.from(wrappers);
+  };
+  window.ChartForgeXTopology = Object.freeze({ mount, dispose });
   mount(document);
 })();

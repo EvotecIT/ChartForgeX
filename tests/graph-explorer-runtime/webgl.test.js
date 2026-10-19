@@ -3,13 +3,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const manifest = fs.readFileSync(path.join(assets, '../HtmlGraphExplorerAssets.cs'), 'utf8');
-const source = [...manifest.matchAll(/"ChartForgeX\.Interactivity\.Html\.Assets\.(graph-explorer\.[^"]+\.js)"/g)]
-  .map(match => fs.readFileSync(path.join(assets, match[1]), 'utf8')).join('\n');
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
+const source = graphRuntimeSource('this.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphNodeIconColor, graphBadgeGeometry, graphColorContrast, graphEdgePaint, edgeArrowGeometry, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails, drawAcceleratedSvgRuntime, materializeAcceleratedSvg };');
 function runtime() {
   const host = { document: { readyState: 'loading', addEventListener() {}, querySelectorAll: () => [] }, window: {}, setTimeout, clearTimeout };
-  vm.runInNewContext(source + '\nthis.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphColorContrast, graphEdgePaint, edgeArrowGeometry, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails, drawAcceleratedSvgRuntime, materializeAcceleratedSvg };', host);
+  vm.runInNewContext(source, host);
   const api = host.api, root = api.graphVirtualElement('root', { 'data-cfx-graph-theme-active': 'light' }, []);
   const node = (id, x, y) => ({ id, x, y, size: 12, shape: 'circle', el: api.graphVirtualElement('graph-node', { 'data-node-label': id }, []) });
   const a = node('a', 100, 100), b = node('b', 300, 100);
@@ -19,6 +19,33 @@ function runtime() {
   return { api, root, a, b, edge, state, palette: api.graphThemePalette(root) };
 }
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`);
+
+test('shared Canvas/WebGL icon paint contrasts with the actual mark fill, including translucent cards', () => {
+  const { api, root, a, palette } = runtime();
+  for (const [card, fill] of [[true, '#ffffff'], [true, '#0f172a'], [false, '#ffffff'], [true, '#ffffff40']]) {
+    a.card = card; a.icon = 'DOM'; a.backgroundColor = fill;
+    a.el.setAttribute('data-node-card', String(card));
+    a.el.setAttribute('data-node-background-color', fill);
+    const ink = [], context = new Proxy({ fillText(text) { ink.push({ text, fill: this.fillStyle }); } }, {
+      get: (target, key) => key in target ? target[key] : () => {}, set: (target, key, value) => (target[key] = value, true)
+    });
+    api.drawNodeMark(context, a, false, false, root, false, palette.selected);
+    assert.equal(ink[0].text, 'DOM');
+    const background = card && fill === '#ffffff40' ? '#ffffff' : fill;
+    assert.ok(api.graphColorContrast(ink[0].fill, background) >= 4.5, `${card}/${fill}`);
+    assert.equal(ink[0].fill, api.graphNodeIconColor(root, a.el, palette, fill));
+  }
+});
+
+test('card badges retain the complete count above the title and ordinary badge anchors stay unchanged', () => {
+  const { api, root, a } = runtime();
+  Object.assign(a, { card: true, size: 62, badge: '+1234567890' });
+  const badge = api.graphBadgeGeometry(a, root);
+  assert.equal(badge.text, '+1234567890'); assert.ok(badge.width > 16);
+  assert.ok(badge.y + 8 < -5 - 12.5, 'Badge paint must end above the primary card title');
+  a.card = false;
+  close(api.graphBadgeGeometry(a, root).y, -a.size * .82);
+});
 
 test('GPU stroke geometry preserves explicit width, round caps and finite vertices', () => {
   const { api } = runtime(), mesh = { positions: [], colors: [] };
@@ -195,6 +222,7 @@ test('materialized virtual SVG card details use the same readable colours as phy
   const element = () => {
     const properties = {};
     return { children: [], attributes: {}, properties, classList: { add() {} },
+      querySelector: () => null,
       setAttribute(name, value) { this.attributes[name] = value; }, appendChild(child) { this.children.push(child); },
       style: { setProperty(name, value) { properties[name] = value; } } };
   };
@@ -351,16 +379,18 @@ test('mixed and driver-limited marks preserve authored body order before all sta
     }
   }
 });
-test('context loss and restoration retain the canonical graph state through Canvas fallback', () => {
+test('context loss and restoration retain the canonical graph state through Canvas fallback', t => {
   const script = fs.readFileSync(path.join(assets, 'graph-explorer.04-webgl.js'), 'utf8');
   const handlers = new Map(), state = {}, paints = [];
   const canvas = { addEventListener: (name, action) => handlers.set(name, action) };
   const root = { dataset: { cfxGraphRendererActive: 'webgl' }, __cfxGraphState: state, querySelector: () => canvas, getAttribute: () => 'webgl' };
-  const bind = new Function('setGraphRenderer', 'drawCanvas', 'graphState', 'hasFeature', 'applyLod', 'attr', 'webGlAvailable',
+  const lifetimes = adapterLifetimes(); lifetimes.mount(root);
+  t.after(() => lifetimes.dispose());
+  const bind = new Function('setGraphRenderer', 'drawCanvas', 'graphState', 'hasFeature', 'applyLod', 'attr', 'webGlAvailable', 'listenGraph',
     script.slice(script.indexOf('  const bindWebGlHitTesting')) + '\nreturn bindWebGlHitTesting;')(
     (target, renderer) => target.dataset.cfxGraphRendererActive = renderer,
     (target, actual) => { assert.equal(actual, state); paints.push(target.dataset.cfxGraphRendererActive); },
-    () => { throw new Error('Discarded live graph state'); }, () => false, () => {}, (target, name) => target.getAttribute(name), () => true);
+    () => { throw new Error('Discarded live graph state'); }, () => false, () => {}, (target, name) => target.getAttribute(name), () => true, lifetimes.listenGraph);
   bind(root);
   let prevented = false;
   handlers.get('webglcontextlost')({ preventDefault: () => prevented = true });

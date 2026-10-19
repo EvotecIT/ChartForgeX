@@ -87,13 +87,14 @@ public sealed partial class CartesianPlotRegionBrowserTests {
             """);
         await CapturePassiveAsync(session, html, "passive-state-sync", new { State = facts, Hover = hover });
         Assert.Equal(2, facts.GetProperty("snapshot").GetProperty("selectedTargets").GetArrayLength());
-        foreach (var root in facts.GetProperty("roots").EnumerateArray()) {
+        foreach (var (root, index) in facts.GetProperty("roots").EnumerateArray().Select((root, index) => (root, index))) {
             Assert.Equal(0, root.GetProperty("passiveSelected").GetInt32());
-            Assert.Equal(2, root.GetProperty("count").GetInt32());
-            Assert.Equal(new[] { "point", "annotation" }, root.GetProperty("selected").EnumerateArray().Select(n => n.GetProperty("role").GetString()));
+            Assert.Equal(index == 0 ? 2 : 1, root.GetProperty("count").GetInt32());
+            Assert.Equal(index == 0 ? new[] { "point", "annotation" } : new[] { "point" },
+                root.GetProperty("selected").EnumerateArray().Select(n => n.GetProperty("role").GetString()));
         }
-        foreach (var root in hover.EnumerateArray()) {
-            Assert.True(root.GetProperty("annotationHovered").GetBoolean());
+        foreach (var (root, index) in hover.EnumerateArray().Select((root, index) => (root, index))) {
+            Assert.Equal(index == 0, root.GetProperty("annotationHovered").GetBoolean());
             Assert.Equal(0, root.GetProperty("passiveEmphasis").GetInt32());
         }
         AssertNoConsoleErrors(session);

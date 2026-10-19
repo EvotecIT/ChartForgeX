@@ -38,6 +38,7 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
         Assert.Equal(1, await stops.CountAsync());
         Assert.Equal("absolute", await stops.GetAttributeAsync("data-cfx-positioning"));
         Assert.Equal("5", await stops.GetAttributeAsync("data-cfx-stop-count"));
+        Assert.Equal(0, await stops.Locator("[data-cfx-target-kind], [tabindex]").CountAsync());
         Assert.Equal(5, await page.Locator("[data-cfx-role='" + prefix + "-stop-source']").CountAsync());
         for (var index = 0; index < scale.Stops.Count; index++) {
             var stop = page.Locator("[data-cfx-role='" + prefix + "-stop-source'][data-cfx-stop='" + index + "']");

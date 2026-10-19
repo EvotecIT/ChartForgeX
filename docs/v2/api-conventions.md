@@ -9,6 +9,7 @@ These rules govern the shared prepared-rendering contracts and their model entry
 | `With*` | Set a scalar value or configuration object on a mutable model builder and return that builder. Do not add data. | `chart.WithTitle("Capacity")`, `chart.WithBarVisualStyle(style)` |
 | `Add*` | Add model data or a semantic child and return the builder. Do not silently replace configuration. | `chart.AddLine("Used", points)` |
 | `Configure*` | Configure a sub-object through a typed callback, preserving the operation's ownership rules, then return the builder. | `chart.ConfigureXAxis(axis => axis.Minimum = 0)` |
+| `ApplyPointChanges` | Commit a bounded keyed numeric data transaction while retaining surviving observations' presentation. | `series.ApplyPointChanges(changes, maximumObservations: 500)` |
 | `Prepare` | Validate and compile a model with an explicit render context; return a detached prepared result. | `chart.Prepare(context)` |
 | `To*` | Return an in-memory representation without writing a file or changing the model. | `prepared.ToSvg()`, `prepared.ToPng()`, `prepared.ToRgba()` |
 | `Save*` | Write to an explicitly supplied path or stream. Keep file ownership and format options visible. | File-saving helpers are outside the Phase 1 prepared contract. |
@@ -40,7 +41,7 @@ HTML interaction presentation stays in the optional adapter. `HtmlChartInteracti
 | `VisualRenderOptions` | Raster scale, supersampling and working pixel budget. These do not change logical layout. |
 | `VisualDiagnostic` | A stable code, human explanation and the existing shared `Diagnostics.VisualDiagnosticSeverity`. |
 | `VisualSemanticRegion` | Stable ID, role, descriptive rectangular extent and optional text. It is not an exact hit-test shape. |
-| `ChartNode` / `ChartFlowLink` | Immutable authored relationship identities and raw finite non-negative flow facts. Chart families validate their graph and weight constraints before adding a series. |
+| `ChartNode` / `ChartFlowLink` | Immutable authored relationship identities and finite nonnegative flow weights. Chord can also use an independent nullable signed color value. Chart families validate their graph and weight constraints before adding a series. |
 | `ChartSeries.WithNodeState(id, state)` | Mutable semantic styling keyed by an existing authored node ID, scoped to that series. `NodeStates` exposes a read-only view; preparation snapshots the resulting paint. |
 | `ChartFlowStyle` / `ChartSeries.WithFlowStyle(id, style)` | Immutable fill, opacity, pattern and outline overrides for an existing Sankey or Chord flow ID. `FlowStyles` is read-only; null removes an override. |
 | `ChartSeries.WithFlowState(id, state)` | Semantic state for an existing Sankey or Chord flow ID. `FlowStates` is read-only; null restores source-node/series inheritance and `None` suppresses it. |
@@ -104,6 +105,16 @@ completed.WithName("Completed orders");
 
 `Series` is a read-only view of paint order. Use `RemoveSeries`, `MoveSeries` and `ClearSeries` for membership changes; these operations validate ownership. A series can belong to one chart at a time, and IDs must be unique there. Fluent `Add*` conveniences allocate deterministic local IDs. Local IDs remain stable in that chart and are excluded from cross-chart synchronization; explicit IDs identify equivalent series across charts. The `cfx:auto:` prefix is reserved. Automatically identified series remain owned by their original chart; construct a series with an explicit ID when it must move between charts.
 
+Line and band annotations accept an immutable `ChartAnnotationId` at construction or through the four typed `AddHorizontalLine`, `AddVerticalLine`, `AddHorizontalBand` and `AddVerticalBand` overloads:
+
+```csharp
+chart.AddHorizontalLine(new ChartAnnotationId("threshold.warning"), 15, "Limit");
+```
+
+Annotation IDs are trimmed, case-sensitive and unique within one chart, independently of kind, caption, coordinates and collection order. Typed additions reject duplicates before changing the collection; preparation also validates direct `Annotations` list edits. Rebuilding an annotation with the same ID preserves its native semantic identity. Existing constructors and overloads create anonymous annotations with source-local ordinal identities. Statistical and focus helpers continue creating anonymous annotations. Annotation IDs do not change native geometry or paint.
+
+An explicit series ID also selects its categorical palette slot deterministically. Renaming, reordering, rebuilding the same ID, or adding/removing another series does not change that slot. A finite palette can reuse colors for different IDs; use `WithColor` when distinct authored colors are required. Explicit series/point colors and semantic states retain precedence. Fluent `Add*` series keep their ordinal palette behavior. Pie, donut and other part-to-whole categories retain their separate per-observation palette.
+
 Specialized observations remain in their typed collections: `Bubbles`, `FinancialValues`, `Ranges`, `Intervals`, `ErrorBars`, `BoxPlots`, `Dumbbells`, `DifferencePoints`, `GanttItems`, `GaugeValues`, `BulletValues`, `StateTimelineSegments`, `GanttLaneItems`, `MapPoints`, `CalendarItems`, `RegionValues` and categorical `HeatmapCells`. Layered radial series expose `RadialLayers`. Each item represents one complete observation or layer. `Points` contains genuine numeric XY points and is an empty read-only view for these specialized families. Renderer projections are internal and do not define public source ordinals. Gauge and bullet series accept at most one value; empty replacements produce their no-data state.
 
 ```csharp
@@ -124,15 +135,43 @@ to assign or replace one ID independently.
 
 `Update*` replaces one complete item and preserves its ordinal, explicit observation ID and point styling. `Replace*` validates and snapshots the complete sequence before installation, then clears per-observation IDs, labels and paint overrides; series configuration remains. An invalid replacement leaves existing data and metadata intact. Empty replacement creates a no-data series. Row selectors run once during ingestion and do not retain application records or delegates.
 
+Ordinary numeric `Points` keeps its `IList<ChartPoint>` surface. Replacing an item by index preserves its identity and overrides. Insert/remove operations shift observation IDs, labels, colors, patterns, text styles and slice offsets with the existing observations; a new inserted observation starts without those overrides. `Clear` clears both data and observation metadata, and `SourcePointCount` follows the current ordinary point count. A retained numeric list becomes read-only if its series switches to typed waterfall data.
+
+For keyed live updates, use `ApplyPointChanges` after assigning an explicit ID to every observation:
+
+```csharp
+completed.WithObservationIds(new[] {
+    new ChartObservationId("mon"), new ChartObservationId("tue"),
+    new ChartObservationId("wed"), new ChartObservationId("thu"), new ChartObservationId("fri")
+});
+completed.ApplyPointChanges(new[] {
+    ChartPointChange.Remove(new ChartObservationId("mon")),
+    ChartPointChange.Replace(new ChartObservationId("fri"), new ChartPoint(5, 39)),
+    ChartPointChange.Append(new ChartObservationId("sat"), new ChartPoint(6, 45))
+}, maximumObservations: 5);
+```
+
+Append requires a new key; replacement and removal require existing keys. A key occurs at most once in a batch. Surviving values retain their source order, IDs, labels, colors, patterns, text styles and slice offsets. The optional rolling limit removes the oldest surviving observations in source order. Enumeration, key, capacity and cancellation failures leave installed data unchanged; prepared results remain detached. The default `maximumChanges` is 4,096, with rejection after at most one additional input item. Hosts can set a deliberate capacity, coalesce or split incoming work and pass a cancellation token. They own collection cadence and asynchronous queues, and serialize access to the mutable model.
+
+This operation supports the eleven point-mapped families: Line, StepLine, Area, StepArea, StackedArea, Scatter, Bar, HorizontalBar, RadialBar, RadialColumn and Lollipop. Typed observations and derived sources retain their existing update APIs. The [compiled rolling-window recipe](../../ChartForgeX.Examples/Recipes/KeyedPointChangesRecipe.cs) shows the complete model workflow. Browser hosts prepare a new section and call the existing controller's `update`; surviving explicit identities retain selection and legend state, while accepted replacement clears transient screen-space brush and readout state. A canceled batch leaves the committed model and browser scene intact.
+
+Decimation, histogram and regression factories expose read-only derived `Points`. Change complete source observations and rebuild the derived series rather than editing a reduced point, bin aggregate or fitted endpoint independently of its source provenance. Original-input counts, mappings and source snapshots remain consistent. Presentation overrides remain configurable.
+
+`WithDataLabels` sets chart-level visibility. A series overrides it with `WithDataLabels` and restores inheritance with `UseChartDataLabels`. Layout and paint use the same resolved setting; when neither is explicit, each family keeps its default. This includes Chord/Sankey captions, gauge summaries, Circle captions, radial centers, Bullet captions, the Donut center and ProgressBar numeric values. Dedicated content switches such as `ShowProgressValues` can still suppress their content. Progress row category names and gauge ticks and target labels keep their separate roles.
+
+Gantt lane item captions are visible by default. `WithDataLabels(false)` hides them at chart or series level; an explicit series setting takes precedence. Hidden captions reserve no extra bar height.
+
 Lane factories and full replacements order items by start, end and input order. `UpdateStateTimelineSegment` and `UpdateGanttLaneItem` retain the observation index even when a changed time moves the item in the rendered order. State, category, label and detail stay with that complete item. Adjacent timeline intervals with the same state and detail may render as one run; its contributor metadata lists only the intervals actually combined. A combined run keeps derived identity; a one-interval run retains its authored observation ID.
 
 Categorical `HeatmapCells` includes null masked cells in column order. Observation indices and IDs refer to those columns. `UpdateHeatmapCell(index, null)` masks one cell while preserving later cells' identities; restoring the cell restores its existing ID. Use `CreateHeatmapCategoryRow` for categorical data and the numeric row APIs for numeric data.
 
 `MapPoints` keeps each dotted-map label, longitude, latitude, optional value and color together. Repeated coordinates retain separate observations. `CalendarItems` owns wall-clock dates, values and optional colors. `RegionValues` owns canonical region codes, values and optional colors for region and tile maps; their immutable geometry belongs to `series.RegionMapDefinition` or `series.TileMapDefinition`. Chart options own map viewport, paint, color scales, layers and routes. Changing Cartesian axis labels does not change map observations.
 
+`ChartRegionMapItem.Value` accepts any finite signed scalar, including temperatures or balances. Duplicate region observations can cancel to an observed zero; omitting a region means no data. Explicit color scales retain their signed domain, midpoint and formatting policies. Without an explicit scale, a range containing negative values uses its observed minimum and maximum with safe normalization. Dotted-map values remain nonnegative because they can control point radius.
+
 `WithPointLegend()` gives dotted maps one key per typed location, using that location's label and resolved dot color. The keys retain observation IDs, coordinates and optional values, including for locations outside the selected viewport. HTML legend actions address the corresponding location and reconcile authored IDs through updates. Region and tile maps retain their independent numeric color keys.
 
-Calendar factories and `ReplaceCalendarItems` sum duplicate dates and sort by date. Region/tile factories and `ReplaceRegionValues` resolve codes, names and aliases through the owned definition, sum duplicate canonical regions and sort by code. Both keep the last explicit input color. Their counts and observation indices refer to normalized items. Single-item updates preserve their ordinal, even when the date or region changes, and reject collisions with another observation. Empty retained series export their no-data state and can be refilled. The fluent map/calendar `Add*` conveniences require nonempty input and accept an optional named `id`.
+Calendar factories and `ReplaceCalendarItems` sum duplicate dates and sort by date. Region/tile factories and `ReplaceRegionValues` resolve codes, names and aliases through the owned definition, sum duplicate canonical regions and sort by code. Both keep the last explicit input color. Their counts and observation indices refer to normalized items. Single-item updates preserve their ordinal, even when the date or region changes, and reject collisions with another observation. Empty retained series export their no-data state and can be refilled. The fluent map/calendar `Add*` conveniences accept empty observations with their required geometry and accept an optional named `id`; they prepare the same no-data state as an emptied retained series.
 
 `ChartOptions.Calendar` owns week layout, localized day/month names and cell geometry. Use `ConfigureCalendar` independently of creating, updating or replacing the calendar series. A zero gap and Sunday week start are explicit values. Null names restore invariant abbreviations; null size settings restore automatic layout. Route conveniences between dotted-map labels capture the current coordinates when the route is added; later observation updates do not move that route.
 
@@ -160,21 +199,72 @@ Public option callbacks use one transaction: clone current options, invoke the c
 
 Direct option setters remain supported. Assigning a value expresses intent even when it equals the default; nullable overrides can return to inheritance through null where documented. Text-style boolean assignments also preserve explicit false when overriding inherited italic, underline or strikethrough. Callback ownership applies to installed configuration; one-time data selector and formatter functions have their own documented execution lifetime.
 
+## Grouped category axes
+
+`ChartAxisLabel.Groups` describes a category's parents, from the outermost group to the nearest parent. Supply the original numeric coordinate and leaf caption as usual:
+
+```csharp
+var orders = Chart.Create().WithXAxis("Month").WithYAxis("Orders")
+    .WithXLabels(new[] {
+        new ChartAxisLabel(1.5, "Jan", "2026", "Q1"),
+        new ChartAxisLabel(2.5, "Feb", "2026", "Q1"),
+        new ChartAxisLabel(4, "Mar", "2026", "Q1"),
+        new ChartAxisLabel(5.25, "Apr", "2026", "Q2")
+    })
+    .AddBar("Actual", new[] {
+        new ChartPoint(1.5, 48), new ChartPoint(4, 62), new ChartPoint(5.25, 53)
+    });
+```
+
+February has a catalog slot and no observation. Grouping preserves numeric spacing, raw values, source order and observation IDs. The constructor copies the parent path; all nonempty paths in a chart must have the same depth. Repeated parent names form separate runs when an intervening category has another path or no group. Conflicting captions at the same coordinate and ambiguous mappings are rejected. Every observed category needs an explicit leaf label.
+
+Groups use the physical category axis: X for vertical charts and Y for horizontal charts. Configure horizontal labels through `ConfigureYAxis`; the existing `WithXLabels` fallback applies when Y has no explicit labels. Automatic bounds include the complete authored catalog, including leaves without observations. Explicit bounds remain exact. Supported native X windows clip the same full-source group cells rather than regrouping the visible observations.
+
+Parent tiers share the native SVG/PNG layout and remain passive descriptions. Captions can wrap, shorten or omit within the measured axis budget; `cartesian.category-group-overflow` reports that limit, while complete paths and source spans remain in semantics. Point readouts include the parent context. HTML target descriptors add `categoryPath`, ordered from the outermost parent through the leaf; `category` and category matching retain the leaf caption.
+
+Grouped labels require an ordinary Cartesian chart with a linear category axis. They do not enable grouped time/logarithmic axes, histogram or time-bucket aggregation, sparklines, matrix axes or radial categories. The [category examples](../../ChartForgeX.Examples/CartesianCategoryExamples.cs) demonstrate missing months, a Bar/Line mixture, and repeated horizontal site names in both themes.
+
 ## Numeric color presentation
 
 `ChartColorScale.WithValueRange(double? minimumValue, double? maximumValue)` fixes each uniform continuous endpoint independently. Use `WithValueRange(0, null)` to pin a count scale's floor while its peak follows observations, `WithValueRange(null, 100)` to pin a ceiling, or `WithValueRange(null, null)` to restore automatic bounds. Two supplied bounds must be finite and strictly ascending. Positioned stops require both fixed endpoints; discrete bands reject this method.
 
 An inferred endpoint cannot cross its fixed counterpart. If all observations lie at or below a sole fixed minimum, they use `LowColor`; at or above a sole fixed maximum, they use `HighColor`. Automatic constant domains retain `LowColor`. With no observations, an inferred endpoint stays unresolved: retained keys show missing data without a fabricated numeric extent. Fully fixed continuous ranges and discrete bands retain their authored key domain. `ColorFor(value)` requires two fixed continuous endpoints; partial ranges use `ColorFor(value, sourceMinimum, sourceMaximum)`.
 
-`ChartColorDimensionOptions` owns nullable `Name` and `ValueFormat`, `ShowLegend` (default true), and validated `LegendStyle` (`Auto`, `Gradient`, `Swatches`). Each supported owner exposes one getter-owned instance: `ChartSeries.ColorDimension` for Scatter/Bubble, `ChartOptions.MapColorDimension` for RegionMap/TileMap, `ChartOptions.HeatmapColorDimension` for numeric matrices/calendars, and the Treemap/Sunburst options' `ColorDimension`. Configure those instances with the corresponding `ConfigureColorDimension`, `ConfigureMapColorDimension`, `ConfigureHeatmapColorDimension` or existing hierarchy callback. Unsupported family combinations fail preparation.
+`ChartColorDimensionOptions` owns nullable `Name` and `ValueFormat`, `ShowLegend` (default true), and validated `LegendStyle` (`Auto`, `Gradient`, `Swatches`). Each supported owner exposes one getter-owned instance: `ChartSeries.ColorDimension` for Scatter/Bubble, `ChartOptions.MapColorDimension` for RegionMap/TileMap, `ChartOptions.HeatmapColorDimension` for numeric matrices/calendars, and the Treemap/Sunburst/Chord options' `ColorDimension`. Configure those instances with the corresponding `ConfigureColorDimension`, `ConfigureMapColorDimension`, `ConfigureHeatmapColorDimension` or family callback. Unsupported family combinations fail preparation.
 
-Null restores each name/format property's family default independently. A supplied name must contain non-whitespace text. Scatter/Bubble color uses `ChartLabels.Color` and neutral numeric formatting by default. Map, heatmap and hierarchy color retain their existing value-format defaults, including the chart's `ValueFormat`. Explicit color formatting changes their numeric labels, keys and readouts. It leaves Cartesian Y, Bubble size, hierarchy size, explicit point labels and authored secondary captions unchanged. A map or heatmap observation has one numeric value, so its readout does not add a duplicate Color row.
+Null restores each name/format property's family default independently. A supplied name must contain non-whitespace text. Scatter/Bubble and Chord color use `ChartLabels.Color` and neutral numeric formatting by default. Map, heatmap and hierarchy color retain their existing value-format defaults, including the chart's `ValueFormat`. Explicit color formatting changes their numeric labels, keys and readouts. It leaves Cartesian Y, Bubble size, hierarchy size, Chord weight, explicit point labels and authored secondary captions unchanged. A map or heatmap observation has one numeric value, so its readout does not add a duplicate Color row.
 
 The shared prepared presentation captures names and display strings. An explicit format runs once per distinct finite measurement during preparation; measurement, SVG/PNG export and HTML readouts reuse the result. Missing measurements retain localized no-data text without invoking a numeric formatter. Custom empty output remains authoritative, and formatter exceptions propagate. Raw observations, numeric scale mapping and selection identities remain separate from display text.
 
 `ShowLegend` controls numeric keys independently of categorical `ChartSeries.ShowInLegend` entries. `Options.ShowLegend` remains the all-legends master for convenience exports; an explicit preparation context retains its frame visibility precedence. Hiding a numeric key leaves mark paint, the observed domain and raw facts intact. Categorical heatmap keys use `ShowHeatmapCategoryLegend` / `WithHeatmapCategoryLegend`.
 
 `LegendStyle.Auto` preserves the family's existing presentation. `Gradient` draws the continuous mapping through all reachable authored stops, with numeric positions and alpha; a constant domain draws one mapped color without inventing bounds. `Swatches` uses the shared bounded sampling policy for continuous scales and exact named intervals for discrete scales. Style does not select a sampling mode or change the scale. Explicit styles require a resolved `ChartColorScale` (including an inferred hierarchy scale); legacy map/heatmap policies support `Auto`. `Gradient` with `Discrete` fails preparation because unbounded bands do not define a continuous gradient. Legend styling alone does not enable formatted color-text overrides.
+
+`ChartColorScale.WithCaptions` adds named captions at absolute numeric positions independently of the color anchors:
+
+```csharp
+var scale = ChartColorScale.Sequential(ChartColor.FromHex("#164b75"), ChartColor.FromHex("#f1c75b"))
+    .WithValueRange(-20, 80)
+    .WithCaptions(new[] {
+        new ChartColorScaleCaption(0, "Freezing"),
+        new ChartColorScaleCaption(35, "Operating limit")
+    });
+```
+
+The scale copies and sorts the catalog, rejects duplicate or non-finite positions and blank text, and retains it through later scale copies. Empty input clears it; discrete scales use their named bands. Captions never expand the domain or alter value-to-color mapping. On gradients they follow numeric position; on swatches they follow the actual sampled values. An authored caption takes visible priority over a low, midpoint or high caption at the same value. All captions remain descriptive facts, including those outside the domain or omitted by fitting. Outside captions do not clamp to an endpoint. Horizontal keys use up to two measured caption lanes; right-hand map keys retain their inverted value direction. Neither layout shrinks ordinary captions below the shared key font floor.
+
+Chord flows accept an independent nullable color measurement through the five-argument `ChartFlowLink` constructor:
+
+```csharp
+var flow = new ChartFlowLink("west-east", "west", "east", 42, colorValue: -3);
+chart.ConfigureChord(options => {
+    options.ColorScale = scale;
+    options.ColorDimension.Name = "Temperature";
+    options.ColorDimension.LegendStyle = ChartColorLegendStyle.Gradient;
+});
+```
+
+Weight continues to control ribbon allocation and node totals. Color values may be signed or zero; null means missing. Finite values infer the theme's sequential scale unless an explicit scale is supplied. Every flow contributes its color fact, including zero-weight or collapsed flows and flows with manual paint. ID-keyed fill, source-point fill and series fill keep precedence over the color mapping; node arcs retain their categorical paint. Numeric color facts, the separate key and readouts remain available under paint overrides. Hiding the key leaves the observed domain and mapping unchanged. Sankey rejects independent flow color because it has no quantitative color policy.
 
 ## Configuration precedence
 
@@ -476,6 +566,10 @@ Explicit point colors take precedence over the corresponding family fill, then s
 
 Label placement uses the same node and ribbon geometry under every policy. Opposing labels share the available gap in separate slots; the shared measured label placer avoids caption collisions. Captions wrap, shorten or omit when space is insufficient, while full node text and raw flow facts remain available in native semantics and interactive readouts. Point-specific typography and colors apply under every placement. Any truthful minimum-width treatment remains separate work.
 
+## Flow artifact content sizing
+
+`FlowArtifactStep.FitLabelToContent` defaults to `true`. Step width and height are minimum dimensions; preparation measures titles, subtitles, badges and status inside the shared topology shape geometry, then grows a detached node before layout and routing. Explicitly setting the policy to `false` keeps the dimensions fixed. Crowded fixed shapes fit or shorten content inside their outline and expose overflow diagnostics while retaining full source text in semantic interchange. The policy is copied by `ConfigureStep` and retained in each flow node's semantic JSON.
+
 ## Flow paint and semantic state
 
 Sankey and Chord share `ChartFlowStyle` and ID-keyed series overrides. Style values are immutable; `FlowStyles` and `FlowStates` expose read-only live views of the mutable series builder. IDs are case-sensitive, scoped to the series, and must match an existing authored `ChartFlowLink.Id`. Parallel flows can have separate paint and state even when their endpoints and labels match.
@@ -524,7 +618,7 @@ var means = Chart.Create().AddHistogram("Quantity", observations, bins,
 
 Typed data uses `dataset.Bin(selector, layout)` and `AddHistogram(name, bins, encoding)`. Typed and scalar count layouts share the same rounding. A typed histogram requires the complete ordered partition and retains source rows; use `AddBar` for a selected or reordered set of bins.
 
-`ChartSeries.HistogramSourcePoints` retains an immutable copy of the input observations in their original order. Each bin's `SourceIndices` indexes that collection; X is the measurement and Y is the supplied quantity, or one for scalar count input. Input array changes and edits to the series' aggregate points do not change this source snapshot. Prepared bin extents, aggregate values and contributor identities also remain detached from later model edits.
+`ChartSeries.HistogramSourcePoints` retains an immutable copy of the input observations in their original order. Each bin's `SourceIndices` indexes that collection; X is the measurement and Y is the supplied quantity, or one for scalar count input. Input array changes do not change this source snapshot; derived aggregate points are read-only. Prepared bin extents, aggregate values and contributor identities also remain detached from later model edits.
 
 Migration: replace the former global `layout.Width` with `layout.GetWidth(index)`, because the last regular bin and authored bins can have different widths. Histogram layout, aggregation and encoding are read-only series facts. Labels, paints and styles can change after ingestion; to change bin X/Y aggregates, rebuild from observations so source statistics stay consistent.
 
@@ -554,14 +648,16 @@ Scatter and Bubble series with a numeric color scale use the theme foreground fo
 
 `ChartForgeX.Core.ChartLineAreaForm` is the shared form type for `ChartSeries.Radar.Form` and `MetricCard.MiniSparklineStyle`. Its values are `Area = 0` and `Line = 1`; both models default to Area. Metric cards select the same form through `WithMiniSparklineStyle`.
 
-`AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `ConfigureRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity. Missing categories retain the existing zero-imputation behavior; an explicit missing-category policy is separate work.
+`AddRadarArea` and `AddRadarLine` use the same Radar series kind and shared categorical/radial axes. `ChartSeries.Radar.Form` selects filled Area or unfilled Line, and `ConfigureRadar` configures the area's `FillOpacity`; null uses the theme. `AddRadar` retains the Area default. Line form rejects area opacity.
+
+`ConfigureRadar(radar => radar.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap)` leaves unknown categories unpainted. `Zero`, the default, retains derived zero vertices with missing metadata and no authored source identity. `Gap` breaks the outline at missing categories, keeps observed runs across the category seam, and omits an incomplete area fill and its legend fill with a `radar.open-area` diagnostic. `Connect` joins the observed vertices across missing categories and closes an area only when at least three observed vertices remain. Gap and Connect add no missing point targets or captions. Authored zeros remain observations under every policy; the common category axis remains the union of the participating series.
 
 `WithPolarGridShape(ChartPolarGridShape.Circle)` selects circular guides for radar or polar line charts. `Polygon` joins the spokes; `Automatic` preserves native radar polygons and polar circles. `Options.PolarGridRingCount` optionally requests zero through one hundred equally spaced guides in the configured linear, logarithmic or symmetric-logarithmic scale. Zero hides concentric guides while retaining spokes and observations. Null preserves generated axis ticks. Guide settings preserve source values and series forms and use the same prepared geometry for SVG and PNG. Fractional guide counts can extend beyond the data-axis radius, so fitting the outer guide can resize the plot and change rendered observation coordinates. Observation coordinates remain unchanged when the plot layout is unchanged.
 `ConfigureRadar(radar => radar.CurveTension = 0.25)` selects closed cubic curves through the observations. Null or zero keeps straight edges. Each radar uses its selected value-axis domain during curve fitting. Standalone charts and column overlays reserve complete curve bounds with one scale factor shared by their marks, axes and guides; overlays retain the configured inner-radius proportion and transparent hole. Source values and column stack totals remain unchanged.
 
 These radar forms also combine with `AddRadialColumn` through the existing series calls. The native numeric radial owner aligns every series to the union of category X identifiers and places radar vertices at whole-category centers, regardless of grouped column slots. Each value axis builds its domain from column segment endpoints and the raw values of its radar series; radar contributes neither stack slots nor normalized totals. `UseSecondaryYAxis()` selects an independent numeric domain and reversal for radar in both standalone and mixed charts. Standalone radar starts its first category at the top; mixed charts use the column viewport's category centers. `ConfigureXAxis(axis => axis.WithReversal())` reverses those category positions together with their spokes and captions. Standalone radar then starts its last category at the top. Source observations, category labels, point colors and missing-category identities keep their original associations.
 
-Mixed column/radar charts require a full-turn `ChartRadialGeometryOptions` viewport. Each series must have unique category identifiers; a populated radar needs at least three categories across the composition. Missing column observations remain absent. Missing radar observations retain zero-imputation with derived identities and no source contributors. The inner radius clips radar fills, patterns, lines and glyphs in both native exporters. `RadialBar`, continuous `Polar`, `PolarArea` and Cartesian series cannot join this composition.
+Mixed column/radar charts require a full-turn `ChartRadialGeometryOptions` viewport. Each series must have unique category identifiers; a populated radar needs at least three categories across the composition. Missing column observations remain absent. Radar uses its configured missing-category policy in both standalone and mixed layouts. The inner radius clips radar fills, patterns, lines and glyphs in both native exporters. `RadialBar`, continuous `Polar`, `PolarArea` and Cartesian series cannot join this composition.
 
 Continuous `Polar` uses authored `ChartPoint.X` radians from the positive horizontal ray. Its default direction is counter-clockwise; `XAxis.WithReversal()` makes increasing radians advance clockwise. Points, angular spokes and captions use the same projection, while angle metadata and readouts retain the authored radians. `YAxis` and `SecondaryYAxis` control numeric radius reversal independently.
 
@@ -634,11 +730,11 @@ HTML financial tooltips expose Open, High, Low and Close rows, including zero pr
 
 ## Bubble size scale
 
-`ChartOptions.Bubble` owns one size domain for every bubble series, including series on the secondary Y axis and series with hidden glyphs. Automatic bounds use the minimum and maximum positive source sizes across those series; empty typed series contribute no extent. Equal source sizes therefore map to equal logical radii. Adding an observation outside the automatic domain changes that domain. Pin both the domain and radius endpoints when sizes must remain stable across additional series or viewport changes.
+`ChartOptions.Bubble` owns one size domain for every bubble series, including series on the secondary Y axis and series with hidden glyphs. Automatic bounds use the minimum and maximum positive source sizes across those series; empty typed series contribute no extent. Equal source sizes map to equal reference-circle radii under the selected encoding. Adding an observation outside the automatic domain changes that domain. Pin both the domain and radius endpoints when sizes must remain stable across additional series or viewport changes.
 
 Its getter-owned `SizeDimension` keeps the measurement's `Name`, `ValueFormat` and optional numeric key together. Configure it inside `ConfigureBubble`; the successful callback installs a detached copy. A null name uses `ChartLabels.Size`, and a null format uses the chart value format. Source size, Cartesian Y and independent color measurements retain separate names and formatting. Preparation captures each distinct size caption once; native labels, key captions and HTML readouts reuse it, including an explicitly empty formatter result. Raw positive sizes and observation identities remain unchanged.
 
-Set `SizeDimension.ShowLegend = true` to draw a numeric size key; the default is false. Chart/frame legend visibility remains the master switch. The key shares the categorical and color-key layout budget and uses the logical radii resolved for the final plot. It explains the existing radius mapping, not proportional painted areas. An oversized explicit key reports `cartesian.size-scale-overflow` and retains its complete facts instead of shrinking the authored marker radii.
+Set `SizeDimension.ShowLegend = true` to draw a numeric size key; the default is false. Chart/frame legend visibility remains the master switch. The key shares the categorical and color-key layout budget and uses the reference-circle radii resolved for the final plot and encoding. An oversized explicit key reports `cartesian.size-scale-overflow` and retains its complete facts instead of shrinking the authored marker radii.
 
 ```csharp
 chart.ConfigureBubble(bubble => {
@@ -654,9 +750,11 @@ chart.Series[0].ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Dia
 
 `WithSizeDomain(minimumValue, maximumValue)` atomically installs finite, non-negative, increasing bounds; `MinimumValue` and `MaximumValue` expose them read-only. `UseAutomaticSizeDomain()` clears both. Source `ChartBubble.Size` values remain finite and positive. An explicit domain can start at zero, but does not admit zero-valued observations.
 
-`MinimumRadius` defaults to six logical pixels. A null `MaximumRadius` uses 7.5% of the smaller final plot dimension, bounded between 14 and 32 pixels and raised to the minimum radius when needed. Explicit radius endpoints are finite and non-negative, and the maximum must be at least the minimum during preparation. Equal endpoints select a fixed radius; two zero endpoints suppress bubble and legend glyphs while retaining source facts and legend text. Use `Markers.Enabled = false` to hide only one series.
+`MinimumRadius` defaults to six logical pixels. A null `MaximumRadius` uses 7.5% of the smaller final plot dimension, bounded between 14 and 32 pixels and raised to the minimum radius when needed. Explicit radius endpoints are finite and non-negative, and the maximum must be at least the minimum during preparation. Equal endpoints select a fixed reference-circle radius; two zero endpoints suppress bubble and legend glyphs while retaining source facts and legend text. Use `Markers.Enabled = false` to hide only one series.
 
 The existing square-root interpolation of the radius range is preserved: for a nonconstant domain, `t = Clamp((size - minimumValue) / (maximumValue - minimumValue), 0, 1)` and `radius = minimumRadius + Sqrt(t) * (maximumRadius - minimumRadius)`. `Reversed = true` replaces `t` with `1 - t` before taking the square root. Sizes outside an explicit domain use its endpoint radii. A constant automatic domain uses the arithmetic radius midpoint, including when reversed. This mapping does not promise proportional painted areas or equal areas across different marker shapes.
+
+Choose `bubble.SizeEncoding = ChartBubbleSizeEncoding.Area` to interpolate fill area instead: `referenceRadius = Sqrt(minimumRadius² * (1 - t) + maximumRadius² * t)`. Each built-in marker is normalized to the fill area of that reference circle, including the pin's hole; a noncircular marker may extend farther than the reference radius. A zero domain minimum and zero minimum radius make fill area proportional to source size. Other endpoints interpolate the authored area range. A constant automatic domain uses the area midpoint. Stroke widths, raster antialiasing and clipped portions do not change the encoded fill area. The size key's circles show the same area; `SquareRootRadius` remains the default encoding.
 
 Preparation snapshots the domain and radius settings once. Mark drawing, automatic paint bounds and legend glyph eligibility use that snapshot; the ordinary legend remains a fixed-size style key. Prepared SVG, native PNG, descriptive regions and raw `data-cfx-size` metadata stay detached from later source or option changes. Point-label overrides still change display text without changing raw sizes.
 

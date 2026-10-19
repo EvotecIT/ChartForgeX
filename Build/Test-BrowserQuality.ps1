@@ -33,7 +33,7 @@ $start.ArgumentList.Add((Join-Path $PSScriptRoot 'Serve-BrowserGallery.cjs'))
 $start.ArgumentList.Add($gallery)
 $start.ArgumentList.Add($addressFile)
 $server = $null
-$variables = @('HFX_TEST_ENABLE_PLAYWRIGHT', 'CFX_TEST_REQUIRE_BROWSER', 'CFX_V2_GALLERY_URL', 'CFX_V2_CAPTURE_ROOT', 'CFX_BROWSER_CAPTURE_DIRECTORY')
+$variables = @('HFX_TEST_ENABLE_PLAYWRIGHT', 'CFX_TEST_REQUIRE_BROWSER', 'CFX_TEST_BROWSER', 'CFX_V2_GALLERY_URL', 'CFX_V2_CAPTURE_ROOT', 'CFX_BROWSER_CAPTURE_DIRECTORY')
 $saved = @{}
 foreach ($name in $variables) { $saved[$name] = [Environment]::GetEnvironmentVariable($name) }
 try {
@@ -51,6 +51,7 @@ try {
     }
     $env:HFX_TEST_ENABLE_PLAYWRIGHT = '1'
     $env:CFX_TEST_REQUIRE_BROWSER = '1'
+    $env:CFX_TEST_BROWSER = 'chromium'
     $env:CFX_V2_GALLERY_URL = [IO.File]::ReadAllText($addressFile)
     $env:CFX_V2_CAPTURE_ROOT = $captures
     $env:CFX_BROWSER_CAPTURE_DIRECTORY = $captures
@@ -74,6 +75,9 @@ try {
         'InteractiveChartLifecycleBrowserTests.PointLegendMuteAndIsolationFollowAuthoredIdentityAcrossNativeReordering',
         'InteractiveChartLifecycleBrowserTests.DisposalClearsComparisonBrushAndResetPresentationBeforeFreshMount',
         'InteractiveChartLifecycleBrowserTests.NativeWheelZoomsAndCanceledTouchBrushReleasesUncommittedPresentation',
+        'InteractiveChartLifecycleBrowserTests.KeyedPointTransactionsRetainSelectedFactsAndCanceledUpdatesLeaveCommittedBrushUntouched',
+        'SvgHostProjectionBrowserTests.HostZoomKeepsPartialPointerReadoutsFocusAndGuidesOnActualSvgMarks',
+        'SvgHostProjectionBrowserTests.HostZoomKeepsBrushDataAndNativeViewportAnchorsInTheRenderedPlot',
         'InteractiveNativeXViewportBrowserTests.ConnectedXWindowRepreparesNativeTicksRetainsIdentityAndExportsCommittedScene',
         'InteractiveNativeXViewportBrowserTests.ConnectedNativePanConfinesTheRequestedSpanAndPointerCancellationDoesNotCommit',
         'InteractiveNativeXViewportBrowserTests.NativeWindowWithoutObservationsKeepsCrossingPaintWithoutInventingTargets',
@@ -82,6 +86,61 @@ try {
         'InteractiveNativeXViewportBrowserTests.FailedNativeRepliesLeaveTheCommittedSceneAndExportWorking',
         'InteractiveNativeXViewportBrowserTests.UnsupportedAndEmptyConnectedScenesDisableNativeControlsUntilSupportedReplacement',
         'InteractiveNativeXViewportBrowserTests.StandaloneControlsKeepGeometricZoomAndDisconnectDoesNotPretendToResetANativeDomain',
+        'InteractiveNativeXViewportBrowserTests.NativeSourceWindowsReprepareSmoothAreaAndBubbleOnLinearAndTimeAxes',
+        'InteractiveNativeXViewportBrowserTests.NativeWheelKeepsThePointerSourceAnchorWhileButtonsUseThePlotCentre',
+        'InteractiveChartExportBrowserTests.StandaloneSvgAndBrowserPngRetainPersistentPaintWithoutHoverOrKeyboardChrome',
+        'RuntimeSelectionCueBrowserTests.PersistentSelectionAndHostHighlightsPaintWithoutFiltersAndFollowCurrentNativeGeometry',
+        'RuntimeSelectionCueBrowserTests.CollapsedFilledMarksHaveNoCueWhileNativeStrokesAndConnectedPointCuesRemainAvailable',
+        'RuntimeSelectionCueBrowserTests.BranchSelectionAndHostHighlightKeepIndependentNativeCuesAcrossPeerHover',
+        'InteractiveChordColorBrowserTests.IndependentFlowColorRetainsNativeReadoutsIdentityAndCurrentExportAcrossReplacement',
+        'HighlightObservationOwnershipBrowserTests.OmittedSourceObservationsRetainTheirCatalogOwnerAcrossReplacement',
+        'MapObservationIdentityBrowserTests.SelectionAndReadoutsRetainObservationIdsAfterTypedUpdates',
+        'RuntimeSelectionCueBrowserTests.NativeTextOnlySelectionKeepsItsPaintedCueAndIdentityWithoutFilters',
+        'WordCloudTargetOwnershipBrowserTests.PublicSelectionResolvesOnePaintedOwnerPerTermInMultipleAndSingleModes',
+        'WordCloudTargetOwnershipBrowserTests.LimitedAndZeroWeightTermsRetainExactInventoryWithoutBecomingInteractiveDuplicates',
+        'AnnotationTargetIdentityBrowserTests.RepeatedAnnotationCaptionsAndValuesRoundTripIndividualCommandAndActivationTargets',
+        'AnnotationTargetIdentityBrowserTests.AnnotationScenarioOpaqueIdentityWinsBeforeLegacyCaptionAliases',
+        'AnnotationTargetIdentityBrowserTests.AutomaticAnnotationIdentitiesStayLocalToPeersAndClearOnFullReplacement',
+        'AnnotationTargetIdentityBrowserTests.AuthoredAnnotationsRetainStateAcrossReplacementAndRejectInvalidCatalogsAtomically',
+        'AnnotationTargetIdentityBrowserTests.AuthoredAnnotationPeersShareOnlyInsideTheExistingEnabledGroup',
+        'AnnotationTargetIdentityBrowserTests.SharedObservationHighlightFollowsItsCurrentAggregateAcrossPeersAndRepeatedReplacement',
+        'NamedTargetIdentityBrowserTests.NamedNativeTargetsSynchronizeOnlyWithinTheirExplicitSeries',
+        'PeerHoverOwnershipBrowserTests.MissingSharedObservationPreservesPeersOwnKeyboardAffordancesThroughPointerAndClear',
+        'PeerHoverOwnershipBrowserTests.ContinuousPlotTransitionsRetireOnlyTheSendersAcceptedPeerHover',
+        'GroupedCategoryAxisBrowserTests.GroupedCategoryContextStaysDetachedPassiveAndCurrentAcrossResizeAndReplacement',
+        'GroupedCategoryAxisBrowserTests.NativeCategoryWindowRetainsFullSourceContextThroughAcceptedViewportReplacement',
+        'ExplorerLocalizationBrowserTests.GraphMessagesFollowNativeInputPatchExportAndRemountWithoutTranslatingFacts',
+        'ExplorerLocalizationBrowserTests.TopologyMessagesStayScopedAcrossNativeSelectionFilteringAndCanonicalAssetDelivery',
+        'ExplorerLocalizationBrowserTests.PublicReportStartsWithCanonicalMessagesAndKeepsAuthoredSearchLanguageDuringNavigation',
+        'InteractiveChartLocalizationBrowserTests.TranslatedChromeAndDynamicAnnouncementsFollowNativeUpdatesWithoutReversingAxes',
+        'InteractiveChartLocalizationBrowserTests.ChromeInheritsTheHostDirectionUnlessTheAuthorChoosesOne',
+        'InteractiveSelectionDockBrowserTests.CompareActivationInspectsTheRequestedObservationWithoutChangingSelectionOrCoveringTheDock',
+        'InteractiveSelectionDockBrowserTests.ReadableCompareInspectionRevealsEachSelectedSourceBeforeShowingItsReadout',
+        'InteractiveSelectionDockBrowserTests.PointerPressOnAPartlyVisibleChipKeepsItsClickWhileKeyboardFocusRevealsTheWholeChip',
+        'InteractiveSelectionDockBrowserTests.PagedComparisonInspectsEverySelectionAndPreservesExportsResizeAndReplacement',
+        'InteractiveLegendOverflowBrowserTests.OmittedLegendEntriesExposeEveryFactAndCanonicalActionsWithoutChangingNativeExports',
+        'InteractiveLegendOverflowBrowserTests.ThousandPointKeysMaterializeOneBoundedPageAndRetainEveryObservationIdentity',
+        'InteractiveLegendOverflowBrowserTests.OmittedPointAndNamedNodeCommandsRetainTheirNativeTargetIdentity',
+        'InteractiveLegendOverflowBrowserTests.LinkedOverflowCommandsUpdateOffPagePeersWithoutEchoingOrUsingSeriesPositions',
+        'InteractiveLegendOverflowBrowserTests.PassiveStateKeysAndDisabledLegendCommandsRemainDescriptive',
+        'InteractiveLegendOverflowBrowserTests.OverflowCommandsFollowDurableIdentityAndReleaseDetachedPagesAcrossUpdateAndDisposal',
+        'InteractiveLegendOverflowBrowserTests.AdaptiveOverflowRestoresAnIndividuallyMutedKeyAndKeepsDisclosurePreferenceWhenTheWideLegendFits',
+        'StandaloneAdapterLifecycleBrowserTests.TopologyRemovalAndExplicitDisposalStopPlaybackAndReleaseListenersBeforeRemount',
+        'StandaloneAdapterLifecycleBrowserTests.GraphRemovalReleasesPreferencesAndRemountRestoresOneSelectionHandler',
+        'StandaloneAdapterLifecycleBrowserTests.GraphBadgeMeasurementsReusePaintWorkAndRefreshWithFontLoadingAndRemount',
+        'StandaloneAdapterLifecycleBrowserTests.GraphEnvironmentPreferencesKeepControlsPaintPrintAndTeardownUsable',
+        'StandaloneAdapterLifecycleBrowserTests.GraphCardIconsAndBadgesKeepReadablePaintAcrossBackends',
+        'StandaloneAdapterLifecycleBrowserTests.GraphHierarchyDoubleClickAndBreadcrumbsRemainOperableAfterRemount',
+        'StandaloneAdapterLifecycleBrowserTests.AcceleratedGraphRemountPreservesDraggedPositionsSelectionAndExportsAndClearsHostHover',
+        'StandaloneAdapterLifecycleBrowserTests.PendingPngImageCompletesAcrossDocumentMutationsWithoutItsTimeoutFallback',
+        'StandaloneAdapterLifecycleBrowserTests.GraphPrintMaterializesTheCommittedSceneAndReleasesItsSnapshotWithoutChangingTheCamera',
+        'StandaloneAdapterLifecycleBrowserTests.GraphPrintFitsActualVisibleLabelsSecondaryBadgesAndEdgeCaptions',
+        'StandaloneAdapterLifecycleBrowserTests.UnmodifiedGraphFragmentsShareOneRuntimeAcrossParsingAndLateInsertion',
+        'StandaloneAdapterLifecycleBrowserTests.GraphImagesFollowCurrentScenesAndShareUntilTheirLastConsumerLeaves',
+        'StandaloneAdapterLifecycleBrowserTests.GraphImageExportsLeaseReplacedImagesAndIgnoreAbandonedLoadCallbacks',
+        'StandaloneAdapterLifecycleBrowserTests.NonSquareImagesStretchConsistentlyBeforeAndAfterSelectedAuthoredUpdates',
+        'StandaloneAdapterLifecycleBrowserTests.NativeGraphSvgAndPngPreserveTheSameNonSquareImageContentAndCircularClipping',
+        'InteractiveChartTouchScrollingBrowserTests.NativeTouchScrollsTheReportAndExplicitBrushRetainsItsGesture',
         'DottedMapPointLegendBrowserTests.PointKeysKeepWeightedFactsAndPointOnlyLegendStateAcrossNativeReplacement',
         'MermaidFlowchartCaptionLayoutTests.ShapeOnlyFlowchartsCenterMeasuredCaptionsWithoutInfrastructureGlyphs',
         'MermaidFlowchartLengthTests.AuthoredSpacingRendersInNativeAndResponsiveStaticHosts',

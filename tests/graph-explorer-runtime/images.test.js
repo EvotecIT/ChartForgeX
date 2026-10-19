@@ -3,9 +3,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
+const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 
-function runtime() {
+function runtime(t) {
   const images = [], redraws = [], timers = new Set();
   class Image {
     constructor() { this.complete = false; this.naturalWidth = 0; this.listeners = new Map(); images.push(this); }
@@ -23,15 +24,19 @@ function runtime() {
   const host = { Image, drawCanvas: (root, state, options) => redraws.push({ root, state, options }), graphState: () => { throw new Error('Reconstructed live image state'); },
     attr: () => 'graph', emit: () => false, downloadExport: () => { throw new Error('Canceled export downloaded'); },
     setTimeout: callback => { timers.add(callback); return callback; }, clearTimeout: callback => timers.delete(callback) };
+  const lifetimes = adapterLifetimes({ setTimeout: host.setTimeout, clearTimeout: host.clearTimeout });
+  t.after(() => lifetimes.dispose());
+  Object.assign(host, { graphLifetime: lifetimes.graphLifetime, listenGraph: lifetimes.listenGraph });
   vm.runInNewContext(viewport + nodes + exports + '\nthis.api = { drawNodeMark, preloadCanvasImages, exportGraph };', host);
   const context = new Proxy({}, { get: (target, key) => target[key] || (() => {}), set: (target, key, value) => (target[key] = value, true) });
-  return { api: host.api, images, redraws, timers, context };
+  return { api: host.api, images, redraws, timers, context, mount: lifetimes.mount };
 }
 
-test('shared loading image redraws each connected graph once and retains its latest live state', () => {
+test('shared loading image redraws each connected graph once and retains its latest live state', t => {
   for (const completion of ['load', 'error']) {
-    const { api, images, redraws, context } = runtime();
+    const { api, images, redraws, context, mount } = runtime(t);
     const roots = [{ isConnected: true }, { isConnected: true }, { isConnected: false }];
+    roots.forEach(root => mount(root));
     for (let frame = 0; frame < 25; frame++) for (const root of roots) for (let node = 0; node < 12; node++) {
       api.drawNodeMark(context, { x: node * 40, y: 100, size: 12, shape: node % 2 ? 'image' : 'imageRect', imageUrl: 'https://host/image.png' }, false, true, root, true);
     }
@@ -43,13 +48,14 @@ test('shared loading image redraws each connected graph once and retains its lat
   }
 });
 
-test('PNG export restores the current graph after a concurrent update, including capture failure', async () => {
+test('PNG export restores the current graph after a concurrent update, including capture failure', async t => {
   for (const renderer of ['svg', 'canvas', 'webgl']) for (const captureFails of [false, true]) {
-    const { api, images, redraws } = runtime();
+    const { api, images, redraws, mount } = runtime(t);
     const requested = { nodes: [{ shape: 'image', imageUrl: 'https://host/image.png' }] }, current = { nodes: [] };
     const canvas = { toDataURL: () => { if (captureFails) throw new Error('capture'); return 'data:image/png;base64,proof'; } };
     const root = { __cfxGraphState: requested, dataset: {}, querySelector: () => canvas,
       classList: { contains: name => name === 'cfx-graph-render-' + renderer } };
+    mount(root);
     const exported = api.exportGraph(root, 'png');
     root.__cfxGraphState = current;
     images[0].finish('load');
@@ -62,11 +68,12 @@ test('PNG export restores the current graph after a concurrent update, including
   }
 });
 
-test('PNG image preload deduplicates shared URLs and releases listeners on completion or timeout', async () => {
+test('PNG image preload deduplicates shared URLs and releases listeners on completion or timeout', async t => {
   for (const completion of ['load', 'error', 'timeout']) {
-    const { api, images, timers } = runtime();
+    const { api, images, timers, mount } = runtime(t);
     const state = { nodes: Array.from({ length: 12 }, (_, i) => ({ shape: i % 2 ? 'image' : 'imageRect', imageUrl: 'https://host/image.png' })) };
-    const loaded = api.preloadCanvasImages({}, state);
+    const root = {}; mount(root);
+    const loaded = api.preloadCanvasImages(root, state);
     assert.equal(images.length, 1); assert.equal(timers.size, 1);
     if (completion === 'timeout') [...timers][0](); else images[0].finish(completion);
     await loaded;

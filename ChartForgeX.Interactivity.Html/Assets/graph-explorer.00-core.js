@@ -1,5 +1,17 @@
-  const roots = () => Array.from(document.querySelectorAll('.cfx-graph-explorer:not([data-cfx-graph-bound])'));
+if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
+  // Self-contained fragments may register these assets repeatedly. The first
+  // runtime owns every graph's cache, callbacks and public command closures.
+  const installed = window[Symbol.for('ChartForgeX.graphRuntime')];
+  window.ChartForgeXGraphExplorer = installed;
+  const mountInstalled = () => installed.mount(document);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountInstalled, { once: true });
+  else mountInstalled();
+} else {
+  const uiText = window[Symbol.for('ChartForgeX.uiText')];
+  const roots = (target = document) => target?.matches?.('.cfx-graph-explorer') ? [target] : Array.from(target.querySelectorAll('.cfx-graph-explorer'));
   const attr = (node, name) => node ? node.getAttribute(name) || '' : '';
+  // Match native IsNullOrWhiteSpace while retaining authored nonblank padding.
+  const graphLabelText = value => value != null && /\P{White_Space}/u.test(String(value)) ? String(value) : '';
   const num = (node, name, fallback) => {
     const raw = attr(node, name);
     if (raw === '') return fallback;
@@ -54,7 +66,7 @@
     const detailGroups = new Map(items(root, '[data-cfx-role="graph-node-details"]').map(el => [attr(el, 'data-node-details-for'), el]));
     let cardFill;
     const nodes = items(root, '[data-cfx-role="graph-node"]').map((el, index) => ({
-      el,
+      el, root,
       detailsEl: detailGroups.get(attr(el, 'data-node-id')) || null,
       id: attr(el, 'data-node-id'),
       label: attr(el, 'data-node-label'),
@@ -106,7 +118,7 @@
         targetCluster: clusterById.get(attr(el, 'data-target-cluster-id') || target?.cluster || ''),
         weight: Math.max(0.1, num(el, 'data-edge-weight', 1)),
         length: Math.max(0, num(el, 'data-edge-length', 0)),
-        label: attr(el, 'data-cfx-bundle-label') || attr(el, 'data-edge-label'),
+        label: graphLabelText(attr(el, 'data-cfx-bundle-label')) || graphLabelText(attr(el, 'data-edge-label')),
         directed: attr(el, 'data-edge-directed') === 'true',
         sourceArrow: attr(el, 'data-edge-source-arrow') === 'true',
         targetArrow: attr(el, 'data-edge-target-arrow') === 'true',
@@ -126,6 +138,7 @@
       edge.source.degree += 1;
       edge.target.degree += 1;
     });
+    syncGraphImageOwnership(root, nodes);
     return { nodes, edges, clusters, byId, clusterById };
   };
   const graphLinkOpacity = el => el.classList.contains('cfx-graph-link-dim') ? .3 : 1;
@@ -198,6 +211,8 @@
   };
   const drawCanvas = (root, state, options) => {
     if (typeof syncNodeDetailLayers === 'function') syncNodeDetailLayers(state);
+    if ((root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer')) === 'svg' && !options?.force &&
+      typeof syncPhysicalSvgEdgePaint === 'function') syncPhysicalSvgEdgePaint(root, state);
     if ((root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer')) === 'svg' && attr(root, 'data-cfx-graph-accelerated-markup') === 'true' && !options?.force) {
       if (typeof drawAcceleratedSvgRuntime === 'function' && drawAcceleratedSvgRuntime(root, state)) return;
     }

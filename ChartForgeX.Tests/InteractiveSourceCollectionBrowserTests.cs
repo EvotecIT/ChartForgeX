@@ -129,11 +129,15 @@ public sealed class InteractiveSourceCollectionBrowserTests {
     [InlineData(720, true)]
     public async Task MeanBinsRetainPopulatedAndEmptySourcesInHoverSelectionAndPeerSynchronization(int width, bool dark) {
         if (!Enabled) return;
+        const string noData = "No quantity <&>";
+        const string sampleCount = "Observation count <&>";
+        const string aggregate = "Aggregate <&>";
         var observations = new[] { new ChartPoint(.2, 10), new ChartPoint(.4, -4), new ChartPoint(1.2, 8),
             new ChartPoint(2.5, 12), new ChartPoint(6.1, -4), new ChartPoint(9, -8) };
         Chart Mean(IEnumerable<ChartPoint> source) {
             var chart = Chart.Create().WithSize(640, 400)
                 .WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), dark ? ChartForgeX.Themes.VisualThemeMode.Dark : ChartForgeX.Themes.VisualThemeMode.Light)
+                .ConfigureLabels(labels => { labels.NoData = noData; labels.SampleCount = sampleCount; })
                 .AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("quantity-source"), "Quantity", source, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 }), ChartHistogramAggregation.Mean));
             return chart;
         }
@@ -141,6 +145,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         var html = new[] { Mean(observations), Mean(observations.Skip(2).Concat(observations.Take(2))) }
             .ToInteractiveHtmlDashboardPage(options => {
                 options.Columns = 1;
+                options.Localization[HtmlChartText.Value] = aggregate;
                 options.Interaction.Features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection
                     | ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.SynchronizedCharts;
             });
@@ -156,7 +161,13 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         Assert.Equal("10", await populated.GetAttributeAsync("data-cfx-bin-value"));
         Assert.Equal("2", await populated.GetAttributeAsync("data-cfx-bin-count"));
         Assert.Equal("false", await empty.GetAttributeAsync("data-cfx-bin-has-value"));
+        Assert.Equal("0", await empty.GetAttributeAsync("data-cfx-bin-count"));
         Assert.Null(await empty.GetAttributeAsync("data-cfx-bin-value"));
+        Assert.Null(await empty.GetAttributeAsync("data-cfx-y"));
+        Assert.Contains("Mean=" + noData, await empty.GetAttributeAsync("aria-label"));
+        Assert.Contains("observations=0", await empty.GetAttributeAsync("aria-label"));
+        foreach (var peer in new[] { 0, 1 })
+            Assert.Equal(0, await roots.Nth(peer).Locator(Point(0, 2)).Locator("[data-cfx-browser-hit-area]").CountAsync());
         var targetIds = new Dictionary<int, string>();
         foreach (var bin in new[] { 1, 2 }) {
             var point = roots.Nth(0).Locator(Point(0, bin));
@@ -164,10 +175,23 @@ public sealed class InteractiveSourceCollectionBrowserTests {
             targetIds[bin] = (await point.GetAttributeAsync("data-cfx-target-id"))!;
             Assert.StartsWith("quantity-source:derived:histogram-bin:", targetIds[bin]);
             Assert.Equal(targetIds[bin], await roots.Nth(1).Locator(Point(0, bin)).GetAttributeAsync("data-cfx-target-id"));
+            if (bin == 2) {
+                await FocusWithKeyboardAsync(page, populated);
+                await page.Keyboard.PressAsync("ArrowRight");
+                Assert.True(await point.EvaluateAsync<bool>("node => node === node.getRootNode().activeElement"));
+            }
             await FocusWithKeyboardAsync(page, point);
             await page.Keyboard.PressAsync("Space");
             foreach (var peer in new[] { 0, 1 })
                 Assert.Equal("true", await roots.Nth(peer).Locator(Point(0, bin)).GetAttributeAsync("aria-selected"));
+            if (bin == 2) {
+                var tip = roots.Nth(0).Locator(".cfx-tooltip");
+                Assert.False(await tip.IsHiddenAsync());
+                Assert.Contains("cfx-tooltip--pinned", await tip.GetAttributeAsync("class"));
+                Assert.Equal(noData, await tip.Locator("dt").Filter(new LocatorFilterOptions { HasText = aggregate }).Locator("+ dd").InnerTextAsync());
+                Assert.Equal("0", await tip.Locator("dt").Filter(new LocatorFilterOptions { HasText = sampleCount }).Locator("+ dd").InnerTextAsync());
+                Assert.DoesNotContain("Y", await tip.Locator("dt").AllTextContentsAsync());
+            }
         }
         using (var events = await ReadEventsAsync(page)) {
             foreach (var bin in new[] { 1, 2 }) {
@@ -175,6 +199,8 @@ public sealed class InteractiveSourceCollectionBrowserTests {
                 AssertEvent(events, "cfxhover", "point", targetIds[bin], contributors);
                 AssertEvent(events, "cfxselect", "point", targetIds[bin], contributors);
             }
+            foreach (var item in events.RootElement.EnumerateArray().Where(item => item.GetProperty("target").GetProperty("targetId").GetString() == targetIds[2]))
+                Assert.False(item.GetProperty("target").TryGetProperty("numericValue", out _));
         }
         var ids = await roots.Nth(0).Locator(PointTarget).EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.dataset.cfxTargetId)");
         Assert.Equal(4, ids.Distinct().Count());

@@ -18,12 +18,12 @@
     if (canvas) {
       canvas.setAttribute('tabindex', interactive && root.dataset.cfxGraphRendererActive === 'canvas' ? '0' : '-1');
       canvas.setAttribute('role', 'img');
-      canvas.setAttribute('aria-label', canvas.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph canvas');
+      canvas.setAttribute('aria-label', canvas.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || uiText(root, 'GraphCanvas', 'Graph canvas'));
     }
     if (webgl) {
       webgl.setAttribute('tabindex', interactive && root.dataset.cfxGraphRendererActive === 'webgl' ? '0' : '-1');
       webgl.setAttribute('role', 'img');
-      webgl.setAttribute('aria-label', webgl.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || 'Graph WebGL canvas');
+      webgl.setAttribute('aria-label', webgl.getAttribute('aria-label') || attr(root, 'data-cfx-graph-title') || attr(root, 'data-cfx-graph-id') || uiText(root, 'GraphWebGlCanvas', 'Graph WebGL canvas'));
     }
     if (scene) {
       scene.setAttribute('tabindex', acceleratedSvg ? '0' : '-1');
@@ -83,22 +83,22 @@
     const tip = root.querySelector('.cfx-graph-tooltip');
     if (!tip) return;
     const tooltipDetail = details.length === 1 ? details[0] : fallback;
-    tip.textContent = details.length === 1 ? [tooltipDetail.label || tooltipDetail.id, tooltipDetail.secondaryLabel, tooltipDetail.kind, tooltipDetail.status, tooltipDetail.badge ? `Badge ${tooltipDetail.badge}` : ''].filter(Boolean).join(' / ') : details.length ? `${details.length} selected` : '';
+    tip.textContent = details.length === 1 ? [graphSelectionName(root, tooltipDetail), tooltipDetail.secondaryLabel, tooltipDetail.kind, tooltipDetail.status, tooltipDetail.badge ? uiText(root, 'GraphBadge', 'Badge {badge}', { badge: tooltipDetail.badge }) : ''].filter(Boolean).join(' / ') : details.length ? uiText(root, 'GraphSelectedCount', '{count} selected', { count: details.length }) : '';
     tip.hidden = details.length === 0;
   };
   const syncClusterControls = (root) => {
     const pressed = root.dataset.cfxGraphClusters === 'collapsed' ? 'true' : 'false';
     items(root, "[data-cfx-graph-action='clusters']").forEach(button => {
       button.setAttribute('aria-pressed', pressed);
-      button.setAttribute('aria-label', pressed === 'true' ? 'Expand clusters' : 'Collapse clusters');
-      button.setAttribute('title', pressed === 'true' ? 'Expand clusters' : 'Collapse clusters');
+      button.setAttribute('aria-label', pressed === 'true' ? uiText(root, 'GraphExpandClusters', 'Expand clusters') : uiText(root, 'GraphCollapseClusters', 'Collapse clusters'));
+      button.setAttribute('title', pressed === 'true' ? uiText(root, 'GraphExpandClusters', 'Expand clusters') : uiText(root, 'GraphCollapseClusters', 'Collapse clusters'));
     });
   };
   const syncFocusControls = (root) => {
     const pressed = root.dataset.cfxGraphFocus === 'active' ? 'true' : 'false';
     items(root, "[data-cfx-graph-action='focus']").forEach(button => {
       button.setAttribute('aria-pressed', pressed);
-      button.setAttribute('aria-label', pressed === 'true' ? 'Clear neighborhood focus' : 'Focus selected node neighborhood');
-      button.setAttribute('title', pressed === 'true' ? 'Clear neighborhood focus' : 'Focus selected node neighborhood');
+      button.setAttribute('aria-label', pressed === 'true' ? uiText(root, 'GraphClearNeighborhood', 'Clear neighborhood focus') : uiText(root, 'GraphFocusNeighborhood', 'Focus selected node neighborhood'));
+      button.setAttribute('title', pressed === 'true' ? uiText(root, 'GraphClearNeighborhood', 'Clear neighborhood focus') : uiText(root, 'GraphFocusNeighborhood', 'Focus selected node neighborhood'));
     });
   };

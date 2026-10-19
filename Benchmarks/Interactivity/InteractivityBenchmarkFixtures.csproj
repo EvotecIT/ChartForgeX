@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="InteractivityBenchmarkLane.cs" />
+    <Reference Include="ChartForgeX"><HintPath>$(ProductBinaryRoot)/ChartForgeX.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="ChartForgeX.Interactivity"><HintPath>$(ProductBinaryRoot)/ChartForgeX.Interactivity.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="ChartForgeX.Interactivity.Html"><HintPath>$(ProductBinaryRoot)/ChartForgeX.Interactivity.Html.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="HtmlTinkerX"><HintPath>$(ProductBinaryRoot)/HtmlTinkerX.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Microsoft.Playwright"><HintPath>$(ProductBinaryRoot)/Microsoft.Playwright.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces"><HintPath>$(ProductBinaryRoot)/Microsoft.Bcl.AsyncInterfaces.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

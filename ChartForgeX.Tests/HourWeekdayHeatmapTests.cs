@@ -160,7 +160,6 @@ public sealed class HourWeekdayHeatmapTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).AddHourWeekdayHeatmap(new[] { new ChartTimedValue(Monday) }, (ChartTimeAggregation)9));
         var local = new DateTime(2026, 9, 21, 12, 0, 0, DateTimeKind.Local);
         Assert.Equal(local.ToUniversalTime(), new ChartTimedValue(local).Timestamp);
-        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Report()).AddHeatmapRow("Only", new double?[] { null, null }));
     }
 
     [Fact]

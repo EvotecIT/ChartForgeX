@@ -49,7 +49,7 @@ internal static partial class VisualCartesianCompiler {
                 var raw = item * ObservationStride(series.Kind);
                 var point = series.RenderPoints[raw];
                 var markerRadius = series.Kind == ChartSeriesKind.Bubble
-                    ? bubbleScale!.Radius(series.RenderPoints[raw + 1].Y, plot) : radius;
+                    ? bubbleScale!.Radius(series.RenderPoints[raw + 1].Y, plot, series.Markers.Shape) : radius;
                 markerRadius = VisualMarkerScene.Extent(series, markerRadius);
                 if (markerRadius <= 0) continue;
                 var value = series.Kind == ChartSeriesKind.StackedArea ? stacks.Point(index, raw).End : point.Y;

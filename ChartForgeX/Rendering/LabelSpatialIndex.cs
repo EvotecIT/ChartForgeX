@@ -23,6 +23,38 @@ internal sealed class LabelSpatialIndex {
             entries.Add(entry);
         }
     }
+    /// <summary>Reserves an accepted source-to-caption segment so later text cannot cover it.</summary>
+    internal void AddLeader(ChartPoint start, ChartPoint end) {
+        var shape = new LabelMarkShape(new[] { new List<ChartPoint> { start, end } }, false, 1);
+        // A non-null identity keeps this geometry distinct from caption rectangles.
+        Add(shape.Bounds, string.Empty, shape);
+    }
+
+    /// <summary>Checks a proposed leader against already placed caption boxes, including their required separation.</summary>
+    internal bool LeaderIntersectsLabel(ChartPoint start, ChartPoint end, double? labelGap = null) {
+        var gap = labelGap ?? _gap;
+        var bounds = new ChartRect(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y), Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y));
+        var expanded = Expand(bounds, Math.Max(_gap, Math.Max(gap, _maximumLabelGap)) + .5);
+        foreach (var entry in _large) if (BlocksLeader(entry, start, end, gap)) return true;
+        var cells = Cells(expanded);
+        if ((long)(cells.Right - cells.Left + 1) * (cells.Bottom - cells.Top + 1) > 4096) {
+            foreach (var entries in _cells.Values) foreach (var entry in entries) if (BlocksLeader(entry, start, end, gap)) return true;
+            return false;
+        }
+        for (var x = cells.Left; x <= cells.Right; x++) for (var y = cells.Top; y <= cells.Bottom; y++) {
+            if (!_cells.TryGetValue((x, y), out var entries)) continue;
+            foreach (var entry in entries) if (BlocksLeader(entry, start, end, gap)) return true;
+        }
+        return false;
+    }
+
+    private static bool BlocksLeader(Entry entry, ChartPoint start, ChartPoint end, double gap) {
+        if (entry.Id != null) return false;
+        var box = Expand(entry.Bounds, Math.Max(gap, entry.Gap) + .5);
+        var x1 = start.X; var y1 = start.Y; var x2 = end.X; var y2 = end.Y;
+        return ChartPatternLineGeometry.ClipLineToRect(ref x1, ref y1, ref x2, ref y2, box.Left, box.Top, box.Right, box.Bottom);
+    }
+
     public bool Intersects(ChartRect bounds, string? associated, double? labelGap = null, bool allowLabelOverlap = false) {
         var gap = labelGap ?? _gap;
         // A previously accepted label can require more separation than this request.
