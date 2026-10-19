@@ -1065,7 +1065,20 @@ body {
 <div class="cfx-tooltip" data-cfx-pinned-label="Pinned" role="status" aria-live="polite" hidden></div>
 </section>
 </div></main>
-<script>(() => {
+<script>window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
+  const source = root?.dataset.cfxUi || '';
+  let bundle = root?._cfxUi;
+  if (!bundle || bundle.source !== source) {
+    let messages;
+    try { messages = source ? JSON.parse(source) : {}; } catch { messages = {}; }
+    bundle = { source, messages };
+    if (root) root._cfxUi = bundle;
+  }
+  const value = bundle.messages?.[key];
+  if (typeof value === 'string') text = value;
+  return values ? text.replace(/\{([^{}]+)\}/g, (token, name) => Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : token) : text;
+};
+(() => {
   if (window.ChartForgeXCharts) {
     document.querySelectorAll('.cfx-interactive-chart').forEach(root => window.ChartForgeXCharts.mount(root));
     return;
@@ -1612,18 +1625,7 @@ body {
     hideTip(root, root.querySelector('.cfx-tooltip'), true);
     if (key) emitHostEvent(root, 'cfxtooltip', { pinned: false, ...(target ? { target: targetIdentity(target) } : {}) });
   };
-  const uiText = (root, message, fallback, values) => {
-    let messages;
-    const raw = root?.dataset.cfxUi || '';
-    if (root && root._cfxUiSource === raw) messages = root._cfxUiMessages;
-    else {
-      try { messages = raw ? JSON.parse(raw) : {}; } catch { messages = {}; }
-      if (root) { root._cfxUiSource = raw; root._cfxUiMessages = messages; }
-    }
-    let text = typeof messages?.[message] === 'string' ? messages[message] : fallback;
-    if (values) Object.entries(values).forEach(([name, value]) => { text = text.split('{' + name + '}').join(String(value)); });
-    return text;
-  };
+  const uiText = window[Symbol.for('ChartForgeX.uiText')];
   // Calibrate viewport scaling while retaining native viewBox alignment and local transforms.
   const svgScreenProjection = (svg, styles) => {
     const projections = styles && (styles._cfxScreenProjections ||= new WeakMap());
