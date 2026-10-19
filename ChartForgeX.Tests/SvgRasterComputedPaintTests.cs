@@ -31,7 +31,7 @@ public sealed class SvgRasterComputedPaintTests {
     [Fact]
     public void CurrentColorOnColorUsesTheInheritedColorRatherThanTheLosingLocalDeclaration() {
         Assert.Equal(Render("<rect width='32' height='32' fill='#00ff00'/>"),
-            Render("<g color='#00ff00'><rect width='32' height='32' fill='currentColor' style='color:#ff0000;color:currentColor!important'/></g>"));
+            Render("<style>rect{color:#ff0000}</style><g color='#00ff00'><rect width='32' height='32' style='color:currentColor!important;fill:currentColor!important'/></g>"));
     }
 
     [Theory]
@@ -50,6 +50,27 @@ public sealed class SvgRasterComputedPaintTests {
             "<linearGradient id='blue'><stop offset='0' style='--ink:var(--paint);stop-color:var(--ink)'/></linearGradient></defs>" +
             "<rect width='16' height='32' fill='url(#red)'/><rect x='16' width='16' height='32' fill='url(#blue)'/>");
         Assert.Equal(Render("<rect width='16' height='32' fill='#ff0000'/><rect x='16' width='16' height='32' fill='#0000ff'/>"), actual);
+    }
+
+    [Fact]
+    public void ReferencedDefinitionsRetainAliasesComputedInTheirOriginalAncestry() {
+        Assert.Equal(Render("<rect width='32' height='32' fill='#ff0000'/>"), Render(
+            "<defs><g style='--paint:#ff0000;--ink:var(--paint)!important'><symbol id='s' viewBox='0 0 32 32'>" +
+            "<rect width='32' height='32' style='--paint:#0000ff;fill:var(--ink)'/></symbol></g></defs><use href='#s' width='32' height='32'/>"));
+    }
+
+    [Theory]
+    [InlineData("linearGradient")]
+    [InlineData("radialGradient")]
+    public void GradientCurrentColorUsesDefinitionAncestryAndTheStopLocalImportantColor(string gradient) {
+        var expected = Render("<rect width='32' height='32' fill='#ff0000'/>");
+        Assert.Equal(expected, Render("<g color='#ff0000'><defs><" + gradient + " id='g'><stop offset='0' stop-color='currentColor'/></" + gradient + "></defs>" +
+            "<rect width='32' height='32' fill='url(#g)'/></g>"));
+        Assert.Equal(expected, Render("<style>stop{--ink:currentColor;color:#ff0000!important;stop-color:var(--ink)}</style>" +
+            "<defs><" + gradient + " id='g' color='#00ff00'><stop offset='0' style='color:#0000ff'/></" + gradient + "></defs><rect width='32' height='32' fill='url(#g)'/>"));
+        Assert.Equal(expected, Render("<g color='#ff0000' style='--paint:#ff0000;--ink:var(--paint)!important'><defs><" + gradient +
+            " id='g'><stop offset='0' style='--paint:#0000ff;stop-color:var(--ink)'/></" + gradient + "><" + gradient +
+            " id='derived' href='#g' color='#0000ff'/></defs><rect width='32' height='32' fill='url(#derived)'/></g>"));
     }
 
     [Fact]

@@ -88,7 +88,7 @@ internal sealed class SvgRasterDefinitions {
         SvgRasterLinearGradient? inherited = null;
         var referenceId = ReferenceId(element);
         if (referenceId != null) ResolveLinearGradient(referenceId, visiting, out inherited!);
-        gradient = SvgRasterLinearGradient.From(element, inherited, StyleSheet);
+        gradient = SvgRasterLinearGradient.From(element, inherited, StyleSheet, AncestorsFor(element));
         _linearGradients[id] = gradient;
         visiting.Remove(id);
         return true;
@@ -104,7 +104,7 @@ internal sealed class SvgRasterDefinitions {
         SvgRasterRadialGradient? inherited = null;
         var referenceId = ReferenceId(element);
         if (referenceId != null) ResolveRadialGradient(referenceId, visiting, out inherited!);
-        gradient = SvgRasterRadialGradient.From(element, inherited, StyleSheet);
+        gradient = SvgRasterRadialGradient.From(element, inherited, StyleSheet, AncestorsFor(element));
         _radialGradients[id] = gradient;
         visiting.Remove(id);
         return true;
@@ -138,6 +138,7 @@ internal sealed class SvgRasterDefinitions {
 
         if ((string.Equals(element.Name, "linearGradient", StringComparison.Ordinal) || string.Equals(element.Name, "radialGradient", StringComparison.Ordinal)) && element.TryGet("id", out var id) && !string.IsNullOrWhiteSpace(id)) {
             _gradientElements[id] = element;
+            _elementAncestors[element] = ancestors.ToArray();
         }
 
         if (string.Equals(element.Name, "pattern", StringComparison.Ordinal) && element.TryGet("id", out var patternId) && !string.IsNullOrWhiteSpace(patternId)) {
@@ -204,11 +205,7 @@ internal sealed class SvgRasterMask {
     public SvgRasterMask(SvgRasterElement element, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterStyleSheet styleSheet) {
         Element = element;
         Ancestors = ancestors;
-        var parentStyle = SvgRasterStyle.Default;
-        for (var index = 0; index < ancestors.Count; index++) {
-            parentStyle = SvgRasterStyle.Resolve(parentStyle, ancestors[index], styleSheet, ancestors.Take(index).ToArray());
-        }
-        RootStyle = SvgRasterStyle.Resolve(parentStyle, element, styleSheet, ancestors);
+        RootStyle = SvgRasterStyle.ResolveWithAncestors(element, styleSheet, ancestors);
         UsesAlpha = string.Equals(RootStyle.MaskType, "alpha", StringComparison.OrdinalIgnoreCase);
         UserSpaceOnUse = string.Equals(element.Get("maskUnits"), "userSpaceOnUse", StringComparison.Ordinal);
         ContentUserSpaceOnUse = !string.Equals(element.Get("maskContentUnits"), "objectBoundingBox", StringComparison.Ordinal);
@@ -297,9 +294,9 @@ internal sealed class SvgRasterLinearGradient {
     public RasterGradientSpreadMethod SpreadMethod { get; }
     public IReadOnlyList<RasterGradientStop> Stops { get; }
 
-    public static SvgRasterLinearGradient From(SvgRasterElement element, SvgRasterLinearGradient? inherited, SvgRasterStyleSheet styleSheet) {
+    public static SvgRasterLinearGradient From(SvgRasterElement element, SvgRasterLinearGradient? inherited, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors) {
         var userSpace = string.Equals(element.Get("gradientUnits"), "userSpaceOnUse", StringComparison.Ordinal) || (element.Get("gradientUnits") == null && inherited?.UserSpaceOnUse == true);
-        var stops = SvgRasterGradientValues.ReadStops(element, styleSheet);
+        var stops = SvgRasterGradientValues.ReadStops(element, styleSheet, ancestors);
         if (stops.Count == 0) stops = inherited?.Stops ?? SvgRasterGradientValues.BlackStops;
         var transform = element.Get("gradientTransform") == null ? inherited?.Transform ?? SvgRasterMatrix.Identity : SvgRasterMatrix.ParseTransform(element.Get("gradientTransform"));
         return new SvgRasterLinearGradient(
@@ -353,9 +350,9 @@ internal sealed class SvgRasterRadialGradient {
     public RasterGradientSpreadMethod SpreadMethod { get; }
     public IReadOnlyList<RasterGradientStop> Stops { get; }
 
-    public static SvgRasterRadialGradient From(SvgRasterElement element, SvgRasterRadialGradient? inherited, SvgRasterStyleSheet styleSheet) {
+    public static SvgRasterRadialGradient From(SvgRasterElement element, SvgRasterRadialGradient? inherited, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors) {
         var userSpace = string.Equals(element.Get("gradientUnits"), "userSpaceOnUse", StringComparison.Ordinal) || (element.Get("gradientUnits") == null && inherited?.UserSpaceOnUse == true);
-        var stops = SvgRasterGradientValues.ReadStops(element, styleSheet);
+        var stops = SvgRasterGradientValues.ReadStops(element, styleSheet, ancestors);
         if (stops.Count == 0) stops = inherited?.Stops ?? SvgRasterGradientValues.BlackStops;
         var transform = element.Get("gradientTransform") == null ? inherited?.Transform ?? SvgRasterMatrix.Identity : SvgRasterMatrix.ParseTransform(element.Get("gradientTransform"));
         return new SvgRasterRadialGradient(
@@ -395,11 +392,12 @@ internal sealed class SvgRasterRadialGradient {
 internal static class SvgRasterGradientValues {
     public static readonly IReadOnlyList<RasterGradientStop> BlackStops = new[] { new RasterGradientStop(0, ChartColor.Black), new RasterGradientStop(1, ChartColor.Black) };
 
-    public static IReadOnlyList<RasterGradientStop> ReadStops(SvgRasterElement element, SvgRasterStyleSheet styleSheet) {
-        var ancestors = new List<SvgRasterElement> { element };
+    public static IReadOnlyList<RasterGradientStop> ReadStops(SvgRasterElement element, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors) {
+        var parentStyle = SvgRasterStyle.ResolveWithAncestors(element, styleSheet, ancestors);
+        var stopAncestors = new List<SvgRasterElement>(ancestors) { element };
         return element.Children
             .Where(child => string.Equals(child.Name, "stop", StringComparison.Ordinal))
-            .Select(child => ReadStop(child, styleSheet, ancestors))
+            .Select(child => ReadStop(child, styleSheet, stopAncestors, parentStyle))
             .OrderBy(stop => stop.Offset)
             .ToArray();
     }
@@ -440,8 +438,9 @@ internal static class SvgRasterGradientValues {
         return new GradientBounds(left, top, Math.Max(0.000001, right - left), Math.Max(0.000001, bottom - top));
     }
 
-    private static RasterGradientStop ReadStop(SvgRasterElement element, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors) {
-        var customProperties = SvgRasterStyle.ResolveCustomProperties(styleSheet, ancestors, element);
+    private static RasterGradientStop ReadStop(SvgRasterElement element, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors, SvgRasterStyle parentStyle) {
+        var style = SvgRasterStyle.Resolve(parentStyle, element, styleSheet, ancestors);
+        var customProperties = style.CustomProperties;
         var stopColor = element.Get("stop-color");
         var stopOpacity = element.Get("stop-opacity");
         var declarations = new List<ChartForgeX.Svg.SvgStyleDeclaration>(styleSheet.DeclarationsFor(element, ancestors));
@@ -454,7 +453,7 @@ internal static class SvgRasterGradientValues {
 
         if (stopColor != null) stopColor = SvgRasterCssVariables.Resolve(stopColor, customProperties);
         if (stopOpacity != null) stopOpacity = SvgRasterCssVariables.Resolve(stopOpacity, customProperties);
-        if (!SvgRasterColor.TryParse(stopColor, out var color)) color = ChartColor.Black;
+        var color = SvgRasterPaint.Parse(stopColor ?? string.Empty, style.Color, SvgRasterPaint.Solid(ChartColor.Black)).Color ?? ChartColor.Black;
         return new RasterGradientStop(Math.Max(0, Math.Min(1, ParseCoordinate(element.Get("offset"), 0))), WithOpacity(color, ParseOpacity(stopOpacity, 1)));
     }
 

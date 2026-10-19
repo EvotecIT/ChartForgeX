@@ -176,6 +176,14 @@ internal sealed class SvgRasterStyle {
 
     [ThreadStatic] private static List<SvgStyleDeclaration>? _declarations;
 
+    /// <summary>Reconstructs the computed style of a definition in its original element ancestry.</summary>
+    public static SvgRasterStyle ResolveWithAncestors(SvgRasterElement element, SvgRasterStyleSheet styleSheet, IReadOnlyList<SvgRasterElement> ancestors) {
+        var parent = Default;
+        for (var index = 0; index < ancestors.Count; index++)
+            parent = Resolve(parent, ancestors[index], styleSheet, AncestorsBefore(ancestors, index));
+        return Resolve(parent, element, styleSheet, ancestors);
+    }
+
     private static string MergeTextDecorations(string inherited, string local) {
         var underline = ContainsDecoration(inherited, "underline") || ContainsDecoration(local, "underline");
         var strikethrough = ContainsDecoration(inherited, "line-through") || ContainsDecoration(local, "line-through");
