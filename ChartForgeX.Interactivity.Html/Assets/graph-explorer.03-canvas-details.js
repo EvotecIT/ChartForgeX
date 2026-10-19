@@ -61,7 +61,7 @@
       const fullLabel = node.label || attr(node.el, 'data-node-label');
       const label = card ? graphCardText(fullLabel, node.size) : fullLabel;
       const labelX = card ? node.x - cardHalfWidth + 52 : node.x;
-      const labelY = node.shape === 'text' ? node.y : card ? node.y - 5 : node.y + node.size + 8;
+      const labelY = node.shape === 'text' ? node.y : card ? node.y + graphCardCaptionBaseline(node) : node.y + node.size + 8;
       if (node.labelBackgroundColor) {
         if (!card) {
           const metrics = context.measureText(label);

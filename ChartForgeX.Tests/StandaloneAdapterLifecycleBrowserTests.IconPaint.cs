@@ -41,6 +41,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             await page.EvaluateAsync("()=>document.fonts.ready.then(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))");
             var facts = await page.EvaluateAsync<JsonElement>(GraphIconPaintFacts);
             await WriteReceiptAsync($"graph-icons-{backend}-{width}-{dark}", facts);
+            await CaptureAsync(page, $"graph-icons-{backend}-{width}-{dark}");
             Assert.Equal(expected, facts.GetProperty("actual").GetString());
             Assert.Equal(4, facts.GetProperty("icons").GetArrayLength());
             foreach (var icon in facts.GetProperty("icons").EnumerateArray()) {
@@ -52,7 +53,6 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             Assert.Equal("+1234567890", facts.GetProperty("badge").GetString());
             Assert.Equal("+1234567890", facts.GetProperty("exportedBadge").GetString());
             Assert.Equal("KERBEROS.MICROSOFTONLINE.COM😀", facts.GetProperty("fullTitle").GetString());
-            await CaptureAsync(page, $"graph-icons-{backend}-{width}-{dark}");
         }
         var point = await GraphPointAsync(page, "d");
         await page.Mouse.ClickAsync((float)point.GetProperty("x").GetDouble(), (float)point.GetProperty("y").GetDouble());

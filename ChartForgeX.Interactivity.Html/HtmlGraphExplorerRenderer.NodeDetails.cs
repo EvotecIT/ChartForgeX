@@ -11,6 +11,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var textShape = node.Shape == GraphNodeShape.Text;
         var cardNode = IsCardNode(node);
         var cardTextX = -BoxHalfWidth(size) + 52;
+        var cardTextY = CardCaptionBaseline(node);
         if (includeText && !cardNode && !string.IsNullOrWhiteSpace(node.Style.LabelBackgroundColor)) {
             writer.Append("<rect class=\"cfx-graph-node-label-bg\" x=\"");
             writer.Append(Number(-Math.Max(24, node.Label.Length * 3.8)));
@@ -29,7 +30,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append("\"");
             if (cardNode) Attribute(writer, "x", Number(cardTextX));
             if (cardNode) Attribute(writer, "data-cfx-full-label", node.Label);
-            Attribute(writer, "y", Number(cardNode ? -5 : textShape ? 4 : size + 18));
+            Attribute(writer, "y", Number(cardNode ? cardTextY : textShape ? 4 : size + 18));
             var labelStyle = NodeLabelStyle(node);
             if (!string.IsNullOrWhiteSpace(labelStyle)) Attribute(writer, "style", labelStyle);
             writer.Append('>');
@@ -43,7 +44,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append("\"");
             if (cardNode) Attribute(writer, "x", Number(cardTextX));
             if (cardNode) Attribute(writer, "data-cfx-full-label", node.SecondaryLabel);
-            Attribute(writer, "y", Number(cardNode ? 14 : textShape ? 18 : size + 32));
+            Attribute(writer, "y", Number(cardNode ? cardTextY + 19 : textShape ? 18 : size + 32));
             writer.Append('>');
             writer.Append(Text(cardNode ? CardText(node.SecondaryLabel!, size, true) : node.SecondaryLabel!));
             writer.Append("</text>");
@@ -77,6 +78,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append("></circle>");
         }
     }
+
+    private const double BadgedCardCaptionClearance = 4;
+
+    /// <summary>Reserves the badge's top strip while preserving unbadged card captions.</summary>
+    private static double CardCaptionBaseline(GraphSceneNode node) =>
+        -5 + (string.IsNullOrWhiteSpace(node.BadgeText) ? 0 : BadgedCardCaptionClearance);
 
     /// <summary>Measures the complete badge text and reserves padding without changing its corner anchor.</summary>
     private static ChartRect NodeBadgeBounds(GraphSceneNode node, double size) {

@@ -12,6 +12,8 @@
     return { x: size, y: size };
   };
   const graphCardTextAvailableWidth = size => Math.max(28, size * 2.9 - 78);
+  const graphBadgedCardCaptionClearance = 4;
+  const graphCardCaptionBaseline = node => -5 + ((node.badge || attr(node.el, 'data-node-badge')) ? graphBadgedCardCaptionClearance : 0);
   const graphEstimatedCardTextWidth = (value, secondary = false) => {
     let width = 0;
     Array.from(String(value || '')).forEach(character => {

@@ -76,11 +76,11 @@
         style: `fill:${node.labelBackgroundColor};stroke:none;stroke-width:0;pointer-events:none`
       }));
     }
-    const label = svgNode(document, 'text', { class: card ? 'cfx-graph-node-label cfx-graph-node-card-label' : 'cfx-graph-node-label', x: card ? cardX : 0, y: card ? -5 : textShape ? 4 : node.size + 18, ...(card ? { 'data-cfx-full-label': node.label } : {}) });
+    const label = svgNode(document, 'text', { class: card ? 'cfx-graph-node-label cfx-graph-node-card-label' : 'cfx-graph-node-label', x: card ? cardX : 0, y: card ? graphCardCaptionBaseline(node) : textShape ? 4 : node.size + 18, ...(card ? { 'data-cfx-full-label': node.label } : {}) });
     label.textContent = card ? graphCardText(node.label, node.size) : node.label;
     group.appendChild(label);
     if (node.secondaryLabel) {
-      const secondary = svgNode(document, 'text', { class: card ? 'cfx-graph-node-secondary cfx-graph-node-card-secondary' : 'cfx-graph-node-secondary', x: card ? cardX : 0, y: card ? 14 : textShape ? 18 : node.size + 32, ...(card ? { 'data-cfx-full-label': node.secondaryLabel } : {}) });
+      const secondary = svgNode(document, 'text', { class: card ? 'cfx-graph-node-secondary cfx-graph-node-card-secondary' : 'cfx-graph-node-secondary', x: card ? cardX : 0, y: card ? graphCardCaptionBaseline(node) + 19 : textShape ? 18 : node.size + 32, ...(card ? { 'data-cfx-full-label': node.secondaryLabel } : {}) });
       secondary.textContent = card ? graphCardText(node.secondaryLabel, node.size, true) : node.secondaryLabel;
       group.appendChild(secondary);
     }

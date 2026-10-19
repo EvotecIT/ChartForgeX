@@ -116,13 +116,13 @@
     }
     const label = svgElement(root, 'text'); label.classList.add('cfx-graph-node-label');
     if (card) { label.classList.add('cfx-graph-node-card-label'); label.setAttribute('x', String(cardX)); label.setAttribute('data-cfx-full-label', labelText); }
-    label.setAttribute('y', card ? '-5' : shape === 'text' ? '4' : String(size + 18)); label.textContent = card ? graphCardText(labelText, size) : labelText;
+    label.setAttribute('y', card ? String(graphCardCaptionBaseline(node)) : shape === 'text' ? '4' : String(size + 18)); label.textContent = card ? graphCardText(labelText, size) : labelText;
     if (node.style?.labelColor) label.setAttribute('style', `--cfx-node-label-explicit:${node.style.labelColor}`);
     details.appendChild(label);
     if (node.secondaryLabel) {
       const secondary = svgElement(root, 'text'); secondary.classList.add('cfx-graph-node-secondary');
       if (card) { secondary.classList.add('cfx-graph-node-card-secondary'); secondary.setAttribute('x', String(cardX)); secondary.setAttribute('data-cfx-full-label', node.secondaryLabel); }
-      secondary.setAttribute('y', String(card ? 14 : shape === 'text' ? 18 : size + 32)); secondary.textContent = card ? graphCardText(node.secondaryLabel, size, true) : node.secondaryLabel; details.appendChild(secondary);
+      secondary.setAttribute('y', String(card ? graphCardCaptionBaseline(node) + 19 : shape === 'text' ? 18 : size + 32)); secondary.textContent = card ? graphCardText(node.secondaryLabel, size, true) : node.secondaryLabel; details.appendChild(secondary);
     }
     if (node.badge) {
       const geometry = graphBadgeGeometry({ ...node, size }, root);
