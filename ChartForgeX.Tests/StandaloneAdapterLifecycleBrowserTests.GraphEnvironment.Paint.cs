@@ -81,6 +81,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         var screenshot = await page.ScreenshotAsync(new() { Animations = ScreenshotAnimations.Disabled });
         var painted = await page.EvaluateAsync<bool>("""
             async({png,facts})=>{
+                facts=JSON.parse(facts);
                 const image=new Image();image.src='data:image/png;base64,'+png;await image.decode();
                 const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
                 const context=canvas.getContext('2d');context.drawImage(image,0,0);
@@ -96,7 +97,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                     }
                 return false;
             }
-            """, new { png = Convert.ToBase64String(screenshot), facts });
+            """, new { png = Convert.ToBase64String(screenshot), facts = facts.GetRawText() });
         await WriteReceiptAsync(name, JsonSerializer.SerializeToElement(new { focus = facts, painted }));
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Assert.True(Path.IsPathRooted(output), "Graph environment captures need an absolute task-owned folder.");

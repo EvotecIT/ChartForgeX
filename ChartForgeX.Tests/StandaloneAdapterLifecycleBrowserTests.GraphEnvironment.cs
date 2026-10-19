@@ -43,7 +43,11 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             """);
         var root = page.Locator(".cfx-graph-explorer");
         var actual = await root.GetAttributeAsync("data-cfx-graph-renderer-active");
-        if (backend == HtmlGraphRenderBackend.WebGl) Assert.Contains(actual, new[] { "webgl", "canvas" });
+        if (backend == HtmlGraphRenderBackend.WebGl) {
+            Assert.Contains(actual, new[] { "webgl", "canvas" });
+            var available = await page.EvaluateAsync<bool>("()=>!!retainedGraph.querySelector('[data-cfx-role=graph-webgl]').getContext('webgl2')");
+            if (available) Assert.Equal("webgl", actual);
+        }
         else Assert.Equal(backend.ToString().ToLowerInvariant(), actual);
         var name = "graph-environment-" + backend + "-" + (dark ? "dark" : "light");
         await CaptureGraphEnvironmentAsync(page, name + "-baseline");

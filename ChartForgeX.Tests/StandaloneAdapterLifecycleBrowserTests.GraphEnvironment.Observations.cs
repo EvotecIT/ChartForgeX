@@ -81,14 +81,15 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             ()=>{
                 const root=retainedGraph,active=document.activeElement,visible=node=>node.getClientRects().length&&getComputedStyle(node).visibility!=='hidden',
                     controls=[...root.querySelectorAll('button,input,select,summary')].filter(visible);
-                return {requested:root.dataset.cfxGraphRenderer,actual:root.dataset.cfxGraphRendererActive,
+                return {requested:root.dataset.cfxGraphRenderer,actual:root.dataset.cfxGraphRendererActive,fallback:root.dataset.cfxGraphRendererFallback,
+                    webGlContextAvailable:root.dataset.cfxGraphRenderer==='webgl'?!!root.querySelector('[data-cfx-role=graph-webgl]').getContext('webgl2'):null,
                     forced:matchMedia('(forced-colors:active)').matches,reduced:matchMedia('(prefers-reduced-motion:reduce)').matches,
                     print:matchMedia('print').matches,hostCssZoom:getComputedStyle(document.documentElement).zoom,
                     language:document.documentElement.lang,direction:getComputedStyle(root).direction,
                     selection:ChartForgeXGraphExplorer.captureState(root).selection,viewport:ChartForgeXGraphExplorer.captureState(root).viewport,
                     highlighted:[...root.querySelectorAll('[data-cfx-highlighted=true]')].map(node=>node.dataset.nodeId||node.dataset.edgeId),
                     readout:{hidden:root.querySelector('.cfx-graph-tooltip').hidden,text:root.querySelector('.cfx-graph-tooltip').textContent},
-                    focus:{tag:active?.localName,name:active?.getAttribute('aria-label')||active?.textContent,visible:active?.matches(':focus-visible')},
+                    focus:{tag:active?.localName,name:root.contains(active)?active?.getAttribute('aria-label')||active?.textContent:'',visible:active?.matches(':focus-visible')},
                     pageOverflow:Math.max(0,document.documentElement.scrollWidth-innerWidth),
                     controls:controls.map(node=>({tag:node.localName,name:node.getAttribute('aria-label')||[...(node.labels||[])].map(label=>label.textContent).join(' ')||node.textContent,
                         box:node.getBoundingClientRect().toJSON(),disabled:node.disabled,expanded:node.getAttribute('aria-expanded'),transition:getComputedStyle(node).transitionDuration}))};
