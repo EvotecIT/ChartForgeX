@@ -1,0 +1,83 @@
+using System.Text.Json;
+using ChartForgeX.Core;
+using ChartForgeX.Interactivity;
+using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using Microsoft.Playwright;
+using Xunit;
+using static ChartForgeX.Tests.InteractiveChartBrowser;
+
+namespace ChartForgeX.Tests;
+
+public sealed class ScenarioReadabilityBrowserTests {
+    [BrowserTheory]
+    [InlineData(false, false, 1440)]
+    [InlineData(true, false, 390)]
+    [InlineData(false, true, 390)]
+    [InlineData(true, true, 1440)]
+    public async Task ScenarioHeadingsAndProgressRemainReadableInStandaloneAndThemedHosts(bool dark, bool host, int width) {
+        if (!Enabled) return;
+        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(640, 280)
+            .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("counts"), "Counts", new[] { new ChartPoint(1, 7), new ChartPoint(2, 3) }));
+        var interactive = new HtmlInteractiveChartRenderer().RenderFragment(chart, options => {
+            options.Interaction.Enable(ChartInteractionFeatures.Scenarios | ChartInteractionFeatures.StepPlayback);
+            options.Interaction.AddScenario("route", "Review route", scenario => scenario
+                .AddSeriesStep("counts", "Observe").AddSeriesStep("counts", "Confirm"));
+        });
+        var topology = TopologyChart.Create().WithTheme(VisualTheme.Graphite(), mode).WithViewport(640, 240, 20)
+            .AddNode("a", "API", 80, 100).AddNode("b", "Worker", 340, 100)
+            .AddScenario("route", "Topology route", scenario => scenario.AddNodeStep("a").AddNodeStep("b"));
+        var topologyHtml = new HtmlInteractiveTopologyRenderer().RenderFragment(topology,
+            new TopologyRenderOptions { ActiveScenarioId = "route", EnableHtmlSelectionPanel = false });
+        var background = dark ? "#0f172a" : "#ffffff";
+        var foreground = dark ? "#e5e7eb" : "#0f172a";
+        var hostStyle = host ? $".host .cfx-scenario-panel{{background:{background};color:{foreground}}}" : "";
+        var html = $"<!doctype html><html><head><style>body{{margin:0;background:{background};color:{foreground}}}main{{max-width:760px;margin:auto;padding:12px}}{hostStyle}</style></head><body><main class='host'>{topologyHtml}{interactive}</main></body></html>";
+        await using var session = await OpenAsync(html, width, 1000);
+        var page = session.Page;
+        var errors = new List<string>();
+        page.PageError += (_, error) => errors.Add(error);
+        await page.EmulateMediaAsync(new PageEmulateMediaOptions { ColorScheme = dark ? ColorScheme.Dark : ColorScheme.Light });
+        await page.Locator("[data-cfx-scenario='route']").ClickAsync();
+        var observations = new List<JsonElement>();
+        for (var step = 0; step <= 2; step++) {
+            if (step > 0) await page.Locator(".cfx-scenario-panel__steps li").Nth(step - 1).ClickAsync();
+            await page.Locator(".cfx-scenario-progress__bar").EvaluateAsync("node => { void getComputedStyle(node).width; }");
+            await page.WaitForFunctionAsync("() => document.querySelector('.cfx-scenario-progress__bar').getAnimations().every(animation => animation.playState !== 'running')");
+            observations.Add(await page.EvaluateAsync<JsonElement>("""
+                step => {
+                  const canvas=document.createElement('canvas'); canvas.width=canvas.height=1;
+                  const ctx=canvas.getContext('2d',{willReadFrequently:true,colorSpace:'srgb'});
+                  function rgba(color) {ctx.clearRect(0,0,1,1);ctx.fillStyle=color;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data].map((v,i)=>i===3?v/255:v);}
+                  function over(top,base) {return top.slice(0,3).map((v,i)=>v*top[3]+base[i]*(1-top[3]));}
+                  function luminance(c) {return c.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);}
+                  function facts(selector,progress) {
+                    const node=document.querySelector(selector), chain=[];for(let p=node;p;p=p.parentElement)chain.unshift(p);
+                    let bg=[255,255,255];for(const p of chain)bg=over(rgba(getComputedStyle(p).backgroundColor),bg);
+                    const ink=rgba(getComputedStyle(node).color),fg=over(ink,bg),l1=luminance(fg),l2=luminance(bg);
+                    let ratio=(Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05);
+                    if(progress){const bar=document.querySelector('.cfx-scenario-progress__bar');if(bar.getBoundingClientRect().width>0){const fill=over(rgba(getComputedStyle(bar).backgroundColor),bg),fl=luminance(over(ink,fill)),bl=luminance(fill);ratio=Math.min(ratio,(Math.max(fl,bl)+.05)/(Math.min(fl,bl)+.05));}}
+                    return {selector,text:node.textContent,ratio,ink,background:bg};
+                  }
+                  return {step,labels:[facts('.cfx-topology-scenario-panel__title',false),facts('.cfx-scenario-panel__title',false),facts('.cfx-scenario-panel__meta',false),facts('.cfx-scenario-panel__steps li',false),facts('.cfx-scenario-progress__text',true)]};
+                }
+                """, step));
+        }
+        var root = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");
+        if (!string.IsNullOrWhiteSpace(root)) {
+            var folder = Path.Combine(root, "scenario-readability"); Directory.CreateDirectory(folder);
+            var name = (host ? "host" : "standalone") + (dark ? "-dark-" : "-light-") + width;
+            await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(folder, name + ".png"), FullPage = true });
+            File.WriteAllText(Path.Combine(folder, name + ".html"), html);
+            File.WriteAllText(Path.Combine(folder, name + ".json"), JsonSerializer.Serialize(observations));
+        }
+        foreach (var observation in observations)
+            foreach (var label in observation.GetProperty("labels").EnumerateArray())
+                Assert.True(label.GetProperty("ratio").GetDouble() >= 4.5, label.GetRawText());
+        Assert.Empty(errors);
+        AssertNoConsoleErrors(session);
+    }
+}
