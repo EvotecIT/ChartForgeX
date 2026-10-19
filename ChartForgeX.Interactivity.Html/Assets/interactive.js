@@ -15,8 +15,8 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
-  // Complete word-cloud source inventory describes facts; the painted term owns interaction.
-  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"],[data-cfx-role="word-cloud-source"]');
+  // Complete source catalogs describe facts; their painted observations own interaction.
+  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"],[data-cfx-role="word-cloud-source"],[data-cfx-positioning="absolute"][data-cfx-stop-count]');
   const isInteractiveTarget = (node) => {
     if (isPassiveTarget(node)) return false;
     const role = (node.dataset || {}).cfxRole;
