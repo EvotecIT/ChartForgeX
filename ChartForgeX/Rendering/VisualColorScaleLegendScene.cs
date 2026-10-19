@@ -43,7 +43,10 @@ internal static partial class VisualColorScaleLegendScene {
         var rows = scale.Mode == ChartColorScaleMode.Discrete ? (int)Math.Ceiling(scale.Bands.Count / (double)columns) : 1;
         var inlineMidpoint = compact && InlineMidpoint(builder, scale, labels, style, gap, width, min, max, formatValues, legendStyle);
         var extra = (scale.MidpointLabel != null && !inlineMidpoint ? row + gap : 0) + (missing && !inlineMissing ? row + gap : 0);
-        return headingHeight + Math.Max(0, Math.Min(maximum, rows * (12 + row + gap) + gap + extra));
+        var wanted = rows * (12 + row + gap) + gap + extra;
+        if (MissingHeadingWidth(builder, labels, style, gap, width, headingHeight, maximum, wanted, missing && !inlineMissing, heading) > 0)
+            wanted -= row + gap;
+        return headingHeight + Math.Max(0, Math.Min(maximum, wanted));
     }
 
     /// <summary>Draws shared canonical stops or bands, retaining full captions and domains independently of viewport fit.</summary>
@@ -64,9 +67,12 @@ internal static partial class VisualColorScaleLegendScene {
         var columns = Columns(builder, scale, labels, style, bounds.Width, gap, formatValues);
         var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues) : null;
         var inlineMidpoint = hasDomain && compact && InlineMidpoint(builder, scale, labels, style, gap, bounds.Width, min, max, formatValues, legendStyle);
-        var extra = (scale.MidpointLabel != null && !inlineMidpoint ? row + gap : 0) + (missing && !missingBounds.HasValue ? row + gap : 0);
-        var available = Math.Max(0, bounds.Height - gap - extra);
         var rows = captions != null ? (int)Math.Ceiling(captions.Length / (double)columns) : 1;
+        var extra = (scale.MidpointLabel != null && !inlineMidpoint ? row + gap : 0) + (missing && !missingBounds.HasValue ? row + gap : 0);
+        var missingHeadingWidth = hasDomain ? MissingHeadingWidth(builder, labels, style, gap, bounds.Width, headingHeight, bounds.Height,
+            rows * (12 + row + gap) + gap + extra, missing && !missingBounds.HasValue, heading) : 0;
+        if (missingHeadingWidth > 0) extra -= row + gap;
+        var available = Math.Max(0, bounds.Height - gap - extra);
         if (hasDomain && rows * (12 + row + gap) > available + .000001) {
             // Fit more bands in each row before sacrificing caption height. Complete intervals remain in regions.
             if (captions != null) {
@@ -89,7 +95,13 @@ internal static partial class VisualColorScaleLegendScene {
         builder.AddRegion(new VisualSemanticRegion(prefix, prefix, fullBounds, !hasDomain ? labels.NoData : captions != null ? string.Join("; ", captions)
             : string.Join(" – ", formatValues(new[] { scale.EffectiveMinimum(min), scale.EffectiveMaximum(max) }))));
         using (builder.PushGroup(prefix, prefix, metadata)) {
-            Heading(builder, fullBounds, style, prefix, heading);
+            var headingBounds = missingHeadingWidth > 0
+                ? new ChartRect(fullBounds.Left, fullBounds.Top, fullBounds.Width - missingHeadingWidth - gap, fullBounds.Height) : fullBounds;
+            Heading(builder, headingBounds, style, prefix, heading);
+            if (missingHeadingWidth > 0) {
+                var lane = new ChartRect(fullBounds.Right - missingHeadingWidth, fullBounds.Top, missingHeadingWidth, row);
+                using (builder.PushClip(lane)) Missing(lane.Top, lane);
+            }
             PositionedStops(builder, scale, fullBounds, prefix, formatValues, valueName);
             if (missing && missingBounds.HasValue) using (builder.PushClip(missingBounds.Value)) Missing(missingBounds.Value.Top, missingBounds);
             using (builder.PushClip(bounds)) {
@@ -138,7 +150,7 @@ internal static partial class VisualColorScaleLegendScene {
                     Midpoint(y);
                     y += row + gap;
                 }
-                if (missing && !missingBounds.HasValue) Missing(y);
+                if (missing && !missingBounds.HasValue && missingHeadingWidth == 0) Missing(y);
             }
         }
 
@@ -171,6 +183,17 @@ internal static partial class VisualColorScaleLegendScene {
             var captionStyle = captions != null || id == "midpoint" ? FitCaptionStyle(builder, text, style, box.Width) : style;
             VisualStateSceneTools.Text(builder, text, box, captionStyle, prefix + "-label", prefix + "-label-" + id, alignment);
         }
+    }
+
+    /// <summary>Shares a crowded legacy key's heading with the complete missing-data entry before sacrificing its color strip.</summary>
+    private static double MissingHeadingWidth(VisualSceneBuilder builder, ChartLabels labels, TextStyle style, double gap,
+        double width, double headingHeight, double bodyHeight, double wantedBodyHeight, bool missing, string? heading) {
+        if (!missing || heading == null || wantedBodyHeight <= bodyHeight + .000001) return 0;
+        var row = builder.MeasureText("Mg", style).Height;
+        if (headingHeight + .000001 < row) return 0;
+        var missingWidth = row + builder.MeasureText(labels.NoData, style).Width + gap / 2;
+        // The heading uses the existing bounded text fitter; its full caption stays in the semantic region.
+        return width - missingWidth - gap >= builder.MeasureText("…", style).Width ? missingWidth : 0;
     }
 
     /// <summary>Keeps the numeric anchor centered when readable; edge captions face inward within the measured key.</summary>
