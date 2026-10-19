@@ -11,12 +11,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class AutomaticNumericXAxisTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void DocumentSizedCapacitySpecimenPaintsAllSixAutomaticCaptions(VisualThemeMode mode) {
+    [InlineData(VisualThemeMode.Light, 6)]
+    [InlineData(VisualThemeMode.Dark, 6)]
+    [InlineData(VisualThemeMode.Light, 10)]
+    [InlineData(VisualThemeMode.Dark, 10)]
+    public void DocumentSizedSmallIntegerSpecimensPaintEveryAutomaticCaption(VisualThemeMode mode, int count) {
         var observed = new[] { 42, 58, 73, 91, 67, 82 };
-        var chart = Chart.Create().AddLine("Observed", observed.Select((value, index) => new ChartPoint(index + 1, value)))
-            .AddLine("Capacity", Enumerable.Range(1, 6).Select(index => new ChartPoint(index, 100)));
+        var chart = Chart.Create().AddLine("Observed", Enumerable.Range(1, count).Select(index => new ChartPoint(index, observed[(index - 1) % observed.Length])))
+            .AddLine("Capacity", Enumerable.Range(1, count).Select(index => new ChartPoint(index, 100)));
+        if (count == 10) chart.WithXAxisBounds(1, count);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 360), padding: 24),
             VisualTheme.Graphite().WithTypography(new VisualTypography("Arial", 24, 16, 15, 15, 15)), mode,
             new VisualFrame("Service capacity", "Events per minute · six observation intervals", showLegend: true,
@@ -25,7 +28,7 @@ public sealed class AutomaticNumericXAxisTests {
         Assert.Empty(chart.Options.XAxis.Labels);
         var prepared = chart.Prepare(context);
         var labels = Labels(prepared);
-        Assert.Equal(new[] { "1", "2", "3", "4", "5", "6" }, labels.Select(Text));
+        Assert.Equal(Enumerable.Range(1, count).Select(value => value.ToString(CultureInfo.InvariantCulture)), labels.Select(Text));
         Assert.Equal(labels.Select(Text), XDocument.Parse(prepared.ToSvg()).Descendants()
             .Where(element => (string?)element.Attribute("data-cfx-role") == "axis-x-label").Select(element => element.Value));
         var png = PngReader.Decode(prepared.ToPng());

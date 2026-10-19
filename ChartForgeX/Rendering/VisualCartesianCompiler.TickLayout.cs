@@ -53,12 +53,15 @@ internal static partial class VisualCartesianCompiler {
         if (!ChartMath.IsFinite(span)) return axis.TickCount;
         // Keep the established fractional resolution on short domains. On larger
         // domains, padding must not turn a fitting unit step into a step of two.
+        var unitCount = Math.Max(axis.TickCount, Math.Ceiling(span) + 1);
+        // Small domains must reach their unit-step candidate before a broad-domain
+        // density budget can limit them. Measured captions decide whether it fits.
+        if (unitCount <= 100) return (int)unitCount;
         // A readable five-em pitch bounds the automatic search on wide numeric
-        // domains. Allow one extra boundary budget for nice-step alignment;
-        // complete formatted captions still decide whether each scale fits.
+        // domains. Allow one extra boundary budget for nice-step alignment.
         var budget = axis.LabelDensity == ChartLabelDensity.Dense ? 100
             : Math.Max(axis.TickCount + 1, Math.Floor(length / (style.EffectiveFontSize * 5)) + 2);
-        return (int)Math.Min(100, Math.Min(budget, Math.Max(axis.TickCount, Math.Ceiling(span) + 1)));
+        return (int)Math.Min(100, Math.Min(budget, unitCount));
     }
 
     private static void FitCartesianTicks(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
