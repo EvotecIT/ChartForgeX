@@ -14,7 +14,7 @@
     const series = metadata.series || [];
     const annotations = annotationCatalog(svg, metadata);
     svg.querySelectorAll('[data-cfx-role="annotation"]').forEach(node => {
-      node._cfxAnnotationId = annotations.get(node.dataset.cfxSourceId);
+      node._cfxAnnotationId = annotations.get(node);
     });
     root._cfxDataProjection = metadata.dataProjection || null;
     root._cfxObservationIds = series.map(item => new Map((item.observationIds || []).map(value => [value.index, value.id])));

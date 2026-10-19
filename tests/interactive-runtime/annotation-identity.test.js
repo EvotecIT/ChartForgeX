@@ -18,7 +18,7 @@ function fixture() {
   const mark = (sourceId, annotationId, label = 'Limit', value = '4') => {
     const node = { id: sourceId + '-dom', parentElement: root,
       dataset: { cfxRole: 'annotation', cfxKind: 'HorizontalLine', cfxSourceId: sourceId,
-        cfxTargetKind: 'annotation', cfxTargetId: sourceId, cfxLabel: label, cfxValue: value },
+        cfxLabel: label, cfxValue: value },
       getAttribute: () => null, closest: selector => selector === '.cfx-interactive-chart' ? root : selector === 'svg' ? svg : null };
     if (annotationId !== undefined) node.dataset.cfxAnnotationId = annotationId;
     nodes.push(node); return node;
@@ -56,6 +56,20 @@ test('native annotation catalogs reject missing, duplicate and mismatched bindin
     mutate(value => value.regions.shift())
   ]) assert.throws(() => f.api.annotationCatalog(f.svg, metadata), /prepared annotation metadata/);
   assert.equal(JSON.stringify(f.nodes), before);
+});
+
+test('anonymous annotations cannot claim registered or unknown authored namespaces through any target ID', () => {
+  for (const field of ['cfxSourceId', 'cfxId', 'cfxTargetId']) {
+    for (const registered of [true, false]) {
+      const f = fixture();
+      f.anonymous.dataset[field] = registered ? f.warning.dataset.cfxSourceId : 'annotation-id-unknown';
+      const before = JSON.stringify(f.nodes), binding = f.anonymous._cfxAnnotationId;
+      assert.throws(() => f.api.prepareChartTargets(f.root), /prepared annotation metadata/);
+      assert.equal(JSON.stringify(f.nodes), before);
+      assert.equal(f.anonymous._cfxAnnotationId, binding);
+      assert.equal(f.warning._cfxAnnotationId, 'warning');
+    }
+  }
 });
 
 test('resolved authored DTOs retain identity after refreshed facts and serialized selection while anonymous targets stay local', () => {

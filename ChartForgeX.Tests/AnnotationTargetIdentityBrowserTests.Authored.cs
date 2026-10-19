@@ -57,19 +57,25 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
         Assert.Equal(original.GetProperty("targetId").GetString(), await SelectedId(page));
         Assert.True(await warning.EvaluateAsync<bool>("node=>node.getRootNode().activeElement===node"));
         var atomic = await page.EvaluateAsync<JsonElement>("""
-            fragment=>{const template=document.createElement('template');template.innerHTML=fragment;
+            fragment=>['catalog','data-cfx-source-id','data-cfx-id','data-cfx-target-id'].map(field=>{
+                const template=document.createElement('template');template.innerHTML=fragment;
                 const next=template.content.firstElementChild,metadata=JSON.parse(next.dataset.cfxPreparedChart);
-                metadata.annotations[1].id=metadata.annotations[0].id;next.dataset.cfxPreparedChart=JSON.stringify(metadata);
+                if(field==='catalog'){
+                    metadata.annotations[1].id=metadata.annotations[0].id;next.dataset.cfxPreparedChart=JSON.stringify(metadata);
+                }else next.querySelector('[data-cfx-role=annotation]:not([data-cfx-annotation-id])')
+                    .setAttribute(field,next.querySelector('[data-cfx-annotation-id=warning]').dataset.cfxSourceId);
                 const before=annotationRoot.innerHTML,revision=annotationController.sceneRevision,focus=annotationRoot.getRootNode().activeElement;
                 let rejected=false;try{annotationController.update(next);}catch(error){rejected=error instanceof TypeError;}
-                return{rejected,unchanged:before===annotationRoot.innerHTML,revision:revision===annotationController.sceneRevision,
-                    focus:focus===annotationRoot.getRootNode().activeElement,selected:annotationController.getSelection()};}
+                return{field,rejected,unchanged:before===annotationRoot.innerHTML,revision:revision===annotationController.sceneRevision,
+                    focus:focus===annotationRoot.getRootNode().activeElement,selected:annotationController.getSelection()};})
             """, replacement);
-        Assert.True(atomic.GetProperty("rejected").GetBoolean());
-        Assert.True(atomic.GetProperty("unchanged").GetBoolean());
-        Assert.True(atomic.GetProperty("revision").GetBoolean());
-        Assert.True(atomic.GetProperty("focus").GetBoolean());
-        Assert.Equal("warning", Assert.Single(atomic.GetProperty("selected").EnumerateArray()).GetProperty("annotationId").GetString());
+        Assert.All(atomic.EnumerateArray(), outcome => {
+            Assert.True(outcome.GetProperty("rejected").GetBoolean(), outcome.GetProperty("field").GetString());
+            Assert.True(outcome.GetProperty("unchanged").GetBoolean());
+            Assert.True(outcome.GetProperty("revision").GetBoolean());
+            Assert.True(outcome.GetProperty("focus").GetBoolean());
+            Assert.Equal("warning", Assert.Single(outcome.GetProperty("selected").EnumerateArray()).GetProperty("annotationId").GetString());
+        });
         await AuthoredExports(page, dark);
         await CaptureAuthored(session, "authored-annotation-retained-" + dark, html);
 
