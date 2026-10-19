@@ -7,6 +7,7 @@ namespace ChartForgeX.Tests;
 public sealed partial class StandaloneAdapterLifecycleBrowserTests {
     private static async Task AssertGraphEnvironmentRapidInputAsync(IPage page, string name) {
         var clear = page.GetByRole(AriaRole.Button, new() { Name = "Clear selection", Exact = true });
+        var selectionModifier = OperatingSystem.IsMacOS() ? "Meta" : "Control";
         var observations = new List<JsonElement>();
         async Task ObserveAsync(string action, string expected, int before) {
             var facts = await page.EvaluateAsync<JsonElement>("""
@@ -20,10 +21,10 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         }
         async Task ActivateAsync(string id, bool modified = false) {
             var before = await page.EvaluateAsync<int>("()=>graphEnvironmentSelections");
-            if (modified) await page.Keyboard.DownAsync("Control");
+            if (modified) await page.Keyboard.DownAsync(selectionModifier);
             try { await ClickGraphEnvironmentPointAsync(page, id); }
-            finally { if (modified) await page.Keyboard.UpAsync("Control"); }
-            await ObserveAsync((modified ? "Ctrl+" : "") + "click " + id, modified ? "" : id, before);
+            finally { if (modified) await page.Keyboard.UpAsync(selectionModifier); }
+            await ObserveAsync((modified ? selectionModifier + "+" : "") + "click " + id, modified ? "" : id, before);
         }
         try {
             await clear.ClickAsync();
