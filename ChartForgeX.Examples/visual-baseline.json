@@ -194,6 +194,198 @@
       }
     },
     {
+      "name": "cartesian-grouped-months-390-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 390,
+      "height": 520,
+      "logicalWidth": 390.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 405588,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 753,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "cartesian-grouped-months-390-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 390,
+      "height": 520,
+      "logicalWidth": 390.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 405588,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 793,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "cartesian-grouped-months-960-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 520,
+      "logicalWidth": 960.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 998388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 831,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "cartesian-grouped-months-960-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 520,
+      "logicalWidth": 960.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 998388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 847,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "cartesian-grouped-sites-390-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 390,
+      "height": 520,
+      "logicalWidth": 390.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 405588,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 513,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "cartesian-grouped-sites-390-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 390,
+      "height": 520,
+      "logicalWidth": 390.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 19,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 405588,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 554,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "cartesian-grouped-sites-960-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 520,
+      "logicalWidth": 960.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 998388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 507,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "cartesian-grouped-sites-960-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 520,
+      "logicalWidth": 960.0,
+      "logicalHeight": 520.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 998388,
+        "minTransparentPixels": 12,
+        "minDistinctColors": 554,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "chart-in-five-lines-story",
       "layout": {
         "heightMode": "fixed",
@@ -10054,198 +10246,6 @@
         "minVisiblePixels": 710470,
         "minTransparentPixels": 43930,
         "minDistinctColors": 1416,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "cartesian-grouped-months-390-dark",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 390,
-      "height": 520,
-      "logicalWidth": 390.0,
-      "logicalHeight": 520.0,
-      "svg": {
-        "minVisualNodes": 26,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 405588,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 753,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "cartesian-grouped-months-390-light",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 390,
-      "height": 520,
-      "logicalWidth": 390.0,
-      "logicalHeight": 520.0,
-      "svg": {
-        "minVisualNodes": 26,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 405588,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 793,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "cartesian-grouped-months-960-dark",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 960,
-      "height": 520,
-      "logicalWidth": 960.0,
-      "logicalHeight": 520.0,
-      "svg": {
-        "minVisualNodes": 26,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 998388,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 831,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "cartesian-grouped-months-960-light",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 960,
-      "height": 520,
-      "logicalWidth": 960.0,
-      "logicalHeight": 520.0,
-      "svg": {
-        "minVisualNodes": 26,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 998388,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 847,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "cartesian-grouped-sites-390-dark",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 390,
-      "height": 520,
-      "logicalWidth": 390.0,
-      "logicalHeight": 520.0,
-      "svg": {
-        "minVisualNodes": 19,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 405588,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 513,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "cartesian-grouped-sites-390-light",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 390,
-      "height": 520,
-      "logicalWidth": 390.0,
-      "logicalHeight": 520.0,
-      "svg": {
-        "minVisualNodes": 19,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 405588,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 554,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "cartesian-grouped-sites-960-dark",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 960,
-      "height": 520,
-      "logicalWidth": 960.0,
-      "logicalHeight": 520.0,
-      "svg": {
-        "minVisualNodes": 18,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 998388,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 507,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "cartesian-grouped-sites-960-light",
-      "layout": {
-        "heightMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 960,
-      "height": 520,
-      "logicalWidth": 960.0,
-      "logicalHeight": 520.0,
-      "svg": {
-        "minVisualNodes": 18,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 998388,
-        "minTransparentPixels": 12,
-        "minDistinctColors": 554,
         "maxEdgeInkPixels": 0
       }
     }
