@@ -102,6 +102,8 @@ try {
         'NamedTargetIdentityBrowserTests.NamedNativeTargetsSynchronizeOnlyWithinTheirExplicitSeries',
         'PeerHoverOwnershipBrowserTests.MissingSharedObservationPreservesPeersOwnKeyboardAffordancesThroughPointerAndClear',
         'PeerHoverOwnershipBrowserTests.ContinuousPlotTransitionsRetireOnlyTheSendersAcceptedPeerHover',
+        'GroupedCategoryAxisBrowserTests.GroupedCategoryContextStaysDetachedPassiveAndCurrentAcrossResizeAndReplacement',
+        'GroupedCategoryAxisBrowserTests.NativeCategoryWindowRetainsFullSourceContextThroughAcceptedViewportReplacement',
         'InteractiveChartLocalizationBrowserTests.TranslatedChromeAndDynamicAnnouncementsFollowNativeUpdatesWithoutReversingAxes',
         'InteractiveChartLocalizationBrowserTests.ChromeInheritsTheHostDirectionUnlessTheAuthorChoosesOne',
         'InteractiveSelectionDockBrowserTests.CompareActivationInspectsTheRequestedObservationWithoutChangingSelectionOrCoveringTheDock',

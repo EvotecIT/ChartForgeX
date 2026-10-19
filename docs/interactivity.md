@@ -297,6 +297,7 @@ are present when the source supports them:
 | Field | Meaning |
 | --- | --- |
 | `category` | The authored category or x-axis label. |
+| `categoryPath` | For a grouped Cartesian category, the complete parent path followed by the leaf caption. Each resolved descriptor receives its own copy. Category matching still uses `category`. |
 | `x` | The numeric x value, or an ISO date with a time zone. |
 | `numericValue` | The numeric value, separately from its formatted text. |
 | `value` | The prepared display value, or the named state for a state-timeline run. Use `numericValue` for numeric comparisons. |

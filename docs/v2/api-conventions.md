@@ -189,6 +189,31 @@ Public option callbacks use one transaction: clone current options, invoke the c
 
 Direct option setters remain supported. Assigning a value expresses intent even when it equals the default; nullable overrides can return to inheritance through null where documented. Text-style boolean assignments also preserve explicit false when overriding inherited italic, underline or strikethrough. Callback ownership applies to installed configuration; one-time data selector and formatter functions have their own documented execution lifetime.
 
+## Grouped category axes
+
+`ChartAxisLabel.Groups` describes a category's parents, from the outermost group to the nearest parent. Supply the original numeric coordinate and leaf caption as usual:
+
+```csharp
+var orders = Chart.Create().WithXAxis("Month").WithYAxis("Orders")
+    .WithXLabels(new[] {
+        new ChartAxisLabel(1.5, "Jan", "2026", "Q1"),
+        new ChartAxisLabel(2.5, "Feb", "2026", "Q1"),
+        new ChartAxisLabel(4, "Mar", "2026", "Q1"),
+        new ChartAxisLabel(5.25, "Apr", "2026", "Q2")
+    })
+    .AddBar("Actual", new[] {
+        new ChartPoint(1.5, 48), new ChartPoint(4, 62), new ChartPoint(5.25, 53)
+    });
+```
+
+February has a catalog slot and no observation. Grouping preserves numeric spacing, raw values, source order and observation IDs. The constructor copies the parent path; all nonempty paths in a chart must have the same depth. Repeated parent names form separate runs when an intervening category has another path or no group. Conflicting captions at the same coordinate and ambiguous mappings are rejected. Every observed category needs an explicit leaf label.
+
+Groups use the physical category axis: X for vertical charts and Y for horizontal charts. Configure horizontal labels through `ConfigureYAxis`; the existing `WithXLabels` fallback applies when Y has no explicit labels. Automatic bounds include the complete authored catalog, including leaves without observations. Explicit bounds remain exact. Supported native X windows clip the same full-source group cells rather than regrouping the visible observations.
+
+Parent tiers share the native SVG/PNG layout and remain passive descriptions. Captions can wrap, shorten or omit within the measured axis budget; `cartesian.category-group-overflow` reports that limit, while complete paths and source spans remain in semantics. Point readouts include the parent context. HTML target descriptors add `categoryPath`, ordered from the outermost parent through the leaf; `category` and category matching retain the leaf caption.
+
+Grouped labels require an ordinary Cartesian chart with a linear category axis. They do not enable grouped time/logarithmic axes, histogram or time-bucket aggregation, sparklines, matrix axes or radial categories. The [category examples](../../ChartForgeX.Examples/CartesianCategoryExamples.cs) demonstrate missing months, a Bar/Line mixture, and repeated horizontal site names in both themes.
+
 ## Numeric color presentation
 
 `ChartColorScale.WithValueRange(double? minimumValue, double? maximumValue)` fixes each uniform continuous endpoint independently. Use `WithValueRange(0, null)` to pin a count scale's floor while its peak follows observations, `WithValueRange(null, 100)` to pin a ceiling, or `WithValueRange(null, null)` to restore automatic bounds. Two supplied bounds must be finite and strictly ascending. Positioned stops require both fixed endpoints; discrete bands reject this method.
