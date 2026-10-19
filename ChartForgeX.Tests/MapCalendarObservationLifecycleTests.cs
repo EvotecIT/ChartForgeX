@@ -103,6 +103,7 @@ public sealed class MapCalendarObservationLifecycleTests {
 
     [Fact]
     public void DottedPointsKeepCoordinatesLabelsValuesAndColorsTogetherIncludingRepeatedCoordinates() {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapPoint("Invalid weight", 21, 52, -1));
         var input = new[] { new ChartMapPoint("Warsaw", 21, 52, 5), new ChartMapPoint("Paris", 2, 48, 9, ChartColor.FromHex("#123456")), new ChartMapPoint("Paris peer", 2, 48, 1) };
         var series = ChartSeries.CreateDottedMap(new ChartSeriesId("sites"), "Sites", input);
         var chart = Chart.Create().AddSeries(series).WithXLabels("Unrelated axis label");
@@ -149,7 +150,7 @@ public sealed class MapCalendarObservationLifecycleTests {
         var series = tile ? ChartSeries.CreateTileMap(new ChartSeriesId("regions"), "Regions", Tiles(), Values())
             : ChartSeries.CreateRegionMap(new ChartSeriesId("regions"), "Regions", Regions(), Values());
         Assert.Equal(new[] { "a-Mixed", "b-Mixed" }, series.RegionValues.Select(item => item.Region));
-        Assert.Equal(5, series.RegionValues[0].Value);
+        Assert.Equal(-5, series.RegionValues[0].Value);
         series.WithObservationId(0, new ChartObservationId("a"));
         var first = Chart.Create().WithXLabels("Unrelated").AddSeries(series);
         var before = first.ToSvg();
@@ -219,7 +220,7 @@ public sealed class MapCalendarObservationLifecycleTests {
         else if (series.Kind == ChartSeriesKind.CalendarHeatmap) series.ReplaceCalendarItems(new[] { new ChartCalendarHeatmapItem(First, 4) });
         else series.ReplaceRegionValues(new[] { new ChartRegionMapItem("Alpha", 4) });
     }
-    private static IEnumerable<ChartRegionMapItem> Values() => new[] { new ChartRegionMapItem("Beta", 1), new ChartRegionMapItem("Alpha alias", 2), new ChartRegionMapItem("A-mIXED", 3) };
+    private static IEnumerable<ChartRegionMapItem> Values() => new[] { new ChartRegionMapItem("Beta", 1), new ChartRegionMapItem("Alpha alias", -2), new ChartRegionMapItem("A-mIXED", -3) };
     private static ChartMapDefinition Regions() => new("owned-map", "Owned map", 100, 50, new[] {
         new ChartMapRegion("a-Mixed", "Alpha", "M0 0H50V50H0Z", aliases: new[] { "Alpha alias" }), new ChartMapRegion("b-Mixed", "Beta", "M50 0H100V50H50Z") });
     private static ChartTileMapDefinition Tiles() => new("owned-map", "Owned map", new[] {
