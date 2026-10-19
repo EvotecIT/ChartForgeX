@@ -182,6 +182,15 @@ internal sealed class ChartRange {
         foreach (var annotation in chart.Annotations) {
             range.Include(annotation, ChartCartesianOrientation.AnnotationKind(annotation, hasHorizontalSeries));
         }
+        // An opted-in category catalog describes the automatic domain even where a leaf has
+        // no observation. Explicit bounds below remain authoritative clipping policies.
+        var categoryCatalog = ChartCartesianOrientation.CategoryLabels(chart);
+        if (categoryCatalog.Any(label => label.Groups.Count > 0)) {
+            foreach (var leaf in categoryCatalog) {
+                if (hasHorizontalSeries) range.IncludeY(leaf.Value);
+                else range.IncludeX(leaf.Value);
+            }
+        }
         range.InitializeEmptyX(chart.Options.XAxis);
         range.InitializeEmptyY(chart.Options.YAxis);
         // Category padding supplies a centered nonzero interval for a single category.

@@ -86,8 +86,9 @@ internal static partial class VisualCartesianCompiler {
         var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range, stacks) : null;
         var labels = new CartesianLabels();
+        var categoryGroups = CategoryGroupSource.Create(chart, range);
         var layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
-            stacks, coordinates, bubbleScale, colors, categoryLabels, labels, expandMarkers: true);
+            stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: true);
         if (layout == null) {
             if (xViewport != null) throw new InvalidOperationException("An X viewport requires a usable plot rectangle.");
             return null;
@@ -104,7 +105,7 @@ internal static partial class VisualCartesianCompiler {
                 range = range.Copy(); range.SetXBounds(xViewport.Minimum, xViewport.Maximum);
                 secondaryRange = secondaryRange?.Copy(); secondaryRange?.SetXBounds(xViewport.Minimum, xViewport.Maximum);
                 layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
-                    stacks, coordinates, bubbleScale, colors, categoryLabels, labels, expandMarkers: false)
+                    stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: false)
                     ?? throw new InvalidOperationException("An X viewport requires a usable plot rectangle.");
             }
         }

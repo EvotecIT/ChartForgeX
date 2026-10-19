@@ -18,6 +18,7 @@ internal static partial class VisualCartesianCompiler {
         internal IReadOnlyDictionary<double, string>? CategoryCaptions { get; }
         internal IReadOnlyList<HorizontalStackTotal> HorizontalTotals { get; }
         internal IReadOnlyList<VerticalStackCaption>? VerticalTotals { get; }
+        internal CategoryGroupSource? CategoryGroups => AxisLabels.CategoryGroups;
 
         internal CartesianAxisLayout(ChartRect plot, ChartRect labelBounds, AxisLabelCache axisLabels, bool horizontal,
             IReadOnlyDictionary<double, string>? categoryCaptions, IReadOnlyList<HorizontalStackTotal> horizontalTotals,
@@ -30,11 +31,11 @@ internal static partial class VisualCartesianCompiler {
     private static CartesianAxisLayout? ResolveAxisLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, ChartRect viewport, bool measureAxes, ChartRange range, ChartRange? secondaryRange,
         ChartStackLayout stacks, ChartBarCoordinateMap coordinates, ChartBubbleSizeScale? bubbleScale, VisualThemeColors colors,
-        ChartAxisValueFormatter.Cache? categoryLabels, CartesianLabels labels, bool expandMarkers) {
+        ChartAxisValueFormatter.Cache? categoryLabels, CartesianLabels labels, CategoryGroupSource? categoryGroups, bool expandMarkers) {
         var dataRange = range.Copy();
         var secondaryDataRange = secondaryRange?.Copy();
         categoryLabels ??= new ChartAxisValueFormatter.Cache();
-        var axisLabels = new AxisLabelCache(categoryLabels);
+        var axisLabels = new AxisLabelCache(categoryLabels) { CategoryGroups = categoryGroups };
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
         if (!horizontal) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
@@ -52,6 +53,11 @@ internal static partial class VisualCartesianCompiler {
             if (horizontal || chart.Series.All(series => series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot or ChartSeriesKind.Waterfall))
                 axisLabels.SetTicks(categoryAxis, categoryCaptions.Keys.OrderBy(value => value).ToArray());
             foreach (var category in categoryCaptions) axisLabels.Set(categoryAxis, category.Key, category.Value);
+        }
+        if (categoryGroups != null) {
+            var categoryAxis = horizontal ? HorizontalAxes(chart, axisLabels).Category : chart.Options.XAxis;
+            axisLabels.SetTicks(categoryAxis, categoryGroups.Plan.Catalog.Select(label => label.Value).ToArray());
+            foreach (var category in categoryGroups.Plan.Catalog) axisLabels.Set(categoryAxis, category.Value, category.Text);
         }
         RefreshCategoryDisplay(chart, context, builder, viewport, range, colors, axisLabels);
         if (measureAxes) plot = horizontal ? MeasureHorizontalPlot(chart, context, builder, viewport, range, colors, axisLabels)
