@@ -56,9 +56,10 @@ jobs:
       HISTORY_MODE: ${{ github.event_name == 'pull_request' && 'FunctionalProof' || inputs.mode || 'Verify' }}
       REFERENCE_RUN: ${{ inputs.reference_run_id }}
       HISTORY_PLATFORM: ${{ matrix.name }}
-      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Checkout canonical benchmark owner
         uses: actions/checkout@v7
         # Match the owner's controlled source guard without changing machine-wide Git settings.
@@ -67,6 +68,7 @@ jobs:
           GIT_CONFIG_KEY_0: core.autocrlf
           GIT_CONFIG_VALUE_0: 'false'
         with:
+          persist-credentials: false
           repository: EvotecIT/PSPublishModule
           ref: 77bb1364bd4e21a23200189504c6805f8c13c8dc
           path: Ignore/PowerForgeSource
@@ -79,6 +81,8 @@ jobs:
           if (!$?) { throw 'Shared module build failed.' }
       - name: Restore only accepted main history
         if: env.HISTORY_MODE == 'Verify' || env.HISTORY_MODE == 'AcceptReference'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
           $runId = $env:REFERENCE_RUN
