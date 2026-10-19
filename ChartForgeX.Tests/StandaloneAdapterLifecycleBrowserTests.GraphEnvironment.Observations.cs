@@ -8,6 +8,11 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class StandaloneAdapterLifecycleBrowserTests {
+    private static Task WaitForGraphEnvironmentExportAsync(IPage page, bool expanded) => page.WaitForFunctionAsync("""
+        expanded=>{const summary=retainedGraph.querySelector('.cfx-graph-command-menu summary');
+            return summary.closest('details').open===expanded&&summary.getAttribute('aria-expanded')===String(expanded);}
+        """, expanded);
+
     private static async Task SetGraphEnvironmentPreferencesAsync(IPage page, bool enabled) {
         await page.EmulateMediaAsync(new() {
             Media = Media.Screen,

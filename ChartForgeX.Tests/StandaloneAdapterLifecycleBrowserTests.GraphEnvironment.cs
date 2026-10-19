@@ -20,6 +20,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
     [InlineData(HtmlGraphRenderBackend.WebGl, true, 390)]
     public async Task GraphEnvironmentPreferencesKeepControlsPaintPrintAndTeardownUsable(HtmlGraphRenderBackend backend, bool dark, int width) {
         if (!Enabled) return;
+        if (!dark) await AssertGraphEnvironmentHostSizingAsync(backend);
         var graph = GraphEnvironmentFixture(backend);
         await using var session = await OpenAsync(Instrument(graph.ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = backend;
@@ -104,19 +105,26 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         var export = page.GetByRole(AriaRole.Button, new() { Name = "Export graph", Exact = true });
         await ReachGraphEnvironmentControlAsync(page, export);
         await page.Keyboard.PressAsync("Enter");
-        Assert.Equal("true", await export.GetAttributeAsync("aria-expanded"));
+        await WriteReceiptAsync(name + "-export-key-immediate", await page.EvaluateAsync<JsonElement>("""
+            ()=>{const summary=retainedGraph.querySelector('.cfx-graph-command-menu summary');
+                return {open:summary.closest('details').open,expanded:summary.getAttribute('aria-expanded'),focused:document.activeElement===summary};}
+            """));
+        await WaitForGraphEnvironmentExportAsync(page, expanded: true);
         await AssertGraphEnvironmentFocusPaintAsync(page, export, name + "-export-focus");
+        await page.Keyboard.PressAsync("Escape");
+        await WaitForGraphEnvironmentExportAsync(page, expanded: false);
+        Assert.True(await export.EvaluateAsync<bool>("node=>node===document.activeElement"));
+        await page.Keyboard.PressAsync("Enter");
+        await WaitForGraphEnvironmentExportAsync(page, expanded: true);
         var exportSvg = page.GetByRole(AriaRole.Button, new() { Name = "Export SVG document", Exact = true });
         await ReachGraphEnvironmentControlAsync(page, exportSvg);
         await AssertGraphEnvironmentTextContrastAsync(page, exportSvg);
         await page.Keyboard.PressAsync("Enter");
+        await WaitForGraphEnvironmentExportAsync(page, expanded: false);
         var exported = await page.EvaluateAsync<JsonElement>("()=>graphEnvironmentExports.at(-1)");
         Assert.Equal("svg", exported.GetProperty("format").GetString());
         Assert.Equal(4, exported.GetProperty("nodes").GetInt32());
         Assert.Equal(GraphEnvironmentLabel, exported.GetProperty("label").GetString());
-        await page.Keyboard.PressAsync("Escape");
-        Assert.Equal("false", await export.GetAttributeAsync("aria-expanded"));
-        Assert.True(await export.EvaluateAsync<bool>("node=>node===document.activeElement"));
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Focus selected node neighborhood", Exact = true }).ClickAsync();
         Assert.True(await page.Locator("[data-cfx-role=graph-neighborhood-navigation]").IsVisibleAsync());

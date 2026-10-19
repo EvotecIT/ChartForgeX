@@ -626,7 +626,10 @@
 }
 
 .cfx-graph-stage {
+  box-sizing: border-box;
   position: relative;
+  min-width: 0;
+  max-width: 100%;
   min-height: clamp(440px, 68vh, 820px);
   overflow: hidden;
   aspect-ratio: 12 / 7;

@@ -70,9 +70,10 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         var facts = await target.EvaluateAsync<JsonElement>("""
             node=>{
                 const style=getComputedStyle(node),box=node.getBoundingClientRect(),scale=box.width/node.offsetWidth;
+                const backgrounds=[];for(let owner=node.parentElement;owner;owner=owner.parentElement)backgrounds.unshift(getComputedStyle(owner).backgroundColor);
                 return {ownsFocus:node===document.activeElement&&node.matches(':focus-visible'),box:box.toJSON(),
                     width:parseFloat(style.outlineWidth),offset:parseFloat(style.outlineOffset),scale,colour:style.outlineColor,
-                    transitionSeconds:Math.max(...style.transitionDuration.split(',').map(parseFloat))};
+                    backgrounds,transitionSeconds:Math.max(...style.transitionDuration.split(',').map(parseFloat))};
             }
             """);
         Assert.True(facts.GetProperty("ownsFocus").GetBoolean());
@@ -85,7 +86,8 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                 const image=new Image();image.src='data:image/png;base64,'+png;await image.decode();
                 const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
                 const context=canvas.getContext('2d');context.drawImage(image,0,0);
-                const swatch=document.createElement('canvas').getContext('2d');swatch.fillStyle=facts.colour;swatch.fillRect(0,0,1,1);
+                const swatch=document.createElement('canvas').getContext('2d');swatch.fillStyle='#fff';swatch.fillRect(0,0,1,1);
+                for(const colour of [...facts.backgrounds,facts.colour]){swatch.fillStyle=colour;swatch.fillRect(0,0,1,1);}
                 const expected=swatch.getImageData(0,0,1,1).data,scale=image.naturalWidth/innerWidth,
                     box=facts.box,pad=(facts.offset+facts.width/2)*facts.scale;
                 for(const point of [[box.left+box.width/4,box.top-pad],[box.left+box.width/2,box.top-pad],[box.left-pad,box.top+box.height/2]])
