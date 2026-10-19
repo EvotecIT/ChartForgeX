@@ -783,6 +783,7 @@ public sealed partial class MarkupChartParser {
     }
 
     private sealed class ChartAnnotationSpec {
+        public ChartAnnotationId? Id { get; set; }
         public string Kind { get; set; } = string.Empty;
         public double Start { get; set; }
         public double? End { get; set; }
