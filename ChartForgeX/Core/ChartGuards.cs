@@ -47,6 +47,7 @@ internal static class ChartGuards {
         chart.ValidateHourWeekdayHeatmapOwnership();
         chart.ValidateExplicitGanttDependencies();
         ValidateRenderableChart(chart, preparing);
+        _ = ChartCategoryGroupPlan.TryCreate(chart);
         chart.ValidatePlotRegions();
         if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap))
             throw new InvalidOperationException("Map color presentation requires numeric region or tile maps.");

@@ -16,7 +16,13 @@ internal static class ChartCartesianCategoryLabels {
         // cannot name observations at all the other coordinates between those ticks.
         if (!categorical && (coordinates.Length == 0 || axis.Labels.Count == 0
             || coordinates.Any(value => ChartAxisValueFormatter.FindExplicitLabel(axis.Labels, value) == null))) return null;
-        return Array.AsReadOnly(coordinates.Select(value => new ChartAxisLabel(value, format(value))).ToArray());
+        var grouped = axis.Labels.Any(label => label.Groups.Count > 0);
+        return Array.AsReadOnly(coordinates.Select(value => {
+            var text = format(value);
+            var mapping = grouped ? ChartAxisValueFormatter.FindExplicitMapping(axis.Labels, value, rejectAmbiguous: true) : null;
+            return mapping.HasValue && mapping.Value.Groups.Count > 0
+                ? new ChartAxisLabel(value, text, mapping.Value.Groups.ToArray()) : new ChartAxisLabel(value, text);
+        }).ToArray());
     }
 
     /// <summary>Identifies native category families without treating numeric tick aliases as categorical observations.</summary>
