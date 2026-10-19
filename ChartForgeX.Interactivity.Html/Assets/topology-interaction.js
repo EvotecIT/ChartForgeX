@@ -1,3 +1,16 @@
+window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
+  const source = root?.dataset.cfxUi || '';
+  let bundle = root?._cfxUi;
+  if (!bundle || bundle.source !== source) {
+    let messages;
+    try { messages = source ? JSON.parse(source) : {}; } catch { messages = {}; }
+    bundle = { source, messages };
+    if (root) root._cfxUi = bundle;
+  }
+  const value = bundle.messages?.[key];
+  if (typeof value === 'string') text = value;
+  return values ? text.replace(/\{([^{}]+)\}/g, (token, name) => Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : token) : text;
+};
 (() => {
   const selector = '.cfx-topology-wrapper[data-cfx-interactive="true"]';
   const mountForPrefix = root => {
@@ -8,6 +21,7 @@
     const listen = (target, name, listener, options) => lifetime.listen(target, name, listener, options);
     lifetime.own(() => wrapper.removeAttribute('data-cfx-runtime-bound'));
     wrapper.setAttribute('data-cfx-runtime-bound', 'true');
+    const uiText = (message, fallback, values) => window[Symbol.for('ChartForgeX.uiText')](wrapper, message, fallback, values);
     const selectables = '[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-group"]';
     const viewportControls = wrapper.getAttribute('data-cfx-viewport-controls') === 'true';
     const exportControls = wrapper.getAttribute('data-cfx-export-controls') === 'true';
@@ -130,8 +144,8 @@
       if (!route) {
         scenarioPanel.removeAttribute('data-cfx-panel-active-scenario');
         scenarioPanel.style.removeProperty('--cfx-topology-scenario-color');
-        if (title) title.textContent = 'All';
-        if (meta) meta.textContent = 'All topology routes visible';
+        if (title) title.textContent = uiText('All', 'All');
+        if (meta) meta.textContent = uiText('TopologyAllRoutesVisible', 'All topology routes visible');
         if (stepsList) stepsList.replaceChildren();
         if (scrubber) { scrubber.disabled = true; scrubber.max = '1'; scrubber.value = '1'; }
         return;
@@ -143,7 +157,7 @@
       if (title) title.textContent = route.label || route.scenarioId;
       if (meta) {
         const metadata = Object.entries(route.metadata).slice(0, 2).map(([key, value]) => key + ': ' + value);
-        const summary = [route.description, route.stepCount ? route.stepCount + ' steps' : '', ...metadata].filter(value => value);
+        const summary = [route.description, route.stepCount ? uiText('Steps', '{count} steps', { count: route.stepCount }) : '', ...metadata].filter(value => value);
         meta.textContent = summary.join(' / ');
       }
       if (stepsList) {
@@ -745,8 +759,8 @@
       if (!detail) {
         selectionPanel.hidden = true;
         selectionPanel.style.removeProperty('--cfx-topology-selection-status-color');
-        if (title) title.textContent = 'No item selected';
-        if (kind) kind.textContent = 'Selection';
+        if (title) title.textContent = uiText('ExplorerNoItemSelected', 'No item selected');
+        if (kind) kind.textContent = uiText('ExplorerSelection', 'Selection');
         if (status) status.textContent = '';
         if (facts) facts.replaceChildren();
         if (meta) meta.replaceChildren();
@@ -761,15 +775,15 @@
         : detail.kind === 'edge'
           ? (detail.element ? attr(detail.element, 'data-edge-label') : '') || detail.id
           : (detail.element ? attr(detail.element, 'data-group-label') : '') || detail.id;
-      if (title) title.textContent = displayTitle || detail.id || 'Selection';
-      if (kind) kind.textContent = detail.kind === 'node' ? (detail.nodeKind || 'Node') : detail.kind === 'edge' ? (detail.edgeKind || 'Edge') : 'Group';
+      if (title) title.textContent = displayTitle || detail.id || uiText('ExplorerSelection', 'Selection');
+      if (kind) kind.textContent = detail.kind === 'node' ? (detail.nodeKind || uiText('ExplorerNode', 'Node')) : detail.kind === 'edge' ? (detail.edgeKind || uiText('ExplorerEdge', 'Edge')) : uiText('ExplorerGroup', 'Group');
       if (status) status.textContent = detail.status || '';
       setSelectionFacts(facts, [
-        ['ID', detail.id],
-        ['Status', detail.status],
-        ['Group', detail.groupId || detail.sourceGroupId || detail.targetGroupId],
-        ['Related nodes', (detail.related && detail.related.nodeIds || []).length],
-        ['Related edges', (detail.related && detail.related.edgeIds || []).length]
+        [uiText('ExplorerId', 'ID'), detail.id],
+        [uiText('ExplorerStatus', 'Status'), detail.status],
+        [uiText('ExplorerGroup', 'Group'), detail.groupId || detail.sourceGroupId || detail.targetGroupId],
+        [uiText('ExplorerRelatedNodes', 'Related nodes'), (detail.related && detail.related.nodeIds || []).length],
+        [uiText('ExplorerRelatedEdges', 'Related edges'), (detail.related && detail.related.edgeIds || []).length]
       ]);
       if (meta) {
         meta.replaceChildren();
@@ -779,7 +793,7 @@
       if (relatedPanel) {
         relatedPanel.replaceChildren();
         (detail.related && detail.related.edges || []).slice(0, 5).forEach(edge => {
-          const label = edge.kind || 'Edge';
+          const label = edge.kind || uiText('ExplorerEdge', 'Edge');
           const value = [edge.sourceNodeId, edge.targetNodeId].filter(Boolean).join(' -> ');
           addSelectionRow(relatedPanel, label, value || edge.id);
         });
@@ -1257,7 +1271,7 @@
       };
       setTopologyFilterAttributes(detail);
       const summary = forceGraphPanel?.querySelector('[data-cfx-force-summary]');
-      if (summary) summary.textContent = detail.nodes + ' nodes / ' + detail.edges + ' edges visible';
+      if (summary) summary.textContent = uiText('TopologyVisibleSummary', '{nodes} nodes / {edges} edges visible', { nodes: detail.nodes, edges: detail.edges });
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, composed: true, detail }));
       return detail;
     };

@@ -19,7 +19,7 @@
     root.dataset.cfxGraphKeyboardItem = graphKeyboardItemKey(item);
     item.focus();
     const label = attr(item, 'data-cfx-bundle-count') ? attr(item, 'aria-label')
-      : attr(item, 'data-node-label') || attr(item, 'data-edge-label') || attr(item, 'data-cluster-label') || 'Graph item';
+      : attr(item, 'data-node-label') || graphLabelText(attr(item, 'data-edge-label')) || attr(item, 'data-cluster-label') || attr(item, 'aria-label') || uiText(root, 'GraphItem', 'Graph item');
     const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
     if (announcer) announcer.textContent = label;
   };
@@ -79,8 +79,8 @@
     const surface = event.currentTarget;
     const label = attr(candidates[next].el, 'data-cfx-bundle-count')
       ? attr(candidates[next].el, 'aria-label')
-      : candidates[next].label || candidates[next].id;
-    surface?.setAttribute('aria-label', `${attr(root, 'data-cfx-graph-title') || 'Graph'}. Current item: ${label}. Use arrow keys to move and Enter or Space to activate.`);
+      : graphLabelText(candidates[next].label) || attr(candidates[next].el, 'aria-label') || candidates[next].id;
+    surface?.setAttribute('aria-label', uiText(root, 'GraphCurrentItem', '{title}. Current item: {label}. Use arrow keys to move and Enter or Space to activate.', { title: attr(root, 'data-cfx-graph-title') || uiText(root, 'GraphDefaultTitle', 'Graph'), label }));
     return true;
   };
   const bindGraphItemSelection = (root, item) => {

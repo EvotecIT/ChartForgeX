@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { installUiText } = require('../helpers/adapter-localization');
 const { JSDOM } = require('../mermaid-conformance/node_modules/jsdom');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/topology-interaction.source');
 const lifetimeSource = fs.readFileSync(path.resolve(assets, '../adapter-lifetime.js'), 'utf8');
@@ -17,11 +18,13 @@ function fixture() {
        <div data-cfx-role="topology-edge-label" data-edge-id="${group}"></div>`).join('')}</div>`, { runScripts: 'outside-only' });
   const wrapper = dom.window.document.querySelector('#chart'), forceGraphPanel = wrapper.querySelector('#controls');
   dom.window.eval(lifetimeSource);
+  installUiText(dom.window);
   const lifetime = dom.window[Symbol.for('ChartForgeX.adapterLifetimes')].create(wrapper, 'topology');
   let source = ['40-viewport-export-and-scenarios.js', '60-selection-panel.js', '70-topology-filters.js', '75-filter-summary.js']
     .map(name => fs.readFileSync(path.join(assets, name), 'utf8')).join('\n');
   source += fs.readFileSync(path.join(assets, '80-force-graph-and-bindings.js'), 'utf8').split('    const clearForceFocusLabels =')[0];
   const api = new Function('wrapper', 'forceGraphPanel', 'window', 'CustomEvent', 'lifetime', `
+    const uiText = (key, fallback, values) => window[Symbol.for('ChartForgeX.uiText')](wrapper, key, fallback, values);
     const CSS = window.CSS, Element = window.Element;
     const forceGraphControls = true, viewportControls = false, attr = (element, name) => element.getAttribute(name) || '';
     const restoreForceFocusLabels = () => {};

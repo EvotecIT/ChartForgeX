@@ -41,4 +41,36 @@ public static class InteractiveTopologyExtensions {
         if (path == null) throw new ArgumentNullException(nameof(path));
         File.WriteAllText(path, chart.ToInteractiveHtmlPage(options, svgPresentation), Encoding.UTF8);
     }
+    /// <summary>Renders a localized interactive page, optionally around a trusted detached SVG presentation.</summary>
+    /// <param name="chart">The source topology.</param>
+    /// <param name="options">Native render options, or null for the chart defaults.</param>
+    /// <param name="svgPresentation">Optional producer for the adapter's detached prepared topology.</param>
+    /// <param name="configureLocalization">Optional control-message configuration; authored facts remain unchanged.</param>
+    public static string ToInteractiveHtmlPage(this TopologyChart chart, TopologyRenderOptions? options,
+        Func<PreparedTopology, string>? svgPresentation = null, Action<HtmlChartLocalization>? configureLocalization = null) {
+        var renderer = LocalizedRenderer(configureLocalization);
+        return svgPresentation == null ? renderer.RenderPage(chart, options) : renderer.RenderPresentationPage(chart, svgPresentation, options);
+    }
+
+    /// <summary>Renders an interactive fragment with localized control messages.</summary>
+    public static string ToInteractiveHtmlFragment(this TopologyChart chart, TopologyRenderOptions? options,
+        Action<HtmlChartLocalization> configureLocalization) => LocalizedRenderer(configureLocalization).RenderFragment(chart, options);
+
+    /// <summary>Renders localized controls without renderer-owned stylesheet or script assets.</summary>
+    public static string ToInteractiveHtmlFragmentWithoutAssets(this TopologyChart chart, TopologyRenderOptions? options,
+        Action<HtmlChartLocalization> configureLocalization) => LocalizedRenderer(configureLocalization).RenderFragmentWithoutAssets(chart, options);
+
+    /// <summary>Saves a localized interactive page, optionally around a trusted detached SVG presentation.</summary>
+    public static void SaveInteractiveHtml(this TopologyChart chart, string path, TopologyRenderOptions? options,
+        Func<PreparedTopology, string>? svgPresentation = null, Action<HtmlChartLocalization>? configureLocalization = null) {
+        if (path == null) throw new ArgumentNullException(nameof(path));
+        File.WriteAllText(path, chart.ToInteractiveHtmlPage(options, svgPresentation, configureLocalization), Encoding.UTF8);
+    }
+
+    private static HtmlInteractiveTopologyRenderer LocalizedRenderer(Action<HtmlChartLocalization>? configure) {
+        var renderer = new HtmlInteractiveTopologyRenderer();
+        configure?.Invoke(renderer.Localization);
+        return renderer;
+    }
+
 }

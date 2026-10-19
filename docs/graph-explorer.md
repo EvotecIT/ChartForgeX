@@ -100,6 +100,21 @@ Accessibility behavior is part of the adapter contract:
 
 These defaults target [WCAG 2.2 contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html), [focus visibility](https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance.html), and [target size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html). Accessibility still depends on callers supplying useful node labels, image alternative text, and status wording.
 
+## Control language
+
+Configure `Localization` on the HTML options to translate explorer controls, search counts, announcements, editing feedback, and appearance descriptions. Messages with named placeholders preserve the supplied values as text.
+
+```csharp
+var html = graph.ToGraphExplorerHtmlPage(options => {
+    options.Localization.Language = "pl-PL";
+    options.Localization[HtmlChartText.GraphSearchPlaceholder] = "Szukaj węzłów i relacji";
+    options.Localization[HtmlChartText.GraphMatches] = "Wyniki: {count}";
+    options.Localization[HtmlChartText.GraphItemsSelected] = "Wybrane elementy: {count}";
+});
+```
+
+Unspecified messages use English. Set `Localization.Direction` to `HtmlChartTextDirection.RightToLeft` for right-to-left controls; `Automatic` inherits the embedding document. Graph labels, IDs, kinds, status values, metadata, and numeric facts remain authored. Localization does not change native SVG/PNG labels or the stable values used in host commands. Shared external assets carry the same message resolver as self-contained pages; each explorer keeps its own resolved bundle.
+
 ## Large topology pipeline
 
 Small scenes remain SVG-first because SVG provides rich shapes, images, labels, keyboard targets, and inspectable metadata. As scenes cross their configured thresholds, the same document moves through Canvas and WebGL without changing the C# model.

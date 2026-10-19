@@ -7,7 +7,7 @@ using ChartForgeX.Interactivity;
 namespace ChartForgeX.Interactivity.Html;
 
 public sealed partial class HtmlGraphExplorerRenderer {
-    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, IReadOnlyDictionary<string, Point> collapsedNodePositions, IReadOnlyDictionary<string, double> collapsedNodeRadii, string markerId, HashSet<string> collapsedEdgeIds, bool focusableGraphItems) {
+    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, IReadOnlyDictionary<string, Point> collapsedNodePositions, IReadOnlyDictionary<string, double> collapsedNodeRadii, string markerId, HashSet<string> collapsedEdgeIds, bool focusableGraphItems, HtmlChartLocalization? text = null) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         foreach (var edge in scene.Edges) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
@@ -54,7 +54,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-edge-hidden", edge.Style.Hidden ? "true" : "false");
             Attribute(writer, "data-cfx-search", SearchText(edge.Metadata));
             Attribute(writer, "data-cfx-metadata", MetadataJson(edge.Metadata));
-            Attribute(writer, "aria-label", EdgeAccessibleName(edge, sourceNode, targetNode));
+            Attribute(writer, "aria-label", EdgeAccessibleName(edge, sourceNode, targetNode, text));
             Attribute(writer, "d", path);
             var edgeStyle = EdgeStyle(edge);
             if (!string.IsNullOrWhiteSpace(edgeStyle)) Attribute(writer, "style", edgeStyle);

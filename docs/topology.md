@@ -449,7 +449,35 @@ A chart can carry the options it was designed for: `.WithRenderOptions(options)`
 
 ## Words the renderers write
 
-The SVG title and description of a diagram come from `WithAccessibility` when set, otherwise from `TopologyChart.Labels`: `UntitledTopology` names a diagram without a title and `AccessibleTextFormatter` writes the description from `ChartDescriptionFacts` of kind `Topology` (node, group, and edge counts), the same facts charts pass to `ChartLabels.AccessibleTextFormatter`. `UntitledReport` titles a report split from an untitled diagram. Labels are copied to prepared charts and report pages. The interactive page controls and the graph explorer still write English.
+The SVG title and description of a diagram come from `WithAccessibility` when set, otherwise from `TopologyChart.Labels`: `UntitledTopology` names a diagram without a title and `AccessibleTextFormatter` writes the description from `ChartDescriptionFacts` of kind `Topology` (node, group, and edge counts), the same facts charts pass to `ChartLabels.AccessibleTextFormatter`. `UntitledReport` titles a report split from an untitled diagram. Labels are copied to prepared charts and report pages. The optional HTML adapter localizes browser controls separately from these native descriptions. Configure a renderer when it is reused across pages or fragments:
+
+```csharp
+var renderer = new HtmlInteractiveTopologyRenderer();
+renderer.Localization.Language = "pl-PL";
+renderer.Localization[HtmlChartText.TopologyFindPlaceholder] = "Szukaj węzła, relacji lub grupy";
+renderer.Localization[HtmlChartText.TopologyVisibleSummary] = "Widoczne węzły: {nodes}; relacje: {edges}";
+var html = renderer.RenderPage(topology);
+```
+
+The normal extensions also accept a localization callback. Pass `options` explicitly so existing presentation-callback overloads retain their meaning:
+
+```csharp
+var html = topology.ToInteractiveHtmlPage(options: null, configureLocalization: text => {
+    text.Language = "ar";
+    text.Direction = HtmlChartTextDirection.RightToLeft;
+    text[HtmlChartText.TopologyControls] = "أدوات المخطط";
+});
+
+var report = topology.PrepareReport();
+var reportHtml = report.ToInteractiveHtmlPage(text => {
+    text.Language = "pl-PL";
+    text[HtmlChartText.ReportFindPlaceholder] = "Nazwa lub identyfikator";
+});
+```
+
+Unspecified messages use English. Localized controls, inspector field names, scenario summaries, and report navigation keep authored node/group/edge labels, IDs, status values, metadata, and source-language search intact. Message values are inserted once as text, so braces in an authored label are not treated as placeholders. Number/date formatting and native diagram descriptions keep their existing owners.
+
+`RenderFragmentWithoutAssets` uses the same renderer configuration. The host must register the native topology stylesheet and `HtmlInteractiveAssetFiles.TopologyScript(options)` for the same options, including any custom CSS prefix. Complete pages can instead pass `HtmlAssetReferences` to `RenderPage` and write that public asset through `HtmlInteractiveAssetFiles.WriteTo`; the runtime includes its shared localization resolver.
 
 ## Host Boundaries
 

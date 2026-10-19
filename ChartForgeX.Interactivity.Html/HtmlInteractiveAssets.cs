@@ -12,6 +12,8 @@ internal static class HtmlInteractiveAssets {
         ReadResource(StyleResourceName) + ReadResource(ChromeStyleResourceName));
     private static readonly Lazy<string> ScriptResource = new Lazy<string>(() => ReadResource(ScriptResourceName));
 
+    internal static string LocalizationScript => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-localization.js");
+
     internal static string Style => StyleResource.Value;
 
     internal static string Script => ScriptResource.Value;

@@ -19,4 +19,8 @@ function graphRuntimeSource(probe) {
   }).join('\n');
 }
 
-module.exports = { graphRuntimeSource };
+function graphMessageHelpers() {
+  return new Function('document', 'window', graphRuntimeSource('return { uiText, graphUiError, graphLabelText };'))(
+    { readyState: 'loading', addEventListener() {} }, {});
+}
+module.exports = { graphRuntimeSource, graphMessageHelpers };

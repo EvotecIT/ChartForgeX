@@ -240,6 +240,7 @@
         'data-cfx-role': 'graph-edge',
         'data-cfx-runtime-overlay': 'true',
         'data-edge-id': edge.id,
+        'aria-label': attr(edge.el, 'aria-label'),
         d: edgePathData(paint.rendered, paint.control)
       });
       applySvgEdgePaint(path, edge, paint);

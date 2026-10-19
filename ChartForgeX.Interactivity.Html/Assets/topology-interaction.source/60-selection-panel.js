@@ -87,8 +87,8 @@
       if (!detail) {
         selectionPanel.hidden = true;
         selectionPanel.style.removeProperty('--cfx-topology-selection-status-color');
-        if (title) title.textContent = 'No item selected';
-        if (kind) kind.textContent = 'Selection';
+        if (title) title.textContent = uiText('ExplorerNoItemSelected', 'No item selected');
+        if (kind) kind.textContent = uiText('ExplorerSelection', 'Selection');
         if (status) status.textContent = '';
         if (facts) facts.replaceChildren();
         if (meta) meta.replaceChildren();
@@ -103,15 +103,15 @@
         : detail.kind === 'edge'
           ? (detail.element ? attr(detail.element, 'data-edge-label') : '') || detail.id
           : (detail.element ? attr(detail.element, 'data-group-label') : '') || detail.id;
-      if (title) title.textContent = displayTitle || detail.id || 'Selection';
-      if (kind) kind.textContent = detail.kind === 'node' ? (detail.nodeKind || 'Node') : detail.kind === 'edge' ? (detail.edgeKind || 'Edge') : 'Group';
+      if (title) title.textContent = displayTitle || detail.id || uiText('ExplorerSelection', 'Selection');
+      if (kind) kind.textContent = detail.kind === 'node' ? (detail.nodeKind || uiText('ExplorerNode', 'Node')) : detail.kind === 'edge' ? (detail.edgeKind || uiText('ExplorerEdge', 'Edge')) : uiText('ExplorerGroup', 'Group');
       if (status) status.textContent = detail.status || '';
       setSelectionFacts(facts, [
-        ['ID', detail.id],
-        ['Status', detail.status],
-        ['Group', detail.groupId || detail.sourceGroupId || detail.targetGroupId],
-        ['Related nodes', (detail.related && detail.related.nodeIds || []).length],
-        ['Related edges', (detail.related && detail.related.edgeIds || []).length]
+        [uiText('ExplorerId', 'ID'), detail.id],
+        [uiText('ExplorerStatus', 'Status'), detail.status],
+        [uiText('ExplorerGroup', 'Group'), detail.groupId || detail.sourceGroupId || detail.targetGroupId],
+        [uiText('ExplorerRelatedNodes', 'Related nodes'), (detail.related && detail.related.nodeIds || []).length],
+        [uiText('ExplorerRelatedEdges', 'Related edges'), (detail.related && detail.related.edgeIds || []).length]
       ]);
       if (meta) {
         meta.replaceChildren();
@@ -121,7 +121,7 @@
       if (relatedPanel) {
         relatedPanel.replaceChildren();
         (detail.related && detail.related.edges || []).slice(0, 5).forEach(edge => {
-          const label = edge.kind || 'Edge';
+          const label = edge.kind || uiText('ExplorerEdge', 'Edge');
           const value = [edge.sourceNodeId, edge.targetNodeId].filter(Boolean).join(' -> ');
           addSelectionRow(relatedPanel, label, value || edge.id);
         });

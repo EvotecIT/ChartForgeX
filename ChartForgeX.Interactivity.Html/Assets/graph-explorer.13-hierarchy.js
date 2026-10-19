@@ -41,9 +41,9 @@
     const current = state.byId.get(rootId);
     const ancestors = current && attr(root, 'data-cfx-graph-hierarchy-breadcrumbs') !== 'false' ? hierarchyAncestors(state, rootId) : [];
     const nodes = current ? [...ancestors, current] : [];
-    const labels = nodes.length ? nodes.map(node => node.label || node.id) : ['Overview'];
+    const labels = nodes.length ? nodes.map(node => node.label || node.id) : [uiText(root, 'ExplorerOverview', 'Overview')];
     path.replaceChildren();
-    if (!nodes.length) path.textContent = 'Overview';
+    if (!nodes.length) path.textContent = uiText(root, 'ExplorerOverview', 'Overview');
     nodes.forEach((node, index) => {
       if (index) {
         const separator = root.ownerDocument.createElement('span');

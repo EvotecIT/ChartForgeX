@@ -1,3 +1,5 @@
+  const graphUiError = (message, template, values) => Object.assign(new Error(uiText(null, message, template, values)), { cfxUiMessage: message, cfxUiTemplate: template, cfxUiValues: values });
+  const graphEditorError = (root, error) => error?.cfxUiMessage ? uiText(root, error.cfxUiMessage, error.cfxUiTemplate, error.cfxUiValues) : error?.message || uiText(root, 'GraphChangeRejected', 'The graph change was rejected.');
   const graphCapability = (root, capability) => (attr(root, 'data-cfx-graph-manipulation-capabilities') || '').split(',').includes(capability);
   const graphEditor = root => root.querySelector('[data-cfx-role="graph-editor"]');
   const graphEditorStatus = (root, message, error) => {
@@ -11,15 +13,15 @@
     const edgeIds = new Set(items(root, '[data-cfx-role="graph-edge"]').map(edge => attr(edge, 'data-edge-id')));
     (patch.upsertNodes || []).forEach(node => {
       const capability = nodeIds.has(String(node?.id || '')) ? 'editNodes' : 'addNodes';
-      if (!graphCapability(root, capability)) throw new Error(`Graph manipulation does not allow ${capability}.`);
+      if (!graphCapability(root, capability)) throw graphUiError('GraphManipulationCapability', 'Graph manipulation does not allow {capability}.', { capability });
     });
     (patch.upsertEdges || []).forEach(edge => {
       const capability = edgeIds.has(String(edge?.id || '')) ? 'editEdges' : 'addEdges';
-      if (!graphCapability(root, capability)) throw new Error(`Graph manipulation does not allow ${capability}.`);
+      if (!graphCapability(root, capability)) throw graphUiError('GraphManipulationCapability', 'Graph manipulation does not allow {capability}.', { capability });
     });
-    if ((patch.removeNodeIds || []).length && !graphCapability(root, 'deleteNodes')) throw new Error('Graph manipulation does not allow deleteNodes.');
-    if ((patch.removeEdgeIds || []).length && !graphCapability(root, 'deleteEdges')) throw new Error('Graph manipulation does not allow deleteEdges.');
-    if ((patch.upsertClusters || []).length || (patch.removeClusterIds || []).length) throw new Error('User-level graph manipulation does not allow cluster structure changes. Use the host update API.');
+    if ((patch.removeNodeIds || []).length && !graphCapability(root, 'deleteNodes')) throw graphUiError('GraphManipulationCapability', 'Graph manipulation does not allow {capability}.', { capability: 'deleteNodes' });
+    if ((patch.removeEdgeIds || []).length && !graphCapability(root, 'deleteEdges')) throw graphUiError('GraphManipulationCapability', 'Graph manipulation does not allow {capability}.', { capability: 'deleteEdges' });
+    if ((patch.upsertClusters || []).length || (patch.removeClusterIds || []).length) throw graphUiError("GraphManipulationClusters", "User-level graph manipulation does not allow cluster structure changes. Use the host update API.");
     validateGraphPatch(root, patch);
   };
   const graphSelectedElement = root => items(root, '.cfx-graph-selected')[0] || null;
@@ -39,14 +41,14 @@
     ['node', 'edge'].forEach(name => { const form = graphEditorForm(root, name); if (form) form.hidden = name !== kind; });
     const form = graphEditorForm(root, kind); if (!form) return false;
     form.dataset.cfxGraphEditorMode = mode;
-    const title = form.querySelector('[data-cfx-graph-editor-title]'); if (title) title.textContent = `${mode === 'add' ? 'Add' : 'Edit'} ${kind}`;
+    const title = form.querySelector('[data-cfx-graph-editor-title]'); if (title) title.textContent = uiText(root, mode === 'add' ? (kind === 'node' ? 'GraphAddNode' : 'GraphAddEdge') : (kind === 'node' ? 'GraphEditNode' : 'GraphEditEdge'), `${mode === 'add' ? 'Add' : 'Edit'} ${kind}`);
     ['id', 'label', 'kind', 'x', 'y', 'source', 'target'].forEach(name => { const field = graphEditorField(form, name); if (field) field.value = item?.[name] ?? ''; });
     const id = graphEditorField(form, 'id'); if (id) id.readOnly = mode === 'edit';
     form.hidden = false; graphEditor(root)?.removeAttribute('hidden'); graphEditorField(form, 'id')?.focus();
     return true;
   };
   const requestGraphChange = (root, patch, source, label) => {
-    if (!hasFeature(root, 'Manipulation') || attr(root, 'data-cfx-graph-manipulation') !== 'true') throw new Error('This graph scene does not enable manipulation.');
+    if (!hasFeature(root, 'Manipulation') || attr(root, 'data-cfx-graph-manipulation') !== 'true') throw graphUiError("GraphManipulationDisabled", "This graph scene does not enable manipulation.");
     validateManipulationPatch(root, patch || {});
     const detail = { graphId: attr(root, 'data-cfx-graph-id'), source: source || 'api', label: label || 'Graph change', patch };
     if (!emit(root, 'cfxgraphbeforechange', detail, { cancelable: true })) return false;
@@ -70,22 +72,22 @@
     return requestGraphChange(root, { upsertEdges: [edge] }, `editor-${mode}-edge`, `${mode === 'add' ? 'Add' : 'Edit'} edge ${id}`);
   };
   const deleteGraphSelection = root => {
-    const selected = selectedItems(root); if (!selected.length) { graphEditorStatus(root, 'Select a node or edge first.', true); return false; }
+    const selected = selectedItems(root); if (!selected.length) { graphEditorStatus(root, uiText(root, 'GraphSelectFirst', 'Select a node or edge first.'), true); return false; }
     const nodeIds = selected.filter(item => item.role === 'graph-node' && graphCapability(root, 'deleteNodes')).map(item => item.id);
     const edgeIds = selected.filter(item => item.role === 'graph-edge' && graphCapability(root, 'deleteEdges')).map(item => item.id);
-    if (!nodeIds.length && !edgeIds.length) { graphEditorStatus(root, 'The selected items cannot be deleted.', true); return false; }
-    if (attr(root, 'data-cfx-graph-confirm-destructive') === 'true' && !window.confirm(`Delete ${nodeIds.length + edgeIds.length} selected graph item${nodeIds.length + edgeIds.length === 1 ? '' : 's'}?`)) return false;
+    if (!nodeIds.length && !edgeIds.length) { graphEditorStatus(root, uiText(root, 'GraphCannotDelete', 'The selected items cannot be deleted.'), true); return false; }
+    if (attr(root, 'data-cfx-graph-confirm-destructive') === 'true' && !window.confirm(uiText(root, nodeIds.length + edgeIds.length === 1 ? 'GraphDeleteOne' : 'GraphDeleteMany', nodeIds.length + edgeIds.length === 1 ? 'Delete {count} selected graph item?' : 'Delete {count} selected graph items?', { count: nodeIds.length + edgeIds.length }))) return false;
     return requestGraphChange(root, { removeNodeIds: nodeIds, removeEdgeIds: edgeIds, removeIncidentReferences: true }, 'editor-delete', 'Delete graph selection');
   };
   const handleGraphEditorAction = (root, action) => {
     try {
       if (action === 'add-node' && graphCapability(root, 'addNodes')) showGraphEditorForm(root, 'node', { id: `node-${Date.now().toString(36)}`, label: '' }, 'add');
       else if (action === 'add-edge' && graphCapability(root, 'addEdges')) showGraphEditorForm(root, 'edge', { id: `edge-${Date.now().toString(36)}` }, 'add');
-      else if (action === 'edit-node' && graphCapability(root, 'editNodes')) { const item = graphSelectedDocumentItem(root); if (!item || !Object.prototype.hasOwnProperty.call(item, 'x')) throw new Error('Select one node to edit.'); showGraphEditorForm(root, 'node', item, 'edit'); }
-      else if (action === 'edit-edge' && graphCapability(root, 'editEdges')) { const item = graphSelectedDocumentItem(root); if (!item || Object.prototype.hasOwnProperty.call(item, 'x')) throw new Error('Select one edge to edit.'); showGraphEditorForm(root, 'edge', item, 'edit'); }
+      else if (action === 'edit-node' && graphCapability(root, 'editNodes')) { const item = graphSelectedDocumentItem(root); if (!item || !Object.prototype.hasOwnProperty.call(item, 'x')) throw new Error(uiText(root, 'GraphSelectNodeToEdit', 'Select one node to edit.')); showGraphEditorForm(root, 'node', item, 'edit'); }
+      else if (action === 'edit-edge' && graphCapability(root, 'editEdges')) { const item = graphSelectedDocumentItem(root); if (!item || Object.prototype.hasOwnProperty.call(item, 'x')) throw new Error(uiText(root, 'GraphSelectEdgeToEdit', 'Select one edge to edit.')); showGraphEditorForm(root, 'edge', item, 'edit'); }
       else if (action === 'delete') deleteGraphSelection(root);
       graphEditorStatus(root, '');
-    } catch (error) { graphEditorStatus(root, error?.message || 'The graph change was rejected.', true); }
+    } catch (error) { graphEditorStatus(root, graphEditorError(root, error), true); }
   };
   const bindGraphManipulation = root => {
     const editor = graphEditor(root); if (!editor) return;
@@ -98,7 +100,7 @@
       event.preventDefault();
       try {
         const result = attr(form, 'data-cfx-graph-editor-form') === 'node' ? submitGraphNode(root, form) : submitGraphEdge(root, form);
-        if (result) { graphEditorStatus(root, 'Graph updated.'); form.hidden = true; }
-      } catch (error) { graphEditorStatus(root, error?.message || 'The graph change was rejected.', true); }
+        if (result) { graphEditorStatus(root, uiText(root, 'GraphUpdated', 'Graph updated.')); form.hidden = true; }
+      } catch (error) { graphEditorStatus(root, graphEditorError(root, error), true); }
     }));
   };

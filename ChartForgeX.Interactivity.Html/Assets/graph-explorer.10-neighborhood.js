@@ -55,7 +55,7 @@
     if (summary) {
       const state = graphState(root), label = id => state.byId.get(id)?.label || id;
       const path = [...history.slice(-3).map(entry => label(entry.nodeId)), label(view.rootNodeId)].join(' / ');
-      summary.textContent = `${path}: ${view.nodeIds.size} of ${view.scopeNodeCount} neighborhood nodes · ${view.edgeIds.size} relationships · ${view.hiddenNodeCount} nodes and ${view.hiddenEdgeCount} relationships omitted`;
+      summary.textContent = uiText(root, 'GraphNeighborhoodSummary', '{path}: {shown} of {total} neighborhood nodes · {edges} relationships · {omittedNodes} nodes and {omittedEdges} relationships omitted', { path, shown: view.nodeIds.size, total: view.scopeNodeCount, edges: view.edgeIds.size, omittedNodes: view.hiddenNodeCount, omittedEdges: view.hiddenEdgeCount });
     }
   };
   const applyNeighborhoodFocus = (root, nodeId, configuration, navigation) => {

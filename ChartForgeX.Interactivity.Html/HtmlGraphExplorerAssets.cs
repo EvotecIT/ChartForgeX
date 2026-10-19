@@ -12,6 +12,7 @@ internal static class HtmlGraphExplorerAssets {
     };
     private static readonly string[] ScriptResourceNames = {
         "ChartForgeX.Interactivity.Html.Assets.adapter-lifetime.js",
+        "ChartForgeX.Interactivity.Html.Assets.adapter-localization.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-lifetime.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.01-document.js",
