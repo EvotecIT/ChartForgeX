@@ -9,6 +9,7 @@ const tests = [
   'tests/graph-explorer-runtime/surface.test.js',
   'tests/graph-explorer-runtime/state.test.js',
   'tests/graph-explorer-runtime/webgl.test.js',
+  'tests/graph-explorer-runtime/svg-arrows.test.js',
   'tests/graph-explorer-runtime/images.test.js',
   'tests/graph-explorer-runtime/lifetime.test.js',
   'tests/graph-explorer-runtime/linked-commands.test.js',

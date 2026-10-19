@@ -127,23 +127,27 @@
     path.style.strokeDasharray = edge.dashed ? edge.dashPattern.join(' ') : 'none';
     path.removeAttribute('marker-start'); path.removeAttribute('marker-end');
   };
-  const appendExportedEdgeArrows = (document, group, edge, paint) => {
-    if (!paint.arrows || !edge.sourceArrow && !edge.targetArrow && !edge.directed) return;
-    const arrows = svgNode(document, 'g', {
+  const appendExportedEdgeArrows = (document, group, edge, paint, existing) => {
+    if (!paint.arrows || !edge.sourceArrow && !edge.targetArrow && !edge.directed) { existing?.remove(); return; }
+    const arrows = existing || svgNode(document, 'g');
+    Object.entries({
       class: attr(edge.el, 'class'), 'data-cfx-role': 'graph-edge-arrows',
       'data-cfx-runtime-overlay': 'true', 'data-edge-arrows-for': edge.id,
       style: `opacity:${paint.arrowAlpha};pointer-events:none`
-    });
+    }).forEach(([key, value]) => arrows.setAttribute(key, value));
     for (const side of ['source', 'target']) {
-      if (side === 'source' ? !edge.sourceArrow : !edge.targetArrow && !edge.directed) continue;
+      let polygon = arrows.querySelector(`[data-arrow-side="${side}"]`);
+      if (side === 'source' ? !edge.sourceArrow : !edge.targetArrow && !edge.directed) { polygon?.remove(); continue; }
       const arrow = edgeArrowGeometry(paint.rendered, paint.control, side);
-      arrows.appendChild(svgNode(document, 'polygon', {
-        'data-arrow-side': side,
-        points: [arrow.tip, arrow.left, arrow.right].map(point => `${point.x},${point.y}`).join(' '),
-        style: `fill:${paint.color};stroke:none`
-      }));
+      if (!polygon) {
+        polygon = svgNode(document, 'polygon', { 'data-arrow-side': side });
+        if (side === 'source' && arrows.firstElementChild) arrows.insertBefore(polygon, arrows.firstElementChild);
+        else arrows.appendChild(polygon);
+      }
+      polygon.setAttribute('points', [arrow.tip, arrow.left, arrow.right].map(point => `${point.x},${point.y}`).join(' '));
+      polygon.setAttribute('style', `fill:${paint.color};stroke:none`);
     }
-    group.appendChild(arrows);
+    if (!existing) group.appendChild(arrows);
     return arrows;
   };
   const applySvgEdgeLabelPaint = (root, label, edge, paint, palette) => {
@@ -190,9 +194,8 @@
       const label = labels.get(edge.id);
       if (path.__cfxSvgPaintStamp !== stamp || path.__cfxSvgPaintLabel !== label) {
         applySvgEdgePaint(path, edge, paint);
-        arrowGroups.get(edge.id)?.remove();
-        const arrows = appendExportedEdgeArrows(scene.ownerDocument, path.parentNode, edge, paint);
-        if (arrows) path.after(arrows);
+        const arrows = appendExportedEdgeArrows(scene.ownerDocument, path.parentNode, edge, paint, arrowGroups.get(edge.id));
+        if (arrows && path.nextElementSibling !== arrows) path.after(arrows);
         if (label) applySvgEdgeLabelPaint(root, label, edge, paint, palette);
         path.__cfxSvgPaintStamp = stamp; path.__cfxSvgPaintLabel = label;
       }
