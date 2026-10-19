@@ -60,7 +60,11 @@ public sealed class InteractiveChordColorBrowserTests {
         Assert.Equal(nativePaint, await NativePaintAsync(page));
         await page.Locator(selector).FocusAsync(); await page.Keyboard.PressAsync("Space");
 
-        await MoveAwayAsync(page); await FocusWithKeyboardAsync(page, page.Locator(Flow("support-south")));
+        await MoveAwayAsync(page);
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.Equal("south-north", await page.EvaluateAsync<string>("()=>document.activeElement.dataset.cfxTargetId"));
+        Assert.True(await page.Locator(Flow("south-north")).EvaluateAsync<bool>("node=>node.matches(':focus-visible')"));
+        await FocusWithKeyboardAsync(page, page.Locator(Flow("support-south")));
         await AssertRowAsync("Value", "9"); await AssertRowAsync("Illustrative latency", "0 ms");
         Assert.Equal("0", await page.Locator(Flow("support-south")).GetAttributeAsync("data-cfx-color-value"));
         await page.Keyboard.PressAsync("Space");
