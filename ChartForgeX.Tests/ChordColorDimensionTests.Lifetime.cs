@@ -51,9 +51,9 @@ public sealed partial class ChordColorDimensionTests {
         Assert.Throws<InvalidOperationException>(() => series.ReplaceFlowData(series.Nodes, Interrupted()));
         Assert.Equal(facts, series.FlowLinks); Assert.Equal(before, Prepare(chart).ToSvg());
         Assert.Equal(Low, series.FlowStyles["priority"].Fill); Assert.Equal(ChartSeriesState.Warning, series.FlowStates["priority"]);
-        var replacement = facts.Reverse().Select(flow => new ChartFlowLink(flow.Id, flow.SourceId, flow.TargetId, flow.Value, 99)).ToList();
+        var replacement = Enumerable.Reverse(facts).Select(flow => new ChartFlowLink(flow.Id, flow.SourceId, flow.TargetId, flow.Value, 99)).ToList();
         series.ReplaceFlowData(series.Nodes, replacement); replacement.Clear();
-        Assert.Equal(facts.Reverse().Select(flow => flow.Id), series.FlowLinks.Select(flow => flow.Id));
+        Assert.Equal(Enumerable.Reverse(facts).Select(flow => flow.Id), series.FlowLinks.Select(flow => flow.Id));
         Assert.All(series.FlowLinks, flow => Assert.Equal((double?)99, flow.ColorValue));
         Assert.Empty(series.FlowStyles); Assert.Empty(series.FlowStates);
         Assert.Same(scale, chart.Options.Chord.ColorScale); Assert.Equal("Committed", chart.Options.Chord.ColorDimension.Name);

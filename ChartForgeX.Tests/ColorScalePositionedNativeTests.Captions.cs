@@ -61,11 +61,11 @@ public sealed partial class ColorScalePositionedNativeTests {
         Assert.Equal(6, source.Length);
         Assert.All(source.Where(node => (string?)node.Attribute("data-cfx-caption-origin") == "authored"), node => {
             Assert.Equal("true", (string?)node.Attribute("data-cfx-caption-visible"));
-            Assert.Single(node.Descendants().Where(child => child.Name.LocalName == "text"));
+            Assert.Single(node.Descendants(), child => child.Name.LocalName == "text");
         });
         Assert.All(source.Where(node => (string?)node.Attribute("data-cfx-caption-origin") != "authored"), node => {
             Assert.Equal("false", (string?)node.Attribute("data-cfx-caption-visible"));
-            Assert.Empty(node.Descendants().Where(child => child.Name.LocalName == "text"));
+            Assert.DoesNotContain(node.Descendants(), child => child.Name.LocalName == "text");
         });
         var description = prepared.Regions.Single(region => region.Role == "heatmap-scale").Label!;
         foreach (var text in new[] { "Cold · -20", "Zero · 0", "Hot · 40", "Start · -20", "Target · 0", "End · 40" }) Assert.Contains(text, description);
@@ -112,7 +112,7 @@ public sealed partial class ColorScalePositionedNativeTests {
         Assert.All(outside, node => {
             Assert.Equal("false", (string?)node.Attribute("data-cfx-caption-in-domain"));
             Assert.Equal("false", (string?)node.Attribute("data-cfx-caption-visible")); Assert.Null(node.Attribute("data-cfx-caption-ratio"));
-            Assert.Empty(node.Descendants().Where(child => child.Name.LocalName == "text"));
+            Assert.DoesNotContain(node.Descendants(), child => child.Name.LocalName == "text");
         });
         if (allMissing && !fixedDomain) {
             Assert.Empty(prepared.Scene.Nodes.OfType<VisualSceneGradient>());
