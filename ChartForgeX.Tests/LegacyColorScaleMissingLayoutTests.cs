@@ -76,8 +76,8 @@ public sealed class LegacyColorScaleMissingLayoutTests {
         Assert.All(labels, label => { Assert.True(label.Text.Size >= 10); AssertInside(Ink(label), key); });
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "heatmap-scale-swatch").ToArray();
         Assert.Equal(3, swatches.Length);
-        Assert.True(noData.Text.Metrics.Width + noData.Text.Metrics.Height > swatches[0].Bounds.Width,
-            "This complete translation cannot share a single unused band cell.");
+        Assert.True(noData.Text.Metrics.Width + noData.Text.Metrics.Height > key.Width / 2,
+            "This complete translation is wider than a hypothetical two-column cell; the available separate row must retain it.");
         var image = RasterImageDecoder.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.All(swatches, swatch => {
             Assert.Equal(12, swatch.Bounds.Height, 6); AssertInside(swatch.Bounds, key);
