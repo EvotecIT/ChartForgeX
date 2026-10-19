@@ -71,14 +71,24 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             node=>{
                 const style=getComputedStyle(node),box=node.getBoundingClientRect(),scale=box.width/node.offsetWidth;
                 const backgrounds=[];for(let owner=node.parentElement;owner;owner=owner.parentElement)backgrounds.unshift(getComputedStyle(owner).backgroundColor);
+                const pad=(parseFloat(style.outlineWidth)+parseFloat(style.outlineOffset))*scale,clips=[];
+                for(let owner=node.parentElement;owner;owner=owner.parentElement){
+                    const clip=getComputedStyle(owner),rect=owner.getBoundingClientRect(),outside=/auto|scroll|hidden|clip/;
+                    clips.push({owner:owner.className,x:outside.test(clip.overflowX)?Math.max(0,rect.left-box.left+pad,box.right+pad-rect.right):0,
+                        y:outside.test(clip.overflowY)?Math.max(0,rect.top-box.top+pad,box.bottom+pad-rect.bottom):0});
+                }
                 return {ownsFocus:node===document.activeElement&&node.matches(':focus-visible'),box:box.toJSON(),
                     width:parseFloat(style.outlineWidth),offset:parseFloat(style.outlineOffset),scale,colour:style.outlineColor,
-                    backgrounds,transitionSeconds:Math.max(...style.transitionDuration.split(',').map(parseFloat))};
+                    backgrounds,clips,transitionSeconds:Math.max(...style.transitionDuration.split(',').map(parseFloat))};
             }
             """);
         Assert.True(facts.GetProperty("ownsFocus").GetBoolean());
         Assert.True(facts.GetProperty("width").GetDouble() > 0);
         Assert.InRange(facts.GetProperty("transitionSeconds").GetDouble(), 0, .001);
+        foreach (var clip in facts.GetProperty("clips").EnumerateArray()) {
+            Assert.InRange(clip.GetProperty("x").GetDouble(), 0, 1);
+            Assert.InRange(clip.GetProperty("y").GetDouble(), 0, 1);
+        }
         var screenshot = await page.ScreenshotAsync(new() { Animations = ScreenshotAnimations.Disabled });
         var painted = await page.EvaluateAsync<bool>("""
             async({png,facts})=>{
@@ -90,14 +100,17 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                 for(const colour of [...facts.backgrounds,facts.colour]){swatch.fillStyle=colour;swatch.fillRect(0,0,1,1);}
                 const expected=swatch.getImageData(0,0,1,1).data,scale=image.naturalWidth/innerWidth,
                     box=facts.box,pad=(facts.offset+facts.width/2)*facts.scale;
-                for(const point of [[box.left+box.width/4,box.top-pad],[box.left+box.width/2,box.top-pad],[box.left-pad,box.top+box.height/2]])
+                const points=[[box.left+box.width/2,box.top-pad],[box.left+box.width/2,box.bottom+pad],
+                    [box.left-pad,box.top+box.height/2],[box.right+pad,box.top+box.height/2]];
+                return points.every(point=>{
                     for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){
                         const x=Math.round(point[0]*scale)+dx,y=Math.round(point[1]*scale)+dy;
                         if(x<0||x>=canvas.width||y<0||y>=canvas.height)continue;
                         const pixel=context.getImageData(x,y,1,1).data;
                         if(pixel.every((value,index)=>Math.abs(value-expected[index])<=12))return true;
                     }
-                return false;
+                    return false;
+                });
             }
             """, new { png = Convert.ToBase64String(screenshot), facts = facts.GetRawText() });
         await WriteReceiptAsync(name, JsonSerializer.SerializeToElement(new { focus = facts, painted }));

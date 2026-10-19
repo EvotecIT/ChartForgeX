@@ -68,9 +68,8 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                     Assert.True(await page.EvaluateAsync<double>("()=>ChartForgeXGraphExplorer.captureState(retainedGraph).viewport.scale") < scale);
                 }
                 var export = page.GetByRole(AriaRole.Button, new() { Name = "Export graph", Exact = true });
-                await ReachGraphEnvironmentControlAsync(page, export);
                 var menuState = await GraphCommittedStateAsync(page);
-                await page.Keyboard.PressAsync("Enter");
+                await ClickGraphEnvironmentControlAsync(page, export, name + "-export-summary");
                 await WaitForGraphEnvironmentExportAsync(page, expanded: true);
                 Assert.Equal(menuState, await GraphCommittedStateAsync(page));
                 await AssertGraphEnvironmentMenuPaintAsync(page, name);

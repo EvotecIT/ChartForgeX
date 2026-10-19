@@ -29,9 +29,11 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
 
     // Traverse the real tab order: programmatic focus alone does not qualify navigation or keyboard modality.
     private static async Task ReachGraphEnvironmentControlAsync(IPage page, ILocator target) {
+        // This WebKit host excludes native buttons from Tab even in library-free HTML.
+        var key = Engine == HtmlTinkerX.HtmlBrowserEngine.WebKit ? "Alt+Tab" : "Tab";
         for (var step = 0; step < 64; step++) {
             if (await target.EvaluateAsync<bool>("node=>node===document.activeElement&&node.matches(':focus-visible')")) return;
-            await page.Keyboard.PressAsync("Tab");
+            await page.Keyboard.PressAsync(key);
         }
         Assert.Fail("The graph target was not reachable through the fixture's bounded native Tab order.");
     }

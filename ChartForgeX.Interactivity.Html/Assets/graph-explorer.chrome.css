@@ -552,6 +552,7 @@
   }
 
   .cfx-graph-command-scroll {
+    padding: 5px;
     overflow-x: auto;
     scrollbar-width: none;
   }

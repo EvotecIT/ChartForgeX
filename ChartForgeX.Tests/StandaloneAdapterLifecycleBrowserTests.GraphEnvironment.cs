@@ -65,6 +65,11 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         Assert.Contains(GraphEnvironmentLabel, await page.Locator(".cfx-graph-tooltip").InnerTextAsync());
         await search.FillAsync("");
         var fit = page.GetByRole(AriaRole.Button, new() { Name = "Fit graph to view", Exact = true });
+        foreach (var label in new[] { "Focus selected node neighborhood", "Fit graph to view", "Zoom out" }) {
+            var control = page.GetByRole(AriaRole.Button, new() { Name = label, Exact = true });
+            await ReachGraphEnvironmentControlAsync(page, control);
+            await AssertGraphEnvironmentFocusPaintAsync(page, control, name + "-ordinary-focus-" + label.Split(' ')[0].ToLowerInvariant());
+        }
         await fit.ClickAsync();
         var clear = page.GetByRole(AriaRole.Button, new() { Name = "Clear selection", Exact = true });
         await clear.ClickAsync();
@@ -99,6 +104,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         await page.Mouse.MoveAsync(2, 2);
         var selected = await CaptureGraphEnvironmentFrameAsync(page, "a", name + "-selected");
         await AssertGraphEnvironmentMarkPaintAsync(page, unselected, selected, name + "-selection-pixels");
+        await AssertGraphEnvironmentRapidInputAsync(page, name);
         var scale = await page.EvaluateAsync<double>("()=>ChartForgeXGraphExplorer.captureState(retainedGraph).viewport.scale");
         await ClickGraphEnvironmentControlAsync(page, page.GetByRole(AriaRole.Button, new() { Name = "Zoom out", Exact = true }), name + "-zoom-out");
         Assert.True(await page.EvaluateAsync<double>("()=>ChartForgeXGraphExplorer.captureState(retainedGraph).viewport.scale") < scale);
