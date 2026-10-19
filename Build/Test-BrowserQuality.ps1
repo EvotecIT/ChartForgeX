@@ -123,6 +123,7 @@ try {
         'StandaloneAdapterLifecycleBrowserTests.TopologyRemovalAndExplicitDisposalStopPlaybackAndReleaseListenersBeforeRemount',
         'StandaloneAdapterLifecycleBrowserTests.GraphRemovalReleasesPreferencesAndRemountRestoresOneSelectionHandler',
         'StandaloneAdapterLifecycleBrowserTests.GraphBadgeMeasurementsReusePaintWorkAndRefreshWithFontLoadingAndRemount',
+        'StandaloneAdapterLifecycleBrowserTests.GraphEnvironmentPreferencesKeepControlsPaintPrintAndTeardownUsable',
         'StandaloneAdapterLifecycleBrowserTests.GraphHierarchyDoubleClickAndBreadcrumbsRemainOperableAfterRemount',
         'StandaloneAdapterLifecycleBrowserTests.AcceleratedGraphRemountPreservesDraggedPositionsSelectionAndExportsAndClearsHostHover',
         'StandaloneAdapterLifecycleBrowserTests.PendingPngImageCompletesAcrossDocumentMutationsWithoutItsTimeoutFallback',
