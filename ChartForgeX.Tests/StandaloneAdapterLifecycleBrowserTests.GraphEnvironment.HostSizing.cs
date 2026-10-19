@@ -61,6 +61,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                 await ReachGraphEnvironmentControlAsync(page, export);
                 await page.Keyboard.PressAsync("Enter");
                 await WaitForGraphEnvironmentExportAsync(page, expanded: true);
+                await AssertGraphEnvironmentMenuPaintAsync(page, name);
                 await page.GetByRole(AriaRole.Button, new() { Name = "Export SVG document", Exact = true }).ClickAsync();
                 Assert.Equal("svg", await page.EvaluateAsync<string>("()=>hostSizingExports.at(-1)"));
                 await WaitForGraphEnvironmentExportAsync(page, expanded: false);

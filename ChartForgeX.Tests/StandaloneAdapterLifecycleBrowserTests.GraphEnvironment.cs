@@ -99,6 +99,10 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         await page.Mouse.MoveAsync(2, 2);
         var selected = await CaptureGraphEnvironmentFrameAsync(page, "a", name + "-selected");
         await AssertGraphEnvironmentMarkPaintAsync(page, unselected, selected, name + "-selection-pixels");
+        var scale = await page.EvaluateAsync<double>("()=>ChartForgeXGraphExplorer.captureState(retainedGraph).viewport.scale");
+        await ClickGraphEnvironmentControlAsync(page, page.GetByRole(AriaRole.Button, new() { Name = "Zoom out", Exact = true }), name + "-zoom-out");
+        Assert.True(await page.EvaluateAsync<double>("()=>ChartForgeXGraphExplorer.captureState(retainedGraph).viewport.scale") < scale);
+        Assert.False(await page.Locator(".cfx-graph-command-menu").EvaluateAsync<bool>("menu=>menu.open"));
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.highlight(retainedGraph,[{role:'graph-node',id:'c'}],{dim:false})");
         await AssertGraphEnvironmentTextContrastAsync(page, page.Locator(".cfx-graph-tooltip"));
 
@@ -110,6 +114,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
                 return {open:summary.closest('details').open,expanded:summary.getAttribute('aria-expanded'),focused:document.activeElement===summary};}
             """));
         await WaitForGraphEnvironmentExportAsync(page, expanded: true);
+        await AssertGraphEnvironmentMenuPaintAsync(page, name);
         await AssertGraphEnvironmentFocusPaintAsync(page, export, name + "-export-focus");
         await page.Keyboard.PressAsync("Escape");
         await WaitForGraphEnvironmentExportAsync(page, expanded: false);
