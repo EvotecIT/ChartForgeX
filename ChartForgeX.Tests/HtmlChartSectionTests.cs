@@ -97,10 +97,10 @@ public sealed class HtmlChartSectionTests {
     public void UnsupportedAndEmptySectionsRemainRenderableWithoutAdvertisingANativeProjection() {
         var empty = Chart.Create().AddLine("Empty", Array.Empty<ChartPoint>());
         var bar = Chart.Create().AddBar("Bars", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
-        var smooth = Line(); smooth.Series[0].WithSmooth();
+        var horizontal = Line(); horizontal.Options.LineOrientation = ChartOrientation.Horizontal;
         var sparkline = Line(); sparkline.Options.IsSparkline = true;
         var renderer = new HtmlInteractiveChartRenderer();
-        foreach (var chart in new[] { empty, bar, smooth, sparkline }) {
+        foreach (var chart in new[] { empty, bar, horizontal, sparkline }) {
             var section = renderer.PrepareSection(chart);
             Assert.Null(section.PreparedVisual.XProjection);
             using var metadata = Metadata(section.Html);

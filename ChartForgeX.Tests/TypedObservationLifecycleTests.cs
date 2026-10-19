@@ -17,6 +17,40 @@ public sealed class TypedObservationLifecycleTests {
 
     [Theory]
     [MemberData(nameof(Families))]
+    public void EmptyConvenienceFactoriesCanPrepareThenRefillTheRetainedTypedSeries(ChartSeriesKind kind) {
+        var chart = CreateEmpty(kind); var series = Assert.Single(chart.Series); var id = series.Id;
+        Assert.Equal(0, series.ObservationCount); Assert.Equal(0, series.SourcePointCount);
+        var empty = chart.Prepare(Context()); var svg = empty.ToSvg(); var png = empty.ToPng(new VisualRenderOptions(supersampling: 1));
+        Assert.DoesNotContain(empty.Scene.Nodes, node => node.Role == "point");
+        Assert.Contains(empty.Diagnostics, item => item.Code == "cartesian.no-data");
+        Refill(series);
+        series.WithObservationId(0, new ChartObservationId("arrived"));
+        var filled = chart.Prepare(Context());
+        var point = Assert.Single(filled.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "point");
+        Assert.Equal("arrived", point.Metadata["data-cfx-observation-id"]);
+        Assert.Equal("1", point.Metadata["data-cfx-source-count"]);
+        Assert.Same(series, Assert.Single(chart.Series)); Assert.Equal(id, series.Id);
+        Assert.Equal(1, series.ObservationCount); Assert.Equal(1, series.SourcePointCount);
+        Assert.NotEqual(svg, filled.ToSvg()); Assert.NotEmpty(filled.ToPng(new VisualRenderOptions(supersampling: 1)));
+        Assert.Equal(svg, empty.ToSvg()); Assert.Equal(png, empty.ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    [Fact]
+    public void AnEmptyCollectionOfRawBoxGroupsCanBeFilledWithoutInventingSamples() {
+        var chart = Chart.Create().AddBoxPlot("Raw", Array.Empty<ChartBoxPlotSampleGroup>());
+        var series = Assert.Single(chart.Series); var empty = chart.Prepare(Context());
+        Assert.Empty(series.BoxPlotSourceGroups); Assert.Equal(0, series.SourcePointCount);
+        Assert.DoesNotContain(empty.Scene.Nodes, node => node.Role == "point");
+        series.ReplaceBoxPlotSampleGroups(new[] { new ChartBoxPlotSampleGroup(1, new[] { 2d, 4, 6 }) });
+        var filled = chart.Prepare(Context());
+        Assert.Equal(3, series.SourcePointCount); Assert.Equal(1, series.ObservationCount);
+        Assert.Equal("3", Assert.Single(filled.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "point").Metadata["data-cfx-source-count"]);
+        Assert.NotEmpty(filled.ToPng(new VisualRenderOptions(supersampling: 1)));
+        Assert.Throws<ArgumentException>(() => new ChartBoxPlotSampleGroup(1, Array.Empty<double>()));
+    }
+
+    [Theory]
+    [MemberData(nameof(Families))]
     public void TypedFamiliesHaveOneObservationAndNoMutableNumericEncoding(ChartSeriesKind kind) {
         var series = Create(kind);
         Assert.Equal(1, series.ObservationCount); Assert.Equal(1, series.SourcePointCount);
@@ -94,6 +128,34 @@ public sealed class TypedObservationLifecycleTests {
     }
 
     private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(320, 240)), VisualTheme.Graphite(), frame: new VisualFrame(showLegend: false));
+    private static Chart CreateEmpty(ChartSeriesKind kind) {
+        var chart = Chart.Create();
+        return kind switch {
+            ChartSeriesKind.Bubble => chart.AddBubble("Typed", Array.Empty<ChartBubble>()),
+            ChartSeriesKind.Candlestick => chart.AddCandlestick("Typed", Array.Empty<ChartCandlestick>()),
+            ChartSeriesKind.Ohlc => chart.AddOhlc("Typed", Array.Empty<ChartCandlestick>()),
+            ChartSeriesKind.RangeBand => chart.AddRangeBand("Typed", Array.Empty<ChartRangeBand>()),
+            ChartSeriesKind.RangeArea => chart.AddRangeArea("Typed", Array.Empty<ChartRangeBand>()),
+            ChartSeriesKind.RangeBar => chart.AddRangeBar("Typed", Array.Empty<ChartInterval>()),
+            ChartSeriesKind.ErrorBar => chart.AddErrorBar("Typed", Array.Empty<ChartErrorBar>()),
+            ChartSeriesKind.BoxPlot => chart.AddBoxPlot("Typed", Array.Empty<ChartBoxPlot>()),
+            ChartSeriesKind.Dumbbell => chart.AddDumbbell("Typed", Array.Empty<ChartDumbbell>()),
+            _ => chart.AddDifferenceArea("Typed", Array.Empty<ChartDifferencePoint>())
+        };
+    }
+    private static void Refill(ChartSeries series) {
+        var input = Create(series.Kind);
+        switch (series.Kind) {
+            case ChartSeriesKind.Bubble: series.ReplaceBubbles(input.Bubbles); break;
+            case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc: series.ReplaceFinancialValues(input.FinancialValues); break;
+            case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea: series.ReplaceRanges(input.Ranges); break;
+            case ChartSeriesKind.RangeBar: series.ReplaceIntervals(input.Intervals); break;
+            case ChartSeriesKind.ErrorBar: series.ReplaceErrorBars(input.ErrorBars); break;
+            case ChartSeriesKind.BoxPlot: series.ReplaceBoxPlots(input.BoxPlots); break;
+            case ChartSeriesKind.Dumbbell: series.ReplaceDumbbells(input.Dumbbells); break;
+            default: series.ReplaceDifferencePoints(input.DifferencePoints); break;
+        }
+    }
     private static ChartSeries Create(ChartSeriesKind kind) {
         var id = new ChartSeriesId("typed");
         return kind switch {

@@ -61,7 +61,6 @@ public sealed partial class DifferenceAreaTests {
     public void TypedFiniteInputAndFamilyOptionsKeepRangeIntervalValidationSeparate() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartDifferencePoint(0, double.NaN, 1));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartDifferencePoint(0, 1, double.PositiveInfinity));
-        Assert.Throws<ArgumentException>(() => Chart.Create().AddDifferenceArea("Empty", Array.Empty<ChartDifferencePoint>()));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartRangeBand(0, 8, 2));
         var range = Chart.Create().AddRangeArea("Interval", new[] { new ChartRangeBand(0, 2, 8) });
         Assert.Throws<ArgumentOutOfRangeException>(() => range.Series[0].UpdateRange(0, new ChartRangeBand(0, 9, 8)));

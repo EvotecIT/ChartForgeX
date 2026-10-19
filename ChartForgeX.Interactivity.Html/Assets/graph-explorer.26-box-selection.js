@@ -38,5 +38,5 @@
     return selected;
   };
   const bindGraphBoxSelection = root => {
-    root.addEventListener('keydown', event => { if (event.key === 'Escape' && root.dataset.cfxGraphPointerMode === 'box-select') setGraphBoxSelectionMode(root, false); });
+    listenGraph(root, root, 'keydown', event => { if (event.key === 'Escape' && root.dataset.cfxGraphPointerMode === 'box-select') setGraphBoxSelectionMode(root, false); });
   };

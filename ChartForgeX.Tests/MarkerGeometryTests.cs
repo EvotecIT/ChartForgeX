@@ -156,7 +156,7 @@ public sealed class MarkerGeometryTests {
         Assert.DoesNotContain(hidden.Scene.Nodes, node => node.Role is "marker" or "marker-pattern");
         Assert.Equal(sourceGroups.Select(group => (group.Id, group.Metadata["data-cfx-source-point"])),
             hidden.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point").Select(group => (group.Id, group.Metadata["data-cfx-source-point"])));
-        series.Points.Clear(); series.Markers.Shape = ChartMarkerShape.Pin;
+        chart.ClearSeries(); series.Markers.Shape = ChartMarkerShape.Pin;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 

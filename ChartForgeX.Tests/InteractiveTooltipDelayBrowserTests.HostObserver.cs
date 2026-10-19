@@ -1,5 +1,6 @@
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
 
@@ -17,6 +18,9 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         });
         await using var session = await OpenAsync(html, 950, 1400);
         var page = session.Page;
+        var clockStart = DateTime.UtcNow;
+        await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = clockStart });
+        await page.Clock.PauseAtAsync(clockStart.AddHours(1));
         await MountFragmentAsync(page, "closed");
         await page.EvaluateAsync("() => { window.firstHostedChart=window.hostedChart; window.firstHostedChart.getRootNode().host.id='first-shadow-host'; }");
         await MountFragmentAsync(page, "closed");
@@ -68,20 +72,21 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             }
             """);
         var afterInterleavedDetach = await page.EvaluateAsync<string[]>("() => Array.from(window.pendingTooltipObserverTrees(),tree => tree.host?.id || 'document').sort()");
-        var timer = await page.EvaluateAsync<int>("() => window.interleavedTimer");
-        await Task.Delay(queuedDelay + 80);
+        var timer = await page.EvaluateAsync<long>("() => window.interleavedTimer");
+        await page.Clock.RunForAsync(queuedDelay + 80);
         var expiry = await HostReceiptAsync(page);
         await CaptureDelayAsync(page, "delay-shadow-observer-release", new { RetainedWhileQueued = retained, RetainedAfterLastCancellation = 0,
             AfterInterleavedDetach = afterInterleavedDetach, InterleavedTimer = timer, Expiry = expiry }, session);
         Assert.Equal(new[] { "document", "second-shadow-host" }, retained);
-        Assert.Contains(timer, expiry.GetProperty("timers").GetProperty("canceled").EnumerateArray().Select(item => item.GetInt32()));
-        Assert.DoesNotContain(timer, expiry.GetProperty("timers").GetProperty("fired").EnumerateArray().Select(item => item.GetInt32()));
+        Assert.Contains(timer, expiry.GetProperty("timers").GetProperty("canceled").EnumerateArray().Select(item => item.GetInt64()));
+        Assert.DoesNotContain(timer, expiry.GetProperty("timers").GetProperty("fired").EnumerateArray().Select(item => item.GetInt64()));
         Assert.Empty(afterInterleavedDetach);
         Assert.True(expiry.GetProperty("hidden").GetBoolean());
         Assert.Empty(expiry.GetProperty("expiry").EnumerateArray());
+        await page.Clock.ResumeAsync();
         await MoveAwayAsync(page);
         await MoveToHostTargetAsync(page, Point(0, 0));
-        Assert.True(await HostedTipHiddenAsync(page));
+        await AssertDelayedNativeEntryAsync(page);
         await WaitForHostExpiryAsync(page);
         Assert.False(await HostedTipHiddenAsync(page));
         await CaptureDelayAsync(page, "delay-shadow-observer-recovery", await HostReceiptAsync(page), session);

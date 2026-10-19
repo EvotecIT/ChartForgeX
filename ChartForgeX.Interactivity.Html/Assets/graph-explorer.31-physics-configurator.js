@@ -1,3 +1,4 @@
+  const graphPhysicsText = (root, value) => uiText(root, 'GraphPhysics' + value[0].toUpperCase() + value.slice(1), value);
   const physicsCommonFields = {
     minVelocity: 'data-cfx-physics-min-velocity',
     maxVelocity: 'data-cfx-physics-max-velocity',
@@ -31,7 +32,7 @@
       else if (supported && value !== '') input.value = value;
     });
     const status = panel.querySelector('[data-cfx-role="graph-physics-status"]');
-    if (status) status.textContent = `${solver} · ${root.dataset.cfxGraphPhysicsState || 'ready'} · ${root.dataset.cfxGraphPhysicsThread || 'idle'}`;
+    if (status) status.textContent = uiText(root, 'GraphPhysicsStatus', '{solver} · {state} · {thread}', { solver: uiText(root, 'GraphSolver' + solver, solver), state: graphPhysicsText(root, root.dataset.cfxGraphPhysicsState || 'ready'), thread: graphPhysicsText(root, root.dataset.cfxGraphPhysicsThread || 'idle') });
   };
   const physicsConfigurationAttributes = (root) => Array.from(root.attributes).filter(attribute => attribute.name === 'data-cfx-graph-physics' || attribute.name.startsWith('data-cfx-physics-')).map(attribute => [attribute.name, attribute.value]);
   const applyPhysicsConfiguration = (root, configuration) => {
@@ -52,13 +53,13 @@
     if (!panel || panel.dataset.cfxPhysicsBound === 'true') return;
     panel.dataset.cfxPhysicsBound = 'true';
     root.__cfxGraphPhysicsDefaults = physicsConfigurationAttributes(root);
-    panel.addEventListener('change', event => {
+    listenGraph(root, panel, 'change', event => {
       const input = event.target.closest?.('[data-cfx-physics-field]');
       if (!input) return;
       const field = attr(input, 'data-cfx-physics-field');
       applyPhysicsConfiguration(root, field === 'solver' ? { solver: input.value } : { [field]: input.type === 'checkbox' ? input.checked : Number(input.value) });
     });
-    panel.addEventListener('click', event => {
+    listenGraph(root, panel, 'click', event => {
       const action = attr(event.target.closest?.('[data-cfx-physics-action]'), 'data-cfx-physics-action');
       if (action === 'reheat') reheatPhysics(root, 'configurator', { rebuild: true, fit: false });
       if (action === 'reset') {
@@ -67,6 +68,6 @@
       }
       if (action) syncPhysicsConfigurator(root);
     });
-    root.addEventListener('cfxgraphstabilized', () => syncPhysicsConfigurator(root));
+    listenGraph(root, root, 'cfxgraphstabilized', () => syncPhysicsConfigurator(root));
     syncPhysicsConfigurator(root);
   };

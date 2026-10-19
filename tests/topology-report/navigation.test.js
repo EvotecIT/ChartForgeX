@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { installUiText, localizationSource } = require('../helpers/adapter-localization');
 const source = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/TopologyReportHtmlExtensions.Assets.cs'), 'utf8');
 const script = source.match(/private const string ReportScript = """([\s\S]*?)""";/)[1];
 
@@ -34,9 +35,12 @@ function report(count, customRecords) {
     this.children = [{ querySelector: selector => children[selector] }];
   } });
   ids.content.querySelector = selector => ids.content.children[0].querySelector(selector);
-  new Function('document', script)({
+  const main = { dataset: {}, lang: 'en' }, window = {};
+  installUiText(window);
+  new Function('document', 'window', script)({
+    querySelector: selector => selector === 'main' ? main : null,
     getElementById: id => ids[id], createElement: element, addEventListener() {}
-  });
+  }, window);
   return { ids, allocated: () => buttonsCreated, links: () => ids.content.querySelector('.links').children,
     controls: () => ids.content.querySelector('.relationship-pages').children };
 }
@@ -103,13 +107,14 @@ test('inactive page SVGs remain text and page changes retain one parsed SVG', ()
   const data = (id, value) => `<script type="application/json" id="${id}">${JSON.stringify(value).replace(/</g, '\\u003c')}</script>`;
   const pages = Array.from({length:200}, (_, index) => data('page-' + index,
     `<section class="diagram"><svg><circle id="node-${index}"/></svg></section><section><div class="links"></div><div class="relationship-pages"></div></section>`) + data('links-' + index, []));
-  const dom = new JSDOM(`<select id="page">${Array.from({length:200},(_,i)=>`<option value="${i}">${i}</option>`).join('')}</select>
+  const dom = new JSDOM(`<main lang="en"><select id="page">${Array.from({length:200},(_,i)=>`<option value="${i}">${i}</option>`).join('')}</select>
     <input id="fit" type="checkbox"><input id="search"><div id="results"></div><output id="search-status"></output>
     <button id="previous"></button><button id="next"></button><output id="page-status"></output><div id="content"></div>
-    ${data('objects',[])}${pages.join('')}`, {runScripts:'outside-only'});
+    ${data('objects',[])}${pages.join('')}</main>`, {runScripts:'outside-only'});
   try {
     const document = dom.window.document;
     assert.equal(document.querySelectorAll('svg').length,0);
+    dom.window.eval(localizationSource);
     dom.window.eval(script);
     assert.equal(document.querySelectorAll('svg').length,1);
     document.getElementById('page').value='199';

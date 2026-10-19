@@ -307,6 +307,8 @@ public sealed class VisualArtifactInterchangeTopologyEdge {
 public sealed class VisualArtifactInterchangeFlowNode {
     /// <summary>Gets or sets the exact step kind.</summary>
     public FlowArtifactStepKind Kind { get; set; }
+    /// <summary>Gets or sets whether node dimensions are minima for complete measured content. Default: true.</summary>
+    public bool FitLabelToContent { get; set; } = true;
 }
 
 /// <summary>Represents flow-connector semantics.</summary>

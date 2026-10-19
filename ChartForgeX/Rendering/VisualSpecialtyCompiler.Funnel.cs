@@ -79,7 +79,8 @@ internal static partial class VisualSpecialtyCompiler {
     private static void FunnelLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartFunnelStageLayout stage,
         ChartColor color, VisualThemeColors colors, double raw, double? retention, double? drop, ChartFunnelForm form) {
         var index = stage.SourceIndex;
-        var text = Category(chart, index) + ": " + VisualStateSceneTools.Value(chart, chart.Series[0], index, raw);
+        var value = VisualStateSceneTools.Value(chart, chart.Series[0], index, raw);
+        var text = Category(chart, index) + ": " + value;
         var inside = raw > 0 && form == ChartFunnelForm.StageBars;
         var textColor = inside ? ChartColorMath.AccessibleTextOnBackground(color) : colors.Foreground;
         var style = Style(chart, context, index, textColor);
@@ -125,11 +126,34 @@ internal static partial class VisualSpecialtyCompiler {
             }
             if (!inside) style = Style(chart, context, index, colors.Foreground);
         }
-        StageText(builder, displayed, bounds, style, "funnel-label", Id(index) + "-label", TextAlignment.Center,
+        var railCaption = false;
+        if (form == ChartFunnelForm.Cone && chart.Options.Funnel.Orientation == ChartOrientation.Vertical && metricsBounds.Width > 0) {
+            var readable = style.Clone(); readable.FontSize = Math.Min(10, style.EffectiveFontSize);
+            var lineHeight = builder.MeasureText(text, readable).Height;
+            // A dense stage gives a useful category and raw value first use of its rail.
+            // Ratio descriptors remain available when that space cannot paint both.
+            if (lineHeight > bounds.Height && lineHeight <= metricsBounds.Height) {
+                var suffix = ": " + value;
+                var category = ChartTextFitting.FitEnd(Category(chart, index),
+                    prefix => builder.MeasureText(prefix + suffix, readable).Width <= metricsBounds.Width, "…");
+                if (category.Length > 0 && category != "…") {
+                    displayed = category + suffix; bounds = metricsBounds; style = readable; railCaption = true;
+                    if (bounds.Left > stage.LineEnd.X + context.Theme.Spacing)
+                        VisualStateSceneTools.Connector(builder, chart.Options, stage.LineEnd,
+                            new ChartPoint(bounds.Left - context.Theme.Spacing / 4, stage.LineEnd.Y), colors.MutedForeground);
+                }
+            }
+        }
+        StageText(builder, railCaption ? text : displayed, bounds, style, "funnel-label", Id(index) + "-label",
+            railCaption ? TextAlignment.Left : TextAlignment.Center,
             VisualChartPaint.ExplicitDataLabelColor(chart, index) || !inside ? VisualChartPaint.Text(style)
-                : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "funnel");
+                : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "funnel",
+            displayedText: railCaption ? displayed : null);
         if (index > 0 && metricsBounds.Width > 0 && metricsBounds.Height > 0) {
-            StageText(builder, metrics, metricsBounds, metricsStyle,
+            var ratioBounds = railCaption
+                ? new ChartRect(metricsBounds.Left, metricsBounds.Top, metricsBounds.Width, 0)
+                : metricsBounds;
+            StageText(builder, metrics, ratioBounds, metricsStyle,
                 "funnel-ratio", Id(index) + "-ratio", TextAlignment.Left,
                 VisualChartPaint.Text(metricsStyle), "funnel");
         }

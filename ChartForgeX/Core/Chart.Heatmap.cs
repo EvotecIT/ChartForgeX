@@ -8,7 +8,7 @@ namespace ChartForgeX.Core;
 /// <inheritdoc />
 public sealed partial class Chart {
     /// <summary>
-    /// Adds a heatmap row series.
+    /// Adds a heatmap row series. Empty rows retain their position without inventing observations.
     /// </summary>
     /// <param name="name">The row name.</param>
     /// <param name="points">The cell values. The x values identify columns and the y values set cell intensity.</param>
@@ -18,7 +18,6 @@ public sealed partial class Chart {
     public Chart AddHeatmapRow(string name, IEnumerable<ChartPoint> points, ChartColor? color = null, ChartSeriesId? id = null) {
         EnsureCanAddSeries();
         var materialized = ChartGuards.Points(points, nameof(points));
-        if (materialized.Count == 0) throw new ArgumentException("Heatmap rows must contain at least one cell value.", nameof(points));
         return Add(name, ChartSeriesKind.Heatmap, materialized, color, id: id);
     }
 
@@ -65,7 +64,7 @@ public sealed partial class Chart {
     public Chart AddHeatmapRows(IEnumerable<ChartHeatmapRow> rows, ChartColor? color = null) => AddMatrixRows(rows, color, ChartSeriesKind.Heatmap);
 
     /// <summary>
-    /// Adds a hexbin heatmap row series.
+    /// Adds a hexbin heatmap row series. Empty rows retain their position without inventing observations.
     /// </summary>
     /// <param name="name">The row name.</param>
     /// <param name="points">The cell values. The x values identify columns and the y values set hexagon intensity.</param>
@@ -75,7 +74,6 @@ public sealed partial class Chart {
     public Chart AddHexbinHeatmapRow(string name, IEnumerable<ChartPoint> points, ChartColor? color = null, ChartSeriesId? id = null) {
         EnsureCanAddSeries();
         var materialized = ChartGuards.Points(points, nameof(points));
-        if (materialized.Count == 0) throw new ArgumentException("Hexbin heatmap rows must contain at least one cell value.", nameof(points));
         return Add(name, ChartSeriesKind.HexbinHeatmap, materialized, color, id: id);
     }
 
@@ -163,7 +161,6 @@ public sealed partial class Chart {
         }
 
         columnCount = index - 1;
-        if (points.Count == 0) throw new ArgumentException("At least one visible cell value is required.", parameterName);
         return points;
     }
 }

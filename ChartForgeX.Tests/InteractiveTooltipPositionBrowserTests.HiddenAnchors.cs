@@ -10,6 +10,7 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     [BrowserTheory]
+    [Trait("BrowserSuite", "Compatibility")]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "target", false)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "target", true)]
     [InlineData(HtmlChartTooltipAnchor.Pointer, "ancestor", false)]
@@ -31,15 +32,17 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await page.SetContentAsync("<html><head><style>svg [hidden]{display:none}</style></head><body>" + Observations(false).ToInteractiveHtmlFragment(options => {
             options.Tooltip.Position.Anchor = anchor;
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
-        }) + "</body></html>");
+        }) + "<input id='position-host-after' aria-label='Continue report' /></body></html>");
+        var nativeButtonIsTabStop = pinned && subject == "target" && await NativeButtonsParticipateInTabOrderAsync(page);
         const string literal = "<script>window.hiddenAnchorInjection=true</script> & \"quoted\" 'literal' — full host fact";
         await page.Locator(Reading).EvaluateAsync("(node,literal)=>node.setAttribute('data-cfx-meta-host-fact',literal)", literal);
         var baseline = await ListenerStateAsync(page);
+        double[]? pointer = null;
         if (pinned) {
             await page.Locator(Reading).FocusAsync();
             await page.Keyboard.PressAsync("Space");
-        } else await PointerAsync(page);
-        var shown = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight });
+        } else pointer = await PointerAsync(page);
+        var shown = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, pointer: pointer);
         Assert.Contains(literal, shown.GetProperty("text").GetString()!, StringComparison.Ordinal);
         var active = await ListenerStateAsync(page);
         await page.EvaluateAsync("""
@@ -52,7 +55,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await page.EvaluateAsync("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
         var hidden = await GeometryAsync(page);
         var released = await ListenerStateAsync(page);
-        await CaptureAsync(page, $"position-hidden-{anchor}-{subject}-{(pinned ? "pinned" : "shown")}", new { baseline, shown, active, hidden, released }, session);
+        await CaptureAsync(page, $"position-hidden-{anchor}-{subject}-{(pinned ? "pinned" : "shown")}", new { pointer, baseline, shown, active, hidden, released }, session);
         Assert.True(hidden.GetProperty("hidden").GetBoolean());
         Assert.False(hidden.GetProperty("pinned").GetBoolean());
         Assert.Equal(baseline.GetProperty("observed").GetInt32() + 1, active.GetProperty("observed").GetInt32());
@@ -67,15 +70,19 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             await page.Keyboard.PressAsync("ArrowLeft");
             var resumed = await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, selector: replacement);
             Assert.Contains("X\n7\nY\n6", resumed.GetProperty("text").GetString()!, StringComparison.Ordinal);
+            Assert.Equal(1, await page.Locator("[data-cfx-keyboard-component=data][tabindex='0']").CountAsync());
             await page.Keyboard.PressAsync("Tab");
-            Assert.True(await page.Locator("[data-cfx-reset]").EvaluateAsync<bool>("node=>node===document.activeElement"));
+            // Match the independently observed native button policy, while keeping the chart's next stop strict.
+            var tabDestination = await page.EvaluateAsync<string>("()=>document.activeElement.matches('[data-cfx-reset]')?'reset':document.activeElement.id");
+            Assert.Equal(nativeButtonIsTabStop ? "reset" : "position-host-after", tabDestination);
             Assert.True(await TipHiddenAsync(page));
             await page.Keyboard.PressAsync("Shift+Tab");
             Assert.True(await page.Locator(replacement).EvaluateAsync<bool>("node=>node===document.activeElement"));
+            Assert.Equal(1, await page.Locator("[data-cfx-keyboard-component=data][tabindex='0']").CountAsync());
             await AssertPositionAsync(page, anchor, new[] { HtmlChartTooltipPlacement.BottomRight }, selector: replacement);
             await page.Keyboard.PressAsync("Space");
             Assert.True((await GeometryAsync(page, replacement)).GetProperty("pinned").GetBoolean());
-            await CaptureAsync(page, $"position-hidden-keyboard-resume-{anchor}", await GeometryAsync(page, replacement), session);
+            await CaptureAsync(page, $"position-hidden-keyboard-resume-{anchor}", new { nativeButtonIsTabStop, tabDestination, resumed = await GeometryAsync(page, replacement) }, session);
             await page.Keyboard.PressAsync("Space");
         }
         await page.EvaluateAsync("()=>window.hiddenPositionSubject.removeAttribute('hidden')");
@@ -148,4 +155,23 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await CaptureAsync(page, $"position-hidden-fact-retained-{anchor}-{(precision ? "precision" : "zero")}", new { shown, pointer, retained }, session);
         AssertNoConsoleErrors(session);
     }
+    private static async Task<bool> NativeButtonsParticipateInTabOrderAsync(IPage page) {
+        await page.EvaluateAsync("""
+            ()=>{
+                const probe=document.createElement('div');probe.id='position-native-tab-probe';
+                probe.innerHTML="<input id='position-native-tab-before' aria-label='Native input before button'><button id='position-native-tab-button' type='button'>Native button</button><input id='position-native-tab-after' aria-label='Native input after button'>";
+                document.body.append(probe);
+            }
+            """);
+        try {
+            await page.Locator("#position-native-tab-before").FocusAsync();
+            await page.Keyboard.PressAsync("Tab");
+            var destination = await page.EvaluateAsync<string>("()=>document.activeElement.id");
+            Assert.Contains(destination, new[] { "position-native-tab-button", "position-native-tab-after" });
+            return destination == "position-native-tab-button";
+        } finally {
+            await page.EvaluateAsync("()=>document.getElementById('position-native-tab-probe')?.remove()");
+        }
+    }
+
 }

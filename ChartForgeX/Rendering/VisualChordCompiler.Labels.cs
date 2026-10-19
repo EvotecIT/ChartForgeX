@@ -21,12 +21,14 @@ internal static partial class VisualChordCompiler {
             var vertical = Math.Sin(angle) > .25 ? 0d : Math.Sin(angle) < -.25 ? 1d : .5;
             requests.Add(new LabelPlacementRequest(labels[node.Index], anchor, styles[node.Index], new[] {
                 new LabelCandidate(0, 0, horizontal, vertical), new LabelCandidate(0, -gap, horizontal, 1),
-                new LabelCandidate(0, gap, horizontal, 0), new LabelCandidate(0, -gap * 2, horizontal, 1), new LabelCandidate(0, gap * 2, horizontal, 0)
+                new LabelCandidate(0, gap, horizontal, 0), new LabelCandidate(0, -gap * 2, horizontal, 1), new LabelCandidate(0, gap * 2, horizontal, 0),
+                // The outer rail retains a shorter same-side caption when a vertical leader would cross another label.
+                new LabelCandidate((Math.Cos(angle) >= 0 ? plot.Right : plot.Left) - anchor.X, 0, Math.Cos(angle) >= 0 ? 1 : 0, .5)
             }, priority: 40) { HasLeaderLine = true });
         }
         var contour = ChartCurveFlattening.Arc(model.CenterX, model.CenterY, model.OuterRadius, 0, Math.PI * 2, 1);
         var obstacles = new[] { new LabelObstacle("chord-marks", new LabelMarkShape(new[] { contour }, true, 0)) };
-        var placed = new LabelPlacementService().Place(requests, plot, obstacles, 2, builder.MeasureText);
+        var placed = new LabelPlacementService().Place(requests, plot, obstacles, 2, builder.MeasureText, avoidLeaderLabels: true);
         for (var index = 0; index < placed.Count; index++) {
             var result = placed[index];
             if (result.IsDropped || result.IsEllipsized) builder.AddDiagnostic(new VisualDiagnostic("chord.label-overflow", "Chord labels were shortened or omitted to fit; full labels and endpoint totals remain in node semantics."));

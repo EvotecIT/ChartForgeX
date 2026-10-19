@@ -23,9 +23,11 @@ internal static partial class VisualPolarCompiler {
                 var angle = CategoryAngle(chart.Options.XAxis, index, categories.Length);
                 return new ChartPoint(Math.Cos(angle) * radius, Math.Sin(angle) * radius);
             }).ToArray();
-            var bounds = ChartPathBuilder.ClosedCurve(points, tension).Bounds();
-            extent = Math.Max(extent, Math.Max(Math.Max(Math.Abs(bounds.Left), Math.Abs(bounds.Right)),
-                Math.Max(Math.Abs(bounds.Top), Math.Abs(bounds.Bottom))));
+            foreach (var path in ChartRadarGeometry.Paths(series.Radar, points, sources)) {
+                var bounds = path.Path.Bounds();
+                extent = Math.Max(extent, Math.Max(Math.Max(Math.Abs(bounds.Left), Math.Abs(bounds.Right)),
+                    Math.Max(Math.Abs(bounds.Top), Math.Abs(bounds.Bottom))));
+            }
         }
         var fit = geometry.AvailableRadius <= 0 ? 1 : Math.Max(1, extent * geometry.Radius / geometry.AvailableRadius);
         return fit <= 1 ? geometry : new PolarLayout(geometry.Cx, geometry.Cy, geometry.Radius / fit, geometry.GridRadius / fit, geometry.AvailableRadius);

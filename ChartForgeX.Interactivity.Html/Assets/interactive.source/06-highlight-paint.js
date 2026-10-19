@@ -65,6 +65,28 @@
     });
     return result;
   };
+  const interactionOutlineNode = (kind, attribute, role = 'interaction-highlight') => {
+    const outline = document.createElementNS('http://www.w3.org/2000/svg', kind);
+    outline.setAttribute('data-cfx-role', role);
+    outline.setAttribute(attribute, '');
+    outline.setAttribute('aria-hidden', 'true');
+    outline.setAttribute('focusable', 'false');
+    return outline;
+  };
+  // Keyboard focus and text-only state cues share the same live native-to-SVG footprint.
+  const interactionOutlineFootprint = (node) => {
+    const svg = node?.ownerSVGElement, matrix = svgScreenMatrix(svg);
+    if (!matrix) return null;
+    const box = nativeRegionScreenBox(node) || nativeRegionScreenBox(node, node.getBBox());
+    if (!box || !Object.values(box).every(Number.isFinite)) return null;
+    const centerX = (box.left + box.right) / 2, centerY = (box.top + box.bottom) / 2;
+    const halfWidth = Math.max(5, (box.right - box.left) / 2 + 3), halfHeight = Math.max(5, (box.bottom - box.top) / 2 + 3);
+    const inverse = matrix.inverse();
+    const points = [[centerX - halfWidth, centerY - halfHeight], [centerX + halfWidth, centerY - halfHeight],
+      [centerX + halfWidth, centerY + halfHeight], [centerX - halfWidth, centerY + halfHeight]]
+      .map(([x, y]) => new DOMPoint(x, y).matrixTransform(inverse));
+    return { svg, path: points.map((point, index) => (index ? 'L ' : 'M ') + point.x + ' ' + point.y).join(' ') + ' Z' };
+  };
   const highlightOutline = (paint, style) => {
     const primary = paint.querySelector('[data-cfx-role="sunburst-segment-mark"]');
     let outline = paint.querySelector('[data-cfx-highlight-outline]');
@@ -74,11 +96,7 @@
     }
     // Copy only the primary geometry: no hatch, IDs, targets, tab stops or native paint attributes.
     if (!outline) {
-      outline = document.createElementNS('http://www.w3.org/2000/svg', primary.localName);
-      outline.setAttribute('data-cfx-role', 'interaction-highlight');
-      outline.setAttribute('data-cfx-highlight-outline', '');
-      outline.setAttribute('aria-hidden', 'true');
-      outline.setAttribute('focusable', 'false');
+      outline = interactionOutlineNode(primary.localName, 'data-cfx-highlight-outline');
       paint.insertBefore(outline, paint.firstChild);
     }
     ['d', 'transform', 'fill-rule'].forEach(key => {

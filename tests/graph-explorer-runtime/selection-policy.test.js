@@ -1,20 +1,20 @@
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const test = require('node:test');
+const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 
-const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const source = ['00-core', '01-document', '10-layout', '29-selection', '36-host-commands', '40-api']
-  .map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
+const source = graphRuntimeSource('return { graphVirtualElement, graphState, selectedItems, bindGraphItemSelection };');
 
 function fixture(features = 'Selection') {
-  const window = {};
+  const lifetimes = adapterLifetimes();
+  test.after(() => lifetimes.dispose());
+  const window = lifetimes.window;
   const events = [];
   const announcer = { textContent: '' };
   const tooltip = { hidden: false };
-  const runtime = new Function('window', 'CustomEvent', 'syncSelectedEdgeLabels', 'syncSelectionTooltip', source +
-    '\nreturn { graphVirtualElement, graphState, selectedItems, bindGraphItemSelection };')(
-    window, class { constructor(type, options) { this.type = type; this.detail = options.detail; } }, () => {}, () => {});
+  const runtime = new Function('document', 'window', 'CustomEvent', source)(
+    { readyState: 'loading', addEventListener() {} }, window,
+    class { constructor(type, options) { this.type = type; this.detail = options.detail; } });
   const node = runtime.graphVirtualElement('graph-node', { 'data-node-id': 'shared' });
   const peer = runtime.graphVirtualElement('graph-node', { 'data-node-id': 'peer' });
   const edge = runtime.graphVirtualElement('graph-edge', {
@@ -28,22 +28,29 @@ function fixture(features = 'Selection') {
   root.querySelectorAll = () => [];
   root.querySelector = selector => selector.includes('announcer') ? announcer : selector === '.cfx-graph-tooltip' ? tooltip : null;
   root.dispatchEvent = event => { events.push(event); return true; };
+  lifetimes.mount(root);
   root.__cfxGraphState = runtime.graphState(root);
   const activate = (item, type, modifiers = {}) => {
     const handlers = new Map();
+    // Ordinary clicks target a DOM-backed mark; model-only items use the shared accelerated surface.
+    item.__cfxVirtual = false;
     item.addEventListener = (name, handler) => handlers.set(name, handler);
     runtime.bindGraphItemSelection(root, item);
     const event = { key: type === 'keydown' ? ' ' : undefined, preventDefault() {}, ...modifiers };
     handlers.get(type)(event);
   };
-  return { root, node, peer, edge, cluster, events, announcer, tooltip, activate, api: window.ChartForgeXGraphExplorer,
+  return { root, node, peer, edge, cluster, events, announcer, tooltip, activate, bind: item => runtime.bindGraphItemSelection(root, item), api: window.ChartForgeXGraphExplorer,
     selected: () => runtime.selectedItems(root).map(({ role, id }) => ({ role, id })) };
 }
 
 const identity = (role, id) => ({ role, id });
 
 test('host selection replaces with one stable role-qualified match when MultiSelection is disabled', () => {
-  const { api, root, node, peer, edge, events, announcer, tooltip, selected } = fixture();
+  const { api, root, node, peer, edge, events, announcer, tooltip, selected, bind } = fixture();
+  let subscriptions = 0;
+  node.addEventListener = () => subscriptions++;
+  bind(node);
+  assert.equal(subscriptions, 0, 'Model-only virtual nodes do not own DOM event subscriptions');
   // Graph order gives a deterministic primary even when a host supplies several identities.
   const replacement = api.select(root, [identity('graph-edge', 'shared'), identity('graph-node', 'peer'), identity('graph-node', 'shared')]);
   assert.deepEqual(replacement.map(({ role, id }) => ({ role, id })), [identity('graph-node', 'shared')]);

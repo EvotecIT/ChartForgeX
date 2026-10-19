@@ -50,6 +50,7 @@ public sealed class SvgRasterDiagnosticTests {
             "<defs><symbol id='effect' filter='blur(2px)'><rect width='20' height='20'/></symbol></defs><use href='#effect'/>",
             "<defs><mask id='effect' filter='blur(2px)'><rect width='20' height='20' fill='white'/></mask></defs><rect width='20' height='20' mask='url(#effect)'/>",
             "<style>defs .filtered{filter:var(--effect)}</style><defs style='--effect:blur(2px)'><pattern id='effect' class='filtered' patternUnits='userSpaceOnUse' width='8' height='8'><rect width='8' height='8'/></pattern></defs><rect width='20' height='20' fill='url(#effect)'/>",
+            "<defs style='--missing:var(--absent);--effect:var(--missing,blur(2px))'><pattern id='effect' filter='var(--effect)' patternUnits='userSpaceOnUse' width='8' height='8'><rect width='8' height='8'/></pattern></defs><rect width='20' height='20' fill='url(#effect)'/>",
             "<defs><pattern id='base' patternUnits='userSpaceOnUse' width='8' height='8'><rect width='8' height='8'/></pattern><pattern id='effect' href='#base' filter='blur(2px)'/></defs><rect width='20' height='20' fill='url(#effect)'/>"
         }) {
             var source = Svg(body);

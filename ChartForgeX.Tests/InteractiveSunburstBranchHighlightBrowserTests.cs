@@ -270,17 +270,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         });
         await using var session = await OpenAsync(html, 850, 650);
         var page = session.Page;
-        var point = await page.Locator(Node("platform")).EvaluateAsync<double[]>("""
-            node => {
-                const mark=node.querySelector('[data-cfx-role="sunburst-segment-mark"]'), box=mark.getBoundingClientRect();
-                const hit=(x,y)=>document.elementFromPoint(x,y)?.closest('[data-cfx-target-kind=node]')===node;
-                for(let y=1;y<40;y++) for(let x=1;x<40;x++) {
-                    const px=box.left+box.width*x/40,py=box.top+box.height*y/40;
-                    if([-4,0,4].every(dx=>[-4,0,4].every(dy=>hit(px+dx,py+dy)))) return [px,py];
-                }
-                throw new Error('No interior native sector hit');
-            }
-            """);
+        var point = await NativeInteriorPointAsync(page, Node("platform"), "[data-cfx-role=sunburst-segment-mark]", clearance: 8);
         await page.EvaluateAsync("""
             () => {
                 const root=document.querySelector('.cfx-interactive-chart');
@@ -363,12 +353,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
                 hatch ? getComputedStyle(hatch).strokeWidth : '',String(node.querySelectorAll('[data-cfx-role="sunburst-pattern"]').length)]; }
         """);
     private static async Task MoveToNative(IPage page, string selector) {
-        var point = await page.Locator(selector).First.EvaluateAsync<double[]>("""
-            node => { const mark=node.querySelector('[data-cfx-role="sunburst-segment-mark"]'), box=mark.getBoundingClientRect();
-                for(let y=1;y<40;y++) for(let x=1;x<40;x++) { const px=box.left+box.width*x/40,py=box.top+box.height*y/40,hit=document.elementFromPoint(px,py);
-                    if(hit && hit.closest('[data-cfx-target-kind=node]')===node && !hit.hasAttribute('data-cfx-highlight-outline')) return [px,py]; }
-                throw new Error('No native Sunburst hit for '+node.dataset.cfxNode); }
-            """);
+        var point = await NativeInteriorPointAsync(page, selector, "[data-cfx-role=sunburst-segment-mark]");
         await page.Mouse.MoveAsync((float)point[0], (float)point[1], new MouseMoveOptions { Steps = 4 });
     }
     private static async Task Capture(HtmlBrowserSession session, string html, string name) {

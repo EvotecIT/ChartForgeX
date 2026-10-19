@@ -293,9 +293,9 @@
       "capabilities": ["interactive HTML", "scenario playback", "deep links", "host events"],
       "featured": true,
       "source": {
-        "path": "ChartForgeX.Examples/TopologyVisualExamples.cs",
+        "path": "ChartForgeX.Examples/TopologyVisualExamples.Replication.cs",
         "entry": "BuildReplicationMeshExplorer()",
-        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/TopologyVisualExamples.cs"
+        "url": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Examples/TopologyVisualExamples.Replication.cs"
       },
       "build": {
         "command": "dotnet run --project .\\ChartForgeX.Examples\\ChartForgeX.Examples.csproj -c Release -- --topology-only",

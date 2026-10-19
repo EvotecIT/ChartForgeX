@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -46,6 +47,16 @@ internal static class VisualAxisText {
             }
             return true;
         });
+    }
+
+    /// <summary>Keeps a bounded named-category gutter useful when even a balanced line is too wide.</summary>
+    internal static string FitWrappedCategory(VisualSceneBuilder builder, string text, TextStyle style, double width, out bool shortened) {
+        var lines = ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, width,
+            (value, _) => builder.MeasureText(value, style).Width);
+        var displayed = lines.Select(line => ChartTextFitting.FitEnd(line, width,
+            value => builder.MeasureText(value, style).Width, "…")).ToArray();
+        shortened = lines.Where((line, index) => line != displayed[index]).Any();
+        return string.Join("\n", displayed);
     }
 
     /// <summary>Paints the displayed text within the same footprint used for full and shortened placement.</summary>

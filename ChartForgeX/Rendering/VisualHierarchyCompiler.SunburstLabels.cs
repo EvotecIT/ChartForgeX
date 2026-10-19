@@ -8,6 +8,8 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualHierarchyCompiler {
+    private const double SunburstCaptionClearance = 2;
+
     /// <summary>Fits measured horizontal or upright tangential captions within the actual annular segment.</summary>
     private static void SunburstLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartSunburstModel model, ChartSunburstNode node, ChartColor fill, SvgPaint fillPaint, string? secondary) {
@@ -39,7 +41,8 @@ internal static partial class VisualHierarchyCompiler {
         bool TryRadialPositions(string text, TextMetrics measured) {
             var thickness = node.OuterRadius - node.InnerRadius;
             var positions = node.Depth == 0 ? new[] { 0d }
-                : new[] { radius, node.InnerRadius + thickness * .35, node.InnerRadius + thickness * .65 };
+                : new[] { radius, node.InnerRadius + thickness * .35, node.InnerRadius + thickness * .65,
+                    SunburstTangentialCaptionRadius(node, measured) ?? radius };
             foreach (var position in positions) {
                 x = model.CenterX + Math.Cos(mid) * position;
                 y = model.CenterY + Math.Sin(mid) * position;
@@ -70,7 +73,8 @@ internal static partial class VisualHierarchyCompiler {
         bool Fits(TextMetrics measured, double degrees) {
             if (!SunburstCaptionFits(node, x - model.CenterX, y - model.CenterY, measured, degrees)) return false;
             var roundedShape = degrees == 0 ? horizontalShape : tangentShape;
-            return roundedShape == null || roundedShape.Contains(new ChartRect(-measured.Width / 2 - 2, -measured.Height / 2 - 2, measured.Width + 4, measured.Height + 4));
+            return roundedShape == null || roundedShape.Contains(new ChartRect(-measured.Width / 2 - SunburstCaptionClearance,
+                -measured.Height / 2 - SunburstCaptionClearance, measured.Width + 2 * SunburstCaptionClearance, measured.Height + 2 * SunburstCaptionClearance));
         }
 
         LabelMarkShape? RoundedShape(double degrees) {
@@ -81,9 +85,23 @@ internal static partial class VisualHierarchyCompiler {
         }
     }
 
+    /// <summary>Finds a tangential lane between the inner hole, outer arc and angular edges.</summary>
+    private static double? SunburstTangentialCaptionRadius(ChartSunburstNode node, TextMetrics metrics) {
+        var halfWidth = metrics.Width / 2 + SunburstCaptionClearance;
+        var halfHeight = metrics.Height / 2 + SunburstCaptionClearance;
+        var outer = node.OuterRadius - SunburstCaptionClearance;
+        if (outer <= halfWidth) return null;
+        var minimum = node.InnerRadius + SunburstCaptionClearance + halfHeight;
+        var maximum = Math.Sqrt(outer * outer - halfWidth * halfWidth) - halfHeight;
+        var halfSweep = (node.EndAngle - node.StartAngle) / 2;
+        if (halfSweep < Math.PI / 2)
+            minimum = Math.Max(minimum, halfHeight + halfWidth / Math.Tan(halfSweep));
+        return minimum <= maximum ? (minimum + maximum) / 2 : null;
+    }
+
     /// <summary>Checks outer corners, the inner-hole clearance, and angular bounds without reducing type size.</summary>
     private static bool SunburstCaptionFits(ChartSunburstNode node, double x, double y, TextMetrics metrics, double degrees) {
-        const double clearance = 2;
+        const double clearance = SunburstCaptionClearance;
         var halfWidth = metrics.Width / 2 + clearance;
         var halfHeight = metrics.Height / 2 + clearance;
         var angle = degrees * Math.PI / 180; var cosine = Math.Cos(angle); var sine = Math.Sin(angle);

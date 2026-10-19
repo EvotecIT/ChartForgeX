@@ -136,23 +136,25 @@ test('keyboard availability retains native opacity and style changes outside own
 test('keyboard native availability changes coalesce to one frame and disposal cancels queued work', () => {
   const { root, stage, mark, ancestry } = mutationFixture();
   root.isConnected = true; root.querySelector = () => stage;
-  let changed, frame, refreshes = 0, disconnected = 0, canceled = 0, cleanup;
+  let changed, frame, refreshes = 0, cueRefreshes = 0, disconnected = 0, canceled = 0, cleanup;
   const window = { removeEventListener() {} };
   class Observer { constructor(callback) { changed = callback; } observe() {} disconnect() { disconnected++; } }
   const bind = new Function('MutationObserver', 'Element', 'window', 'chartLifetimes', 'composedAncestry', 'paintAvailabilityAttributes',
-    'listenChart', 'ownChartWork', 'requestAnimationFrame', 'cancelAnimationFrame', 'refreshRootBranchHighlightAvailability', 'hasFeature',
+    'listenChart', 'ownChartWork', 'requestAnimationFrame', 'cancelAnimationFrame', 'refreshRootBranchHighlightAvailability', 'refreshSelectionCuePaint', 'hasFeature',
     fragment('30-keyboard-navigation.js') + '\nreturn bindKeyboardNavigationAvailability;')(
       Observer, Object, window, { get: () => ({ disposed: false }) }, () => ({ ...ancestry, trees: [] }), ['class', 'width'],
       () => {}, (_root, release) => { cleanup = release; }, callback => { frame = callback; return 1; }, () => { canceled++; },
-      () => { refreshes++; }, () => false);
+      () => { refreshes++; }, () => { cueRefreshes++; }, () => false);
   bind(root);
   const nativeChange = [{ type: 'attributes', target: mark, attributeName: 'width' }];
   changed(nativeChange); const firstFrame = frame;
   changed(nativeChange); changed(nativeChange);
   assert.equal(frame, firstFrame);
   assert.equal(refreshes, 0);
+  assert.equal(cueRefreshes, 0);
   frame();
   assert.equal(refreshes, 1);
+  assert.equal(cueRefreshes, 1);
   changed(nativeChange); cleanup();
   assert.equal(canceled, 1);
   assert.ok(disconnected >= 1);

@@ -3,7 +3,6 @@
     fill: node.backgroundColor || '#2563eb', stroke: selected ? selectedColor : node.borderColor || '#eff6ff',
     width: graphNodeMarkWidth(selected, compact)
   });
-  let graphNodeMeasureContext = null;
   const graphNodeMarkBounds = (node, compact, moving, margin) => {
     const extents = nodeShapeExtents(node), width = graphNodeMarkWidth(node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact);
     // Canvas's default miter limit is 10; angular strokes can extend beyond
@@ -27,7 +26,7 @@
     if (status && status !== 'unknown') include(node.card ? node.x + extents.x - 15 : node.x - node.size * .8, node.card ? node.y + extents.y - 14 : node.y - node.size * .8, 5.5, 5.5);
     return bounds;
   };
-  const drawNodeMark = (context, node, selected, compact, root, moving, selectedColor) => {
+  const drawNodeMark = (context, node, selected, compact, root, moving, selectedColor, palette) => {
     const paint = graphNodeMarkPaint(node, selected, compact, selectedColor);
     context.fillStyle = paint.fill;
     context.strokeStyle = paint.stroke;
@@ -86,7 +85,7 @@
     context.shadowOffsetY = 0;
     if (node.icon && !moving) {
       context.font = 'bold 12px Segoe UI, Arial, sans-serif';
-      context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillStyle = '#ffffff';
+      context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillStyle = graphNodeIconColor(root, node.el, palette || graphThemePalette(root), paint.fill);
       context.fillText(node.icon, node.card ? node.x - node.size * 1.45 + 28 : node.x, node.y + 1);
     }
   };

@@ -12,6 +12,8 @@
     return { x: size, y: size };
   };
   const graphCardTextAvailableWidth = size => Math.max(28, size * 2.9 - 78);
+  const graphBadgedCardCaptionClearance = 4;
+  const graphCardCaptionBaseline = node => -5 + ((node.badge || attr(node.el, 'data-node-badge')) ? graphBadgedCardCaptionClearance : 0);
   const graphEstimatedCardTextWidth = (value, secondary = false) => {
     let width = 0;
     Array.from(String(value || '')).forEach(character => {
@@ -43,6 +45,29 @@
     value,
     graphCardTextAvailableWidth(size),
     text => graphEstimatedCardTextWidth(text, secondary));
+  let graphNodeMeasureContext = null;
+  const graphBadgeGeometry = (node, root = node.root || node.el?.closest?.('.cfx-graph-explorer')) => {
+    const text = String(node.badge || attr(node.el, 'data-node-badge') || '');
+    const cache = root ? root.__cfxGraphBadgeMeasurements ||= new Map() : null;
+    let width = cache?.get(text);
+    if (width === undefined) {
+      width = graphEstimatedCardTextWidth(text) * 7 / 12.5;
+      if (typeof document !== 'undefined' && typeof document.createElement === 'function') {
+        graphNodeMeasureContext ||= document.createElement('canvas').getContext('2d');
+        if (graphNodeMeasureContext) {
+          graphNodeMeasureContext.font = '800 7px Inter, "Segoe UI", Arial, sans-serif';
+          width = graphNodeMeasureContext.measureText(text).width;
+        }
+      }
+      if (cache) {
+        if (cache.size >= 512) cache.delete(cache.keys().next().value);
+        cache.set(text, width);
+      }
+    }
+    return { text, width: Math.max(16, width + 8), height: 16,
+      x: node.card ? node.size * 1.45 - 18 : node.size * .82,
+      y: node.card ? -Math.min(node.size * 1.05, 36) + 8 : -node.size * .82 };
+  };
   const nodeUsesRectangularGeometry = (node) => ['box', 'imageRect', 'ellipse', 'square', 'diamond', 'triangle', 'triangleDown', 'star', 'database', 'text'].includes(node?.shape);
   const nodePolygonPoints = (shape, size) => {
     if (shape === 'diamond') return `0,${-size * 1.35} ${size * 1.35},0 0,${size * 1.35} ${-size * 1.35},0`;
@@ -58,12 +83,18 @@
   const nodeHalfHeight = (node) => nodeShapeExtents(node).y;
   const nodeLayoutExtents = (node) => {
     const mark = nodeShapeExtents(node);
-    if (node.card) return { x: mark.x + 7, y: mark.y + 7 };
     const label = attr(node.el, 'data-node-label') || node.label || node.id || '';
     const secondary = attr(node.el, 'data-node-secondary-label') || node.secondaryLabel || '';
     const labelHalfWidth = Math.max(24, Math.min(132, label.length * 3.5 + 10), secondary ? Math.min(132, secondary.length * 2.8 + 8) : 0);
     const labelBottom = node.shape === 'text' ? 9 + (secondary ? 15 : 0) : Math.max(4, node.size || 8) + 24 + (secondary ? 15 : 0);
-    return { x: Math.max(mark.x + 5, labelHalfWidth), y: Math.max(mark.y + 5, labelBottom) };
+    const bounds = node.card ? { x: mark.x + 7, y: mark.y + 7 }
+      : { x: Math.max(mark.x + 5, labelHalfWidth), y: Math.max(mark.y + 5, labelBottom) };
+    if (node.badge || attr(node.el, 'data-node-badge')) {
+      const badge = graphBadgeGeometry(node);
+      bounds.x = Math.max(bounds.x, Math.abs(badge.x) + badge.width / 2 + 1);
+      bounds.y = Math.max(bounds.y, Math.abs(badge.y) + 9);
+    }
+    return bounds;
   };
   const nodeLayoutRadius = (node) => Math.max(6, Math.max(nodeLayoutExtents(node).x, nodeLayoutExtents(node).y));
   const nodeCollisionRadius = (node, includeLabels) => includeLabels ? nodeLayoutRadius(node) : Math.max(6, Math.max(nodeHalfWidth(node), nodeHalfHeight(node)) + 5);
@@ -249,7 +280,7 @@
       && Math.abs(point.y - 4 - node.y) < 10 + extents.y + 6;
   };
   const avoidEdgeLabelNodeCollisions = (edge, candidate) => {
-    const label = edge.label || attr(edge.el, 'data-edge-label');
+    const label = graphLabelText(edge.label) || graphLabelText(attr(edge.el, 'data-edge-label'));
     if (!label || (!edgeLabelIntersectsNode(candidate, label, edge.source) && !edgeLabelIntersectsNode(candidate, label, edge.target))) return candidate;
     if (edgeHasRoute(edge)) {
       const points = routeRenderPoints(edge);

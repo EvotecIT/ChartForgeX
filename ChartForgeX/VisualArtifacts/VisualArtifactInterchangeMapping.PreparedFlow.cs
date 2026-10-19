@@ -20,7 +20,7 @@ public static partial class VisualArtifactInterchangeMapping {
         for (var i = 0; i < flow.Steps.Count; i++) {
             var source = flow.Steps[i]; var node = envelope.Nodes[i];
             node.Role = VisualArtifactInterchangeNodeRole.FlowStep; node.Kind = source.Kind.ToString(); node.Topology = null;
-            node.Flow = new VisualArtifactInterchangeFlowNode { Kind = source.Kind };
+            node.Flow = new VisualArtifactInterchangeFlowNode { Kind = source.Kind, FitLabelToContent = source.FitLabelToContent };
             node.Label = source.Label; node.Subtitle = source.Subtitle; node.Status = source.Status.ToString();
             Copy(source.Metadata, node.Extensions);
         }

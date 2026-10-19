@@ -14,7 +14,7 @@ public static class ChartBubbles {
     /// <param name="x">The x values.</param>
     /// <param name="y">The y values.</param>
     /// <param name="size">The bubble size values.</param>
-    /// <returns>Bubble values using the supplied x, y, and size values.</returns>
+    /// <returns>Bubble values using the supplied x, y, and size values, or an empty array when all sequences are empty.</returns>
     public static ChartBubble[] FromXYSize(IEnumerable<double> x, IEnumerable<double> y, IEnumerable<double> size) {
         if (x is null) throw new ArgumentNullException(nameof(x));
         if (y is null) throw new ArgumentNullException(nameof(y));
@@ -23,7 +23,6 @@ public static class ChartBubbles {
         var xValues = x.ToArray();
         var yValues = y.ToArray();
         var sizeValues = size.ToArray();
-        if (xValues.Length == 0) throw new ArgumentException("Bubble values cannot be empty.", nameof(x));
         if (xValues.Length != yValues.Length || xValues.Length != sizeValues.Length) throw new ArgumentException("Bubble X, Y, and Size values must contain the same number of items.", nameof(size));
 
         var bubbles = new ChartBubble[xValues.Length];

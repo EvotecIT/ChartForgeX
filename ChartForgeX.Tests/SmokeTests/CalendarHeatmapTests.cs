@@ -51,7 +51,6 @@ internal static partial class SmokeTests {
         Assert(CalendarRole(document, "calendar-scale-label").All(label => (double)label.RenderedAttribute("y")! > bottom),
             "Calendar scale captions should sit below their swatches.");
         Assert(chart.ToPng().Length > 64, "Calendar heatmaps should render through the native PNG pipeline.");
-        AssertThrows<ArgumentException>(() => Chart.Create().AddCalendarHeatmap("Commits", Array.Empty<ChartCalendarHeatmapItem>()), "Calendar heatmaps should reject empty inputs.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1), -1), "Calendar heatmap values should reject negatives.");
     }
 

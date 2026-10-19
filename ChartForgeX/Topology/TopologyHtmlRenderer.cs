@@ -41,12 +41,13 @@ public sealed partial class TopologyHtmlRenderer {
     }
 
     internal string RenderInteractiveFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets,
-        string? assetSource = null, Func<PreparedTopology, string>? renderSvg = null) {
-        return RenderFragmentCore(chart, options, includeAssets, assetSource ?? (includeAssets ? "inline" : "host"), renderSvg: renderSvg);
+        string? assetSource = null, Func<PreparedTopology, string>? renderSvg = null, TopologyHtmlText? htmlText = null) {
+        return RenderFragmentCore(chart, options, includeAssets, assetSource ?? (includeAssets ? "inline" : "host"), renderSvg: renderSvg, htmlText: htmlText);
     }
 
     private string RenderFragmentCore(TopologyChart chart, TopologyRenderOptions? options, bool includeAssets, string assetSource,
-        string? preparedSvg = null, double? preparedWidth = null, Func<PreparedTopology, string>? renderSvg = null) {
+        string? preparedSvg = null, double? preparedWidth = null, Func<PreparedTopology, string>? renderSvg = null, TopologyHtmlText? htmlText = null) {
+        var messages = htmlText ?? new TopologyHtmlText();
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = chart.ResolveRenderOptions(options).CloneForRendering();
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
@@ -91,6 +92,9 @@ public sealed partial class TopologyHtmlRenderer {
 
         writer.StartElement("div")
             .Attribute("class", wrapperClass)
+            .Attribute("lang", messages.Language)
+            .Attribute("dir", messages.Direction)
+            .Attribute("data-cfx-ui", messages.Json)
             .Attribute("data-cfx-asset-source", assetSource)
             .Attribute("data-chart-id", id)
             .Attribute("data-layout-mode", chart.LayoutMode.ToString())
@@ -111,32 +115,32 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-sync-group", syncGroup)
             .Attribute("style", "width:100%;max-width:" + (preparedWidth ?? chart.Viewport.Width).ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible" + (enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? ";--cfx-topology-narrow-minimum-height:" + options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) + "px" : string.Empty))
             .EndStartElement();
-        if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode);
-        if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState);
-        if (enableForceGraphControls) WriteForceGraphControls(writer, forceControlsClass, forceControlsChart, options);
+        if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode, messages);
+        if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState, messages);
+        if (enableForceGraphControls) WriteForceGraphControls(writer, forceControlsClass, forceControlsChart, options, messages);
         writer.StartElement("div").Attribute("class", viewportClass).EndStartElement();
         if (enableViewportControls || enableExportControls || enableFullscreenControl) {
-            writer.StartElement("div").Attribute("class", controlsClass).Attribute("aria-label", "Topology controls").EndStartElement();
+            writer.StartElement("div").Attribute("class", controlsClass).Attribute("aria-label", messages["TopologyControls"]).EndStartElement();
             if (enableViewportControls) {
-                WriteIconButton(writer, "data-cfx-topology-zoom", "in", "Zoom in", "Zoom in", null, IconPlus());
-                WriteIconButton(writer, "data-cfx-topology-zoom", "out", "Zoom out", "Zoom out", null, IconMinus());
-                WriteIconButton(writer, "data-cfx-topology-fit", "true", "Fit topology", "Fit topology", null, IconFit());
-                WriteIconButton(writer, "data-cfx-topology-reset", "true", "Reset viewport", "Reset viewport", null, IconReset());
+                WriteIconButton(writer, "data-cfx-topology-zoom", "in", messages["ZoomIn"], messages["ZoomIn"], null, IconPlus());
+                WriteIconButton(writer, "data-cfx-topology-zoom", "out", messages["ZoomOut"], messages["ZoomOut"], null, IconMinus());
+                WriteIconButton(writer, "data-cfx-topology-fit", "true", messages["TopologyFit"], messages["TopologyFit"], null, IconFit());
+                WriteIconButton(writer, "data-cfx-topology-reset", "true", messages["TopologyResetViewport"], messages["TopologyResetViewport"], null, IconReset());
             }
 
             if (enableFullscreenControl) {
-                WriteIconButton(writer, "data-cfx-topology-fullscreen", "true", "Open topology fullscreen", "Open topology fullscreen", null, IconFullscreen());
+                WriteIconButton(writer, "data-cfx-topology-fullscreen", "true", messages["TopologyOpenFullscreen"], messages["TopologyOpenFullscreen"], null, IconFullscreen());
             }
 
             if (enableExportControls) {
-                WriteIconButton(writer, "data-cfx-topology-export", "svg", "Export SVG", "Export SVG", null, IconDownload(), "SVG");
-                WriteIconButton(writer, "data-cfx-topology-export", "png", "Export PNG", "Export PNG", null, IconImage(), "PNG");
+                WriteIconButton(writer, "data-cfx-topology-export", "svg", messages["TopologyExportSvg"], messages["TopologyExportSvg"], null, IconDownload(), "SVG");
+                WriteIconButton(writer, "data-cfx-topology-export", "png", messages["TopologyExportPng"], messages["TopologyExportPng"], null, IconImage(), "PNG");
             }
 
             writer.EndElement();
         }
 
-        if (enableSelectionPanel) WriteSelectionPanel(writer, cssPrefix + "-selection-panel");
+        if (enableSelectionPanel) WriteSelectionPanel(writer, cssPrefix + "-selection-panel", messages);
 
         writer.RawTrusted(preparedSvg ?? RenderEmbeddedSvg(chart, options, enableScenarioInteractions, enableForceGraphControls));
         writer.EndElement().EndElement();
@@ -232,7 +236,7 @@ public sealed partial class TopologyHtmlRenderer {
             .EndElement();
     }
 
-    private static void WriteSelectionPanel(HtmlMarkupWriter writer, string className) {
+    private static void WriteSelectionPanel(HtmlMarkupWriter writer, string className, TopologyHtmlText messages) {
         writer.StartElement("aside")
             .Attribute("class", className)
             .Attribute("data-cfx-topology-selection-panel", "true")
@@ -240,8 +244,8 @@ public sealed partial class TopologyHtmlRenderer {
             .BooleanAttribute("hidden")
             .EndStartElement()
             .StartElement("div").Attribute("class", className + "__head").EndStartElement()
-            .StartElement("span").Attribute("class", className + "__eyebrow").Attribute("data-cfx-selection-kind", "true").EndStartElement().Text("Selection").EndElement()
-            .StartElement("strong").Attribute("class", className + "__title").Attribute("data-cfx-selection-title", "true").EndStartElement().Text("No item selected").EndElement()
+            .StartElement("span").Attribute("class", className + "__eyebrow").Attribute("data-cfx-selection-kind", "true").EndStartElement().Text(messages["ExplorerSelection"]).EndElement()
+            .StartElement("strong").Attribute("class", className + "__title").Attribute("data-cfx-selection-title", "true").EndStartElement().Text(messages["ExplorerNoItemSelected"]).EndElement()
             .StartElement("span").Attribute("class", className + "__status").Attribute("data-cfx-selection-status", "true").EndStartElement().EndElement()
             .EndElement()
             .StartElement("dl").Attribute("class", className + "__facts").Attribute("data-cfx-selection-facts", "true").EndStartElement().EndElement()
@@ -264,42 +268,45 @@ public sealed partial class TopologyHtmlRenderer {
 
     private static string IconImage() => "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 5h14v14H5zM8 15l3-3 2 2 3-4 3 5M8 8h.01\"/></svg>";
 
-    private static void WriteForceGraphControls(HtmlMarkupWriter writer, string className, TopologyChart chart, TopologyRenderOptions options) {
+    private static void WriteForceGraphControls(HtmlMarkupWriter writer, string className, TopologyChart chart, TopologyRenderOptions options, TopologyHtmlText messages) {
         writer.StartElement("div")
             .Attribute("class", className)
             .Attribute("data-cfx-force-graph-panel", "true")
-            .Attribute("aria-label", "Force graph controls")
+            .Attribute("aria-label", messages["TopologyForceControls"])
             .EndStartElement();
         writer.StartElement("div").Attribute("class", className + "__row").EndStartElement();
         writer.StartElement("input")
             .Attribute("type", "search")
             .Attribute("data-cfx-force-search", "true")
-            .Attribute("placeholder", "Find node, edge, group")
-            .Attribute("aria-label", "Find node, edge, or group")
+            .Attribute("placeholder", messages["TopologyFindPlaceholder"])
+            .Attribute("aria-label", messages["TopologyFind"])
             .EndVoidElement();
-        WriteForceSelect(writer, "data-cfx-force-status", "Status", new[] { "All", "Healthy", "Warning", "Critical", "Unknown", "Disabled" });
-        WriteGroupSelect(writer, chart);
+        WriteForceSelect(writer, "data-cfx-force-status", messages["ExplorerStatus"], new[] { "All", "Healthy", "Warning", "Critical", "Unknown", "Disabled" }, messages);
+        WriteGroupSelect(writer, chart, messages);
         writer.EndElement();
         writer.StartElement("div").Attribute("class", className + "__toggles").EndStartElement();
-        WriteToggle(writer, "data-cfx-force-toggle", "edges", "Edges", true);
-        WriteToggle(writer, "data-cfx-force-toggle", "focus", "Focus", true);
-        WriteToggle(writer, "data-cfx-force-toggle", "edge-labels", "Labels", options.IncludeEdgeLabels);
-        WriteToggle(writer, "data-cfx-force-toggle", "groups", "Groups", options.IncludeGroups);
-        WriteToggle(writer, "data-cfx-force-toggle", "hide-moving-edges", "Quiet pan", true);
+        WriteToggle(writer, "data-cfx-force-toggle", "edges", messages["TopologyEdges"], true);
+        WriteToggle(writer, "data-cfx-force-toggle", "focus", messages["ExplorerFocus"], true);
+        WriteToggle(writer, "data-cfx-force-toggle", "edge-labels", messages["TopologyLabels"], options.IncludeEdgeLabels);
+        WriteToggle(writer, "data-cfx-force-toggle", "groups", messages["TopologyGroups"], options.IncludeGroups);
+        WriteToggle(writer, "data-cfx-force-toggle", "hide-moving-edges", messages["TopologyQuietPan"], true);
         writer.EndElement();
-        writer.StartElement("output").Attribute("data-cfx-force-summary", "true").EndStartElement().Text("Graph ready").EndElement();
+        writer.StartElement("output").Attribute("data-cfx-force-summary", "true").EndStartElement().Text(messages["TopologyGraphReady"]).EndElement();
         writer.EndElement();
     }
 
-    private static void WriteForceSelect(HtmlMarkupWriter writer, string dataAttribute, string ariaLabel, string[] values) {
+    private static void WriteForceSelect(HtmlMarkupWriter writer, string dataAttribute, string ariaLabel, string[] values, TopologyHtmlText messages) {
         writer.StartElement("select").Attribute(dataAttribute, "true").Attribute("aria-label", ariaLabel).EndStartElement();
-        foreach (var value in values) writer.StartElement("option").Attribute("value", value == "All" ? string.Empty : value).EndStartElement().Text(value).EndElement();
+        foreach (var value in values) {
+            writer.StartElement("option").Attribute("value", value == "All" ? string.Empty : value).EndStartElement()
+                .Text(messages[value == "All" ? "All" : "Topology" + value]).EndElement();
+        }
         writer.EndElement();
     }
 
-    private static void WriteGroupSelect(HtmlMarkupWriter writer, TopologyChart chart) {
-        writer.StartElement("select").Attribute("data-cfx-force-group", "true").Attribute("aria-label", "Group").EndStartElement();
-        writer.StartElement("option").Attribute("value", string.Empty).EndStartElement().Text("All groups").EndElement();
+    private static void WriteGroupSelect(HtmlMarkupWriter writer, TopologyChart chart, TopologyHtmlText messages) {
+        writer.StartElement("select").Attribute("data-cfx-force-group", "true").Attribute("aria-label", messages["ExplorerGroup"]).EndStartElement();
+        writer.StartElement("option").Attribute("value", string.Empty).EndStartElement().Text(messages["TopologyAllGroups"]).EndElement();
         foreach (var group in chart.Groups.Where(group => !string.IsNullOrWhiteSpace(group.Id)).OrderBy(group => group.Label, StringComparer.OrdinalIgnoreCase)) {
             writer.StartElement("option").Attribute("value", group.Id).EndStartElement().Text(string.IsNullOrWhiteSpace(group.Label) ? group.Id : group.Label).EndElement();
         }
@@ -326,7 +333,7 @@ public sealed partial class TopologyHtmlRenderer {
         stylesheet += TopologyHtmlAssets.Style.Replace("__CFX_FONT_FAMILY__", fontFamily);
         if (includePageShell) {
             stylesheet += HtmlSurfacePolish.ResponsiveCenteredBodyCss;
-            stylesheet += HtmlSurfacePolish.PrintBodyCss("0", ".cfx-topology-wrapper{width:100%;max-width:none}.cfx-topology-wrapper svg{width:100%;height:auto}.cfx-topology-scenarios,.cfx-topology-scenario-panel{display:none}");
+            stylesheet += HtmlSurfacePolish.PrintBodyCss("0", string.Empty);
         }
 
         return stylesheet

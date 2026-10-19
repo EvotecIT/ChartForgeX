@@ -6,14 +6,15 @@ namespace ChartForgeX.Rendering;
 internal static partial class ChartRelationshipPaint {
     /// <summary>Resolves flow paint and semantic state together; explicit colors retain series provenance even with semantic state.</summary>
     internal static ChartRelationshipFlowPaint Flow(ChartSeries series, string id, int source, VisualThemeColors colors,
-        double ribbonOpacity, ChartColor? ribbonFill = null, double? patternOpacity = null) {
+        double ribbonOpacity, ChartColor? ribbonFill = null, double? patternOpacity = null, ChartColorBlend? colorBlend = null) {
         series.FlowStyles.TryGetValue(id, out var style);
         var state = series.FlowStates.TryGetValue(id, out var flowState) ? flowState : State(series, source);
         var pointColor = source >= 0 && source < series.PointColors.Count ? series.PointColors[source] : null;
         var explicitColor = style.Fill ?? pointColor ?? ribbonFill ?? series.Color;
-        var color = explicitColor ?? ChartSeriesColours.State(state, colors, colors.Palette[source % colors.Palette.Count]);
+        var color = explicitColor ?? colorBlend?.Color ?? ChartSeriesColours.State(state, colors, colors.Palette[source % colors.Palette.Count]);
         var role = explicitColor.HasValue || state == ChartSeriesState.None ? SvgColorRole.Series : SvgColorRole.Status;
-        return new ChartRelationshipFlowPaint(style, state, color, SvgPaint.Of(color, role), ribbonOpacity,
+        var paint = !explicitColor.HasValue && colorBlend.HasValue ? colorBlend.Value.Paint : SvgPaint.Of(color, role);
+        return new ChartRelationshipFlowPaint(style, state, color, paint, ribbonOpacity,
             style.FillPattern ?? Pattern(series, source), patternOpacity);
     }
 }

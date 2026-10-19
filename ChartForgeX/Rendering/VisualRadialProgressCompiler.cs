@@ -46,7 +46,7 @@ internal static partial class VisualRadialProgressCompiler {
         var value = ChartNumericFormatter.FormatValue(chart.Options, average);
         var style = VisualRadialPrimitives.Style(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, 700);
         var captionStyle = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize);
-        var requested = series.ShowDataLabels != false && chart.Options.ShowProgressRingCenterLabel
+        var requested = series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.ShowProgressRingCenterLabel
             ? RequestedCenterRadius(builder, context, value, series.Name, style, captionStyle) : 0;
         var layout = ProgressRingLayout.Create(outer, series.RenderPoints.Count, chart.Options.RadialProgressStrokeScale, requested);
         for (var index = 0; index < series.RenderPoints.Count; index++) {
@@ -64,7 +64,7 @@ internal static partial class VisualRadialProgressCompiler {
         }
         builder.Ellipse(cx, cy, layout.CenterRadius, layout.CenterRadius, colors.Surface, colors.Border, role: "progress-ring-center",
             paint: new VisualScenePaintBinding(SvgPaint.Of(colors.Surface, SvgColorRole.Surface), SvgPaint.Of(colors.Border, SvgColorRole.Surface)));
-        if (series.ShowDataLabels != false && chart.Options.ShowProgressRingCenterLabel)
+        if (series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.ShowProgressRingCenterLabel)
             Center(builder, context, cx, cy, layout.CenterRadius, value, series.Name,
                 CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, layout.CenterRadius, 700),
                 CenterStyle(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize, layout.CenterRadius), "progress-ring");
@@ -104,7 +104,7 @@ internal static partial class VisualRadialProgressCompiler {
                 }
             }
         }
-        if (series.ShowDataLabels != false) {
+        if (series.ResolveDataLabels(chart.Options, defaultVisible: true)) {
             Center(builder, context, cx, cy, centerRadius, centerValue!, series.Name,
                 CenterStyle(chart, context, colors.Foreground, context.Theme.Typography.CenterValueSize, centerRadius, 700),
                 CenterStyle(chart, context, colors.MutedForeground, context.Theme.Typography.DataLabelSize, centerRadius), "layered-radial");

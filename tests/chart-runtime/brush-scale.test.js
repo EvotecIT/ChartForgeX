@@ -4,14 +4,12 @@ const path = require('node:path');
 const test = require('node:test');
 
 // Exercise the real pointer-to-payload owner; the DOM boundary is an identity SVG transform.
-const source = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source/43-brush-projection.js'), 'utf8');
-class Point {
-  constructor(x, y) { this.x = x; this.y = y; }
-  matrixTransform() { return this; }
-}
-const { projectBrushSelection, finishBrushSelection } = new Function('DOMPoint', 'dataValue', 'clamp', 'stagePoint',
+const source = ['00-svg-coordinate-precision', '43-brush-projection'].map(name =>
+  fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source', name + '.js'), 'utf8')).join('\n');
+const { Point, identitySvg, getComputedStyle } = require('../helpers/identity-svg');
+const { projectBrushSelection, finishBrushSelection } = new Function('DOMPoint', 'getComputedStyle', 'dataValue', 'clamp', 'stagePoint',
   source + '\nreturn {projectBrushSelection,finishBrushSelection};')(
-  Point, (value, time) => time ? new Date((value - 25569) * 86400000).toISOString() : value,
+  Point, getComputedStyle, (value, time) => time ? new Date((value - 25569) * 86400000).toISOString() : value,
   (value, min, max) => Math.max(min, Math.min(max, value)), (_, point) => point);
 const selectionSource = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source/40-selection-hover-sync.js'), 'utf8');
 const hostSource = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source/42-host-commands.js'), 'utf8');
@@ -29,7 +27,7 @@ function brush(axis, from, to, horizontal = false) {
   const projection = {horizontal, plotBounds:{x:0, y:0, width:100, height:100},
     x:horizontal ? category : axis, ...(horizontal ? {y:axis} : {})};
   const root = {_cfxDataProjection:projection, dataset:{cfxBrushAxis:horizontal ? 'xy' : 'x', cfxPreparedChart:'{"xLabels":[]}'},
-    querySelector:() => ({getScreenCTM:() => ({a:1, d:1, is2D:true, inverse:() => ({})})})};
+    querySelector:identitySvg};
   return projectBrushSelection(root, horizontal
     ? {left:0, right:100, top:100 * (1 - to), bottom:100 * (1 - from)}
     : {left:100 * from, right:100 * to, top:0, bottom:100}).data;
@@ -79,7 +77,7 @@ function gesture(axis, from, to, values, labels = [], horizontal = false, paintO
     displayTicks:[{value:0,text:'0'},{value:100,text:'100'}]};
   const root = {_cfxDataProjection:{horizontal, plotBounds:{x:0,y:0,width:100,height:100}, x:horizontal ? unit : axis, ...(horizontal ? {y:axis} : {})},
     dataset:{cfxBrushAxis:horizontal ? 'xy' : 'x', cfxPreparedChart:JSON.stringify(metadata ?? {xLabels:labels, ...(labels.length ? {categoryLabels:labels} : {})})},
-    querySelector:() => ({getScreenCTM:() => ({a:1,d:1,is2D:true,inverse:() => ({})})}),
+    querySelector:identitySvg,
     targets:values.map(value => {
       const ratio = (value - axis.minimum) / (axis.maximum - axis.minimum), position = 100 * (axis.reversed ? 1 - ratio : ratio) + (paintOffsets[value] || 0);
       return {id:value,dataset:{cfxX:String(value),cfxY:'50'},time:axis.scale==='time',closest:() => null,getBoundingClientRect:() => ({left:horizontal ? 49 : position - 1,
@@ -228,7 +226,7 @@ function preciseRoot(horizontal, timeOnCategory, stops) {
     closest:()=>null,getBoundingClientRect:()=>({left:49,top:49,width:2,height:2})});
   return {_cfxDataProjection:{horizontal,plotBounds:{x:0,y:0,width:100,height:100},x:timeDirection==='x'?timeAxis:unitAxis,
     y:timeDirection==='y'?timeAxis:unitAxis},dataset:{cfxBrushAxis:'xy',cfxPreparedChart:'{"xLabels":[]}'},
-    querySelector:()=>({getScreenCTM:()=>({a:1,d:1,is2D:true,inverse:()=>({})})}),
+    querySelector:identitySvg,
     targets:[target('last',preciseStops[1].instant),target('outside','2026-09-01T00:00:10.0006000Z')]};
 }
 for (const horizontal of [false,true]) {

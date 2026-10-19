@@ -15,6 +15,7 @@ public sealed partial class ChartColorScale {
     private readonly int? _midpointIndex;
     private readonly ChartColorBand[] _bands;
     private readonly ChartColorStop[] _stops;
+    private readonly ChartColorScaleCaption[] _captions;
 
     /// <summary>Gets the color-selection mode.</summary>
     public ChartColorScaleMode Mode => _bands.Length > 0 ? ChartColorScaleMode.Discrete
@@ -89,7 +90,8 @@ public sealed partial class ChartColorScale {
         string? midpointLabel,
         string? highLabel,
         ChartColorBand[]? bands = null,
-        ChartColorStop[]? stops = null) {
+        ChartColorStop[]? stops = null,
+        ChartColorScaleCaption[]? captions = null) {
         ValidateNullableFinite(midpointValue, nameof(midpointValue));
         ValidateNullableFinite(minimumValue, nameof(minimumValue));
         ValidateNullableFinite(maximumValue, nameof(maximumValue));
@@ -99,6 +101,7 @@ public sealed partial class ChartColorScale {
         _midpointIndex = midpointIndex;
         _bands = bands ?? Array.Empty<ChartColorBand>();
         _stops = stops ?? Array.Empty<ChartColorStop>();
+        _captions = captions ?? Array.Empty<ChartColorScaleCaption>();
         MidpointValue = midpointValue;
         MinimumValue = minimumValue;
         MaximumValue = maximumValue;
@@ -196,7 +199,7 @@ public sealed partial class ChartColorScale {
                 throw new ArgumentException("Positioned color stops require both fixed endpoint bounds.", !minimumValue.HasValue ? nameof(minimumValue) : nameof(maximumValue));
             return WithPositionedRange(minimumValue.Value, maximumValue.Value);
         }
-        return new(_colors, _midpointIndex, MidpointValue, minimumValue, maximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel);
+        return new(_colors, _midpointIndex, MidpointValue, minimumValue, maximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel, captions: _captions);
     }
 
     /// <summary>
@@ -209,7 +212,7 @@ public sealed partial class ChartColorScale {
         ValidateFinite(midpointValue, nameof(midpointValue));
         if (Mode != ChartColorScaleMode.Diverging) throw new InvalidOperationException("Only a diverging color scale has a configurable midpoint.");
         if (HasPositionedStops) return WithPositionedMidpoint(midpointValue);
-        return new(_colors, _midpointIndex, midpointValue, MinimumValue, MaximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel);
+        return new(_colors, _midpointIndex, midpointValue, MinimumValue, MaximumValue, NoDataColor, LowLabel, MidpointLabel, HighLabel, captions: _captions);
     }
 
     /// <summary>
@@ -218,7 +221,7 @@ public sealed partial class ChartColorScale {
     /// <param name="noDataColor">The color used for regions without values.</param>
     /// <returns>A color scale.</returns>
     public ChartColorScale WithNoDataColor(ChartColor noDataColor) =>
-        new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, noDataColor, LowLabel, MidpointLabel, HighLabel, _bands, _stops);
+        new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, noDataColor, LowLabel, MidpointLabel, HighLabel, _bands, _stops, _captions);
 
     /// <summary>
     /// Creates a copy with custom legend labels.
@@ -229,7 +232,7 @@ public sealed partial class ChartColorScale {
     /// <returns>A color scale.</returns>
     public ChartColorScale WithLabels(string? lowLabel, string? midpointLabel, string? highLabel) {
         EnsureContinuous();
-        return new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, NoDataColor, lowLabel, midpointLabel, highLabel, stops: _stops);
+        return new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, NoDataColor, lowLabel, midpointLabel, highLabel, stops: _stops, captions: _captions);
     }
 
     /// <summary>Resolves a finite value using discrete bands or the continuous scale's explicit domain.</summary>

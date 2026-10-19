@@ -20,9 +20,15 @@ Replace full-theme `FromThemeJson`/`ToThemeJson` with `FromJson`/`ToJson`. The f
 
 Keep a stable series handle instead of configuring by display name or collection position. Use `ChartSeries.CreateLine(new ChartSeriesId("orders"), "Orders", points)` and `chart.AddSeries(series)`, or the corresponding typed factory. Direct numeric construction requires an explicit ID. Replace `InteractionKey`/`WithInteractionKey` with that construction-time ID. Duplicate labels are permitted; duplicate series IDs within one chart are rejected. Use `WithName` to rename display text, and `MoveSeries`/`RemoveSeries`/`ClearSeries` for the read-only series view. Automatic IDs from fluent `Add*` are local and do not synchronize across charts. The `cfx:auto:` prefix is reserved. Automatically identified series remain owned by their original chart; construct a series with an explicit ID when it must move between charts.
 
+Explicit-ID series now choose a deterministic categorical palette slot from their ID rather than their current collection position. Their default color can therefore differ from earlier output, but stays stable through reorder, reconstruction and membership changes. Explicit colors and semantic states retain precedence; palettes with finitely many entries can repeat. Set a series color when the report requires a particular or unique color. Anonymous `Add*` series and part-to-whole category palettes retain their ordinal behavior.
+
 For chart scenario routes, use `AddSeriesStep(series.Id, ...)` with `ChartForgeX.Interactivity.Html` in scope. The string overload targets the exact stable ID, including numeric strings: `"0"` identifies a series whose ID is `new ChartSeriesId("0")`. Replace positional series targets with the intended handle's `Id`. See [series identity and scenario steps](../interactivity.md#semantic-series-identity) for synchronized charts and source observation IDs.
 
 Replace `WithPointKey` with `WithObservationId(index, new ChartObservationId("item-id"))` where a stable authored identity is needed. Typed-family source ordinals now count observations, not encoded members. Read `FinancialValues` for Candlestick/OHLC, `Bubbles` for Bubble, and the named range/error/box/dumbbell/difference collections for their families. Numeric `Points` is empty and read-only for these kinds. Replace tuple-member edits with `Update*` for one complete observation or `Replace*` for the entire sequence. Single-item updates preserve ID and point styling; whole replacements clear per-observation metadata after successful validation.
+
+Ordinary numeric `Points` still implements `IList<ChartPoint>`, with owner-controlled insert/remove/clear operations. Existing observation identities and presentation now follow their points through structural edits; index replacement preserves them, and clearing removes them. `SourcePointCount` reflects the current ordinary point count. A cast to the former concrete `List<ChartPoint>` is unsupported.
+
+Derived points from decimation, histograms and regressions are now read-only, including index replacement and `Clear`. Rebuild those series from the changed complete source observations, then replace the attached series with the same explicit series ID when the measure should retain its identity. This keeps reduced source indices, bin contributor facts and fitted-source snapshots consistent; point presentation remains configurable.
 
 Calendar and map exports retain IDs assigned to their normalized observations. Duplicate dates and region aliases are combined during ingestion; assign IDs to the resulting `CalendarItems` or `RegionValues` indices. Each populated calendar cell represents one normalized observation. Missing days or regions have no authored observation ID. Native SVG and the HTML selection event expose the same captured observation ID.
 
@@ -106,6 +112,12 @@ For example, use `chart.ConfigureLabels(labels => labels.NoData = "Brak danych")
 
 Configuration callbacks now have one ownership rule: edit an isolated copy, then install a separate snapshot after success. Exceptions leave the current owner unchanged. A reference retained before or inside a callback cannot mutate the newly installed options. Theme configuration returns an immutable paired snapshot. See the [API conventions](api-conventions.md#configuration-callback-ownership) for the complete boundary and explicit override intent.
 
+## Flow step sizing
+
+Flow steps grow during preparation to keep their measured content inside their native shapes. `FlowArtifactStep.FitLabelToContent` defaults to `true`; `Width` and `Height` supply minimum dimensions. Growth happens on the detached rendering model before layout and connector routing, leaving the source step unchanged.
+
+Set `flow.ConfigureStep("approve", step => step.FitLabelToContent = false)` when authored dimensions must stay fixed. Fixed shapes fit or shorten crowded captions within their outline and report `topology.shape-content-overflow` when complete content cannot fit. The sizing policy survives configuration copies and semantic JSON. Native flow markup accepts `fitLabelToContent:false` as a step attribute or table column.
+
 ## Gauge readings and presentation
 
 Move `ChartOptions.Gauge.Target` into the reading's `ChartGaugeValue.Targets`. Each immutable `ChartGaugeTarget` holds a numeric value and an optional label, and the reading snapshots the supplied targets in order. Pass one target to preserve a single threshold, or several for a reading with multiple reference values:
@@ -130,6 +142,8 @@ Keep presentation in `ConfigureGauge`: `Orientation` selects horizontal or verti
 
 Bubble series share one chart-wide size domain. Previously, each series inferred its own domain, so equal source sizes could render at different radii. Single-series defaults retain their existing square-root radius mapping and responsive endpoints. A constant automatic domain retains the radius midpoint.
 
+`SizeEncoding` makes that choice explicit. `SquareRootRadius` preserves existing geometry. Opt into `Area` to interpolate reference-circle area and normalize different built-in marker shapes to equal fill area. Use `WithSizeDomain(0, maximum)` and `MinimumRadius = 0` for proportional areas; nonzero endpoints describe an interpolated area range. Radius settings and the numeric size key use reference circles, so another marker shape may need a larger bounding radius. See [bubble sizing](api-conventions.md#bubble-size-scale) for the complete contract.
+
 Replace bubble `Markers.Radius`, `MarkerRadius` or `WithMarkerRadius(...)` overrides with `ChartOptions.Bubble` endpoints. Any non-null series radius now throws during preparation, including zero. Clear an existing override with `UseThemeMarkerRadius()` and configure the shared range:
 
 ```csharp
@@ -141,7 +155,7 @@ chart.ConfigureBubble(bubble => {
 });
 ```
 
-Use `series.ConfigureMarkers(markers => markers.Enabled = false)` to hide one series' glyphs. Marker shape, fill, outline and point-label overrides remain available. Explicit domains clamp geometry while retaining raw source sizes; `Reversed = true` maps larger values to smaller radii. Pin the domain and both radius endpoints for stable sizing across data and layout changes. Source sizes remain finite and positive, and the mapping does not promise equal painted areas across shapes. See [bubble sizing](api-conventions.md#bubble-size-scale) for validation and automatic defaults.
+Use `series.ConfigureMarkers(markers => markers.Enabled = false)` to hide one series' glyphs. Marker shape, fill, outline and point-label overrides remain available. Explicit domains clamp geometry while retaining raw source sizes; `Reversed = true` maps larger values to smaller radii. Pin the domain and both radius endpoints for stable sizing across data and layout changes. Source sizes remain finite and positive.
 
 Name and format the shared size measurement independently from Y and color, and opt into its numeric key through the same callback:
 
@@ -154,6 +168,10 @@ chart.ConfigureBubble(bubble => {
 ```
 
 The key is off by default. Enabling it keeps categorical series entries and color keys in one measured layout budget. Captured size captions also govern native default size labels and HTML size readouts; raw source sizes, shared geometry and selection IDs retain their existing meaning. Explicitly empty formatted text remains empty. Full size-key semantics survive a constrained layout, with `cartesian.size-scale-overflow` explaining an omitted key.
+
+## Graph image sizing
+
+Graph image nodes stretch the complete source image to the configured image rectangle before circular clipping. Native SVG/PNG, accelerated SVG, browser PNG and patched nodes use the same scaling. Earlier SVG paths could letterbox or crop a non-square source while Canvas stretched it. Supply an image with the intended mark's aspect ratio when its original proportions must be preserved; exports no longer choose a different fit based on the backend.
 
 ## HTML tooltip options
 
@@ -229,7 +247,7 @@ Replace former percent-ring `AddRadialBar` calls with `AddProgressRing`. The rin
 
 `AddRadialBar` now maps numeric values to angles in radial category bands. `AddRadialColumn` maps numeric values to radii in angular category bands. In both methods, `ChartPoint.X` identifies a category and `Y` holds the signed source value. Use `YAxis` or the series' `SecondaryYAxis` for numeric bounds, scale and formatting, and `XAxis` for category labels and reversal. Categories are ordered by their numeric X identifiers; omitted observations remain absent, while authored zeros retain their identities and facts without painted sectors. Standalone numeric radial series retain distinct slots for repeated X observations.
 
-`AddRadialColumn` also combines with the existing `AddRadarArea` and `AddRadarLine` calls. Mixed charts require a full-turn viewport and unique categories within each series. Category-axis reversal keeps columns and radar vertices aligned. A populated radar needs at least three categories across the chart. Radar follows whole-category centers, fills missing categories with derived zeros and selects its own primary or secondary numeric axis. Column stacks and normalization retain their existing membership. Standalone Radar and Polar now honor `UseSecondaryYAxis()` and that axis's bounds, scale, formatter and numeric reversal.
+`AddRadialColumn` also combines with the existing `AddRadarArea` and `AddRadarLine` calls. Mixed charts require a full-turn viewport and unique categories within each series. Category-axis reversal keeps columns and radar vertices aligned. A populated radar needs at least three categories across the chart. Radar follows whole-category centers and selects its own primary or secondary numeric axis. `MissingCategoryPolicy.Zero` preserves derived zeros by default; choose `Gap` for open observed runs without incomplete fill or `Connect` to join existing vertices. Gap and Connect create no missing point targets. Column stacks and normalization retain their existing membership. Standalone Radar and Polar honor `UseSecondaryYAxis()` and that axis's bounds, scale, formatter and numeric reversal.
 
 Set start/end angles, inner radius and category/series spacing through immutable `ChartRadialGeometryOptions` and `WithRadialGeometry`. Default numeric series are grouped. Named `StackGroup` values or stacked bar mode share slots; normalization uses the existing positive/negative stack owner. `NormalizedTo` targets partition by kind, axis and group and must agree within each stack. Raw labels and `data-cfx-y` retain counts; rendered contribution, baseline, endpoint and source total remain separate metadata. An all-zero normalized stack reports `numeric-radial.stack-zero-total`.
 

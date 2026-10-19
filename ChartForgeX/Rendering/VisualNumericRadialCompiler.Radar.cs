@@ -18,20 +18,23 @@ internal static partial class VisualNumericRadialCompiler {
         if (series.RenderPoints.Count == 0) return;
         var scale = scales[series.YAxis]; var color = ChartSeriesColours.Resolve(series, seriesIndex, colors);
         var (mapped, raw) = RadarPoints(chart, geometry, seriesIndex, coordinates, categories, scale);
-        var path = ChartPathBuilder.ClosedCurve(mapped, series.Radar.CurveTension ?? 0);
+        var paths = ChartRadarGeometry.Paths(series.Radar, mapped, raw);
+        ChartRadarGeometry.DiagnoseOpenArea(builder, series, paths);
         using (builder.PushGroup(SeriesId(seriesIndex), "radar-series", new Dictionary<string, string> {
             ["data-cfx-series"] = N(seriesIndex), ["data-cfx-series-key"] = series.InteractionIdentityKey,
             ["data-cfx-label"] = series.Name, ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
-            ["data-cfx-form"] = series.Radar.Form == ChartLineAreaForm.Area ? "area" : "line", ["data-cfx-missing-policy"] = "zero",
+            ["data-cfx-form"] = series.Radar.Form == ChartLineAreaForm.Area ? "area" : "line", ["data-cfx-missing-policy"] = ChartRadarGeometry.MissingPolicy(series.Radar),
             ["data-cfx-min-value"] = N(scale.Minimum), ["data-cfx-max-value"] = N(scale.Maximum)
         })) {
             // Clip the hole in both native exporters, without clipping maximum-radius marker outlines.
             var clipCommands = ChartPathBuilder.RoundedRectangle(plot, 0).Commands.ToList();
             if (geometry.Inner > 0) clipCommands.AddRange(ChartPathBuilder.Ellipse(geometry.Cx, geometry.Cy, geometry.Inner, geometry.Inner).Commands);
             using (builder.PushClip(new ChartPath(clipCommands))) {
-                if (geometry.Outer > 0) VisualPolarSeriesScene.Draw(chart, context, builder, series, path, color, true);
+                if (geometry.Outer > 0) foreach (var path in paths)
+                    VisualPolarSeriesScene.Draw(chart, context, builder, series, path.Path, color, true, path.Closed);
                 for (var category = 0; category < categories.Length; category++) {
                     var source = raw[category]; var value = source >= 0 ? series.RenderPoints[source].Y : 0;
+                    if (source < 0 && series.Radar.MissingCategoryPolicy != ChartRadarMissingCategoryPolicy.Zero) continue;
                     var angle = CategoryAngle(chart.Options.XAxis, category, categories.Length, geometry.Start, geometry.Sweep, false);
                     var text = source >= 0 && source < series.PointLabels.Count && series.PointLabels[source] != null
                         ? series.PointLabels[source]! : ChartNumericFormatter.FormatValue(chart.Options, value);
@@ -72,10 +75,12 @@ internal static partial class VisualNumericRadialCompiler {
             }
         }
         if (geometry.Outer > 0 && obstacles != null) {
-            var closed = path.Flatten();
-            if (closed.Count > 0 && !closed[closed.Count - 1].Equals(closed[0])) closed.Add(closed[0]);
             var stroke = VisualPolarSeriesScene.StrokeExtent(chart, context, series, color);
-            if (stroke > 0) obstacles.Add(new LabelObstacle(SeriesId(seriesIndex), new LabelMarkShape(new[] { closed }, false, stroke, plot)));
+            if (stroke > 0) foreach (var path in paths) {
+                var contour = path.Path.Flatten();
+                if (path.Closed && contour.Count > 0 && !contour[contour.Count - 1].Equals(contour[0])) contour.Add(contour[0]);
+                obstacles.Add(new LabelObstacle(SeriesId(seriesIndex), new LabelMarkShape(new[] { contour }, false, stroke, plot)));
+            }
         }
     }
 

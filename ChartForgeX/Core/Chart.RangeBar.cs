@@ -22,7 +22,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddRangeBar(string name, IEnumerable<ChartInterval> intervals, ChartColor? color = null) {
         var series = ChartSeries.CreateRangeBar(name, intervals, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(intervals));
         AppendSeries(series);
         return this;
     }

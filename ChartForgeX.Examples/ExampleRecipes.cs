@@ -73,7 +73,8 @@ public static class ExampleRecipes {
         ["comparison"] = new(nameof(ComparisonRecipe), ComparisonRecipe.Create),
         ["findings"] = new(nameof(FindingsRecipe), FindingsRecipe.Create),
         ["line-viewport"] = new(nameof(LineViewportRecipe), LineViewportRecipe.Create),
-        ["step-line-viewport"] = new(nameof(StepLineViewportRecipe), StepLineViewportRecipe.Create)
+        ["step-line-viewport"] = new(nameof(StepLineViewportRecipe), StepLineViewportRecipe.Create),
+        ["keyed-point-changes"] = new(nameof(KeyedPointChangesRecipe), KeyedPointChangesRecipe.Create)
     });
 
     private static readonly IReadOnlyDictionary<(ChartSeriesKind Kind, string Variant), ExampleRecipe> Options = OptionRecipes();
@@ -107,6 +108,7 @@ public static class ExampleRecipes {
             foreach (var variant in variants) recipes.Add((kind, variant), recipe);
         }
         Add(ChartSeriesKind.Sankey, nameof(SankeyOptionsRecipe), SankeyOptionsRecipe.Create, "options");
+        Add(ChartSeriesKind.Chord, nameof(ChordRecipe), ChordRecipe.Create, "color-dimension");
         Add(ChartSeriesKind.Scatter, nameof(ScatterMarkerShapesRecipe), ScatterMarkerShapesRecipe.Create, "options");
         Add(ChartSeriesKind.Scatter, nameof(ScatterColorScaleRecipe), ScatterColorScaleRecipe.Create, "color-scale");
         Add(ChartSeriesKind.Scatter, nameof(ScatterPositionedColorScaleRecipe), ScatterPositionedColorScaleRecipe.Create, "positioned-color-scale");
@@ -124,6 +126,7 @@ public static class ExampleRecipes {
         Add(ChartSeriesKind.HexbinHeatmap, nameof(HexbinHeatmapColorScaleRecipe), HexbinHeatmapColorScaleRecipe.Create, "color-scale");
         Add(ChartSeriesKind.CalendarHeatmap, nameof(CalendarHeatmapColorScaleRecipe), CalendarHeatmapColorScaleRecipe.Create, "color-scale");
         Add(ChartSeriesKind.CalendarHeatmap, nameof(CalendarHeatmapColorDimensionRecipe), CalendarHeatmapColorDimensionRecipe.Create, "color-dimension");
+        Add(ChartSeriesKind.RegionMap, nameof(RegionMapRecipe), RegionMapRecipe.Create, "color-dimension");
         Add(ChartSeriesKind.TileMap, nameof(TileMapOptionsRecipe), TileMapOptionsRecipe.Create, "options");
         Add(ChartSeriesKind.TileMap, nameof(TileMapPositionedColorScaleRecipe), TileMapPositionedColorScaleRecipe.Create, "positioned-color-scale");
         Add(ChartSeriesKind.TileMap, nameof(TileMapColorDimensionRecipe), TileMapColorDimensionRecipe.Create, "color-dimension", "gradient-color-legend", "swatch-color-legend");

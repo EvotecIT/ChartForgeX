@@ -11,11 +11,12 @@ public sealed partial class Chart : IVisualRenderable {
     /// <remarks>Every chart family uses the same mutable-model validation before its scene is compiled.</remarks>
     public PreparedVisual Prepare(VisualRenderContext context) => PrepareCore(context, null);
 
-    /// <summary>Prepares a detached line-chart scene within an explicit numeric X window.</summary>
+    /// <summary>Prepares a detached Cartesian scene within an explicit source-coordinate X window.</summary>
     /// <param name="context">The logical size, frame, theme and typography used for preparation.</param>
     /// <param name="viewport">An increasing window contained in the resolved full X domain.</param>
     /// <returns>A prepared scene with its detached X projection.</returns>
-    /// <remarks>Supports ordinary vertical Line and StepLine series with linear X and linear or step interpolation; sparklines are excluded.
+    /// <remarks>Supports ordinary vertical line, area, scatter and bubble series with linear or time X axes; sparklines are excluded.
+    /// Time bounds use the same OLE Automation date units as source observations. Interpolation and full-data stack calculations are retained.
     /// Full-data primary Y and secondary Y domains and authored series paint remain fixed. Marks are clipped to the plot even
     /// when ClipMarksToPlot is false; automatic marker padding does not expand the requested X bounds.
     /// All source observations and disconnected paths are retained. The chart and authored axes are unchanged.

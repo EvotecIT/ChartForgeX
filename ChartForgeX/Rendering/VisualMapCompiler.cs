@@ -20,8 +20,8 @@ internal static partial class VisualMapCompiler {
             throw new InvalidOperationException("Map region stroke width must be non-negative and finite.");
         var colors = context.Theme.Resolve(context.ThemeMode);
         if (series.Kind == ChartSeriesKind.DottedMap) { Dotted(chart, context, builder, plot, colors); return; }
-        if (series.RenderPoints.Any(point => !Finite(point.X) || !Finite(point.Y) || point.Y < 0))
-            throw new InvalidOperationException("Map values must be finite and non-negative.");
+        if (series.RenderPoints.Any(point => !Finite(point.X) || !Finite(point.Y)))
+            throw new InvalidOperationException("Region and tile map values must be finite.");
         var minimum = series.RenderPoints.Count == 0 ? 0 : series.RenderPoints.Min(point => point.Y);
         var maximum = series.RenderPoints.Count == 0 ? 0 : series.RenderPoints.Max(point => point.Y);
         var layout = ScaleLayout(chart, context, builder, plot, minimum, maximum, presentation, legendInset);

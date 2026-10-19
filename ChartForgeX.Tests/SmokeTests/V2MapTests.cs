@@ -99,8 +99,10 @@ public sealed class V2MapTests {
             Assert.All(path.Commands, command => { Assert.InRange(command.X, 0, width); Assert.InRange(command.Y, 0, height); });
         }
         foreach (var text in scene.Nodes.OfType<VisualSceneText>()) {
-            var left = text.X - (text.Alignment == TextAlignment.Center ? text.Text.Metrics.Width / 2 : 0);
-            Assert.InRange(left, -.001, width); Assert.True(left + text.Text.Metrics.Width <= width + .001);
+            foreach (var line in text.Text.Lines) {
+                var left = text.LineLeft(line);
+                Assert.InRange(left, -.001, width); Assert.True(left + line.Width <= width + .001);
+            }
             Assert.True(text.Baseline - text.Text.Ascent >= -.001 && text.Baseline - text.Text.Ascent + text.Text.Metrics.Height <= height + .001);
         }
         Assert.Contains(scene.Nodes, node => node.Role == "tile-map-pattern");

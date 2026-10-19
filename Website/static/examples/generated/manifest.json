@@ -606,6 +606,34 @@
     "family-candlestick-wide-light.svg",
     "family-candlestick-wide-light.thumbnail.png",
     "family-candlestick-wide-light.thumbnail.svg",
+    "family-chord-color-dimension-dark.csharp.txt",
+    "family-chord-color-dimension-dark.gallery.csharp.txt",
+    "family-chord-color-dimension-dark.html",
+    "family-chord-color-dimension-dark.png",
+    "family-chord-color-dimension-dark.svg",
+    "family-chord-color-dimension-dark.thumbnail.png",
+    "family-chord-color-dimension-dark.thumbnail.svg",
+    "family-chord-color-dimension-light.csharp.txt",
+    "family-chord-color-dimension-light.gallery.csharp.txt",
+    "family-chord-color-dimension-light.html",
+    "family-chord-color-dimension-light.png",
+    "family-chord-color-dimension-light.svg",
+    "family-chord-color-dimension-light.thumbnail.png",
+    "family-chord-color-dimension-light.thumbnail.svg",
+    "family-chord-compact-color-dimension-dark.csharp.txt",
+    "family-chord-compact-color-dimension-dark.gallery.csharp.txt",
+    "family-chord-compact-color-dimension-dark.html",
+    "family-chord-compact-color-dimension-dark.png",
+    "family-chord-compact-color-dimension-dark.svg",
+    "family-chord-compact-color-dimension-dark.thumbnail.png",
+    "family-chord-compact-color-dimension-dark.thumbnail.svg",
+    "family-chord-compact-color-dimension-light.csharp.txt",
+    "family-chord-compact-color-dimension-light.gallery.csharp.txt",
+    "family-chord-compact-color-dimension-light.html",
+    "family-chord-compact-color-dimension-light.png",
+    "family-chord-compact-color-dimension-light.svg",
+    "family-chord-compact-color-dimension-light.thumbnail.png",
+    "family-chord-compact-color-dimension-light.thumbnail.svg",
     "family-chord-compact-dark.csharp.txt",
     "family-chord-compact-dark.gallery.csharp.txt",
     "family-chord-compact-dark.html",
@@ -2636,6 +2664,34 @@
     "family-range-bar-wide-light.svg",
     "family-range-bar-wide-light.thumbnail.png",
     "family-range-bar-wide-light.thumbnail.svg",
+    "family-region-map-color-dimension-dark.csharp.txt",
+    "family-region-map-color-dimension-dark.gallery.csharp.txt",
+    "family-region-map-color-dimension-dark.html",
+    "family-region-map-color-dimension-dark.png",
+    "family-region-map-color-dimension-dark.svg",
+    "family-region-map-color-dimension-dark.thumbnail.png",
+    "family-region-map-color-dimension-dark.thumbnail.svg",
+    "family-region-map-color-dimension-light.csharp.txt",
+    "family-region-map-color-dimension-light.gallery.csharp.txt",
+    "family-region-map-color-dimension-light.html",
+    "family-region-map-color-dimension-light.png",
+    "family-region-map-color-dimension-light.svg",
+    "family-region-map-color-dimension-light.thumbnail.png",
+    "family-region-map-color-dimension-light.thumbnail.svg",
+    "family-region-map-compact-color-dimension-dark.csharp.txt",
+    "family-region-map-compact-color-dimension-dark.gallery.csharp.txt",
+    "family-region-map-compact-color-dimension-dark.html",
+    "family-region-map-compact-color-dimension-dark.png",
+    "family-region-map-compact-color-dimension-dark.svg",
+    "family-region-map-compact-color-dimension-dark.thumbnail.png",
+    "family-region-map-compact-color-dimension-dark.thumbnail.svg",
+    "family-region-map-compact-color-dimension-light.csharp.txt",
+    "family-region-map-compact-color-dimension-light.gallery.csharp.txt",
+    "family-region-map-compact-color-dimension-light.html",
+    "family-region-map-compact-color-dimension-light.png",
+    "family-region-map-compact-color-dimension-light.svg",
+    "family-region-map-compact-color-dimension-light.thumbnail.png",
+    "family-region-map-compact-color-dimension-light.thumbnail.svg",
     "family-region-map-compact-dark.csharp.txt",
     "family-region-map-compact-dark.gallery.csharp.txt",
     "family-region-map-compact-dark.html",
@@ -6780,7 +6836,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 24
     },
     {
       "id": "family-bubble-compact-options-light",
@@ -6814,7 +6870,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 23
     },
     {
       "id": "family-bubble-wide-dark",
@@ -7122,7 +7178,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 24
     },
     {
       "id": "family-bubble-compact-options-dark",
@@ -7156,7 +7212,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 23
     },
     {
       "id": "family-error-bar-wide-light",
@@ -10146,7 +10202,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 40
     },
     {
       "id": "family-heatmap-compact-color-scale-light",
@@ -10180,7 +10236,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 40
     },
     {
       "id": "family-heatmap-positioned-color-scale-light",
@@ -10214,7 +10270,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 41
     },
     {
       "id": "family-heatmap-compact-positioned-color-scale-light",
@@ -10248,7 +10304,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 41
     },
     {
       "id": "family-heatmap-color-dimension-light",
@@ -10282,7 +10338,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-compact-color-dimension-light",
@@ -10316,7 +10372,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-gradient-color-legend-light",
@@ -10350,7 +10406,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 37
     },
     {
       "id": "family-heatmap-compact-gradient-color-legend-light",
@@ -10384,7 +10440,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 31
     },
     {
       "id": "family-heatmap-swatch-color-legend-light",
@@ -10418,7 +10474,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-compact-swatch-color-legend-light",
@@ -10452,7 +10508,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-wide-dark",
@@ -10554,7 +10610,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 40
     },
     {
       "id": "family-heatmap-compact-color-scale-dark",
@@ -10588,7 +10644,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 38
+      "semanticRegions": 40
     },
     {
       "id": "family-heatmap-positioned-color-scale-dark",
@@ -10622,7 +10678,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 41
     },
     {
       "id": "family-heatmap-compact-positioned-color-scale-dark",
@@ -10656,7 +10712,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 41
     },
     {
       "id": "family-heatmap-color-dimension-dark",
@@ -10690,7 +10746,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-compact-color-dimension-dark",
@@ -10724,7 +10780,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 36
     },
     {
       "id": "family-heatmap-gradient-color-legend-dark",
@@ -10758,7 +10814,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 35
+      "semanticRegions": 37
     },
     {
       "id": "family-heatmap-compact-gradient-color-legend-dark",
@@ -10792,7 +10848,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 31
     },
     {
       "id": "family-heatmap-swatch-color-legend-dark",
@@ -10826,7 +10882,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 42
     },
     {
       "id": "family-heatmap-compact-swatch-color-legend-dark",
@@ -10860,7 +10916,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 36
     },
     {
       "id": "family-hexbin-heatmap-wide-light",
@@ -10962,7 +11018,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 38
     },
     {
       "id": "family-hexbin-heatmap-compact-color-scale-light",
@@ -10996,7 +11052,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 38
     },
     {
       "id": "family-hexbin-heatmap-wide-dark",
@@ -11098,7 +11154,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 38
     },
     {
       "id": "family-hexbin-heatmap-compact-color-scale-dark",
@@ -11132,7 +11188,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 36
+      "semanticRegions": 38
     },
     {
       "id": "family-calendar-heatmap-wide-light",
@@ -11334,12 +11390,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "matrix.scale-overflow"
-      ],
-      "diagnosticMessages": [
-        "The numeric color key does not fit the viewport; complete scale values and captions remain in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 144
     },
     {
@@ -11542,12 +11594,8 @@
         "png",
         "html"
       ],
-      "diagnostics": [
-        "matrix.scale-overflow"
-      ],
-      "diagnosticMessages": [
-        "The numeric color key does not fit the viewport; complete scale values and captions remain in descriptive regions."
-      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
       "semanticRegions": 144
     },
     {
@@ -13659,6 +13707,74 @@
       "semanticRegions": 55
     },
     {
+      "id": "family-region-map-color-dimension-light",
+      "family": "region-map",
+      "familyLabel": "Region Map",
+      "group": "matrices-maps",
+      "title": "Temperature by state",
+      "variant": "color-dimension",
+      "primary": false,
+      "seriesKinds": [
+        "RegionMap"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-region-map-color-dimension-light.csharp.txt",
+      "gallerySource": "family-region-map-color-dimension-light.gallery.csharp.txt",
+      "svg": "family-region-map-color-dimension-light.svg",
+      "png": "family-region-map-color-dimension-light.png",
+      "html": "family-region-map-color-dimension-light.html",
+      "thumbnail": "family-region-map-color-dimension-light.thumbnail.svg",
+      "thumbnailPng": "family-region-map-color-dimension-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 57
+    },
+    {
+      "id": "family-region-map-compact-color-dimension-light",
+      "family": "region-map",
+      "familyLabel": "Region Map",
+      "group": "matrices-maps",
+      "title": "Temperature by state",
+      "variant": "compact-color-dimension",
+      "primary": false,
+      "seriesKinds": [
+        "RegionMap"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-region-map-compact-color-dimension-light.csharp.txt",
+      "gallerySource": "family-region-map-compact-color-dimension-light.gallery.csharp.txt",
+      "svg": "family-region-map-compact-color-dimension-light.svg",
+      "png": "family-region-map-compact-color-dimension-light.png",
+      "html": "family-region-map-compact-color-dimension-light.html",
+      "thumbnail": "family-region-map-compact-color-dimension-light.thumbnail.svg",
+      "thumbnailPng": "family-region-map-compact-color-dimension-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 57
+    },
+    {
       "id": "family-region-map-wide-dark",
       "family": "region-map",
       "familyLabel": "Region Map",
@@ -13725,6 +13841,74 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 55
+    },
+    {
+      "id": "family-region-map-color-dimension-dark",
+      "family": "region-map",
+      "familyLabel": "Region Map",
+      "group": "matrices-maps",
+      "title": "Temperature by state",
+      "variant": "color-dimension",
+      "primary": false,
+      "seriesKinds": [
+        "RegionMap"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-region-map-color-dimension-dark.csharp.txt",
+      "gallerySource": "family-region-map-color-dimension-dark.gallery.csharp.txt",
+      "svg": "family-region-map-color-dimension-dark.svg",
+      "png": "family-region-map-color-dimension-dark.png",
+      "html": "family-region-map-color-dimension-dark.html",
+      "thumbnail": "family-region-map-color-dimension-dark.thumbnail.svg",
+      "thumbnailPng": "family-region-map-color-dimension-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 57
+    },
+    {
+      "id": "family-region-map-compact-color-dimension-dark",
+      "family": "region-map",
+      "familyLabel": "Region Map",
+      "group": "matrices-maps",
+      "title": "Temperature by state",
+      "variant": "compact-color-dimension",
+      "primary": false,
+      "seriesKinds": [
+        "RegionMap"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-region-map-compact-color-dimension-dark.csharp.txt",
+      "gallerySource": "family-region-map-compact-color-dimension-dark.gallery.csharp.txt",
+      "svg": "family-region-map-compact-color-dimension-dark.svg",
+      "png": "family-region-map-compact-color-dimension-dark.png",
+      "html": "family-region-map-compact-color-dimension-dark.html",
+      "thumbnail": "family-region-map-compact-color-dimension-dark.thumbnail.svg",
+      "thumbnailPng": "family-region-map-compact-color-dimension-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 57
     },
     {
       "id": "family-gauge-wide-light",
@@ -16238,7 +16422,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 17
     },
     {
       "id": "family-timeline-compact-light",
@@ -16272,7 +16456,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 14
     },
     {
       "id": "family-timeline-wide-dark",
@@ -16306,7 +16490,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 17
     },
     {
       "id": "family-timeline-compact-dark",
@@ -16340,7 +16524,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 15
+      "semanticRegions": 14
     },
     {
       "id": "family-gantt-wide-light",
@@ -17070,13 +17254,11 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17160,13 +17342,11 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17318,13 +17498,11 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -17408,13 +17586,11 @@
       ],
       "diagnostics": [
         "hierarchy.label-overflow",
-        "hierarchy.label-overflow",
         "hierarchy.label-overflow"
       ],
       "diagnosticMessages": [
         "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics.",
-        "A sunburst label was omitted to fit its segment; complete text remains in source semantics."
+        "A sunburst secondary label was omitted to preserve its primary caption; complete text remains in source semantics."
       ],
       "semanticRegions": 12
     },
@@ -22583,6 +22759,78 @@
       "semanticRegions": 13
     },
     {
+      "id": "family-chord-color-dimension-light",
+      "family": "chord",
+      "familyLabel": "Chord",
+      "group": "relationships",
+      "title": "Transfer volume and latency",
+      "variant": "color-dimension",
+      "primary": false,
+      "seriesKinds": [
+        "Chord"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-chord-color-dimension-light.csharp.txt",
+      "gallerySource": "family-chord-color-dimension-light.gallery.csharp.txt",
+      "svg": "family-chord-color-dimension-light.svg",
+      "png": "family-chord-color-dimension-light.png",
+      "html": "family-chord-color-dimension-light.html",
+      "thumbnail": "family-chord-color-dimension-light.thumbnail.svg",
+      "thumbnailPng": "family-chord-color-dimension-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-chord-compact-color-dimension-light",
+      "family": "chord",
+      "familyLabel": "Chord",
+      "group": "relationships",
+      "title": "Transfer volume and latency",
+      "variant": "compact-color-dimension",
+      "primary": false,
+      "seriesKinds": [
+        "Chord"
+      ],
+      "theme": "light",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-chord-compact-color-dimension-light.csharp.txt",
+      "gallerySource": "family-chord-compact-color-dimension-light.gallery.csharp.txt",
+      "svg": "family-chord-compact-color-dimension-light.svg",
+      "png": "family-chord-compact-color-dimension-light.png",
+      "html": "family-chord-compact-color-dimension-light.html",
+      "thumbnail": "family-chord-compact-color-dimension-light.thumbnail.svg",
+      "thumbnailPng": "family-chord-compact-color-dimension-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "color-scale.caption-overflow"
+      ],
+      "diagnosticMessages": [
+        "Some numeric color captions do not fit at their value positions; complete captions remain in descriptive regions."
+      ],
+      "semanticRegions": 23
+    },
+    {
       "id": "family-chord-options-light",
       "family": "chord",
       "familyLabel": "Chord",
@@ -22683,6 +22931,78 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 13
+    },
+    {
+      "id": "family-chord-color-dimension-dark",
+      "family": "chord",
+      "familyLabel": "Chord",
+      "group": "relationships",
+      "title": "Transfer volume and latency",
+      "variant": "color-dimension",
+      "primary": false,
+      "seriesKinds": [
+        "Chord"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-chord-color-dimension-dark.csharp.txt",
+      "gallerySource": "family-chord-color-dimension-dark.gallery.csharp.txt",
+      "svg": "family-chord-color-dimension-dark.svg",
+      "png": "family-chord-color-dimension-dark.png",
+      "html": "family-chord-color-dimension-dark.html",
+      "thumbnail": "family-chord-color-dimension-dark.thumbnail.svg",
+      "thumbnailPng": "family-chord-color-dimension-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 23
+    },
+    {
+      "id": "family-chord-compact-color-dimension-dark",
+      "family": "chord",
+      "familyLabel": "Chord",
+      "group": "relationships",
+      "title": "Transfer volume and latency",
+      "variant": "compact-color-dimension",
+      "primary": false,
+      "seriesKinds": [
+        "Chord"
+      ],
+      "theme": "dark",
+      "width": 360,
+      "height": 360,
+      "naturalAspect": 1,
+      "compact": true,
+      "source": "family-chord-compact-color-dimension-dark.csharp.txt",
+      "gallerySource": "family-chord-compact-color-dimension-dark.gallery.csharp.txt",
+      "svg": "family-chord-compact-color-dimension-dark.svg",
+      "png": "family-chord-compact-color-dimension-dark.png",
+      "html": "family-chord-compact-color-dimension-dark.html",
+      "thumbnail": "family-chord-compact-color-dimension-dark.thumbnail.svg",
+      "thumbnailPng": "family-chord-compact-color-dimension-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "color-scale.caption-overflow"
+      ],
+      "diagnosticMessages": [
+        "Some numeric color captions do not fit at their value positions; complete captions remain in descriptive regions."
+      ],
+      "semanticRegions": 23
     },
     {
       "id": "family-chord-options-dark",
@@ -22819,7 +23139,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 28
     },
     {
       "id": "family-difference-area-compact-dated-gaps-light",
@@ -23093,7 +23413,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 28
     },
     {
       "id": "family-difference-area-compact-dated-gaps-dark",
@@ -23854,8 +24174,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "topology.shape-content-overflow",
+        "topology.label-height",
+        "topology.shape-content-overflow",
+        "topology.label-height"
+      ],
+      "diagnosticMessages": [
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange.",
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."
+      ],
       "semanticRegions": 17
     },
     {
@@ -23990,8 +24320,18 @@
         "png",
         "html"
       ],
-      "diagnostics": [],
-      "diagnosticMessages": [],
+      "diagnostics": [
+        "topology.shape-content-overflow",
+        "topology.label-height",
+        "topology.shape-content-overflow",
+        "topology.label-height"
+      ],
+      "diagnosticMessages": [
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange.",
+        "A fixed topology shape cannot contain every complete content row; full source text remains in semantic interchange. Enable FitLabelToContent or enlarge the node.",
+        "A topology label has no complete text line in its allocated bounds; full source text remains in semantic interchange."
+      ],
       "semanticRegions": 17
     },
     {

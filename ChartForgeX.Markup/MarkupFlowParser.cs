@@ -267,6 +267,7 @@ public sealed class MarkupFlowParser {
         if (attributes.TryGetValue("badge", out var badge)) step.Badge = badge;
         if (attributes.TryGetValue("width", out var width)) step.Width = ParsePositiveFiniteDouble(width, "width");
         if (attributes.TryGetValue("height", out var height)) step.Height = ParsePositiveFiniteDouble(height, "height");
+        if (attributes.TryGetValue("fitlabeltocontent", out var fit)) step.FitLabelToContent = bool.Parse(fit);
     }
 
     private static void ParseConnector(FlowArtifact flow, List<string> tokens) {

@@ -29,6 +29,7 @@ internal static partial class VisualMatrixCompiler {
         var values = rows.SelectMany(row => row.RenderPoints).Select(point => point.Y).ToArray();
         if (values.Any(value => !ChartMath.IsFinite(value))) throw new InvalidOperationException("Matrix values must be finite; omit missing cells rather than supplying NaN.");
         var min = values.Length == 0 ? 0 : values.Min(); var max = values.Length == 0 ? 0 : values.Max();
+        var missing = rows.Any(row => row.RenderPoints.Count < columns.Length);
         var hasDomain = ChartColorScaleSurface.HasDomain(chart.Options.HeatmapColorScale, values.Length > 0 ? min : null, values.Length > 0 ? max : null);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
@@ -36,7 +37,7 @@ internal static partial class VisualMatrixCompiler {
         if (rows.Any(row => row.IsCategoricalHeatmapRow != categorical)) throw new InvalidOperationException("Numeric and categorical matrix rows cannot be mixed.");
         var categories = new ChartStateCategoryLegend(chart, colors.MutedForeground);
         var formatColumn = ChartAxisValueFormatter.Create(chart.Options.XAxis, columns);
-        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain);
+        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain, min, max, missing);
         var plot = layout.Plot;
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
         var gap = Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2,
@@ -128,7 +129,7 @@ internal static partial class VisualMatrixCompiler {
                 }
             }
             MatrixAxes(chart, context, builder, viewport, plot, columns, cellWidth, gap, layout, formatColumn);
-            if (!categorical && ScaleVisible(context, presentation)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color, presentation, hasDomain);
+            if (!categorical && ScaleVisible(context, presentation)) NumericScale(chart, context, builder, layout.Scale, min, max, rows[0].Color, presentation, hasDomain, missing);
         }
     }
 

@@ -15,7 +15,6 @@ public sealed partial class Chart {
     /// Linear interpolation splits crossings; Step uses the series step position for both held boundaries. Smooth is unsupported.</remarks>
     public Chart AddDifferenceArea(string name, IEnumerable<ChartDifferencePoint> points, ChartColor? color = null) {
         var series = ChartSeries.CreateDifferenceArea(name, points, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(points));
         AppendSeries(series);
         return this;
     }

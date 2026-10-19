@@ -35,6 +35,8 @@
   box-sizing: inherit;
 }
 
+.cfx-graph-explorer[hidden] { display: none; }
+
 .cfx-graph-explorer {
   --cfx-color-canvas: #f8fafc;
   --cfx-color-surface: rgba(255, 255, 255, .88);
@@ -624,7 +626,10 @@
 }
 
 .cfx-graph-stage {
+  box-sizing: border-box;
   position: relative;
+  min-width: 0;
+  max-width: 100%;
   min-height: clamp(440px, 68vh, 820px);
   overflow: hidden;
   aspect-ratio: 12 / 7;
@@ -751,7 +756,7 @@
 
 .cfx-graph-node-card-icon {
   font-size: 15px !important;
-  fill: var(--cfx-node-stroke, var(--cfx-color-graph-text)) !important;
+  --cfx-node-icon-fallback: var(--cfx-color-graph-text);
 }
 
 .cfx-graph-node {
@@ -782,7 +787,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 .cfx-graph-node polygon,
 .cfx-graph-node path {
   fill: var(--cfx-node-fill, #2563eb);
-  stroke: var(--cfx-node-stroke, #60a5fa);
+  stroke: var(--cfx-node-stroke, #eff6ff);
   stroke-width: 3;
 }
 
@@ -811,10 +816,22 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 }
 
 .cfx-graph-node .cfx-graph-node-icon {
-  fill: #ffffff;
+  fill: var(--cfx-node-icon-adaptive, var(--cfx-node-icon-light, var(--cfx-node-icon-fallback, #ffffff)));
   stroke: none;
   font-weight: 750;
   paint-order: normal;
+}
+
+.cfx-graph-explorer.cfx-graph-theme-dark .cfx-graph-node-icon,
+.cfx-graph-explorer[data-cfx-graph-theme="dark"] .cfx-graph-node-icon,
+.cfx-graph-explorer[data-cfx-graph-theme-active="dark"] .cfx-graph-node-icon {
+  fill: var(--cfx-node-icon-adaptive, var(--cfx-node-icon-dark, var(--cfx-node-icon-fallback, #ffffff)));
+}
+
+@media (prefers-color-scheme: dark) {
+  .cfx-graph-explorer[data-cfx-graph-theme="system"]:not([data-cfx-graph-theme-active]) .cfx-graph-node-icon {
+    fill: var(--cfx-node-icon-adaptive, var(--cfx-node-icon-dark, var(--cfx-node-icon-fallback, #ffffff)));
+  }
 }
 
 .cfx-graph-node .cfx-graph-node-secondary,
@@ -825,7 +842,9 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
 }
 
 .cfx-graph-node .cfx-graph-node-badge circle,
-.cfx-graph-node-details .cfx-graph-node-badge circle {
+.cfx-graph-node-details .cfx-graph-node-badge circle,
+.cfx-graph-node .cfx-graph-node-badge rect,
+.cfx-graph-node-details .cfx-graph-node-badge rect {
   fill: var(--cfx-color-text);
   stroke: var(--cfx-color-paper);
   stroke-width: 2;
@@ -837,6 +856,7 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   stroke: none;
   font-size: 7px;
   font-weight: 800;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
   paint-order: normal;
 }
 

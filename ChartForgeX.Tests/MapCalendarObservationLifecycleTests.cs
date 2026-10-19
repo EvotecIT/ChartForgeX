@@ -12,6 +12,35 @@ public sealed class MapCalendarObservationLifecycleTests {
     private static readonly DateTime First = new(2026, 1, 5);
 
     [Theory]
+    [InlineData(ChartSeriesKind.DottedMap)]
+    [InlineData(ChartSeriesKind.CalendarHeatmap)]
+    [InlineData(ChartSeriesKind.RegionMap)]
+    [InlineData(ChartSeriesKind.TileMap)]
+    public void EmptyConvenienceFactoriesKeepGeometryAndCanRefillTheAttachedSeries(ChartSeriesKind kind) {
+        var chart = Chart.Create().WithSize(480, 280);
+        switch (kind) {
+            case ChartSeriesKind.DottedMap: chart.AddDottedMap("Items", Array.Empty<ChartMapPoint>()); break;
+            case ChartSeriesKind.CalendarHeatmap: chart.AddCalendarHeatmap("Items", Array.Empty<ChartCalendarHeatmapItem>()); break;
+            case ChartSeriesKind.RegionMap: chart.AddRegionMap("Items", Regions(), Array.Empty<ChartRegionMapItem>()); break;
+            default: chart.AddTileMap("Items", Tiles(), Array.Empty<ChartRegionMapItem>()); break;
+        }
+        var series = Assert.Single(chart.Series); var id = series.Id;
+        var regions = series.RegionMapDefinition; var tiles = series.TileMapDefinition;
+        Assert.Equal(0, series.ObservationCount); Assert.Equal(0, series.SourcePointCount);
+        var empty = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var svg = empty.ToSvg();
+        var png = empty.ToPng(new VisualRenderOptions(supersampling: 1));
+        Refill(series); series.WithObservationId(0, new ChartObservationId("arrived"));
+        var filled = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var mark = Assert.Single(Marks(chart), item => item.Attribute("data-cfx-observation-id")?.Value == "arrived");
+        Assert.Equal("4", mark.Attribute("data-cfx-value")?.Value);
+        Assert.Same(series, Assert.Single(chart.Series)); Assert.Equal(id, series.Id);
+        Assert.Same(regions, series.RegionMapDefinition); Assert.Same(tiles, series.TileMapDefinition);
+        Assert.Equal(1, series.ObservationCount); Assert.Equal(1, series.SourcePointCount);
+        Assert.NotEqual(svg, filled.ToSvg()); Assert.NotEmpty(filled.ToPng(new VisualRenderOptions(supersampling: 1)));
+        Assert.Equal(svg, empty.ToSvg()); Assert.Equal(png, empty.ToPng(new VisualRenderOptions(supersampling: 1)));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void DefinitionsRejectUninitializedRegionSlotsAtConstruction(bool tileMap) {
@@ -74,6 +103,7 @@ public sealed class MapCalendarObservationLifecycleTests {
 
     [Fact]
     public void DottedPointsKeepCoordinatesLabelsValuesAndColorsTogetherIncludingRepeatedCoordinates() {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapPoint("Invalid weight", 21, 52, -1));
         var input = new[] { new ChartMapPoint("Warsaw", 21, 52, 5), new ChartMapPoint("Paris", 2, 48, 9, ChartColor.FromHex("#123456")), new ChartMapPoint("Paris peer", 2, 48, 1) };
         var series = ChartSeries.CreateDottedMap(new ChartSeriesId("sites"), "Sites", input);
         var chart = Chart.Create().AddSeries(series).WithXLabels("Unrelated axis label");
@@ -120,7 +150,7 @@ public sealed class MapCalendarObservationLifecycleTests {
         var series = tile ? ChartSeries.CreateTileMap(new ChartSeriesId("regions"), "Regions", Tiles(), Values())
             : ChartSeries.CreateRegionMap(new ChartSeriesId("regions"), "Regions", Regions(), Values());
         Assert.Equal(new[] { "a-Mixed", "b-Mixed" }, series.RegionValues.Select(item => item.Region));
-        Assert.Equal(5, series.RegionValues[0].Value);
+        Assert.Equal(-5, series.RegionValues[0].Value);
         series.WithObservationId(0, new ChartObservationId("a"));
         var first = Chart.Create().WithXLabels("Unrelated").AddSeries(series);
         var before = first.ToSvg();
@@ -190,7 +220,7 @@ public sealed class MapCalendarObservationLifecycleTests {
         else if (series.Kind == ChartSeriesKind.CalendarHeatmap) series.ReplaceCalendarItems(new[] { new ChartCalendarHeatmapItem(First, 4) });
         else series.ReplaceRegionValues(new[] { new ChartRegionMapItem("Alpha", 4) });
     }
-    private static IEnumerable<ChartRegionMapItem> Values() => new[] { new ChartRegionMapItem("Beta", 1), new ChartRegionMapItem("Alpha alias", 2), new ChartRegionMapItem("A-mIXED", 3) };
+    private static IEnumerable<ChartRegionMapItem> Values() => new[] { new ChartRegionMapItem("Beta", 1), new ChartRegionMapItem("Alpha alias", -2), new ChartRegionMapItem("A-mIXED", -3) };
     private static ChartMapDefinition Regions() => new("owned-map", "Owned map", 100, 50, new[] {
         new ChartMapRegion("a-Mixed", "Alpha", "M0 0H50V50H0Z", aliases: new[] { "Alpha alias" }), new ChartMapRegion("b-Mixed", "Beta", "M50 0H100V50H50Z") });
     private static ChartTileMapDefinition Tiles() => new("owned-map", "Owned map", new[] {

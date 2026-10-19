@@ -6,20 +6,29 @@ using Microsoft.Playwright;
 namespace ChartForgeX.Tests;
 
 /// <summary>
-/// Opens rendered interactive charts in headless Chromium through an HtmlTinkerX-owned session so tests can
+/// Opens rendered interactive charts through an HtmlTinkerX-owned browser session so tests can
 /// assert the runtime look (computed opacity, visibility, tooltip content) that string checks cannot observe.
 /// </summary>
 internal static partial class InteractiveChartBrowser {
     /// <summary>Environment switch shared with the other EvotecIT browser suites; optional browser tests are skipped unless it is "1".</summary>
     internal const string EnableVariable = "HFX_TEST_ENABLE_PLAYWRIGHT";
+    internal const string EngineVariable = "CFX_TEST_BROWSER";
 
     internal const string PointTarget = "g[data-cfx-role=\"point\"]";
 
     internal static bool Enabled => BrowserTestPrerequisites.IsEnabled();
 
+    /// <summary>Selects the explicit engine for compatibility proof; the required browser suite defaults to Chromium.</summary>
+    internal static HtmlBrowserEngine Engine => Environment.GetEnvironmentVariable(EngineVariable)?.Trim().ToLowerInvariant() switch {
+        null or "" or "chromium" => HtmlBrowserEngine.Chromium,
+        "firefox" => HtmlBrowserEngine.Firefox,
+        "webkit" => HtmlBrowserEngine.WebKit,
+        _ => throw new InvalidOperationException(EngineVariable + " must be chromium, firefox or webkit.")
+    };
+
     internal static async Task<HtmlBrowserSession> OpenAsync(string html, int width = 700, int height = 460, bool touch = false) {
         var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
-            Browser = HtmlBrowserEngine.Chromium,
+            Browser = Engine,
             Headless = true,
             Timeout = 15000,
             ViewportWidth = width,
@@ -27,8 +36,13 @@ internal static partial class InteractiveChartBrowser {
             HasTouch = touch,
             IsMobile = touch
         });
-        await session.Page.SetContentAsync(html);
-        return session;
+        try {
+            await session.Page.SetContentAsync(html);
+            return session;
+        } catch {
+            await session.DisposeAsync();
+            throw;
+        }
     }
 
     /// <summary>The approved "Checks over a week" interaction example: quiet, warning, and danger lines.</summary>

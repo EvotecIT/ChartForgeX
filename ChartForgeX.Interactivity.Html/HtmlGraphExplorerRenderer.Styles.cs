@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ChartForgeX.Interactivity;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -111,6 +113,23 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var parts = new List<string>();
         if (!string.IsNullOrWhiteSpace(node.Style.LabelColor)) parts.Add("--cfx-node-label-explicit:" + node.Style.LabelColor);
         return string.Join(";", parts);
+    }
+
+    /// <summary>Resolves authored mark surfaces for script-free icons; implicit cards follow the viewer theme.</summary>
+    private static string NodeIconStyle(GraphSceneNode node) {
+        var card = IsCardNode(node);
+        var fill = node.Style.BackgroundColor;
+        if (string.IsNullOrWhiteSpace(fill) && card) node.Metadata.TryGetValue("topology.cardBackgroundColor", out fill);
+        if (string.IsNullOrWhiteSpace(fill)) { if (card) return string.Empty; fill = "#2563eb"; }
+        if (!ChartColor.TryParse(fill, out var surface)) return string.Empty;
+        string Foreground(bool dark) {
+            var background = ChartColorMath.CompositeOverOpaque(surface, ChartColor.FromHex(dark ? "#0b1220" : "#ffffff"));
+            var preferred = card ? ChartColor.FromHex(dark ? "#e5edf8" : "#334155") : ChartColor.White;
+            if (card && ChartColor.TryParse(node.Style.BorderColor, out var border)) preferred = border;
+            var opaque = ChartColorMath.CompositeOverOpaque(preferred, background);
+            return (ChartColorMath.ContrastRatio(opaque, background) >= 4.5 ? preferred : ChartColorMath.AccessibleTextOnBackground(background)).ToCss();
+        }
+        return "--cfx-node-icon-light:" + Foreground(false) + ";--cfx-node-icon-dark:" + Foreground(true);
     }
 
     private static string EdgeStyle(GraphSceneEdge edge) {

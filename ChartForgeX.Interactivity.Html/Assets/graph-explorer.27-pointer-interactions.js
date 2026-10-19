@@ -3,7 +3,17 @@
     if (!stage) return;
     const chromeTarget = (event) => event.target.closest?.('.cfx-graph-command-rail,.cfx-graph-breadcrumbs,.cfx-graph-editor');
     let active = null;
-    stage.addEventListener('pointerdown', event => {
+    graphLifetime(root).own(() => {
+      if (active) {
+        try { stage.releasePointerCapture?.(active.pointerId); } catch { }
+        if (active.mode === 'node') {
+          const node = root.__cfxGraphState?.nodes.find(item => item.id === active.nodeId);
+          if (node) { node.fixed = active.movingFixed; node.vx = 0; node.vy = 0; node.el.setAttribute('data-node-fixed', active.fixed || 'false'); }
+        }
+      }
+      root.__cfxGraphDragNodeId = ''; active = null;
+    });
+    listenGraph(root, stage, 'pointerdown', event => {
       if (event.button !== 0 || chromeTarget(event)) return;
       const point = scenePoint(root, event);
       const state = root.__cfxGraphState || graphState(root);
@@ -51,8 +61,8 @@
         active = { mode: 'pan', pointerId: event.pointerId, screenX: point.screenX, screenY: point.screenY, view: viewport(root) };
       } else root.dataset.cfxGraphLastPointerMode = 'none';
     });
-    stage.addEventListener('pointerleave', () => graphHover(root, null));
-    stage.addEventListener('pointermove', event => {
+    listenGraph(root, stage, 'pointerleave', () => graphHover(root, null));
+    listenGraph(root, stage, 'pointermove', event => {
       if (!active && (root.classList.contains('cfx-graph-render-canvas') || root.dataset.cfxGraphRendererActive === 'webgl' || attr(root, 'data-cfx-graph-accelerated-markup') === 'true')) {
         const hit = hitGraphItemAt(root, scenePoint(root, event));
         graphHover(root, hit?.el || null);
@@ -123,8 +133,8 @@
       }
       root.__cfxGraphDragNodeId = ''; root.classList.remove('cfx-graph-dragging-node', 'cfx-graph-panning'); active = null;
     };
-    stage.addEventListener('pointerup', finish); stage.addEventListener('pointercancel', finish);
-    stage.addEventListener('wheel', event => {
+    listenGraph(root, stage, 'pointerup', finish); listenGraph(root, stage, 'pointercancel', finish);
+    listenGraph(root, stage, 'wheel', event => {
       if (!hasFeature(root, 'Viewport') || chromeTarget(event)) return;
       event.preventDefault(); root.__cfxGraphViewportTouched = true;
       const point = scenePoint(root, event); zoomViewport(root, event.deltaY < 0 ? 1.12 : 0.88, { x: point.screenX, y: point.screenY });

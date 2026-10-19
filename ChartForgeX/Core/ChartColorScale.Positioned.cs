@@ -82,7 +82,7 @@ public sealed partial class ChartColorScale {
 
     private ChartColorScale CopyStops(ChartColorStop[] stops) =>
         new(_colors, _midpointIndex, _midpointIndex.HasValue ? stops[_midpointIndex.Value].Value : null,
-            stops[0].Value, stops[stops.Length - 1].Value, NoDataColor, LowLabel, MidpointLabel, HighLabel, stops: stops);
+            stops[0].Value, stops[stops.Length - 1].Value, NoDataColor, LowLabel, MidpointLabel, HighLabel, stops: stops, captions: _captions);
 
     private ChartColorBlend AlongPositioned(double value) {
         if (value <= _stops[0].Value) return ChartColorBlend.Solid(LowColor, SvgColorRole.Ramp);

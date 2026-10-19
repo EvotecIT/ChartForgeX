@@ -52,6 +52,7 @@
     const kind = step.targetKind || '';
     const target = step.targetId || '';
     if (renderedTargetKind(node) === kind && renderedTargetId(node, kind) === target) return true;
+    if (kind === 'annotation' && target.startsWith('annotation-id-')) return false;
     if (kind === 'series') return seriesKey(node) === target;
     if (kind === 'point' && data.cfxPoint === target) return true;
     if (kind === 'point' && data.cfxSeries !== undefined && data.cfxPoint !== undefined && (data.cfxSeries + ':' + data.cfxPoint === target || data.cfxSeries + '.' + data.cfxPoint === target)) return true;
@@ -83,8 +84,13 @@
     const matches = new Set();
     if (!route) return matches;
     const steps = stepIndex === undefined || stepIndex === null ? route.steps : route.steps.filter((_, index) => index === Number(stepIndex));
-    scenarioTargetCandidates(root, route).forEach((node) => {
-      if (steps.some((step) => scenarioTargetMatches(node, step))) matches.add(node);
+    const candidates = scenarioTargetCandidates(root, route);
+    // An exact annotation identity wins over a different annotation's ID-looking caption.
+    const exactAnnotations = steps.map(step => step.targetKind === 'annotation' ? candidates.filter(node =>
+      renderedTargetKind(node) === 'annotation' && renderedTargetId(node, 'annotation') === step.targetId) : []);
+    candidates.forEach((node) => {
+      if (steps.some((step, index) => exactAnnotations[index].length
+        ? exactAnnotations[index].includes(node) : scenarioTargetMatches(node, step))) matches.add(node);
     });
     return matches;
   };
@@ -105,8 +111,8 @@
     if (!route) {
       panel.removeAttribute('data-cfx-panel-active-scenario');
       panel.style.removeProperty('--cfx-scenario-color');
-      if (title) title.textContent = 'All';
-      if (meta) meta.textContent = 'All chart data visible';
+      if (title) title.textContent = uiText(root, 'All', 'All');
+      if (meta) meta.textContent = uiText(root, 'AllDataVisible', 'All chart data visible');
       if (steps) steps.replaceChildren();
       return;
     }
@@ -116,7 +122,7 @@
     if (title) title.textContent = route.label || route.id;
     if (meta) {
       const pairs = Object.entries(route.metadata || {}).slice(0, 2).map(([key, value]) => key + ': ' + value);
-      meta.textContent = [route.description, route.steps.length ? route.steps.length + ' steps' : '', ...pairs].filter(Boolean).join(' / ');
+      meta.textContent = [route.description, route.steps.length ? uiText(root, 'Steps', '{count} steps', { count: route.steps.length }) : '', ...pairs].filter(Boolean).join(' / ');
     }
     if (steps) {
       steps.replaceChildren();
@@ -139,7 +145,7 @@
     const hasStep = stepIndex !== undefined && stepIndex !== null && stepIndex !== '';
     const current = count && hasStep ? clamp(Number(stepIndex) + 1, 0, count) : 0;
     const percent = count ? Math.round((current / count) * 100) : 0;
-    const label = 'Step ' + current + ' / ' + count;
+    const label = uiText(root, 'StepProgress', 'Step {current} / {count}', { current, count });
     if (progress) {
       progress.hidden = !count;
       progress.style.setProperty('--cfx-scenario-progress', percent + '%');
@@ -243,7 +249,7 @@
       const playing = normalized === 'playing';
       button.setAttribute('aria-pressed', playing ? 'true' : 'false');
       button.textContent = playing ? (button.dataset.cfxScenarioPauseLabel || 'Pause') : (button.dataset.cfxScenarioPlayLabel || 'Play');
-      button.title = playing ? 'Pause scenario' : 'Play scenario';
+      button.title = playing ? uiText(root, 'PauseScenario', 'Pause scenario') : uiText(root, 'PlayScenario', 'Play scenario');
     });
     if (emit !== false) {
       emitHostEvent(root, 'cfxscenarioplayback', {

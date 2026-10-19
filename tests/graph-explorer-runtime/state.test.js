@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { graphMessageHelpers } = require('../helpers/graph-runtime-source');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const source = names => names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
 function element(role, id, parent = '') {
@@ -39,10 +40,10 @@ test('successful host document updates clear stale undo snapshots and rejected u
   const {root}=fixture();
   const events=[];
   const apiSource=source(['40-api']);
-  const patchSource=apiSource.slice(apiSource.indexOf('  const applyGraphRuntimePatch ='),apiSource.indexOf('  const graphExplorerApi ='));
+  const patchSource=apiSource.slice(apiSource.indexOf('  const syncGraphEdgeAccessibleNames ='),apiSource.indexOf('  const graphExplorerApi ='));
   const ignored=['stopWorkerPhysics','stopMainPhysics','upsertGraphCluster','upsertGraphEdge','syncSvgThemeColors','performanceGate','applyLayout','syncGraphItemTabStops'];
   let observeHostUpdate=false;
-  const environment={...Object.fromEntries(ignored.map(name=>[name,()=>{}])),graphApiRoot:target=>target,
+  const environment={...graphMessageHelpers(),...Object.fromEntries(ignored.map(name=>[name,()=>{}])),graphApiRoot:target=>target,
     items,attr,setGraphAttribute:(item,name,value)=>{ if(value===undefined || value===null || value==='') delete item.attributes[name]; else item.setAttribute(name,value); },
     idList:value=>value.split(',').filter(Boolean),hasFeature:(_root,name)=>['IncrementalUpdates','History'].includes(name),
     graphState:root=>({...root.state,edges:[],clusters:[]}),
@@ -64,7 +65,9 @@ test('successful host document updates clear stale undo snapshots and rejected u
 
 test('export preserves inherited edge width and explicit widths', () => {
   const {edge,root}=fixture();
-  const exportJson=new Function('items','attr','metadataDetail','viewport','graphFocusSnapshot','exportGraphPerformance','routePoints','idList','graphState','document',source(['30-bindings'])+'\nreturn exportGraphJson;')(
+  const bindings=source(['30-bindings']);
+  const exportSource=bindings.slice(bindings.indexOf('  const exportGraphJson ='), bindings.indexOf('  const bindCommandMenus ='));
+  const exportJson=new Function('items','attr','metadataDetail','viewport','graphFocusSnapshot','exportGraphPerformance','routePoints','idList','graphState','document',exportSource+'\nreturn exportGraphJson;')(
     items,attr,()=>({}),()=>({}),()=>null,()=>({}),()=>[],value=>value.split(',').filter(Boolean),root=>root.state,{readyState:'loading',addEventListener(){}});
   assert.equal(exportJson(root).edges[0].style.width,null);
   edge.setAttribute('data-edge-width',2.5); assert.equal(exportJson(root).edges[0].style.width,2.5);
@@ -72,7 +75,7 @@ test('export preserves inherited edge width and explicit widths', () => {
 
 test('node and cluster parent cycles and invalid edge widths are rejected before mutation', () => {
   const {root}=fixture();
-  const validate=new Function('items','attr','idList',source(['39-patch-validation'])+'\nreturn validateGraphPatch;')(items,attr,value=>value.split(',').filter(Boolean));
+  const validate=new Function('graphUiError','items','attr','idList',source(['39-patch-validation'])+'\nreturn validateGraphPatch;')(graphMessageHelpers().graphUiError,items,attr,value=>value.split(',').filter(Boolean));
   const before=JSON.stringify(root.elements.map(item=>item.attributes));
   for (const patch of [
     {upsertNodes:[{id:'shared',parentId:'db'},{id:'db',parentId:'shared'}]},

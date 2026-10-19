@@ -19,7 +19,7 @@
     root.dataset.cfxGraphKeyboardItem = graphKeyboardItemKey(item);
     item.focus();
     const label = attr(item, 'data-cfx-bundle-count') ? attr(item, 'aria-label')
-      : attr(item, 'data-node-label') || attr(item, 'data-edge-label') || attr(item, 'data-cluster-label') || 'Graph item';
+      : attr(item, 'data-node-label') || graphLabelText(attr(item, 'data-edge-label')) || attr(item, 'data-cluster-label') || attr(item, 'aria-label') || uiText(root, 'GraphItem', 'Graph item');
     const announcer = root.querySelector('[data-cfx-role="graph-announcer"]');
     if (announcer) announcer.textContent = label;
   };
@@ -79,17 +79,17 @@
     const surface = event.currentTarget;
     const label = attr(candidates[next].el, 'data-cfx-bundle-count')
       ? attr(candidates[next].el, 'aria-label')
-      : candidates[next].label || candidates[next].id;
-    surface?.setAttribute('aria-label', `${attr(root, 'data-cfx-graph-title') || 'Graph'}. Current item: ${label}. Use arrow keys to move and Enter or Space to activate.`);
+      : graphLabelText(candidates[next].label) || attr(candidates[next].el, 'aria-label') || candidates[next].id;
+    surface?.setAttribute('aria-label', uiText(root, 'GraphCurrentItem', '{title}. Current item: {label}. Use arrow keys to move and Enter or Space to activate.', { title: attr(root, 'data-cfx-graph-title') || uiText(root, 'GraphDefaultTitle', 'Graph'), label }));
     return true;
   };
   const bindGraphItemSelection = (root, item) => {
     if (attr(item, 'data-cfx-graph-selection-bound') === 'true') return;
     item.setAttribute('data-cfx-graph-selection-bound', 'true');
-    item.addEventListener('pointerenter', () => graphHover(root, item));
-    item.addEventListener('pointerleave', () => graphHover(root, null));
-    item.addEventListener('blur', () => graphHover(root, null));
-    item.addEventListener('focus', () => {
+    listenGraph(root, item, 'pointerenter', () => graphHover(root, item));
+    listenGraph(root, item, 'pointerleave', () => graphHover(root, null));
+    listenGraph(root, item, 'blur', () => graphHover(root, null));
+    listenGraph(root, item, 'focus', () => {
       graphHover(root, item);
       root.dataset.cfxGraphKeyboardItem = graphKeyboardItemKey(item);
       items(root, '[data-cfx-role="graph-node"],[data-cfx-role="graph-edge"],[data-cfx-role="graph-cluster"]').forEach(candidate => {
@@ -98,7 +98,7 @@
         else candidate.removeAttribute('aria-keyshortcuts');
       });
     });
-    item.addEventListener('click', event => {
+    listenGraph(root, item, 'click', event => {
       const id = attr(item, 'data-node-id') || attr(item, 'data-edge-id') || attr(item, 'data-cluster-id');
       if (id && root.__cfxGraphSuppressClickId === id) {
         root.__cfxGraphSuppressClickId = '';
@@ -108,7 +108,7 @@
       if (id && root.__cfxGraphPointerSelectionId === id && Date.now() - (root.__cfxGraphPointerSelectionTick || 0) < 250) return;
       select(root, item, { additive: event.ctrlKey || event.metaKey || event.shiftKey, toggle: event.ctrlKey || event.metaKey || event.shiftKey });
     });
-    item.addEventListener('keydown', event => {
+    listenGraph(root, item, 'keydown', event => {
       if (event.defaultPrevented) return;
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
         event.preventDefault();
@@ -124,8 +124,8 @@
   const bindGraphSearch = (root) => {
     const search = root.querySelector('[data-cfx-graph-search]');
     if (!search) return;
-    search.addEventListener('input', () => applyFilters(root));
-    search.addEventListener('keydown', event => {
+    listenGraph(root, search, 'input', () => applyFilters(root));
+    listenGraph(root, search, 'keydown', event => {
       if (event.key !== 'Enter') return;
       const query = search.value.trim().toLowerCase();
       const match = (root.__cfxGraphState || graphState(root)).nodes.find(node => visible(node.el) && (!query || searchable(node.el).includes(query)));

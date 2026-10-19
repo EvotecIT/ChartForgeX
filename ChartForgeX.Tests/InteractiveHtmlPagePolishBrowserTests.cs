@@ -77,11 +77,15 @@ public sealed class InteractiveHtmlPagePolishBrowserTests {
         Assert.False(pointerFocus.GetProperty("focusVisible").GetBoolean());
         Assert.Equal("none", pointerFocus.GetProperty("focusOutlineStyle").GetString());
         Assert.Equal("none", pointerPrinted.GetProperty("focusOutlineStyle").GetString());
+        Assert.False(pointerFocus.GetProperty("nativeFocusVisible").GetBoolean());
+        Assert.False(pointerPrinted.GetProperty("nativeFocusVisible").GetBoolean());
         Assert.Equal(pointerFocus.GetProperty("paint").GetRawText(), pointerPrinted.GetProperty("paint").GetRawText());
         Assert.True(screen.GetProperty("nativePointFocused").GetBoolean());
         Assert.True(printed.GetProperty("nativePointFocused").GetBoolean());
         Assert.True(screen.GetProperty("focusVisible").GetBoolean());
-        Assert.NotEqual("none", screen.GetProperty("focusOutlineStyle").GetString());
+        Assert.True(screen.GetProperty("nativeFocusVisible").GetBoolean());
+        Assert.False(printed.GetProperty("nativeFocusVisible").GetBoolean());
+        Assert.True(restored.GetProperty("nativeFocusVisible").GetBoolean());
         Assert.Equal("none", printed.GetProperty("focusOutlineStyle").GetString());
         Assert.Equal(screen.GetProperty("focusOutlineStyle").GetString(), restored.GetProperty("focusOutlineStyle").GetString());
         Assert.Equal(screen.GetProperty("focusOutlineWidth").GetString(), restored.GetProperty("focusOutlineWidth").GetString());
@@ -116,6 +120,7 @@ public sealed class InteractiveHtmlPagePolishBrowserTests {
                 nativeAspect:box.width/box.height,renderedAspect:bounds.width/bounds.height,renderedWidth:bounds.width,stageWidth:stage.getBoundingClientRect().width,
                 nativePointFocused:focused.matches('g[data-cfx-role="point"][data-cfx-series="0"][data-cfx-point="0"]'),
                 focusVisible:focused.matches(':focus-visible'),
+                nativeFocusVisible:visible('[data-cfx-keyboard-focus-outline]'),
                 focusOutlineStyle:focusStyle.outlineStyle,focusOutlineWidth:focusStyle.outlineWidth,focusOutlineColor:focusStyle.outlineColor,
                 mutedLegend:root.querySelector('[data-cfx-role="legend-item"][data-cfx-series="1"]').dataset.cfxMuted,
                 paint:[...svg.querySelectorAll('[stroke],[opacity]')].map(node=>[node.localName,node.getAttribute('data-cfx-role'),node.getAttribute('stroke'),node.getAttribute('opacity'),node.getAttribute('style'),getComputedStyle(node).stroke,getComputedStyle(node).opacity])

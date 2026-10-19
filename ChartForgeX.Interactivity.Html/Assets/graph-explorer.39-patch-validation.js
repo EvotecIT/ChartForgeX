@@ -7,7 +7,7 @@
       let current = id;
       while (values.get(current)?.parentId) {
         if (complete.has(current)) break;
-        if (visiting.has(current)) throw new Error(`Graph patch ${itemKind} hierarchy contains a parent cycle at '${current}'.`);
+        if (visiting.has(current)) throw graphUiError("GraphPatchParentCycle", "Graph patch {kind} hierarchy contains a parent cycle at '{id}'.", { kind: itemKind, id: current });
         visiting.add(current); current = values.get(current).parentId;
       }
       visiting.forEach(visited => complete.add(visited));
@@ -18,21 +18,21 @@
     const clusters = new Map(items(root, '[data-cfx-role="graph-cluster"]').filter(cluster => !removedClusters.has(attr(cluster, 'data-cluster-id'))).map(cluster => [attr(cluster, 'data-cluster-id'), { parentId: attr(cluster, 'data-cluster-parent'), nodeIds: new Set(idList(attr(cluster, 'data-cluster-node-ids'))) }]));
     if (patch.removeIncidentReferences !== false) clusters.forEach(cluster => { cluster.nodeIds = new Set(Array.from(cluster.nodeIds).filter(id => !removedNodes.has(id))); });
     (patch.upsertClusters || []).forEach(cluster => {
-      if (!cluster?.id) throw new Error('Graph patch clusters require stable ids.');
+      if (!cluster?.id) throw graphUiError("GraphPatchClusterIds", "Graph patch clusters require stable ids.");
       clusters.set(String(cluster.id), { parentId: String(cluster.parentClusterId || ''), nodeIds: new Set((cluster.nodeIds || []).map(String)) });
     });
     (patch.upsertNodes || []).filter(node => graphPatchHas(node, 'clusterId')).forEach(node => {
       const nodeId = String(node.id); clusters.forEach(cluster => cluster.nodeIds.delete(nodeId));
       const clusterId = String(node.clusterId || '');
       if (clusterId) {
-        if (!clusters.has(clusterId)) throw new Error(`Graph patch node '${nodeId}' references missing cluster '${clusterId}'.`);
+        if (!clusters.has(clusterId)) throw graphUiError("GraphPatchNodeCluster", "Graph patch node '{nodeId}' references missing cluster '{clusterId}'.", { nodeId: nodeId, clusterId: clusterId });
         clusters.get(clusterId).nodeIds.add(nodeId);
       }
     });
     clusters.forEach((cluster, clusterId) => {
       if (cluster.parentId && removedClusters.has(cluster.parentId) && !clusters.has(cluster.parentId)) cluster.parentId = '';
-      if (cluster.parentId && !clusters.has(cluster.parentId)) throw new Error(`Graph patch cluster '${clusterId}' references missing parent '${cluster.parentId}'.`);
-      cluster.nodeIds.forEach(nodeId => { if (!nodeIds.has(nodeId)) throw new Error(`Graph patch cluster '${clusterId}' references missing node '${nodeId}'.`); });
+      if (cluster.parentId && !clusters.has(cluster.parentId)) throw graphUiError("GraphPatchClusterParent", "Graph patch cluster '{clusterId}' references missing parent '{parentId}'.", { clusterId: clusterId, parentId: cluster.parentId });
+      cluster.nodeIds.forEach(nodeId => { if (!nodeIds.has(nodeId)) throw graphUiError("GraphPatchClusterNode", "Graph patch cluster '{clusterId}' references missing node '{nodeId}'.", { clusterId: clusterId, nodeId: nodeId }); });
     });
     validateGraphParents(clusters, 'cluster');
     return clusters;
@@ -40,21 +40,21 @@
   const validateGraphPatch = (root, patch) => {
     const removedNodes = graphPatchIds(patch.removeNodeIds);
     const nodes = new Map(items(root, '[data-cfx-role="graph-node"]').filter(node => !removedNodes.has(attr(node, 'data-node-id'))).map(node => [attr(node, 'data-node-id'), { parentId: attr(node, 'data-node-parent'), clusterId: attr(node, 'data-node-cluster') }]));
-    (patch.upsertNodes || []).forEach(node => { if (!node?.id) throw new Error('Graph patch nodes require stable ids.'); nodes.set(String(node.id), { parentId: String(node.parentId || ''), clusterId: String(node.clusterId || '') }); });
+    (patch.upsertNodes || []).forEach(node => { if (!node?.id) throw graphUiError("GraphPatchNodeIds", "Graph patch nodes require stable ids."); nodes.set(String(node.id), { parentId: String(node.parentId || ''), clusterId: String(node.clusterId || '') }); });
     const nodeIds = new Set(nodes.keys());
-    nodes.forEach((node, nodeId) => { if (node.parentId && !nodeIds.has(node.parentId)) throw new Error(`Graph patch node '${nodeId}' references missing parent '${node.parentId}'.`); });
+    nodes.forEach((node, nodeId) => { if (node.parentId && !nodeIds.has(node.parentId)) throw graphUiError("GraphPatchNodeParent", "Graph patch node '{nodeId}' references missing parent '{parentId}'.", { nodeId: nodeId, parentId: node.parentId }); });
     validateGraphParents(nodes, 'node');
     const clusters = graphPatchClusters(root, patch, nodeIds, removedNodes);
     const removedClusters = graphPatchIds(patch.removeClusterIds);
     const declaredMembership = new Map();
     clusters.forEach((cluster, clusterId) => cluster.nodeIds.forEach(nodeId => {
-      if (declaredMembership.has(nodeId) && declaredMembership.get(nodeId) !== clusterId) throw new Error(`Graph patch node '${nodeId}' belongs to multiple clusters.`);
+      if (declaredMembership.has(nodeId) && declaredMembership.get(nodeId) !== clusterId) throw graphUiError("GraphPatchMultipleClusters", "Graph patch node '{nodeId}' belongs to multiple clusters.", { nodeId: nodeId });
       declaredMembership.set(nodeId, clusterId);
     }));
     nodes.forEach((node, nodeId) => {
       if (node.clusterId && removedClusters.has(node.clusterId) && !clusters.has(node.clusterId)) node.clusterId = '';
-      if (node.clusterId && !clusters.has(node.clusterId)) throw new Error(`Graph patch node '${nodeId}' references missing cluster '${node.clusterId}'.`);
-      if (node.clusterId && declaredMembership.has(nodeId) && declaredMembership.get(nodeId) !== node.clusterId) throw new Error(`Graph patch node '${nodeId}' has conflicting cluster memberships.`);
+      if (node.clusterId && !clusters.has(node.clusterId)) throw graphUiError("GraphPatchNodeCluster", "Graph patch node '{nodeId}' references missing cluster '{clusterId}'.", { nodeId: nodeId, clusterId: node.clusterId });
+      if (node.clusterId && declaredMembership.has(nodeId) && declaredMembership.get(nodeId) !== node.clusterId) throw graphUiError("GraphPatchConflictingClusters", "Graph patch node '{nodeId}' has conflicting cluster memberships.", { nodeId: nodeId });
     });
     const removedEdges = graphPatchIds(patch.removeEdgeIds);
     const edges = new Map();
@@ -64,13 +64,13 @@
       edges.set(id, { source, target });
     });
     (patch.upsertEdges || []).forEach(edge => {
-      if (!edge?.id) throw new Error('Graph patch edges require stable ids.');
+      if (!edge?.id) throw graphUiError("GraphPatchEdgeIds", "Graph patch edges require stable ids.");
       const width = edge.style?.width;
-      if (width !== undefined && width !== null && width !== '' && (!Number.isFinite(Number(width)) || Number(width) <= 0)) throw new Error(`Graph patch edge '${edge.id}' width must be finite and greater than zero.`);
+      if (width !== undefined && width !== null && width !== '' && (!Number.isFinite(Number(width)) || Number(width) <= 0)) throw graphUiError("GraphPatchEdgeWidth", "Graph patch edge '{edgeId}' width must be finite and greater than zero.", { edgeId: edge.id });
       const source = String(edge.sourceNodeId || edge.source || ''), target = String(edge.targetNodeId || edge.target || '');
       edges.set(String(edge.id), { source, target });
     });
-    edges.forEach((edge, edgeId) => { if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) throw new Error(`Graph patch edge '${edgeId}' references a missing endpoint.`); });
+    edges.forEach((edge, edgeId) => { if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) throw graphUiError("GraphPatchEdgeEndpoint", "Graph patch edge '{edgeId}' references a missing endpoint.", { edgeId: edgeId }); });
   };
   const detachGraphPatchRemovedClusters = (root, removedClusters, upsertClusters) => {
     if (!removedClusters.size) return;

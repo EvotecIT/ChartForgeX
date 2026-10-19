@@ -2,28 +2,56 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
-const names = ['00-core', '01-document', '02-geometry', '05-viewport', '06-theme', '09-edge-bundles', '09-performance', '10-layout', '10-neighborhood-plan', '10-neighborhood', '11-state-sync', '13-hierarchy', '15-edge-hit-index', '15-hit-testing', '29-selection', '30-bindings', '39-patch-validation', '40-api'];
-const code = names.map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
-const loadRuntime = new Function('document', 'window', 'CustomEvent', code + '\nreturn { graphVirtualElement, graphVirtualClassList, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, applyFilters, applyNeighborhoodFocus, applyClusterState, applyHierarchyView, clearHiddenSelections, attr };');
-const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, {}, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
+const code = graphRuntimeSource('return { graphVirtualElement, graphVirtualClassList, graphVirtualMatches, graphState, applyCollapsedEdgeBundles, syncBundledEdgePresentation, graphItemAccessible, graphOverviewDisclosure, exportGraphJson, acceleratedGraphCandidates, moveAcceleratedGraphSelection, upsertGraphEdge, syncGraphEdgeAccessibleNames, select, applyFilters, applyNeighborhoodFocus, applyClusterState, applyHierarchyView, clearHiddenSelections, appendExportedEdgeLabel, graphThemePalette, attr };');
+const loadRuntime = new Function('document', 'window', 'CustomEvent', code);
+const lifetimes = adapterLifetimes();
+test.after(() => lifetimes.dispose());
+const runtime = loadRuntime({ readyState: 'loading', addEventListener() {} }, lifetimes.window, class CustomEvent { constructor(name, options) { this.type = name; this.detail = options.detail; } });
 
 function scene(siteCount, edgeSpecs, renderer = 'canvas') {
   const physicalLabels = [];
-  const viewport = { appendChild(label) { physicalLabels.push(label); } };
+  const document = {
+    createElementNS(_namespace, name) {
+      const element = runtime.graphVirtualElement(name, {}, []);
+      element.ownerDocument = document; element.children = [];
+      element.style = { setProperty(name, value) { element.setAttribute(name, value); } };
+      element.appendChild = child => { child.remove(); child.__cfxRemoved = false; child.parent = element; element.children.push(child); };
+      element.insertBefore = (child, before) => {
+        if (!before) { element.appendChild(child); return; }
+        assert.ok(element.children.includes(before));
+        child.remove(); child.__cfxRemoved = false; child.parent = element;
+        element.children.splice(element.children.indexOf(before), 0, child);
+      };
+      element.append = (...children) => children.forEach(element.appendChild);
+      element.remove = () => {
+        element.__cfxRemoved = true;
+        if (element.parent) element.parent.children.splice(element.parent.children.indexOf(element), 1);
+        element.parent = null;
+      };
+      element.querySelectorAll = selector => {
+        const found = [];
+        const visit = child => { if (runtime.graphVirtualMatches(child, selector)) found.push(child); child.children.forEach(visit); };
+        element.children.forEach(visit); return found;
+      };
+      element.querySelector = selector => element.querySelectorAll(selector)[0] || null;
+      return element;
+    },
+    createElement() { return { setAttribute() {}, remove() { root.note = null; } }; }
+  };
+  const viewport = document.createElementNS('', 'g'), append = viewport.appendChild;
+  viewport.appendChild = child => {
+    if (child.getAttribute('data-cfx-role') === 'graph-edge-label') physicalLabels.push(child);
+    append(child);
+  };
   const stage = { appendChild(note) { root.note = note; } };
   const root = runtime.graphVirtualElement('root', { 'data-cfx-graph-id': 'bundle-test', 'data-cfx-graph-features': 'Selection,Clustering' }, []);
   root.dataset = { cfxGraphRendererActive: renderer };
   root.dispatchEvent = () => true;
-  root.ownerDocument = {
-    createElementNS() {
-      const label = runtime.graphVirtualElement('graph-edge-label', {}, []);
-      label.style = { setProperty(name, value) { label.setAttribute(name, value); } };
-      return label;
-    },
-    createElement() { return { setAttribute() {}, remove() { root.note = null; } }; }
-  };
+  root.ownerDocument = document;
   root.querySelector = selector => selector.includes('graph-overview-note') ? root.note || null
     : selector === '.cfx-graph-stage' ? stage
     : selector.includes('graph-viewport') ? viewport
@@ -48,6 +76,7 @@ function scene(siteCount, edgeSpecs, renderer = 'canvas') {
     'data-target-cluster-id': `site-${target}`, 'data-edge-weight': '1'
   }, []));
   root.__cfxGraphVirtualItems = [...nodes, ...edges, ...clusters];
+  lifetimes.mount(root);
   return { root, edges, physicalLabels };
 }
 
@@ -352,11 +381,12 @@ test('accelerated pointer activation expands a bundle without Selection enabled'
   overlay.closest = selector => selector.includes('graph-edge') ? overlay : null;
   const nearbyNode = { id: 'nearby', el: runtime.graphVirtualElement('graph-node', {}, []) };
   const root = { dataset: {}, querySelector: () => stage, __cfxGraphState: { nodes: [nearbyNode], edges: [{ id: 'route', el: canonical }], clusters: [] } };
+  lifetimes.mount(root);
   const selected = [];
-  const bind = new Function('attr', 'scenePoint', 'hasFeature', 'hitNodeAt', 'hitGraphItemAt', 'select',
+  const bind = new Function('attr', 'scenePoint', 'hasFeature', 'hitNodeAt', 'hitGraphItemAt', 'select', 'graphLifetime', 'listenGraph',
     source + '\nreturn bindPointerInteractions;')(
     runtime.attr, () => ({ x: 1, y: 2 }), (_, feature) => feature === 'Clustering' || feature === 'Viewport',
-    () => nearbyNode, () => null, (_, item) => selected.push(item)
+    () => nearbyNode, () => null, (_, item) => selected.push(item), lifetimes.graphLifetime, lifetimes.listenGraph
   );
   bind(root);
   let prevented = false;
@@ -425,24 +455,18 @@ test('activating a bundled route reheats the expanded graph once and falls back 
 });
 
 test('accelerated SVG materialization preserves selected and focused route labels', () => {
-  const source = fs.readFileSync(path.join(assets, 'graph-explorer.28-svg-export.js'), 'utf8');
-  const start = source.indexOf('  const appendExportedEdgeLabel = (document, group, edge, rendered) => {');
-  const end = source.indexOf('  const drawAcceleratedSvgRuntime = (root, state) => {', start);
-  assert.ok(start >= 0 && end > start);
-  const append = new Function('svgNode', 'edgeLabelPoint', 'edgeControl',
-    source.slice(start, end) + '\nreturn appendExportedEdgeLabel;')(
-    (_, tag, properties) => ({ ...properties, style: { setProperty() {} } }),
-    () => ({ x: 100, y: 50 }), () => null
-  );
   const edgeElement = runtime.graphVirtualElement('graph-edge', {}, ['cfx-graph-selected']);
   const edge = { id: 'route', label: '2 relationships', showLabel: true, el: edgeElement };
   const group = { appendChild(label) { this.label = label; } };
-  append({}, group, edge, {});
-  assert.match(group.label.class, /cfx-graph-label-selected/);
+  const root = runtime.graphVirtualElement('root', {}, []);
+  const document = { createElementNS: () => { const element = runtime.graphVirtualElement('text', {}, []); element.style = {}; return element; } };
+  const paint = { rendered: { source: { x: 0, y: 50 }, target: { x: 200, y: 50 } }, control: null };
+  runtime.appendExportedEdgeLabel(document, group, edge, paint, root, runtime.graphThemePalette(root));
+  assert.match(group.label.getAttribute('class'), /cfx-graph-label-selected/);
   edgeElement.classList.remove('cfx-graph-selected');
   edgeElement.classList.add('cfx-graph-neighborhood-related');
-  append({}, group, edge, {});
-  assert.match(group.label.class, /cfx-graph-neighborhood-related/);
+  runtime.appendExportedEdgeLabel(document, group, edge, paint, root, runtime.graphThemePalette(root));
+  assert.match(group.label.getAttribute('class'), /cfx-graph-neighborhood-related/);
 });
 
 test('host export includes numeric worker and picking counters', () => {
@@ -462,4 +486,44 @@ test('host export includes numeric worker and picking counters', () => {
   assert.equal(performance.edgeHitIndexBuilds, 1);
   assert.equal(performance.edgeHitIndexRefits, 4);
   assert.equal(performance.edgeHitIndexLastMs, .75);
+});
+
+
+test('blank authored edge labels retain current endpoint names through patching and bundle restoration', () => {
+  const { root, edges } = scene(2, [[0, 1, ' \t\u0085 ', 'critical'], [0, 1, '  Authored flow  ', 'healthy']]);
+  root.setAttribute('data-cfx-graph-accelerated-markup', 'true');
+  runtime.syncGraphEdgeAccessibleNames(root);
+  assert.equal(runtime.attr(edges[0], 'aria-label'), 'Node 0 to Node 1');
+  assert.equal(runtime.attr(edges[1], 'aria-label'), '  Authored flow  ');
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(runtime.attr(edges[0], 'data-cfx-bundle-count'), '2');
+  root.__cfxGraphVirtualItems.find(item => runtime.attr(item, 'data-node-id') === 'node-1').setAttribute('data-node-label', 'Renamed {source}');
+  runtime.syncGraphEdgeAccessibleNames(root);
+  root.__cfxGraphVirtualItems.filter(item => runtime.attr(item, 'data-cfx-role') === 'graph-cluster').forEach(cluster => cluster.setAttribute('data-cluster-collapsed', 'false'));
+  runtime.applyCollapsedEdgeBundles(root);
+  assert.equal(runtime.attr(edges[0], 'aria-label'), 'Node 0 to Renamed {source}');
+  assert.equal(runtime.attr(edges[1], 'aria-label'), '  Authored flow  ');
+  runtime.upsertGraphEdge(root, { id: 'edge-0', source: 'node-0', target: 'node-1', label: ' \t ' });
+  runtime.syncGraphEdgeAccessibleNames(root);
+  assert.equal(runtime.attr(edges[0], 'aria-label'), 'Node 0 to Renamed {source}');
+  const state = runtime.graphState(root);
+  runtime.syncBundledEdgePresentation(root, state);
+  assert.equal(state.edges[0].label, '');
+  assert.equal(runtime.exportGraphJson(root).edges[0].label, ' \t ');
+  assert.equal(runtime.exportGraphJson(root).edges[1].label, '  Authored flow  ');
+  const announcer = { textContent: '' }, tip = { textContent: '', hidden: true }, events = [];
+  const originalQuery = root.querySelector;
+  root.querySelector = selector => selector.includes('graph-announcer') ? announcer : selector === '.cfx-graph-tooltip' ? tip : originalQuery(selector);
+  root.dispatchEvent = event => { events.push(event); return true; };
+  root.setAttribute('data-cfx-graph-features', 'Selection,MultiSelection');
+  runtime.select(root, edges[0], { activateBundle: false });
+  assert.equal(announcer.textContent, 'Node 0 to Renamed {source} selected. 1 item selected.');
+  assert.equal(tip.textContent, 'Node 0 to Renamed {source}');
+  assert.equal(tip.hidden, false);
+  assert.equal(events.findLast(event => event.type === 'cfxgraphselect').detail.label, ' \t ');
+  assert.equal(events.findLast(event => event.type === 'cfxgraphselection').detail.items[0].label, ' \t ');
+  runtime.select(root, edges[0], { additive: true, toggle: true, activateBundle: false });
+  assert.equal(announcer.textContent, 'Node 0 to Renamed {source} removed from selection.');
+  assert.equal(tip.hidden, true);
+  assert.equal(events.findLast(event => event.type === 'cfxgraphselect').detail.label, ' \t ');
 });

@@ -9,6 +9,7 @@ public static partial class TopologyReportHtmlExtensions {
         header{padding:4px 0 20px}
         h1{font-size:32px;letter-spacing:-.6px;margin:8px 0}
         header p{color:#526078}
+        [data-cfx-report-summary],#page-status,#search-status,.relationship-pages [role=status]{unicode-bidi:plaintext;text-align:match-parent}
         .eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;color:#315abb}
         nav,.search{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
         nav{padding:16px;background:white;border:1px solid #dce3ef;border-radius:14px}
@@ -25,7 +26,7 @@ public static partial class TopologyReportHtmlExtensions {
         .search p{font-size:13px;color:#526078}
         #results{flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap}
         #page-status{font-size:13px;color:#526078}
-        .diagram{overflow:auto;background:white;border:1px solid #dce3ef;border-radius:14px;box-shadow:0 5px 24px #17315309}
+        .diagram{direction:ltr;overflow:auto;background:white;border:1px solid #dce3ef;border-radius:14px;box-shadow:0 5px 24px #17315309}
         .diagram svg{display:block;max-width:none!important}
         .diagram.fitted svg{max-width:100%!important;height:auto}
         .connections{margin-top:22px}
@@ -50,6 +51,7 @@ public static partial class TopologyReportHtmlExtensions {
 
     private const string ReportScript = """
         (() => {
+            const uiText = (key, fallback, values) => window[Symbol.for('ChartForgeX.uiText')](document.querySelector('main'), key, fallback, values);
             'use strict';
             const picker = document.getElementById('page');
             const content = document.getElementById('content');
@@ -67,7 +69,7 @@ public static partial class TopologyReportHtmlExtensions {
                 button.textContent = record[1];
                 if (record[2]) {
                     const suffix = document.createElement('span');
-                    suffix.lang = 'en';
+                    suffix.lang = document.querySelector('main').lang || 'en';
                     suffix.textContent = record[2];
                     button.append(suffix);
                 }
@@ -88,14 +90,14 @@ public static partial class TopologyReportHtmlExtensions {
                 const next = document.createElement('button');
                 const count = document.createElement('span');
                 previous.type = next.type = 'button';
-                previous.textContent = page === 0 ? 'Previous detail pages' : 'Previous relationships';
-                next.textContent = page === 0 ? 'Next detail pages' : 'Next relationships';
+                previous.textContent = page === 0 ? uiText('ReportPreviousDetailPages', 'Previous detail pages') : uiText('ReportPreviousRelationships', 'Previous relationships');
+                next.textContent = page === 0 ? uiText('ReportNextDetailPages', 'Next detail pages') : uiText('ReportNextRelationships', 'Next relationships');
                 count.setAttribute('role', 'status');
                 function renderLinks() {
                     links.replaceChildren(...linkItems.slice(offset, offset + 20).map(makeButton));
                     previous.disabled = offset === 0;
                     next.disabled = offset + 20 >= linkItems.length;
-                    count.textContent = (offset + 1) + '–' + Math.min(offset + 20, linkItems.length) + ' of ' + linkItems.length;
+                    count.textContent = uiText('ReportRange', '{first}–{last} of {count}', { first: offset + 1, last: Math.min(offset + 20, linkItems.length), count: linkItems.length });
                 }
                 if (linkItems.length > 20) controls.append(previous, count, next);
                 previous.addEventListener('click', () => { offset = Math.max(0, offset - 20); renderLinks(); });
@@ -105,8 +107,8 @@ public static partial class TopologyReportHtmlExtensions {
                 document.getElementById('previous').disabled = page === 0;
                 document.getElementById('next').disabled = page === picker.options.length - 1;
                 document.getElementById('page-status').textContent = page === 0
-                    ? 'Overview · choose a detail page to read individual objects'
-                    : 'Page ' + page + ' of ' + (picker.options.length - 1) + ' · scroll at natural size, or choose Fit page';
+                    ? uiText('ReportOverviewStatus', 'Overview · choose a detail page to read individual objects')
+                    : uiText('ReportPageStatus', 'Page {page} of {count} · scroll at natural size, or choose Fit page', { page, count: picker.options.length - 1 });
             }
             picker.addEventListener('change', () => show(picker.value));
             document.getElementById('previous').addEventListener('click', () => show(current - 1));
@@ -136,8 +138,8 @@ public static partial class TopologyReportHtmlExtensions {
                     normalize(entry[4], entry[3]).includes(normalize(query, entry[3]))
                     || normalizeIdentifier(entry[5]).includes(identifierQuery));
                 for (const entry of matches.slice(0, 20)) results.append(makeButton(entry));
-                status.textContent = matches.length + (matches.length === 1 ? ' match' : ' matches')
-                    + (matches.length > 20 ? ' · showing first 20; refine your search' : '');
+                status.textContent = uiText(matches.length === 1 ? 'ReportOneMatch' : 'ReportMatches', matches.length === 1 ? '{count} match' : '{count} matches', { count: matches.length })
+                    + (matches.length > 20 ? uiText('ReportRefineSearch', ' · showing first 20; refine your search') : '');
             });
             show(0);
         })();

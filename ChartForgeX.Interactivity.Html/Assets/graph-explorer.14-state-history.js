@@ -139,8 +139,8 @@
     let timer = 0;
     const schedule = event => {
       if (graphHistory(root).applying || event.detail?.source === 'storage') return;
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => { timer = 0; persistGraphInteractionState(root, event.type); }, 80);
+      if (timer) graphLifetime(root)?.clearTimeout(timer);
+      timer = graphLifetime(root)?.timeout(() => { timer = 0; persistGraphInteractionState(root, event.type); }, 80);
     };
-    ['cfxgraphselection', 'cfxgraphviewport', 'cfxgraphcluster', 'cfxgraphfocus', 'cfxgraphhierarchy'].forEach(name => root.addEventListener(name, schedule));
+    ['cfxgraphselection', 'cfxgraphviewport', 'cfxgraphcluster', 'cfxgraphfocus', 'cfxgraphhierarchy'].forEach(name => listenGraph(root, root, name, schedule));
   };

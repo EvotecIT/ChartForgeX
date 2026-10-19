@@ -50,7 +50,7 @@ internal sealed class VisualBubbleSizeKeyScene {
             ["data-cfx-label-size"] = _scale.Presentation.Name,
             ["data-cfx-min-value"] = Number(_scale.MinimumValue), ["data-cfx-max-value"] = Number(_scale.MaximumValue),
             ["data-cfx-reversed"] = _scale.Reversed ? "true" : "false",
-            ["data-cfx-size-mapping"] = "sqrt-radius-range", ["aria-label"] = description
+            ["data-cfx-size-mapping"] = _scale.Mapping, ["aria-label"] = description
         };
         using (builder.PushGroup("bubble-size-key", "bubble-size-key", metadata)) {
             if (Height <= 0) return;

@@ -93,6 +93,9 @@ public sealed class HtmlInteractiveDashboardOptions {
     /// <summary>Gets the transient mark and branch emphasis options shared by every dashboard chart.</summary>
     public HtmlChartHighlightOptions Highlight { get; } = new HtmlChartHighlightOptions();
 
+    /// <summary>Gets control translations, language and direction shared by the dashboard charts.</summary>
+    public HtmlChartLocalization Localization { get; } = new HtmlChartLocalization();
+
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;
         var trimmed = value.Trim();

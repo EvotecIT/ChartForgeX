@@ -208,6 +208,8 @@ internal static class ChartHeatmapSurface {
     }
 
     public static double Ratio(double value, double min, double max) {
+        // Signed measurements use their observed domain, even near zero or across an overflowing finite span.
+        if (min < 0) return max <= min ? 0 : Clamp(ChartMath.Normalize(value, min, max), 0, 1);
         if (min >= -0.000001 && max <= 100.000001) return Clamp(value / 100, 0, 1);
         return Clamp((value - min) / Math.Max(0.000001, max - min), 0, 1);
     }

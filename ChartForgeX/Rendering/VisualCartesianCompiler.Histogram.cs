@@ -14,7 +14,7 @@ internal static partial class VisualCartesianCompiler {
         return series.IsHistogramDensity ? label + ", density=" + Number(bin.RenderedValue) : label;
     }
 
-    private static void AddHistogramMetadata(IDictionary<string, string> metadata, ChartSeries series, int pointIndex) {
+    private static void AddHistogramMetadata(IDictionary<string, string> metadata, ChartSeries series, int pointIndex, ChartLabels labels) {
         var bin = series.HistogramBins[pointIndex];
         metadata.Remove("data-cfx-source-point");
         if (!bin.Value.HasValue) metadata.Remove("data-cfx-y");
@@ -30,6 +30,8 @@ internal static partial class VisualCartesianCompiler {
         metadata["data-cfx-bin-width"] = Number(bin.Width);
         metadata["data-cfx-bin-count"] = Number(bin.Count);
         metadata["data-cfx-bin-has-value"] = bin.Value.HasValue ? "true" : "false";
+        metadata["data-cfx-label-no-data"] = labels.NoData;
+        metadata["data-cfx-label-sample-count"] = labels.SampleCount;
         metadata["data-cfx-histogram-aggregation"] = series.HistogramAggregation!.Value.ToString().ToLowerInvariant();
         metadata["data-cfx-histogram-encoding"] = series.HistogramEncoding!.Value.ToString().ToLowerInvariant();
         metadata["data-cfx-derived"] = "histogram-bin";

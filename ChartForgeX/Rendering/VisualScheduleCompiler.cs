@@ -29,8 +29,8 @@ internal static partial class VisualScheduleCompiler {
             throw new NotSupportedException("Schedule layouts do not support reversed axes.");
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("Schedule families cannot mix different layout kinds.");
-        if (kind == ChartSeriesKind.Gantt && chart.Series.All(series => !series.HasSourceData)) {
-            builder.AddDiagnostic(new VisualDiagnostic("schedule.no-data", "Gantt charts need a schedule item.")); return;
+        if ((kind is ChartSeriesKind.Gantt or ChartSeriesKind.Timeline) && chart.Series.All(series => !series.HasSourceData)) {
+            builder.AddDiagnostic(new VisualDiagnostic("schedule.no-data", "Range schedules need a schedule item.")); return;
         }
         if (kind == ChartSeriesKind.StateTimeline) StateLanes(chart, context, builder, viewport);
         else if (kind == ChartSeriesKind.GanttLane) GanttLanes(chart, context, builder, viewport);
@@ -95,7 +95,9 @@ internal static partial class VisualScheduleCompiler {
         var projection = GuideProjection(chart, context, layout.Plot, model.Min, model.Max,
             minimumExtent, maximumExtent, model.NowVisible ? model.Now : null, lanes: true);
         model = model.Repack(projection.Width);
-        var plot = layout.Plot; var tops = model.RowTops(plot); var band = model.Band(plot);
+        var plot = layout.Plot; var tops = model.RowTops(plot);
+        var minimumCaptionBand = GanttLaneCaptionBand(chart, context, builder, model, plot, projection);
+        var items = GanttLaneLabels(chart, context, builder, model, plot, projection, tops, minimumCaptionBand);
         builder.DataProjection = ChartDataProjection.TryCreate(projection, model.Min, model.Max, chart.Options.XAxis, linearOnly: true);
         builder.AddRegion(new VisualSemanticRegion("schedule-plot", "schedule-plot", plot));
         using (builder.PushGroup("gantt-lanes", "gantt-lanes", Window(model.Min, model.Max))) {
@@ -111,9 +113,8 @@ internal static partial class VisualScheduleCompiler {
                 LaneText(chart, context, builder, viewport, layout, row.Name, row.Summary, tops[rowIndex], tops[rowIndex + 1] - tops[rowIndex], row.SeriesIndex);
                 var series = chart.Series[row.SeriesIndex];
                 foreach (var placed in row.Items) {
-                    var visible = model.TrySpan(placed, projection, out var left, out var width);
-                    var top = visible ? model.BarTop(plot, tops[rowIndex], placed.SubRow) : tops[rowIndex];
-                    var bounds = new ChartRect(visible ? left : plot.Left, top, visible ? Math.Max(0, Math.Min(width, plot.Right - left)) : 0, Math.Max(0, band));
+                    var id = VisualStateSceneTools.SourceId(row.SeriesIndex, placed.PointIndex);
+                    var item = items[id]; var bounds = item.Bounds;
                     var metadata = VisualStateSceneTools.StateMetadata(chart, placed.Category);
                     metadata["data-cfx-series"] = row.SeriesIndex.ToString(); metadata["data-cfx-point"] = placed.PointIndex.ToString();
                     metadata["data-cfx-series-key"] = series.InteractionIdentityKey;
@@ -123,9 +124,8 @@ internal static partial class VisualScheduleCompiler {
                     metadata["data-cfx-meta-duration"] = ChartStateTimelineModel.FormatDuration(placed.End - placed.Item.Start);
                     if (!string.IsNullOrWhiteSpace(placed.Item.Detail)) metadata["data-cfx-meta-detail"] = placed.Item.Detail!;
                     metadata["data-cfx-open"] = placed.Item.IsOpen ? "true" : "false"; metadata["data-cfx-sub-row"] = placed.SubRow.ToString();
-                    var id = VisualStateSceneTools.SourceId(row.SeriesIndex, placed.PointIndex);
                     using (VisualStateSceneTools.Mark(builder, id, "gantt-lane-item", bounds, model.ItemSummary(row, placed), metadata)) {
-                        if (!visible) continue;
+                        if (!item.Visible) continue;
                         var mark = ChartStateMark.For(placed.Category, backdrop);
                         using (builder.PushClip(plot)) {
                             VisualStateSceneTools.StateRect(builder, bounds, mark, ChartGanttLaneModel.BarRadius, "gantt-lane-item-shape");
@@ -137,8 +137,7 @@ internal static partial class VisualScheduleCompiler {
                                     paint: VisualChartPaint.Stroke(SvgPaint.Literal(ChartColorMath.AccessibleTextOnBackground(mark.Surface))));
                             }
                         }
-                        if (!string.IsNullOrWhiteSpace(placed.Item.Label)) DataLabel(chart, context, builder, series, placed.PointIndex, placed.Item.Label!, bounds, plot, colors, mark.Surface,
-                            ChartMarkText.OnStateMark(chart, colors, context.Frame, mark));
+                        DrawGanttLaneLabel(chart, context, builder, series, placed.PointIndex, item, colors, mark);
                     }
                 }
             }

@@ -21,6 +21,14 @@ internal static partial class VisualHierarchyCompiler {
         if (!HasHierarchyScale(chart, context, surface)) return (plot, new ChartRect(plot.X, plot.Bottom, 0, 0));
         var style = HierarchyScaleStyle(context); var row = builder.MeasureText("Mg", style).Height;
         var scale = surface.Scale!;
+        if (scale.Captions.Count > 0) {
+            var captionHeight = VisualColorScaleLegendScene.Height(builder, scale, surface.Presentation.Labels, style,
+                context.Theme.Spacing / 2, plot.Width, plot.Height * .35, surface.HasMissing, surface.Presentation.ScaleValues,
+                surface.HasDomain, min: surface.Minimum, max: surface.Maximum, heading: surface.Title, legendStyle: surface.Presentation.LegendStyle);
+            var separation = Math.Min(context.Theme.Spacing, plot.Height * .05);
+            return (new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, plot.Height - captionHeight - separation)),
+                new ChartRect(plot.Left, plot.Bottom - captionHeight, plot.Width, captionHeight));
+        }
         var numeric = scale.Mode == ChartColorScaleMode.Discrete || surface.HasDomain;
         var lines = numeric ? 2 + (scale.MidpointLabel != null ? 1 : 0) + (surface.HasMissing ? 1 : 0) : 2;
         var height = Math.Min(plot.Height * .35, row * lines + (numeric ? row * .8 : 0) + context.Theme.Spacing);
@@ -30,7 +38,16 @@ internal static partial class VisualHierarchyCompiler {
 
     private static void DrawHierarchyScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect area,
         ChartHierarchySurface surface, VisualThemeColors colors) {
-        if (!HasHierarchyScale(chart, context, surface) || area.Width <= 0 || area.Height <= 0) return;
+        if (!HasHierarchyScale(chart, context, surface)) return;
+        var captionScale = surface.Scale!;
+        if (captionScale.Captions.Count > 0) {
+            VisualColorScaleLegendScene.Draw(builder, captionScale, surface.Presentation.Labels, HierarchyScaleStyle(context), context.Theme.Spacing / 2,
+                area, surface.Minimum, surface.Maximum, surface.RolePrefix + "-color-scale", surface.HasMissing, ChartColorScaleSurface.NoData(captionScale, colors),
+                surface.Presentation.ScaleValues, "hierarchy.scale-overflow", surface.HasDomain, heading: surface.Title,
+                valueName: surface.Presentation.HasOverrides ? surface.Title : null, legendStyle: surface.Presentation.LegendStyle);
+            return;
+        }
+        if (area.Width <= 0 || area.Height <= 0) return;
         var scale = surface.Scale!; var style = HierarchyScaleStyle(context); var row = builder.MeasureText("Mg", style).Height;
         var title = surface.Title;
         var metadata = new Dictionary<string, string> { ["data-cfx-scale-mode"] = scale.Mode.ToString().ToLowerInvariant() };

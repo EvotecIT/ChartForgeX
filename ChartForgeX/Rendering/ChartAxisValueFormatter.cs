@@ -23,10 +23,27 @@ internal static class ChartAxisValueFormatter {
     }
 
     // Exact mappings take precedence over tolerance matches, especially for closely spaced time values.
-    internal static string? FindExplicitLabel(IReadOnlyList<ChartAxisLabel> labels, double value) {
-        foreach (var label in labels) if (label.Value == value) return label.Text;
-        foreach (var label in labels) if (Math.Abs(label.Value - value) < 0.000001) return label.Text;
-        return null;
+    internal static string? FindExplicitLabel(IReadOnlyList<ChartAxisLabel> labels, double value) => FindExplicitMapping(labels, value)?.Text;
+
+    /// <summary>Resolves the same complete mapping for caption and group context, preserving exact-first matching.</summary>
+    internal static ChartAxisLabel? FindExplicitMapping(IReadOnlyList<ChartAxisLabel> labels, double value, bool rejectAmbiguous = false) {
+        foreach (var label in labels) if (label.Value == value) return label;
+        ChartAxisLabel? found = null;
+        foreach (var label in labels) {
+            if (!(Math.Abs(label.Value - value) < 0.000001)) continue;
+            if (!found.HasValue) found = label;
+            else if (rejectAmbiguous && !SameMeaning(found.Value, label))
+                throw new InvalidOperationException("A grouped category coordinate has ambiguous explicit label mappings.");
+            if (!rejectAmbiguous) break;
+        }
+        return found;
+    }
+
+    private static bool SameMeaning(ChartAxisLabel left, ChartAxisLabel right) {
+        if (!string.Equals(left.Text, right.Text, StringComparison.Ordinal) || left.Groups.Count != right.Groups.Count) return false;
+        for (var index = 0; index < left.Groups.Count; index++)
+            if (!string.Equals(left.Groups[index], right.Groups[index], StringComparison.Ordinal)) return false;
+        return true;
     }
 
     public static string Format(ChartAxis axis, double value, Func<double, string>? fallbackFormatter = null, IReadOnlyList<double>? ticks = null,

@@ -19,16 +19,31 @@ internal static partial class VisualCartesianCompiler {
         private readonly Dictionary<ChartAxis, Func<double, string>> _formatters = new();
         private readonly Dictionary<ChartAxis, Func<double, string>> _readoutFormatters = new();
         private readonly Dictionary<ChartAxis, HashSet<double>> _formattedValues = new();
+        private readonly Dictionary<ChartAxis, Dictionary<double, (string Text, bool Shortened)>> _categoryDisplay = new();
+        private readonly Dictionary<ChartAxis, (IReadOnlyList<double> Ticks, double TrackLength)> _categoryPlan = new();
         private IReadOnlyList<double>? _regularTimeBarObservations;
         private bool _hasTimeBarObservations;
         internal ChartAxis? HorizontalValueAxis { get; set; }
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
+        internal CategoryGroupSource? CategoryGroups { get; set; }
+        internal double[]? HorizontalGroupBandSizes { get; set; }
         internal AxisLabelCache(ChartAxisValueFormatter.Cache labels) => _labels = labels;
         internal IReadOnlyList<double>? TimeBarObservations(Chart chart) {
             if (!_hasTimeBarObservations) { _regularTimeBarObservations = RegularTimeBarObservations(chart); _hasTimeBarObservations = true; }
             return _regularTimeBarObservations;
         }
         internal void Set(ChartAxis axis, double value, string text) => _labels.Set(axis, value, text);
+        internal void SetCategoryDisplay(ChartAxis axis, Dictionary<double, (string Text, bool Shortened)>? captions) {
+            if (captions == null) { _categoryDisplay.Remove(axis); _categoryPlan.Remove(axis); }
+            else _categoryDisplay[axis] = captions;
+        }
+        internal void PlanCategoryTicks(ChartAxis axis, IReadOnlyList<double> ticks, double trackLength) => _categoryPlan[axis] = (ticks, trackLength);
+        internal IReadOnlyList<double>? PlannedCategoryTicks(ChartAxis axis) => _categoryPlan.TryGetValue(axis, out var plan) ? plan.Ticks : null;
+        internal double PlannedCategoryTrack(ChartAxis axis) => _categoryPlan[axis].TrackLength;
+        internal string CategoryDisplay(ChartAxis axis, double value, string source) =>
+            _categoryDisplay.TryGetValue(axis, out var captions) && captions.TryGetValue(value, out var display) ? display.Text : source;
+        internal bool CategoryShortened(ChartAxis axis, double value) =>
+            _categoryDisplay.TryGetValue(axis, out var captions) && captions.TryGetValue(value, out var display) && display.Shortened;
         internal void SetTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _ticks[axis] = ticks;
         internal bool HasAuthoredTicks(ChartAxis axis) => axis.Labels.Count > 0 || _ticks.ContainsKey(axis);
         internal void SetFittedTicks(ChartAxis axis, IReadOnlyList<double> ticks) => _fittedTicks[axis] = ticks;
@@ -96,6 +111,8 @@ internal static partial class VisualCartesianCompiler {
         var bottom = chart.Options.XAxis.Visible ? xMetrics.Height + spacing : 0;
         var xTitle = XAxisTitle(chart);
         if (chart.Options.XAxis.Visible && xTitle.Length > 0) bottom += builder.MeasureText(xTitle, titleStyle).Height + spacing;
+        if (chart.Options.XAxis.Visible) bottom += CategoryGroupBandSizes(builder, labels, style, spacing,
+            range.MinX, range.MaxX, viewport.Width, Math.Max(0, viewport.Height * .45 - bottom)).Sum();
         var top = 0d;
         if (chart.Options.YAxis.Visible && chart.YAxisTitle.Length > 0) top = builder.MeasureText(chart.YAxisTitle, titleStyle).Height + spacing;
         if (secondaryRange != null && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0)
@@ -107,8 +124,9 @@ internal static partial class VisualCartesianCompiler {
         top = Math.Min(top, viewport.Height * .25);
         // Axis tracks end at the data bounds; their centered captions occupy the
         // surrounding frame instead of moving inward toward a different value.
-        left = Math.Max(left, Math.Min(xMetrics.Width / 2, viewport.Width * .35));
-        right = Math.Max(right, Math.Min(xMetrics.Width / 2, viewport.Width * .35));
+        var xOverhang = CategoryCaptionOverhang(builder, chart.Options.XAxis, range.MinX, range.MaxX, style, labels);
+        left = Math.Max(left, Math.Min(xOverhang?.Left ?? xMetrics.Width / 2, viewport.Width * .35));
+        right = Math.Max(right, Math.Min(xOverhang?.Right ?? xMetrics.Width / 2, viewport.Width * .35));
         var halfHeight = Math.Max(yMetrics.Height, secondaryMetrics.Height) / 2;
         top = Math.Max(top, Math.Min(halfHeight, viewport.Height * .25));
         bottom = Math.Max(bottom, Math.Min(halfHeight, viewport.Height * .45));
@@ -118,8 +136,9 @@ internal static partial class VisualCartesianCompiler {
     private static TextMetrics TickMetrics(VisualSceneBuilder builder, ChartAxis axis, double minimum, double maximum, TextStyle style, Func<double, string>? fallback, AxisLabelCache labels) {
         var ticks = labels.Ticks(axis, minimum, maximum);
         var width = 0d; var height = 0d;
-        foreach (var tick in ticks) {
-            var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(labels.Format(axis, tick, fallback, ticks), style), axis.LabelAngle);
+        foreach (var tick in labels.PlannedCategoryTicks(axis) ?? ticks) {
+            var text = labels.CategoryDisplay(axis, tick, labels.Format(axis, tick, fallback, ticks));
+            var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), axis.LabelAngle);
             width = Math.Max(width, metrics.Width); height = Math.Max(height, metrics.Height);
         }
         return new TextMetrics(width, height, height);
@@ -153,7 +172,10 @@ internal static partial class VisualCartesianCompiler {
                     paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.VerticalOpacity), grid.VerticalOpacity)));
             }
         }
-        if (!chart.Options.ShowAxes) return;
+        if (!chart.Options.ShowAxes) {
+            DrawCategoryGroups(chart, context, builder, labels, map.X, range.MinX, range.MaxX, default, colors);
+            return;
+        }
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle {
             Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground
         });
@@ -164,14 +186,19 @@ internal static partial class VisualCartesianCompiler {
             var title = XAxisTitle(chart);
             var titleHeight = string.IsNullOrEmpty(title) ? 0 : builder.MeasureText(title,
                 chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground })).Height + spacing;
-            titleHeight = FitAxisTitleReservation(tickHeight, titleHeight, Math.Max(0, viewport.Bottom - plot.Bottom - spacing));
+            var available = Math.Max(0, viewport.Bottom - plot.Bottom - spacing);
+            var groupHeight = CategoryGroupBandSizes(builder, labels, style, spacing, range.MinX, range.MaxX,
+                plot.Width, Math.Max(0, available - tickHeight - titleHeight)).Sum();
+            titleHeight = FitAxisTitleReservation(tickHeight + groupHeight, titleHeight, available);
             var bounds = new ChartRect(viewport.Left, plot.Bottom + spacing, viewport.Width,
-                Math.Max(0, Math.Min(tickHeight, viewport.Bottom - plot.Bottom - spacing - titleHeight)));
+                Math.Max(0, Math.Min(tickHeight, available - titleHeight - groupHeight)));
             DrawAxisLabels(builder, chart.Options, chart.Options.XAxis, xTicks, map.X, true, false, bounds, style, spacing, null, labels, plot.Width);
+            DrawCategoryGroups(chart, context, builder, labels, map.X, range.MinX, range.MaxX,
+                new ChartRect(plot.Left, bounds.Bottom, plot.Width, groupHeight), colors);
             if (!string.IsNullOrEmpty(title)) DrawAxisTitle(chart, context, builder, title,
-                new ChartRect(plot.Left, bounds.Bottom + spacing, plot.Width, Math.Max(0, viewport.Bottom - bounds.Bottom - spacing)),
+                new ChartRect(plot.Left, bounds.Bottom + groupHeight + spacing, plot.Width, Math.Max(0, viewport.Bottom - bounds.Bottom - groupHeight - spacing)),
                 colors, TextAlignment.Center, "axis-x-title");
-        }
+        } else DrawCategoryGroups(chart, context, builder, labels, map.X, range.MinX, range.MaxX, default, colors);
         if (chart.Options.YAxis.Visible) {
             if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
             var bounds = new ChartRect(viewport.Left, viewport.Top, Math.Max(0, plot.Left - viewport.Left - spacing), viewport.Height);
@@ -209,13 +236,26 @@ internal static partial class VisualCartesianCompiler {
             style = VisualAxisText.FitOversized(builder, style, new ChartRect(0, 0, horizontal ? Math.Min(bounds.Width, pitch) : bounds.Width,
                 horizontal ? bounds.Height : Math.Min(bounds.Height, pitch)), ticks.Select(tick => labels.Format(axis, tick, fallback, ticks)).ToArray(), axis.LabelAngle);
         }
+        var shortenedCategories = false;
         string Display(double tick) {
             var text = labels.Format(axis, tick, fallback, ticks);
-            return !horizontal && labels.HasAuthoredTicks(axis) && VisualAxisText.Angle(axis.LabelAngle) == 0 && bounds.Width > 0
-                ? string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, bounds.Width,
-                    (value, _) => builder.MeasureText(value, style).Width)) : text;
+            if (horizontal) {
+                shortenedCategories |= labels.CategoryShortened(axis, tick);
+                return labels.CategoryDisplay(axis, tick, text);
+            }
+            if (!labels.HasAuthoredTicks(axis) || VisualAxisText.Angle(axis.LabelAngle) != 0 || bounds.Width <= 0) return text;
+            // Only named horizontal categories use this bounded caption fallback. Numeric
+            // and calendar value axes keep their complete-caption scale/stride policy.
+            if (ReferenceEquals(axis, labels.HorizontalCategoryAxis) && axis.Labels.Count > 0 && axis.Scale != ChartScaleKind.Time) {
+                var displayed = VisualAxisText.FitWrappedCategory(builder, text, style, bounds.Width, out var shortened);
+                shortenedCategories |= shortened;
+                return displayed;
+            }
+            return string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, bounds.Width,
+                (value, _) => builder.MeasureText(value, style).Width));
         }
-        var visible = SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
+        var visible = labels.PlannedCategoryTicks(axis) is { } planned ? new HashSet<double>(planned)
+            : SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
         var requests = new List<LabelPlacementRequest>();
         var role = horizontal ? "axis-x-label" : secondary ? "axis-secondary-y-label" : "axis-y-label";
         var index = 0;
@@ -246,8 +286,8 @@ internal static partial class VisualCartesianCompiler {
         var placed = axis.LabelDensity == ChartLabelDensity.All
             ? requests.Select(request => placement.Place(new[] { request }, bounds, null, 0, builder.MeasureText)[0]).ToArray()
             : placement.Place(requests, bounds, null, gap, builder.MeasureText);
-        if (placed.Any(label => label.IsDropped))
-            builder.AddDiagnostic(new VisualDiagnostic("cartesian.axis-label-overflow", "An axis caption cannot fit at its tick inside the available frame."));
+        if (shortenedCategories || placed.Any(label => label.IsDropped))
+            builder.AddDiagnostic(new VisualDiagnostic("cartesian.axis-label-overflow", "An axis caption was shortened or could not fit at its tick inside the available frame."));
         foreach (var label in placed) VisualAxisText.Draw(builder, label, role);
     }
 

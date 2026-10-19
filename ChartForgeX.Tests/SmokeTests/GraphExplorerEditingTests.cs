@@ -38,7 +38,6 @@ internal static partial class SmokeTests {
         Assert(html.Contains("Move cluster", StringComparison.Ordinal) && html.Contains("graphCapability(root, 'dragGroups')", StringComparison.Ordinal), "Collapsed clusters should support capability-gated group movement.");
         var style = HtmlGraphExplorerRenderer.BuildFragmentStyle();
         Assert(style.Contains(".cfx-graph-editor", StringComparison.Ordinal) && style.Contains(".cfx-graph-selection-box", StringComparison.Ordinal), "Graph editing and box selection should share the premium self-contained visual system.");
-        Assert(style.Contains("fill: var(--cfx-node-stroke, var(--cfx-color-graph-text)) !important", StringComparison.Ordinal), "Card icons should retain visible contrast on light and dark card surfaces.");
 
         var invalid = SampleGraphScene();
         invalid.Options.Enable(GraphSceneFeatures.Manipulation);

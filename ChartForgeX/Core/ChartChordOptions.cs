@@ -12,6 +12,12 @@ public sealed class ChartChordOptions {
     private ChartChordDirectionCue _directionCue = ChartChordDirectionCue.TargetChevron;
     private ChartChordLabelContent _labelContent = ChartChordLabelContent.LabelAndValue;
 
+    /// <summary>Gets or sets the flow-color scale. Finite flow color values otherwise infer the theme's sequential scale.</summary>
+    public ChartColorScale? ColorScale { get; set; }
+
+    /// <summary>Gets the independent flow-color name, formatting and numeric-key presentation.</summary>
+    public ChartColorDimensionOptions ColorDimension { get; private set; } = new();
+
     /// <summary>Gets or sets the clockwise start in degrees; zero points right and -90 points up.</summary>
     public double StartAngleDegrees {
         get => _startAngleDegrees;
@@ -73,7 +79,11 @@ public sealed class ChartChordOptions {
     }
 
     /// <summary>Copies the configured state for isolated chart configuration.</summary>
-    internal ChartChordOptions Clone() => (ChartChordOptions)MemberwiseClone();
+    internal ChartChordOptions Clone() {
+        var clone = (ChartChordOptions)MemberwiseClone();
+        clone.ColorDimension = ColorDimension.Clone();
+        return clone;
+    }
 }
 
 /// <summary>Controls the native target cue on directed chord ribbons.</summary>

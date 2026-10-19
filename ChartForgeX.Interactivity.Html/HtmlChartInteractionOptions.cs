@@ -84,6 +84,9 @@ public sealed class HtmlChartInteractionOptions {
     /// <summary>Gets the transient mark and branch emphasis options.</summary>
     public HtmlChartHighlightOptions Highlight { get; } = new HtmlChartHighlightOptions();
 
+    /// <summary>Gets HTML control translations, language and direction independently from native data formatting.</summary>
+    public HtmlChartLocalization Localization { get; } = new HtmlChartLocalization();
+
     private static string? NormalizeOptionalText(string? value, string parameterName) {
         if (value == null) return null;
         var trimmed = value.Trim();

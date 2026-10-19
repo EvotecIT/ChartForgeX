@@ -14,7 +14,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddErrorBar(string name, IEnumerable<ChartErrorBar> errorBars, ChartColor? color = null) {
         var series = ChartSeries.CreateErrorBar(name, errorBars, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(errorBars));
         AppendSeries(series);
         return this;
     }

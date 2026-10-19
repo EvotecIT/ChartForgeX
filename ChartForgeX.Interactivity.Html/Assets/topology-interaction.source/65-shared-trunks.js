@@ -46,12 +46,13 @@
       let sharedTrunkFrame = 0;
       const sharedTrunkObserver = new MutationObserver(() => {
         if (sharedTrunkFrame) return;
-        sharedTrunkFrame = requestAnimationFrame(() => {
+        sharedTrunkFrame = lifetime.frame(() => {
           sharedTrunkFrame = 0;
           if (!wrapper.isConnected) { sharedTrunkObserver.disconnect(); return; }
           updateSharedTrunks();
         });
       });
       sharedTrunkObserver.observe(wrapper, { attributes: true, attributeFilter: ['class', 'style', 'hidden'], subtree: true });
+      lifetime.own(() => { sharedTrunkObserver.disconnect(); if (sharedTrunkFrame) lifetime.cancelFrame(sharedTrunkFrame); });
       updateSharedTrunks();
     }

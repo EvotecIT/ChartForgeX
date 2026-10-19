@@ -16,12 +16,20 @@ public sealed class FactTableLayoutOwnershipTests {
 
         var svg = table.ToSvg("fitted-table");
         foreach (var scene in new[] { svg, new SvgFactBlockRenderer().RenderLabelScene(table).ToSvg() }) {
-            var labels = XDocument.Parse(scene).Descendants().Where(element => element.Name.LocalName == "text").ToArray();
+            var nodes = XDocument.Parse(scene).Descendants().ToArray();
+            var labels = nodes.Where(element => element.Name.LocalName == "text").ToArray();
             Assert.Equal(121, labels.Length);
             foreach (var caption in new[] { "Service", "XXXXXXXXXXXXXXXXXXXX" }) {
                 var label = Assert.Single(labels, element => element.Value == caption);
                 Assert.NotEqual("none", (string?)label.Attribute("display"));
                 Assert.NotEqual("true", (string?)label.Attribute("aria-hidden"));
+                var role = caption == "Service" ? "table-header" : "table-row";
+                var cell = nodes.Where(element => (string?)element.Attribute("data-cfx-role") == role).Last()
+                    .DescendantsAndSelf().Single(element => element.Name.LocalName == "rect");
+                static double Number(XElement element, string attribute) => double.Parse((string)element.Attribute(attribute)!, System.Globalization.CultureInfo.InvariantCulture);
+                Assert.InRange(Number(label, "x"), Number(cell, "x") - 1, Number(cell, "x") + Number(cell, "width") + 1);
+                Assert.InRange(Number(label, "y") - Number(label, "font-size"), Number(cell, "y") - 1, Number(cell, "y") + Number(cell, "height") + 1);
+                Assert.InRange(Number(label, "y"), Number(cell, "y") - 1, Number(cell, "y") + Number(cell, "height") + 1);
             }
         }
         var captureRoot = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");

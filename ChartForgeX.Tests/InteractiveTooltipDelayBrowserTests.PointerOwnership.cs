@@ -1,5 +1,6 @@
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
 
@@ -23,6 +24,8 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         await TraceAsync(page);
         await page.EvaluateAsync("""
             () => {
+                // This host owns a multi-contact gesture. Default report scrolling is qualified separately.
+                document.querySelector('.cfx-stage').style.touchAction='none';
                 window.contactTrace=[];
                 ['pointerenter','pointermove','pointerleave','pointercancel','click'].forEach(type => document.addEventListener(type,event => {
                     const point=event.target.closest?.('[data-cfx-role=point]');
@@ -30,6 +33,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
                 },true));
             }
             """);
+        Assert.Equal("none", await page.Locator(".cfx-stage").EvaluateAsync<string>("node=>getComputedStyle(node).touchAction"));
         var first = await BoxAsync(page, Point(0, 3));
         var second = await BoxAsync(page, Point(0, 4));
         object Contact(int id, double x, double y) => new { id, x, y };
@@ -49,7 +53,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             if (stageAcquisition) await TouchAsync("touchMove", movedA, Contact(2, secondX, second.Y + second.Height / 2 + 16));
             await TouchAsync("touchEnd", movedA);
             await Task.Delay(contactDelay + 120);
-            var receipt = await page.EvaluateAsync<object>("() => { const root=document.querySelector('.cfx-interactive-chart'), guide=root.querySelector('.cfx-crosshair'); return {hidden:root.querySelector('.cfx-tooltip').hidden,text:root.querySelector('.cfx-tooltip').innerText,guideHidden:guide.hidden,guide:root.dataset.cfxCrosshair,guideLabel:guide.innerText,trace:window.delayTrace,contacts:window.contactTrace}; }");
+            var receipt = await page.EvaluateAsync<object>("() => { const root=document.querySelector('.cfx-interactive-chart'), guide=root.querySelector('.cfx-crosshair'); return {gesturePolicy:getComputedStyle(root.querySelector('.cfx-stage')).touchAction,hidden:root.querySelector('.cfx-tooltip').hidden,text:root.querySelector('.cfx-tooltip').innerText,guideHidden:guide.hidden,guide:root.dataset.cfxCrosshair,guideLabel:guide.innerText,trace:window.delayTrace,contacts:window.contactTrace}; }");
             await CaptureDelayAsync(page, "delay-native-touch-" + (stageAcquisition ? "stage-" : "") + "ownership", receipt, session);
             Assert.False(await TipHiddenAsync(page));
             Assert.Contains("208", await TooltipTextAsync(page), StringComparison.Ordinal);
@@ -76,6 +80,11 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         if (!Enabled) return;
         await using var session = await OpenAsync(HostFragment(), 950, 760);
         var page = session.Page;
+        if (!shown) {
+            var clockStart = DateTime.UtcNow;
+            await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = clockStart });
+            await page.Clock.PauseAtAsync(clockStart.AddHours(1));
+        }
         await MountFragmentAsync(page, "light");
         await page.EvaluateAsync("""
             () => {
@@ -90,6 +99,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             }
             """);
         if (shown) await WaitForTipAsync(page);
+        else Assert.True(await TipHiddenAsync(page));
         await page.EvaluateAsync("""
             action => {
                 const root=window.hostedChart, old=root.querySelector('[data-cfx-role=point][data-cfx-series="0"][data-cfx-point="0"]');
@@ -98,7 +108,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
                 surface.dispatchEvent(window.oldContactEvent(type));
             }
             """, action);
-        if (!shown) await Task.Delay(Delay + 80);
+        if (!shown) await page.Clock.RunForAsync(Delay + 80);
         var receipt = await HostReceiptAsync(page);
         await CaptureDelayAsync(page, "delay-contact-owner-" + action + "-" + shown, receipt, session);
         Assert.False(await TipHiddenAsync(page));

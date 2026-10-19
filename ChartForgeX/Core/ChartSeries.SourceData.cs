@@ -8,7 +8,7 @@ public sealed partial class ChartSeries {
     /// <summary>Gets the histogram's immutable measurement/quantity observations in original input order; empty for other series.</summary>
     /// <remarks>
     /// Each <see cref="ChartHistogramBin.SourceIndices"/> member indexes this collection. X is the measurement and Y is the
-    /// supplied quantity (one for scalar count input). Input and series point edits do not rewrite this ingestion snapshot.
+    /// supplied quantity (one for scalar count input). Derived bin points and this ingestion snapshot are read-only.
     /// Preparation retains detached bin extents, aggregates and contributor identities; original observations remain in this
     /// typed snapshot and do not become individual <see cref="ChartForgeX.Rendering.VisualSemanticRegion"/> entries.
     /// </remarks>
@@ -17,7 +17,7 @@ public sealed partial class ChartSeries {
     /// <summary>Gets the regression's immutable source observations in original input order; empty for other series.</summary>
     /// <remarks>
     /// The collection retains the supplied X/Y values rather than the fitted endpoints in <see cref="Points"/>.
-    /// Input and endpoint edits do not rewrite this ingestion snapshot. Preparation captures fitted mark facts;
+    /// Derived endpoints and this ingestion snapshot are read-only. Preparation captures fitted mark facts;
     /// callers retaining original observations use this typed snapshot rather than semantic region labels.
     /// </remarks>
     public IReadOnlyList<ChartPoint> TrendLineSourcePoints { get; private set; } = Array.Empty<ChartPoint>();

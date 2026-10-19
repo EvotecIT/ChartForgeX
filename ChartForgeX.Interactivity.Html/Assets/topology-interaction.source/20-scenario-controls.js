@@ -48,8 +48,8 @@
       if (!route) {
         scenarioPanel.removeAttribute('data-cfx-panel-active-scenario');
         scenarioPanel.style.removeProperty('--cfx-topology-scenario-color');
-        if (title) title.textContent = 'All';
-        if (meta) meta.textContent = 'All topology routes visible';
+        if (title) title.textContent = uiText('All', 'All');
+        if (meta) meta.textContent = uiText('TopologyAllRoutesVisible', 'All topology routes visible');
         if (stepsList) stepsList.replaceChildren();
         if (scrubber) { scrubber.disabled = true; scrubber.max = '1'; scrubber.value = '1'; }
         return;
@@ -61,7 +61,7 @@
       if (title) title.textContent = route.label || route.scenarioId;
       if (meta) {
         const metadata = Object.entries(route.metadata).slice(0, 2).map(([key, value]) => key + ': ' + value);
-        const summary = [route.description, route.stepCount ? route.stepCount + ' steps' : '', ...metadata].filter(value => value);
+        const summary = [route.description, route.stepCount ? uiText('Steps', '{count} steps', { count: route.stepCount }) : '', ...metadata].filter(value => value);
         meta.textContent = summary.join(' / ');
       }
       if (stepsList) {
@@ -135,8 +135,17 @@
       if (scrubber) scrubber.value = '1';
       updateScenarioStepControls(false);
     };
+    lifetime.own(() => {
+      if (scenarioPlayback) lifetime.clearTimeout(scenarioPlayback);
+      if (forceGraphMotionTimer) lifetime.clearTimeout(forceGraphMotionTimer);
+      scenarioPlayback = null; forceGraphMotionTimer = null;
+      wrapper.removeAttribute('data-cfx-topology-dragging');
+      wrapper.removeAttribute('data-cfx-force-moving-edges');
+      wrapper.querySelectorAll('.cfx-topology-html-force-moving').forEach(edge => edge.classList.remove('cfx-topology-html-force-moving'));
+      updateScenarioStepControls(false);
+    });
     const stopScenarioPlayback = () => {
-      if (scenarioPlayback) window.clearTimeout(scenarioPlayback);
+      if (scenarioPlayback) lifetime.clearTimeout(scenarioPlayback);
       scenarioPlayback = null;
       updateScenarioStepControls(false);
     };
@@ -190,7 +199,7 @@
         }
         const current = index++;
         setScenarioStep(current, true);
-        scenarioPlayback = window.setTimeout(advance, stepDelay(route.steps[current]));
+        scenarioPlayback = lifetime.timeout(advance, stepDelay(route.steps[current]));
       };
       advance();
     };

@@ -8,6 +8,7 @@
       if (event.key === 'Escape') cancelXViewportRequest(chartLifetimes.get(root));
     }, true);
     applyRenderedTargetContract(root);
+    bindLegendOverflow(root);
     bindHostCommands(root);
     prepareRootBranchHighlights(root);
     if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
@@ -29,7 +30,22 @@
       publishSelectionChange(root, 'clear', true);
       publishCompare(root, false);
     }, true);
-    if (compareTray) listenChart(root, compareTray, 'pointerdown', (event) => event.stopPropagation());
+    if (compareTray) {
+      let pointerFocus = false;
+      listenChart(root, compareTray, 'pointerdown', (event) => { pointerFocus = event.button === 0; event.stopPropagation(); });
+      ['pointerup', 'pointercancel'].forEach(type => listenChart(root, compareTray, type, () => { pointerFocus = false; }));
+      listenChart(root, compareTray, 'pointerleave', () => {
+        pointerFocus = false;
+        const active = root.getRootNode().activeElement;
+        if (!compareTray.contains(active) || !active.matches(':focus-visible')) hideTip(root, tip, false);
+      });
+      listenChart(root, compareTray, 'focusout', event => {
+        if (!compareTray.contains(event.relatedTarget)) hideTip(root, tip, false);
+      });
+      listenChart(root, compareTray, 'focusin', (event) => {
+        if (!pointerFocus && event.target instanceof Element && event.target.matches(':focus-visible')) scrollKeyboardTargetIntoView(root, event.target);
+      });
+    }
     if (hasFeature(root, 'StateBookmarks')) {
       listenChart(root, root, 'cfx-capture-state', (event) => {
         const detail = event.detail || {};
@@ -48,7 +64,7 @@
       const labels = pointLabelSurfaces(root, node);
       [node, ...labels].forEach(surface => {
         listenChart(root, surface, 'pointerenter', (event) => {
-          if (pointerReadoutSuspended(root) || !pointerTargetPaint(node)) return;
+          if (pointerReadoutSuspended(root) || keyboardReadoutOwnsPointer(root) || !pointerTargetPaint(node)) return;
           if (!ownsTooltipPointer(root, event)) hideCrosshair(root, crosshair);
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
@@ -72,16 +88,21 @@
           refreshKeyboardNavigation(root, node);
           // Revealing a partly visible mark between pointer down and up retargets its native click.
           const keyboardFocus = focusNode.matches(':focus-visible');
+          if (keyboardFocus && !pointerFocus) delete root._cfxPointerFocus;
+          refreshKeyboardFocusPaint(root);
           if (hasFeature(root, 'KeyboardNavigation') && !pointerFocus && keyboardFocus) scrollKeyboardTargetIntoView(root, focusNode);
           pointerFocus = false;
           if (!keyboardFocus || root._cfxRecoveringFocus) return;
           resumePointerReadout(root);
+          root._cfxKeyboardReadout = node;
           if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         });
         listenChart(root, focusNode, 'blur', () => {
           pointerFocus = false;
+          clearKeyboardFocusPaint(root);
+          if (root._cfxKeyboardReadout === node) delete root._cfxKeyboardReadout;
           clearHover(root, true, true);
           hideTip(root, tip, false);
         });
@@ -104,6 +125,9 @@
       labels.forEach(label => listenChart(root, label, 'click', activateTarget));
       if (hasFeature(root, 'KeyboardNavigation')) listenChart(root, focusNode, 'keydown', (event) => {
         if (!hasFeature(root, 'KeyboardNavigation') || event.defaultPrevented || event.target !== focusNode) return;
+        delete root._cfxPointerFocus;
+        refreshKeyboardFocusPaint(root);
+        root._cfxKeyboardReadout = node;
         if ((node.dataset ? node.dataset.cfxRole : '') === 'legend-item' && event.key.toLowerCase() === 'i') {
           event.preventDefault();
           event.stopPropagation();
@@ -205,13 +229,14 @@
     if (stage) {
       listenChart(root, stage, 'pointerenter', (event) => {
         // A new contact can acquire sparse plot space before any native mark receives its own entry.
+        if (keyboardReadoutOwnsPointer(root)) return;
         if (!ownsTooltipPointer(root, event)) updateNearestPoint(root, crosshair, tip, event);
       });
       listenChart(root, stage, 'wheel', (event) => {
         if (!hasFeature(root, 'Zoom')) return;
         if (connectedXViewport(root) && !chartXProjection(root)) return;
         event.preventDefault();
-        zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92);
+        zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92, logicalXPointer(root, event));
       }, { passive: false });
       let drag = null;
       let pointerFrame = 0, pendingPointerMove = null;
@@ -255,7 +280,9 @@
       });
       listenChart(root, stage, 'pointerdown', (event) => {
         if (event.button !== 0) return;
-        resumePointerReadout(root);
+        root._cfxPointerFocus = true;
+        clearKeyboardFocusPaint(root);
+        resumePointerHover(root);
         cancelPointerMove();
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           if (connectedXViewport(root)) {
@@ -283,7 +310,7 @@
         }
       });
       listenChart(root, stage, 'pointermove', (event) => {
-        resumePointerReadout(root);
+        resumePointerHover(root);
         if (drag ? drag.id !== event.pointerId : !ownsTooltipPointer(root, event)) return;
         // A shadow event is retargeted as dispatch leaves the chart. Capture its
         // native surface now, while retaining the PointerEvent for timing and ownership.

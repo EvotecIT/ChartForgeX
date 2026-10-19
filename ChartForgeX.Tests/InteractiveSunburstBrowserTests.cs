@@ -62,13 +62,7 @@ public sealed class InteractiveSunburstBrowserTests {
             await page.EvaluateAsync("() => document.activeElement?.blur()");
             await MoveAwayAsync(page);
             var node = page.Locator("[data-cfx-node=" + id + "]");
-            var coordinates = await node.EvaluateAsync<double[]>("""
-                node => { const box = node.getBoundingClientRect();
-                    for (let y=1; y<30; y++) for (let x=1; x<30; x++) {
-                        const px=box.left+box.width*x/30, py=box.top+box.height*y/30, hit=document.elementFromPoint(px,py);
-                        if (hit && hit.closest('[data-cfx-target-kind=node]') === node && !hit.hasAttribute('data-cfx-browser-hit-area')) return [px,py];
-                    } throw new Error('No native Sunburst sector hit'); }
-                """);
+            var coordinates = await NativeInteriorPointAsync(page, "[data-cfx-node=" + id + "]", "[data-cfx-role=sunburst-segment-mark]");
             await page.Mouse.MoveAsync((float)coordinates[0], (float)coordinates[1], new MouseMoveOptions { Steps = 4 });
             await page.WaitForFunctionAsync("id => document.querySelector('.cfx-hovered[data-cfx-target-kind=node]')?.dataset.cfxTargetId === id", id);
             rows = await Rows(page);

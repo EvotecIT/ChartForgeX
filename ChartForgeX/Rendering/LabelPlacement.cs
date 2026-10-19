@@ -76,6 +76,8 @@ public sealed class LabelPlacementRequest {
     internal double? MinimumLabelGap { get; set; }
     /// <summary>Accepts existing label intersections while preserving mark and viewport checks. Accepted bounds still block later labels.</summary>
     internal bool AllowLabelOverlap { get; set; }
+    // Prepared Cartesian Auto captions may retain complete authored text on two lines.
+    internal bool AllowWrapping { get; set; }
     internal TextMetrics? MeasuredSize { get; set; }
     internal TextMetrics? DecorationSize { get; set; }
 }

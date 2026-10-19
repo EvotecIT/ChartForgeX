@@ -20,7 +20,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
 
         await MoveToHostTargetAsync(page, Point(1, 1));
         if (delay > 0) {
-            Assert.True(await HostedTipHiddenAsync(page));
+            await AssertDelayedHostAcquisitionAsync(page);
             await WaitForHostExpiryAsync(page);
         }
         var pointer = await HostReceiptAsync(page);

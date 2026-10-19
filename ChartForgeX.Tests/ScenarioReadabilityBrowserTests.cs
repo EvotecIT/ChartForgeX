@@ -34,13 +34,21 @@ public sealed class ScenarioReadabilityBrowserTests {
             new TopologyRenderOptions { ActiveScenarioId = "route", EnableHtmlSelectionPanel = false });
         var background = dark ? "#0f172a" : "#ffffff";
         var foreground = dark ? "#e5e7eb" : "#0f172a";
-        var hostStyle = host ? $".host .cfx-scenario-panel{{background:{background};color:{foreground}}}" : "";
+        var hostCard = dark ? "#203247" : "#fff5e6";
+        var hostText = dark ? "#f0f4ff" : "#2a1c10";
+        var hostMuted = dark ? "#c0cedf" : "#635041";
+        var hostStyle = host ? $".host{{--cfx-surface-card:{hostCard};--cfx-text-primary:{hostText};--cfx-text-muted:{hostMuted}}}" : "";
         var html = $"<!doctype html><html><head><style>body{{margin:0;background:{background};color:{foreground}}}main{{max-width:760px;margin:auto;padding:12px}}{hostStyle}</style></head><body><main class='host'>{topologyHtml}{interactive}</main></body></html>";
         await using var session = await OpenAsync(html, width, 1000);
         var page = session.Page;
         var errors = new List<string>();
         page.PageError += (_, error) => errors.Add(error);
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ColorScheme = dark ? ColorScheme.Dark : ColorScheme.Light });
+        if (host) {
+            Assert.Equal(dark ? "rgb(32, 50, 71)" : "rgb(255, 245, 230)", await page.Locator(".cfx-scenario-panel").EvaluateAsync<string>("node => getComputedStyle(node).backgroundColor"));
+            Assert.Equal(dark ? "rgb(240, 244, 255)" : "rgb(42, 28, 16)", await page.Locator(".cfx-scenario-panel__title").EvaluateAsync<string>("node => getComputedStyle(node).color"));
+            Assert.Equal(dark ? "rgb(192, 206, 223)" : "rgb(99, 80, 65)", await page.Locator(".cfx-scenario-panel__meta").EvaluateAsync<string>("node => getComputedStyle(node).color"));
+        }
         await page.Locator("[data-cfx-scenario='route']").ClickAsync();
         var observations = new List<JsonElement>();
         for (var step = 0; step <= 2; step++) {
@@ -59,8 +67,9 @@ public sealed class ScenarioReadabilityBrowserTests {
                     let bg=[255,255,255];for(const p of chain)bg=over(rgba(getComputedStyle(p).backgroundColor),bg);
                     const ink=rgba(getComputedStyle(node).color),fg=over(ink,bg),l1=luminance(fg),l2=luminance(bg);
                     let ratio=(Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05);
-                    if(progress){const bar=document.querySelector('.cfx-scenario-progress__bar');if(bar.getBoundingClientRect().width>0){const fill=over(rgba(getComputedStyle(bar).backgroundColor),bg),fl=luminance(over(ink,fill)),bl=luminance(fill);ratio=Math.min(ratio,(Math.max(fl,bl)+.05)/(Math.min(fl,bl)+.05));}}
-                    return {selector,text:node.textContent,ratio,ink,background:bg};
+                    let progressOverlapsText=false;
+                    if(progress){const bar=document.querySelector('.cfx-scenario-progress__bar'),fillBox=bar.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(node);const textBox=range.getBoundingClientRect();progressOverlapsText=Math.min(fillBox.right,textBox.right)>Math.max(fillBox.left,textBox.left)&&Math.min(fillBox.bottom,textBox.bottom)>Math.max(fillBox.top,textBox.top);if(progressOverlapsText){const fill=over(rgba(getComputedStyle(bar).backgroundColor),bg),fl=luminance(over(ink,fill)),bl=luminance(fill);ratio=Math.min(ratio,(Math.max(fl,bl)+.05)/(Math.min(fl,bl)+.05));}}
+                    return {selector,text:node.textContent,ratio,ink,background:bg,progressOverlapsText};
                   }
                   return {step,labels:[facts('.cfx-topology-scenario-panel__title',false),facts('.cfx-scenario-panel__title',false),facts('.cfx-scenario-panel__meta',false),facts('.cfx-scenario-panel__steps li',false),facts('.cfx-scenario-progress__text',true)]};
                 }

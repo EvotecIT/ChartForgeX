@@ -30,7 +30,7 @@ public enum ChartSeriesKind {
     Scatter,
 
     /// <summary>
-    /// Renders x/y points with marker area scaled by a third value.
+    /// Renders x/y points with marker size controlled by a third value and the selected Bubble size encoding.
     /// </summary>
     Bubble,
 

@@ -15,6 +15,30 @@
     }
   },
   "fixtures": {
+    "invalid/flowchart-missing-target.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored negative regression using the flowchart edge grammar exercised by fixtures/flowchart-basic.mmd: remove C from a final B --> C statement. Qualified against the pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 parsers."
+    },
+    "invalid/flowchart-unclosed-subgraph.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored negative regression using the subgraph grammar exercised by fixtures/flowchart-basic.mmd: omit the closing end after a supported edge. Qualified against the pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 parsers."
+    },
+    "invalid/sequence-orphan-branch.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Authored negative regression using the sequence message grammar exercised by fixtures/sequence-basic.mmd: place else fallback after a message without opening an alt block. Qualified against the pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 parsers."
+    },
     "fixtures/accessibility-dark.mmd": {
       "syntax": {
         "10": "accepted",

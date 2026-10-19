@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualRadialCompiler {
     private static void AddLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        List<RadialLabel> labels, RadialSlice slice, string text, double total, double angle, double sx, double sy,
+        List<RadialLabel> labels, RadialSlice slice, string text, double percent, double angle, double sx, double sy,
         double cx, double cy, double radius, double inner, ChartDataLabelPlacement placement) {
         var outside = placement is ChartDataLabelPlacement.Outside or ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right;
         var vertical = placement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below;
@@ -36,7 +36,7 @@ internal static partial class VisualRadialCompiler {
         }
         var maxWidth = Math.Min(radius * 0.9, Math.Max(0, Math.Min(x - plot.Left, plot.Right - x) * 2));
         // A label must fit the angular width of its slice instead of overlapping a neighbouring value.
-        var angularWidth = 2 * labelRadius * Math.Sin(Math.Min(Math.PI / 2, slice.Value / total * Math.PI));
+        var angularWidth = 2 * labelRadius * Math.Sin(Math.Min(Math.PI / 2, percent * Math.PI));
         var oversized = style.EffectiveFontSize > VisualTextFitting.MaximumOrdinaryFontSize;
         bool FitsSlice(TextMetrics metrics) {
             var dx = x - sx; var dy = y - sy;
@@ -47,7 +47,7 @@ internal static partial class VisualRadialCompiler {
                 for (var vertical = -1; vertical <= 1; vertical += 2) {
                     var delta = Math.Atan2(dy + vertical * metrics.Height / 2, dx + horizontal * metrics.Width / 2) - angle;
                     delta = (delta + Math.PI * 3) % (Math.PI * 2) - Math.PI;
-                    if (Math.Abs(delta) > slice.Value / total * Math.PI) return false;
+                    if (Math.Abs(delta) > percent * Math.PI) return false;
                 }
             return true;
         }
@@ -229,9 +229,11 @@ internal static partial class VisualRadialCompiler {
         return VisualChartPaint.Stroke(source.WithOpacity(actual, chart.Options.DataLabelConnectorOpacity));
     }
 
-    private static void DrawCenter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double cx, double cy, double inner, double total) {
+    private static void DrawCenter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double cx, double cy, double inner, double? total) {
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var value = chart.Options.DonutCenterValue ?? ChartNumericFormatter.FormatValue(chart.Options, total);
+        var value = chart.Options.DonutCenterValue ?? (total.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, total.Value) : OverflowValueText);
+        var overflowCaption = chart.Options.DonutCenterValue == null && !total.HasValue;
+        var displayValue = overflowCaption ? "> 1.79E308" : value;
         var label = chart.Options.DonutCenterLabel ?? chart.Series[0].Name;
         // These describe the hole's content, rather than claiming exact hit boxes for fitted text.
         var bounds = new ChartRect(cx - inner, cy - inner, inner * 2, inner * 2);
@@ -243,7 +245,20 @@ internal static partial class VisualRadialCompiler {
         labelStyle.FontSize = Math.Min(labelStyle.FontSize, inner * 0.25);
         valueStyle.Alignment = labelStyle.Alignment = TextAlignment.Center;
         var width = inner * 1.6;
-        var fittedValue = Fit(value, valueStyle, width, builder);
+        if (overflowCaption) {
+            valueStyle.FontSize = ChartTextFitting.FitFontSize(Math.Min(valueStyle.FontSize, VisualTextFitting.MinimumOrdinaryFontSize),
+                valueStyle.FontSize, size => {
+                    valueStyle.FontSize = size;
+                    return builder.MeasureText(displayValue, valueStyle).Width <= width;
+                });
+            if (builder.MeasureText(displayValue, valueStyle).Width > width) displayValue = ">1E308";
+            if (builder.MeasureText(displayValue, valueStyle).Width > width) {
+                displayValue = string.Empty;
+                builder.AddDiagnostic(new VisualDiagnostic("radial.center-omitted", "The overflowing total's lower bound cannot fit legibly in the donut hole; its complete value remains in semantic metadata."));
+            }
+        }
+        // A truncated exponent would change the apparent magnitude. Keep overflow bounds complete or omit them.
+        var fittedValue = overflowCaption ? displayValue : Fit(displayValue, valueStyle, width, builder);
         var fittedLabel = Fit(label, labelStyle, width, builder);
         var valueHeight = builder.MeasureText(fittedValue, valueStyle).Height;
         var labelHeight = builder.MeasureText(fittedLabel, labelStyle).Height;

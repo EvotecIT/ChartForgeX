@@ -1,0 +1,55 @@
+.cfx-graph-print-surface { display: none; }
+
+@media print {
+  .cfx-graph-shell,
+  .cfx-graph-shell.cfx-graph-shell-embedded {
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    background: none;
+  }
+
+  .cfx-graph-explorer[data-cfx-graph-print-ready="true"] {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    break-after: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  [data-cfx-graph-print-ready="true"] > .cfx-graph-stage,
+  [data-cfx-graph-print-ready="true"] > output,
+  [data-cfx-graph-print-ready="true"] > nav,
+  [data-cfx-graph-print-ready="true"] .cfx-graph-toolbar,
+  [data-cfx-graph-print-ready="true"] [data-cfx-role="graph-physics-configurator"] {
+    display: none !important;
+  }
+
+  .cfx-graph-print-surface {
+    display: block;
+    width: 100%;
+    max-width: 1480px;
+    margin: 0 auto;
+    break-inside: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .cfx-graph-print-surface > svg {
+    display: block !important;
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    max-height: max(1px, calc(100vh - var(--cfx-graph-print-reserved-height, 16px))) !important;
+    margin-inline: auto;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: none;
+  }
+}

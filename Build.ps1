@@ -130,7 +130,7 @@ function Assert-VisualBaseline {
             (-not $naturalHeight -and ($expected.PSObject.Properties.Name -contains 'logicalHeight') -and $logicalHeight -ne [double]$expected.logicalHeight)
         if ($actual.svg.width -ne $expected.width -or (-not $naturalHeight -and $actual.svg.height -ne $expected.height) -or $logicalDimensionsChanged -or
             $actual.png.scale -ne $expectedScale -or $actual.png.width -ne [Math]::Ceiling($logicalWidth * $expectedScale) -or $actual.png.height -ne [Math]::Ceiling($logicalHeight * $expectedScale)) {
-            throw "SVG/PNG baseline dimensions changed for $($expected.name). Expected $($expected.width)x$($expected.height) at PNG scale $expectedScale. See $ComparisonManifest."
+            throw "SVG/PNG baseline dimensions changed for $($expected.name). Expected $($expected.width)x$($expected.height) at PNG scale $expectedScale; actual SVG $($actual.svg.width)x$($actual.svg.height), logical ${logicalWidth}x${logicalHeight}, PNG $($actual.png.width)x$($actual.png.height) at scale $($actual.png.scale); natural-height exception applied: $naturalHeight. See $ComparisonManifest."
         }
 
         if ($actual.svg.visualNodes -lt $expected.svg.minVisualNodes) {

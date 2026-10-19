@@ -89,16 +89,17 @@ public sealed class LabelPlacementService {
     /// <param name="obstacles">Mark rectangles to avoid.</param>
     /// <param name="gap">Minimum separation in logical pixels.</param>
     public IReadOnlyList<PlacedLabel> Place(IReadOnlyList<LabelPlacementRequest> requests, ChartRect bounds, IReadOnlyList<LabelObstacle>? obstacles = null, double gap = DefaultGap) =>
-        PlaceCore(requests, bounds, obstacles, gap, null);
+        PlaceCore(requests, bounds, obstacles, gap, null, false);
 
     /// <summary>Uses the prepared backend's measurements for both original and shortened labels, including font fallback.</summary>
-    /// <remarks>The callback receives displayed text and a style with casing already resolved. Existing public placement retains its measurement policy.</remarks>
+    /// <remarks>The callback receives displayed text and a style with casing already resolved. Existing public placement retains its measurement policy.
+    /// Prepared requests with a source anchor may reserve their straight leaders against other captions in either placement order.</remarks>
     internal IReadOnlyList<PlacedLabel> Place(IReadOnlyList<LabelPlacementRequest> requests, ChartRect bounds,
-        IReadOnlyList<LabelObstacle>? obstacles, double gap, Func<string, TextStyle, TextMetrics> measureText) =>
-        PlaceCore(requests, bounds, obstacles, gap, measureText ?? throw new ArgumentNullException(nameof(measureText)));
+        IReadOnlyList<LabelObstacle>? obstacles, double gap, Func<string, TextStyle, TextMetrics> measureText, bool avoidLeaderLabels = false) =>
+        PlaceCore(requests, bounds, obstacles, gap, measureText ?? throw new ArgumentNullException(nameof(measureText)), avoidLeaderLabels);
 
     private IReadOnlyList<PlacedLabel> PlaceCore(IReadOnlyList<LabelPlacementRequest> requests, ChartRect bounds,
-        IReadOnlyList<LabelObstacle>? obstacles, double gap, Func<string, TextStyle, TextMetrics>? measureText) {
+        IReadOnlyList<LabelObstacle>? obstacles, double gap, Func<string, TextStyle, TextMetrics>? measureText, bool avoidLeaderLabels) {
         if (requests == null) throw new ArgumentNullException(nameof(requests));
         ChartGuards.Finite(gap, nameof(gap));
         if (gap < 0) throw new ArgumentOutOfRangeException(nameof(gap));
@@ -125,26 +126,36 @@ public sealed class LabelPlacementService {
             var text = TextCaseTransformer.Apply(request.Text, request.Style.TextCase, CultureInfo.InvariantCulture);
             var displayedStyle = measureText == null ? null : request.Style.Clone();
             if (displayedStyle != null) displayedStyle.TextCase = TextCaseTransform.None;
-            var result = TryPlace(request, text, bounds, occupied, measureText, displayedStyle);
+            var result = TryPlace(request, text, bounds, occupied, measureText, displayedStyle, avoidLeaderLabels);
+            if (result == null && request.AllowWrapping && text.IndexOf(' ') >= 0
+                && text.IndexOf('\n') < 0 && text.IndexOf('\r') < 0) {
+                var lines = ChartLabelWrapping.BalancedTwoLine(text, request.Style.EffectiveFontSize, 0,
+                    (value, _) => (measureText != null ? measureText(value, displayedStyle!) : MeasureDisplayed(value, request.Style)).Width);
+                if (lines.Length == 2) result = TryPlace(request, string.Join("\n", lines), bounds, occupied,
+                    measureText, displayedStyle, avoidLeaderLabels, remeasure: true);
+            }
             if (result == null && request.Fallback == LabelFallbackRule.EllipsisThenDrop) {
                 // Text elements retain surrogate pairs and combining marks during shortening.
                 var elements = StringInfo.ParseCombiningCharacters(text);
                 for (var count = elements.Length - 1; count > 0 && result == null; count--) {
                     var shorter = text.Substring(0, elements[count]).TrimEnd() + "…";
-                    result = TryPlace(request, shorter, bounds, occupied, measureText, displayedStyle, ellipsized: true);
+                    result = TryPlace(request, shorter, bounds, occupied, measureText, displayedStyle, avoidLeaderLabels, ellipsized: true);
                 }
             }
             result ??= new PlacedLabel(request, string.Empty, default, true, -1);
             placed[index] = result;
-            if (!result.IsDropped) occupied.Add(result.Bounds, null, labelGap: request.MinimumLabelGap);
+            if (!result.IsDropped) {
+                occupied.Add(result.Bounds, null, labelGap: request.MinimumLabelGap);
+                if (avoidLeaderLabels && result.HasLeaderLine) occupied.AddLeader(request.Anchor, result.LeaderEnd);
+            }
         }
         return Array.AsReadOnly(placed);
     }
 
     private PlacedLabel? TryPlace(LabelPlacementRequest request, string text, ChartRect scene, LabelSpatialIndex occupied,
-        Func<string, TextStyle, TextMetrics>? measureText, TextStyle? displayedStyle, bool ellipsized = false) {
+        Func<string, TextStyle, TextMetrics>? measureText, TextStyle? displayedStyle, bool avoidLeaderLabels, bool ellipsized = false, bool remeasure = false) {
         if (text.Length == 0) return null;
-        var metrics = !ellipsized && request.MeasuredSize.HasValue ? request.MeasuredSize.Value
+        var metrics = !ellipsized && !remeasure && request.MeasuredSize.HasValue ? request.MeasuredSize.Value
             : measureText != null ? measureText(text, displayedStyle!) : MeasureDisplayed(text, request.Style);
         metrics = VisualAxisText.RotatedMetrics(metrics, request.RotationDegrees);
         var decoration = text != request.Text ? request.DecorationSize : null;
@@ -156,7 +167,9 @@ public sealed class LabelPlacementService {
                 request.Anchor.Y + candidate.OffsetY - height * candidate.VerticalAlignment, width, height);
             if (!Contains(scene, box) || request.Bounds.HasValue && !Contains(request.Bounds.Value, box)) continue;
             if (occupied.Intersects(box, request.AssociatedMarkId, request.MinimumLabelGap, request.AllowLabelOverlap)) continue;
-            return new PlacedLabel(request, text, box, false, i, ellipsized);
+            var result = new PlacedLabel(request, text, box, false, i, ellipsized);
+            if (avoidLeaderLabels && result.HasLeaderLine && occupied.LeaderIntersectsLabel(request.Anchor, result.LeaderEnd, request.MinimumLabelGap)) continue;
+            return result;
         }
         return null;
     }

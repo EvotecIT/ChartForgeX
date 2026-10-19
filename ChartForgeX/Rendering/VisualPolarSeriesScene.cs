@@ -20,8 +20,8 @@ internal static class VisualPolarSeriesScene {
     }
 
     internal static void Draw(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
-        ChartPath path, ChartColor color, bool radar) {
-        if (radar && series.Radar.Form == ChartLineAreaForm.Area) {
+        ChartPath path, ChartColor color, bool radar, bool closed = true) {
+        if (radar && closed && series.Radar.Form == ChartLineAreaForm.Area) {
             var opacity = series.Radar.FillOpacity ?? context.Theme.AreaOpacity;
             var fill = ChartColorMath.WithOpacity(color, opacity);
             builder.Path(path, fill, role: "radar-area", close: true,
@@ -39,7 +39,7 @@ internal static class VisualPolarSeriesScene {
         if (width <= 0) return;
         foreach (var layer in ChartLineVisualLayers.Build(actual, width, chart.Options.LineVisualStyle))
             if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth,
-                role: (radar ? "radar-outline" : "polar-line") + layer.RoleSuffix, close: radar,
+                role: (radar ? "radar-outline" : "polar-line") + layer.RoleSuffix, close: radar && closed,
                 dash: stroke?.ResolveDash(Array.Empty<double>()),
                 paint: VisualChartPaint.Stroke(layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity())
                     : (stroke?.Color != null ? SvgPaint.Literal(source) : VisualChartPaint.Series(series, source))

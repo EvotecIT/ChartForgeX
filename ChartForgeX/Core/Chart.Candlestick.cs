@@ -14,7 +14,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddCandlestick(string name, IEnumerable<ChartCandlestick> candles, ChartColor? color = null) {
         var series = ChartSeries.CreateCandlestick(name, candles, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(candles));
         AppendSeries(series);
         return this;
     }

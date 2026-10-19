@@ -17,9 +17,11 @@ internal static partial class VisualMatrixCompiler {
         chart.Options.HeatmapColorScale?.NoDataColor != null
             ? ChartColorScaleSurface.NoData(chart.Options.HeatmapColorScale, colors) : ChartHeatmapSurface.CalendarEmptyBlend(colors);
 
-    private static double ColorScaleHeight(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double width, double maximum, ChartColorPresentation presentation, bool missing = false, bool hasDomain = true) =>
+    private static double ColorScaleHeight(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double width, double maximum, ChartColorPresentation presentation,
+        bool missing = false, bool hasDomain = true, double min = 0, double max = 0) =>
         VisualColorScaleLegendScene.Height(builder, chart.Options.HeatmapColorScale!, presentation.Labels, ColorScaleStyle(chart, context),
-            context.Theme.Spacing / 2, width, maximum, missing, presentation.ScaleValues, hasDomain: hasDomain, heading: presentation.HasName ? presentation.Name : null, legendStyle: presentation.LegendStyle);
+            context.Theme.Spacing / 2, width, maximum, missing, presentation.ScaleValues, hasDomain: hasDomain, min: min, max: max,
+            heading: presentation.HasName ? presentation.Name : null, legendStyle: presentation.LegendStyle);
 
     private static void ColorScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds,
         double min, double max, string prefix, ChartColorPresentation presentation, bool missing = false, ChartColorBlend? missingBlend = null, bool hasDomain = true) {

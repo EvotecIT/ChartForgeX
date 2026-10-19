@@ -159,18 +159,22 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     }
 
     [BrowserTheory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task SlottedChartScrollUsesNativeComposedClipAndReleasesWatchers(bool closed) {
+    [Trait("BrowserSuite", "Compatibility")]
+    [InlineData(false, 1)]
+    [InlineData(true, 1)]
+    [InlineData(false, 1.25)]
+    [InlineData(true, 1.25)]
+    public async Task SlottedChartScrollUsesNativeComposedClipAndReleasesWatchers(bool closed, double zoom) {
         if (!Enabled) return;
         await using var session = await OpenAsync("<html><body></body></html>", 950, 760);
         var page = session.Page;
+        var capturePrefix = "css-slot-" + closed + "-zoom-" + zoom.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
         await InstallListenerProbeAsync(page);
         await page.SetContentAsync(CssClipChart(true, true));
         await page.EvaluateAsync("""
-            closed=>{
+            ({closed,zoom})=>{
                 const root=document.querySelector('.cfx-interactive-chart'),host=document.createElement('div');
-                root.before(host);host.id='slot-host';host.style.width='360px';
+                root.before(host);host.id='slot-host';host.style.cssText=`width:360px;zoom:${zoom}`;
                 const tree=window.clipShadow=host.attachShadow({mode:closed?'closed':'open'});
                 tree.innerHTML='<div id="css-clip" style="width:340px;height:420px;overflow:auto;border:3px solid #777"><div style="width:650px"><slot></slot></div></div>';
                 host.append(root);root.style.cssText+=';width:650px;max-width:none';
@@ -189,20 +193,21 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
                 window.slotIntersections=[];window.slotNativeObserver=new IntersectionObserver(entries=>slotIntersections.push(...entries.map(e=>({ratio:e.intersectionRatio,intersection:{x:e.intersectionRect.x,y:e.intersectionRect.y,width:e.intersectionRect.width,height:e.intersectionRect.height}}))));
                 slotNativeObserver.observe(root.querySelector('g[data-cfx-role="point"][data-cfx-point="0"]'));
             }
-            """, closed);
+            """, new { closed, zoom });
+        var stageShape = await page.EvaluateAsync<JsonElement>("()=>{const stage=document.querySelector('.cfx-stage');return{children:stage.childElementCount,width:stage.scrollWidth,height:stage.scrollHeight}}");
         var baseline = await ListenerStateAsync(page);
         var intersectionBaseline = await page.EvaluateAsync<int>("()=>Array.from(slotObserved.values()).reduce((n,s)=>n+s.size,0)");
         await page.Locator(Point(0, 0)).EvaluateAsync("node=>node.focus({preventScroll:true})"); await page.Keyboard.PressAsync("Space");
         await SettleObservedPositionAsync(page);
         var shown = await CssClipFactsAsync(page);
-        await CaptureAsync(page, "css-slot-" + closed + "-shown", shown, session);
+        await CaptureAsync(page, capturePrefix + "-shown", shown, session);
         Assert.False(shown.GetProperty("hidden").GetBoolean());
         await page.EvaluateAsync("()=>clipShadow.getElementById('css-clip').scrollLeft=650");
         await SettleObservedPositionAsync(page);
         var clipped = await CssClipFactsAsync(page);
         var native = await page.EvaluateAsync<JsonElement>("()=>({assignedSlot:!!document.querySelector('.cfx-interactive-chart').assignedSlot,events:slotScrolls,intersections:slotIntersections,listeners:{scroll:slotListeners.scroll.size,transitionend:slotListeners.transitionend.size}})");
         var released = await ListenerStateAsync(page);
-        await CaptureAsync(page, "css-slot-" + closed + "-clipped", new { clipped, native, baseline, released }, session);
+        await CaptureAsync(page, capturePrefix + "-clipped", new { clipped, native, baseline, released }, session);
         Assert.False(clipped.GetProperty("painted").GetBoolean());
         Assert.True(native.GetProperty("events").GetProperty("native").GetInt32() > 0);
         Assert.Equal(0, native.GetProperty("events").GetProperty("document").GetInt32());
@@ -211,7 +216,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             await page.Locator(Point(0, 0)).EvaluateAsync("node=>node.scrollIntoView({behavior:'instant',block:'nearest',inline:'nearest'})");
             await SettleObservedPositionAsync(page);
             var nativeRecovery = await CssClipFactsAsync(page);
-            await CaptureAsync(page, "css-slot-native-opaque-reveal", nativeRecovery, session);
+            await CaptureAsync(page, capturePrefix + "-native-opaque-reveal", nativeRecovery, session);
             Assert.True(nativeRecovery.GetProperty("painted").GetBoolean());
         }
         Assert.True(clipped.GetProperty("hidden").GetBoolean());
@@ -224,12 +229,18 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         var end = await CssClipFactsAsync(page, Point(0, 2));
         Assert.True(end.GetProperty("painted").GetBoolean());
         Assert.False(end.GetProperty("hidden").GetBoolean());
+        Assert.Equal("css-reading:2", end.GetProperty("focused").GetString());
+        Assert.Equal("9", end.GetProperty("x").GetString());
+        await CaptureAsync(page, capturePrefix + "-end", end, session);
         await page.Keyboard.PressAsync("Home");
         await SettleObservedPositionAsync(page);
         var recovered = await CssClipFactsAsync(page);
-        await CaptureAsync(page, "css-slot-" + closed + "-recovered", new { end, recovered }, session);
+        await CaptureAsync(page, capturePrefix + "-recovered", new { end, recovered }, session);
         Assert.True(recovered.GetProperty("painted").GetBoolean());
         Assert.False(recovered.GetProperty("hidden").GetBoolean());
+        Assert.Equal("css-reading:0", recovered.GetProperty("focused").GetString());
+        var finalStageShape = await page.EvaluateAsync<JsonElement>("()=>{const stage=document.querySelector('.cfx-stage');return{children:stage.childElementCount,width:stage.scrollWidth,height:stage.scrollHeight}}");
+        Assert.Equal(stageShape.GetRawText(), finalStageShape.GetRawText());
         await page.EvaluateAsync("()=>{slotNativeObserver.disconnect();document.getElementById('slot-host').remove()}");
         await SettleObservedPositionAsync(page);
         var removed = await ListenerStateAsync(page);

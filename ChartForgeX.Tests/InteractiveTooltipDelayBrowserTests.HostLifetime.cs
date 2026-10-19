@@ -29,7 +29,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.True(await HostedTipHiddenAsync(page));
         await page.EvaluateAsync("() => { window.hostExpiry=[]; }");
         await MoveToHostTargetAsync(page, Point(0, 0));
-        Assert.True(await HostedTipHiddenAsync(page));
+        await AssertDelayedNativeEntryAsync(page);
         await WaitForHostExpiryAsync(page);
         Assert.False(await HostedTipHiddenAsync(page));
         AssertNoConsoleErrors(session);

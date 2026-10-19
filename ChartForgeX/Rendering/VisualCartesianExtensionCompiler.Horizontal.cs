@@ -70,7 +70,8 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static IReadOnlyList<double> HorizontalCategoryTicks(Chart chart, ChartRange range, ChartAxis axis) =>
-        chart.Series.Where(series => ChartCartesianOrientation.Categories(series).Any())
+        axis.Labels.Any(label => label.Groups.Count > 0) ? ChartTicks.ForAxis(axis, range.MinY, range.MaxY)
+        : chart.Series.Where(series => ChartCartesianOrientation.Categories(series).Any())
             .All(series => ChartCartesianOrientation.IsHorizontalLine(chart, series))
             ? ChartTicks.ForAxis(axis, range.MinY, range.MaxY)
             : chart.Series.SelectMany(ChartCartesianOrientation.Categories)
@@ -87,13 +88,22 @@ internal static partial class VisualCartesianCompiler {
         var widest = 0d; var tallest = 0d;
         foreach (var category in categories) {
             var text = cache.Format(axes.Category, category, null, categories);
-            if (cache.HasAuthoredTicks(axes.Category) && VisualAxisText.Angle(axes.Category.LabelAngle) == 0)
-                text = string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
-                    Math.Max(0, viewport.Width * .35 - spacing), (value, _) => builder.MeasureText(value, style).Width));
+            if (cache.HasAuthoredTicks(axes.Category) && VisualAxisText.Angle(axes.Category.LabelAngle) == 0) {
+                var width = Math.Max(0, viewport.Width * .35 / ((cache.CategoryGroups?.Depth ?? 0) + 1) - spacing);
+                text = axes.Category.Labels.Count > 0 && axes.Category.Scale != ChartScaleKind.Time
+                    ? VisualAxisText.FitWrappedCategory(builder, text, style, width, out _)
+                    : string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize,
+                        width, (value, _) => builder.MeasureText(value, style).Width));
+            }
             var metrics = VisualAxisText.RotatedMetrics(builder.MeasureText(text, style), axes.Category.LabelAngle);
             widest = Math.Max(widest, metrics.Width); tallest = Math.Max(tallest, metrics.Height);
         }
         var left = chart.Options.YAxis.Visible ? Math.Min(viewport.Width * .35, widest + spacing) : 0;
+        if (chart.Options.YAxis.Visible) {
+            cache.HorizontalGroupBandSizes = CategoryGroupBandSizes(builder, cache, style, spacing,
+                range.MinY, range.MaxY, viewport.Height, Math.Max(0, viewport.Width * .35 - left));
+            left += cache.HorizontalGroupBandSizes.Sum();
+        }
         var valueMetrics = chart.Options.XAxis.Visible ? TickMetrics(builder, axes.Value, range.MinX, range.MaxX, style, chart.Options.ValueFormatter, cache) : default;
         var bottom = chart.Options.XAxis.Visible ? valueMetrics.Height + spacing : 0;
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
@@ -127,7 +137,10 @@ internal static partial class VisualCartesianCompiler {
                 ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), width, role: "grid-y", dash: dash,
                 paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), grid.HorizontalOpacity)));
         }
-        if (!chart.Options.ShowAxes) return;
+        if (!chart.Options.ShowAxes) {
+            DrawCategoryGroups(chart, context, builder, cache, map.Y, range.MinY, range.MaxY, default, colors);
+            return;
+        }
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
         if (chart.Options.XAxis.Visible) {
             if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-x", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
@@ -144,11 +157,19 @@ internal static partial class VisualCartesianCompiler {
         }
         if (chart.Options.YAxis.Visible) {
             if (chart.Options.YAxis.ShowLine) builder.Line(plot.Left, plot.Top, plot.Left, plot.Bottom, colors.Axis, context.Theme.AxisStrokeWidth, role: "axis-y", paint: VisualChartPaint.Stroke(colors.Axis, SvgColorRole.Axis));
+            var available = Math.Max(0, categoryLabelRight - viewport.Left - spacing);
+            // Retain the individual widths that reserved this frame. Redistributing their sum
+            // equally can starve an outer parent even when the complete stack already fits.
+            var groupSizes = cache.HorizontalGroupBandSizes ?? CategoryGroupBandSizes(builder, cache, style, spacing,
+                range.MinY, range.MaxY, plot.Height, available * (cache.CategoryGroups?.Depth ?? 0) / ((cache.CategoryGroups?.Depth ?? 0) + 1));
+            var groupWidth = groupSizes.Sum();
             DrawAxisLabels(builder, chart.Options, axes.Category, categories, map.Y, false, false,
-                new ChartRect(viewport.Left, viewport.Top, Math.Max(0, categoryLabelRight - viewport.Left - spacing), viewport.Height), style, spacing, null, cache, plot.Height);
+                new ChartRect(viewport.Left + groupWidth, viewport.Top, Math.Max(0, available - groupWidth), viewport.Height), style, spacing, null, cache, plot.Height);
+            DrawCategoryGroups(chart, context, builder, cache, map.Y, range.MinY, range.MaxY,
+                new ChartRect(viewport.Left, plot.Top, groupWidth, plot.Height), colors, groupSizes);
             var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
             if (yTitle.Length > 0) DrawAxisTitle(chart, context, builder, yTitle,
                 new ChartRect(plot.Left, viewport.Top, plot.Width, Math.Max(0, plot.Top - viewport.Top - spacing)), colors, TextAlignment.Left, "axis-y-title");
-        }
+        } else DrawCategoryGroups(chart, context, builder, cache, map.Y, range.MinY, range.MaxY, default, colors);
     }
 }

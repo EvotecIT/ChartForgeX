@@ -9,7 +9,6 @@ public sealed partial class Chart {
     /// <summary>Adds raw measurement groups using interpolated quartiles and minimum/maximum whiskers by default.</summary>
     public Chart AddBoxPlot(string name, IEnumerable<ChartBoxPlotSampleGroup> groups, ChartColor? color = null) {
         var series = ChartSeries.CreateBoxPlot(name, groups, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one group.", nameof(groups));
         AppendSeries(series); return this;
     }
     /// <summary>Configures box plot value direction. Multiple box plot series share distinct category slots.</summary>
@@ -46,7 +45,6 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddBoxPlot(string name, IEnumerable<ChartBoxPlot> boxes, ChartColor? color = null) {
         var series = ChartSeries.CreateBoxPlot(name, boxes, color);
-        if (series.ObservationCount == 0) throw new ArgumentException("The series must contain at least one observation.", nameof(boxes));
         AppendSeries(series);
         return this;
     }

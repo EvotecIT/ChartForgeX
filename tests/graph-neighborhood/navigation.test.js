@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const source = ['10-neighborhood-plan', '10-neighborhood', '14-state-history'].map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
 const runtime = new Function(`
@@ -73,11 +74,8 @@ test('filter refresh keeps the root and resets a page that no longer has eligibl
   assert.deepEqual([...root.__cfxGraphNeighborhoodView.nodeIds],['n00','n01']);
 });
 test('bounded focus labels compose linked and neighborhood dimming and omit hidden nodes', () => {
-  const paintSource = ['00-core', '03-canvas-details'].map(name => fs.readFileSync(path.join(assets, `graph-explorer.${name}.js`), 'utf8')).join('\n');
-  const draw = new Function(`
-    const graphThemePalette = () => ({}), graphReadableNodeColors = () => ({halo:'white',label:'black'});
-    ${paintSource}\nreturn drawCanvasNodeDetails;
-  `)();
+  const draw = new Function('document', 'window', graphRuntimeSource('return drawCanvasNodeDetails;'))(
+    { readyState: 'loading', addEventListener() {} }, {});
   const paint=[], alphaStack=[], context={
     globalAlpha:1,
     save(){alphaStack.push(this.globalAlpha);},

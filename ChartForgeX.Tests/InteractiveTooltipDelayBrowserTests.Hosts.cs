@@ -90,7 +90,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
             const root=window.hostedChart, tip=root.querySelector('.cfx-tooltip');
             const nativeTimer=window.setTimeout.bind(window), nativeClear=window.clearTimeout.bind(window), delay=Number(root.dataset.cfxTooltipDelay);
             window.hostExpiry=[];
-            const timers=window.hostTimerTrace={queued:[],canceled:[],fired:[]};
+            const timers=window.hostTimerTrace={queued:[],canceled:[],fired:[],acquired:[]};
             window.clearTimeout=id=>{ if(timers.queued.includes(id)) timers.canceled.push(id); nativeClear(id); };
             window.setTimeout=(callback,ms,...args)=>{
                 const id=nativeTimer((...values)=>{
@@ -108,7 +108,10 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
                     window.hostExpiry.push({hidden:tip.hidden,text:tip.innerText,documentHit:documentHit?.id||documentHit?.tagName,
                         localHit:localHit?.id||localHit?.tagName,owned:!!localHit&&root.contains(localHit)});
                 },ms,...args);
-                if(ms===delay) timers.queued.push(id);
+                if(ms===delay) {
+                    timers.queued.push(id);
+                    timers.acquired.push({t:performance.now(),hidden:tip.hidden});
+                }
                 return id;
             };
         }
@@ -127,6 +130,14 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
 
     private static Task<bool> HostedTipHiddenAsync(IPage page) => page.EvaluateAsync<bool>("() => window.hostedChart.querySelector('.cfx-tooltip').hidden");
     private static Task WaitForHostExpiryAsync(IPage page) => page.WaitForFunctionAsync("() => window.hostExpiry.length>0", null, new PageWaitForFunctionOptions { Timeout = 5000 });
+
+    private static async Task AssertDelayedHostAcquisitionAsync(IPage page) {
+        // Mapped captions and focused-legend handoff acquire through the stage's coalesced native move.
+        await page.WaitForFunctionAsync("() => window.hostTimerTrace.acquired.length>0", null, new PageWaitForFunctionOptions { Timeout = 5000 });
+        var acquired = (await HostReceiptAsync(page)).GetProperty("timers").GetProperty("acquired").EnumerateArray().ToArray();
+        Assert.True(acquired[acquired.Length - 1].GetProperty("hidden").GetBoolean());
+    }
+
     private static Task<JsonElement> HostReceiptAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
         () => {
             const root=window.hostedChart, tip=root.querySelector('.cfx-tooltip');

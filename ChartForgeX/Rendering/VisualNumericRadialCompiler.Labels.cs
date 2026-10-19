@@ -13,6 +13,7 @@ internal static partial class VisualNumericRadialCompiler {
         int point, string id, string text, RadialSeriesMark mark, ChartRect bounds, ChartColor fill, List<RadialSeriesLabel> labels) {
         var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
         var inside = placement is ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside;
+        var automaticOutside = placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Outside;
         var colors = context.Theme.Resolve(context.ThemeMode);
         var ink = inside && mark.Painted ? ChartMarkText.OnPreparedMark(fill, VisualChartPaint.SeriesRole(series, point),
             ChartStateMark.Backdrop(chart.Options, colors, context.Frame)) : ChartColorBlend.Solid(colors.Foreground, SvgColorRole.Text);
@@ -27,10 +28,11 @@ internal static partial class VisualNumericRadialCompiler {
             ChartDataLabelPlacement.Below => new LabelCandidate(0, gap, .5, 0),
             ChartDataLabelPlacement.Left => new LabelCandidate(-gap, 0, 1, .5),
             ChartDataLabelPlacement.Right => new LabelCandidate(gap, 0, 0, .5),
-            _ => inside ? new LabelCandidate(0, 0, .5, .5) : new LabelCandidate(mark.Offset.X * gap, mark.Offset.Y * gap, .5, .5)
+            _ => inside ? new LabelCandidate(0, 0, .5, .5) : automaticOutside ? OutsideCandidate(mark.Offset, gap)
+                : new LabelCandidate(mark.Offset.X * gap, mark.Offset.Y * gap, .5, .5)
         };
         var request = AddLabel(builder, labels, text, inside && mark.Painted ? mark.Center : mark.End, style, id + "-label", "radial-data-label", plot, candidate, 40,
-            VisualMarkLabel.Metadata(text, id));
+            VisualMarkLabel.Metadata(text, id), automaticOutside ? new LabelCandidate(mark.Offset.X * gap, mark.Offset.Y * gap, .5, .5) : (LabelCandidate?)null);
         // The shared placement engine permits containment in the associated curved mark,
         // rejects partial crossings, and retains the original description if no ink fits.
         if (inside) { request.Bounds = bounds; request.AssociatedMarkId = id; }
@@ -57,14 +59,22 @@ internal static partial class VisualNumericRadialCompiler {
                 ["data-cfx-stack-group"] = total.Group ?? string.Empty, ["data-cfx-axis"] = total.Axis.ToString().ToLowerInvariant()
             };
             AddLabel(builder, labels, text, mark.End, style, id, "stack-total", plot,
-                new LabelCandidate(mark.Offset.X * context.Theme.Spacing, mark.Offset.Y * context.Theme.Spacing, .5, .5), 60, facts);
+                OutsideCandidate(mark.Offset, context.Theme.Spacing), 60, facts,
+                new LabelCandidate(mark.Offset.X * context.Theme.Spacing, mark.Offset.Y * context.Theme.Spacing, .5, .5));
         }
     }
 
+    // Keep the near text edge beyond the mark before trying the previous centered position.
+    private static LabelCandidate OutsideCandidate(ChartPoint direction, double gap) {
+        return new LabelCandidate(direction.X * gap, direction.Y * gap, Alignment(direction.X), Alignment(direction.Y));
+        static double Alignment(double value) => value > .25 ? 0 : value < -.25 ? 1 : .5;
+    }
+
     private static LabelPlacementRequest AddLabel(VisualSceneBuilder builder, List<RadialSeriesLabel> labels, string text, ChartPoint anchor, TextStyle style,
-        string id, string role, ChartRect bounds, LabelCandidate candidate, int priority, Dictionary<string, string>? facts = null) {
+        string id, string role, ChartRect bounds, LabelCandidate candidate, int priority, Dictionary<string, string>? facts = null, LabelCandidate? fallbackCandidate = null) {
         builder.AddRegion(new VisualSemanticRegion(id, role, bounds, text));
-        var request = new LabelPlacementRequest(text, anchor, style, new[] { candidate }, priority) {
+        var candidates = fallbackCandidate.HasValue ? new[] { candidate, fallbackCandidate.Value } : new[] { candidate };
+        var request = new LabelPlacementRequest(text, anchor, style, candidates, priority) {
             MeasuredSize = builder.MeasureText(text, style)
         };
         labels.Add(new RadialSeriesLabel(request, id, role, facts));

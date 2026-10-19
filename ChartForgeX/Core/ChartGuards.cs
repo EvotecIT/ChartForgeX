@@ -47,6 +47,7 @@ internal static class ChartGuards {
         chart.ValidateHourWeekdayHeatmapOwnership();
         chart.ValidateExplicitGanttDependencies();
         ValidateRenderableChart(chart, preparing);
+        _ = ChartCategoryGroupPlan.TryCreate(chart);
         chart.ValidatePlotRegions();
         if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap))
             throw new InvalidOperationException("Map color presentation requires numeric region or tile maps.");
@@ -57,6 +58,12 @@ internal static class ChartGuards {
             throw new InvalidOperationException("Treemap color presentation requires a Treemap chart.");
         if (chart.Options.Sunburst.ColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.Sunburst))
             throw new InvalidOperationException("Sunburst color presentation requires a Sunburst chart.");
+        if ((chart.Options.Chord.ColorScale != null || chart.Options.Chord.ColorDimension.HasOverrides)
+            && chart.Series.Any(series => series.Kind != ChartSeriesKind.Chord))
+            throw new InvalidOperationException("Chord flow color presentation requires a Chord chart.");
+        if (chart.Series.Count > 0 && chart.Series[0].Kind == ChartSeriesKind.Chord)
+            chart.Options.Chord.ColorDimension.ValidateLegend(chart.Options.Chord.ColorScale,
+                chart.Series[0].FlowLinks.Any(link => link.ColorValue.HasValue));
         chart.Options.MapColorDimension.ValidateLegend(chart.Options.MapColorScale);
         chart.Options.HeatmapColorDimension.ValidateLegend(chart.Options.HeatmapColorScale);
         if (chart.Series.Count > 0 && chart.Series[0].Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {
@@ -159,8 +166,13 @@ internal static class ChartGuards {
             }
         }
 
+        var annotationIds = new HashSet<ChartAnnotationId>();
         for (var i = 0; i < chart.Annotations.Count; i++) {
             if (chart.Annotations[i] == null) throw new InvalidOperationException("Chart annotations collection must not contain null entries.");
+            if (chart.Annotations[i].Id is ChartAnnotationId id) {
+                id.Validate();
+                if (!annotationIds.Add(id)) throw new InvalidOperationException("Annotation IDs must be unique within a chart.");
+            }
         }
 
         ValidateAxisLabels(chart.Options.XAxis, "X-axis");
@@ -267,8 +279,8 @@ internal static class ChartGuards {
 
     private static void ValidateSpecializedShape(Chart chart, ChartSeriesKind kind, bool preparing) {
         if (kind == ChartSeriesKind.Heatmap || kind == ChartSeriesKind.HexbinHeatmap) {
-            // Fully masked rows keep their position (for example a weekday with no samples) when the column span is known.
-            if (!preparing || chart.Series.Any(series => series.RenderPoints.Count > 0))
+            // Native matrices retain empty peers and masked column spans without inventing cells.
+            if (!preparing)
                 ValidateMinimumPointCount(chart.Series.Where(series => !series.HeatmapColumnCount.HasValue).ToArray(), kind, 1);
             // A categorical matrix may list entities nothing is known about, so it can be empty; a numeric one cannot.
             if (!preparing && !chart.Series.Any(series => series.RenderPoints.Count > 0) && !chart.Series.All(series => series.IsCategoricalHeatmapRow)) throw new InvalidOperationException(kind.ToString() + " charts require at least one visible cell.");
@@ -284,7 +296,6 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.DottedMap && !preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
         else if (kind == ChartSeriesKind.TileMap || kind == ChartSeriesKind.RegionMap) {
             if (!preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
-            ValidateNonNegativeValues(chart.Series[0], kind);
         }
         else if (kind == ChartSeriesKind.Gauge || kind == ChartSeriesKind.Circle) {
             if (!preparing || chart.Series[0].HasSourceData) ValidateScalePair(chart.Series[0], kind.ToString());
@@ -298,7 +309,7 @@ internal static class ChartGuards {
         else if (kind == ChartSeriesKind.Bullet) {
             if (!preparing || chart.Series.Any(series => series.HasSourceData)) ValidateBullets(chart.Series);
         }
-        else if (kind == ChartSeriesKind.Timeline) ValidateMinimumPointCount(chart.Series, kind, 1);
+        else if (kind == ChartSeriesKind.Timeline && !preparing) ValidateMinimumPointCount(chart.Series, kind, 1);
         else if (kind == ChartSeriesKind.StateTimeline) ValidateStateTimeline(chart, preparing);
         else if (kind == ChartSeriesKind.GanttLane) ValidateGanttLanes(chart, preparing);
         else if (kind == ChartSeriesKind.Gantt) {

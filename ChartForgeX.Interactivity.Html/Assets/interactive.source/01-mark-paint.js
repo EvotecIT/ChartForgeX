@@ -74,16 +74,8 @@
     // Native paired fills need a connected span; isolated observations can still paint their own markers or caps.
     return !!(previous && followsPrevious(node) || followsPrevious(next));
   };
-  const pairedExtentScreenBox = (node) => {
-    const region = node._cfxPairedRegion, matrix = node.getScreenCTM();
-    if (!region || !matrix) return null;
-    // Use the captured native extent, excluding the minimum-size transparent browser hit area.
-    const corners = [[region.x, region.y], [region.x + region.width, region.y],
-      [region.x, region.y + region.height], [region.x + region.width, region.y + region.height]]
-      .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
-    return { left: Math.min(...corners.map(p => p.x)), right: Math.max(...corners.map(p => p.x)),
-      top: Math.min(...corners.map(p => p.y)), bottom: Math.max(...corners.map(p => p.y)) };
-  };
+  // Use the captured native extent, excluding the minimum-size transparent browser hit area.
+  const pairedExtentScreenBox = (node) => nativeRegionScreenBox(node, node._cfxPairedRegion);
   // Native producers use rectangular user-space clips, in the live transform of their owning group.
   const nativePaintClips = (node) => {
     const clips = [];
@@ -93,26 +85,32 @@
       const clip = parent.ownerSVGElement.getElementById(reference[1]);
       if (!clip || clip.getAttribute('clipPathUnits') !== 'userSpaceOnUse' || clip.children.length !== 1
         || !clip.firstElementChild.matches('rect')) continue;
-      const matrix = parent.getScreenCTM(), rect = clip.firstElementChild.getBBox();
-      if (!matrix || !(rect.width > 0 && rect.height > 0)) return null;
+      // SVG lengths resolve clip geometry even when a non-rendered clipPath has an empty box.
+      const shape = clip.firstElementChild, matrix = parent.getScreenCTM();
+      const rect = { x: shape.x.baseVal.value, y: shape.y.baseVal.value,
+        width: shape.width.baseVal.value, height: shape.height.baseVal.value };
+      if (!matrix || !Object.values(rect).every(Number.isFinite) || !(rect.width > 0 && rect.height > 0)) return null;
       clips.push({ rect, matrix });
     }
     return clips;
   };
   // A retained fact or a path's box can lie outside the native clips.
-  const paintWithinNativeClips = (node, subject = node) => {
+  const paintWithinNativeClips = (node, subject = node, styles) => {
     const paired = subject !== node && pairedExtentObservation(subject);
     const clips = nativePaintClips(node);
     if (!clips) return false;
+    const projection = clips.length && svgScreenProjection(node.ownerSVGElement, styles);
+    if (projection) for (const clip of clips) clip.matrix = projection.multiply(clip.matrix);
     let box;
     for (const { rect, matrix } of clips) {
       const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
         .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
       const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
       const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
-      // Native SVG coordinates use three decimals; prepared fact locations retain full precision.
+      // Prepared facts can exceed the native coordinate precision.
       const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
-      box ||= paired ? pairedExtentScreenBox(subject) : subject.getBoundingClientRect();
+      box ||= paired ? nativeRegionScreenBox(subject, subject._cfxPairedRegion, projection)
+        : subject !== node ? nativeRegionScreenBox(subject, subject._cfxNativeRegion, projection) || subject.getBoundingClientRect() : subject.getBoundingClientRect();
       if (!box) return false;
       if (subject !== node) {
         // Connected paired fills use their own extent. Single-point line/radar paint keeps its source-location contract.
@@ -162,10 +160,11 @@
     if (!node || !node.matches(paintShapes) || node.closest('[data-cfx-browser-hit-area]') || node.classList.contains('cfx-prepared-point-marker')) return null;
     const pairedBoundary = subject !== node && pairedExtentObservation(subject) && pairedBoundaryRole(node);
     if (/-(highlight|halo|shadow(?:-soft)?)$/.test((node.dataset || {}).cfxRole || '')
-      || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node)) return null;
-    // SVG omits zero-radius circles and ellipses, including their otherwise visible stroke paint.
-    if (node.matches('circle,ellipse')) {
-      const box = node.getBBox();
+      || !paintNodeVisible(node, styles) || !pairedBoundary && !paintWithinNativeClips(node, node, styles)) return null;
+    // SVG disables zero-sized basic shapes, including their otherwise visible stroke paint.
+    let box;
+    if (node.matches('rect,circle,ellipse')) {
+      box = node.getBBox();
       if (!(box.width > 0 && box.height > 0)) return null;
     }
     const paint = paintStyle(node, styles);
@@ -173,28 +172,33 @@
     // A series-wide boundary box cannot establish paint at this observation, connected or isolated.
     if (pairedBoundary) return stroke && pairedBoundaryInk(node, subject, paint) ? stroke : null;
     // Open line marks never paint their inherited default black fill.
-    const fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
+    let fill = /^(line|polyline)$/i.test(node.tagName) || node.dataset.cfxFillArea === 'false' ? null
       : paintValue(node, paint.fill, paint.fillOpacity, styles);
+    // A collapsed filled path has no interior ink. A real horizontal/vertical stroke or round cap still paints.
+    if (fill) {
+      box ||= node.getBBox();
+      if (!(box.width > 0 && box.height > 0)) fill = null;
+    }
     if (cartesianFillObservation(node, subject)) {
       if ((node.dataset.cfxRole || '').endsWith('-pattern')) return stroke && cartesianFillInk(node, subject, styles) ? stroke : null;
       if (fill && cartesianFillInk(node, subject, styles)) return fill;
       return stroke && cartesianFillStrokeInk(node, subject, paint) ? stroke : null;
     }
     const resolved = fill || stroke;
-    return resolved && (subject === node || paintWithinNativeClips(node, subject)) ? resolved : null;
+    return resolved && (subject === node || paintWithinNativeClips(node, subject, styles)) ? resolved : null;
   };
   const primaryTextPaint = (node, decoration, styles) => {
     const role = (node.dataset || {}).cfxRole;
     // Text is the mark for a word-cloud term or annotation caption; ordinary point labels are decoration.
     if (role !== 'word-cloud-term' && role !== 'annotation' && !(decoration && role === 'legend-item')) return null;
     for (const text of node.querySelectorAll('text')) {
-      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text)
+      if (!text.textContent.trim() || !paintNodeVisible(text, styles) || !paintWithinNativeClips(text, text, styles)
         || !decoration && text.closest('[data-cfx-label-decoration]')) continue;
       const style = paintStyle(text, styles);
       if (!(parseFloat(style.fontSize) > 0)) continue;
       const stroke = parseFloat(style.strokeWidth) > 0 ? paintValue(text, style.stroke, style.strokeOpacity, styles) : null;
       const paint = paintValue(text, style.fill, style.fillOpacity, styles) || stroke;
-      if (paint) return paint;
+      if (paint) return { ...paint, textNode: text };
     }
     return null;
   };
@@ -250,7 +254,11 @@
     if (node.closest('[data-cfx-highlight-managed]')) styles = new Map();
     return paintAncestorsVisible(node, styles) ? childPaint(node, false, styles) || seriesPaint(node, styles) : null;
   });
-  const retainedGeometryFact = (node) => ['zero', 'precision-collapse', 'layout-collapse'].includes((node.dataset || {}).cfxGeometryStatus);
+  const retainedGeometryFact = (node) => {
+    const data = node.dataset || {};
+    return ['zero', 'precision-collapse', 'layout-collapse'].includes(data.cfxGeometryStatus)
+      || data.cfxDerived === 'histogram-bin' && data.cfxBinHasValue === 'false';
+  };
   // Geometry alone is not evidence of paint: transparent browser hit areas and retained facts have boxes too.
   // Legend summaries remain usable when their data is muted; data targets obey ancestor muting.
   const pointerTargetPaint = (node, styles = new Map()) => {

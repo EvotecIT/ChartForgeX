@@ -21,7 +21,8 @@ internal static partial class VisualMatrixCompiler {
         var top = axes && chart.Options.XAxis.Visible ? Math.Min(viewport.Height * .15, lineHeight + gap) : 0;
         var scale = chart.Options.HeatmapColorScale;
         var scaleHeight = ScaleVisible(context, presentation) ? scale != null
-            ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height * .35 - gap), presentation, model.EmptyDays > 0) + gap
+            ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height * .35 - gap), presentation,
+                model.EmptyDays > 0, min: model.Min, max: model.Max) + gap
             : Math.Min(viewport.Height * .25, CalendarScaleCaptionHeight(chart, builder, model, style, presentation) + 12 + gap + gap / 3 + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null)) : 0;
         var scaleGap = Math.Min(gap, scaleHeight / 3);
         var area = new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height - top - scaleHeight));

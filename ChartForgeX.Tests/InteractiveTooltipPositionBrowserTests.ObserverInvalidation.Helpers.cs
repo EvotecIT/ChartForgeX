@@ -13,12 +13,14 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
         }) + "<aside id='unrelated-dashboard' style='position:fixed;left:8px;bottom:8px'><span>Background dashboard</span></aside></body></html>";
 
-    private static async Task AcquireObservedPositionAsync(IPage page, bool pinned) {
+    private static async Task<double[]?> AcquireObservedPositionAsync(IPage page, bool pinned) {
+        double[]? pointer = null;
         if (pinned) {
             await page.Locator(Reading).FocusAsync();
             await page.Keyboard.PressAsync("Space");
-        } else await PointerAsync(page);
+        } else pointer = await PointerAsync(page);
         await SettleObservedPositionAsync(page);
+        return pointer;
     }
 
     private static Task SettleObservedPositionAsync(IPage page) => page.EvaluateAsync("async()=>{for(let frame=0;frame<3;frame++)await new Promise(resolve=>requestAnimationFrame(resolve));}");
@@ -26,10 +28,14 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     private static Task InstallPositionWorkProbeAsync(IPage page) => page.EvaluateAsync("""
         ()=>{
             const tip=document.querySelector('.cfx-tooltip'),nativeStyle=window.getComputedStyle;
-            window.positionWork={paintStyleReads:0,placementStyleReads:0,tipStyleWrites:0};
+            window.positionWork={paintStyleReads:0,projectionStyleReads:0,placementStyleReads:0,tipStyleWrites:0};
             window.getComputedStyle=(node,...args)=>{
-                // Attribute the canonical paint work to the position owner; keyboard reconciliation has its own boundary.
-                if(new Error().stack.includes('tooltipPositionAvailable'))window.positionWork.paintStyleReads++;
+                // Geometry calibration reads SVG viewport style without rescanning mark paint.
+                const stack=new Error().stack;
+                if(stack.includes('tooltipPositionAvailable')) {
+                    if(node instanceof SVGSVGElement&&stack.includes('svgScreenProjection'))window.positionWork.projectionStyleReads++;
+                    else window.positionWork.paintStyleReads++;
+                }
                 if(node===tip)window.positionWork.placementStyleReads++;
                 return nativeStyle.call(window,node,...args);
             };

@@ -4,10 +4,11 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.SvgRaster;
 
 internal readonly struct SvgRasterPaint {
-    private SvgRasterPaint(ChartColor? color, string? referenceId, bool none) {
+    private SvgRasterPaint(ChartColor? color, string? referenceId, bool none, bool currentColor = false) {
         Color = color;
         ReferenceId = referenceId;
         IsNone = none;
+        IsCurrentColor = currentColor;
     }
 
     public ChartColor? Color { get; }
@@ -15,15 +16,20 @@ internal readonly struct SvgRasterPaint {
     public bool IsNone { get; }
     public bool IsReference => !string.IsNullOrWhiteSpace(ReferenceId);
 
+    private bool IsCurrentColor { get; }
+
     public static SvgRasterPaint None => new(null, null, true);
     public static SvgRasterPaint Solid(ChartColor color) => new(color, null, false);
     public static SvgRasterPaint Reference(string id) => new(null, id, false);
+
+    /// <summary>Resolves used color after the element's cascade while retaining the inherited keyword.</summary>
+    public SvgRasterPaint ResolveCurrentColor(ChartColor color) => IsCurrentColor ? new(color, null, false, true) : this;
 
     public static SvgRasterPaint Parse(string value, ChartColor currentColor, SvgRasterPaint fallback) {
         if (string.IsNullOrWhiteSpace(value)) return fallback;
         var trimmed = value.Trim();
         if (string.Equals(trimmed, "none", StringComparison.OrdinalIgnoreCase)) return None;
-        if (string.Equals(trimmed, "currentColor", StringComparison.OrdinalIgnoreCase)) return Solid(currentColor);
+        if (string.Equals(trimmed, "currentColor", StringComparison.OrdinalIgnoreCase)) return new(currentColor, null, false, true);
         var reference = TryParseReference(trimmed);
         if (reference != null) return Reference(reference);
         return SvgRasterColor.TryParse(trimmed, out var color) ? Solid(color) : fallback;

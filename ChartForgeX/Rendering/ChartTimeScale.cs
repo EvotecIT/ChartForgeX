@@ -237,7 +237,11 @@ internal static partial class ChartTimeScale {
             case TimeUnit.Second: return new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second / step * step);
             case TimeUnit.Minute: return new DateTime(value.Year, value.Month, value.Day, value.Hour, value.Minute / step * step, 0);
             case TimeUnit.Hour: return new DateTime(value.Year, value.Month, value.Day, value.Hour / step * step, 0, 0);
-            case TimeUnit.Day: return new DateTime(value.Year, value.Month, (value.Day - 1) / step * step + 1);
+            case TimeUnit.Day:
+                // Keep automatic multi-day ticks on one display-calendar phase.
+                // Restarting at the first of each month shifts overlapping windows.
+                var days = value.Date.Ticks / TimeSpan.TicksPerDay;
+                return value.Date.AddDays(-PositiveRemainder(days, step));
             case TimeUnit.Week:
                 var monday = value.Date.AddDays(-(((int)value.DayOfWeek + 6) % 7));
                 // All multi-week ticks share one calendar phase across months and windows.

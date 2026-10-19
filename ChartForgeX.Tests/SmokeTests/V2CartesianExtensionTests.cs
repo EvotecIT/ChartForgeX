@@ -134,7 +134,7 @@ public sealed class V2CartesianExtensionTests {
         var trendSvg = preparedTrend.ToSvg(); var boxSvg = preparedBox.ToSvg();
         var trendFacts = preparedTrend.Regions.Select(region => region.Label).ToArray();
         var boxFacts = preparedBox.Regions.Select(region => region.Label).ToArray();
-        trend.Series[0].Points.Clear(); box.Series[0].ReplaceBoxPlots(Array.Empty<ChartBoxPlot>());
+        trend.ClearSeries(); box.Series[0].ReplaceBoxPlots(Array.Empty<ChartBoxPlot>());
         Assert.Equal(8, trendSource[1].Y); Assert.Equal(8, boxSource[0]);
         Assert.Equal(trendFacts, preparedTrend.Regions.Select(region => region.Label));
         Assert.Equal(boxFacts, preparedBox.Regions.Select(region => region.Label));

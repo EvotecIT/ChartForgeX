@@ -71,7 +71,7 @@ public sealed class HistogramOptionsTests {
         Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<ChartPoint>)source)[0] = new ChartPoint(99, 99));
         var svg = prepared.ToSvg();
         observations[0] = new ChartPoint(99, 99);
-        chart.Series[0].Points.Clear();
+        chart.ClearSeries();
         Assert.Equal(.25, source[0].X); Assert.Equal(6, source[0].Y);
         Assert.Equal("0,1", Point(prepared, 0, 0).Metadata["data-cfx-source-points"]);
         Assert.Equal("2", Point(prepared, 0, 0).Metadata["data-cfx-bin-count"]);
@@ -234,8 +234,8 @@ public sealed class HistogramOptionsTests {
         chart.AddHistogram("First", new[] { 1d, 2d }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1d, 4d }));
         chart.AddHistogram("Second", new[] { 1d }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2d, 4d }));
         Assert.Equal(label, Assert.Single(chart.Options.XAxisLabels));
-        chart.Series[0].Points[0] = new ChartPoint(.5, 99);
-        Assert.Throws<InvalidOperationException>(() => Prepare(chart));
+        Assert.Throws<NotSupportedException>(() => chart.Series[0].Points[0] = new ChartPoint(.5, 99));
+        Assert.NotNull(Prepare(chart));
     }
 
     [Fact]

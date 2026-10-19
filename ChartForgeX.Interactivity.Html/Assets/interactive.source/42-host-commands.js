@@ -1,5 +1,4 @@
-  // Native links, annotations and scalar series are selectable facts too. A series wrapper
-  // has no value of its own; its separately identified children own the observations.
+  // Identified leaves own selectable values; series wrappers do not.
   const isDataTarget = node => isInteractiveTarget(node) && renderedTargetKind(node) !== 'legend'
     && (renderedTargetKind(node) !== 'series' || node.dataset.cfxValue !== undefined);
   const dataTargets = root => interactiveTargets(root).filter(isDataTarget);
@@ -27,7 +26,7 @@
     const lower = data.cfxRangeStart;
     const upper = data.cfxRangeEnd;
     if (lower === undefined || upper === undefined) return undefined;
-    // A range has one unit: native negative OLE coordinates cannot mix with Unix-millisecond ISO instants.
+    // Do not mix OLE dates and Unix milliseconds in one range.
     const time = data.cfxRangeScale === 'time' && timeTarget(node) && Number(lower) >= 0 && Number(upper) >= 0;
     const from = time ? data.cfxRangeStartInstant ?? dataValue(lower, true) : dataValue(lower, false);
     const to = time ? data.cfxRangeInclusiveEndInstant ?? data.cfxRangeEndInstant ?? dataValue(upper, true) : dataValue(upper, false);
@@ -47,13 +46,13 @@
     root.toggleAttribute('data-cfx-has-selection', selected);
     if (selected) root.dataset.cfxHasSelection = 'true';
     nodes.forEach(node => {
-      // Selection and external highlights are independent foregrounds. Their combined dim policy
-      // keeps either active mark at full strength instead of letting the two layers dim each other.
+      // Selection and host highlights share foreground; neither dims the other.
       const active = node.classList.contains('cfx-selected') || node.classList.contains('cfx-highlighted');
       node.classList.toggle('cfx-selection-dim', selectionForeground && root.dataset.cfxDimOthersSelected === 'true' && !active);
       node.classList.toggle('cfx-linked-dim', highlightForeground && root._cfxHostHighlight?.dim === true && !active);
     });
     syncCartesianLinkedPaint(root, nodes);
+    refreshSelectionCuePaint(root, nodes);
   };
   const selectionSignature = root => selectedTargets(root).map(targetKey).join('\n');
   const publishSelectionChange = (root, reason, sync = false, previousTargets) => {
@@ -77,8 +76,7 @@
     const a = intervalNumber(left), b = intervalNumber(right);
     if (a !== b) return a < b ? -1 : 1;
     if (typeof left !== 'string') return 0;
-    // Date.parse normalizes offsets but truncates fractional milliseconds. Compare that remainder
-    // separately so precise instants never round together in a Unix-millisecond floating-point value.
+    // Compare fractional milliseconds separately from Date.parse's truncated value.
     const remainder = value => (value.match(/\.(\d+)(?:Z|[+-]\d\d:\d\d)$/)?.[1] || '').slice(3);
     const x = remainder(left), y = remainder(right), length = Math.max(x.length, y.length);
     const paddedX = x.padEnd(length, '0'), paddedY = y.padEnd(length, '0');
@@ -153,11 +151,35 @@
     clearBrushCommand(root, options);
     return runSelectionCommand(root, { targets: [] }, { ...options, mode: 'replace' });
   };
-  const captureHostHighlight = (root, sameSource = false) => {
-    const state = copyHostValue(root._cfxHostHighlight || null);
-    if (!state || sameSource) return state;
+  // Retain durable identity for replacement and shared peers.
+  const projectHostHighlight = (root, source, synchronize = false) => {
+    const state = copyHostValue(source);
+    if (!state) return state;
     const match = state.match, nodes = dataTargets(root);
-    const sharedKeys = new Set(JSON.parse(root.dataset.cfxPreparedChart).series.filter(series => !series.local).map(series => series.key));
+    const series = JSON.parse(root.dataset.cfxPreparedChart).series;
+    const sharedKeys = new Set(series.filter(series => !series.local).map(series => series.key));
+    const retainTarget = synchronize ? target => target.seriesScope !== 'local' : durableChartTarget;
+    let observationOwners;
+    const observationReferences = (ids, seriesKey) => {
+      // The source catalog also owns omitted samples.
+      if (!observationOwners) {
+        observationOwners = new Map();
+        series.forEach(owner => (owner.observationIds || []).forEach(({ id }) => {
+          if (!observationOwners.has(id)) observationOwners.set(id, []);
+          observationOwners.get(id).push(owner);
+        }));
+      }
+      const resolved = resolveHostTargets(root, { observationIds: ids, seriesKey });
+      return ids.flatMap(observationId => {
+        const matching = resolved.filter(target => target.observationId === observationId || target.observationIds?.includes(observationId));
+        const declared = (observationOwners.get(observationId) || []).filter(owner => !seriesKey || owner.key === seriesKey);
+        const keys = matching.length || declared.length
+          ? [...matching.filter(target => target.seriesScope === 'shared' && sharedKeys.has(target.seriesKey)).map(target => target.seriesKey),
+            ...declared.filter(owner => !owner.local).map(owner => owner.key)]
+          : Array.from(sharedKeys).filter(key => !seriesKey || key === seriesKey);
+        return Array.from(new Set(keys)).map(seriesKey => ({ seriesKey, observationId }));
+      });
+    };
     let removed = false;
     const retain = (key, predicate) => {
       if (!match[key]) return;
@@ -167,20 +189,32 @@
     retain('seriesKeys', key => sharedKeys.has(key));
     if (match.targets) {
       const original = match.targets;
-      match.targets = original.flatMap(item => nodes.filter(node => item && (!item.seriesKey || item.seriesKey === seriesKey(node))
-        && matchesTargetIdentity(node, item)).map(targetIdentity).filter(durableChartTarget)
-        .map(target => ({ targetKind: target.targetKind, targetId: target.targetId, seriesKey: target.seriesKey })));
-      removed ||= original.some(item => !nodes.some(node => item && (!item.seriesKey || item.seriesKey === seriesKey(node))
-        && matchesTargetIdentity(node, item) && durableChartTarget(targetIdentity(node))));
+      const projected = original.map(item => {
+        if (item?.observationId !== undefined && !item.targetId)
+          return observationReferences([item.observationId], item.seriesKey);
+        return nodes.filter(node => item && matchesTargetIdentity(node, item)).map(targetIdentity).filter(retainTarget);
+      });
+      match.targets = projected.flat();
+      removed ||= projected.some(targets => !targets.length);
     }
-    // Ordinals describe the previous source order; explicit IDs and value filters describe durable intent.
-    if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
+    if (match.observationIds) {
+      const references = observationReferences(match.observationIds, match.seriesKey);
+      const unique = new Map(references.map(item => [JSON.stringify([item.seriesKey, item.observationId]), item]));
+      match.targets = [...(match.targets || []), ...unique.values()];
+      delete match.observationIds;
+      removed = true;
+    }
+    // Source ordinals expire on replacement; IDs and value filters persist.
+    if (synchronize) retain('sourcePoints', item => item && sharedKeys.has(item.seriesKey));
+    else if (match.sourcePoints?.length) { match.sourcePoints = []; removed = true; }
     if (match.seriesKey && !sharedKeys.has(match.seriesKey)) {
-      for (const key of ['observationIds', 'ranges']) if (match[key]?.length) { match[key] = []; removed = true; }
+      for (const key of ['sourcePoints', 'ranges']) if (match[key]?.length) { match[key] = []; removed = true; }
       delete match.seriesKey;
     }
-    return removed && !['targets', 'observationIds', 'categories', 'seriesKeys', 'ranges'].some(key => match[key]?.length) ? null : state;
+    return removed && !['targets', 'observationIds', 'categories', 'seriesKeys', 'sourcePoints', 'ranges'].some(key => match[key]?.length) ? null : state;
   };
+  const captureHostHighlight = (root, sameSource = false) => sameSource
+    ? copyHostValue(root._cfxHostHighlight || null) : projectHostHighlight(root, root._cfxHostHighlight || null);
   const applyHostHighlight = (root, state) => {
     root._cfxHostHighlight = state ? copyHostValue(state) : null;
     const nodes = dataTargets(root), highlighted = state ? nodes.filter(node => matchesHostTarget(node, state.match)) : [];
@@ -193,7 +227,7 @@
     });
     syncSelectionAppearance(root);
     const region = root.querySelector('[data-cfx-live]');
-    if (region) region.textContent = state ? highlighted.length + ' marks highlighted' : 'Highlight cleared';
+    if (region) region.textContent = state ? uiText(root, 'Highlighted', '{count} marks highlighted', { count: highlighted.length }) : uiText(root, 'HighlightCleared', 'Highlight cleared');
     return highlighted.map(targetIdentity);
   };
   const runHighlightCommand = (root, match, options = {}) => {
@@ -201,7 +235,7 @@
     const state = { match: hostMatch(match), dim: options.dim === true, source: options.source || '' };
     const targets = applyHostHighlight(root, state);
     if (options.emit === true) emitHostEvent(root, 'cfxhighlight', { count: targets.length, targets, source: state.source });
-    if (options.sync === true) emitSync(root, { action: 'highlight', state });
+    if (options.sync === true) emitSync(root, { action: 'highlight', state: projectHostHighlight(root, state, true) });
     return targets;
   };
   const clearHighlightCommand = (root, options = {}) => {

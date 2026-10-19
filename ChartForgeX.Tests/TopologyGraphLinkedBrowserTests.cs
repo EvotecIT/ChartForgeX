@@ -202,6 +202,7 @@ public sealed class TopologyGraphLinkedBrowserTests {
     }
 
     [BrowserTheory]
+    [Trait("BrowserSuite", "Compatibility")]
     [InlineData(false)]
     [InlineData(true)]
     public async Task GraphHighlightPaintStaysScopedToExplicitNodeShapes(bool dark) {
@@ -233,7 +234,8 @@ public sealed class TopologyGraphLinkedBrowserTests {
         Assert.Equal(3, highlighted.GetArrayLength());
         Assert.All(highlighted.EnumerateArray(), item => {
             Assert.Equal(selectedColor, item.GetProperty("stroke").GetString());
-            Assert.Equal("4px", item.GetProperty("width").GetString());
+            // Highlight and selection share the native five-pixel mark width across backends.
+            Assert.Equal("5px", item.GetProperty("width").GetString());
         });
         Assert.Equal("none", await page.Locator(".cfx-graph-bg").EvaluateAsync<string>("node=>getComputedStyle(node).stroke"));
         await CaptureAsync(page, "graph-scoped-shape-highlights-" + dark, new { before, highlighted, selectedColor });

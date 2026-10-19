@@ -68,7 +68,7 @@ public sealed class NumericRadialPrecisionBrowserTests {
         await MoveAwayAsync(page);
         if (await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned") == "true")
             await page.Locator("[data-cfx-reset]").ClickAsync();
-        await target.FocusAsync(); Assert.Contains("Observed", await TooltipTextAsync(page));
+        await FocusWithKeyboardAsync(page, target); Assert.Contains("Observed", await TooltipTextAsync(page));
         Assert.Equal("1", await target.GetAttributeAsync("data-cfx-y"));
         await page.Keyboard.PressAsync("Space"); Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));

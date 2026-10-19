@@ -86,8 +86,9 @@ internal static partial class VisualCartesianCompiler {
         var hasSecondary = chart.Series.Any(series => series.YAxis == ChartAxisSide.Secondary);
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryYAxis(chart, range, stacks) : null;
         var labels = new CartesianLabels();
+        var categoryGroups = CategoryGroupSource.Create(chart, range);
         var layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
-            stacks, coordinates, bubbleScale, colors, categoryLabels, labels, expandMarkers: true);
+            stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: true);
         if (layout == null) {
             if (xViewport != null) throw new InvalidOperationException("An X viewport requires a usable plot rectangle.");
             return null;
@@ -104,7 +105,7 @@ internal static partial class VisualCartesianCompiler {
                 range = range.Copy(); range.SetXBounds(xViewport.Minimum, xViewport.Maximum);
                 secondaryRange = secondaryRange?.Copy(); secondaryRange?.SetXBounds(xViewport.Minimum, xViewport.Maximum);
                 layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
-                    stacks, coordinates, bubbleScale, colors, categoryLabels, labels, expandMarkers: false)
+                    stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: false)
                     ?? throw new InvalidOperationException("An X viewport requires a usable plot rectangle.");
             }
         }
@@ -176,7 +177,7 @@ internal static partial class VisualCartesianCompiler {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
                         DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index], clipMarks, xViewport);
-                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index]);
+                    else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index], xViewport);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
@@ -196,7 +197,7 @@ internal static partial class VisualCartesianCompiler {
             DrawDataLabels(context, builder, labelBounds, labels, obstacles);
         CaptureReadouts(chart, builder, range, secondaryRange, axisLabels, horizontal, secondaryOnly);
         return hasProjection
-            ? new ChartXProjection(fullMinimum, fullMaximum, range.MinX, range.MaxX, plot, chart.Options.XAxis.Reversed) : null;
+            ? new ChartXProjection(fullMinimum, fullMaximum, range.MinX, range.MaxX, plot, chart.Options.XAxis.Reversed, chart.Options.XAxis.Scale) : null;
     }
 
     private static void Validate(Chart chart) {
@@ -243,7 +244,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-fill-point-start"] = Number(start), ["data-cfx-fill-point-count"] = Number(count)
         });
 
-    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null, bool visible = true) {
+    private static IDisposable PointGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int pointIndex, ChartRect bounds, ResolvedPointLabel resolvedLabel, ChartLabels chartLabels, ChartStackPoint? stack = null, ChartSeriesColorSurface? colorSurface = null, bool visible = true) {
         var point = series.RenderPoints[pointIndex];
         var id = PointId(seriesIndex, pointIndex);
         var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + ChartNumericFormatter.FormatCoordinate(point.X) + ", " + ChartNumericFormatter.FormatCoordinate(point.Y) + ")";
@@ -266,7 +267,7 @@ internal static partial class VisualCartesianCompiler {
         metadata["aria-label"] = label;
         builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, label));
         if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
-        if (series.HistogramBinLayout != null) AddHistogramMetadata(metadata, series, pointIndex);
+        if (series.HistogramBinLayout != null) AddHistogramMetadata(metadata, series, pointIndex, chartLabels);
         return builder.PushGroup(id, "point", metadata);
     }
 

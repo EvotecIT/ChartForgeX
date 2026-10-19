@@ -13,6 +13,7 @@ internal static partial class VisualMapCompiler {
         ChartColorPresentation presentation, TileMapLegendInset? legendInset = null) {
         if (!presentation.ShowLegend || !context.Frame.ShowLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
         if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) return DiscreteScaleLayout(chart, context, builder, plot, presentation);
+        if (chart.Options.MapColorScale?.Captions.Count > 0) return CaptionedScaleLayout(chart, context, builder, plot, min, max, presentation);
         if (chart.Options.MapColorScale is ChartColorScale scale && !MapHasDomain(chart, scale, min, max))
             return MissingScaleLayout(chart, context, builder, plot, presentation);
         var texts = ResolveScaleCaptions(chart, min, max, presentation);
@@ -52,6 +53,10 @@ internal static partial class VisualMapCompiler {
 
     private static void DrawScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
         if (!presentation.ShowLegend || !context.Frame.ShowLegend) return;
+        if (chart.Options.MapColorScale?.Captions.Count > 0) {
+            DrawCaptionedScale(chart, context, builder, layout, colors, min, max, presentation);
+            return;
+        }
         if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) {
             DrawDiscreteScale(chart, context, builder, layout, colors, presentation);
             return;
@@ -137,9 +142,9 @@ internal static partial class VisualMapCompiler {
                     }
                 }
                 VisualRadialPrimitives.Text(builder, layout.Texts[2], new ChartRect(area.Left, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-low",
-                    alignment: layout.Inset ? TextAlignment.Left : TextAlignment.Center);
+                    alignment: TextAlignment.Left);
                 VisualRadialPrimitives.Text(builder, layout.Texts[0], new ChartRect(area.Left + area.Width / 2, area.Top, area.Width / 2, Math.Min(row, area.Height)), style, "map-scale-label", "map-scale-high",
-                    alignment: layout.Inset ? TextAlignment.Right : TextAlignment.Center);
+                    alignment: TextAlignment.Right);
                 var next = swatchTop + swatchHeight;
                 if (ChartHeatmapSurface.MapMidpointLabel(chart) != null) {
                     var center = gradient ? area.Left + area.Width * ChartColorScaleLegend.MidpointRatio(scale!, min, max)

@@ -4,14 +4,15 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
 
-/// <summary>A detached linear X projection captured from a prepared Line or StepLine chart.</summary>
+/// <summary>A detached linear or time X projection captured from a supported prepared Cartesian chart.</summary>
 /// <remarks>Bounds include resolved authored limits and automatic full-chart marker padding.
 /// A requested viewport retains those full bounds while using its exact window for mapping and clipping.
 /// This snapshot does not retain the chart, its axes, or formatter callbacks.</remarks>
 public sealed class ChartXProjection {
-    internal ChartXProjection(double fullMinimum, double fullMaximum, double minimum, double maximum, ChartRect plotBounds, bool reversed) {
+    internal ChartXProjection(double fullMinimum, double fullMaximum, double minimum, double maximum, ChartRect plotBounds, bool reversed,
+        ChartScaleKind scale = ChartScaleKind.Linear) {
         FullMinimum = fullMinimum; FullMaximum = fullMaximum;
-        Minimum = minimum; Maximum = maximum; PlotBounds = plotBounds; Reversed = reversed;
+        Minimum = minimum; Maximum = maximum; PlotBounds = plotBounds; Reversed = reversed; Scale = scale;
     }
 
     /// <summary>Gets the lower resolved X bound before applying a viewport.</summary>
@@ -26,6 +27,8 @@ public sealed class ChartXProjection {
     public ChartRect PlotBounds { get; }
     /// <summary>Gets whether increasing source X runs from right to left.</summary>
     public bool Reversed { get; }
+    /// <summary>Gets the source coordinate scale. Time coordinates use the chart's OLE Automation date units.</summary>
+    public ChartScaleKind Scale { get; }
 
     /// <summary>Maps a finite source X coordinate into logical scene units.</summary>
     /// <param name="sourceX">A source coordinate, including coordinates outside the current window.</param>

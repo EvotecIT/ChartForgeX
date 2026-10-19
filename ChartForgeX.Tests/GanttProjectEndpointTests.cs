@@ -206,8 +206,7 @@ public sealed class GanttProjectEndpointTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = PlanChart(width, mode, string.Empty);
         var prepared = Prepare(chart);
-        await using var session = await InteractiveChartBrowser.OpenAsync(
-            "<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 340);
+        await using var session = await BrowserProofFonts.OpenAsync(chart.ToHtmlFragment(), width, 340);
         var labels = await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync();
         Assert.Equal(Captions(prepared).Select(label => label.Text.Lines.Single().Text), labels);
         Assert.Equal("2026-03-02", labels[0]);
@@ -246,7 +245,7 @@ public sealed class GanttProjectEndpointTests {
 
     private static Chart PlanChart(int width, VisualThemeMode mode, string interval) => new MermaidParser()
         .ParseGantt(string.Format(CultureInfo.InvariantCulture, Plan, interval)).Document!.ToChart().WithSize(width, 300)
-        .WithTheme(VisualTheme.Graphite(), mode).WithPngFont(Font()).ConfigureGridStyle(style => style.ShowVerticalLines = true);
+        .WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(BrowserProofFonts.Family).WithPngFont(Font()).ConfigureGridStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()
         .Where(text => text.Role == "schedule-tick-label").ToArray();

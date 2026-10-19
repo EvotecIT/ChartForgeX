@@ -263,7 +263,7 @@ internal static partial class SvgRasterRenderer {
         var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(HorizontalLength(element, "x", viewport), VerticalLength(element, "y", viewport)));
         var referencedAncestors = new List<SvgRasterElement>(definitions.AncestorsFor(referenced));
         if (IsSymbolElement(referenced)) {
-            var symbolStyle = ResolveReferencedStyle(style, referenced, definitions);
+            var symbolStyle = ResolveUseStyle(style, referenced, definitions);
             if (!symbolStyle.Displayed) return;
             var viewBox = referenced.Get("viewBox");
             var symbolWidth = HorizontalLength(element, "width", viewport, viewport.Width);
@@ -293,13 +293,10 @@ internal static partial class SvgRasterRenderer {
         RenderElement(canvas, referenced, style, useMatrix, definitions, width, height, referenceDepth + 1, referencedAncestors, viewport);
     }
 
-    private static SvgRasterStyle ResolveReferencedStyle(SvgRasterStyle parentStyle, SvgRasterElement referenced, SvgRasterDefinitions definitions) {
-        var inherited = parentStyle.Inherit();
-        var definitionAncestors = definitions.AncestorsFor(referenced);
-        foreach (var property in SvgRasterStyle.ResolveCustomProperties(definitions.StyleSheet, definitionAncestors, referenced)) {
-            if (!inherited.CustomProperties.ContainsKey(property.Key)) inherited.CustomProperties[property.Key] = property.Value;
-        }
-        return SvgRasterStyle.Resolve(inherited, referenced, definitions.StyleSheet, definitionAncestors);
+    private static SvgRasterStyle ResolveUseStyle(SvgRasterStyle parentStyle, SvgRasterElement referenced, SvgRasterDefinitions definitions) {
+        // A use instance inherits from its use host, not ancestors outside the referenced subtree.
+        // Keep the original ancestry only for matching selectors on the referenced element.
+        return SvgRasterStyle.Resolve(parentStyle, referenced, definitions.StyleSheet, definitions.AncestorsFor(referenced));
     }
 
     private static void RenderPath(RgbaCanvas canvas, SvgRasterElement element, SvgRasterStyle style, SvgRasterMatrix matrix, SvgRasterDefinitions definitions, int width, int height, int referenceDepth, List<SvgRasterElement> ancestors, SvgRasterViewport viewport) {
@@ -431,7 +428,7 @@ internal static partial class SvgRasterRenderer {
             frame.Origin.X,
             frame.Origin.Y);
         if (!tileToCanvas.TryInvert(out var canvasToTile)) return false;
-        ReportUnsupportedFilter(pattern.Element, ResolveReferencedStyle(SvgRasterStyle.Default, pattern.Element, definitions), definitions);
+        ReportUnsupportedFilter(pattern.Element, SvgRasterStyle.ResolveWithAncestors(pattern.Element, definitions.StyleSheet, definitions.AncestorsFor(pattern.Element)), definitions);
         var tileCanvas = new RgbaCanvas(tileWidth, tileHeight, 1);
         var contentMatrix = PatternContentMatrix(pattern, matrix, objectMatrix, objectToCanvas, canvasToTile, objectPaint.HasValue, tileWidth, tileHeight);
         var contentViewport = !string.IsNullOrWhiteSpace(pattern.ViewBox)
@@ -537,7 +534,7 @@ internal static partial class SvgRasterRenderer {
             var useMatrix = matrix.Multiply(SvgRasterMatrix.Translate(HorizontalLength(element, "x", viewport), VerticalLength(element, "y", viewport)));
             var referencedAncestors = new List<SvgRasterElement>(definitions.AncestorsFor(referenced));
             if (IsSymbolElement(referenced)) {
-                var symbolStyle = ResolveReferencedStyle(style, referenced, definitions);
+                var symbolStyle = ResolveUseStyle(style, referenced, definitions);
                 if (!symbolStyle.Displayed) return;
                 var symbolWidth = HorizontalLength(element, "width", viewport, viewport.Width);
                 var symbolHeight = VerticalLength(element, "height", viewport, viewport.Height);
