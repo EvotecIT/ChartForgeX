@@ -10,6 +10,32 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects absent matrix observations through row construction, clear/refill and both native painters.</summary>
 public sealed class MatrixRowLifecycleTests {
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void FixedNumericKeysIdentifyMissingCellsSeparatelyFromObservedZero(bool hexagonal, bool allMissing) {
+        var missingColor = ChartColor.FromHex("#9CA3AF");
+        var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(true)
+            .WithHeatmapColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White)
+                .WithValueRange(0, 10).WithNoDataColor(missingColor))
+            .ConfigureLabels(labels => labels.NoData = "Not measured");
+        Add(chart, hexagonal, "Observed", new double?[] { null, allMissing ? null : 0, null });
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var document = XDocument.Parse(prepared.ToSvg());
+        var missing = Assert.Single(document.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "heatmap-scale-empty");
+        Assert.Equal("true", (string?)missing.Attribute("data-cfx-empty"));
+        Assert.Null(missing.Attribute("data-cfx-value"));
+        var key = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "heatmap-scale-missing-swatch");
+        Assert.Equal(missingColor, key.Fill);
+        Assert.Contains(prepared.Regions, region => region.Role == "heatmap-scale-empty" && region.Label == "Not measured");
+        var cells = Cells(prepared);
+        if (allMissing) Assert.Empty(cells);
+        else Assert.Equal("0", Assert.Single(cells).Attribute("data-cfx-value")?.Value);
+        Assert.NotEmpty(prepared.ToPng(Raster()));
+    }
+
+    [Theory]
     [InlineData(false, VisualThemeMode.Light)]
     [InlineData(false, VisualThemeMode.Dark)]
     [InlineData(true, VisualThemeMode.Light)]

@@ -166,7 +166,7 @@ public sealed partial class ColorScalePositionedNativeTests {
     }
 
     private static ChartColorScale CaptionScale() => ChartColorScale.Diverging(new[] { Cold }, ChartColor.White, new[] { Cool, Warm, Hot }, 0)
-        .WithValueRange(-20, 40).WithLabels("Cold", "Zero", "Hot");
+        .WithValueRange(-20, 40).WithLabels("Cold", "Zero", "Hot").WithNoDataColor(Missing);
 
     private static XElement[] CaptionSources(XDocument document, string family) => Role(document, Prefix(family) + "-caption-source");
 
