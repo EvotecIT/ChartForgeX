@@ -36,7 +36,7 @@ internal static partial class VisualMatrixCompiler {
         if (rows.Any(row => row.IsCategoricalHeatmapRow != categorical)) throw new InvalidOperationException("Numeric and categorical matrix rows cannot be mixed.");
         var categories = new ChartStateCategoryLegend(chart, colors.MutedForeground);
         var formatColumn = ChartAxisValueFormatter.Create(chart.Options.XAxis, columns);
-        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain);
+        var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain, min, max);
         var plot = layout.Plot;
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
         var gap = Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2,

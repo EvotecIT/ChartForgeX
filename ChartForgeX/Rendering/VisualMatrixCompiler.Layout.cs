@@ -10,7 +10,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMatrixCompiler {
     private static MatrixLayout MeasureMatrix(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
-        ChartSeries[] rows, double[] columns, bool categorical, Func<double, string> formatColumn, ChartColorPresentation presentation, bool hasDomain) {
+        ChartSeries[] rows, double[] columns, bool categorical, Func<double, string> formatColumn, ChartColorPresentation presentation, bool hasDomain, double min, double max) {
         var style = VisualStateSceneTools.TickStyle(chart, context); var gap = context.Theme.Spacing;
         var x = chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels;
         var y = chart.Options.ShowAxes && chart.Options.YAxis.Visible;
@@ -71,7 +71,7 @@ internal static partial class VisualMatrixCompiler {
         var plotLeft = viewport.Left + left + (ChartHeatmapColumnLabels.EndsAtColumn(chart, angle) ? side : 0);
         var scaleHeight = !categorical && ScaleVisible(context, presentation)
             ? chart.Options.HeatmapColorScale != null
-                ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left - side), viewport.Height * .35, presentation, hasDomain: hasDomain)
+                ? ColorScaleHeight(chart, context, builder, Math.Max(0, viewport.Width - left - side), viewport.Height * .35, presentation, hasDomain: hasDomain, min: min, max: max)
                 : Math.Min(viewport.Height * .22, lineHeight * 2 + gap + VisualColorScaleLegendScene.HeadingHeight(builder, style, gap / 2, presentation.HasName ? presentation.Name : null)) : 0;
         var plot = new ChartRect(plotLeft, viewport.Top + top, Math.Max(0, viewport.Width - left - side), Math.Max(0, viewport.Height - top - labels - titleHeight - scaleHeight));
         return new MatrixLayout(plot, new ChartRect(plot.Left, viewport.Bottom - scaleHeight, plot.Width, scaleHeight), labels, titleHeight, xTitle, titleStyle,

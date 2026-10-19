@@ -13,6 +13,7 @@ internal static partial class VisualMapCompiler {
         ChartColorPresentation presentation, TileMapLegendInset? legendInset = null) {
         if (!presentation.ShowLegend || !context.Frame.ShowLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
         if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) return DiscreteScaleLayout(chart, context, builder, plot, presentation);
+        if (chart.Options.MapColorScale?.Captions.Count > 0) return CaptionedScaleLayout(chart, context, builder, plot, min, max, presentation);
         if (chart.Options.MapColorScale is ChartColorScale scale && !MapHasDomain(chart, scale, min, max))
             return MissingScaleLayout(chart, context, builder, plot, presentation);
         var texts = ResolveScaleCaptions(chart, min, max, presentation);
@@ -52,6 +53,10 @@ internal static partial class VisualMapCompiler {
 
     private static void DrawScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
         if (!presentation.ShowLegend || !context.Frame.ShowLegend) return;
+        if (chart.Options.MapColorScale?.Captions.Count > 0) {
+            DrawCaptionedScale(chart, context, builder, layout, colors, min, max, presentation);
+            return;
+        }
         if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) {
             DrawDiscreteScale(chart, context, builder, layout, colors, presentation);
             return;

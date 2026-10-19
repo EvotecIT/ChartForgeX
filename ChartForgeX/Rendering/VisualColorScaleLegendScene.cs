@@ -33,6 +33,8 @@ internal static partial class VisualColorScaleLegendScene {
         double gap, double width, double maximum, bool missing, Func<IReadOnlyList<double>, string[]> formatValues, bool hasDomain = true,
         bool compact = false, double min = 0, double max = 0, bool inlineMissing = false, string? heading = null,
         ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto) {
+        if (scale.Captions.Count > 0) return CaptionedHeight(builder, scale, labels, style, gap, width, maximum, missing,
+            formatValues, hasDomain, min, max, inlineMissing, heading, legendStyle);
         var row = builder.MeasureText("Mg", style).Height;
         var headingHeight = Math.Max(0, Math.Min(maximum, HeadingHeight(builder, style, gap, heading)));
         maximum = Math.Max(0, maximum - headingHeight);
@@ -50,6 +52,11 @@ internal static partial class VisualColorScaleLegendScene {
         Func<IReadOnlyList<double>, string[]> formatValues, string diagnosticCode = "matrix.scale-overflow", bool hasDomain = true,
         bool compact = false, ChartRect? missingBounds = null, string? heading = null, string? valueName = null,
         ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto) {
+        if (scale.Captions.Count > 0) {
+            DrawCaptioned(builder, scale, labels, style, gap, bounds, min, max, prefix, missing, missingBlend, formatValues,
+                diagnosticCode, hasDomain, missingBounds, heading, valueName, legendStyle);
+            return;
+        }
         var row = builder.MeasureText("Mg", style).Height;
         var fullBounds = bounds;
         var headingHeight = Math.Max(0, Math.Min(bounds.Height, HeadingHeight(builder, style, gap, heading)));
