@@ -77,6 +77,8 @@ try {
     $requiredContracts = @(
         'V2GalleryBrowserMatrixTests.EveryFamilyKeepsReadableNativeSvgAndHealthyPairedPng',
         'GraphReadabilityBrowserTests.CompactFitUsesScreenSpaceAndResizePreservesTouchedCamera',
+        'GraphResizeLifecycleBrowserTests.ImmediateSearchAfterRemountDoesNotTurnInitialResizeNotificationIntoFit',
+        'GraphResizeLifecycleBrowserTests.HiddenRemountRefitsOnRevealAndActualResizePreservesTouchedCamera',
         'GraphReadabilityBrowserTests.TallCompactFitKeepsPaintClearOfFloatingControls',
         'GraphReadabilityBrowserTests.PreparedAndLiveCaptionsUseClearSpaceAlongTheirRoute',
         'GraphReadabilityBrowserTests.ShortRelationshipUsesEmptySpaceBetweenPaintedNodeDetails',

@@ -63,7 +63,25 @@ public sealed partial class ExplorerLocalizationBrowserTests {
                 texts:surfaces.filter(node=>node.localName==='svg'&&painted(node)).flatMap(svg=>[...svg.querySelectorAll('text')]).map(node=>({...textFacts(node),
                     characters:Array.from({length:node.getNumberOfChars()},(_,index)=>{const point=node.getStartPositionOfChar(index);return [point.x,point.y]})}))}}
             """);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(snapshot.GetRawText())));
+        var json = snapshot.GetRawText();
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json)));
+        var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(directory)) {
+            Directory.CreateDirectory(directory);
+            var context = await page.Locator(selector).EvaluateAsync<JsonElement>("""
+                root=>{const rect=node=>{if(!node)return null;const box=node.getBoundingClientRect();return [box.x,box.y,box.width,box.height]};
+                    return {viewport:[root.dataset.cfxViewportX,root.dataset.cfxViewportY,root.dataset.cfxViewportScale],
+                        selected:root.__cfxGraphState?.nodes.filter(node=>node.el.getAttribute('aria-pressed')==='true').map(node=>node.id),
+                        hover:root.__cfxGraphHoverKey,stage:rect(root.querySelector('.cfx-graph-stage')),
+                        controls:[...root.querySelectorAll('.cfx-graph-toolbar,.cfx-graph-view-controls')].map(rect),
+                        surfaces:[...root.querySelectorAll('svg[data-cfx-role=graph-scene],canvas,.cfx-topology-viewport>svg')].map(node=>({role:node.dataset.cfxRole,
+                            box:rect(node),width:node.width?.baseVal?.value??node.width,height:node.height?.baseVal?.value??node.height,
+                            display:getComputedStyle(node).display,visibility:getComputedStyle(node).visibility}))};}
+                """);
+            await File.WriteAllTextAsync(Path.Combine(directory, "localization-native-" + hash + ".json"),
+                JsonSerializer.Serialize(new { snapshot, context }));
+        }
+        return hash;
     }
 
     private static async Task AssertLeadingEnglishNumberOrderAsync(ILocator message) {

@@ -55,10 +55,12 @@ test('resizing a touched or fixed viewport redraws without resetting it and coal
     queueFrame, id=>frames.delete(id), (root, actual)=>{assert.equal(actual,state);painted.push(root);}, ()=>{throw new Error('Rebuilt stale attributes');}, root=>root.viewportEnabled, lifetimes.graphLifetime, fixture(390,600,1).runtime.graphStageHasLayout);
   const root={__cfxGraphState:state,querySelector:()=>stage,__cfxGraphViewportTouched:true,viewportEnabled:true};
   lifetimes.mount(root);
-  bind(root); callback(); callback(); assert.equal(frames.size,1);
+  bind(root); callback(); callback(); assert.equal(frames.size,0); assert.equal(painted.length,0);
+  // The initial same-size notification owns no redraw; real changes still coalesce.
+  layout={width:400,height:600};callback();layout={width:420,height:600};callback();assert.equal(frames.size,1);
   const flush=()=>{const pending=[...frames.values()];frames.clear();pending.forEach(action=>action());};
   flush(); assert.deepEqual(painted,[root]);
-  root.viewportEnabled=false;root.__cfxGraphViewportTouched=false;callback();flush();assert.equal(painted.length,2);
+  root.viewportEnabled=false;root.__cfxGraphViewportTouched=false;layout={width:440,height:600};callback();flush();assert.equal(painted.length,2);
   layout={width:0,height:0};callback();flush();assert.equal(painted.length,2);
   layout={width:480,height:600};callback();flush();assert.equal(painted.length,3);
   root.isConnected=false;lifetimes.notifyMutations();callback();flush();assert.equal(painted.length,3);assert.equal(disconnected,true);

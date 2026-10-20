@@ -589,8 +589,9 @@ Fit includes complete node captions and badges and adjusts its zoom ceiling for
 the host's screen size. Small scenes can use a compact host without inheriting
 the wide scene's zoom limit. Node positions and the logical scene frame stay
 unchanged. Resizing refits an untouched camera; after a user zooms or pans, it
-preserves that camera until Fit is requested. Large scenes can still require
-zooming or filtering to read individual captions; Fit does not promise a minimum
+preserves that camera until Fit is requested. Typing or clearing search changes
+visibility without moving the camera; Enter selects and centers the first matching
+node. Large scenes can still require zooming or filtering to read individual captions; Fit does not promise a minimum
 font size for an arbitrary graph. Static SVG and PNG measure their complete
 chosen node captions and badges within the design frame. Their requested output
 dimensions scale that frame without reflowing authored node positions.
