@@ -12,6 +12,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 /// <summary>Uses real native preparation replies to qualify the managed host's committed-basis and lifetime contract.</summary>
+[Trait("BrowserSuite", "Compatibility")]
 public sealed class ManagedNativeConnectionBrowserTests {
     [BrowserTheory]
     [InlineData(390, VisualThemeMode.Dark)]

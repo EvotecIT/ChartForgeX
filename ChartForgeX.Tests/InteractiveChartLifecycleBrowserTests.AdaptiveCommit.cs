@@ -15,6 +15,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [BrowserTheory]
     [InlineData("horizontal")]
     [InlineData("vertical-secondary")]
+    [Trait("BrowserSuite", "Compatibility")]
     public async Task AdaptiveUpdateCommitsItsActiveDrawingBeforeHostNotificationAndKeepsFocusAndExportControlsUntilResize(string layout) {
         if (!Enabled) return;
         var pageErrors = new List<string>();
@@ -52,6 +53,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     }
 
     [BrowserFact]
+    [Trait("BrowserSuite", "Compatibility")]
     public async Task AdaptiveUpdateUsesTheCurrentPositiveHostWidthAndNewBreakpointWhileHiddenHostsKeepTheirActiveDrawing() {
         if (!Enabled) return;
         var pageErrors = new List<string>();

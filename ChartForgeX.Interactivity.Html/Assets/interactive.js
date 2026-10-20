@@ -3592,13 +3592,15 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (candidate[key] !== undefined && !Array.isArray(candidate[key])) throw new TypeError('Chart match ' + key + ' must be an array.');
     return candidate;
   };
+  // Parse whole milliseconds consistently; engines round longer fractions differently.
   const intervalNumber = value => typeof value === 'number' && Number.isFinite(value) ? value
-    : typeof value === 'string' && /(?:Z|[+-]\d\d:\d\d)$/.test(value) ? Date.parse(value) : NaN;
+    : typeof value === 'string' && /(?:Z|[+-]\d\d:\d\d)$/.test(value)
+      ? Date.parse(value.replace(/(\.\d{3})\d+(Z|[+-]\d\d:\d\d)$/, '$1$2')) : NaN;
   const compareIntervalValues = (left, right) => {
     const a = intervalNumber(left), b = intervalNumber(right);
     if (a !== b) return a < b ? -1 : 1;
     if (typeof left !== 'string') return 0;
-    // Compare fractional milliseconds separately from Date.parse's truncated value.
+    // Compare the remaining fractional milliseconds from the original values.
     const remainder = value => (value.match(/\.(\d+)(?:Z|[+-]\d\d:\d\d)$/)?.[1] || '').slice(3);
     const x = remainder(left), y = remainder(right), length = Math.max(x.length, y.length);
     const paddedX = x.padEnd(length, '0'), paddedY = y.padEnd(length, '0');

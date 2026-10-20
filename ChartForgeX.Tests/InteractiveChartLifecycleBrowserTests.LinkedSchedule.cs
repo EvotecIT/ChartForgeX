@@ -72,6 +72,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData("2026-03-11T00:00:00.123Z")]
     [InlineData("1970-01-01T00:00:00.123Z")]
     [InlineData("1969-12-31T00:00:00.123Z")]
+    [Trait("BrowserSuite", "Compatibility")]
     public async Task StateIntervalClosedDateRangeExcludesItsExclusiveEndAcrossTheUnixEpoch(string instant) {
         if (!Enabled) return;
         var end = DateTimeOffset.Parse(instant).UtcDateTime;
