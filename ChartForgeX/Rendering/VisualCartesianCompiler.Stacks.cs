@@ -77,7 +77,7 @@ internal static partial class VisualCartesianCompiler {
                 new LabelCandidate(0, positive ? -context.Theme.Spacing : context.Theme.Spacing, .5, positive ? 1 : 0),
                 new LabelCandidate(right - anchor.X + context.Theme.Spacing, 0, 0, positive ? 0 : 1),
                 new LabelCandidate(left - anchor.X - context.Theme.Spacing, 0, 1, positive ? 0 : 1)
-            }, priority: 1) { AssociatedMarkId = id, MeasuredSize = caption.Metrics });
+            }, priority: 1) { AssociatedMarkId = id, MeasuredSize = caption.Metrics, Fallback = LabelFallbackRule.Drop });
         }
     }
 }

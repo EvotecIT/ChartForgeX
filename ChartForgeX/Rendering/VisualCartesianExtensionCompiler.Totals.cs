@@ -68,7 +68,7 @@ internal static partial class VisualCartesianCompiler {
             })) { }
             labels.Add(new LabelPlacementRequest(total.Text, point, total.Style, new[] {
                 new LabelCandidate(positive ? Math.Max(2, context.Theme.Spacing) : -Math.Max(2, context.Theme.Spacing), 0, positive ? 0 : 1, .5)
-            }, priority: 1) { AssociatedMarkId = total.Id, MeasuredSize = total.Metrics });
+            }, priority: 1) { AssociatedMarkId = total.Id, MeasuredSize = total.Metrics, Fallback = LabelFallbackRule.Drop });
         }
     }
 }

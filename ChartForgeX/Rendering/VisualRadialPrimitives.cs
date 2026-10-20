@@ -38,14 +38,16 @@ internal static class VisualRadialPrimitives {
         return style;
     }
 
+    /// <summary>Keeps the complete descriptive fact; Drop omits numeric captions that cannot fit at their resolved size.</summary>
     internal static void Text(VisualSceneBuilder builder, string full, ChartRect area, TextStyle style, string role, string id, SvgPaint? paint = null,
-        TextAlignment alignment = TextAlignment.Center) {
+        TextAlignment alignment = TextAlignment.Center, LabelFallbackRule fallback = LabelFallbackRule.EllipsisThenDrop) {
         builder.AddRegion(new VisualSemanticRegion(id, role, area, full));
         using (builder.PushGroup(id + "-source", role + "-source", new Dictionary<string, string> { ["aria-label"] = full, ["data-cfx-label"] = full })) {
-            var fitted = ChartTextFitting.TrimEnd(full, style.FontSize, Math.Max(0, area.Width), (text, _) => builder.MeasureText(text, style).Width);
+            var fitted = fallback == LabelFallbackRule.Drop ? full
+                : ChartTextFitting.TrimEnd(full, style.FontSize, Math.Max(0, area.Width), (text, _) => builder.MeasureText(text, style).Width);
             var metrics = builder.MeasureText(fitted, style);
             // Centering and intersecting a measured row may subtract a floating-point ULP.
-            if (fitted.Length == 0 || metrics.Height > area.Height + .000001) {
+            if (fitted.Length == 0 || metrics.Width > area.Width + .000001 || metrics.Height > area.Height + .000001) {
                 builder.AddDiagnostic(new VisualDiagnostic("radial.text-overflow", "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions."));
                 return;
             }

@@ -319,24 +319,31 @@ internal static partial class VisualGaugeCompiler {
         if (scaleCaptions.Count == 0) return;
         var colors = context.Theme.Resolve(context.ThemeMode);
         var left = plot.Left + context.Theme.Spacing; var width = Math.Max(0, plot.Width - context.Theme.Spacing * 2);
-        var explicitScale = chart.Options.Gauge.TickLabels.Count > 0;
         var occupied = new List<ChartRect>();
+        var style = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
+        var labelBounds = new ChartRect[scaleCaptions.Count];
+        for (var tick = 0; tick < scaleCaptions.Count; tick++) {
+            var x = left + width * Ratio(data, scaleValues[tick]);
+            var captionWidth = builder.MeasureText(scaleCaptions[tick], style).Width;
+            labelBounds[tick] = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - captionWidth, x - captionWidth / 2)),
+                y + 3, captionWidth, Math.Max(0, height - 3));
+        }
+        var last = scaleCaptions.Count - 1;
+        var reserveEndpoints = chart.Options.Gauge.TickLabels.Count == 0 && last > 0
+            && FitsCaption(plot, labelBounds[0], occupied)
+            && FitsCaption(plot, labelBounds[last], new List<ChartRect> { labelBounds[0] })
+            && builder.MeasureText(scaleCaptions[0], style).Height <= labelBounds[0].Height + .000001
+            && builder.MeasureText(scaleCaptions[last], style).Height <= labelBounds[last].Height + .000001;
+        // Reserve the complete generated endpoints before interior facts, retaining authored paint order.
+        if (reserveEndpoints) { occupied.Add(labelBounds[0]); occupied.Add(labelBounds[last]); }
         builder.Line(left, y, left + width, y, colors.Border, context.Theme.AxisStrokeWidth, "gauge-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
         for (var tick = 0; tick < scaleCaptions.Count; tick++) {
             var x = left + width * Ratio(data, scaleValues[tick]);
             builder.Line(x, y, x, y + 3, colors.Border, context.Theme.AxisStrokeWidth, "gauge-tick", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
-            if (explicitScale) {
-                var style = VisualRadialPrimitives.Style(chart, context, colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
-                var captionWidth = builder.MeasureText(scaleCaptions[tick], style).Width;
-                var bounds = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - captionWidth, x - captionWidth / 2)),
-                    y + 3, captionWidth, Math.Max(0, height - 3));
-                FactualLabel(chart, context, builder, plot, scaleCaptions[tick], bounds, ScaleRole(data, scaleValues[tick], tick),
-                    "series-0-gauge-scale-" + tick, occupied);
-                continue;
-            }
-            var boxWidth = plot.Width / Math.Max(1, scaleCaptions.Count);
-            var box = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right - boxWidth, x - boxWidth / 2)), y + 3, boxWidth, Math.Max(0, height - 3));
-            Label(chart, context, builder, scaleCaptions[tick], box, ScaleRole(data, scaleValues[tick], tick), context.Theme.Typography.AxisSize, ticks: true);
+            var bounds = labelBounds[tick];
+            if (reserveEndpoints && (tick == 0 || tick == last)) occupied.Remove(bounds);
+            FactualLabel(chart, context, builder, plot, scaleCaptions[tick], bounds, ScaleRole(data, scaleValues[tick], tick),
+                "series-0-gauge-scale-" + tick, occupied);
         }
     }
 

@@ -311,7 +311,8 @@ internal static partial class VisualCartesianCompiler {
         if (inside) { style = insideStyle; paint = insidePaint; }
         var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, style, candidates) {
             AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint,
-            AllowWrapping = resolvedLabel.Authored && placement == ChartDataLabelPlacement.Auto
+            AllowWrapping = resolvedLabel.Authored && placement == ChartDataLabelPlacement.Auto,
+            Fallback = resolvedLabel.Authored ? LabelFallbackRule.EllipsisThenDrop : LabelFallbackRule.Drop
         };
         if (labelId != null) ((CartesianLabels)labels).LabelIds.Add(request, labelId);
         if (inside) request.Bounds = mark;

@@ -2,6 +2,19 @@
 public static class GaugeRecipe {
     /// <summary>Creates capacity against its target, or a close-bound linear tolerance measurement.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (variant is "dense-scale" or "compact-dense-scale") {
+            var reading = new ChartGaugeValue(12500.125, 0, 20000, new[] {
+                new ChartGaugeTarget(1800, "Baseline"), new ChartGaugeTarget(9500, "Expected"),
+                new ChartGaugeTarget(10500, "Goal"), new ChartGaugeTarget(19000, "Limit")
+            });
+            return Chart.Create().WithTitle("Processed requests").AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", reading))
+                .WithValueFormat(ChartValueFormat.Number("0.000", System.Globalization.CultureInfo.InvariantCulture))
+                .ConfigureGauge(options => {
+                    options.Form = ChartGaugeForm.Linear; options.TickCount = 11; options.Caption = "Processed requests";
+                    options.Bands.Add(new ChartGaugeBand(0, 10000, ChartSeriesState.Warning));
+                    options.Bands.Add(new ChartGaugeBand(10000, 20000, ChartSeriesState.Success));
+                });
+        }
         if (variant is "precision" or "compact-precision") {
             var tolerance = ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance",
                 new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) }));
