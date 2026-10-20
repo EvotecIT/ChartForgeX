@@ -76,6 +76,13 @@ try {
     }
     $requiredContracts = @(
         'V2GalleryBrowserMatrixTests.EveryFamilyKeepsReadableNativeSvgAndHealthyPairedPng',
+        'GraphReadabilityBrowserTests.CompactFitUsesScreenSpaceAndResizePreservesTouchedCamera',
+        'GraphReadabilityBrowserTests.TallCompactFitKeepsPaintClearOfFloatingControls',
+        'GraphReadabilityBrowserTests.PreparedAndLiveCaptionsUseClearSpaceAlongTheirRoute',
+        'GraphReadabilityBrowserTests.FitMeasuresUntruncatedPrimaryAndSecondaryCaptionsInPhysicalAndVirtualScenes',
+        'GraphReadabilityBrowserTests.NativeStaticFitIncludesTheSameCompletePrimaryAndSecondaryCaptions',
+        'InteractiveChartLifecycleBrowserTests.HostAccentSurvivesReplacementAndAdaptiveDrawingsWhileDefaultsFollowTheNewTheme',
+        'SupportedCombinationBrowserTests.ReplacementRetainsSelectedSourceAndLegendStateAcrossSupportedCompositions',
         'GaugeScalePrecisionBrowserTests.NeedleAtScaleEdgesClearsMeasuredSummaryInRenderedSvg',
         'GaugeScalePrecisionBrowserTests.CloseGaugeBoundsRemainDistinctAndContainedInNativeSvgAndPairedPng',
         'InteractiveTopologyPresentationTests.PointerReleaseOutsideViewportDoesNotResumePanningOnReentry',

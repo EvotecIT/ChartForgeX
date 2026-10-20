@@ -350,7 +350,9 @@ For the repository quality loop, run:
 
 The quality loop builds and tests the solution, checks the pinned Mermaid reference corpus, runs the AOT smoke, generates examples, checks visual-health baselines, and packs and inspects packages. `-QualifyPackages` additionally builds and runs isolated consumers of the packed packages.
 
-The Windows CI quality job enables this gate and retains its reports. Core, Visuals and Stories execute net472 consumers on the runner's installed .NET Framework; the four consumer lanes also execute net8.0 and net10.0, while netstandard2.0 has compile proof. Public-feed and installed-user qualification remain separate.
+The Windows CI quality job enables this gate and retains its reports. Core, Visuals and Stories execute net472 consumers on the runner's installed .NET Framework; adapter and downstream consumers also execute net8.0 and net10.0, while netstandard2.0 has compile proof.
+
+The downstream lane loads public OfficeIMO.ChartForgeX and HtmlForgeX.ChartForgeX adapter packages with the candidate ChartForgeX packages and saves real Office files and report HTML. Running [package qualification](Build/Test-PackageQualification.ps1) with `HFX_TEST_ENABLE_PLAYWRIGHT=1` also exercises packed chart selection, graph editor add/undo/redo and downstream HTML at compact and wide sizes through HtmlTinkerX. Native Office appearance, other installed hosts and private consumers need their own acceptance.
 
 Use a supported Node.js runtime for the Mermaid reference checks. CI selects Node 24, starting at 24.15.0; the npm restore enforces dependency engine requirements.
 
