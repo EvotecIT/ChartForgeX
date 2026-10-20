@@ -200,7 +200,48 @@ public sealed class GeographicMapCompositionTests {
         Assert.Throws<InvalidOperationException>(() => Prepare(tiles));
         var duplicates = Chart.Create().AddDottedMap("First", new[] { new ChartMapPoint("Shared", 1, 1) })
             .AddDottedMap("Second", new[] { new ChartMapPoint("Shared", 2, 2), new ChartMapPoint("Other", 3, 3) });
-        Assert.Contains("one observation", Assert.Throws<ArgumentException>(() => duplicates.AddMapRouteBetweenPoints("Ambiguous", "Shared", "Other")).Message);
+        Assert.Contains("one geographic location", Assert.Throws<ArgumentException>(() => duplicates.AddMapRouteBetweenPoints("Ambiguous", "Shared", "Other")).Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LabelRoutesAcceptCoincidentObservationsWithoutCombiningTheirFacts(bool acrossDatasets) {
+        var first = new ChartMapPoint("Shared", 21, 52, 3).WithColorValue(-5);
+        var peer = new ChartMapPoint("shared", 21, 52, 9).WithColorValue(5);
+        var destination = new ChartMapPoint("Other", 10, 60, 12);
+        var chart = Chart.Create().WithSize(640, 460).WithLegend(false).WithMapViewport(ChartMapViewport.Europe())
+            .AddDottedMap("First", acrossDatasets ? new[] { first, destination } : new[] { first, peer, destination });
+        if (acrossDatasets) chart.AddDottedMap("Second", new[] { peer });
+        if (acrossDatasets) chart.AddMapConnectorBetweenPoints("Shared route", "SHARED", "Other");
+        else chart.AddMapRouteBetweenPoints("Shared route", " SHARED ", "Other");
+        var connector = Assert.Single(chart.Options.MapConnectors);
+        Assert.Equal((21d, 52d, 10d, 60d),
+            (connector.FromLongitude, connector.FromLatitude, connector.ToLongitude, connector.ToLatitude));
+        Assert.Equal(3, chart.Series.Sum(series => series.MapPoints.Count));
+        Assert.Equal(new double?[] { -5, 5 }, chart.Series.SelectMany(series => series.MapPoints)
+            .Where(point => point.Longitude == 21).Select(point => point.ColorValue));
+        var prepared = Prepare(chart);
+        Assert.Equal(3, prepared.Scene.Nodes.OfType<VisualSceneGroup>().Count(node => node.Role == "dotted-map-point-source"));
+        var route = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "dotted-map-connector-source");
+        Assert.Equal("21,52;10,60", route.Metadata["data-cfx-route-coordinates"]);
+        Assert.Contains("Shared route", prepared.ToSvg());
+        Assert.NotEmpty(prepared.ToPng());
+        Capture(prepared, "coincident-label-route-" + acrossDatasets);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LabelRoutesRejectEvenAdjacentRepresentableCoordinatesWithoutAddingAConnector(bool longitudeDiffers) {
+        var longitude = longitudeDiffers ? Math.BitIncrement(21d) : 21;
+        var latitude = longitudeDiffers ? 52 : Math.BitIncrement(52d);
+        var chart = Chart.Create().AddDottedMap("First", new[] { new ChartMapPoint("Shared", 21, 52) })
+            .AddDottedMap("Second", new[] { new ChartMapPoint("Shared", longitude, latitude), new ChartMapPoint("Other", 10, 60) });
+        var error = Assert.Throws<ArgumentException>(() => chart.AddMapRouteBetweenPoints("Ambiguous", "Shared", "Other"));
+        Assert.Equal("fromPointLabel", error.ParamName);
+        Assert.Empty(chart.Options.MapConnectors);
+        Assert.Equal(3, chart.Series.Sum(series => series.MapPoints.Count));
     }
 
     internal static Chart Fixture(ChartMapGeoJsonProjection projection, int width, VisualThemeMode mode) {

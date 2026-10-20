@@ -3458,8 +3458,15 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
       return;
     }
-    if (detail.action === 'viewport' && (detail.xWindow || detail.yWindow) && cartesianViewportConnected(root))
-      requestNativeCartesianWindow(root, { x: detail.xWindow, y: detail.yWindow }, false);
+    if (detail.action === 'viewport' && (detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
+      // Peers share each representable source axis. A missing or differently scaled
+      // Y projection must not discard a compatible X window (or the reverse).
+      const data = root._cfxDataProjection;
+      requestNativeCartesianWindow(root, {
+        ...(validSourceAxisWindow(detail.xWindow, chartXProjection(root), data?.x) ? { x: detail.xWindow } : {}),
+        ...(validSourceAxisWindow(detail.yWindow, chartYProjection(root), data?.y) ? { y: detail.yWindow } : {})
+      }, false);
+    }
     else if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
     else if (detail.action === 'viewport' && detail.state && !connectedXViewport(root)) applyViewport(root, detail.state);
     else if (detail.action === 'brush') {
@@ -5179,8 +5186,13 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     });
     return requestCartesianViewport(root, { kind: 'window', axes: (viewport.x ? 'x' : '') + (viewport.y ? 'y' : ''), sourceViewport }, sync, accepted);
   };
-  const requestViewportReset = root => cartesianViewportConnected(root)
-    ? requestCartesianViewport(root, { kind: 'reset', axes: nativePreparationBinding(root, 'viewport').axes }) : requestXViewport(root, 'reset');
+  const requestViewportReset = root => {
+    if (!cartesianViewportConnected(root)) return requestXViewport(root, 'reset');
+    // Reset restores the native view, rather than replaying a bookmark's complete
+    // window. A replacement can lose Y eligibility while retaining a zoomed X.
+    const axes = nativePreparationBinding(root, 'viewport').axes.replace('y', chartYProjection(root) ? 'y' : '');
+    return requestCartesianViewport(root, { kind: 'reset', axes: axes || 'x' });
+  };
   const requestCartesianViewportZoom = (root, factor, logicalX, logicalY) => {
     const projection = chartXProjection(root), binding = nativePreparationBinding(root, 'viewport'), plot = projection?.plotBounds;
     if (!plot || !Number.isFinite(factor) || factor <= 0) return;

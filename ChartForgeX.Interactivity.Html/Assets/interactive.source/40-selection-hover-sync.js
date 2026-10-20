@@ -299,8 +299,15 @@
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
       return;
     }
-    if (detail.action === 'viewport' && (detail.xWindow || detail.yWindow) && cartesianViewportConnected(root))
-      requestNativeCartesianWindow(root, { x: detail.xWindow, y: detail.yWindow }, false);
+    if (detail.action === 'viewport' && (detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
+      // Peers share each representable source axis. A missing or differently scaled
+      // Y projection must not discard a compatible X window (or the reverse).
+      const data = root._cfxDataProjection;
+      requestNativeCartesianWindow(root, {
+        ...(validSourceAxisWindow(detail.xWindow, chartXProjection(root), data?.x) ? { x: detail.xWindow } : {}),
+        ...(validSourceAxisWindow(detail.yWindow, chartYProjection(root), data?.y) ? { y: detail.yWindow } : {})
+      }, false);
+    }
     else if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
     else if (detail.action === 'viewport' && detail.state && !connectedXViewport(root)) applyViewport(root, detail.state);
     else if (detail.action === 'brush') {

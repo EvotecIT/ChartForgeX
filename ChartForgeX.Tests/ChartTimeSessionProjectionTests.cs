@@ -35,8 +35,10 @@ public sealed class ChartTimeSessionProjectionTests {
         var chart = Mixed(); chart.Options.XAxis.Reversed = reversed;
         var prepared = chart.Prepare(Context()); var projection = prepared.XProjection!; var plot = projection.PlotBounds;
         var quarter = projection.Project(Oa(Friday.AddHours(4))); var thirdQuarter = projection.Project(Oa(Monday.AddHours(4)));
-        Assert.Equal(plot.Left + plot.Width * (reversed ? .75 : .25), quarter, 7);
-        Assert.Equal(plot.Left + plot.Width * (reversed ? .25 : .75), thirdQuarter, 7);
+        // OLE Automation fractions for four/eight hours are inexact. Check the logical-unit error
+        // directly, rather than rounding values that can straddle the same decimal midpoint.
+        Assert.InRange(Math.Abs(plot.Left + plot.Width * (reversed ? .75 : .25) - quarter), 0, 1e-8);
+        Assert.InRange(Math.Abs(plot.Left + plot.Width * (reversed ? .25 : .75) - thirdQuarter), 0, 1e-8);
         Assert.Equal(projection.Project(Oa(Friday.AddHours(8))), projection.Project(Oa(Monday)), 8);
         Assert.Equal(Oa(Monday), projection.Unproject(projection.Project(Oa(Friday.AddHours(8)))), 8);
         Assert.Equal(Oa(Monday.AddHours(8)), projection.Unproject(projection.Project(Oa(Monday.AddHours(8)))), 8);

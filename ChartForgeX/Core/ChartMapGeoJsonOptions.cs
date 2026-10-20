@@ -19,6 +19,29 @@ public sealed class ChartMapGeoJsonOptions {
     private double? _maximumLatitude;
     private string? _weightPropertyName;
     private string? _colorValuePropertyName;
+    private int _maximumObservations = 100_000;
+    private int _maximumExpandedLabelCharacters = 4 * 1024 * 1024;
+
+    /// <summary>Gets or sets the positive maximum number of imported point positions or route waypoints per observation import.
+    /// Coordinate-filtered features do not consume this output budget. The default is 100,000.</summary>
+    public int MaximumObservations {
+        get => _maximumObservations;
+        set {
+            if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "The observation limit must be positive.");
+            _maximumObservations = value;
+        }
+    }
+
+    /// <summary>Gets or sets the positive aggregate UTF-16 character budget for imported point, route and waypoint labels.
+    /// The default is 4,194,304 characters. This limits multipart name expansion before label strings are constructed;
+    /// it does not replace the host's input-size policy.</summary>
+    public int MaximumExpandedLabelCharacters {
+        get => _maximumExpandedLabelCharacters;
+        set {
+            if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "The expanded label limit must be positive.");
+            _maximumExpandedLabelCharacters = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets property names searched for canonical region codes.

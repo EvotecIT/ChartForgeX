@@ -40,6 +40,8 @@ internal sealed class ChartMapPointSizeScale : IChartMarkerSizeScale {
         var ratio = ChartMarkerSizeMapping.Ratio(value.Value, MinimumValue, MaximumValue, Reversed, 0);
         if (_options.MinimumRadius.HasValue || _options.MaximumRadius.HasValue) {
             var minimum = _options.MinimumRadius ?? Math.Min(3, dot * 1.35);
+            if (!_options.MinimumRadius.HasValue && _options.MaximumRadius.HasValue)
+                minimum = Math.Min(minimum, _options.MaximumRadius.Value);
             var maximum = _options.MaximumRadius ?? Math.Max(minimum, dot * 2.2);
             if (maximum < minimum) throw new InvalidOperationException("The map maximum radius must be at least its resolved minimum radius.");
             return ChartMath.InterpolateRange(minimum, maximum, ratio);

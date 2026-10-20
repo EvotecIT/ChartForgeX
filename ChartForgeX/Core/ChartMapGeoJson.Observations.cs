@@ -15,6 +15,7 @@ public static partial class ChartMapGeoJson {
     public static IReadOnlyList<ChartMapPoint> ToMapPoints(string geoJson, ChartMapGeoJsonOptions? options = null) {
         var features = ObservationFeatures(geoJson, ref options);
         var points = new List<ChartMapPoint>();
+        var budget = new ObservationImportBudget(options!);
         var index = 1;
         foreach (var feature in features) {
             if (!options!.IncludesFeature(feature)) continue;
@@ -25,15 +26,18 @@ public static partial class ChartMapGeoJson {
             var label = options.FindName(feature, options.FindCode(feature, index));
             var weight = PointWeight(feature, options);
             var colorValue = NumericFeatureValue(feature, options.ColorValuePropertyName);
-            var featurePoints = new List<ChartMapPoint>();
             var bounds = EmptyCoordinateBounds();
+            long labelCharacters = 0;
             for (var part = 0; part < positions.Count; part++) {
-                var point = GeographicPosition(positions[part], PartLabel(label, part, multiple), weight).WithColorValue(colorValue);
+                var point = GeographicPosition(positions[part], "Position", weight);
                 Include(ref bounds, point.Longitude, point.Latitude);
-                featurePoints.Add(point);
+                labelCharacters += PartLabelLength(label.Length, part, multiple);
             }
-            if (featurePoints.Count > 0 && options.IncludesCoordinateBounds(bounds.MinLongitude, bounds.MaxLongitude, bounds.MinLatitude, bounds.MaxLatitude))
-                points.AddRange(featurePoints);
+            if (positions.Count > 0 && options.IncludesCoordinateBounds(bounds.MinLongitude, bounds.MaxLongitude, bounds.MinLatitude, bounds.MaxLatitude)) {
+                budget.Reserve(positions.Count, labelCharacters);
+                for (var part = 0; part < positions.Count; part++)
+                    points.Add(GeographicPosition(positions[part], PartLabel(label, part, multiple), weight).WithColorValue(colorValue));
+            }
             index++;
         }
         return points.AsReadOnly();
@@ -49,6 +53,7 @@ public static partial class ChartMapGeoJson {
     public static IReadOnlyList<ChartMapConnector> ToMapConnectors(string geoJson, ChartMapGeoJsonOptions? options = null) {
         var features = ObservationFeatures(geoJson, ref options);
         var connectors = new List<ChartMapConnector>();
+        var budget = new ObservationImportBudget(options!);
         var index = 1;
         foreach (var feature in features) {
             if (!options!.IncludesFeature(feature)) continue;
@@ -57,21 +62,32 @@ public static partial class ChartMapGeoJson {
             var coordinates = feature.Geometry!.RequiredArray("coordinates");
             var lines = multiple ? coordinates : new List<GeoJsonValue> { GeoJsonValue.Array(coordinates) };
             var label = options.FindName(feature, options.FindCode(feature, index));
-            var featureConnectors = new List<ChartMapConnector>();
             var bounds = EmptyCoordinateBounds();
+            long labelCharacters = 0, observationCount = 0;
+            for (var part = 0; part < lines.Count; part++) {
+                var positions = lines[part].AsArray("LineString positions");
+                if (positions.Count < 2) throw new ArgumentException("Map route connectors require at least two route points.", "routePoints");
+                var lineLength = PartLabelLength(label.Length, part, multiple);
+                labelCharacters += lineLength;
+                observationCount += positions.Count;
+                for (var position = 0; position < positions.Count; position++) {
+                    var point = GeographicPosition(positions[position], "Position", null);
+                    Include(ref bounds, point.Longitude, point.Latitude);
+                    labelCharacters += PartLabelLength(lineLength, position, true);
+                }
+            }
+            if (lines.Count == 0 || !options.IncludesCoordinateBounds(bounds.MinLongitude, bounds.MaxLongitude, bounds.MinLatitude, bounds.MaxLatitude)) { index++; continue; }
+            budget.Reserve(observationCount, labelCharacters);
             for (var part = 0; part < lines.Count; part++) {
                 var positions = lines[part].AsArray("LineString positions");
                 var lineLabel = PartLabel(label, part, multiple);
                 var route = new List<ChartMapPoint>();
                 for (var position = 0; position < positions.Count; position++) {
                     var point = GeographicPosition(positions[position], PartLabel(lineLabel, position, true), null);
-                    Include(ref bounds, point.Longitude, point.Latitude);
                     route.Add(point);
                 }
-                featureConnectors.Add(new ChartMapConnector(lineLabel, route));
+                connectors.Add(new ChartMapConnector(lineLabel, route));
             }
-            if (featureConnectors.Count > 0 && options.IncludesCoordinateBounds(bounds.MinLongitude, bounds.MaxLongitude, bounds.MinLatitude, bounds.MaxLatitude))
-                connectors.AddRange(featureConnectors);
             index++;
         }
         return connectors.AsReadOnly();

@@ -54,8 +54,13 @@
     });
     return requestCartesianViewport(root, { kind: 'window', axes: (viewport.x ? 'x' : '') + (viewport.y ? 'y' : ''), sourceViewport }, sync, accepted);
   };
-  const requestViewportReset = root => cartesianViewportConnected(root)
-    ? requestCartesianViewport(root, { kind: 'reset', axes: nativePreparationBinding(root, 'viewport').axes }) : requestXViewport(root, 'reset');
+  const requestViewportReset = root => {
+    if (!cartesianViewportConnected(root)) return requestXViewport(root, 'reset');
+    // Reset restores the native view, rather than replaying a bookmark's complete
+    // window. A replacement can lose Y eligibility while retaining a zoomed X.
+    const axes = nativePreparationBinding(root, 'viewport').axes.replace('y', chartYProjection(root) ? 'y' : '');
+    return requestCartesianViewport(root, { kind: 'reset', axes: axes || 'x' });
+  };
   const requestCartesianViewportZoom = (root, factor, logicalX, logicalY) => {
     const projection = chartXProjection(root), binding = nativePreparationBinding(root, 'viewport'), plot = projection?.plotBounds;
     if (!plot || !Number.isFinite(factor) || factor <= 0) return;

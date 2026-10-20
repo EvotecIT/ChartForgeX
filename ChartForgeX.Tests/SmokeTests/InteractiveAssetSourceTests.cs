@@ -24,8 +24,8 @@ internal static partial class SmokeTests {
             Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.js"));
 
         // A shipping-artifact budget catches accidental bundled tools or repeated runtime copies.
-        // The managed native connection adds 589 gzip bytes for shared basis and lifetime ownership.
-        // Its reviewed 83,330-byte artifact fits within 82 KiB, without bundled tools or a second runtime.
+        // Managed basis tracking, compatible-axis synchronization and reset recovery share this runtime.
+        // The reviewed 82 KiB budget excludes bundled tools and repeated runtime copies.
         using var compressed = new MemoryStream();
         using (var gzip = new GZipStream(compressed, CompressionLevel.Optimal, leaveOpen: true)) {
             var script = Encoding.UTF8.GetBytes(HtmlInteractiveChartRenderer.BuildInteractionScript());

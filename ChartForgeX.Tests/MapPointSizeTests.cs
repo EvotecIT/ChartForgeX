@@ -77,6 +77,48 @@ public sealed class MapPointSizeTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapPointSizeOptions().WithSizeDomain(10, 10));
     }
 
+    [Theory]
+    [InlineData(390, 2d)]
+    [InlineData(1200, 2d)]
+    [InlineData(1200, 0d)]
+    public void MaximumRadiusAloneCapsTheResponsiveMinimumForMarksAndSizeKeys(int width, double maximumRadius) {
+        var chart = Chart.Create().WithSize(width, 800).WithMapViewport(ChartMapViewport.Europe()).WithLegend(true)
+            .AddDottedMap("Traffic", new[] { new ChartMapPoint("Low", 0, 50, 0), new ChartMapPoint("High", 10, 60, 100) });
+        chart.Series[0].ConfigureMapPointSize(options => {
+            options.MaximumRadius = maximumRadius;
+            options.SizeDimension.ShowLegend = true;
+        });
+        var prepared = Prepare(chart);
+        var marks = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "dotted-map-point").ToArray();
+        Assert.Equal(2, marks.Length);
+        Assert.All(marks, mark => Assert.InRange(mark.Rx, 0, maximumRadius));
+        Assert.Equal(maximumRadius, marks[1].Rx);
+        var samples = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "map-size-key-0-sample").ToArray();
+        Assert.Equal(new[] { "0", "100" }, samples.Select(node => node.Metadata["data-cfx-size-value"]));
+        Assert.All(samples, sample => Assert.InRange(double.Parse(sample.Metadata["data-cfx-radius"], System.Globalization.CultureInfo.InvariantCulture), 0, maximumRadius));
+        Assert.Equal(new[] { "0", "100" }, prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "dotted-map-point-source")
+            .Select(node => node.Metadata["data-cfx-value"]));
+        Assert.Contains("Traffic", prepared.ToSvg());
+        Assert.NotEmpty(prepared.ToPng());
+        Capture(prepared, "maximum-radius-only-" + width + "-" + maximumRadius);
+    }
+
+    [Fact]
+    public void MinimumOnlyCanRaiseTheResponsiveDefaultWhileExplicitReversedBoundsStillReject() {
+        var chart = Chart.Create().WithSize(640, 460).WithLegend(false).WithMapViewport(ChartMapViewport.Europe())
+            .AddDottedMap("Traffic", new[] { new ChartMapPoint("Low", 0, 50, 0), new ChartMapPoint("High", 10, 60, 100) });
+        var series = chart.Series[0];
+        series.ConfigureMapPointSize(options => options.MinimumRadius = 8);
+        var prepared = Prepare(chart);
+        var marks = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "dotted-map-point").ToArray();
+        Assert.Equal(2, marks.Length);
+        Assert.All(marks, mark => Assert.True(mark.Rx >= 8));
+        var original = prepared.ToSvg();
+        series.ConfigureMapPointSize(options => options.MaximumRadius = 2);
+        Assert.Throws<InvalidOperationException>(() => Prepare(chart));
+        Assert.Equal(original, prepared.ToSvg());
+    }
+
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static void Capture(PreparedVisual prepared, string name) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
