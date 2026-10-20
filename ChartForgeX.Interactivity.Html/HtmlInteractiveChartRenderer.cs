@@ -163,7 +163,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var adaptive = options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive;
         if (adaptive) ValidateAdaptiveOptions(options.Adaptive);
         if (adaptive && !narrow && preparedDrawing == null) {
-            var aligned = chart.PrepareAligned(context, AdaptiveDrawingContext(context, options.Adaptive), viewport);
+            var aligned = chart.PrepareAligned(context, AdaptiveDrawingContext(context, options.Adaptive), viewport,
+                retainFullDrawings: options.XNavigation.Enabled && options.XNavigation.IncludeNavigator);
             preparedDrawing = aligned.First; narrowDrawing = aligned.Second;
             fullDrawing = aligned.FullFirst; fullNarrowDrawing = aligned.FullSecond;
         }

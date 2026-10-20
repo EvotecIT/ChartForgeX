@@ -777,6 +777,24 @@ body {
 }
 
 /* Graphite keeps host controls separate from the chart's single frame. */
+.cfx-chart-context-menu {
+  position: fixed; z-index: 1000; box-sizing: border-box;
+  width: 220px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow: auto;
+  padding: 6px; border: 1px solid var(--cfx-tooltip-line); border-radius: 8px;
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+  font: 14px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, sans-serif);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 22%);
+}
+.cfx-chart-context-menu button {
+  display: block; box-sizing: border-box; width: 100%; padding: 8px 10px;
+  border: 0; border-radius: 4px; background: transparent; color: inherit;
+  font: inherit; text-align: start; cursor: pointer;
+}
+.cfx-chart-context-menu button:focus-visible {
+  outline: 2px solid currentColor; outline-offset: -2px;
+}
+.cfx-chart-context-menu button:disabled { opacity: .5; cursor: default; }
+
 .cfx-interactive-chart[data-cfx-look="graphite"] {
   background: var(--cfx-host-background, transparent); color: var(--cfx-tooltip-text);
   font-family: var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, system-ui, sans-serif);
@@ -1039,6 +1057,50 @@ body {
 .cfx-legend-overflow__entry > .cfx-tool { flex: 0 0 auto; }
 .cfx-legend-overflow__entry > .cfx-legend-overflow__toggle { flex: 1 1 auto; min-width: 0; white-space: normal; text-align: start; }
 .cfx-legend-overflow__toggle[aria-pressed="true"] > span { text-decoration: line-through; }
+
+/* Native range controls live outside the plot and use the same Graphite surface roles. */
+.cfx-x-navigation {
+  display: grid; gap: 10px; width: 100%; max-width: var(--cfx-native-width); margin: 10px auto 0;
+  padding: 12px; border: 1px solid var(--cfx-tooltip-line); border-radius: 6px;
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); box-sizing: border-box;
+  font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, system-ui, sans-serif);
+}
+.cfx-x-navigation[hidden] { display: none !important; }
+.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-x-navigation { max-width: none; }
+.cfx-x-navigation__header, .cfx-x-navigation__presets { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cfx-x-navigation__header { justify-content: space-between; }
+.cfx-x-navigation__header strong { font-size: 13px; font-weight: 600; }
+.cfx-x-navigation__presets .cfx-tool { min-height: 30px; padding: 5px 10px; font-size: 12px; }
+.cfx-x-navigation__overview {
+  position: relative; overflow: hidden; height: 64px; border: 1px solid var(--cfx-tooltip-line); border-radius: 3px;
+  touch-action: none; cursor: crosshair;
+}
+.cfx-x-navigation__overview > svg { display: block; width: 100%; height: 100%; opacity: .72; pointer-events: none; }
+.cfx-x-navigation__window {
+  position: absolute; inset-block: 0; box-sizing: border-box; pointer-events: none;
+  border: 2px solid var(--cfx-host-accent, var(--cfx-default-host-accent));
+  background: color-mix(in srgb, var(--cfx-host-accent, var(--cfx-default-host-accent)) 12%, transparent);
+}
+.cfx-x-navigation__limits { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.cfx-x-navigation__range { display: grid; gap: 5px; min-width: 0; }
+.cfx-x-navigation__range > span { display: flex; justify-content: space-between; gap: 8px; color: var(--cfx-tooltip-muted); }
+.cfx-x-navigation__range output { min-width: 0; color: var(--cfx-tooltip-text); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; text-align: end; }
+.cfx-x-navigation__range input {
+  width: 100%; height: 20px; min-width: 0; margin: 0; cursor: ew-resize;
+  accent-color: var(--cfx-host-accent, var(--cfx-default-host-accent));
+}
+.cfx-x-navigation__range input:focus-visible { outline: 2px solid var(--cfx-host-accent, var(--cfx-default-host-accent)); outline-offset: 3px; }
+.cfx-x-navigation__range input:disabled { cursor: default; opacity: .45; }
+.cfx-x-navigation__status { min-height: 1.4em; color: var(--cfx-tooltip-muted); }
+@media (max-width: 430px) {
+  .cfx-x-navigation__limits { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .cfx-x-navigation__header { align-items: flex-start; }
+}
+@media (forced-colors: active) {
+  .cfx-x-navigation__window { border-color: Highlight; background: transparent; }
+  .cfx-x-navigation__range input { accent-color: Highlight; }
+}
+@media print { .cfx-x-navigation { display: none !important; } }
 .cfx-legend-overflow [data-cfx-legend-page]:disabled { cursor: default; opacity: .5; }
 
 /* Persistent selection and host highlights keep a native SVG cue when filters do not paint. */
@@ -1051,7 +1113,7 @@ body {
 </head>
 <body style="background:#F2F3F4;color:#16181C;font-family:Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif">
 <main class="cfx-shell" style="background:#F2F3F4;color:#16181C;font-family:Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif">
-<section class="cfx-interactive-chart" data-cfx-look="graphite" role="group" aria-label="Sign-ins by method" lang="en" data-cfx-ui="{&quot;ChartControls&quot;:&quot;Chart controls&quot;,&quot;ZoomIn&quot;:&quot;Zoom in&quot;,&quot;ZoomOut&quot;:&quot;Zoom out&quot;,&quot;ZoomInButton&quot;:&quot;Zoom +&quot;,&quot;ZoomOutButton&quot;:&quot;Zoom -&quot;,&quot;Pan&quot;:&quot;Pan&quot;,&quot;PanChart&quot;:&quot;Pan chart&quot;,&quot;Brush&quot;:&quot;Brush&quot;,&quot;BrushRegion&quot;:&quot;Brush select region&quot;,&quot;DownloadSvg&quot;:&quot;Download SVG&quot;,&quot;DownloadPng&quot;:&quot;Download PNG&quot;,&quot;ResetView&quot;:&quot;Reset view&quot;,&quot;Compare&quot;:&quot;Compare {count}&quot;,&quot;Clear&quot;:&quot;Clear&quot;,&quot;Highlighted&quot;:&quot;{count} marks highlighted&quot;,&quot;HighlightCleared&quot;:&quot;Highlight cleared&quot;,&quot;ChartScenarios&quot;:&quot;Chart scenarios&quot;,&quot;All&quot;:&quot;All&quot;,&quot;ShowAllScenarios&quot;:&quot;Show all scenarios&quot;,&quot;AllDataVisible&quot;:&quot;All chart data visible&quot;,&quot;Steps&quot;:&quot;{count} steps&quot;,&quot;StepProgress&quot;:&quot;Step {current} / {count}&quot;,&quot;Previous&quot;:&quot;Prev&quot;,&quot;PreviousStep&quot;:&quot;Previous step&quot;,&quot;Play&quot;:&quot;Play&quot;,&quot;Pause&quot;:&quot;Pause&quot;,&quot;PlayScenario&quot;:&quot;Play scenario&quot;,&quot;PauseScenario&quot;:&quot;Pause scenario&quot;,&quot;Next&quot;:&quot;Next&quot;,&quot;NextStep&quot;:&quot;Next step&quot;,&quot;ClearStep&quot;:&quot;Clear step&quot;,&quot;Link&quot;:&quot;Link&quot;,&quot;CopyScenarioLink&quot;:&quot;Copy scenario link&quot;,&quot;ScenarioTimelineStep&quot;:&quot;Scenario timeline step&quot;,&quot;Pinned&quot;:&quot;Pinned&quot;,&quot;ComparePrevious&quot;:&quot;Previous selected targets&quot;,&quot;CompareNext&quot;:&quot;Next selected targets&quot;,&quot;CompareRange&quot;:&quot;{first}–{last} of {count}&quot;,&quot;Value&quot;:&quot;Value&quot;,&quot;LegendMore&quot;:&quot;More legend entries ({count})&quot;,&quot;LegendPrevious&quot;:&quot;Previous legend entries&quot;,&quot;LegendNext&quot;:&quot;Next legend entries&quot;,&quot;LegendRange&quot;:&quot;{first}–{last} of {count}&quot;,&quot;LegendMute&quot;:&quot;Mute {label}&quot;,&quot;LegendIsolate&quot;:&quot;Isolate {label}&quot;,&quot;LegendIsolateButton&quot;:&quot;Isolate&quot;}" data-cfx-label-value="Value" data-cfx-asset-source="document" data-cfx-chart-id="sign-ins-by-method" data-cfx-prepared-chart="{&quot;series&quot;:[{&quot;name&quot;:&quot;Passkey&quot;,&quot;key&quot;:&quot;cfx:auto:1&quot;,&quot;local&quot;:true,&quot;kind&quot;:&quot;stackedarea&quot;,&quot;state&quot;:&quot;none&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;Authenticator app&quot;,&quot;key&quot;:&quot;cfx:auto:2&quot;,&quot;local&quot;:true,&quot;kind&quot;:&quot;stackedarea&quot;,&quot;state&quot;:&quot;none&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;SMS code&quot;,&quot;key&quot;:&quot;cfx:auto:3&quot;,&quot;local&quot;:true,&quot;kind&quot;:&quot;stackedarea&quot;,&quot;state&quot;:&quot;none&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;Password only&quot;,&quot;key&quot;:&quot;cfx:auto:4&quot;,&quot;local&quot;:true,&quot;kind&quot;:&quot;stackedarea&quot;,&quot;state&quot;:&quot;none&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]}],&quot;xLabels&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;W1&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;W2&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;W3&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;W4&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;W5&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;W6&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;W7&quot;},{&quot;value&quot;:8,&quot;text&quot;:&quot;W8&quot;},{&quot;value&quot;:9,&quot;text&quot;:&quot;W9&quot;},{&quot;value&quot;:10,&quot;text&quot;:&quot;W10&quot;},{&quot;value&quot;:11,&quot;text&quot;:&quot;W11&quot;},{&quot;value&quot;:12,&quot;text&quot;:&quot;W12&quot;}],&quot;regions&quot;:[{&quot;id&quot;:&quot;legend-series-0&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Passkey&quot;,&quot;x&quot;:24,&quot;y&quot;:75.65,&quot;width&quot;:77.130859375,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-1&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Authenticator app&quot;,&quot;x&quot;:113.130859375,&quot;y&quot;:75.65,&quot;width&quot;:129.9052734375,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-2&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;SMS code&quot;,&quot;x&quot;:255.0361328125,&quot;y&quot;:75.65,&quot;width&quot;:87.97265625,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-3&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Password only&quot;,&quot;x&quot;:355.0087890625,&quot;y&quot;:75.65,&quot;width&quot;:112.5380859375,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;cartesian-plot&quot;,&quot;role&quot;:&quot;cartesian-plot&quot;,&quot;label&quot;:&quot;&quot;,&quot;x&quot;:55.34765625,&quot;y&quot;:135.2375,&quot;width&quot;:868.3154296875,&quot;height&quot;:352.67500000000007},{&quot;id&quot;:&quot;axis-x-label-0&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W1 (1)&quot;,&quot;x&quot;:55.34765625,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-1&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W2 (2)&quot;,&quot;x&quot;:134.0126953125,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-2&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W3 (3)&quot;,&quot;x&quot;:212.677734375,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-3&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W4 (4)&quot;,&quot;x&quot;:291.3427734375,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-4&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W5 (5)&quot;,&quot;x&quot;:370.0078125,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-5&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W6 (6)&quot;,&quot;x&quot;:448.6728515625,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-6&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W7 (7)&quot;,&quot;x&quot;:527.337890625,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-7&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W8 (8)&quot;,&quot;x&quot;:606.0029296875,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-8&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W9 (9)&quot;,&quot;x&quot;:684.66796875,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-9&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W10 (10)&quot;,&quot;x&quot;:763.3330078125,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-10&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W11 (11)&quot;,&quot;x&quot;:841.998046875,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-11&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W12 (12)&quot;,&quot;x&quot;:920.6630859375,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-y-label-0&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;0 (0)&quot;,&quot;x&quot;:24,&quot;y&quot;:487.9125000000001,&quot;width&quot;:19.34765625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-1&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;5k (5000)&quot;,&quot;x&quot;:24,&quot;y&quot;:396.6971575625906,&quot;width&quot;:19.34765625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-2&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;10k (10000)&quot;,&quot;x&quot;:24,&quot;y&quot;:305.48181512518113,&quot;width&quot;:19.34765625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-3&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;15k (15000)&quot;,&quot;x&quot;:24,&quot;y&quot;:214.26647268777162,&quot;width&quot;:19.34765625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-title&quot;,&quot;role&quot;:&quot;axis-y-title&quot;,&quot;label&quot;:&quot;Sign-ins&quot;,&quot;x&quot;:55.34765625,&quot;y&quot;:107.15,&quot;width&quot;:868.3154296875,&quot;height&quot;:16.087500000000006},{&quot;id&quot;:&quot;series-0-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 800 (1, 800)&quot;,&quot;x&quot;:52.34765625,&quot;y&quot;:470.3180452100146,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[56.84782812499999,474.74846024672775,0.7499140625000003]]},{&quot;id&quot;:&quot;series-0-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 1,200 (2, 1200)&quot;,&quot;x&quot;:131.0126953125,&quot;y&quot;:463.0208178150218,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[132.51284765625002,467.5904863031274,0.7121086489304236]]},{&quot;id&quot;:&quot;series-0-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 1,700 (3, 1700)&quot;,&quot;x&quot;:209.677734375,&quot;y&quot;:453.8992835712809,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[211.1778671875,458.4861195490398,0.7018787780222726]]},{&quot;id&quot;:&quot;series-0-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 2,300 (4, 2300)&quot;,&quot;x&quot;:288.3427734375,&quot;y&quot;:442.9534424787917,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[289.84288671875004,447.5575893826398,0.6912665173905431]]},{&quot;id&quot;:&quot;series-0-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 3,000 (5, 3000)&quot;,&quot;x&quot;:367.0078125,&quot;y&quot;:430.1832945375544,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[368.50790625,434.8049053389958,0.6802892893253054]]},{&quot;id&quot;:&quot;series-0-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 3,800 (6, 3800)&quot;,&quot;x&quot;:445.6728515625,&quot;y&quot;:415.58883974756884,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[447.17292578125,420.228067418108,0.6689712288374948]]},{&quot;id&quot;:&quot;series-0-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 4,700 (7, 4700)&quot;,&quot;x&quot;:524.337890625,&quot;y&quot;:399.1700781088351,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[525.8379453125,403.8265851544243,0.6575757662621792]]},{&quot;id&quot;:&quot;series-0-point-7&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 5,500 (8, 5500)&quot;,&quot;x&quot;:603.0029296875,&quot;y&quot;:384.57562331884964,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[604.5029648437501,389.2149555802938,0.6689198107533366]]},{&quot;id&quot;:&quot;series-0-point-8&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 6,400 (9, 6400)&quot;,&quot;x&quot;:681.66796875,&quot;y&quot;:368.1568616801159,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[683.1679843750001,372.81347286349194,0.657524795779026]]},{&quot;id&quot;:&quot;series-0-point-9&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 7,200 (10, 7200)&quot;,&quot;x&quot;:760.3330078125,&quot;y&quot;:353.56240689013043,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[761.83300390625,358.201353276555,0.669107985775348]]},{&quot;id&quot;:&quot;series-0-point-10&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 8,100 (11, 8100)&quot;,&quot;x&quot;:838.998046875,&quot;y&quot;:337.1436452513967,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[840.4980234375,341.80035103860837,0.6574801633184826]]},{&quot;id&quot;:&quot;series-0-point-11&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 8,900 (12, 8900)&quot;,&quot;x&quot;:917.6630859375,&quot;y&quot;:322.5491904614112,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[919.16304296875,327.18824143849235,0.6690565679304249]]},{&quot;id&quot;:&quot;series-1-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,200 (1, 7200)&quot;,&quot;x&quot;:52.34765625,&quot;y&quot;:338.9679521001449,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[56.84782812499999,343.3636277461492,0.7499140625000003]]},{&quot;id&quot;:&quot;series-1-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,400 (2, 7400)&quot;,&quot;x&quot;:131.0126953125,&quot;y&quot;:328.0221110076558,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[132.51284765625002,332.62642636478694,0.691183094489728]]},{&quot;id&quot;:&quot;series-1-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,500 (3, 7500)&quot;,&quot;x&quot;:209.677734375,&quot;y&quot;:317.0762699151666,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[211.1778671875,321.6805044596848,0.6912231152151842]]},{&quot;id&quot;:&quot;series-1-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,600 (4, 7600)&quot;,&quot;x&quot;:288.3427734375,&quot;y&quot;:304.3061219739293,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[289.84288671875004,308.92782064247575,0.6802459234527117]]},{&quot;id&quot;:&quot;series-1-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,500 (5, 7500)&quot;,&quot;x&quot;:367.0078125,&quot;y&quot;:293.36028088144013,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[368.50790625,297.9645072251064,0.6912271765124293]]},{&quot;id&quot;:&quot;series-1-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,400 (6, 7400)&quot;,&quot;x&quot;:445.6728515625,&quot;y&quot;:280.5901329402028,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[447.17292578125,285.21182295502757,0.6802501944047336]]},{&quot;id&quot;:&quot;series-1-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,300 (7, 7300)&quot;,&quot;x&quot;:524.337890625,&quot;y&quot;:265.99567815021726,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[525.8379453125,270.6349848077049,0.6689323979509522]]},{&quot;id&quot;:&quot;series-1-point-7&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,100 (8, 7100)&quot;,&quot;x&quot;:603.0029296875,&quot;y&quot;:255.04983705772815,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[604.5029648437501,259.65428123667766,0.6911192982278002]]},{&quot;id&quot;:&quot;series-1-point-8&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 6,900 (9, 6900)&quot;,&quot;x&quot;:681.66796875,&quot;y&quot;:242.27968911649083,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[683.1679843750001,246.90159628729424,0.6801430193873239]]},{&quot;id&quot;:&quot;series-1-point-9&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 6,700 (10, 6700)&quot;,&quot;x&quot;:760.3330078125,&quot;y&quot;:231.33384802400167,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[761.83300390625,235.93828400209927,0.6911233595250452]]},{&quot;id&quot;:&quot;series-1-point-10&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 6,400 (11, 6400)&quot;,&quot;x&quot;:838.998046875,&quot;y&quot;:220.38800693151256,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[840.4980234375,224.99236209699717,0.6911633802505334]]},{&quot;id&quot;:&quot;series-1-point-11&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 6,200 (12, 6200)&quot;,&quot;x&quot;:917.6630859375,&quot;y&quot;:209.4421658390234,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[919.16304296875,214.046440191895,0.6912034009759793]]},{&quot;id&quot;:&quot;series-2-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 4,200 (1, 4200)&quot;,&quot;x&quot;:52.34765625,&quot;y&quot;:262.34706445272093,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[56.84782812499999,266.77746986808086,0.7499140625000003]]},{&quot;id&quot;:&quot;series-2-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 4,000 (2, 4000)&quot;,&quot;x&quot;:131.0126953125,&quot;y&quot;:255.04983705772815,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[132.51284765625002,259.6194959244806,0.7121134390428998]]},{&quot;id&quot;:&quot;series-2-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 3,800 (3, 3800)&quot;,&quot;x&quot;:209.677734375,&quot;y&quot;:247.75260966273538,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[211.1778671875,252.32238132112053,0.7120572843008046]]},{&quot;id&quot;:&quot;series-2-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 3,500 (4, 3500)&quot;,&quot;x&quot;:288.3427734375,&quot;y&quot;:240.45538226774264,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[289.84288671875004,245.0247762525808,0.7122444810986435]]},{&quot;id&quot;:&quot;series-2-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 3,200 (5, 3200)&quot;,&quot;x&quot;:367.0078125,&quot;y&quot;:234.98246172149805,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[368.50790625,239.53441425294218,0.7222777615579038]]},{&quot;id&quot;:&quot;series-2-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 2,900 (6, 2900)&quot;,&quot;x&quot;:445.6728515625,&quot;y&quot;:227.68523432650534,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[447.17292578125,232.2546909354145,0.7122141356704416]]},{&quot;id&quot;:&quot;series-2-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 2,600 (7, 2600)&quot;,&quot;x&quot;:524.337890625,&quot;y&quot;:218.56370008276434,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[525.8379453125,223.1508137406429,0.7017418827831048]]},{&quot;id&quot;:&quot;series-2-point-7&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 2,300 (8, 2300)&quot;,&quot;x&quot;:603.0029296875,&quot;y&quot;:213.0907795365198,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[604.5029648437501,217.6430711221667,0.722108643268662]]},{&quot;id&quot;:&quot;series-2-point-8&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 2,000 (9, 2000)&quot;,&quot;x&quot;:681.66796875,&quot;y&quot;:205.79355214152702,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[683.1679843750001,210.36334712533431,0.7120456714440965]]},{&quot;id&quot;:&quot;series-2-point-9&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 1,800 (10, 1800)&quot;,&quot;x&quot;:760.3330078125,&quot;y&quot;:198.49632474653424,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[761.83300390625,203.06574205604971,0.7122328686263467]]},{&quot;id&quot;:&quot;series-2-point-10&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 1,500 (11, 1500)&quot;,&quot;x&quot;:838.998046875,&quot;y&quot;:193.0234042002897,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[840.4980234375,197.57538141576526,0.7222654493047617]]},{&quot;id&quot;:&quot;series-2-point-11&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 1,300 (12, 1300)&quot;,&quot;x&quot;:917.6630859375,&quot;y&quot;:185.72617680529692,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[919.16304296875,190.29565673962827,0.7122025228137475]]},{&quot;id&quot;:&quot;series-3-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 5,600 (1, 5600)&quot;,&quot;x&quot;:52.34765625,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[56.84782812499999,164.6685522550932,0.7499140625000003]]},{&quot;id&quot;:&quot;series-3-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 5,300 (2, 5300)&quot;,&quot;x&quot;:131.0126953125,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[132.51284765625002,162.87917900217403,0.7409983698268736]]},{&quot;id&quot;:&quot;series-3-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 4,900 (3, 4900)&quot;,&quot;x&quot;:209.677734375,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[211.1778671875,162.86178703703706,0.749893518518526]]},{&quot;id&quot;:&quot;series-3-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 4,500 (4, 4500)&quot;,&quot;x&quot;:288.3427734375,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[289.84288671875004,162.86178703703706,0.749893518518526]]},{&quot;id&quot;:&quot;series-3-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 4,100 (5, 4100)&quot;,&quot;x&quot;:367.0078125,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[368.50790625,164.6685491755788,0.7500468749999953]]},{&quot;id&quot;:&quot;series-3-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 3,700 (6, 3700)&quot;,&quot;x&quot;:445.6728515625,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[447.17292578125,164.68594046141112,0.7499702307055571]]},{&quot;id&quot;:&quot;series-3-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 3,300 (7, 3300)&quot;,&quot;x&quot;:524.337890625,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[525.8379453125,162.8791778699996,0.7409989357619573]]},{&quot;id&quot;:&quot;series-3-point-7&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 2,900 (8, 2900)&quot;,&quot;x&quot;:603.0029296875,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[604.5029648437501,164.66854985488345,0.7500175781250107]]},{&quot;id&quot;:&quot;series-3-point-8&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 2,500 (9, 2500)&quot;,&quot;x&quot;:681.66796875,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[683.1679843750001,164.68594046141112,0.7499702307055571]]},{&quot;id&quot;:&quot;series-3-point-9&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 2,100 (10, 2100)&quot;,&quot;x&quot;:760.3330078125,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[761.83300390625,164.68594046141112,0.7499702307055571]]},{&quot;id&quot;:&quot;series-3-point-10&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 1,800 (11, 1800)&quot;,&quot;x&quot;:838.998046875,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[840.4980234375,164.68594046141112,0.7499702307055571]]},{&quot;id&quot;:&quot;series-3-point-11&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 1,500 (12, 1500)&quot;,&quot;x&quot;:917.6630859375,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[919.16304296875,162.87917673782522,0.7409995016970549]]}],&quot;categoryLabels&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;W1&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;W2&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;W3&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;W4&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;W5&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;W6&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;W7&quot;},{&quot;value&quot;:8,&quot;text&quot;:&quot;W8&quot;},{&quot;value&quot;:9,&quot;text&quot;:&quot;W9&quot;},{&quot;value&quot;:10,&quot;text&quot;:&quot;W10&quot;},{&quot;value&quot;:11,&quot;text&quot;:&quot;W11&quot;},{&quot;value&quot;:12,&quot;text&quot;:&quot;W12&quot;}],&quot;dataProjection&quot;:{&quot;x&quot;:{&quot;minimum&quot;:1,&quot;maximum&quot;:12.038136382257644,&quot;transformedMinimum&quot;:1,&quot;transformedMaximum&quot;:12.038136382257644,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;displayTicks&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;W1&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;W2&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;W3&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;W4&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;W5&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;W6&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;W7&quot;},{&quot;value&quot;:8,&quot;text&quot;:&quot;W8&quot;},{&quot;value&quot;:9,&quot;text&quot;:&quot;W9&quot;},{&quot;value&quot;:10,&quot;text&quot;:&quot;W10&quot;},{&quot;value&quot;:11,&quot;text&quot;:&quot;W11&quot;},{&quot;value&quot;:12,&quot;text&quot;:&quot;W12&quot;}],&quot;displayBounds&quot;:[]},&quot;y&quot;:{&quot;minimum&quot;:0,&quot;maximum&quot;:19332,&quot;transformedMinimum&quot;:0,&quot;transformedMaximum&quot;:19332,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;displayTicks&quot;:[{&quot;value&quot;:0,&quot;text&quot;:&quot;0&quot;},{&quot;value&quot;:5000,&quot;text&quot;:&quot;5k&quot;},{&quot;value&quot;:10000,&quot;text&quot;:&quot;10k&quot;},{&quot;value&quot;:15000,&quot;text&quot;:&quot;15k&quot;}],&quot;displayBounds&quot;:[{&quot;value&quot;:0,&quot;text&quot;:&quot;0&quot;},{&quot;value&quot;:19332,&quot;text&quot;:&quot;19.3k&quot;}]},&quot;horizontal&quot;:false,&quot;plotBounds&quot;:{&quot;x&quot;:55.34765625,&quot;y&quot;:135.2375,&quot;width&quot;:868.3154296875,&quot;height&quot;:352.67500000000007}},&quot;xProjection&quot;:{&quot;fullMinimum&quot;:1,&quot;fullMaximum&quot;:12.038136382257644,&quot;minimum&quot;:1,&quot;maximum&quot;:12.038136382257644,&quot;scale&quot;:&quot;linear&quot;,&quot;reversed&quot;:false,&quot;plotBounds&quot;:{&quot;x&quot;:55.34765625,&quot;y&quot;:135.2375,&quot;width&quot;:868.3154296875,&quot;height&quot;:352.67500000000007}}}" data-cfx-interaction-features="ReportReview" data-cfx-scenario-count="0" data-cfx-deep-link-state="false" data-cfx-responsive-layout="readable" data-cfx-toolbar="band" data-cfx-selection-mode="toggle" data-cfx-brush-axis="xy" data-cfx-dim-others-selected="false" data-cfx-pin-on-select="true" data-cfx-tooltip-mode="shared-x" data-cfx-tooltip-range="distance" data-cfx-tooltip-distance="120" data-cfx-tooltip-delay="0" data-cfx-tooltip-anchor="pointer" data-cfx-tooltip-placements="bottom-right" data-cfx-tooltip-gap="14" data-cfx-tooltip-offset-x="0" data-cfx-tooltip-offset-y="0" data-cfx-crosshair-label="true" style="--cfx-intrinsic-width:960px;--cfx-native-width:960px;--cfx-native-height:540px;--cfx-host-background:transparent;--cfx-tooltip-font:Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif;--cfx-tooltip-surface:var(--cfx-surface-card,#FFFFFF);--cfx-tooltip-text:var(--cfx-text-primary,#16181C);--cfx-tooltip-muted:var(--cfx-text-muted,#4D525B);--cfx-tooltip-line:var(--cfx-surface-line,#E2E4E7);--cfx-tooltip-shadow:var(--cfx-shadow-tooltip,0 8px 24px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.08));--cfx-crosshair-axis:var(--cfx-guide-axis,#E2E4E7);--cfx-default-host-accent:var(--cfx-accent-base,#2A78D6)">
+<section class="cfx-interactive-chart" data-cfx-look="graphite" role="group" aria-label="Sign-ins by method" lang="en" data-cfx-ui="{&quot;ChartControls&quot;:&quot;Chart controls&quot;,&quot;ZoomIn&quot;:&quot;Zoom in&quot;,&quot;ZoomOut&quot;:&quot;Zoom out&quot;,&quot;ZoomInButton&quot;:&quot;Zoom +&quot;,&quot;ZoomOutButton&quot;:&quot;Zoom -&quot;,&quot;Pan&quot;:&quot;Pan&quot;,&quot;PanChart&quot;:&quot;Pan chart&quot;,&quot;Brush&quot;:&quot;Brush&quot;,&quot;BrushRegion&quot;:&quot;Brush select region&quot;,&quot;DownloadSvg&quot;:&quot;Download SVG&quot;,&quot;DownloadPng&quot;:&quot;Download PNG&quot;,&quot;ResetView&quot;:&quot;Reset view&quot;,&quot;XNavigation&quot;:&quot;Data range&quot;,&quot;XFullRange&quot;:&quot;Full range&quot;,&quot;XRangeStart&quot;:&quot;Start&quot;,&quot;XRangeEnd&quot;:&quot;End&quot;,&quot;XWindowPosition&quot;:&quot;Move window&quot;,&quot;XRangeUpdating&quot;:&quot;Updating range…&quot;,&quot;XRangeFailed&quot;:&quot;The range could not be updated.&quot;,&quot;Compare&quot;:&quot;Compare {count}&quot;,&quot;Clear&quot;:&quot;Clear&quot;,&quot;Highlighted&quot;:&quot;{count} marks highlighted&quot;,&quot;HighlightCleared&quot;:&quot;Highlight cleared&quot;,&quot;ChartScenarios&quot;:&quot;Chart scenarios&quot;,&quot;All&quot;:&quot;All&quot;,&quot;ShowAllScenarios&quot;:&quot;Show all scenarios&quot;,&quot;AllDataVisible&quot;:&quot;All chart data visible&quot;,&quot;Steps&quot;:&quot;{count} steps&quot;,&quot;StepProgress&quot;:&quot;Step {current} / {count}&quot;,&quot;Previous&quot;:&quot;Prev&quot;,&quot;PreviousStep&quot;:&quot;Previous step&quot;,&quot;Play&quot;:&quot;Play&quot;,&quot;Pause&quot;:&quot;Pause&quot;,&quot;PlayScenario&quot;:&quot;Play scenario&quot;,&quot;PauseScenario&quot;:&quot;Pause scenario&quot;,&quot;Next&quot;:&quot;Next&quot;,&quot;NextStep&quot;:&quot;Next step&quot;,&quot;ClearStep&quot;:&quot;Clear step&quot;,&quot;Link&quot;:&quot;Link&quot;,&quot;CopyScenarioLink&quot;:&quot;Copy scenario link&quot;,&quot;ScenarioTimelineStep&quot;:&quot;Scenario timeline step&quot;,&quot;Pinned&quot;:&quot;Pinned&quot;,&quot;ComparePrevious&quot;:&quot;Previous selected targets&quot;,&quot;CompareNext&quot;:&quot;Next selected targets&quot;,&quot;CompareRange&quot;:&quot;{first}–{last} of {count}&quot;,&quot;Value&quot;:&quot;Value&quot;,&quot;LegendMore&quot;:&quot;More legend entries ({count})&quot;,&quot;LegendPrevious&quot;:&quot;Previous legend entries&quot;,&quot;LegendNext&quot;:&quot;Next legend entries&quot;,&quot;LegendRange&quot;:&quot;{first}–{last} of {count}&quot;,&quot;LegendMute&quot;:&quot;Mute {label}&quot;,&quot;LegendIsolate&quot;:&quot;Isolate {label}&quot;,&quot;LegendIsolateButton&quot;:&quot;Isolate&quot;}" data-cfx-label-value="Value" data-cfx-asset-source="document" data-cfx-chart-id="sign-ins-by-method" data-cfx-prepared-chart="{&quot;series&quot;:[{&quot;name&quot;:&quot;Passkey&quot;,&quot;key&quot;:&quot;cfx:auto:1&quot;,&quot;local&quot;:true,&quot;kind&quot;:&quot;stackedarea&quot;,&quot;state&quot;:&quot;none&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;Authenticator app&quot;,&quot;key&quot;:&quot;cfx:auto:2&quot;,&quot;local&quot;:true,&quot;kind&quot;:&quot;stackedarea&quot;,&quot;state&quot;:&quot;none&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;SMS code&quot;,&quot;key&quot;:&quot;cfx:auto:3&quot;,&quot;local&quot;:true,&quot;kind&quot;:&quot;stackedarea&quot;,&quot;state&quot;:&quot;none&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]},{&quot;name&quot;:&quot;Password only&quot;,&quot;key&quot;:&quot;cfx:auto:4&quot;,&quot;local&quot;:true,&quot;kind&quot;:&quot;stackedarea&quot;,&quot;state&quot;:&quot;none&quot;,&quot;indices&quot;:[],&quot;observationIds&quot;:[]}],&quot;xLabels&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;W1&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;W2&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;W3&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;W4&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;W5&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;W6&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;W7&quot;},{&quot;value&quot;:8,&quot;text&quot;:&quot;W8&quot;},{&quot;value&quot;:9,&quot;text&quot;:&quot;W9&quot;},{&quot;value&quot;:10,&quot;text&quot;:&quot;W10&quot;},{&quot;value&quot;:11,&quot;text&quot;:&quot;W11&quot;},{&quot;value&quot;:12,&quot;text&quot;:&quot;W12&quot;}],&quot;regions&quot;:[{&quot;id&quot;:&quot;legend-series-0&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Passkey&quot;,&quot;x&quot;:24,&quot;y&quot;:75.65,&quot;width&quot;:77.130859375,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-1&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Authenticator app&quot;,&quot;x&quot;:113.130859375,&quot;y&quot;:75.65,&quot;width&quot;:129.9052734375,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-2&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;SMS code&quot;,&quot;x&quot;:255.0361328125,&quot;y&quot;:75.65,&quot;width&quot;:87.97265625,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;legend-series-3&quot;,&quot;role&quot;:&quot;legend&quot;,&quot;label&quot;:&quot;Password only&quot;,&quot;x&quot;:355.0087890625,&quot;y&quot;:75.65,&quot;width&quot;:112.5380859375,&quot;height&quot;:19.5},{&quot;id&quot;:&quot;cartesian-plot&quot;,&quot;role&quot;:&quot;cartesian-plot&quot;,&quot;label&quot;:&quot;&quot;,&quot;x&quot;:55.34765625,&quot;y&quot;:135.2375,&quot;width&quot;:868.3154296875,&quot;height&quot;:352.67500000000007},{&quot;id&quot;:&quot;axis-x-label-0&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W1 (1)&quot;,&quot;x&quot;:55.34765625,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-1&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W2 (2)&quot;,&quot;x&quot;:134.0126953125,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-2&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W3 (3)&quot;,&quot;x&quot;:212.677734375,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-3&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W4 (4)&quot;,&quot;x&quot;:291.3427734375,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-4&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W5 (5)&quot;,&quot;x&quot;:370.0078125,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-5&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W6 (6)&quot;,&quot;x&quot;:448.6728515625,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-6&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W7 (7)&quot;,&quot;x&quot;:527.337890625,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-7&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W8 (8)&quot;,&quot;x&quot;:606.0029296875,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-8&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W9 (9)&quot;,&quot;x&quot;:684.66796875,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-9&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W10 (10)&quot;,&quot;x&quot;:763.3330078125,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-10&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W11 (11)&quot;,&quot;x&quot;:841.998046875,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-x-label-11&quot;,&quot;role&quot;:&quot;axis-x-label&quot;,&quot;label&quot;:&quot;W12 (12)&quot;,&quot;x&quot;:920.6630859375,&quot;y&quot;:499.9125000000001,&quot;width&quot;:0,&quot;height&quot;:16.08749999999992},{&quot;id&quot;:&quot;axis-y-label-0&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;0 (0)&quot;,&quot;x&quot;:24,&quot;y&quot;:487.9125000000001,&quot;width&quot;:19.34765625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-1&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;5k (5000)&quot;,&quot;x&quot;:24,&quot;y&quot;:396.6971575625906,&quot;width&quot;:19.34765625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-2&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;10k (10000)&quot;,&quot;x&quot;:24,&quot;y&quot;:305.48181512518113,&quot;width&quot;:19.34765625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-label-3&quot;,&quot;role&quot;:&quot;axis-y-label&quot;,&quot;label&quot;:&quot;15k (15000)&quot;,&quot;x&quot;:24,&quot;y&quot;:214.26647268777162,&quot;width&quot;:19.34765625,&quot;height&quot;:0},{&quot;id&quot;:&quot;axis-y-title&quot;,&quot;role&quot;:&quot;axis-y-title&quot;,&quot;label&quot;:&quot;Sign-ins&quot;,&quot;x&quot;:55.34765625,&quot;y&quot;:107.15,&quot;width&quot;:868.3154296875,&quot;height&quot;:16.087500000000006},{&quot;id&quot;:&quot;series-0-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 800 (1, 800)&quot;,&quot;x&quot;:52.34765625,&quot;y&quot;:470.3180452100146,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[56.84782812499999,474.74846024672775,0.7499140625000003]]},{&quot;id&quot;:&quot;series-0-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 1,200 (2, 1200)&quot;,&quot;x&quot;:131.0126953125,&quot;y&quot;:463.0208178150218,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[132.51284765625002,467.5904863031274,0.7121086489304236]]},{&quot;id&quot;:&quot;series-0-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 1,700 (3, 1700)&quot;,&quot;x&quot;:209.677734375,&quot;y&quot;:453.8992835712809,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[211.1778671875,458.4861195490398,0.7018787780222726]]},{&quot;id&quot;:&quot;series-0-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 2,300 (4, 2300)&quot;,&quot;x&quot;:288.3427734375,&quot;y&quot;:442.9534424787917,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[289.84288671875004,447.5575893826398,0.6912665173905431]]},{&quot;id&quot;:&quot;series-0-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 3,000 (5, 3000)&quot;,&quot;x&quot;:367.0078125,&quot;y&quot;:430.1832945375544,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[368.50790625,434.8049053389958,0.6802892893253054]]},{&quot;id&quot;:&quot;series-0-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 3,800 (6, 3800)&quot;,&quot;x&quot;:445.6728515625,&quot;y&quot;:415.58883974756884,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[447.17292578125,420.228067418108,0.6689712288374948]]},{&quot;id&quot;:&quot;series-0-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 4,700 (7, 4700)&quot;,&quot;x&quot;:524.337890625,&quot;y&quot;:399.1700781088351,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[525.8379453125,403.8265851544243,0.6575757662621792]]},{&quot;id&quot;:&quot;series-0-point-7&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 5,500 (8, 5500)&quot;,&quot;x&quot;:603.0029296875,&quot;y&quot;:384.57562331884964,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[604.5029648437501,389.2149555802938,0.6689198107533366]]},{&quot;id&quot;:&quot;series-0-point-8&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 6,400 (9, 6400)&quot;,&quot;x&quot;:681.66796875,&quot;y&quot;:368.1568616801159,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[683.1679843750001,372.81347286349194,0.657524795779026]]},{&quot;id&quot;:&quot;series-0-point-9&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 7,200 (10, 7200)&quot;,&quot;x&quot;:760.3330078125,&quot;y&quot;:353.56240689013043,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[761.83300390625,358.201353276555,0.669107985775348]]},{&quot;id&quot;:&quot;series-0-point-10&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 8,100 (11, 8100)&quot;,&quot;x&quot;:838.998046875,&quot;y&quot;:337.1436452513967,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[840.4980234375,341.80035103860837,0.6574801633184826]]},{&quot;id&quot;:&quot;series-0-point-11&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Passkey: 8,900 (12, 8900)&quot;,&quot;x&quot;:917.6630859375,&quot;y&quot;:322.5491904614112,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[919.16304296875,327.18824143849235,0.6690565679304249]]},{&quot;id&quot;:&quot;series-1-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,200 (1, 7200)&quot;,&quot;x&quot;:52.34765625,&quot;y&quot;:338.9679521001449,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[56.84782812499999,343.3636277461492,0.7499140625000003]]},{&quot;id&quot;:&quot;series-1-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,400 (2, 7400)&quot;,&quot;x&quot;:131.0126953125,&quot;y&quot;:328.0221110076558,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[132.51284765625002,332.62642636478694,0.691183094489728]]},{&quot;id&quot;:&quot;series-1-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,500 (3, 7500)&quot;,&quot;x&quot;:209.677734375,&quot;y&quot;:317.0762699151666,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[211.1778671875,321.6805044596848,0.6912231152151842]]},{&quot;id&quot;:&quot;series-1-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,600 (4, 7600)&quot;,&quot;x&quot;:288.3427734375,&quot;y&quot;:304.3061219739293,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[289.84288671875004,308.92782064247575,0.6802459234527117]]},{&quot;id&quot;:&quot;series-1-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,500 (5, 7500)&quot;,&quot;x&quot;:367.0078125,&quot;y&quot;:293.36028088144013,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[368.50790625,297.9645072251064,0.6912271765124293]]},{&quot;id&quot;:&quot;series-1-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,400 (6, 7400)&quot;,&quot;x&quot;:445.6728515625,&quot;y&quot;:280.5901329402028,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[447.17292578125,285.21182295502757,0.6802501944047336]]},{&quot;id&quot;:&quot;series-1-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,300 (7, 7300)&quot;,&quot;x&quot;:524.337890625,&quot;y&quot;:265.99567815021726,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[525.8379453125,270.6349848077049,0.6689323979509522]]},{&quot;id&quot;:&quot;series-1-point-7&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 7,100 (8, 7100)&quot;,&quot;x&quot;:603.0029296875,&quot;y&quot;:255.04983705772815,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[604.5029648437501,259.65428123667766,0.6911192982278002]]},{&quot;id&quot;:&quot;series-1-point-8&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 6,900 (9, 6900)&quot;,&quot;x&quot;:681.66796875,&quot;y&quot;:242.27968911649083,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[683.1679843750001,246.90159628729424,0.6801430193873239]]},{&quot;id&quot;:&quot;series-1-point-9&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 6,700 (10, 6700)&quot;,&quot;x&quot;:760.3330078125,&quot;y&quot;:231.33384802400167,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[761.83300390625,235.93828400209927,0.6911233595250452]]},{&quot;id&quot;:&quot;series-1-point-10&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 6,400 (11, 6400)&quot;,&quot;x&quot;:838.998046875,&quot;y&quot;:220.38800693151256,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[840.4980234375,224.99236209699717,0.6911633802505334]]},{&quot;id&quot;:&quot;series-1-point-11&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Authenticator app: 6,200 (12, 6200)&quot;,&quot;x&quot;:917.6630859375,&quot;y&quot;:209.4421658390234,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[919.16304296875,214.046440191895,0.6912034009759793]]},{&quot;id&quot;:&quot;series-2-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 4,200 (1, 4200)&quot;,&quot;x&quot;:52.34765625,&quot;y&quot;:262.34706445272093,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[56.84782812499999,266.77746986808086,0.7499140625000003]]},{&quot;id&quot;:&quot;series-2-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 4,000 (2, 4000)&quot;,&quot;x&quot;:131.0126953125,&quot;y&quot;:255.04983705772815,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[132.51284765625002,259.6194959244806,0.7121134390428998]]},{&quot;id&quot;:&quot;series-2-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 3,800 (3, 3800)&quot;,&quot;x&quot;:209.677734375,&quot;y&quot;:247.75260966273538,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[211.1778671875,252.32238132112053,0.7120572843008046]]},{&quot;id&quot;:&quot;series-2-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 3,500 (4, 3500)&quot;,&quot;x&quot;:288.3427734375,&quot;y&quot;:240.45538226774264,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[289.84288671875004,245.0247762525808,0.7122444810986435]]},{&quot;id&quot;:&quot;series-2-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 3,200 (5, 3200)&quot;,&quot;x&quot;:367.0078125,&quot;y&quot;:234.98246172149805,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[368.50790625,239.53441425294218,0.7222777615579038]]},{&quot;id&quot;:&quot;series-2-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 2,900 (6, 2900)&quot;,&quot;x&quot;:445.6728515625,&quot;y&quot;:227.68523432650534,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[447.17292578125,232.2546909354145,0.7122141356704416]]},{&quot;id&quot;:&quot;series-2-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 2,600 (7, 2600)&quot;,&quot;x&quot;:524.337890625,&quot;y&quot;:218.56370008276434,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[525.8379453125,223.1508137406429,0.7017418827831048]]},{&quot;id&quot;:&quot;series-2-point-7&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 2,300 (8, 2300)&quot;,&quot;x&quot;:603.0029296875,&quot;y&quot;:213.0907795365198,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[604.5029648437501,217.6430711221667,0.722108643268662]]},{&quot;id&quot;:&quot;series-2-point-8&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 2,000 (9, 2000)&quot;,&quot;x&quot;:681.66796875,&quot;y&quot;:205.79355214152702,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[683.1679843750001,210.36334712533431,0.7120456714440965]]},{&quot;id&quot;:&quot;series-2-point-9&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 1,800 (10, 1800)&quot;,&quot;x&quot;:760.3330078125,&quot;y&quot;:198.49632474653424,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[761.83300390625,203.06574205604971,0.7122328686263467]]},{&quot;id&quot;:&quot;series-2-point-10&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 1,500 (11, 1500)&quot;,&quot;x&quot;:838.998046875,&quot;y&quot;:193.0234042002897,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[840.4980234375,197.57538141576526,0.7222654493047617]]},{&quot;id&quot;:&quot;series-2-point-11&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;SMS code: 1,300 (12, 1300)&quot;,&quot;x&quot;:917.6630859375,&quot;y&quot;:185.72617680529692,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[919.16304296875,190.29565673962827,0.7122025228137475]]},{&quot;id&quot;:&quot;series-3-point-0&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 5,600 (1, 5600)&quot;,&quot;x&quot;:52.34765625,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[56.84782812499999,164.6685522550932,0.7499140625000003]]},{&quot;id&quot;:&quot;series-3-point-1&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 5,300 (2, 5300)&quot;,&quot;x&quot;:131.0126953125,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[132.51284765625002,162.87917900217403,0.7409983698268736]]},{&quot;id&quot;:&quot;series-3-point-2&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 4,900 (3, 4900)&quot;,&quot;x&quot;:209.677734375,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[211.1778671875,162.86178703703706,0.749893518518526]]},{&quot;id&quot;:&quot;series-3-point-3&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 4,500 (4, 4500)&quot;,&quot;x&quot;:288.3427734375,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[289.84288671875004,162.86178703703706,0.749893518518526]]},{&quot;id&quot;:&quot;series-3-point-4&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 4,100 (5, 4100)&quot;,&quot;x&quot;:367.0078125,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[368.50790625,164.6685491755788,0.7500468749999953]]},{&quot;id&quot;:&quot;series-3-point-5&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 3,700 (6, 3700)&quot;,&quot;x&quot;:445.6728515625,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[447.17292578125,164.68594046141112,0.7499702307055571]]},{&quot;id&quot;:&quot;series-3-point-6&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 3,300 (7, 3300)&quot;,&quot;x&quot;:524.337890625,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[525.8379453125,162.8791778699996,0.7409989357619573]]},{&quot;id&quot;:&quot;series-3-point-7&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 2,900 (8, 2900)&quot;,&quot;x&quot;:603.0029296875,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[604.5029648437501,164.66854985488345,0.7500175781250107]]},{&quot;id&quot;:&quot;series-3-point-8&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 2,500 (9, 2500)&quot;,&quot;x&quot;:681.66796875,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[683.1679843750001,164.68594046141112,0.7499702307055571]]},{&quot;id&quot;:&quot;series-3-point-9&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 2,100 (10, 2100)&quot;,&quot;x&quot;:760.3330078125,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[761.83300390625,164.68594046141112,0.7499702307055571]]},{&quot;id&quot;:&quot;series-3-point-10&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 1,800 (11, 1800)&quot;,&quot;x&quot;:838.998046875,&quot;y&quot;:160.18588092282226,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[840.4980234375,164.68594046141112,0.7499702307055571]]},{&quot;id&quot;:&quot;series-3-point-11&quot;,&quot;role&quot;:&quot;point&quot;,&quot;label&quot;:&quot;Password only: 1,500 (12, 1500)&quot;,&quot;x&quot;:917.6630859375,&quot;y&quot;:158.3615740740741,&quot;width&quot;:6,&quot;height&quot;:6,&quot;fillInteriors&quot;:[[919.16304296875,162.87917673782522,0.7409995016970549]]}],&quot;categoryLabels&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;W1&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;W2&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;W3&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;W4&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;W5&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;W6&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;W7&quot;},{&quot;value&quot;:8,&quot;text&quot;:&quot;W8&quot;},{&quot;value&quot;:9,&quot;text&quot;:&quot;W9&quot;},{&quot;value&quot;:10,&quot;text&quot;:&quot;W10&quot;},{&quot;value&quot;:11,&quot;text&quot;:&quot;W11&quot;},{&quot;value&quot;:12,&quot;text&quot;:&quot;W12&quot;}],&quot;dataProjection&quot;:{&quot;x&quot;:{&quot;minimum&quot;:1,&quot;maximum&quot;:12.038136382257644,&quot;transformedMinimum&quot;:1,&quot;transformedMaximum&quot;:12.038136382257644,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;displayTicks&quot;:[{&quot;value&quot;:1,&quot;text&quot;:&quot;W1&quot;},{&quot;value&quot;:2,&quot;text&quot;:&quot;W2&quot;},{&quot;value&quot;:3,&quot;text&quot;:&quot;W3&quot;},{&quot;value&quot;:4,&quot;text&quot;:&quot;W4&quot;},{&quot;value&quot;:5,&quot;text&quot;:&quot;W5&quot;},{&quot;value&quot;:6,&quot;text&quot;:&quot;W6&quot;},{&quot;value&quot;:7,&quot;text&quot;:&quot;W7&quot;},{&quot;value&quot;:8,&quot;text&quot;:&quot;W8&quot;},{&quot;value&quot;:9,&quot;text&quot;:&quot;W9&quot;},{&quot;value&quot;:10,&quot;text&quot;:&quot;W10&quot;},{&quot;value&quot;:11,&quot;text&quot;:&quot;W11&quot;},{&quot;value&quot;:12,&quot;text&quot;:&quot;W12&quot;}],&quot;displayBounds&quot;:[]},&quot;y&quot;:{&quot;minimum&quot;:0,&quot;maximum&quot;:19332,&quot;transformedMinimum&quot;:0,&quot;transformedMaximum&quot;:19332,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;displayTicks&quot;:[{&quot;value&quot;:0,&quot;text&quot;:&quot;0&quot;},{&quot;value&quot;:5000,&quot;text&quot;:&quot;5k&quot;},{&quot;value&quot;:10000,&quot;text&quot;:&quot;10k&quot;},{&quot;value&quot;:15000,&quot;text&quot;:&quot;15k&quot;}],&quot;displayBounds&quot;:[{&quot;value&quot;:0,&quot;text&quot;:&quot;0&quot;},{&quot;value&quot;:19332,&quot;text&quot;:&quot;19.3k&quot;}]},&quot;horizontal&quot;:false,&quot;plotBounds&quot;:{&quot;x&quot;:55.34765625,&quot;y&quot;:135.2375,&quot;width&quot;:868.3154296875,&quot;height&quot;:352.67500000000007}},&quot;xProjection&quot;:{&quot;fullMinimum&quot;:1,&quot;fullMaximum&quot;:12.038136382257644,&quot;minimum&quot;:1,&quot;maximum&quot;:12.038136382257644,&quot;transformedMinimum&quot;:1,&quot;transformedMaximum&quot;:12.038136382257644,&quot;transformedFullMinimum&quot;:1,&quot;transformedFullMaximum&quot;:12.038136382257644,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;plotBounds&quot;:{&quot;x&quot;:55.34765625,&quot;y&quot;:135.2375,&quot;width&quot;:868.3154296875,&quot;height&quot;:352.67500000000007}},&quot;yProjection&quot;:{&quot;fullMinimum&quot;:0,&quot;fullMaximum&quot;:19332,&quot;minimum&quot;:0,&quot;maximum&quot;:19332,&quot;transformedMinimum&quot;:0,&quot;transformedMaximum&quot;:19332,&quot;transformedFullMinimum&quot;:0,&quot;transformedFullMaximum&quot;:19332,&quot;scale&quot;:&quot;linear&quot;,&quot;threshold&quot;:1,&quot;reversed&quot;:false,&quot;plotBounds&quot;:{&quot;x&quot;:55.34765625,&quot;y&quot;:135.2375,&quot;width&quot;:868.3154296875,&quot;height&quot;:352.67500000000007}}}" data-cfx-interaction-features="ReportReview" data-cfx-scenario-count="0" data-cfx-deep-link-state="false" data-cfx-responsive-layout="readable" data-cfx-toolbar="band" data-cfx-selection-mode="toggle" data-cfx-brush-axis="xy" data-cfx-dim-others-selected="false" data-cfx-pin-on-select="true" data-cfx-tooltip-mode="shared-x" data-cfx-tooltip-range="distance" data-cfx-tooltip-distance="120" data-cfx-tooltip-delay="0" data-cfx-tooltip-anchor="pointer" data-cfx-tooltip-placements="bottom-right" data-cfx-tooltip-gap="14" data-cfx-tooltip-offset-x="0" data-cfx-tooltip-offset-y="0" data-cfx-crosshair-label="true" style="--cfx-intrinsic-width:960px;--cfx-native-width:960px;--cfx-native-height:540px;--cfx-host-background:transparent;--cfx-tooltip-font:Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif;--cfx-tooltip-surface:var(--cfx-surface-card,#FFFFFF);--cfx-tooltip-text:var(--cfx-text-primary,#16181C);--cfx-tooltip-muted:var(--cfx-text-muted,#4D525B);--cfx-tooltip-line:var(--cfx-surface-line,#E2E4E7);--cfx-tooltip-shadow:var(--cfx-shadow-tooltip,0 8px 24px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.08));--cfx-crosshair-axis:var(--cfx-guide-axis,#E2E4E7);--cfx-default-host-accent:var(--cfx-accent-base,#2A78D6)">
 <div class="cfx-frame">
 <div class="cfx-stage">
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" stroke-linecap="round" stroke-linejoin="round" lang="en" xml:lang="en" role="img" aria-label="Sign-ins by method" aria-labelledby="sign-ins-by-method-title" aria-describedby="sign-ins-by-method-description"><title id="sign-ins-by-method-title">Sign-ins by method</title><desc id="sign-ins-by-method-description">Passkey sign-ins grow from 800 to 8,900 a week while password-only and SMS sign-ins decline.</desc><defs><clipPath id="sign-ins-by-method-clip-1" clipPathUnits="userSpaceOnUse"><rect x="24" y="24" width="912" height="492"/></clipPath><clipPath id="sign-ins-by-method-clip-9" clipPathUnits="userSpaceOnUse"><rect x="24" y="75.65" width="912" height="19.5"/></clipPath><clipPath id="sign-ins-by-method-clip-11" clipPathUnits="userSpaceOnUse"><rect x="24" y="78.969" width="10" height="10"/></clipPath><clipPath id="sign-ins-by-method-clip-17" clipPathUnits="userSpaceOnUse"><rect x="113.131" y="78.969" width="10" height="10"/></clipPath><clipPath id="sign-ins-by-method-clip-23" clipPathUnits="userSpaceOnUse"><rect x="255.036" y="78.969" width="10" height="10"/></clipPath><clipPath id="sign-ins-by-method-clip-29" clipPathUnits="userSpaceOnUse"><rect x="355.009" y="78.969" width="10" height="10"/></clipPath><clipPath id="sign-ins-by-method-clip-35" clipPathUnits="userSpaceOnUse"><rect x="24" y="107.15" width="912" height="408.85"/></clipPath><clipPath id="sign-ins-by-method-clip-61" clipPathUnits="userSpaceOnUse"><rect x="55.348" y="135.238" width="868.315" height="352.675"/></clipPath></defs><rect x="0.5" y="0.5" width="959" height="539" rx="3" data-cfx-role="frame-card" fill="#FFFFFF" stroke="#E2E4E7" stroke-width="1"/><g clip-path="url(#sign-ins-by-method-clip-1)"><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|"><g data-cfx-role="frame-heading"><text x="24" y="39.39" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="17" font-weight="700" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Sign-ins by method</text></g></g><g data-cfx-role="frame-heading-source" data-cfx-authored-font-request="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|400|normal|13.5|"><g data-cfx-role="frame-heading"><text x="24" y="60.321" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Weekly sign-ins across the tenant, last 12 weeks</text></g></g></g><g clip-path="url(#sign-ins-by-method-clip-9)"><g id="sign-ins-by-method-node-10" data-cfx-source-id="legend-series-0" data-cfx-role="legend-entry" aria-label="Passkey" data-cfx-series-key="cfx:auto:1" data-cfx-state="None"><g clip-path="url(#sign-ins-by-method-clip-11)"><rect x="24" y="78.969" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#2A78D6" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="42" y="87.419" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Passkey</text></g></g><g id="sign-ins-by-method-node-16" data-cfx-source-id="legend-series-1" data-cfx-role="legend-entry" aria-label="Authenticator app" data-cfx-series-key="cfx:auto:2" data-cfx-state="None"><g clip-path="url(#sign-ins-by-method-clip-17)"><rect x="113.131" y="78.969" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#0F9F8C" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="131.131" y="87.419" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Authenticator app</text></g></g><g id="sign-ins-by-method-node-22" data-cfx-source-id="legend-series-2" data-cfx-role="legend-entry" aria-label="SMS code" data-cfx-series-key="cfx:auto:3" data-cfx-state="None"><g clip-path="url(#sign-ins-by-method-clip-23)"><rect x="255.036" y="78.969" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#7B61E8" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="273.036" y="87.419" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">SMS code</text></g></g><g id="sign-ins-by-method-node-28" data-cfx-source-id="legend-series-3" data-cfx-role="legend-entry" aria-label="Password only" data-cfx-series-key="cfx:auto:4" data-cfx-state="None"><g clip-path="url(#sign-ins-by-method-clip-29)"><rect x="355.009" y="78.969" width="10" height="10" rx="0" data-cfx-role="legend-swatch" fill="#C24FA8" stroke="none" stroke-width="1"/></g><g data-cfx-role="legend-label"><text x="373.009" y="87.419" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Password only</text></g></g></g><g clip-path="url(#sign-ins-by-method-clip-35)"><line x1="55.348" y1="487.913" x2="923.663" y2="487.913" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="55.348" y1="396.697" x2="923.663" y2="396.697" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="55.348" y1="305.482" x2="923.663" y2="305.482" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="55.348" y1="214.266" x2="923.663" y2="214.266" data-cfx-role="grid-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><line x1="55.348" y1="487.913" x2="923.663" y2="487.913" data-cfx-role="axis-x" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-x-label"><text x="46.348" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W1</text></g><g data-cfx-role="axis-x-label"><text x="125.013" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W2</text></g><g data-cfx-role="axis-x-label"><text x="203.678" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W3</text></g><g data-cfx-role="axis-x-label"><text x="282.343" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W4</text></g><g data-cfx-role="axis-x-label"><text x="361.008" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W5</text></g><g data-cfx-role="axis-x-label"><text x="439.673" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W6</text></g><g data-cfx-role="axis-x-label"><text x="518.338" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W7</text></g><g data-cfx-role="axis-x-label"><text x="597.003" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W8</text></g><g data-cfx-role="axis-x-label"><text x="675.668" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W9</text></g><g data-cfx-role="axis-x-label"><text x="750.996" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W10</text></g><g data-cfx-role="axis-x-label"><text x="830.106" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W11</text></g><g data-cfx-role="axis-x-label"><text x="908.326" y="510.776" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">W12</text></g><line x1="55.348" y1="135.238" x2="55.348" y2="487.913" data-cfx-role="axis-y" fill="none" stroke="#E2E4E7" stroke-width="1"/><g data-cfx-role="axis-y-label"><text x="36.674" y="490.732" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">0</text></g><g data-cfx-role="axis-y-label"><text x="30.674" y="399.517" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">5k</text></g><g data-cfx-role="axis-y-label"><text x="24" y="308.301" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">10k</text></g><g data-cfx-role="axis-y-label"><text x="24" y="217.086" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#4D525B" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">15k</text></g><g data-cfx-role="axis-y-title"><text x="55.348" y="118.013" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="12" font-weight="400" font-style="normal" fill="#16181C" xml:space="preserve" style="white-space:pre;font-language-override:normal;font-palette:normal">Sign-ins</text></g></g><g id="sign-ins-by-method-node-60" data-cfx-source-id="series-0" data-cfx-role="series" aria-label="Passkey" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="StackedArea" data-cfx-pin-state-colors="false" data-cfx-rendered-points="12" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-name="Passkey" data-cfx-series-scope="local" data-cfx-source-points="12" data-cfx-state="none"><g clip-path="url(#sign-ins-by-method-clip-61)"><g data-cfx-role="fill-segment" data-cfx-fill-point-count="12" data-cfx-fill-point-start="0"><path d="M 55.348 473.318 L 134.013 466.021 L 212.678 456.899 L 291.343 445.953 L 370.008 433.183 L 448.673 418.589 L 527.338 402.17 L 606.003 387.576 L 684.668 371.157 L 763.333 356.562 L 841.998 340.144 L 920.663 325.549 L 920.663 487.913 L 841.998 487.913 L 763.333 487.913 L 684.668 487.913 L 606.003 487.913 L 527.338 487.913 L 448.673 487.913 L 370.008 487.913 L 291.343 487.913 L 212.678 487.913 L 134.013 487.913 L 55.348 487.913 Z" data-cfx-role="area" fill="rgba(42,120,214,0.18)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 55.348 473.318 L 134.013 466.021 L 212.678 456.899 L 291.343 445.953 L 370.008 433.183 L 448.673 418.589 L 527.338 402.17 L 606.003 387.576 L 684.668 371.157 L 763.333 356.562 L 841.998 340.144 L 920.663 325.549" data-cfx-role="line" fill="none" stroke="#2A78D6" stroke-width="2"/></g><g id="sign-ins-by-method-node-67" data-cfx-source-id="series-0-point-0" data-cfx-role="point" aria-label="Passkey: 800 (1, 800)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W1" data-cfx-fill-pattern="None" data-cfx-formatted-value="800" data-cfx-formatted-x="W1" data-cfx-label="800" data-cfx-point="0" data-cfx-rendered-y="800" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="0" data-cfx-stack-end="800" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="1" data-cfx-y="800"></g><g id="sign-ins-by-method-node-69" data-cfx-source-id="series-0-point-1" data-cfx-role="point" aria-label="Passkey: 1,200 (2, 1200)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W2" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.2k" data-cfx-formatted-x="W2" data-cfx-label="1,200" data-cfx-point="1" data-cfx-rendered-y="1200" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="1" data-cfx-stack-end="1200" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="2" data-cfx-y="1200"></g><g id="sign-ins-by-method-node-71" data-cfx-source-id="series-0-point-2" data-cfx-role="point" aria-label="Passkey: 1,700 (3, 1700)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W3" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.7k" data-cfx-formatted-x="W3" data-cfx-label="1,700" data-cfx-point="2" data-cfx-rendered-y="1700" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="2" data-cfx-stack-end="1700" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="3" data-cfx-y="1700"></g><g id="sign-ins-by-method-node-73" data-cfx-source-id="series-0-point-3" data-cfx-role="point" aria-label="Passkey: 2,300 (4, 2300)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W4" data-cfx-fill-pattern="None" data-cfx-formatted-value="2.3k" data-cfx-formatted-x="W4" data-cfx-label="2,300" data-cfx-point="3" data-cfx-rendered-y="2300" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="3" data-cfx-stack-end="2300" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="4" data-cfx-y="2300"></g><g id="sign-ins-by-method-node-75" data-cfx-source-id="series-0-point-4" data-cfx-role="point" aria-label="Passkey: 3,000 (5, 3000)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W5" data-cfx-fill-pattern="None" data-cfx-formatted-value="3k" data-cfx-formatted-x="W5" data-cfx-label="3,000" data-cfx-point="4" data-cfx-rendered-y="3000" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="4" data-cfx-stack-end="3000" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="5" data-cfx-y="3000"></g><g id="sign-ins-by-method-node-77" data-cfx-source-id="series-0-point-5" data-cfx-role="point" aria-label="Passkey: 3,800 (6, 3800)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W6" data-cfx-fill-pattern="None" data-cfx-formatted-value="3.8k" data-cfx-formatted-x="W6" data-cfx-label="3,800" data-cfx-point="5" data-cfx-rendered-y="3800" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="5" data-cfx-stack-end="3800" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="6" data-cfx-y="3800"></g><g id="sign-ins-by-method-node-79" data-cfx-source-id="series-0-point-6" data-cfx-role="point" aria-label="Passkey: 4,700 (7, 4700)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W7" data-cfx-fill-pattern="None" data-cfx-formatted-value="4.7k" data-cfx-formatted-x="W7" data-cfx-label="4,700" data-cfx-point="6" data-cfx-rendered-y="4700" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="6" data-cfx-stack-end="4700" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="7" data-cfx-y="4700"></g><g id="sign-ins-by-method-node-81" data-cfx-source-id="series-0-point-7" data-cfx-role="point" aria-label="Passkey: 5,500 (8, 5500)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W8" data-cfx-fill-pattern="None" data-cfx-formatted-value="5.5k" data-cfx-formatted-x="W8" data-cfx-label="5,500" data-cfx-point="7" data-cfx-rendered-y="5500" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="7" data-cfx-stack-end="5500" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="8" data-cfx-y="5500"></g><g id="sign-ins-by-method-node-83" data-cfx-source-id="series-0-point-8" data-cfx-role="point" aria-label="Passkey: 6,400 (9, 6400)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W9" data-cfx-fill-pattern="None" data-cfx-formatted-value="6.4k" data-cfx-formatted-x="W9" data-cfx-label="6,400" data-cfx-point="8" data-cfx-rendered-y="6400" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="8" data-cfx-stack-end="6400" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="9" data-cfx-y="6400"></g><g id="sign-ins-by-method-node-85" data-cfx-source-id="series-0-point-9" data-cfx-role="point" aria-label="Passkey: 7,200 (10, 7200)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W10" data-cfx-fill-pattern="None" data-cfx-formatted-value="7.2k" data-cfx-formatted-x="W10" data-cfx-label="7,200" data-cfx-point="9" data-cfx-rendered-y="7200" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="9" data-cfx-stack-end="7200" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="10" data-cfx-y="7200"></g><g id="sign-ins-by-method-node-87" data-cfx-source-id="series-0-point-10" data-cfx-role="point" aria-label="Passkey: 8,100 (11, 8100)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W11" data-cfx-fill-pattern="None" data-cfx-formatted-value="8.1k" data-cfx-formatted-x="W11" data-cfx-label="8,100" data-cfx-point="10" data-cfx-rendered-y="8100" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="10" data-cfx-stack-end="8100" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="11" data-cfx-y="8100"></g><g id="sign-ins-by-method-node-89" data-cfx-source-id="series-0-point-11" data-cfx-role="point" aria-label="Passkey: 8,900 (12, 8900)" data-cfx-axis="primary" data-cfx-base="0" data-cfx-display-label="W12" data-cfx-fill-pattern="None" data-cfx-formatted-value="8.9k" data-cfx-formatted-x="W12" data-cfx-label="8,900" data-cfx-point="11" data-cfx-rendered-y="8900" data-cfx-semantic-role="" data-cfx-series="0" data-cfx-series-key="cfx:auto:1" data-cfx-series-scope="local" data-cfx-source-point="11" data-cfx-stack-end="8900" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="12" data-cfx-y="8900"><ellipse cx="920.663" cy="325.549" rx="3" ry="3" data-cfx-role="marker" fill="#2A78D6" stroke="none" stroke-width="0"/></g></g><g id="sign-ins-by-method-node-93" data-cfx-source-id="series-1" data-cfx-role="series" aria-label="Authenticator app" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="StackedArea" data-cfx-pin-state-colors="false" data-cfx-rendered-points="12" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-name="Authenticator app" data-cfx-series-scope="local" data-cfx-source-points="12" data-cfx-state="none"><g clip-path="url(#sign-ins-by-method-clip-61)"><g data-cfx-role="fill-segment" data-cfx-fill-point-count="12" data-cfx-fill-point-start="0"><path d="M 55.348 341.968 L 134.013 331.022 L 212.678 320.076 L 291.343 307.306 L 370.008 296.36 L 448.673 283.59 L 527.338 268.996 L 606.003 258.05 L 684.668 245.28 L 763.333 234.334 L 841.998 223.388 L 920.663 212.442 L 920.663 325.549 L 841.998 340.144 L 763.333 356.562 L 684.668 371.157 L 606.003 387.576 L 527.338 402.17 L 448.673 418.589 L 370.008 433.183 L 291.343 445.953 L 212.678 456.899 L 134.013 466.021 L 55.348 473.318 Z" data-cfx-role="area" fill="rgba(15,159,140,0.18)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 55.348 341.968 L 134.013 331.022 L 212.678 320.076 L 291.343 307.306 L 370.008 296.36 L 448.673 283.59 L 527.338 268.996 L 606.003 258.05 L 684.668 245.28 L 763.333 234.334 L 841.998 223.388 L 920.663 212.442" data-cfx-role="line" fill="none" stroke="#0F9F8C" stroke-width="2"/></g><g id="sign-ins-by-method-node-100" data-cfx-source-id="series-1-point-0" data-cfx-role="point" aria-label="Authenticator app: 7,200 (1, 7200)" data-cfx-axis="primary" data-cfx-base="800" data-cfx-display-label="W1" data-cfx-fill-pattern="None" data-cfx-formatted-value="7.2k" data-cfx-formatted-x="W1" data-cfx-label="7,200" data-cfx-point="0" data-cfx-rendered-y="7200" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="0" data-cfx-stack-end="8000" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="1" data-cfx-y="7200"></g><g id="sign-ins-by-method-node-102" data-cfx-source-id="series-1-point-1" data-cfx-role="point" aria-label="Authenticator app: 7,400 (2, 7400)" data-cfx-axis="primary" data-cfx-base="1200" data-cfx-display-label="W2" data-cfx-fill-pattern="None" data-cfx-formatted-value="7.4k" data-cfx-formatted-x="W2" data-cfx-label="7,400" data-cfx-point="1" data-cfx-rendered-y="7400" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="1" data-cfx-stack-end="8600" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="2" data-cfx-y="7400"></g><g id="sign-ins-by-method-node-104" data-cfx-source-id="series-1-point-2" data-cfx-role="point" aria-label="Authenticator app: 7,500 (3, 7500)" data-cfx-axis="primary" data-cfx-base="1700" data-cfx-display-label="W3" data-cfx-fill-pattern="None" data-cfx-formatted-value="7.5k" data-cfx-formatted-x="W3" data-cfx-label="7,500" data-cfx-point="2" data-cfx-rendered-y="7500" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="2" data-cfx-stack-end="9200" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="3" data-cfx-y="7500"></g><g id="sign-ins-by-method-node-106" data-cfx-source-id="series-1-point-3" data-cfx-role="point" aria-label="Authenticator app: 7,600 (4, 7600)" data-cfx-axis="primary" data-cfx-base="2300" data-cfx-display-label="W4" data-cfx-fill-pattern="None" data-cfx-formatted-value="7.6k" data-cfx-formatted-x="W4" data-cfx-label="7,600" data-cfx-point="3" data-cfx-rendered-y="7600" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="3" data-cfx-stack-end="9900" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="4" data-cfx-y="7600"></g><g id="sign-ins-by-method-node-108" data-cfx-source-id="series-1-point-4" data-cfx-role="point" aria-label="Authenticator app: 7,500 (5, 7500)" data-cfx-axis="primary" data-cfx-base="3000" data-cfx-display-label="W5" data-cfx-fill-pattern="None" data-cfx-formatted-value="7.5k" data-cfx-formatted-x="W5" data-cfx-label="7,500" data-cfx-point="4" data-cfx-rendered-y="7500" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="4" data-cfx-stack-end="10500" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="5" data-cfx-y="7500"></g><g id="sign-ins-by-method-node-110" data-cfx-source-id="series-1-point-5" data-cfx-role="point" aria-label="Authenticator app: 7,400 (6, 7400)" data-cfx-axis="primary" data-cfx-base="3800" data-cfx-display-label="W6" data-cfx-fill-pattern="None" data-cfx-formatted-value="7.4k" data-cfx-formatted-x="W6" data-cfx-label="7,400" data-cfx-point="5" data-cfx-rendered-y="7400" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="5" data-cfx-stack-end="11200" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="6" data-cfx-y="7400"></g><g id="sign-ins-by-method-node-112" data-cfx-source-id="series-1-point-6" data-cfx-role="point" aria-label="Authenticator app: 7,300 (7, 7300)" data-cfx-axis="primary" data-cfx-base="4700" data-cfx-display-label="W7" data-cfx-fill-pattern="None" data-cfx-formatted-value="7.3k" data-cfx-formatted-x="W7" data-cfx-label="7,300" data-cfx-point="6" data-cfx-rendered-y="7300" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="6" data-cfx-stack-end="12000" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="7" data-cfx-y="7300"></g><g id="sign-ins-by-method-node-114" data-cfx-source-id="series-1-point-7" data-cfx-role="point" aria-label="Authenticator app: 7,100 (8, 7100)" data-cfx-axis="primary" data-cfx-base="5500" data-cfx-display-label="W8" data-cfx-fill-pattern="None" data-cfx-formatted-value="7.1k" data-cfx-formatted-x="W8" data-cfx-label="7,100" data-cfx-point="7" data-cfx-rendered-y="7100" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="7" data-cfx-stack-end="12600" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="8" data-cfx-y="7100"></g><g id="sign-ins-by-method-node-116" data-cfx-source-id="series-1-point-8" data-cfx-role="point" aria-label="Authenticator app: 6,900 (9, 6900)" data-cfx-axis="primary" data-cfx-base="6400" data-cfx-display-label="W9" data-cfx-fill-pattern="None" data-cfx-formatted-value="6.9k" data-cfx-formatted-x="W9" data-cfx-label="6,900" data-cfx-point="8" data-cfx-rendered-y="6900" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="8" data-cfx-stack-end="13300" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="9" data-cfx-y="6900"></g><g id="sign-ins-by-method-node-118" data-cfx-source-id="series-1-point-9" data-cfx-role="point" aria-label="Authenticator app: 6,700 (10, 6700)" data-cfx-axis="primary" data-cfx-base="7200" data-cfx-display-label="W10" data-cfx-fill-pattern="None" data-cfx-formatted-value="6.7k" data-cfx-formatted-x="W10" data-cfx-label="6,700" data-cfx-point="9" data-cfx-rendered-y="6700" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="9" data-cfx-stack-end="13900" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="10" data-cfx-y="6700"></g><g id="sign-ins-by-method-node-120" data-cfx-source-id="series-1-point-10" data-cfx-role="point" aria-label="Authenticator app: 6,400 (11, 6400)" data-cfx-axis="primary" data-cfx-base="8100" data-cfx-display-label="W11" data-cfx-fill-pattern="None" data-cfx-formatted-value="6.4k" data-cfx-formatted-x="W11" data-cfx-label="6,400" data-cfx-point="10" data-cfx-rendered-y="6400" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="10" data-cfx-stack-end="14500" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="11" data-cfx-y="6400"></g><g id="sign-ins-by-method-node-122" data-cfx-source-id="series-1-point-11" data-cfx-role="point" aria-label="Authenticator app: 6,200 (12, 6200)" data-cfx-axis="primary" data-cfx-base="8900" data-cfx-display-label="W12" data-cfx-fill-pattern="None" data-cfx-formatted-value="6.2k" data-cfx-formatted-x="W12" data-cfx-label="6,200" data-cfx-point="11" data-cfx-rendered-y="6200" data-cfx-semantic-role="" data-cfx-series="1" data-cfx-series-key="cfx:auto:2" data-cfx-series-scope="local" data-cfx-source-point="11" data-cfx-stack-end="15100" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="12" data-cfx-y="6200"><ellipse cx="920.663" cy="212.442" rx="3" ry="3" data-cfx-role="marker" fill="#0F9F8C" stroke="none" stroke-width="0"/></g></g><g id="sign-ins-by-method-node-126" data-cfx-source-id="series-2" data-cfx-role="series" aria-label="SMS code" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="StackedArea" data-cfx-pin-state-colors="false" data-cfx-rendered-points="12" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-name="SMS code" data-cfx-series-scope="local" data-cfx-source-points="12" data-cfx-state="none"><g clip-path="url(#sign-ins-by-method-clip-61)"><g data-cfx-role="fill-segment" data-cfx-fill-point-count="12" data-cfx-fill-point-start="0"><path d="M 55.348 265.347 L 134.013 258.05 L 212.678 250.753 L 291.343 243.455 L 370.008 237.982 L 448.673 230.685 L 527.338 221.564 L 606.003 216.091 L 684.668 208.794 L 763.333 201.496 L 841.998 196.023 L 920.663 188.726 L 920.663 212.442 L 841.998 223.388 L 763.333 234.334 L 684.668 245.28 L 606.003 258.05 L 527.338 268.996 L 448.673 283.59 L 370.008 296.36 L 291.343 307.306 L 212.678 320.076 L 134.013 331.022 L 55.348 341.968 Z" data-cfx-role="area" fill="rgba(123,97,232,0.18)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 55.348 265.347 L 134.013 258.05 L 212.678 250.753 L 291.343 243.455 L 370.008 237.982 L 448.673 230.685 L 527.338 221.564 L 606.003 216.091 L 684.668 208.794 L 763.333 201.496 L 841.998 196.023 L 920.663 188.726" data-cfx-role="line" fill="none" stroke="#7B61E8" stroke-width="2"/></g><g id="sign-ins-by-method-node-133" data-cfx-source-id="series-2-point-0" data-cfx-role="point" aria-label="SMS code: 4,200 (1, 4200)" data-cfx-axis="primary" data-cfx-base="8000" data-cfx-display-label="W1" data-cfx-fill-pattern="None" data-cfx-formatted-value="4.2k" data-cfx-formatted-x="W1" data-cfx-label="4,200" data-cfx-point="0" data-cfx-rendered-y="4200" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="0" data-cfx-stack-end="12200" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="1" data-cfx-y="4200"></g><g id="sign-ins-by-method-node-135" data-cfx-source-id="series-2-point-1" data-cfx-role="point" aria-label="SMS code: 4,000 (2, 4000)" data-cfx-axis="primary" data-cfx-base="8600" data-cfx-display-label="W2" data-cfx-fill-pattern="None" data-cfx-formatted-value="4k" data-cfx-formatted-x="W2" data-cfx-label="4,000" data-cfx-point="1" data-cfx-rendered-y="4000" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="1" data-cfx-stack-end="12600" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="2" data-cfx-y="4000"></g><g id="sign-ins-by-method-node-137" data-cfx-source-id="series-2-point-2" data-cfx-role="point" aria-label="SMS code: 3,800 (3, 3800)" data-cfx-axis="primary" data-cfx-base="9200" data-cfx-display-label="W3" data-cfx-fill-pattern="None" data-cfx-formatted-value="3.8k" data-cfx-formatted-x="W3" data-cfx-label="3,800" data-cfx-point="2" data-cfx-rendered-y="3800" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="2" data-cfx-stack-end="13000" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="3" data-cfx-y="3800"></g><g id="sign-ins-by-method-node-139" data-cfx-source-id="series-2-point-3" data-cfx-role="point" aria-label="SMS code: 3,500 (4, 3500)" data-cfx-axis="primary" data-cfx-base="9900" data-cfx-display-label="W4" data-cfx-fill-pattern="None" data-cfx-formatted-value="3.5k" data-cfx-formatted-x="W4" data-cfx-label="3,500" data-cfx-point="3" data-cfx-rendered-y="3500" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="3" data-cfx-stack-end="13400" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="4" data-cfx-y="3500"></g><g id="sign-ins-by-method-node-141" data-cfx-source-id="series-2-point-4" data-cfx-role="point" aria-label="SMS code: 3,200 (5, 3200)" data-cfx-axis="primary" data-cfx-base="10500" data-cfx-display-label="W5" data-cfx-fill-pattern="None" data-cfx-formatted-value="3.2k" data-cfx-formatted-x="W5" data-cfx-label="3,200" data-cfx-point="4" data-cfx-rendered-y="3200" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="4" data-cfx-stack-end="13700" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="5" data-cfx-y="3200"></g><g id="sign-ins-by-method-node-143" data-cfx-source-id="series-2-point-5" data-cfx-role="point" aria-label="SMS code: 2,900 (6, 2900)" data-cfx-axis="primary" data-cfx-base="11200" data-cfx-display-label="W6" data-cfx-fill-pattern="None" data-cfx-formatted-value="2.9k" data-cfx-formatted-x="W6" data-cfx-label="2,900" data-cfx-point="5" data-cfx-rendered-y="2900" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="5" data-cfx-stack-end="14100" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="6" data-cfx-y="2900"></g><g id="sign-ins-by-method-node-145" data-cfx-source-id="series-2-point-6" data-cfx-role="point" aria-label="SMS code: 2,600 (7, 2600)" data-cfx-axis="primary" data-cfx-base="12000" data-cfx-display-label="W7" data-cfx-fill-pattern="None" data-cfx-formatted-value="2.6k" data-cfx-formatted-x="W7" data-cfx-label="2,600" data-cfx-point="6" data-cfx-rendered-y="2600" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="6" data-cfx-stack-end="14600" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="7" data-cfx-y="2600"></g><g id="sign-ins-by-method-node-147" data-cfx-source-id="series-2-point-7" data-cfx-role="point" aria-label="SMS code: 2,300 (8, 2300)" data-cfx-axis="primary" data-cfx-base="12600" data-cfx-display-label="W8" data-cfx-fill-pattern="None" data-cfx-formatted-value="2.3k" data-cfx-formatted-x="W8" data-cfx-label="2,300" data-cfx-point="7" data-cfx-rendered-y="2300" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="7" data-cfx-stack-end="14900" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="8" data-cfx-y="2300"></g><g id="sign-ins-by-method-node-149" data-cfx-source-id="series-2-point-8" data-cfx-role="point" aria-label="SMS code: 2,000 (9, 2000)" data-cfx-axis="primary" data-cfx-base="13300" data-cfx-display-label="W9" data-cfx-fill-pattern="None" data-cfx-formatted-value="2k" data-cfx-formatted-x="W9" data-cfx-label="2,000" data-cfx-point="8" data-cfx-rendered-y="2000" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="8" data-cfx-stack-end="15300" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="9" data-cfx-y="2000"></g><g id="sign-ins-by-method-node-151" data-cfx-source-id="series-2-point-9" data-cfx-role="point" aria-label="SMS code: 1,800 (10, 1800)" data-cfx-axis="primary" data-cfx-base="13900" data-cfx-display-label="W10" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.8k" data-cfx-formatted-x="W10" data-cfx-label="1,800" data-cfx-point="9" data-cfx-rendered-y="1800" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="9" data-cfx-stack-end="15700" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="10" data-cfx-y="1800"></g><g id="sign-ins-by-method-node-153" data-cfx-source-id="series-2-point-10" data-cfx-role="point" aria-label="SMS code: 1,500 (11, 1500)" data-cfx-axis="primary" data-cfx-base="14500" data-cfx-display-label="W11" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.5k" data-cfx-formatted-x="W11" data-cfx-label="1,500" data-cfx-point="10" data-cfx-rendered-y="1500" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="10" data-cfx-stack-end="16000" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="11" data-cfx-y="1500"></g><g id="sign-ins-by-method-node-155" data-cfx-source-id="series-2-point-11" data-cfx-role="point" aria-label="SMS code: 1,300 (12, 1300)" data-cfx-axis="primary" data-cfx-base="15100" data-cfx-display-label="W12" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.3k" data-cfx-formatted-x="W12" data-cfx-label="1,300" data-cfx-point="11" data-cfx-rendered-y="1300" data-cfx-semantic-role="" data-cfx-series="2" data-cfx-series-key="cfx:auto:3" data-cfx-series-scope="local" data-cfx-source-point="11" data-cfx-stack-end="16400" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="12" data-cfx-y="1300"><ellipse cx="920.663" cy="188.726" rx="3" ry="3" data-cfx-role="marker" fill="#7B61E8" stroke="none" stroke-width="0"/></g></g><g id="sign-ins-by-method-node-159" data-cfx-source-id="series-3" data-cfx-role="series" aria-label="Password only" data-cfx-coordinate-system="cartesian" data-cfx-decimation="" data-cfx-kind="StackedArea" data-cfx-pin-state-colors="false" data-cfx-rendered-points="12" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-name="Password only" data-cfx-series-scope="local" data-cfx-source-points="12" data-cfx-state="none"><g clip-path="url(#sign-ins-by-method-clip-61)"><g data-cfx-role="fill-segment" data-cfx-fill-point-count="12" data-cfx-fill-point-start="0"><path d="M 55.348 163.186 L 134.013 161.362 L 212.678 161.362 L 291.343 161.362 L 370.008 163.186 L 448.673 163.186 L 527.338 161.362 L 606.003 163.186 L 684.668 163.186 L 763.333 163.186 L 841.998 163.186 L 920.663 161.362 L 920.663 188.726 L 841.998 196.023 L 763.333 201.496 L 684.668 208.794 L 606.003 216.091 L 527.338 221.564 L 448.673 230.685 L 370.008 237.982 L 291.343 243.455 L 212.678 250.753 L 134.013 258.05 L 55.348 265.347 Z" data-cfx-role="area" fill="rgba(194,79,168,0.18)" stroke="none" stroke-width="1" fill-rule="evenodd"/></g><path d="M 55.348 163.186 L 134.013 161.362 L 212.678 161.362 L 291.343 161.362 L 370.008 163.186 L 448.673 163.186 L 527.338 161.362 L 606.003 163.186 L 684.668 163.186 L 763.333 163.186 L 841.998 163.186 L 920.663 161.362" data-cfx-role="line" fill="none" stroke="#C24FA8" stroke-width="2"/></g><g id="sign-ins-by-method-node-166" data-cfx-source-id="series-3-point-0" data-cfx-role="point" aria-label="Password only: 5,600 (1, 5600)" data-cfx-axis="primary" data-cfx-base="12200" data-cfx-display-label="W1" data-cfx-fill-pattern="None" data-cfx-formatted-value="5.6k" data-cfx-formatted-x="W1" data-cfx-label="5,600" data-cfx-point="0" data-cfx-rendered-y="5600" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="0" data-cfx-stack-end="17800" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="1" data-cfx-y="5600"></g><g id="sign-ins-by-method-node-168" data-cfx-source-id="series-3-point-1" data-cfx-role="point" aria-label="Password only: 5,300 (2, 5300)" data-cfx-axis="primary" data-cfx-base="12600" data-cfx-display-label="W2" data-cfx-fill-pattern="None" data-cfx-formatted-value="5.3k" data-cfx-formatted-x="W2" data-cfx-label="5,300" data-cfx-point="1" data-cfx-rendered-y="5300" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="1" data-cfx-stack-end="17900" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="2" data-cfx-y="5300"></g><g id="sign-ins-by-method-node-170" data-cfx-source-id="series-3-point-2" data-cfx-role="point" aria-label="Password only: 4,900 (3, 4900)" data-cfx-axis="primary" data-cfx-base="13000" data-cfx-display-label="W3" data-cfx-fill-pattern="None" data-cfx-formatted-value="4.9k" data-cfx-formatted-x="W3" data-cfx-label="4,900" data-cfx-point="2" data-cfx-rendered-y="4900" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="2" data-cfx-stack-end="17900" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="3" data-cfx-y="4900"></g><g id="sign-ins-by-method-node-172" data-cfx-source-id="series-3-point-3" data-cfx-role="point" aria-label="Password only: 4,500 (4, 4500)" data-cfx-axis="primary" data-cfx-base="13400" data-cfx-display-label="W4" data-cfx-fill-pattern="None" data-cfx-formatted-value="4.5k" data-cfx-formatted-x="W4" data-cfx-label="4,500" data-cfx-point="3" data-cfx-rendered-y="4500" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="3" data-cfx-stack-end="17900" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="4" data-cfx-y="4500"></g><g id="sign-ins-by-method-node-174" data-cfx-source-id="series-3-point-4" data-cfx-role="point" aria-label="Password only: 4,100 (5, 4100)" data-cfx-axis="primary" data-cfx-base="13700" data-cfx-display-label="W5" data-cfx-fill-pattern="None" data-cfx-formatted-value="4.1k" data-cfx-formatted-x="W5" data-cfx-label="4,100" data-cfx-point="4" data-cfx-rendered-y="4100" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="4" data-cfx-stack-end="17800" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="5" data-cfx-y="4100"></g><g id="sign-ins-by-method-node-176" data-cfx-source-id="series-3-point-5" data-cfx-role="point" aria-label="Password only: 3,700 (6, 3700)" data-cfx-axis="primary" data-cfx-base="14100" data-cfx-display-label="W6" data-cfx-fill-pattern="None" data-cfx-formatted-value="3.7k" data-cfx-formatted-x="W6" data-cfx-label="3,700" data-cfx-point="5" data-cfx-rendered-y="3700" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="5" data-cfx-stack-end="17800" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="6" data-cfx-y="3700"></g><g id="sign-ins-by-method-node-178" data-cfx-source-id="series-3-point-6" data-cfx-role="point" aria-label="Password only: 3,300 (7, 3300)" data-cfx-axis="primary" data-cfx-base="14600" data-cfx-display-label="W7" data-cfx-fill-pattern="None" data-cfx-formatted-value="3.3k" data-cfx-formatted-x="W7" data-cfx-label="3,300" data-cfx-point="6" data-cfx-rendered-y="3300" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="6" data-cfx-stack-end="17900" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="7" data-cfx-y="3300"></g><g id="sign-ins-by-method-node-180" data-cfx-source-id="series-3-point-7" data-cfx-role="point" aria-label="Password only: 2,900 (8, 2900)" data-cfx-axis="primary" data-cfx-base="14900" data-cfx-display-label="W8" data-cfx-fill-pattern="None" data-cfx-formatted-value="2.9k" data-cfx-formatted-x="W8" data-cfx-label="2,900" data-cfx-point="7" data-cfx-rendered-y="2900" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="7" data-cfx-stack-end="17800" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="8" data-cfx-y="2900"></g><g id="sign-ins-by-method-node-182" data-cfx-source-id="series-3-point-8" data-cfx-role="point" aria-label="Password only: 2,500 (9, 2500)" data-cfx-axis="primary" data-cfx-base="15300" data-cfx-display-label="W9" data-cfx-fill-pattern="None" data-cfx-formatted-value="2.5k" data-cfx-formatted-x="W9" data-cfx-label="2,500" data-cfx-point="8" data-cfx-rendered-y="2500" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="8" data-cfx-stack-end="17800" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="9" data-cfx-y="2500"></g><g id="sign-ins-by-method-node-184" data-cfx-source-id="series-3-point-9" data-cfx-role="point" aria-label="Password only: 2,100 (10, 2100)" data-cfx-axis="primary" data-cfx-base="15700" data-cfx-display-label="W10" data-cfx-fill-pattern="None" data-cfx-formatted-value="2.1k" data-cfx-formatted-x="W10" data-cfx-label="2,100" data-cfx-point="9" data-cfx-rendered-y="2100" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="9" data-cfx-stack-end="17800" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="10" data-cfx-y="2100"></g><g id="sign-ins-by-method-node-186" data-cfx-source-id="series-3-point-10" data-cfx-role="point" aria-label="Password only: 1,800 (11, 1800)" data-cfx-axis="primary" data-cfx-base="16000" data-cfx-display-label="W11" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.8k" data-cfx-formatted-x="W11" data-cfx-label="1,800" data-cfx-point="10" data-cfx-rendered-y="1800" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="10" data-cfx-stack-end="17800" data-cfx-stack-group="" data-cfx-stack-source-total="17800" data-cfx-stack-total="17800" data-cfx-state="none" data-cfx-x="11" data-cfx-y="1800"></g><g id="sign-ins-by-method-node-188" data-cfx-source-id="series-3-point-11" data-cfx-role="point" aria-label="Password only: 1,500 (12, 1500)" data-cfx-axis="primary" data-cfx-base="16400" data-cfx-display-label="W12" data-cfx-fill-pattern="None" data-cfx-formatted-value="1.5k" data-cfx-formatted-x="W12" data-cfx-label="1,500" data-cfx-point="11" data-cfx-rendered-y="1500" data-cfx-semantic-role="" data-cfx-series="3" data-cfx-series-key="cfx:auto:4" data-cfx-series-scope="local" data-cfx-source-point="11" data-cfx-stack-end="17900" data-cfx-stack-group="" data-cfx-stack-source-total="17900" data-cfx-stack-total="17900" data-cfx-state="none" data-cfx-x="12" data-cfx-y="1500"><ellipse cx="920.663" cy="161.362" rx="3" ry="3" data-cfx-role="marker" fill="#C24FA8" stroke="none" stroke-width="0"/></g></g></svg>
@@ -1563,8 +1625,10 @@ body {
       if (!key || seen.has(key)) return;
       seen.add(key);
       const data = node.dataset || {};
-      let label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
-        ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
+      let label = target.targetKind === 'annotation'
+        ? target.label || target.role || target.id || 'Target'
+        : data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
+          ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
       const series = seriesLabel(node);
       if (timeTarget(node) && label && series && label !== series) label = series + ' · ' + label;
       items.push({ label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target });
@@ -1680,7 +1744,7 @@ body {
     for (const item of entries) {
       if (!item || typeof item.id !== 'string' || !item.id.trim() || item.id !== item.id.trim()
         || typeof item.sourceId !== 'string' || !item.sourceId.startsWith('annotation-id-')
-        || !['HorizontalLine', 'VerticalLine', 'HorizontalBand', 'VerticalBand'].includes(item.kind)
+        || !['HorizontalLine', 'VerticalLine', 'HorizontalBand', 'VerticalBand', 'Note', 'LineSegment', 'ParallelChannel'].includes(item.kind)
         || ids.has(item.id) || sources.has(item.sourceId)) invalid();
       const node = nodes.find(node => node.dataset.cfxSourceId === item.sourceId), data = node?.dataset;
       if (!data || data.cfxAnnotationId !== item.id || data.cfxKind !== item.kind
@@ -3143,11 +3207,12 @@ body {
   const releaseChartLifetime = (root) => {
     const lifetime = chartLifetimes.get(root);
     if (!lifetime || lifetime.disposed) return;
-    cancelXViewportRequest(lifetime);
+    cancelNativePreparation(lifetime);
     lifetime.disposed = true;
     for (const cleanup of Array.from(lifetime.cleanups)) cleanup();
     clearChartBrowserState(root);
     mountedCharts.delete(root); chartLifetimes.delete(root); watchChartLifetimes();
+    syncXNavigation(root);
     syncResetControl(root);
   };
   // Legend items summarize their series for readers instead of exposing renderer metadata such as role or kind.
@@ -3473,7 +3538,7 @@ body {
   };
   // Reset is visible only for a changed view.
   const viewChanged = (root) => {
-    if (connectedXViewport(root) && nativeXWindowChanged(root)) return true;
+    if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
@@ -3573,6 +3638,7 @@ body {
       source: source || '',
       viewport: getState(root),
       xWindow: connectedXViewport(root) ? nativeXWindow(root) : null,
+      yWindow: cartesianViewportConnected(root) ? nativeYWindow(root) : null,
       mode: root.dataset.cfxMode || '',
       brush: root.dataset.cfxBrush || '',
       selectedTargets: selectedTargets(root),
@@ -3596,11 +3662,15 @@ body {
   };
   const applyInteractionState = (root, snapshot, emit, sync, nativeAccepted = false) => {
     if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
-    if (!nativeAccepted && snapshot.xWindow && connectedXViewport(root)) {
-      // Capture now and replay only after this request installs its accepted scene.
+    if (!nativeAccepted && (snapshot.xWindow || snapshot.yWindow)) {
       const captured = copyHostValue(snapshot);
-      if (requestNativeXWindow(root, captured.xWindow, false,
-        () => applyInteractionState(root, captured, emit, sync, true))) return;
+      const accepted = () => applyInteractionState(root, captured, emit, sync, true);
+      if (cartesianViewportConnected(root))
+        requestNativeCartesianWindow(root, { x: captured.xWindow, y: captured.yWindow }, false, accepted);
+      else if (!captured.yWindow && captured.xWindow && connectedXViewport(root))
+        requestNativeXWindow(root, captured.xWindow, false, accepted);
+      // Native bounds are one transaction. Unsupported or disconnected replays leave reader state unchanged.
+      return;
     }
     const previousSelection = selectedTargets(root).map(targetKey).join('\n');
     if (!nativeAccepted && snapshot.viewport) applyViewport(root, Object.assign({}, snapshot.viewport));
@@ -3630,10 +3700,10 @@ body {
     }
     if (sync !== false) emitSync(root, { action: 'state', state: { ...snapshot, selectedTargets: selectedTargets(root) } });
   };
-  const zoomBy = (root, factor, logicalX) => {
+  const zoomBy = (root, factor, logicalX, logicalY) => {
     if (!hasFeature(root, 'Zoom')) return;
-    if (chartLifetimes.get(root)?.xViewportConnection) {
-      requestXViewportZoom(root, factor, logicalX);
+    if (connectedXViewport(root)) {
+      requestXViewportZoom(root, factor, logicalX, logicalY);
       return;
     }
     const state = getState(root);
@@ -4517,7 +4587,9 @@ body {
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
       return;
     }
-    if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
+    if (detail.action === 'viewport' && (detail.xWindow || detail.yWindow) && cartesianViewportConnected(root))
+      requestNativeCartesianWindow(root, { x: detail.xWindow, y: detail.yWindow }, false);
+    else if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
     else if (detail.action === 'viewport' && detail.state && !connectedXViewport(root)) applyViewport(root, detail.state);
     else if (detail.action === 'brush') {
       if (detail.clear) clearBrush(root);
@@ -4831,11 +4903,40 @@ body {
       listenChart(root, root, name, event => { const detail = event.detail || {}; execute(root, detail.match, detail); });
     listenChart(root, root, 'cfx-clear-highlight', event => clearHighlightCommand(root, event.detail || {}));
   };
+  const validTimeSessions = sessions => sessions === undefined || Array.isArray(sessions) && sessions.length > 0
+    && sessions.every((session, index) => session && [session.minimum, session.maximum, session.offset].every(Number.isFinite)
+      && session.minimum >= 0 && session.maximum > session.minimum && session.offset >= 0
+      && (index === 0 ? session.offset === 0 : session.minimum >= sessions[index - 1].maximum
+        && session.offset === sessions[index - 1].offset + (sessions[index - 1].maximum - sessions[index - 1].minimum)));
+  const timeSessionIndex = (sessions, value, field) => {
+    let low = 0, high = sessions.length - 1;
+    while (low <= high) {
+      const middle = low + Math.floor((high - low) / 2);
+      if (sessions[middle][field] <= value) low = middle + 1; else high = middle - 1;
+    }
+    return high;
+  };
+  const projectedSessionValue = (sessions, value) => {
+    const last = sessions.at(-1), total = last.offset + (last.maximum - last.minimum);
+    if (value < 0) return sessions[0].minimum + value;
+    if (value >= total) return last.maximum + (value - total);
+    const index = timeSessionIndex(sessions, value, 'offset');
+    return sessions[index].minimum + (value - sessions[index].offset);
+  };
+  const transformedSessionValue = (sessions, value) => {
+    const index = timeSessionIndex(sessions, value, 'minimum');
+    if (index < 0) return value - sessions[0].minimum;
+    const session = sessions[index];
+    if (value > session.maximum) return index < sessions.length - 1 ? sessions[index + 1].offset
+      : session.offset + (session.maximum - session.minimum) + (value - session.maximum);
+    return session.offset + (value - session.minimum);
+  };
   const validDataProjection = projection => {
     const plot = projection?.plotBounds;
     const axis = value => !!value && [value.minimum, value.maximum, value.transformedMinimum, value.transformedMaximum, value.threshold].every(Number.isFinite)
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
+      && validTimeSessions(value.timeSessions) && (value.timeSessions === undefined || value.scale === 'time')
       && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
         tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')))
       && (value.displayBounds === undefined || Array.isArray(value.displayBounds) && value.displayBounds.every(tick =>
@@ -4859,11 +4960,12 @@ body {
     const span = axis.transformedMaximum - axis.transformedMinimum;
     const value = Number.isFinite(span) ? axis.transformedMinimum + ratio * span
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
-    const raw = axis.scale === 'logarithmic' ? Math.pow(10, value)
+    const raw = axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic' ? Math.pow(10, value)
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
     return clamp(raw, axis.minimum, axis.maximum);
   };
-  const transformedAxisValue = (axis, value) => axis.scale === 'logarithmic' ? Math.log10(value)
+  const transformedAxisValue = (axis, value) => axis.timeSessions ? transformedSessionValue(axis.timeSessions, value)
+    : axis.scale === 'logarithmic' ? Math.log10(value)
     : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * Math.log10(1 + Math.abs(value) / axis.threshold) : value;
   const enclosingAxisTicks = (axis, values) => {
     const ticks = [...(axis.displayTicks || []), ...(axis.displayBounds || [])]
@@ -5534,10 +5636,12 @@ body {
     const compareTray = root.querySelector('[data-cfx-compare-tray]');
     if (!tip) return;
     listenChart(root, root, 'keydown', event => {
-      if (event.key === 'Escape') cancelXViewportRequest(chartLifetimes.get(root));
+      if (event.key === 'Escape') cancelNativePreparation(chartLifetimes.get(root));
     }, true);
     applyRenderedTargetContract(root);
     bindLegendOverflow(root);
+    bindXNavigation(root);
+    bindChartContextMenu(root);
     bindHostCommands(root);
     prepareRootBranchHighlights(root);
     if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
@@ -5765,7 +5869,8 @@ body {
         if (!hasFeature(root, 'Zoom')) return;
         if (connectedXViewport(root) && !chartXProjection(root)) return;
         event.preventDefault();
-        zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92, logicalXPointer(root, event));
+        const point = logicalChartPointer(root, event);
+        zoomBy(root, event.deltaY < 0 ? 1.08 : 0.92, point?.x, point?.y);
       }, { passive: false });
       let drag = null;
       let pointerFrame = 0, pendingPointerMove = null;
@@ -5783,8 +5888,8 @@ body {
           return;
         }
         if (drag.mode === 'native-pan') {
-          const x = logicalXPointer(root, event);
-          if (x !== null) drag.delta = x - drag.x;
+          const point = logicalChartPointer(root, event);
+          if (point) { drag.deltaX = point.x - drag.x; drag.deltaY = point.y - drag.y; }
         } else if (drag.mode === 'pan') {
           const point = stagePointer(stage, event);
           applyViewport(root, { zoom: getState(root).zoom, panX: drag.panX + point.x - drag.x, panY: drag.panY + point.y - drag.y });
@@ -5815,9 +5920,9 @@ body {
         cancelPointerMove();
         if (root.dataset.cfxMode === 'pan' && hasFeature(root, 'Pan')) {
           if (connectedXViewport(root)) {
-            const x = logicalXPointer(root, event);
-            if (x === null || !chartXProjection(root)) return;
-            drag = { mode: 'native-pan', id: event.pointerId, x, delta: 0 };
+            const point = logicalChartPointer(root, event);
+            if (!point || !chartXProjection(root)) return;
+            drag = { mode: 'native-pan', id: event.pointerId, x: point.x, y: point.y, deltaX: 0, deltaY: 0 };
             event.preventDefault(); stage.setPointerCapture(event.pointerId);
             return;
           }
@@ -5857,8 +5962,7 @@ body {
         cancelPointerMove();
         applyPointerMove(event);
         if (drag.mode === 'native-pan') {
-          const plot = chartXProjection(root)?.plotBounds;
-          if (plot && Math.abs(drag.delta) > 0.5) requestXViewport(root, 'pan', plot.x - drag.delta, plot.x + plot.width - drag.delta);
+          requestNativeViewportPan(root, drag.deltaX, drag.deltaY);
         } else if (drag.mode === 'brush' && brush) {
           const dataRange = finishBrushSelection(root, stage, brush);
           root.dataset.cfxBrush = [brush.style.left, brush.style.top, brush.style.width, brush.style.height].join(' ');
@@ -5906,8 +6010,8 @@ body {
     const reset = root.querySelector('[data-cfx-reset]');
     if (reset) listenChart(root, window, 'resize', () => syncResetControl(root));
     if (reset) listenChart(root, reset, 'click', () => {
-      if (connectedXViewport(root) && chartXProjection(root) && (nativeXWindowChanged(root) || chartLifetimes.get(root)?.xViewportPending)) {
-        requestXViewport(root, 'reset');
+      if (connectedXViewport(root) && chartXProjection(root) && (nativeViewportChanged(root) || chartLifetimes.get(root)?.preparationPending)) {
+        requestViewportReset(root);
         return;
       }
       resetViewport(root);
@@ -5954,6 +6058,7 @@ body {
         || !Array.isArray(item.indices) || item.indices.some(index => !Number.isSafeInteger(index) || index < 0))
       || new Set(metadata.series.map(item => item.key)).size !== metadata.series.length
       || metadata.xProjection !== undefined && !validXProjection(metadata.xProjection)
+      || metadata.yProjection !== undefined && !validXProjection(metadata.yProjection)
       || metadata.dataProjection !== undefined && !validDataProjection(metadata.dataProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
       || metadata.categoryLabels !== undefined && (!Array.isArray(metadata.categoryLabels)
@@ -5993,7 +6098,7 @@ body {
     });
   };
   const chartUpdateState = (root, sameSource = false) => {
-    const active = root.getRootNode().activeElement;
+    const active = root._cfxContextMenuSourceFocus || root.getRootNode().activeElement;
     const focused = interactiveTargets(root).find(node => targetFocusNode(node) === active);
     return {
       selected: selectedTargets(root).filter(target => sameSource || durableChartTarget(target)),
@@ -6034,50 +6139,37 @@ body {
     // Focus recovery must not resurrect a pinned or stale readout from the previous scene.
     hideTip(root, root.querySelector('.cfx-tooltip'), true); clearHover(root, false, false);
   };
-  // Native hosts own scenes; the browser owns gestures and reply lifetime.
-  let chartSceneSequence = 0, chartViewportRequestSequence = 0;
+  // Every native edit shares one scene revision, cancellation and generated-section commit owner.
+  let chartSceneSequence = 0, chartPreparationRequestSequence = 0;
   const nextChartSceneRevision = () => 'cfx-scene-' + (++chartSceneSequence);
-  const validXProjection = projection => {
-    const box = projection?.plotBounds;
-    return !!projection && [projection.fullMinimum, projection.fullMaximum, projection.minimum, projection.maximum].every(Number.isFinite)
-      && projection.fullMinimum < projection.fullMaximum && projection.minimum < projection.maximum
-      && projection.minimum >= projection.fullMinimum && projection.maximum <= projection.fullMaximum
-      && typeof projection.reversed === 'boolean' && !!box && [box.x, box.y, box.width, box.height].every(Number.isFinite)
-      && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
-  };
-  const chartXProjection = root => {
-    try { return JSON.parse(root.dataset.cfxPreparedChart).xProjection || null; } catch { return null; }
-  };
-  const nativeXWindowChanged = root => {
-    const projection = chartXProjection(root);
-    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
-  };
-  const connectedXViewport = root => !!chartLifetimes.get(root)?.xViewportConnection;
-  const syncXViewportControls = root => {
-    const unsupported = connectedXViewport(root) && !chartXProjection(root);
-    root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = unsupported; });
-    if (unsupported && root.dataset.cfxMode === 'pan') applyMode(root, '');
-    syncResetControl(root);
-  };
-  const cancelXViewportRequest = lifetime => {
-    const pending = lifetime?.xViewportPending;
+  const nativePreparationBinding = (root, channel) => chartLifetimes.get(root)?.preparationConnections[channel] || null;
+  const cancelNativePreparation = lifetime => {
+    const pending = lifetime?.preparationPending;
     if (!pending) return;
-    lifetime.xViewportPending = null;
-    pending.abort.abort();
+    lifetime.preparationPending = null; pending.abort.abort();
+    if (lifetime.controller) syncXNavigation(lifetime.controller.root);
   };
-  const logicalXPointer = (root, event) => {
-    const matrix = svgScreenMatrix(root.querySelector('.cfx-stage svg'));
-    if (!matrix) return null;
-    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
-    return Number.isFinite(point.x) ? point.x : null;
+  const setNativePreparationConnection = (root, channel, connection, settings = {}) => {
+    const lifetime = chartLifetimes.get(root);
+    if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected a native preparation callback or null to disconnect.');
+    cancelNativePreparation(lifetime);
+    lifetime.preparationConnections[channel] = connection ? Object.freeze({ ...settings, callback: connection }) : null;
   };
-  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '') => {
+  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false) => {
     // Validate alternates before releasing the committed scene.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
+    // A native reply carries fresh wide/narrow scenes. Commit the active drawing
+    // directly, rather than briefly installing wide chrome before an observer swaps it.
+    if (nativeKind && adaptive && lifetime.adaptive) {
+      adaptive.current = lifetime.adaptive.current;
+      next = adaptive[adaptive.current].cloneNode(true);
+    }
     const state = chartUpdateState(root, !!adaptiveDrawing);
+    const active = root.getRootNode().activeElement;
+    const navigationFocus = active && root.contains(active) ? active.dataset?.cfxXControl : null;
     const suspended = nativeKind === 'reset' || !!adaptiveDrawing && pointerReadoutSuspended(root);
     // Retain the request until validation can report failures.
-    if (nativeKind) lifetime.xViewportPending = null;
+    if (nativeKind) lifetime.preparationPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
     releaseChartLifetime(root);
     installChartSection(root, next);
@@ -6089,50 +6181,172 @@ body {
     // Preserve reset dismissal before binding the fresh scene.
     if (suspended) suspendPointerReadout(root);
     prepareAdaptiveRoot(root, lifetime);
-    bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind);
+    bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind && !preserveViewport);
     bindAdaptiveLayout(root);
     syncXViewportControls(root);
+    if (navigationFocus) Array.from(root.querySelectorAll('[data-cfx-x-control]'))
+      .find(control => control.dataset.cfxXControl === navigationFocus && !control.disabled)?.focus({ preventScroll: true });
   };
-  const requestXViewport = (root, kind, left, right, sync = true, accepted) => {
-    const lifetime = chartLifetimes.get(root), connection = lifetime?.xViewportConnection;
-    if (!connection || lifetime.disposed || !root.isConnected || !chartXProjection(root)) return;
-    if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return;
-    if (kind === 'reset') suspendPointerReadout(root);
-    cancelXViewportRequest(lifetime);
-    const request = Object.freeze({ chartId: root.dataset.cfxChartId, requestId: 'cfx-request-' + (++chartViewportRequestSequence),
-      sceneRevision: lifetime.sceneRevision, kind, ...(lifetime.adaptive ? { drawing: lifetime.adaptive.current } : {}),
-      ...(kind === 'reset' ? {} : { left, right }) });
-    const pending = { request, abort: new AbortController() }; lifetime.xViewportPending = pending;
+  const requestNativePreparation = (root, channel, payload, hooks) => {
+    const lifetime = chartLifetimes.get(root), binding = nativePreparationBinding(root, channel);
+    if (!binding || lifetime.disposed || !root.isConnected) return false;
+    cancelNativePreparation(lifetime);
+    const request = Object.freeze({ ...payload, chartId: root.dataset.cfxChartId,
+      requestId: 'cfx-request-' + (++chartPreparationRequestSequence), sceneRevision: lifetime.sceneRevision,
+      ...(lifetime.adaptive ? { drawing: lifetime.adaptive.current } : {}) });
+    const pending = { request, channel, abort: new AbortController() }; lifetime.preparationPending = pending;
+    syncXNavigation(root);
     const current = () => root.isConnected && chartLifetimes.get(root) === lifetime && !lifetime.disposed
-      && lifetime.xViewportConnection === connection && lifetime.xViewportPending === pending
+      && nativePreparationBinding(root, channel) === binding && lifetime.preparationPending === pending
       && lifetime.sceneRevision === request.sceneRevision && !pending.abort.signal.aborted;
-    emitHostEvent(root, 'cfxviewportrequest', request);
-    Promise.resolve().then(() => {
+    emitHostEvent(root, hooks.eventPrefix + 'request', request);
+    Promise.resolve().then(() => current() ? binding.callback(request, pending.abort.signal) : undefined).then(html => {
       if (!current()) return;
-      return connection(request, pending.abort.signal);
-    }).then(html => {
-      if (!current()) return;
-      if (typeof html !== 'string') throw new TypeError('The viewport connection must return a fresh generated section HTML string.');
+      if (typeof html !== 'string') throw new TypeError('A native preparation callback must return a fresh generated section HTML string.');
       const next = readChartSection(html, true).cloneNode(true);
-      if (next.dataset.cfxChartId !== request.chartId || !chartXProjection(next))
-        throw new TypeError('The viewport reply must retain the chart identity and a supported X projection.');
-      const previousSelection = kind === 'reset' ? selectionSignature(root) : '';
-      replaceChartSection(root, lifetime, next, kind);
-      if (accepted) accepted();
-      if (kind === 'reset') {
-        emitHostEvent(root, 'cfxreset', {});
-        publishResetSelection(root, previousSelection);
-      }
-      if (sync) emitSync(root, { action: 'viewport', state: getState(root), xWindow: nativeXWindow(root) });
-      emitHostEvent(root, 'cfxviewportchange', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind });
+      if (next.dataset.cfxChartId !== request.chartId) throw new TypeError('A native preparation reply must retain the chart identity.');
+      hooks.validate(next, request);
+      const before = hooks.beforeCommit?.();
+      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true);
+      hooks.accepted?.(); hooks.committed?.(request, before);
+      emitHostEvent(root, hooks.eventPrefix + 'change', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind: request.kind });
     }).catch(error => {
       if (!current()) return;
-      lifetime.xViewportPending = null;
-      emitHostEvent(root, 'cfxviewporterror', { requestId: request.requestId, sceneRevision: request.sceneRevision, kind,
+      lifetime.preparationPending = null; syncXNavigation(root);
+      emitHostEvent(root, hooks.eventPrefix + 'error', { requestId: request.requestId, sceneRevision: request.sceneRevision, kind: request.kind,
         message: error instanceof Error ? error.message : String(error) });
     });
+    return true;
   };
-  const requestXViewportZoom = (root, factor, logicalX) => {
+  // Explicit primary Y/XY policy uses the same captured transforms and native preparation channel as X.
+  const chartYProjection = root => {
+    try { return JSON.parse(root.dataset.cfxPreparedChart).yProjection || null; } catch { return null; }
+  };
+  const nativeYWindow = root => {
+    const projection = chartYProjection(root);
+    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale } : null;
+  };
+  const nativeYWindowChanged = root => {
+    const projection = chartYProjection(root);
+    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+  };
+  const nativeViewportChanged = root => nativeXWindowChanged(root) || nativeYWindowChanged(root);
+  const cartesianViewportConnected = root => nativePreparationBinding(root, 'viewport')?.legacy === false;
+  const nativeViewportWindows = root => ({ x: nativeXWindow(root), y: nativeYWindow(root) });
+  const logicalChartPointer = (root, event) => {
+    const matrix = svgScreenMatrix(root.querySelector('.cfx-stage svg'));
+    if (!matrix) return null;
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+    return Number.isFinite(point.x) && Number.isFinite(point.y) ? { x: point.x, y: point.y } : null;
+  };
+  const validSourceAxisWindow = (window, projection, axis) => {
+    if (!window || !projection || !axis || !Number.isFinite(window.minimum) || !Number.isFinite(window.maximum)
+      || window.minimum >= window.maximum || window.scale && window.scale !== projection.scale
+      || axis.scale === 'logarithmic' && window.minimum <= 0) return false;
+    const first = projectedAxisRatio(axis, window.minimum), last = projectedAxisRatio(axis, window.maximum);
+    return Number.isFinite(first) && Number.isFinite(last) && first !== last;
+  };
+  const requestCartesianViewport = (root, payload, sync = true, accepted) => {
+    if (!cartesianViewportConnected(root) || !chartXProjection(root)
+      || payload.axes?.includes('y') && !chartYProjection(root)) return false;
+    if (payload.kind === 'reset') suspendPointerReadout(root);
+    return requestNativePreparation(root, 'viewport', payload, {
+      eventPrefix: 'cfxviewport', resetView: payload.kind === 'reset', accepted,
+      validate: next => {
+        if (!chartXProjection(next) || (payload.axes?.includes('y') || chartYProjection(root)) && !chartYProjection(next))
+          throw new TypeError('The viewport reply must retain its supported native axis projections.');
+      },
+      beforeCommit: () => payload.kind === 'reset' ? selectionSignature(root) : '',
+      committed: (_, previousSelection) => {
+        if (payload.kind === 'reset') { emitHostEvent(root, 'cfxreset', {}); publishResetSelection(root, previousSelection); }
+        if (sync) emitSync(root, { action: 'viewport', state: getState(root), xWindow: nativeXWindow(root), yWindow: nativeYWindow(root) });
+      }
+    });
+  };
+  const requestNativeCartesianWindow = (root, viewport, sync = true, accepted) => {
+    if (!cartesianViewportConnected(root) || !viewport || (!viewport.x && !viewport.y)) return false;
+    const x = chartXProjection(root), y = chartYProjection(root), data = root._cfxDataProjection;
+    if (viewport.x && !validSourceAxisWindow(viewport.x, x, data?.x)
+      || viewport.y && !validSourceAxisWindow(viewport.y, y, data?.y)) return false;
+    const sourceViewport = Object.freeze({
+      ...(viewport.x ? { x: Object.freeze({ minimum: viewport.x.minimum, maximum: viewport.x.maximum }) } : {}),
+      ...(viewport.y ? { y: Object.freeze({ minimum: viewport.y.minimum, maximum: viewport.y.maximum }) } : {})
+    });
+    return requestCartesianViewport(root, { kind: 'window', axes: (viewport.x ? 'x' : '') + (viewport.y ? 'y' : ''), sourceViewport }, sync, accepted);
+  };
+  const requestViewportReset = root => cartesianViewportConnected(root)
+    ? requestCartesianViewport(root, { kind: 'reset', axes: nativePreparationBinding(root, 'viewport').axes }) : requestXViewport(root, 'reset');
+  const requestCartesianViewportZoom = (root, factor, logicalX, logicalY) => {
+    const projection = chartXProjection(root), binding = nativePreparationBinding(root, 'viewport'), plot = projection?.plotBounds;
+    if (!plot || !Number.isFinite(factor) || factor <= 0) return;
+    const x = Number.isFinite(logicalX) ? clamp(logicalX, plot.x, plot.x + plot.width) : plot.x + plot.width / 2;
+    const y = Number.isFinite(logicalY) ? clamp(logicalY, plot.y, plot.y + plot.height) : plot.y + plot.height / 2;
+    const axes = binding.axes;
+    requestCartesianViewport(root, { kind: 'zoom', axes,
+      ...(axes.includes('x') ? { left: x - (x - plot.x) / factor, right: x + (plot.x + plot.width - x) / factor } : {}),
+      ...(axes.includes('y') ? { top: y - (y - plot.y) / factor, bottom: y + (plot.y + plot.height - y) / factor } : {})
+    });
+  };
+  const requestNativeViewportPan = (root, deltaX, deltaY) => {
+    const plot = chartXProjection(root)?.plotBounds, binding = nativePreparationBinding(root, 'viewport');
+    if (!plot || !binding) return;
+    if (binding.legacy) {
+      if (Math.abs(deltaX) > .5) requestXViewport(root, 'pan', plot.x - deltaX, plot.x + plot.width - deltaX);
+      return;
+    }
+    const axes = binding.axes;
+    if (!(axes.includes('x') && Math.abs(deltaX) > .5 || axes.includes('y') && Math.abs(deltaY) > .5)) return;
+    requestCartesianViewport(root, { kind: 'pan', axes,
+      ...(axes.includes('x') ? { left: plot.x - deltaX, right: plot.x + plot.width - deltaX } : {}),
+      ...(axes.includes('y') ? { top: plot.y - deltaY, bottom: plot.y + plot.height - deltaY } : {})
+    });
+  };
+  // Native hosts own scenes; the browser owns gestures and reply lifetime.
+  const validXProjection = projection => {
+    const box = projection?.plotBounds;
+    return !!projection && [projection.fullMinimum, projection.fullMaximum, projection.minimum, projection.maximum,
+      projection.transformedMinimum, projection.transformedMaximum, projection.transformedFullMinimum, projection.transformedFullMaximum].every(Number.isFinite)
+      && projection.fullMinimum < projection.fullMaximum && projection.minimum < projection.maximum
+      && projection.transformedMinimum < projection.transformedMaximum && projection.transformedFullMinimum < projection.transformedFullMaximum
+      && validTimeSessions(projection.timeSessions)
+      && projection.minimum >= projection.fullMinimum && projection.maximum <= projection.fullMaximum
+      && typeof projection.reversed === 'boolean' && !!box && [box.x, box.y, box.width, box.height].every(Number.isFinite)
+      && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
+  };
+  const chartXProjection = root => {
+    try { return JSON.parse(root.dataset.cfxPreparedChart).xProjection || null; } catch { return null; }
+  };
+  const nativeXWindowChanged = root => {
+    const projection = chartXProjection(root);
+    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+  };
+  const connectedXViewport = root => !!nativePreparationBinding(root, 'viewport');
+  const syncXViewportControls = root => {
+    const binding = nativePreparationBinding(root, 'viewport');
+    const unsupported = !!binding && (!chartXProjection(root) || !binding.legacy && binding.axes.includes('y') && !chartYProjection(root));
+    root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = unsupported; });
+    if (unsupported && root.dataset.cfxMode === 'pan') applyMode(root, '');
+    syncXNavigation(root);
+    syncResetControl(root);
+  };
+  const requestXViewport = (root, kind, left, right, sync = true, accepted, sourceWindow) => {
+    if (!connectedXViewport(root) || !chartXProjection(root)) return false;
+    if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return false;
+    if (kind === 'reset') suspendPointerReadout(root);
+    return requestNativePreparation(root, 'viewport', { kind,
+      ...(sourceWindow ? { sourceWindow: Object.freeze({ minimum: sourceWindow.minimum, maximum: sourceWindow.maximum }) } : {}),
+      ...(kind === 'reset' ? {} : { left, right }) }, {
+      eventPrefix: 'cfxviewport', resetView: kind === 'reset', accepted,
+      validate: next => { if (!chartXProjection(next)) throw new TypeError('The viewport reply requires a supported X projection.'); },
+      beforeCommit: () => kind === 'reset' ? selectionSignature(root) : '',
+      committed: (_, previousSelection) => {
+        if (kind === 'reset') { emitHostEvent(root, 'cfxreset', {}); publishResetSelection(root, previousSelection); }
+        if (sync) emitSync(root, { action: 'viewport', state: getState(root), xWindow: nativeXWindow(root) });
+      }
+    });
+  };
+  const requestXViewportZoom = (root, factor, logicalX, logicalY) => {
+    if (cartesianViewportConnected(root)) { requestCartesianViewportZoom(root, factor, logicalX, logicalY); return; }
     const plot = chartXProjection(root)?.plotBounds;
     if (!plot || !Number.isFinite(factor) || factor <= 0) return;
     const anchor = Number.isFinite(logicalX) ? clamp(logicalX, plot.x, plot.x + plot.width) : plot.x + plot.width / 2;
@@ -6143,6 +6357,7 @@ body {
     return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale || 'linear' } : null;
   };
   const requestNativeXWindow = (root, window, sync = true, accepted) => {
+    if (cartesianViewportConnected(root)) return requestNativeCartesianWindow(root, { x: window }, sync, accepted);
     const projection = chartXProjection(root), axis = root._cfxDataProjection?.x;
     if (!connectedXViewport(root) || !projection || !axis || !window
       || !Number.isFinite(window.minimum) || !Number.isFinite(window.maximum) || window.minimum >= window.maximum
@@ -6151,7 +6366,7 @@ body {
     const first = projection.plotBounds.x + projectedAxisRatio(axis, window.minimum) * projection.plotBounds.width;
     const last = projection.plotBounds.x + projectedAxisRatio(axis, window.maximum) * projection.plotBounds.width;
     if (!Number.isFinite(first) || !Number.isFinite(last) || first === last) return false;
-    requestXViewport(root, 'window', Math.min(first, last), Math.max(first, last), sync, accepted);
+    requestXViewport(root, 'window', Math.min(first, last), Math.max(first, last), sync, accepted, window);
     return true;
   };
   // Alternate drawings are native preparations of the same source, not scaled desktop geometry.
@@ -6215,6 +6430,275 @@ body {
     ownChartWork(root, () => { observer?.disconnect(); if (frame) cancelAnimationFrame(frame); });
     queue();
   };
+  // Commands carry exact source geometry to the host; the native model owns drawing and export.
+  const nativeAnnotationNode = (root, id) => Array.from(root.querySelectorAll('[data-cfx-role=annotation][data-cfx-annotation-id]'))
+    .find(node => node.dataset.cfxAnnotationId === id);
+  const sourceAnnotationDrawing = value => {
+    const point = source => {
+      if (!source || !Number.isFinite(source.x) || !Number.isFinite(source.y))
+        throw new TypeError('Source drawing coordinates must be finite.');
+      return Object.freeze({ x: source.x, y: source.y });
+    };
+    if (!value || !['Note', 'LineSegment', 'ParallelChannel'].includes(value.kind)
+      || value.label !== undefined && typeof value.label !== 'string'
+      || value.yAxis !== undefined && !['Primary', 'Secondary'].includes(value.yAxis))
+      throw new TypeError('Expected a source Note, LineSegment or ParallelChannel drawing.');
+    const start = point(value.start), end = value.kind === 'Note' ? undefined : point(value.end);
+    if (end && start.x === end.x && start.y === end.y) throw new TypeError('Source line endpoints must differ.');
+    if (value.kind === 'Note' && value.end !== undefined) throw new TypeError('A note has one source anchor.');
+    const yOffset = value.kind === 'ParallelChannel' ? value.yOffset : 0;
+    if (!Number.isFinite(yOffset) || value.kind === 'ParallelChannel' && yOffset === 0
+      || !Number.isFinite(start.y + yOffset) || end && !Number.isFinite(end.y + yOffset))
+      throw new TypeError('A channel requires a finite nonzero source Y offset and finite boundaries.');
+    return Object.freeze({ kind: value.kind, start, ...(end ? { end } : {}),
+      ...(value.kind === 'ParallelChannel' ? { yOffset } : {}), label: value.label ?? '', yAxis: value.yAxis ?? 'Primary' });
+  };
+  const requestAnnotationChange = (root, change) => {
+    if (!nativePreparationBinding(root, 'annotation')) throw new TypeError('Connect a native annotation preparation callback first.');
+    if (!change || !['add', 'replace', 'remove'].includes(change.operation)
+      || typeof change.id !== 'string' || !change.id.trim()) throw new TypeError('An annotation change requires an operation and a nonempty authored ID.');
+    const annotationId = change.id.trim(), existing = nativeAnnotationNode(root, annotationId);
+    if (change.operation === 'add' ? !!existing : !existing)
+      throw new TypeError('Add requires an unused annotation ID; replace and remove require an existing authored annotation.');
+    const drawing = change.operation === 'remove' ? undefined : sourceAnnotationDrawing(change.drawing);
+    if (drawing && (!root._cfxDataProjection || root._cfxDataProjection.horizontal))
+      throw new TypeError('Source drawings require a vertical Cartesian data projection.');
+    return requestNativePreparation(root, 'annotation', { kind: change.operation, annotationId, ...(drawing ? { sourceDrawing: drawing } : {}) }, {
+      eventPrefix: 'cfxannotation', preserveViewport: true,
+      validate: (next, request) => {
+        const node = nativeAnnotationNode(next, request.annotationId), source = request.sourceDrawing;
+        if (request.kind === 'remove') {
+          if (node) throw new TypeError('The native reply did not remove the requested annotation.');
+          return;
+        }
+        const data = node?.dataset;
+        if (!data || data.cfxKind !== source.kind || data.cfxLabel !== source.label || data.cfxYAxis !== source.yAxis
+          || Number(data.cfxSourceX) !== source.start.x || Number(data.cfxSourceY) !== source.start.y
+          || (source.end ? Number(data.cfxSourceEndX) !== source.end.x || Number(data.cfxSourceEndY) !== source.end.y
+            : data.cfxSourceEndX !== '' || data.cfxSourceEndY !== '')
+          || Number(data.cfxChannelOffset) !== (source.yOffset ?? 0))
+          throw new TypeError('The native reply did not retain the requested source drawing facts.');
+      }
+    });
+  };
+  // Navigation chrome reuses the captured axis math and requests a fresh native scene.
+  const fullXNavigationAxis = root => {
+    const projection = chartXProjection(root), axis = root._cfxDataProjection?.x;
+    return projection && axis ? { ...axis, minimum: projection.fullMinimum, maximum: projection.fullMaximum,
+      transformedMinimum: projection.transformedFullMinimum, transformedMaximum: projection.transformedFullMaximum,
+      timeSessions: projection.timeSessions, reversed: false } : null;
+  };
+  const xNavigationCaption = (root, value) => {
+    const axis = root._cfxDataProjection?.x;
+    const native = [...(axis?.displayBounds || []), ...(axis?.displayTicks || [])].find(tick => tick.value === value);
+    return native ? native.text : String(dataValue(value, axis?.scale === 'time' && value >= 0));
+  };
+  const paintXNavigationRange = (root, first, last, rawWindow) => {
+    const panel = root.querySelector('[data-cfx-x-navigation]'), projection = chartXProjection(root), axis = fullXNavigationAxis(root);
+    if (!panel || !projection || !axis) return;
+    const start = panel.querySelector('[data-cfx-x-range="start"]'), end = panel.querySelector('[data-cfx-x-range="end"]');
+    start.value = String(first); end.value = String(last);
+    const lower = rawWindow?.minimum ?? projectedAxisValue(axis, first), upper = rawWindow?.maximum ?? projectedAxisValue(axis, last);
+    const captions = [xNavigationCaption(root, lower), xNavigationCaption(root, upper)];
+    [start, end].forEach((input, index) => { input.setAttribute('aria-valuetext', captions[index]); });
+    panel.querySelector('[data-cfx-x-value="start"]').textContent = captions[0];
+    panel.querySelector('[data-cfx-x-value="end"]').textContent = captions[1];
+    const selected = panel.querySelector('[data-cfx-x-window]');
+    if (selected) {
+      selected.style.left = ((projection.reversed ? 1 - last : first) * 100) + '%';
+      selected.style.width = ((last - first) * 100) + '%';
+    }
+    const position = panel.querySelector('[data-cfx-x-range="position"]');
+    if (position) {
+      const available = 1 - (last - first);
+      position.value = String(available > 0 ? first / available : 0);
+      position.disabled = !connectedXViewport(root) || available <= Number.EPSILON;
+      position.setAttribute('aria-valuetext', captions.join(' – '));
+    }
+    panel.querySelectorAll('[data-cfx-x-range]').forEach(input => { input.dir = projection.reversed ? 'rtl' : 'ltr'; });
+  };
+  const syncXNavigation = root => {
+    const panel = root.querySelector('[data-cfx-x-navigation]');
+    if (!panel) return;
+    const projection = chartXProjection(root), axis = fullXNavigationAxis(root);
+    const enabled = connectedXViewport(root) && !!projection && !!axis;
+    panel.hidden = !enabled;
+    panel.querySelectorAll('button,input').forEach(control => { control.disabled = !enabled; });
+    if (!enabled) return;
+    const first = projectedAxisRatio(axis, projection.minimum), last = projectedAxisRatio(axis, projection.maximum);
+    paintXNavigationRange(root, first, last, { minimum: projection.minimum, maximum: projection.maximum });
+    const pending = chartLifetimes.get(root)?.preparationPending?.channel === 'viewport';
+    panel.setAttribute('aria-busy', String(pending));
+    panel.querySelector('[data-cfx-x-status]').textContent = pending
+      ? uiText(root, 'XRangeUpdating', 'Updating range…') : '';
+    panel.querySelector('[data-cfx-x-full]').setAttribute('aria-pressed', String(!nativeXWindowChanged(root)));
+    panel.querySelectorAll('[data-cfx-x-preset]').forEach(button => {
+      const maximum = projection.fullMaximum, minimum = Math.max(projection.fullMinimum, maximum - Number(button.dataset.cfxXPreset));
+      button.disabled = !(minimum < maximum);
+      button.setAttribute('aria-pressed', String(projection.minimum === minimum && projection.maximum === maximum));
+    });
+  };
+  const bindXNavigation = root => {
+    const panel = root.querySelector('[data-cfx-x-navigation]');
+    if (!panel) return;
+    const commit = (first, last, rawWindow) => {
+      const axis = fullXNavigationAxis(root);
+      if (!axis || !requestNativeXWindow(root, rawWindow || { minimum: projectedAxisValue(axis, first), maximum: projectedAxisValue(axis, last) }))
+        syncXNavigation(root);
+    };
+    const ratios = () => {
+      const projection = chartXProjection(root), axis = fullXNavigationAxis(root);
+      return projection && axis ? [projectedAxisRatio(axis, projection.minimum), projectedAxisRatio(axis, projection.maximum)] : null;
+    };
+    const overview = panel.querySelector('.cfx-x-navigation__overview');
+    if (overview) {
+      let drag = null;
+      const pointerRatio = event => {
+        const box = overview.getBoundingClientRect();
+        const ratio = clamp((event.clientX - box.left) / box.width, 0, 1);
+        return chartXProjection(root)?.reversed ? 1 - ratio : ratio;
+      };
+      const cancel = () => { drag = null; syncXNavigation(root); };
+      listenChart(root, overview, 'pointerdown', event => {
+        if (event.button !== 0 || !connectedXViewport(root)) return;
+        event.preventDefault();
+        drag = { id: event.pointerId, first: pointerRatio(event), clientX: event.clientX };
+        overview.setPointerCapture(event.pointerId);
+      });
+      listenChart(root, overview, 'pointermove', event => {
+        if (!drag || drag.id !== event.pointerId) return;
+        const last = pointerRatio(event);
+        if (last !== drag.first) paintXNavigationRange(root, Math.min(drag.first, last), Math.max(drag.first, last));
+      });
+      listenChart(root, overview, 'pointerup', event => {
+        if (!drag || drag.id !== event.pointerId) return;
+        const first = drag.first, last = pointerRatio(event), moved = Math.abs(event.clientX - drag.clientX) >= 4;
+        drag = null;
+        if (overview.hasPointerCapture(event.pointerId)) overview.releasePointerCapture(event.pointerId);
+        if (moved && first !== last) commit(Math.min(first, last), Math.max(first, last));
+        else syncXNavigation(root);
+      });
+      listenChart(root, overview, 'pointercancel', cancel);
+      listenChart(root, root, 'keydown', event => { if (event.key === 'Escape') cancel(); });
+    }
+    panel.querySelectorAll('[data-cfx-x-range]').forEach(input => {
+      let draft = null;
+      listenChart(root, input, 'input', () => {
+        const committed = ratios();
+        if (!committed || !connectedXViewport(root)) return;
+        const value = clamp(Number(input.value), 0, 1), kind = input.dataset.cfxXRange;
+        if (kind === 'position') {
+          const span = committed[1] - committed[0], first = value * (1 - span);
+          draft = [first, first + span];
+        } else {
+          draft = committed;
+          if (kind === 'start') draft[0] = Math.min(value, draft[1] - Number.EPSILON);
+          else draft[1] = Math.max(value, draft[0] + Number.EPSILON);
+          const projection = chartXProjection(root), axis = fullXNavigationAxis(root);
+          draft.push({ minimum: kind === 'start' ? projectedAxisValue(axis, draft[0]) : projection.minimum,
+            maximum: kind === 'end' ? projectedAxisValue(axis, draft[1]) : projection.maximum });
+        }
+        paintXNavigationRange(root, draft[0], draft[1], draft[2]);
+      });
+      listenChart(root, input, 'change', () => { if (draft) commit(...draft); draft = null; });
+      listenChart(root, input, 'keydown', event => {
+        if (event.key === 'Escape') { draft = null; syncXNavigation(root); }
+      });
+      listenChart(root, input, 'pointercancel', () => { draft = null; syncXNavigation(root); });
+    });
+    panel.querySelectorAll('[data-cfx-x-preset]').forEach(button => listenChart(root, button, 'click', () => {
+      const projection = chartXProjection(root);
+      if (projection) requestNativeXWindow(root, { minimum: Math.max(projection.fullMinimum, projection.fullMaximum - Number(button.dataset.cfxXPreset)),
+        maximum: projection.fullMaximum });
+    }));
+    listenChart(root, panel.querySelector('[data-cfx-x-full]'), 'click', () => {
+      const projection = chartXProjection(root);
+      if (projection) requestNativeXWindow(root, { minimum: projection.fullMinimum, maximum: projection.fullMaximum });
+    });
+    listenChart(root, root, 'cfxviewporterror', () => {
+      syncXNavigation(root);
+      panel.querySelector('[data-cfx-x-status]').textContent = uiText(root, 'XRangeFailed', 'The range could not be updated.');
+    });
+    syncXNavigation(root);
+  };
+  // A second presentation of existing commands, never a second reset/export owner.
+  const bindChartContextMenu = root => {
+    if (root.dataset.cfxContextMenu !== 'true') return;
+    const stage = root.querySelector('.cfx-stage'), view = root.ownerDocument.defaultView;
+    if (!stage || !view) return;
+    let menu = null, returnFocus = null, cleanups = [];
+    const close = (restore = false) => {
+      for (const cleanup of cleanups.splice(0)) cleanup();
+      menu?.remove(); menu = null;
+      delete root._cfxContextMenuSourceFocus;
+      if (restore && returnFocus?.isConnected) returnFocus.focus?.({ preventScroll: true });
+      returnFocus = null;
+    };
+    const open = (x, y) => {
+      const actions = Array.from(root.querySelectorAll('[data-cfx-reset],.cfx-toolbar [data-cfx-export]'));
+      if (!actions.some(action => !action.disabled && !action.hidden)) return false;
+      close();
+      const tree = root.getRootNode(), style = view.getComputedStyle(root);
+      returnFocus = tree.activeElement || root;
+      // The portal belongs to this chart during replacement. Preserve its source
+      // focus rather than treating the menu's document-level button as unrelated.
+      root._cfxContextMenuSourceFocus = root.contains(returnFocus) ? returnFocus : stage;
+      menu = root.ownerDocument.createElement('div');
+      menu.className = 'cfx-chart-context-menu'; menu.setAttribute('role', 'menu');
+      menu.setAttribute('aria-label', uiText(root, 'ChartControls', 'Chart controls'));
+      menu.dir = style.direction; menu.lang = root.lang;
+      for (const name of ['--cfx-tooltip-surface', '--cfx-tooltip-text', '--cfx-tooltip-line', '--cfx-tooltip-font'])
+        menu.style.setProperty(name, style.getPropertyValue(name));
+      menu.style.visibility = 'hidden';
+      const items = actions.map(action => {
+        const item = root.ownerDocument.createElement('button'); item.type = 'button'; item.setAttribute('role', 'menuitem');
+        item.textContent = action.title || action.textContent; item.disabled = action.disabled || action.hidden;
+        item.dataset.cfxContextAction = action.dataset.cfxExport || 'reset';
+        menu.appendChild(item);
+        cleanups.push(listenChart(root, item, 'click', () => {
+          const enabled = action.isConnected && root.contains(action) && !action.disabled && !action.hidden;
+          close(true); if (enabled) action.click();
+        }));
+        return item;
+      });
+      (tree instanceof ShadowRoot ? tree : root.ownerDocument.body).appendChild(menu);
+      const bounds = menu.getBoundingClientRect(), gap = 8;
+      menu.style.left = Math.max(gap, Math.min(x, view.innerWidth - bounds.width - gap)) + 'px';
+      menu.style.top = Math.max(gap, Math.min(y, view.innerHeight - bounds.height - gap)) + 'px';
+      menu.style.visibility = '';
+      const enabled = items.filter(item => !item.disabled);
+      cleanups.push(listenChart(root, menu, 'keydown', event => {
+        if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(true); return; }
+        if (event.key === 'Tab') { close(true); return; }
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const active = root.getRootNode().activeElement, current = enabled.indexOf(active);
+        const index = event.key === 'Home' ? 0 : event.key === 'End' ? enabled.length - 1
+          : (current + (event.key === 'ArrowDown' ? 1 : -1) + enabled.length) % enabled.length;
+        enabled[index]?.focus();
+      }));
+      cleanups.push(listenChart(root, root.ownerDocument, 'pointerdown', event => {
+        if (!event.composedPath().includes(menu)) close();
+      }, true));
+      cleanups.push(listenChart(root, view, 'resize', () => close(true)));
+      cleanups.push(listenChart(root, root.ownerDocument, 'scroll', event => {
+        if (!event.composedPath().includes(menu)) close(true);
+      }, true));
+      enabled[0]?.focus({ preventScroll: true });
+      return true;
+    };
+    listenChart(root, stage, 'contextmenu', event => {
+      if (open(event.clientX, event.clientY)) event.preventDefault();
+    });
+    listenChart(root, root, 'keydown', event => {
+      if (event.key !== 'ContextMenu' && !(event.key === 'F10' && event.shiftKey)) return;
+      const active = root.getRootNode().activeElement;
+      if (active !== root && !stage.contains(active)) return;
+      const box = active.getBoundingClientRect();
+      if (open(box.left + box.width / 2, box.top + box.height / 2)) { event.preventDefault(); event.stopPropagation(); }
+    });
+    ownChartWork(root, close);
+  };
   const chartRoot = target => typeof target === 'string' ? document.querySelector(target) : target;
   const mountChart = target => {
     const root = chartRoot(target);
@@ -6223,8 +6707,8 @@ body {
     if (existing && !existing.disposed) return existing.controller;
     readChartSection(root);
     if (!root.isConnected) throw new TypeError('Mount the chart after inserting its section into the document.');
-    const lifetime = { cleanups: new Set(), disposed: false, controller: null, xViewportConnection: null,
-      xViewportPending: null, sceneRevision: nextChartSceneRevision() };
+    const lifetime = { cleanups: new Set(), disposed: false, controller: null, preparationConnections: {},
+      preparationPending: null, sceneRevision: nextChartSceneRevision() };
     lifetime.adaptive = readAdaptiveLayout(root);
     const requireMounted = () => {
       if (lifetime.disposed || !root.isConnected) { controller.dispose(); throw new Error('The chart controller is disposed; mount the connected section again.'); }
@@ -6247,13 +6731,44 @@ body {
         emitHostEvent(root, 'cfxupdated', {});
         return controller;
       },
+      connectAnnotations: connection => {
+        requireMounted();
+        setNativePreparationConnection(root, 'annotation', connection);
+        return controller;
+      },
+      applyAnnotationChange: change => {
+        requireMounted();
+        if (!requestAnnotationChange(root, change)) throw new TypeError('The native annotation request cannot start on this scene.');
+        return controller;
+      },
       connectXViewport: connection => {
         requireMounted();
         if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected an X viewport callback or null to disconnect.');
-        cancelXViewportRequest(lifetime);
-        lifetime.xViewportConnection = connection;
+        setNativePreparationConnection(root, 'viewport', connection, { axes: 'x', legacy: true });
         if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
         syncXViewportControls(root);
+        return controller;
+      },
+      connectViewport: (connection, options = {}) => {
+        requireMounted();
+        const axes = options.axes || 'xy';
+        if (!['x', 'y', 'xy'].includes(axes)) throw new TypeError('Native viewport axes must be x, y or xy.');
+        if (connection !== null && (!chartXProjection(root) || axes.includes('y') && !chartYProjection(root)))
+          throw new TypeError('This chart has no unambiguous native projection for the requested axes.');
+        setNativePreparationConnection(root, 'viewport', connection, { axes, legacy: false });
+        if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
+        syncXViewportControls(root); return controller;
+      },
+      getViewport: () => { requireMounted(); return copyHostValue(nativeViewportWindows(root)); },
+      setViewport: viewport => {
+        requireMounted();
+        if (!requestNativeCartesianWindow(root, viewport)) throw new TypeError('A native viewport requires connected supported axes and finite increasing source windows.');
+        return controller;
+      },
+      getYWindow: () => { requireMounted(); return copyHostValue(nativeYWindow(root)); },
+      setYWindow: (minimum, maximum) => {
+        requireMounted();
+        if (!requestNativeCartesianWindow(root, { y: { minimum, maximum } })) throw new TypeError('A native Y window requires a connected unambiguous primary axis and finite increasing source bounds.');
         return controller;
       },
       getXWindow: () => { requireMounted(); return copyHostValue(nativeXWindow(root)); },

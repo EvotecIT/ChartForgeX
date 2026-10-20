@@ -90,11 +90,22 @@ internal static partial class VisualCartesianCompiler {
         fullDomain?.Apply(chart, range, secondaryRange);
         var labels = new CartesianLabels();
         var categoryGroups = CategoryGroupSource.Create(chart, range);
-        var layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
-            stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: true);
-        if (layout == null) {
-            if (sourceViewport != null) throw new InvalidOperationException("A Cartesian viewport requires a usable plot rectangle.");
-            return null;
+        var completedDomain = sourceViewport != null && fullDomain != null;
+        // An aligned primary-only envelope already includes both drawings' full marker fit. Re-solving that fit
+        // here both duplicates layout work and can move a completed endpoint by one floating-point step.
+        CartesianAxisLayout? layout = null;
+        if (!completedDomain || fullDomain!.Y == null) {
+            layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
+                stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: true);
+            if (layout == null) {
+                if (sourceViewport != null) throw new InvalidOperationException("A Cartesian viewport requires a usable plot rectangle.");
+                return null;
+            }
+        }
+        if (completedDomain) {
+            // Secondary-axis charts still require their ordinary Y fit; their completed shared X bound remains authoritative.
+            range.SetXBounds(fullDomain!.X.Minimum, fullDomain.X.Maximum);
+            secondaryRange?.SetXBounds(fullDomain.X.Minimum, fullDomain.X.Maximum);
         }
         var fullMinimum = range.MinX; var fullMaximum = range.MaxX;
         var fullYMinimum = range.MinY; var fullYMaximum = range.MaxY;
@@ -117,11 +128,12 @@ internal static partial class VisualCartesianCompiler {
                 stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: false)
                 ?? throw new InvalidOperationException("A Cartesian viewport requires a usable plot rectangle.");
         }
-        plot = layout.Plot;
+        var resolvedLayout = layout ?? throw new InvalidOperationException("A Cartesian viewport requires a usable plot rectangle.");
+        plot = resolvedLayout.Plot;
         sizeKey?.Draw(builder, plot);
-        var labelBounds = layout.LabelBounds; var axisLabels = layout.AxisLabels;
-        var horizontal = layout.Horizontal; var categoryCaptions = layout.CategoryCaptions;
-        var horizontalTotals = layout.HorizontalTotals; var verticalTotals = layout.VerticalTotals;
+        var labelBounds = resolvedLayout.LabelBounds; var axisLabels = resolvedLayout.AxisLabels;
+        var horizontal = resolvedLayout.Horizontal; var categoryCaptions = resolvedLayout.CategoryCaptions;
+        var horizontalTotals = resolvedLayout.HorizontalTotals; var verticalTotals = resolvedLayout.VerticalTotals;
         var clipMarks = sourceViewport != null || chart.Options.ClipMarksToPlot;
         // Capture the final mapping extent after every measured axis and total lane.
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
