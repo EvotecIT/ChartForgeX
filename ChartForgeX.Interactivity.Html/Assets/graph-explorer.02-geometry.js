@@ -81,14 +81,14 @@
   };
   const nodeHalfWidth = (node) => nodeShapeExtents(node).x;
   const nodeHalfHeight = (node) => nodeShapeExtents(node).y;
-  const nodeLayoutExtents = (node) => {
+  const nodeLayoutExtents = (node, layoutPadding = true) => {
     const mark = nodeShapeExtents(node);
     const label = attr(node.el, 'data-node-label') || node.label || node.id || '';
     const secondary = attr(node.el, 'data-node-secondary-label') || node.secondaryLabel || '';
     const labelHalfWidth = Math.max(24, Math.min(132, label.length * 3.5 + 10), secondary ? Math.min(132, secondary.length * 2.8 + 8) : 0);
     const labelBottom = node.shape === 'text' ? 9 + (secondary ? 15 : 0) : Math.max(4, node.size || 8) + 24 + (secondary ? 15 : 0);
-    const bounds = node.card ? { x: mark.x + 7, y: mark.y + 7 }
-      : { x: Math.max(mark.x + 5, labelHalfWidth), y: Math.max(mark.y + 5, labelBottom) };
+    const bounds = node.card ? { x: mark.x + (layoutPadding ? 7 : 0), y: mark.y + (layoutPadding ? 7 : 0) }
+      : { x: Math.max(mark.x + (layoutPadding ? 5 : 0), labelHalfWidth), y: Math.max(mark.y + (layoutPadding ? 5 : 0), labelBottom) };
     if (node.badge || attr(node.el, 'data-node-badge')) {
       const badge = graphBadgeGeometry(node);
       bounds.x = Math.max(bounds.x, Math.abs(badge.x) + badge.width / 2 + 1);
@@ -272,27 +272,20 @@
     });
     return width;
   };
-  const edgeLabelIntersectsNode = (point, label, node) => {
-    if (!node) return false;
-    // Collapsed proxies show their aggregate body, rather than the hidden member's details.
-    const extents = attr(node.el, 'data-cfx-role') === 'graph-cluster' ? nodeShapeExtents(node) : nodeLayoutExtents(node);
-    const labelHalfWidth = Math.max(14, graphEstimatedEdgeLabelWidth(label) / 2);
-    return Math.abs(point.x - node.x) < labelHalfWidth + extents.x + 6
-      && Math.abs(point.y - 4 - node.y) < 10 + extents.y + 6;
-  };
-  const avoidEdgeLabelNodeCollisions = (edge, candidate) => {
+  const avoidEdgeLabelNodeCollisions = (edge, candidate, obstacles) => {
     const label = graphLabelText(edge.label) || graphLabelText(attr(edge.el, 'data-edge-label'));
-    if (!label || (!edgeLabelIntersectsNode(candidate, label, edge.source) && !edgeLabelIntersectsNode(candidate, label, edge.target))) return candidate;
+    const intersects = point => edgeLabelIntersectsObstacles(point, label, obstacles);
+    if (!label || !intersects(candidate)) return candidate;
     if (edgeHasRoute(edge)) {
       const points = routeRenderPoints(edge);
       for (const fraction of [.45, .55, .35, .65, .25, .75]) {
         const point = routePointAt(points, fraction, -7);
-        if (!edgeLabelIntersectsNode(point, label, edge.source) && !edgeLabelIntersectsNode(point, label, edge.target)) return point;
+        if (!intersects(point)) return point;
       }
       return candidate;
     }
     const center = { x: (edge.source.x + edge.target.x) / 2, y: (edge.source.y + edge.target.y) / 2 - 7 };
-    if (!edgeLabelIntersectsNode(center, label, edge.source) && !edgeLabelIntersectsNode(center, label, edge.target)) return center;
+    if (!intersects(center)) return center;
     const dx = edge.target.x - edge.source.x;
     const dy = edge.target.y - edge.source.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -301,21 +294,21 @@
     const offsets = [20, 36, 54, 76, 102, 136, 176, 220, 280];
     for (const offset of offsets) {
       const preferred = { x: candidate.x + normal.x * offset * preferredSign, y: candidate.y + normal.y * offset * preferredSign };
-      if (!edgeLabelIntersectsNode(preferred, label, edge.source) && !edgeLabelIntersectsNode(preferred, label, edge.target)) return preferred;
+      if (!intersects(preferred)) return preferred;
       const alternate = { x: candidate.x - normal.x * offset * preferredSign, y: candidate.y - normal.y * offset * preferredSign };
-      if (!edgeLabelIntersectsNode(alternate, label, edge.source) && !edgeLabelIntersectsNode(alternate, label, edge.target)) return alternate;
+      if (!intersects(alternate)) return alternate;
     }
     const offset = offsets[offsets.length - 1];
     return { x: candidate.x + normal.x * offset * preferredSign, y: candidate.y + normal.y * offset * preferredSign };
   };
-  const edgeLabelPoint = (edge, control) => {
+  const edgeLabelPoint = (edge, control, obstacles) => {
     if (edge.source === edge.target) return selfLoopGeometry(edge.source).label;
-    if (edgeHasRoute(edge)) return avoidEdgeLabelNodeCollisions(edge, routeMidpoint(routeRenderPoints(edge), -7));
+    if (edgeHasRoute(edge)) return avoidEdgeLabelNodeCollisions(edge, routeMidpoint(routeRenderPoints(edge), -7), obstacles);
     const endpoints = edgeRenderEndpoints(edge, control);
     const point = control
       ? { x: (endpoints.source.x + 2 * control.x + endpoints.target.x) / 4, y: (endpoints.source.y + 2 * control.y + endpoints.target.y) / 4 - 7 }
       : { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 - 7 };
-    return avoidEdgeLabelNodeCollisions(edge, point);
+    return avoidEdgeLabelNodeCollisions(edge, point, obstacles);
   };
   const edgeArrowGeometry = (edge, control, side, size = 8) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;

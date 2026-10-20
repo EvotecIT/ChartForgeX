@@ -1,5 +1,5 @@
   // Canvas, WebGL and raster export share the same visible edge style and LOD policy.
-  const graphEdgePaint = (root, edge, byId, palette, dense, moving) => {
+  const graphEdgePaint = (root, edge, byId, palette, dense, moving, labelObstacles) => {
     const rendered = visualEdge(edge, byId), control = edgeControl(rendered);
     const dimmed = edge.el.classList.contains('cfx-graph-neighborhood-dim');
     const related = edge.el.classList.contains('cfx-graph-neighborhood-related');
@@ -8,7 +8,7 @@
     const emphasis = selected ? 1.6 : related ? 1.2 : 0;
     const width = edge.strokeWidth > 0 ? Math.max(.65, edge.strokeWidth + emphasis)
       : Math.max(.65, Math.min(selected ? 6 : related ? 4 : dense ? 1.8 : 4, baseWidth + emphasis));
-    return { rendered, control, width, dimmed,
+    return { rendered, control, width, dimmed, labelObstacles,
       color: selected ? palette.selected : related ? '#14b8a6' : edge.strokeColor || palette.edge,
       alpha: (dimmed ? .1 : selected ? .95 : related ? .86 : dense ? .28 : .58) * graphLinkOpacity(edge.el),
       arrowAlpha: (dimmed ? .14 : selected || related ? 1 : dense ? .34 : 1) * graphLinkOpacity(edge.el),
@@ -19,7 +19,7 @@
   };
   const drawCanvasEdgeLabel = (context, root, edge, paint, palette) => {
     if (!paint.labels) return;
-    const label = edgeLabelPoint(paint.rendered, paint.control);
+    const label = edgeLabelPoint(paint.rendered, paint.control, paint.labelObstacles);
     context.font = '11px Segoe UI, Arial, sans-serif';
     context.textAlign = 'center';
     context.textBaseline = 'middle';

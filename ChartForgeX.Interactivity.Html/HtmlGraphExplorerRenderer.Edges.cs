@@ -90,6 +90,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void WriteEdgeLabels(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, Point> collapsedNodePositions, IReadOnlyDictionary<string, double> collapsedNodeRadii, HashSet<string> collapsedEdgeIds) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var labelObstacles = BuildEdgeLabelObstacles(scene, positions, collapsedNodePositions, collapsedNodeRadii);
         foreach (var edge in scene.Edges.Where(edge => edge.ShowLabel && !edge.Style.Hidden && !string.IsNullOrWhiteSpace(edge.Label))) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
             nodesById.TryGetValue(edge.SourceNodeId, out var sourceNode);
@@ -98,7 +99,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
             var sourceBoundary = collapsedNodeRadii.TryGetValue(edge.SourceNodeId, out var sourceRadius) ? sourceRadius : (double?)null;
             var targetBoundary = collapsedNodeRadii.TryGetValue(edge.TargetNodeId, out var targetRadius) ? targetRadius : (double?)null;
-            var point = EdgeLabelPoint(edge, renderSource, renderTarget, sourceNode, targetNode, targetBoundary, sourceBoundary);
+            var point = EdgeLabelPoint(edge, renderSource, renderTarget, sourceNode, targetNode, labelObstacles, targetBoundary, sourceBoundary);
             writer.Append("<text class=\"cfx-graph-edge-label");
             if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
             writer.Append("\" data-cfx-role=\"graph-edge-label\"");

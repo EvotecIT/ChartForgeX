@@ -15,16 +15,12 @@
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
     const state = root.__cfxGraphState || graphState(root);
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
+    const labelObstacles = graphEdgeLabelObstacles(root, state);
     edges.forEach(edge => {
       const rendered = visualEdge(edge, byId);
       const control = edgeControl(rendered);
-      edge.el.setAttribute('d', edgePathData(rendered, control));
       const label = labels.get(attr(edge.el, 'data-edge-id'));
-      if (label) {
-        const point = edgeLabelPoint(rendered, control);
-        label.setAttribute('x', point.x.toFixed(3));
-        label.setAttribute('y', point.y.toFixed(3));
-      }
+      syncGraphEdgeGeometry(edge.el, label, rendered, control, labelObstacles);
     });
   };
   const updateClusters = (clusters, byId) => clusters.forEach(cluster => {

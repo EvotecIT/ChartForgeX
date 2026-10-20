@@ -63,7 +63,7 @@
     ]));
     const labels = new Map(items(root, '[data-cfx-role="graph-edge-label"]').map(label => [attr(label, 'data-edge-label-for'), label]));
     const leads = [];
-    let positionedState;
+    let positionedState, labelObstacles;
     groups.forEach(edges => {
       const lead = edges.reduce((best, edge) => bundlePriority(edge) > bundlePriority(best) ? edge : best, edges[0]);
       leads.push(lead);
@@ -103,10 +103,11 @@
             graphAdaptiveTextColor(root, labelColor, graphThemePalette(root).edgeLabel));
           viewport.appendChild(label);
           positionedState ||= root.__cfxGraphState || graphState(root);
+          labelObstacles ||= graphEdgeLabelObstacles(root, positionedState);
           const edge = positionedState.edges.find(item => item.el === lead);
           if (edge) {
             const rendered = visualEdge(edge, positionedState.byId);
-            const point = edgeLabelPoint(rendered, edgeControl(rendered));
+            const point = edgeLabelPoint(rendered, edgeControl(rendered), labelObstacles);
             label.setAttribute('x', point.x.toFixed(3));
             label.setAttribute('y', point.y.toFixed(3));
           }

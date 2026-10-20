@@ -7,7 +7,7 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 
 namespace ChartForgeX.Tests;
 
-/// <summary>Measures endpoint captions against real text and badge bounds in prepared and updated graph output.</summary>
+/// <summary>Measures relationship captions against visible node text, marks and badges in prepared and updated output.</summary>
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class GraphEndpointCaptionBrowserTests {
     [BrowserTheory]
@@ -72,6 +72,19 @@ public sealed class GraphEndpointCaptionBrowserTests {
             await File.WriteAllBytesAsync(Path.Combine(output, "graph-endpoint-runtime-" + backend + ".png"), Convert.FromBase64String(png[(png.IndexOf(',') + 1)..]));
         }
         await page.EvaluateAsync("()=>document.getElementById('caption-proof').remove()");
+        if (backend == HtmlGraphRenderBackend.Svg) {
+            await page.Locator("[data-cfx-graph-search]").FillAsync("replication");
+            Assert.Contains("cfx-graph-hidden", await page.Locator("[data-node-id=global]").GetAttributeAsync("class"));
+            var filtered = await MeasureAsync(page, ".cfx-graph-explorer");
+            await CaptureAsync(page, "graph-endpoint-filtered", filtered);
+            Assert.Empty(filtered.GetProperty("collisions").EnumerateArray());
+            var filteredPoint = filtered.GetProperty("facts")[0].GetProperty("x").GetString();
+            await page.Locator("[data-cfx-graph-search]").FillAsync("");
+            var restored = await MeasureAsync(page, ".cfx-graph-explorer");
+            await CaptureAsync(page, "graph-endpoint-filter-restored", restored);
+            AssertFacts(restored);
+            Assert.NotEqual(filteredPoint, restored.GetProperty("facts")[0].GetProperty("x").GetString());
+        }
         await page.EmulateMediaAsync(new() { Media = Media.Print });
         await page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-role=graph-print-surface] svg')");
         var printed = await MeasureAsync(page, "[data-cfx-role=graph-print-surface]");
@@ -88,21 +101,23 @@ public sealed class GraphEndpointCaptionBrowserTests {
             .AddNode("apac", "Asia Pacific", node => { node.Fixed = true; node.X = 320; node.Y = 260; node.Size = 8; })
             .AddNode("counter", "Counter", node => { node.Fixed = true; node.X = 600; node.Y = 180; node.Size = 8; node.BadgeText = "+12345678901234567890"; })
             .AddNode("worker", "Worker", node => { node.Fixed = true; node.X = 720; node.Y = 180; node.Size = 8; })
+            .AddNode("global", "Global", node => { node.Fixed = true; node.X = 371.6; node.Y = 151.8; node.Size = 8; node.BadgeText = "42"; })
             .AddEdge("secondary-edge", reverse ? "apac" : "europe", reverse ? "europe" : "apac", "replication")
             .AddEdge("badge-edge", reverse ? "worker" : "counter", reverse ? "counter" : "worker", "badge route");
-        graph.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Export | GraphSceneFeatures.IncrementalUpdates;
+        graph.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Export | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Search;
         return graph;
     }
 
     private static Task<JsonElement> MeasureAsync(IPage page, string selector = "#caption-proof") => page.EvaluateAsync<JsonElement>("""
         selector=>{
-            const svg=document.querySelector(selector+' svg'),collisions=[];
-            const facts=[...svg.querySelectorAll('[data-cfx-role=graph-edge-label]')].map(caption=>{
-                const id=caption.dataset.edgeLabelFor,endpoints=id==='secondary-edge'?['europe','apac']:['counter','worker'];
+            const svg=document.querySelector(selector+' [data-cfx-role=graph-scene]')||document.querySelector(selector+' svg'),collisions=[];
+            const facts=[...svg.querySelectorAll('[data-cfx-role=graph-edge-label]')].filter(caption=>getComputedStyle(caption).display!=='none'&&caption.getClientRects().length).map(caption=>{
+                const id=caption.dataset.edgeLabelFor;
                 const box=caption.getBoundingClientRect();
-                for(const endpoint of endpoints){
-                    const details=svg.querySelector('[data-node-details-for="'+endpoint+'"]');
-                    for(const obstacle of details.querySelectorAll('.cfx-graph-node-label,.cfx-graph-node-secondary,.cfx-graph-node-badge')){
+                for(const details of svg.querySelectorAll('[data-cfx-role=graph-node-details]')){
+                    const endpoint=details.dataset.nodeDetailsFor;
+                    for(const obstacle of [svg.querySelector('[data-node-id="'+endpoint+'"]'),...details.querySelectorAll('.cfx-graph-node-label,.cfx-graph-node-secondary,.cfx-graph-node-badge')]){
+                        if(!obstacle||getComputedStyle(obstacle).display==='none'||!obstacle.getClientRects().length)continue;
                         const bounds=obstacle.getBoundingClientRect();
                         const width=Math.min(box.right,bounds.right)-Math.max(box.left,bounds.left),height=Math.min(box.bottom,bounds.bottom)-Math.max(box.top,bounds.top);
                         if(width>0&&height>0)collisions.push({edge:id,endpoint,detail:obstacle.textContent,area:width*height});

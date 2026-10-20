@@ -111,6 +111,7 @@
   const edgeHasVisibleEndpoints = (edge, byId) => endpointVisible(edgeVisualNode(edge, 'source', byId)) && endpointVisible(edgeVisualNode(edge, 'target', byId));
   const contentBounds = (root, state) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
+    const labelObstacles = graphEdgeLabelObstacles(root, state);
     const bounds = [];
     const pushPoint = (point, pad) => {
       if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
@@ -146,7 +147,7 @@
       pushPoint(rendered.target, pad);
       if (edgeHasRoute(rendered)) routeRenderPoints(rendered).forEach(point => pushPoint(point, pad));
       pushPoint(control, pad);
-      pushEdgeLabel(rendered, edgeLabelPoint(rendered, control), pad);
+      pushEdgeLabel(rendered, edgeLabelPoint(rendered, control, labelObstacles), pad);
     });
     state.clusters.forEach(cluster => {
       if (!visible(cluster.el)) return;

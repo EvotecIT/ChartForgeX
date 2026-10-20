@@ -242,10 +242,11 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
     const compact = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview');
     const dense = compact || state.edges.length > 250;
     const moving = root.dataset.cfxGraphPhysicsState === 'running' && !options?.force;
+    const labelObstacles = graphEdgeLabelObstacles(root, state);
     drawCanvasClusters(context, root, state, byId, palette, moving);
     state.edges.forEach(edge => {
       if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, byId)) return;
-      drawCanvasEdge(context, root, edge, graphEdgePaint(root, edge, byId, palette, dense, moving), palette);
+      drawCanvasEdge(context, root, edge, graphEdgePaint(root, edge, byId, palette, dense, moving, labelObstacles), palette);
     });
     drawCanvasNodes(context, root, state.nodes, compact, moving, undefined, palette);
     context.restore();
