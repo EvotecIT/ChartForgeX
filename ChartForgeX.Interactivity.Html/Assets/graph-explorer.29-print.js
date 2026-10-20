@@ -71,6 +71,7 @@
     const clear = () => {
       surface?.remove(); surface = null;
       root.removeAttribute('data-cfx-graph-print-ready');
+      paintPendingGraphScreen(root);
     };
     const prepare = () => {
       clear();
@@ -95,6 +96,7 @@
       surface.appendChild(svg);
       root.after(surface);
       root.setAttribute('data-cfx-graph-print-ready', 'true');
+      root.__cfxGraphScreenPaintPending = true;
       const heading = root.querySelector('.cfx-graph-header');
       surface.style.setProperty('--cfx-graph-print-reserved-height', `${Math.ceil(heading?.getBoundingClientRect().height || 0) + 16}px`);
       // beforeprint may precede the print media change. A synchronous visible measurement
@@ -117,6 +119,6 @@
     listenGraph(root, view, 'beforeprint', prepare);
     listenGraph(root, view, 'afterprint', clear);
     listenGraph(root, media, 'change', () => media.matches ? prepare() : clear());
-    lifetime.own(clear);
+    lifetime.own(() => { clear(); delete root.__cfxGraphScreenPaintPending; });
     if (media.matches) prepare();
   };

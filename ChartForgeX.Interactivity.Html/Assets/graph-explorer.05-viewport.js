@@ -234,6 +234,16 @@
     });
   };
 
+  // Print can hide the live surface while its committed paint continues to change.
+  // Consume that invalidation on screen reveal without treating it as a camera resize.
+  const paintPendingGraphScreen = root => {
+    if (!root.__cfxGraphScreenPaintPending || !graphLifetime(root)?.active || !root.isConnected ||
+      root.ownerDocument.defaultView.matchMedia('print').matches || !graphStageHasLayout(root)) return false;
+    drawCanvas(root, root.__cfxGraphState || graphState(root));
+    delete root.__cfxGraphScreenPaintPending;
+    return true;
+  };
+
   const bindGraphSurfaceResize = root => {
     const stage = root.querySelector('.cfx-graph-stage');
     if (!stage || typeof ResizeObserver === 'undefined') return;
@@ -248,7 +258,7 @@
       // must not replace the last screen frame or trigger a refit on return.
       if (printing.matches) return;
       const size = stage.getBoundingClientRect();
-      if (size.width === width && size.height === height) return;
+      if (size.width === width && size.height === height) { paintPendingGraphScreen(root); return; }
       if (frame) graphLifetime(root)?.cancelFrame(frame);
       frame = 0;
       // Remember ordinary layout loss even if hide/reveal coalesces before
@@ -259,11 +269,12 @@
         if (root.isConnected === false) { observer.disconnect(); return; }
         if (printing.matches) return;
         const current = stage.getBoundingClientRect();
-        if (current.width === width && current.height === height) return;
+        if (current.width === width && current.height === height) { paintPendingGraphScreen(root); return; }
         width = current.width; height = current.height;
         if (!graphStageHasLayout(root)) return;
         if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched) fitViewport(root);
         else drawCanvas(root, root.__cfxGraphState || graphState(root));
+        delete root.__cfxGraphScreenPaintPending;
       });
     });
     observer.observe(stage);
