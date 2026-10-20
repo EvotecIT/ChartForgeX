@@ -60,6 +60,174 @@
     "chart-grid-wide-light.svg",
     "chart-grid-wide-light.thumbnail.png",
     "chart-grid-wide-light.thumbnail.svg",
+    "combination-horizontal-compact-dark.csharp.txt",
+    "combination-horizontal-compact-dark.gallery.csharp.txt",
+    "combination-horizontal-compact-dark.html",
+    "combination-horizontal-compact-dark.png",
+    "combination-horizontal-compact-dark.svg",
+    "combination-horizontal-compact-dark.thumbnail.png",
+    "combination-horizontal-compact-dark.thumbnail.svg",
+    "combination-horizontal-compact-light.csharp.txt",
+    "combination-horizontal-compact-light.gallery.csharp.txt",
+    "combination-horizontal-compact-light.html",
+    "combination-horizontal-compact-light.png",
+    "combination-horizontal-compact-light.svg",
+    "combination-horizontal-compact-light.thumbnail.png",
+    "combination-horizontal-compact-light.thumbnail.svg",
+    "combination-horizontal-dark.csharp.txt",
+    "combination-horizontal-dark.gallery.csharp.txt",
+    "combination-horizontal-dark.html",
+    "combination-horizontal-dark.png",
+    "combination-horizontal-dark.svg",
+    "combination-horizontal-dark.thumbnail.png",
+    "combination-horizontal-dark.thumbnail.svg",
+    "combination-horizontal-light.csharp.txt",
+    "combination-horizontal-light.gallery.csharp.txt",
+    "combination-horizontal-light.html",
+    "combination-horizontal-light.png",
+    "combination-horizontal-light.svg",
+    "combination-horizontal-light.thumbnail.png",
+    "combination-horizontal-light.thumbnail.svg",
+    "combination-mixed-radial-compact-dark.csharp.txt",
+    "combination-mixed-radial-compact-dark.gallery.csharp.txt",
+    "combination-mixed-radial-compact-dark.html",
+    "combination-mixed-radial-compact-dark.png",
+    "combination-mixed-radial-compact-dark.svg",
+    "combination-mixed-radial-compact-dark.thumbnail.png",
+    "combination-mixed-radial-compact-dark.thumbnail.svg",
+    "combination-mixed-radial-compact-light.csharp.txt",
+    "combination-mixed-radial-compact-light.gallery.csharp.txt",
+    "combination-mixed-radial-compact-light.html",
+    "combination-mixed-radial-compact-light.png",
+    "combination-mixed-radial-compact-light.svg",
+    "combination-mixed-radial-compact-light.thumbnail.png",
+    "combination-mixed-radial-compact-light.thumbnail.svg",
+    "combination-mixed-radial-dark.csharp.txt",
+    "combination-mixed-radial-dark.gallery.csharp.txt",
+    "combination-mixed-radial-dark.html",
+    "combination-mixed-radial-dark.png",
+    "combination-mixed-radial-dark.svg",
+    "combination-mixed-radial-dark.thumbnail.png",
+    "combination-mixed-radial-dark.thumbnail.svg",
+    "combination-mixed-radial-light.csharp.txt",
+    "combination-mixed-radial-light.gallery.csharp.txt",
+    "combination-mixed-radial-light.html",
+    "combination-mixed-radial-light.png",
+    "combination-mixed-radial-light.svg",
+    "combination-mixed-radial-light.thumbnail.png",
+    "combination-mixed-radial-light.thumbnail.svg",
+    "combination-updated-horizontal-compact-dark.csharp.txt",
+    "combination-updated-horizontal-compact-dark.gallery.csharp.txt",
+    "combination-updated-horizontal-compact-dark.html",
+    "combination-updated-horizontal-compact-dark.png",
+    "combination-updated-horizontal-compact-dark.svg",
+    "combination-updated-horizontal-compact-dark.thumbnail.png",
+    "combination-updated-horizontal-compact-dark.thumbnail.svg",
+    "combination-updated-horizontal-compact-light.csharp.txt",
+    "combination-updated-horizontal-compact-light.gallery.csharp.txt",
+    "combination-updated-horizontal-compact-light.html",
+    "combination-updated-horizontal-compact-light.png",
+    "combination-updated-horizontal-compact-light.svg",
+    "combination-updated-horizontal-compact-light.thumbnail.png",
+    "combination-updated-horizontal-compact-light.thumbnail.svg",
+    "combination-updated-horizontal-dark.csharp.txt",
+    "combination-updated-horizontal-dark.gallery.csharp.txt",
+    "combination-updated-horizontal-dark.html",
+    "combination-updated-horizontal-dark.png",
+    "combination-updated-horizontal-dark.svg",
+    "combination-updated-horizontal-dark.thumbnail.png",
+    "combination-updated-horizontal-dark.thumbnail.svg",
+    "combination-updated-horizontal-light.csharp.txt",
+    "combination-updated-horizontal-light.gallery.csharp.txt",
+    "combination-updated-horizontal-light.html",
+    "combination-updated-horizontal-light.png",
+    "combination-updated-horizontal-light.svg",
+    "combination-updated-horizontal-light.thumbnail.png",
+    "combination-updated-horizontal-light.thumbnail.svg",
+    "combination-updated-mixed-radial-compact-dark.csharp.txt",
+    "combination-updated-mixed-radial-compact-dark.gallery.csharp.txt",
+    "combination-updated-mixed-radial-compact-dark.html",
+    "combination-updated-mixed-radial-compact-dark.png",
+    "combination-updated-mixed-radial-compact-dark.svg",
+    "combination-updated-mixed-radial-compact-dark.thumbnail.png",
+    "combination-updated-mixed-radial-compact-dark.thumbnail.svg",
+    "combination-updated-mixed-radial-compact-light.csharp.txt",
+    "combination-updated-mixed-radial-compact-light.gallery.csharp.txt",
+    "combination-updated-mixed-radial-compact-light.html",
+    "combination-updated-mixed-radial-compact-light.png",
+    "combination-updated-mixed-radial-compact-light.svg",
+    "combination-updated-mixed-radial-compact-light.thumbnail.png",
+    "combination-updated-mixed-radial-compact-light.thumbnail.svg",
+    "combination-updated-mixed-radial-dark.csharp.txt",
+    "combination-updated-mixed-radial-dark.gallery.csharp.txt",
+    "combination-updated-mixed-radial-dark.html",
+    "combination-updated-mixed-radial-dark.png",
+    "combination-updated-mixed-radial-dark.svg",
+    "combination-updated-mixed-radial-dark.thumbnail.png",
+    "combination-updated-mixed-radial-dark.thumbnail.svg",
+    "combination-updated-mixed-radial-light.csharp.txt",
+    "combination-updated-mixed-radial-light.gallery.csharp.txt",
+    "combination-updated-mixed-radial-light.html",
+    "combination-updated-mixed-radial-light.png",
+    "combination-updated-mixed-radial-light.svg",
+    "combination-updated-mixed-radial-light.thumbnail.png",
+    "combination-updated-mixed-radial-light.thumbnail.svg",
+    "combination-updated-vertical-secondary-compact-dark.csharp.txt",
+    "combination-updated-vertical-secondary-compact-dark.gallery.csharp.txt",
+    "combination-updated-vertical-secondary-compact-dark.html",
+    "combination-updated-vertical-secondary-compact-dark.png",
+    "combination-updated-vertical-secondary-compact-dark.svg",
+    "combination-updated-vertical-secondary-compact-dark.thumbnail.png",
+    "combination-updated-vertical-secondary-compact-dark.thumbnail.svg",
+    "combination-updated-vertical-secondary-compact-light.csharp.txt",
+    "combination-updated-vertical-secondary-compact-light.gallery.csharp.txt",
+    "combination-updated-vertical-secondary-compact-light.html",
+    "combination-updated-vertical-secondary-compact-light.png",
+    "combination-updated-vertical-secondary-compact-light.svg",
+    "combination-updated-vertical-secondary-compact-light.thumbnail.png",
+    "combination-updated-vertical-secondary-compact-light.thumbnail.svg",
+    "combination-updated-vertical-secondary-dark.csharp.txt",
+    "combination-updated-vertical-secondary-dark.gallery.csharp.txt",
+    "combination-updated-vertical-secondary-dark.html",
+    "combination-updated-vertical-secondary-dark.png",
+    "combination-updated-vertical-secondary-dark.svg",
+    "combination-updated-vertical-secondary-dark.thumbnail.png",
+    "combination-updated-vertical-secondary-dark.thumbnail.svg",
+    "combination-updated-vertical-secondary-light.csharp.txt",
+    "combination-updated-vertical-secondary-light.gallery.csharp.txt",
+    "combination-updated-vertical-secondary-light.html",
+    "combination-updated-vertical-secondary-light.png",
+    "combination-updated-vertical-secondary-light.svg",
+    "combination-updated-vertical-secondary-light.thumbnail.png",
+    "combination-updated-vertical-secondary-light.thumbnail.svg",
+    "combination-vertical-secondary-compact-dark.csharp.txt",
+    "combination-vertical-secondary-compact-dark.gallery.csharp.txt",
+    "combination-vertical-secondary-compact-dark.html",
+    "combination-vertical-secondary-compact-dark.png",
+    "combination-vertical-secondary-compact-dark.svg",
+    "combination-vertical-secondary-compact-dark.thumbnail.png",
+    "combination-vertical-secondary-compact-dark.thumbnail.svg",
+    "combination-vertical-secondary-compact-light.csharp.txt",
+    "combination-vertical-secondary-compact-light.gallery.csharp.txt",
+    "combination-vertical-secondary-compact-light.html",
+    "combination-vertical-secondary-compact-light.png",
+    "combination-vertical-secondary-compact-light.svg",
+    "combination-vertical-secondary-compact-light.thumbnail.png",
+    "combination-vertical-secondary-compact-light.thumbnail.svg",
+    "combination-vertical-secondary-dark.csharp.txt",
+    "combination-vertical-secondary-dark.gallery.csharp.txt",
+    "combination-vertical-secondary-dark.html",
+    "combination-vertical-secondary-dark.png",
+    "combination-vertical-secondary-dark.svg",
+    "combination-vertical-secondary-dark.thumbnail.png",
+    "combination-vertical-secondary-dark.thumbnail.svg",
+    "combination-vertical-secondary-light.csharp.txt",
+    "combination-vertical-secondary-light.gallery.csharp.txt",
+    "combination-vertical-secondary-light.html",
+    "combination-vertical-secondary-light.png",
+    "combination-vertical-secondary-light.svg",
+    "combination-vertical-secondary-light.thumbnail.png",
+    "combination-vertical-secondary-light.thumbnail.svg",
     "donut-compact-dark.csharp.txt",
     "donut-compact-dark.gallery.csharp.txt",
     "donut-compact-dark.html",
@@ -417,6 +585,20 @@
     "family-bullet-compact-dark.svg",
     "family-bullet-compact-dark.thumbnail.png",
     "family-bullet-compact-dark.thumbnail.svg",
+    "family-bullet-compact-dense-dark.csharp.txt",
+    "family-bullet-compact-dense-dark.gallery.csharp.txt",
+    "family-bullet-compact-dense-dark.html",
+    "family-bullet-compact-dense-dark.png",
+    "family-bullet-compact-dense-dark.svg",
+    "family-bullet-compact-dense-dark.thumbnail.png",
+    "family-bullet-compact-dense-dark.thumbnail.svg",
+    "family-bullet-compact-dense-light.csharp.txt",
+    "family-bullet-compact-dense-light.gallery.csharp.txt",
+    "family-bullet-compact-dense-light.html",
+    "family-bullet-compact-dense-light.png",
+    "family-bullet-compact-dense-light.svg",
+    "family-bullet-compact-dense-light.thumbnail.png",
+    "family-bullet-compact-dense-light.thumbnail.svg",
     "family-bullet-compact-light.csharp.txt",
     "family-bullet-compact-light.gallery.csharp.txt",
     "family-bullet-compact-light.html",
@@ -424,6 +606,20 @@
     "family-bullet-compact-light.svg",
     "family-bullet-compact-light.thumbnail.png",
     "family-bullet-compact-light.thumbnail.svg",
+    "family-bullet-dense-dark.csharp.txt",
+    "family-bullet-dense-dark.gallery.csharp.txt",
+    "family-bullet-dense-dark.html",
+    "family-bullet-dense-dark.png",
+    "family-bullet-dense-dark.svg",
+    "family-bullet-dense-dark.thumbnail.png",
+    "family-bullet-dense-dark.thumbnail.svg",
+    "family-bullet-dense-light.csharp.txt",
+    "family-bullet-dense-light.gallery.csharp.txt",
+    "family-bullet-dense-light.html",
+    "family-bullet-dense-light.png",
+    "family-bullet-dense-light.svg",
+    "family-bullet-dense-light.thumbnail.png",
+    "family-bullet-dense-light.thumbnail.svg",
     "family-bullet-wide-dark.csharp.txt",
     "family-bullet-wide-dark.gallery.csharp.txt",
     "family-bullet-wide-dark.html",
@@ -725,6 +921,20 @@
     "family-difference-area-compact-dated-gaps-light.svg",
     "family-difference-area-compact-dated-gaps-light.thumbnail.png",
     "family-difference-area-compact-dated-gaps-light.thumbnail.svg",
+    "family-difference-area-compact-dense-dark.csharp.txt",
+    "family-difference-area-compact-dense-dark.gallery.csharp.txt",
+    "family-difference-area-compact-dense-dark.html",
+    "family-difference-area-compact-dense-dark.png",
+    "family-difference-area-compact-dense-dark.svg",
+    "family-difference-area-compact-dense-dark.thumbnail.png",
+    "family-difference-area-compact-dense-dark.thumbnail.svg",
+    "family-difference-area-compact-dense-light.csharp.txt",
+    "family-difference-area-compact-dense-light.gallery.csharp.txt",
+    "family-difference-area-compact-dense-light.html",
+    "family-difference-area-compact-dense-light.png",
+    "family-difference-area-compact-dense-light.svg",
+    "family-difference-area-compact-dense-light.thumbnail.png",
+    "family-difference-area-compact-dense-light.thumbnail.svg",
     "family-difference-area-compact-light.csharp.txt",
     "family-difference-area-compact-light.gallery.csharp.txt",
     "family-difference-area-compact-light.html",
@@ -732,6 +942,20 @@
     "family-difference-area-compact-light.svg",
     "family-difference-area-compact-light.thumbnail.png",
     "family-difference-area-compact-light.thumbnail.svg",
+    "family-difference-area-compact-singleton-dark.csharp.txt",
+    "family-difference-area-compact-singleton-dark.gallery.csharp.txt",
+    "family-difference-area-compact-singleton-dark.html",
+    "family-difference-area-compact-singleton-dark.png",
+    "family-difference-area-compact-singleton-dark.svg",
+    "family-difference-area-compact-singleton-dark.thumbnail.png",
+    "family-difference-area-compact-singleton-dark.thumbnail.svg",
+    "family-difference-area-compact-singleton-light.csharp.txt",
+    "family-difference-area-compact-singleton-light.gallery.csharp.txt",
+    "family-difference-area-compact-singleton-light.html",
+    "family-difference-area-compact-singleton-light.png",
+    "family-difference-area-compact-singleton-light.svg",
+    "family-difference-area-compact-singleton-light.thumbnail.png",
+    "family-difference-area-compact-singleton-light.thumbnail.svg",
     "family-difference-area-compact-step-middle-dark.csharp.txt",
     "family-difference-area-compact-step-middle-dark.gallery.csharp.txt",
     "family-difference-area-compact-step-middle-dark.html",
@@ -760,6 +984,34 @@
     "family-difference-area-dated-gaps-light.svg",
     "family-difference-area-dated-gaps-light.thumbnail.png",
     "family-difference-area-dated-gaps-light.thumbnail.svg",
+    "family-difference-area-dense-dark.csharp.txt",
+    "family-difference-area-dense-dark.gallery.csharp.txt",
+    "family-difference-area-dense-dark.html",
+    "family-difference-area-dense-dark.png",
+    "family-difference-area-dense-dark.svg",
+    "family-difference-area-dense-dark.thumbnail.png",
+    "family-difference-area-dense-dark.thumbnail.svg",
+    "family-difference-area-dense-light.csharp.txt",
+    "family-difference-area-dense-light.gallery.csharp.txt",
+    "family-difference-area-dense-light.html",
+    "family-difference-area-dense-light.png",
+    "family-difference-area-dense-light.svg",
+    "family-difference-area-dense-light.thumbnail.png",
+    "family-difference-area-dense-light.thumbnail.svg",
+    "family-difference-area-singleton-dark.csharp.txt",
+    "family-difference-area-singleton-dark.gallery.csharp.txt",
+    "family-difference-area-singleton-dark.html",
+    "family-difference-area-singleton-dark.png",
+    "family-difference-area-singleton-dark.svg",
+    "family-difference-area-singleton-dark.thumbnail.png",
+    "family-difference-area-singleton-dark.thumbnail.svg",
+    "family-difference-area-singleton-light.csharp.txt",
+    "family-difference-area-singleton-light.gallery.csharp.txt",
+    "family-difference-area-singleton-light.html",
+    "family-difference-area-singleton-light.png",
+    "family-difference-area-singleton-light.svg",
+    "family-difference-area-singleton-light.thumbnail.png",
+    "family-difference-area-singleton-light.thumbnail.svg",
     "family-difference-area-step-end-dark.csharp.txt",
     "family-difference-area-step-end-dark.gallery.csharp.txt",
     "family-difference-area-step-end-dark.html",
@@ -1103,6 +1355,20 @@
     "family-gauge-compact-dark.svg",
     "family-gauge-compact-dark.thumbnail.png",
     "family-gauge-compact-dark.thumbnail.svg",
+    "family-gauge-compact-dense-scale-dark.csharp.txt",
+    "family-gauge-compact-dense-scale-dark.gallery.csharp.txt",
+    "family-gauge-compact-dense-scale-dark.html",
+    "family-gauge-compact-dense-scale-dark.png",
+    "family-gauge-compact-dense-scale-dark.svg",
+    "family-gauge-compact-dense-scale-dark.thumbnail.png",
+    "family-gauge-compact-dense-scale-dark.thumbnail.svg",
+    "family-gauge-compact-dense-scale-light.csharp.txt",
+    "family-gauge-compact-dense-scale-light.gallery.csharp.txt",
+    "family-gauge-compact-dense-scale-light.html",
+    "family-gauge-compact-dense-scale-light.png",
+    "family-gauge-compact-dense-scale-light.svg",
+    "family-gauge-compact-dense-scale-light.thumbnail.png",
+    "family-gauge-compact-dense-scale-light.thumbnail.svg",
     "family-gauge-compact-full-circle-dark.csharp.txt",
     "family-gauge-compact-full-circle-dark.gallery.csharp.txt",
     "family-gauge-compact-full-circle-dark.html",
@@ -1166,6 +1432,20 @@
     "family-gauge-compact-vertical-light.svg",
     "family-gauge-compact-vertical-light.thumbnail.png",
     "family-gauge-compact-vertical-light.thumbnail.svg",
+    "family-gauge-dense-scale-dark.csharp.txt",
+    "family-gauge-dense-scale-dark.gallery.csharp.txt",
+    "family-gauge-dense-scale-dark.html",
+    "family-gauge-dense-scale-dark.png",
+    "family-gauge-dense-scale-dark.svg",
+    "family-gauge-dense-scale-dark.thumbnail.png",
+    "family-gauge-dense-scale-dark.thumbnail.svg",
+    "family-gauge-dense-scale-light.csharp.txt",
+    "family-gauge-dense-scale-light.gallery.csharp.txt",
+    "family-gauge-dense-scale-light.html",
+    "family-gauge-dense-scale-light.png",
+    "family-gauge-dense-scale-light.svg",
+    "family-gauge-dense-scale-light.thumbnail.png",
+    "family-gauge-dense-scale-light.thumbnail.svg",
     "family-gauge-full-circle-dark.csharp.txt",
     "family-gauge-full-circle-dark.gallery.csharp.txt",
     "family-gauge-full-circle-dark.html",
@@ -1971,6 +2251,20 @@
     "family-pyramid-compact-dark.svg",
     "family-pyramid-compact-dark.thumbnail.png",
     "family-pyramid-compact-dark.thumbnail.svg",
+    "family-pyramid-compact-dense-dark.csharp.txt",
+    "family-pyramid-compact-dense-dark.gallery.csharp.txt",
+    "family-pyramid-compact-dense-dark.html",
+    "family-pyramid-compact-dense-dark.png",
+    "family-pyramid-compact-dense-dark.svg",
+    "family-pyramid-compact-dense-dark.thumbnail.png",
+    "family-pyramid-compact-dense-dark.thumbnail.svg",
+    "family-pyramid-compact-dense-light.csharp.txt",
+    "family-pyramid-compact-dense-light.gallery.csharp.txt",
+    "family-pyramid-compact-dense-light.html",
+    "family-pyramid-compact-dense-light.png",
+    "family-pyramid-compact-dense-light.svg",
+    "family-pyramid-compact-dense-light.thumbnail.png",
+    "family-pyramid-compact-dense-light.thumbnail.svg",
     "family-pyramid-compact-light.csharp.txt",
     "family-pyramid-compact-light.gallery.csharp.txt",
     "family-pyramid-compact-light.html",
@@ -1992,6 +2286,20 @@
     "family-pyramid-compact-options-light.svg",
     "family-pyramid-compact-options-light.thumbnail.png",
     "family-pyramid-compact-options-light.thumbnail.svg",
+    "family-pyramid-dense-dark.csharp.txt",
+    "family-pyramid-dense-dark.gallery.csharp.txt",
+    "family-pyramid-dense-dark.html",
+    "family-pyramid-dense-dark.png",
+    "family-pyramid-dense-dark.svg",
+    "family-pyramid-dense-dark.thumbnail.png",
+    "family-pyramid-dense-dark.thumbnail.svg",
+    "family-pyramid-dense-light.csharp.txt",
+    "family-pyramid-dense-light.gallery.csharp.txt",
+    "family-pyramid-dense-light.html",
+    "family-pyramid-dense-light.png",
+    "family-pyramid-dense-light.svg",
+    "family-pyramid-dense-light.thumbnail.png",
+    "family-pyramid-dense-light.thumbnail.svg",
     "family-pyramid-options-dark.csharp.txt",
     "family-pyramid-options-dark.gallery.csharp.txt",
     "family-pyramid-options-dark.html",
@@ -2468,6 +2776,20 @@
     "family-range-area-compact-options-light.svg",
     "family-range-area-compact-options-light.thumbnail.png",
     "family-range-area-compact-options-light.thumbnail.svg",
+    "family-range-area-compact-singleton-dark.csharp.txt",
+    "family-range-area-compact-singleton-dark.gallery.csharp.txt",
+    "family-range-area-compact-singleton-dark.html",
+    "family-range-area-compact-singleton-dark.png",
+    "family-range-area-compact-singleton-dark.svg",
+    "family-range-area-compact-singleton-dark.thumbnail.png",
+    "family-range-area-compact-singleton-dark.thumbnail.svg",
+    "family-range-area-compact-singleton-light.csharp.txt",
+    "family-range-area-compact-singleton-light.gallery.csharp.txt",
+    "family-range-area-compact-singleton-light.html",
+    "family-range-area-compact-singleton-light.png",
+    "family-range-area-compact-singleton-light.svg",
+    "family-range-area-compact-singleton-light.thumbnail.png",
+    "family-range-area-compact-singleton-light.thumbnail.svg",
     "family-range-area-options-dark.csharp.txt",
     "family-range-area-options-dark.gallery.csharp.txt",
     "family-range-area-options-dark.html",
@@ -2482,6 +2804,20 @@
     "family-range-area-options-light.svg",
     "family-range-area-options-light.thumbnail.png",
     "family-range-area-options-light.thumbnail.svg",
+    "family-range-area-singleton-dark.csharp.txt",
+    "family-range-area-singleton-dark.gallery.csharp.txt",
+    "family-range-area-singleton-dark.html",
+    "family-range-area-singleton-dark.png",
+    "family-range-area-singleton-dark.svg",
+    "family-range-area-singleton-dark.thumbnail.png",
+    "family-range-area-singleton-dark.thumbnail.svg",
+    "family-range-area-singleton-light.csharp.txt",
+    "family-range-area-singleton-light.gallery.csharp.txt",
+    "family-range-area-singleton-light.html",
+    "family-range-area-singleton-light.png",
+    "family-range-area-singleton-light.svg",
+    "family-range-area-singleton-light.thumbnail.png",
+    "family-range-area-singleton-light.thumbnail.svg",
     "family-range-area-wide-dark.csharp.txt",
     "family-range-area-wide-dark.gallery.csharp.txt",
     "family-range-area-wide-dark.html",
@@ -2503,6 +2839,20 @@
     "family-range-band-compact-dark.svg",
     "family-range-band-compact-dark.thumbnail.png",
     "family-range-band-compact-dark.thumbnail.svg",
+    "family-range-band-compact-dense-dark.csharp.txt",
+    "family-range-band-compact-dense-dark.gallery.csharp.txt",
+    "family-range-band-compact-dense-dark.html",
+    "family-range-band-compact-dense-dark.png",
+    "family-range-band-compact-dense-dark.svg",
+    "family-range-band-compact-dense-dark.thumbnail.png",
+    "family-range-band-compact-dense-dark.thumbnail.svg",
+    "family-range-band-compact-dense-light.csharp.txt",
+    "family-range-band-compact-dense-light.gallery.csharp.txt",
+    "family-range-band-compact-dense-light.html",
+    "family-range-band-compact-dense-light.png",
+    "family-range-band-compact-dense-light.svg",
+    "family-range-band-compact-dense-light.thumbnail.png",
+    "family-range-band-compact-dense-light.thumbnail.svg",
     "family-range-band-compact-light.csharp.txt",
     "family-range-band-compact-light.gallery.csharp.txt",
     "family-range-band-compact-light.html",
@@ -2510,6 +2860,48 @@
     "family-range-band-compact-light.svg",
     "family-range-band-compact-light.thumbnail.png",
     "family-range-band-compact-light.thumbnail.svg",
+    "family-range-band-compact-singleton-dark.csharp.txt",
+    "family-range-band-compact-singleton-dark.gallery.csharp.txt",
+    "family-range-band-compact-singleton-dark.html",
+    "family-range-band-compact-singleton-dark.png",
+    "family-range-band-compact-singleton-dark.svg",
+    "family-range-band-compact-singleton-dark.thumbnail.png",
+    "family-range-band-compact-singleton-dark.thumbnail.svg",
+    "family-range-band-compact-singleton-light.csharp.txt",
+    "family-range-band-compact-singleton-light.gallery.csharp.txt",
+    "family-range-band-compact-singleton-light.html",
+    "family-range-band-compact-singleton-light.png",
+    "family-range-band-compact-singleton-light.svg",
+    "family-range-band-compact-singleton-light.thumbnail.png",
+    "family-range-band-compact-singleton-light.thumbnail.svg",
+    "family-range-band-dense-dark.csharp.txt",
+    "family-range-band-dense-dark.gallery.csharp.txt",
+    "family-range-band-dense-dark.html",
+    "family-range-band-dense-dark.png",
+    "family-range-band-dense-dark.svg",
+    "family-range-band-dense-dark.thumbnail.png",
+    "family-range-band-dense-dark.thumbnail.svg",
+    "family-range-band-dense-light.csharp.txt",
+    "family-range-band-dense-light.gallery.csharp.txt",
+    "family-range-band-dense-light.html",
+    "family-range-band-dense-light.png",
+    "family-range-band-dense-light.svg",
+    "family-range-band-dense-light.thumbnail.png",
+    "family-range-band-dense-light.thumbnail.svg",
+    "family-range-band-singleton-dark.csharp.txt",
+    "family-range-band-singleton-dark.gallery.csharp.txt",
+    "family-range-band-singleton-dark.html",
+    "family-range-band-singleton-dark.png",
+    "family-range-band-singleton-dark.svg",
+    "family-range-band-singleton-dark.thumbnail.png",
+    "family-range-band-singleton-dark.thumbnail.svg",
+    "family-range-band-singleton-light.csharp.txt",
+    "family-range-band-singleton-light.gallery.csharp.txt",
+    "family-range-band-singleton-light.html",
+    "family-range-band-singleton-light.png",
+    "family-range-band-singleton-light.svg",
+    "family-range-band-singleton-light.thumbnail.png",
+    "family-range-band-singleton-light.thumbnail.svg",
     "family-range-band-wide-dark.csharp.txt",
     "family-range-band-wide-dark.gallery.csharp.txt",
     "family-range-band-wide-dark.html",
@@ -2531,6 +2923,34 @@
     "family-range-bar-compact-dark.svg",
     "family-range-bar-compact-dark.thumbnail.png",
     "family-range-bar-compact-dark.thumbnail.svg",
+    "family-range-bar-compact-dense-dark.csharp.txt",
+    "family-range-bar-compact-dense-dark.gallery.csharp.txt",
+    "family-range-bar-compact-dense-dark.html",
+    "family-range-bar-compact-dense-dark.png",
+    "family-range-bar-compact-dense-dark.svg",
+    "family-range-bar-compact-dense-dark.thumbnail.png",
+    "family-range-bar-compact-dense-dark.thumbnail.svg",
+    "family-range-bar-compact-dense-horizontal-dark.csharp.txt",
+    "family-range-bar-compact-dense-horizontal-dark.gallery.csharp.txt",
+    "family-range-bar-compact-dense-horizontal-dark.html",
+    "family-range-bar-compact-dense-horizontal-dark.png",
+    "family-range-bar-compact-dense-horizontal-dark.svg",
+    "family-range-bar-compact-dense-horizontal-dark.thumbnail.png",
+    "family-range-bar-compact-dense-horizontal-dark.thumbnail.svg",
+    "family-range-bar-compact-dense-horizontal-light.csharp.txt",
+    "family-range-bar-compact-dense-horizontal-light.gallery.csharp.txt",
+    "family-range-bar-compact-dense-horizontal-light.html",
+    "family-range-bar-compact-dense-horizontal-light.png",
+    "family-range-bar-compact-dense-horizontal-light.svg",
+    "family-range-bar-compact-dense-horizontal-light.thumbnail.png",
+    "family-range-bar-compact-dense-horizontal-light.thumbnail.svg",
+    "family-range-bar-compact-dense-light.csharp.txt",
+    "family-range-bar-compact-dense-light.gallery.csharp.txt",
+    "family-range-bar-compact-dense-light.html",
+    "family-range-bar-compact-dense-light.png",
+    "family-range-bar-compact-dense-light.svg",
+    "family-range-bar-compact-dense-light.thumbnail.png",
+    "family-range-bar-compact-dense-light.thumbnail.svg",
     "family-range-bar-compact-endpoint-labels-dark.csharp.txt",
     "family-range-bar-compact-endpoint-labels-dark.gallery.csharp.txt",
     "family-range-bar-compact-endpoint-labels-dark.html",
@@ -2594,6 +3014,48 @@
     "family-range-bar-compact-options-light.svg",
     "family-range-bar-compact-options-light.thumbnail.png",
     "family-range-bar-compact-options-light.thumbnail.svg",
+    "family-range-bar-compact-sparse-catalog-dark.csharp.txt",
+    "family-range-bar-compact-sparse-catalog-dark.gallery.csharp.txt",
+    "family-range-bar-compact-sparse-catalog-dark.html",
+    "family-range-bar-compact-sparse-catalog-dark.png",
+    "family-range-bar-compact-sparse-catalog-dark.svg",
+    "family-range-bar-compact-sparse-catalog-dark.thumbnail.png",
+    "family-range-bar-compact-sparse-catalog-dark.thumbnail.svg",
+    "family-range-bar-compact-sparse-catalog-light.csharp.txt",
+    "family-range-bar-compact-sparse-catalog-light.gallery.csharp.txt",
+    "family-range-bar-compact-sparse-catalog-light.html",
+    "family-range-bar-compact-sparse-catalog-light.png",
+    "family-range-bar-compact-sparse-catalog-light.svg",
+    "family-range-bar-compact-sparse-catalog-light.thumbnail.png",
+    "family-range-bar-compact-sparse-catalog-light.thumbnail.svg",
+    "family-range-bar-dense-dark.csharp.txt",
+    "family-range-bar-dense-dark.gallery.csharp.txt",
+    "family-range-bar-dense-dark.html",
+    "family-range-bar-dense-dark.png",
+    "family-range-bar-dense-dark.svg",
+    "family-range-bar-dense-dark.thumbnail.png",
+    "family-range-bar-dense-dark.thumbnail.svg",
+    "family-range-bar-dense-horizontal-dark.csharp.txt",
+    "family-range-bar-dense-horizontal-dark.gallery.csharp.txt",
+    "family-range-bar-dense-horizontal-dark.html",
+    "family-range-bar-dense-horizontal-dark.png",
+    "family-range-bar-dense-horizontal-dark.svg",
+    "family-range-bar-dense-horizontal-dark.thumbnail.png",
+    "family-range-bar-dense-horizontal-dark.thumbnail.svg",
+    "family-range-bar-dense-horizontal-light.csharp.txt",
+    "family-range-bar-dense-horizontal-light.gallery.csharp.txt",
+    "family-range-bar-dense-horizontal-light.html",
+    "family-range-bar-dense-horizontal-light.png",
+    "family-range-bar-dense-horizontal-light.svg",
+    "family-range-bar-dense-horizontal-light.thumbnail.png",
+    "family-range-bar-dense-horizontal-light.thumbnail.svg",
+    "family-range-bar-dense-light.csharp.txt",
+    "family-range-bar-dense-light.gallery.csharp.txt",
+    "family-range-bar-dense-light.html",
+    "family-range-bar-dense-light.png",
+    "family-range-bar-dense-light.svg",
+    "family-range-bar-dense-light.thumbnail.png",
+    "family-range-bar-dense-light.thumbnail.svg",
     "family-range-bar-endpoint-labels-dark.csharp.txt",
     "family-range-bar-endpoint-labels-dark.gallery.csharp.txt",
     "family-range-bar-endpoint-labels-dark.html",
@@ -2650,6 +3112,20 @@
     "family-range-bar-options-light.svg",
     "family-range-bar-options-light.thumbnail.png",
     "family-range-bar-options-light.thumbnail.svg",
+    "family-range-bar-sparse-catalog-dark.csharp.txt",
+    "family-range-bar-sparse-catalog-dark.gallery.csharp.txt",
+    "family-range-bar-sparse-catalog-dark.html",
+    "family-range-bar-sparse-catalog-dark.png",
+    "family-range-bar-sparse-catalog-dark.svg",
+    "family-range-bar-sparse-catalog-dark.thumbnail.png",
+    "family-range-bar-sparse-catalog-dark.thumbnail.svg",
+    "family-range-bar-sparse-catalog-light.csharp.txt",
+    "family-range-bar-sparse-catalog-light.gallery.csharp.txt",
+    "family-range-bar-sparse-catalog-light.html",
+    "family-range-bar-sparse-catalog-light.png",
+    "family-range-bar-sparse-catalog-light.svg",
+    "family-range-bar-sparse-catalog-light.thumbnail.png",
+    "family-range-bar-sparse-catalog-light.thumbnail.svg",
     "family-range-bar-wide-dark.csharp.txt",
     "family-range-bar-wide-dark.gallery.csharp.txt",
     "family-range-bar-wide-dark.html",
@@ -5403,7 +5879,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 39
     },
     {
       "id": "family-scatter-compact-color-scale-light",
@@ -5472,7 +5948,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 44
     },
     {
       "id": "family-scatter-compact-positioned-color-scale-light",
@@ -5540,7 +6016,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-compact-color-dimension-light",
@@ -5608,7 +6084,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-compact-gradient-color-legend-light",
@@ -5676,7 +6152,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-compact-swatch-color-legend-light",
@@ -5744,7 +6220,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-compact-quadrants-light",
@@ -5778,7 +6254,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-partial-color-range-light",
@@ -5812,7 +6288,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-partial-color-range-light",
@@ -6017,7 +6493,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 34
+      "semanticRegions": 39
     },
     {
       "id": "family-scatter-compact-color-scale-dark",
@@ -6086,7 +6562,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 39
+      "semanticRegions": 44
     },
     {
       "id": "family-scatter-compact-positioned-color-scale-dark",
@@ -6154,7 +6630,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-compact-color-dimension-dark",
@@ -6222,7 +6698,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 27
+      "semanticRegions": 32
     },
     {
       "id": "family-scatter-compact-gradient-color-legend-dark",
@@ -6290,7 +6766,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 37
     },
     {
       "id": "family-scatter-compact-swatch-color-legend-dark",
@@ -6358,7 +6834,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-compact-quadrants-dark",
@@ -6392,7 +6868,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 25
+      "semanticRegions": 30
     },
     {
       "id": "family-scatter-partial-color-range-dark",
@@ -6426,7 +6902,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 30
+      "semanticRegions": 35
     },
     {
       "id": "family-scatter-compact-partial-color-range-dark",
@@ -6631,7 +7107,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 37
     },
     {
       "id": "family-bubble-compact-color-scale-light",
@@ -6700,7 +7176,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 34
     },
     {
       "id": "family-bubble-compact-color-dimension-light",
@@ -6768,7 +7244,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-compact-plot-regions-light",
@@ -6802,7 +7278,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-options-light",
@@ -6973,7 +7449,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 32
+      "semanticRegions": 37
     },
     {
       "id": "family-bubble-compact-color-scale-dark",
@@ -7042,7 +7518,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 29
+      "semanticRegions": 34
     },
     {
       "id": "family-bubble-compact-color-dimension-dark",
@@ -7110,7 +7586,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-compact-plot-regions-dark",
@@ -7144,7 +7620,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 27
     },
     {
       "id": "family-bubble-options-dark",
@@ -7827,6 +8303,142 @@
       "semanticRegions": 15
     },
     {
+      "id": "family-range-band-singleton-light",
+      "family": "range-band",
+      "familyLabel": "Range Band",
+      "group": "trends",
+      "title": "Expected temperature band",
+      "variant": "singleton",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-band-singleton-light.csharp.txt",
+      "gallerySource": "family-range-band-singleton-light.gallery.csharp.txt",
+      "svg": "family-range-band-singleton-light.svg",
+      "png": "family-range-band-singleton-light.png",
+      "html": "family-range-band-singleton-light.html",
+      "thumbnail": "family-range-band-singleton-light.thumbnail.svg",
+      "thumbnailPng": "family-range-band-singleton-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-range-band-compact-singleton-light",
+      "family": "range-band",
+      "familyLabel": "Range Band",
+      "group": "trends",
+      "title": "Expected temperature band",
+      "variant": "compact-singleton",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-band-compact-singleton-light.csharp.txt",
+      "gallerySource": "family-range-band-compact-singleton-light.gallery.csharp.txt",
+      "svg": "family-range-band-compact-singleton-light.svg",
+      "png": "family-range-band-compact-singleton-light.png",
+      "html": "family-range-band-compact-singleton-light.html",
+      "thumbnail": "family-range-band-compact-singleton-light.thumbnail.svg",
+      "thumbnailPng": "family-range-band-compact-singleton-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-range-band-dense-light",
+      "family": "range-band",
+      "familyLabel": "Range Band",
+      "group": "trends",
+      "title": "Expected temperature band",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-band-dense-light.csharp.txt",
+      "gallerySource": "family-range-band-dense-light.gallery.csharp.txt",
+      "svg": "family-range-band-dense-light.svg",
+      "png": "family-range-band-dense-light.png",
+      "html": "family-range-band-dense-light.html",
+      "thumbnail": "family-range-band-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-range-band-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 71
+    },
+    {
+      "id": "family-range-band-compact-dense-light",
+      "family": "range-band",
+      "familyLabel": "Range Band",
+      "group": "trends",
+      "title": "Expected temperature band",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-band-compact-dense-light.csharp.txt",
+      "gallerySource": "family-range-band-compact-dense-light.gallery.csharp.txt",
+      "svg": "family-range-band-compact-dense-light.svg",
+      "png": "family-range-band-compact-dense-light.png",
+      "html": "family-range-band-compact-dense-light.html",
+      "thumbnail": "family-range-band-compact-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-range-band-compact-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 55
+    },
+    {
       "id": "family-range-band-wide-dark",
       "family": "range-band",
       "familyLabel": "Range Band",
@@ -7895,6 +8507,142 @@
       "semanticRegions": 15
     },
     {
+      "id": "family-range-band-singleton-dark",
+      "family": "range-band",
+      "familyLabel": "Range Band",
+      "group": "trends",
+      "title": "Expected temperature band",
+      "variant": "singleton",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-band-singleton-dark.csharp.txt",
+      "gallerySource": "family-range-band-singleton-dark.gallery.csharp.txt",
+      "svg": "family-range-band-singleton-dark.svg",
+      "png": "family-range-band-singleton-dark.png",
+      "html": "family-range-band-singleton-dark.html",
+      "thumbnail": "family-range-band-singleton-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-band-singleton-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-range-band-compact-singleton-dark",
+      "family": "range-band",
+      "familyLabel": "Range Band",
+      "group": "trends",
+      "title": "Expected temperature band",
+      "variant": "compact-singleton",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-band-compact-singleton-dark.csharp.txt",
+      "gallerySource": "family-range-band-compact-singleton-dark.gallery.csharp.txt",
+      "svg": "family-range-band-compact-singleton-dark.svg",
+      "png": "family-range-band-compact-singleton-dark.png",
+      "html": "family-range-band-compact-singleton-dark.html",
+      "thumbnail": "family-range-band-compact-singleton-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-band-compact-singleton-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-range-band-dense-dark",
+      "family": "range-band",
+      "familyLabel": "Range Band",
+      "group": "trends",
+      "title": "Expected temperature band",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-band-dense-dark.csharp.txt",
+      "gallerySource": "family-range-band-dense-dark.gallery.csharp.txt",
+      "svg": "family-range-band-dense-dark.svg",
+      "png": "family-range-band-dense-dark.png",
+      "html": "family-range-band-dense-dark.html",
+      "thumbnail": "family-range-band-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-band-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 71
+    },
+    {
+      "id": "family-range-band-compact-dense-dark",
+      "family": "range-band",
+      "familyLabel": "Range Band",
+      "group": "trends",
+      "title": "Expected temperature band",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBand"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-band-compact-dense-dark.csharp.txt",
+      "gallerySource": "family-range-band-compact-dense-dark.gallery.csharp.txt",
+      "svg": "family-range-band-compact-dense-dark.svg",
+      "png": "family-range-band-compact-dense-dark.png",
+      "html": "family-range-band-compact-dense-dark.html",
+      "thumbnail": "family-range-band-compact-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-band-compact-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 55
+    },
+    {
       "id": "family-range-area-wide-light",
       "family": "range-area",
       "familyLabel": "Range Area",
@@ -7961,6 +8709,74 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 15
+    },
+    {
+      "id": "family-range-area-singleton-light",
+      "family": "range-area",
+      "familyLabel": "Range Area",
+      "group": "trends",
+      "title": "Expected operating range",
+      "variant": "singleton",
+      "primary": false,
+      "seriesKinds": [
+        "RangeArea"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-area-singleton-light.csharp.txt",
+      "gallerySource": "family-range-area-singleton-light.gallery.csharp.txt",
+      "svg": "family-range-area-singleton-light.svg",
+      "png": "family-range-area-singleton-light.png",
+      "html": "family-range-area-singleton-light.html",
+      "thumbnail": "family-range-area-singleton-light.thumbnail.svg",
+      "thumbnailPng": "family-range-area-singleton-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-range-area-compact-singleton-light",
+      "family": "range-area",
+      "familyLabel": "Range Area",
+      "group": "trends",
+      "title": "Expected operating range",
+      "variant": "compact-singleton",
+      "primary": false,
+      "seriesKinds": [
+        "RangeArea"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-area-compact-singleton-light.csharp.txt",
+      "gallerySource": "family-range-area-compact-singleton-light.gallery.csharp.txt",
+      "svg": "family-range-area-compact-singleton-light.svg",
+      "png": "family-range-area-compact-singleton-light.png",
+      "html": "family-range-area-compact-singleton-light.html",
+      "thumbnail": "family-range-area-compact-singleton-light.thumbnail.svg",
+      "thumbnailPng": "family-range-area-compact-singleton-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
     },
     {
       "id": "family-range-area-options-light",
@@ -8097,6 +8913,74 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 15
+    },
+    {
+      "id": "family-range-area-singleton-dark",
+      "family": "range-area",
+      "familyLabel": "Range Area",
+      "group": "trends",
+      "title": "Expected operating range",
+      "variant": "singleton",
+      "primary": false,
+      "seriesKinds": [
+        "RangeArea"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-area-singleton-dark.csharp.txt",
+      "gallerySource": "family-range-area-singleton-dark.gallery.csharp.txt",
+      "svg": "family-range-area-singleton-dark.svg",
+      "png": "family-range-area-singleton-dark.png",
+      "html": "family-range-area-singleton-dark.html",
+      "thumbnail": "family-range-area-singleton-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-area-singleton-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-range-area-compact-singleton-dark",
+      "family": "range-area",
+      "familyLabel": "Range Area",
+      "group": "trends",
+      "title": "Expected operating range",
+      "variant": "compact-singleton",
+      "primary": false,
+      "seriesKinds": [
+        "RangeArea"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-area-compact-singleton-dark.csharp.txt",
+      "gallerySource": "family-range-area-compact-singleton-dark.gallery.csharp.txt",
+      "svg": "family-range-area-compact-singleton-dark.svg",
+      "png": "family-range-area-compact-singleton-dark.png",
+      "html": "family-range-area-compact-singleton-dark.html",
+      "thumbnail": "family-range-area-compact-singleton-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-area-compact-singleton-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
     },
     {
       "id": "family-range-area-options-dark",
@@ -8779,6 +9663,222 @@
       "semanticRegions": 15
     },
     {
+      "id": "family-range-bar-dense-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-bar-dense-light.csharp.txt",
+      "gallerySource": "family-range-bar-dense-light.gallery.csharp.txt",
+      "svg": "family-range-bar-dense-light.svg",
+      "png": "family-range-bar-dense-light.png",
+      "html": "family-range-bar-dense-light.html",
+      "thumbnail": "family-range-bar-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 52
+    },
+    {
+      "id": "family-range-bar-compact-dense-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-bar-compact-dense-light.csharp.txt",
+      "gallerySource": "family-range-bar-compact-dense-light.gallery.csharp.txt",
+      "svg": "family-range-bar-compact-dense-light.svg",
+      "png": "family-range-bar-compact-dense-light.png",
+      "html": "family-range-bar-compact-dense-light.html",
+      "thumbnail": "family-range-bar-compact-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 52
+    },
+    {
+      "id": "family-range-bar-dense-horizontal-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "dense-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-bar-dense-horizontal-light.csharp.txt",
+      "gallerySource": "family-range-bar-dense-horizontal-light.gallery.csharp.txt",
+      "svg": "family-range-bar-dense-horizontal-light.svg",
+      "png": "family-range-bar-dense-horizontal-light.png",
+      "html": "family-range-bar-dense-horizontal-light.html",
+      "thumbnail": "family-range-bar-dense-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-dense-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 74
+    },
+    {
+      "id": "family-range-bar-compact-dense-horizontal-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-dense-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-bar-compact-dense-horizontal-light.csharp.txt",
+      "gallerySource": "family-range-bar-compact-dense-horizontal-light.gallery.csharp.txt",
+      "svg": "family-range-bar-compact-dense-horizontal-light.svg",
+      "png": "family-range-bar-compact-dense-horizontal-light.png",
+      "html": "family-range-bar-compact-dense-horizontal-light.html",
+      "thumbnail": "family-range-bar-compact-dense-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-dense-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 62
+    },
+    {
+      "id": "family-range-bar-sparse-catalog-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "sparse-catalog",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-bar-sparse-catalog-light.csharp.txt",
+      "gallerySource": "family-range-bar-sparse-catalog-light.gallery.csharp.txt",
+      "svg": "family-range-bar-sparse-catalog-light.svg",
+      "png": "family-range-bar-sparse-catalog-light.png",
+      "html": "family-range-bar-sparse-catalog-light.html",
+      "thumbnail": "family-range-bar-sparse-catalog-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-sparse-catalog-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-range-bar-compact-sparse-catalog-light",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-sparse-catalog",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-bar-compact-sparse-catalog-light.csharp.txt",
+      "gallerySource": "family-range-bar-compact-sparse-catalog-light.gallery.csharp.txt",
+      "svg": "family-range-bar-compact-sparse-catalog-light.svg",
+      "png": "family-range-bar-compact-sparse-catalog-light.png",
+      "html": "family-range-bar-compact-sparse-catalog-light.html",
+      "thumbnail": "family-range-bar-compact-sparse-catalog-light.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-sparse-catalog-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
       "id": "family-range-bar-options-light",
       "family": "range-bar",
       "familyLabel": "Range Bar",
@@ -8882,7 +9982,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 41
     },
     {
       "id": "family-range-bar-compact-horizontal-light",
@@ -8920,7 +10020,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 30
     },
     {
       "id": "family-range-bar-endpoint-labels-light",
@@ -9022,7 +10122,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 51
     },
     {
       "id": "family-range-bar-compact-horizontal-endpoint-labels-light",
@@ -9056,7 +10156,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 27
     },
     {
       "id": "family-range-bar-wide-dark",
@@ -9125,6 +10225,222 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 15
+    },
+    {
+      "id": "family-range-bar-dense-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-bar-dense-dark.csharp.txt",
+      "gallerySource": "family-range-bar-dense-dark.gallery.csharp.txt",
+      "svg": "family-range-bar-dense-dark.svg",
+      "png": "family-range-bar-dense-dark.png",
+      "html": "family-range-bar-dense-dark.html",
+      "thumbnail": "family-range-bar-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 52
+    },
+    {
+      "id": "family-range-bar-compact-dense-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-bar-compact-dense-dark.csharp.txt",
+      "gallerySource": "family-range-bar-compact-dense-dark.gallery.csharp.txt",
+      "svg": "family-range-bar-compact-dense-dark.svg",
+      "png": "family-range-bar-compact-dense-dark.png",
+      "html": "family-range-bar-compact-dense-dark.html",
+      "thumbnail": "family-range-bar-compact-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 52
+    },
+    {
+      "id": "family-range-bar-dense-horizontal-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "dense-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-bar-dense-horizontal-dark.csharp.txt",
+      "gallerySource": "family-range-bar-dense-horizontal-dark.gallery.csharp.txt",
+      "svg": "family-range-bar-dense-horizontal-dark.svg",
+      "png": "family-range-bar-dense-horizontal-dark.png",
+      "html": "family-range-bar-dense-horizontal-dark.html",
+      "thumbnail": "family-range-bar-dense-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-dense-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 74
+    },
+    {
+      "id": "family-range-bar-compact-dense-horizontal-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-dense-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-bar-compact-dense-horizontal-dark.csharp.txt",
+      "gallerySource": "family-range-bar-compact-dense-horizontal-dark.gallery.csharp.txt",
+      "svg": "family-range-bar-compact-dense-horizontal-dark.svg",
+      "png": "family-range-bar-compact-dense-horizontal-dark.png",
+      "html": "family-range-bar-compact-dense-horizontal-dark.html",
+      "thumbnail": "family-range-bar-compact-dense-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-dense-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "cartesian.data-label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
+      ],
+      "semanticRegions": 62
+    },
+    {
+      "id": "family-range-bar-sparse-catalog-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "sparse-catalog",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-range-bar-sparse-catalog-dark.csharp.txt",
+      "gallerySource": "family-range-bar-sparse-catalog-dark.gallery.csharp.txt",
+      "svg": "family-range-bar-sparse-catalog-dark.svg",
+      "png": "family-range-bar-sparse-catalog-dark.png",
+      "html": "family-range-bar-sparse-catalog-dark.html",
+      "thumbnail": "family-range-bar-sparse-catalog-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-sparse-catalog-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-range-bar-compact-sparse-catalog-dark",
+      "family": "range-bar",
+      "familyLabel": "Range Bar",
+      "group": "compare",
+      "title": "Minimum and maximum delivery times",
+      "variant": "compact-sparse-catalog",
+      "primary": false,
+      "seriesKinds": [
+        "RangeBar"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-range-bar-compact-sparse-catalog-dark.csharp.txt",
+      "gallerySource": "family-range-bar-compact-sparse-catalog-dark.gallery.csharp.txt",
+      "svg": "family-range-bar-compact-sparse-catalog-dark.svg",
+      "png": "family-range-bar-compact-sparse-catalog-dark.png",
+      "html": "family-range-bar-compact-sparse-catalog-dark.html",
+      "thumbnail": "family-range-bar-compact-sparse-catalog-dark.thumbnail.svg",
+      "thumbnailPng": "family-range-bar-compact-sparse-catalog-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
     },
     {
       "id": "family-range-bar-options-dark",
@@ -9230,7 +10546,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 22
+      "semanticRegions": 41
     },
     {
       "id": "family-range-bar-compact-horizontal-dark",
@@ -9268,7 +10584,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 22
+      "semanticRegions": 30
     },
     {
       "id": "family-range-bar-endpoint-labels-dark",
@@ -9370,7 +10686,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 51
     },
     {
       "id": "family-range-bar-compact-horizontal-endpoint-labels-dark",
@@ -9404,7 +10720,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 27
     },
     {
       "id": "family-box-plot-wide-light",
@@ -9574,7 +10890,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 47
     },
     {
       "id": "family-box-plot-compact-horizontal-light",
@@ -9612,7 +10928,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 31
     },
     {
       "id": "family-box-plot-wide-dark",
@@ -9782,7 +11098,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 19
+      "semanticRegions": 47
     },
     {
       "id": "family-box-plot-compact-horizontal-dark",
@@ -9820,7 +11136,7 @@
       "diagnosticMessages": [
         "Data labels were shortened or omitted to avoid marks and other labels within the available plot."
       ],
-      "semanticRegions": 19
+      "semanticRegions": 31
     },
     {
       "id": "family-horizontal-bar-wide-light",
@@ -9854,7 +11170,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 43
     },
     {
       "id": "family-horizontal-bar-compact-light",
@@ -9888,7 +11204,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 26
     },
     {
       "id": "family-horizontal-bar-options-light",
@@ -9922,7 +11238,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 45
     },
     {
       "id": "family-horizontal-bar-compact-options-light",
@@ -9994,7 +11310,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 43
     },
     {
       "id": "family-horizontal-bar-compact-dark",
@@ -10028,7 +11344,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 26
     },
     {
       "id": "family-horizontal-bar-options-dark",
@@ -10062,7 +11378,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 40
+      "semanticRegions": 45
     },
     {
       "id": "family-horizontal-bar-compact-options-dark",
@@ -13979,6 +15295,82 @@
       "semanticRegions": 10
     },
     {
+      "id": "family-gauge-dense-scale-light",
+      "family": "gauge",
+      "familyLabel": "Gauge",
+      "group": "indicators",
+      "title": "Available capacity against a target",
+      "variant": "dense-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Gauge"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-gauge-dense-scale-light.csharp.txt",
+      "gallerySource": "family-gauge-dense-scale-light.gallery.csharp.txt",
+      "svg": "family-gauge-dense-scale-light.svg",
+      "png": "family-gauge-dense-scale-light.png",
+      "html": "family-gauge-dense-scale-light.html",
+      "thumbnail": "family-gauge-dense-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-gauge-dense-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "gauge.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
+      ],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-gauge-compact-dense-scale-light",
+      "family": "gauge",
+      "familyLabel": "Gauge",
+      "group": "indicators",
+      "title": "Available capacity against a target",
+      "variant": "compact-dense-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Gauge"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 300,
+      "naturalAspect": 1.3,
+      "compact": true,
+      "source": "family-gauge-compact-dense-scale-light.csharp.txt",
+      "gallerySource": "family-gauge-compact-dense-scale-light.gallery.csharp.txt",
+      "svg": "family-gauge-compact-dense-scale-light.svg",
+      "png": "family-gauge-compact-dense-scale-light.png",
+      "html": "family-gauge-compact-dense-scale-light.html",
+      "thumbnail": "family-gauge-compact-dense-scale-light.thumbnail.svg",
+      "thumbnailPng": "family-gauge-compact-dense-scale-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "gauge.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
+      ],
+      "semanticRegions": 16
+    },
+    {
       "id": "family-gauge-precision-light",
       "family": "gauge",
       "familyLabel": "Gauge",
@@ -14317,6 +15709,82 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 10
+    },
+    {
+      "id": "family-gauge-dense-scale-dark",
+      "family": "gauge",
+      "familyLabel": "Gauge",
+      "group": "indicators",
+      "title": "Available capacity against a target",
+      "variant": "dense-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Gauge"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-gauge-dense-scale-dark.csharp.txt",
+      "gallerySource": "family-gauge-dense-scale-dark.gallery.csharp.txt",
+      "svg": "family-gauge-dense-scale-dark.svg",
+      "png": "family-gauge-dense-scale-dark.png",
+      "html": "family-gauge-dense-scale-dark.html",
+      "thumbnail": "family-gauge-dense-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-gauge-dense-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "gauge.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
+      ],
+      "semanticRegions": 24
+    },
+    {
+      "id": "family-gauge-compact-dense-scale-dark",
+      "family": "gauge",
+      "familyLabel": "Gauge",
+      "group": "indicators",
+      "title": "Available capacity against a target",
+      "variant": "compact-dense-scale",
+      "primary": false,
+      "seriesKinds": [
+        "Gauge"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 300,
+      "naturalAspect": 1.3,
+      "compact": true,
+      "source": "family-gauge-compact-dense-scale-dark.csharp.txt",
+      "gallerySource": "family-gauge-compact-dense-scale-dark.gallery.csharp.txt",
+      "svg": "family-gauge-compact-dense-scale-dark.svg",
+      "png": "family-gauge-compact-dense-scale-dark.png",
+      "html": "family-gauge-compact-dense-scale-dark.html",
+      "thumbnail": "family-gauge-compact-dense-scale-dark.thumbnail.svg",
+      "thumbnailPng": "family-gauge-compact-dense-scale-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "gauge.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "A gauge caption was omitted because it cannot fit without moving from its value; the complete fact remains in semantic regions."
+      ],
+      "semanticRegions": 16
     },
     {
       "id": "family-gauge-precision-dark",
@@ -15075,6 +16543,98 @@
       "semanticRegions": 13
     },
     {
+      "id": "family-bullet-dense-light",
+      "family": "bullet",
+      "familyLabel": "Bullet",
+      "group": "indicators",
+      "title": "Reviewed work against its targets",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "Bullet"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-bullet-dense-light.csharp.txt",
+      "gallerySource": "family-bullet-dense-light.gallery.csharp.txt",
+      "svg": "family-bullet-dense-light.svg",
+      "png": "family-bullet-dense-light.png",
+      "html": "family-bullet-dense-light.html",
+      "thumbnail": "family-bullet-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-bullet-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 37
+    },
+    {
+      "id": "family-bullet-compact-dense-light",
+      "family": "bullet",
+      "familyLabel": "Bullet",
+      "group": "indicators",
+      "title": "Reviewed work against its targets",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "Bullet"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 300,
+      "naturalAspect": 1.3,
+      "compact": true,
+      "source": "family-bullet-compact-dense-light.csharp.txt",
+      "gallerySource": "family-bullet-compact-dense-light.gallery.csharp.txt",
+      "svg": "family-bullet-compact-dense-light.svg",
+      "png": "family-bullet-compact-dense-light.png",
+      "html": "family-bullet-compact-dense-light.html",
+      "thumbnail": "family-bullet-compact-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-bullet-compact-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "bullet.label-overflow",
+        "bullet.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "A complete bullet scale caption was omitted because it cannot fit without overlapping; the exact fact remains in descriptive regions.",
+        "A complete bullet scale caption was omitted because it cannot fit without overlapping; the exact fact remains in descriptive regions."
+      ],
+      "semanticRegions": 37
+    },
+    {
       "id": "family-bullet-wide-dark",
       "family": "bullet",
       "familyLabel": "Bullet",
@@ -15141,6 +16701,98 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 13
+    },
+    {
+      "id": "family-bullet-dense-dark",
+      "family": "bullet",
+      "familyLabel": "Bullet",
+      "group": "indicators",
+      "title": "Reviewed work against its targets",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "Bullet"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-bullet-dense-dark.csharp.txt",
+      "gallerySource": "family-bullet-dense-dark.gallery.csharp.txt",
+      "svg": "family-bullet-dense-dark.svg",
+      "png": "family-bullet-dense-dark.png",
+      "html": "family-bullet-dense-dark.html",
+      "thumbnail": "family-bullet-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-bullet-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 37
+    },
+    {
+      "id": "family-bullet-compact-dense-dark",
+      "family": "bullet",
+      "familyLabel": "Bullet",
+      "group": "indicators",
+      "title": "Reviewed work against its targets",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "Bullet"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 300,
+      "naturalAspect": 1.3,
+      "compact": true,
+      "source": "family-bullet-compact-dense-dark.csharp.txt",
+      "gallerySource": "family-bullet-compact-dense-dark.gallery.csharp.txt",
+      "svg": "family-bullet-compact-dense-dark.svg",
+      "png": "family-bullet-compact-dense-dark.png",
+      "html": "family-bullet-compact-dense-dark.html",
+      "thumbnail": "family-bullet-compact-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-bullet-compact-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "radial.text-overflow",
+        "bullet.label-overflow",
+        "bullet.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "Radial text was omitted because it does not fit the fixed viewport; the complete value remains in descriptive regions.",
+        "A complete bullet scale caption was omitted because it cannot fit without overlapping; the exact fact remains in descriptive regions.",
+        "A complete bullet scale caption was omitted because it cannot fit without overlapping; the exact fact remains in descriptive regions."
+      ],
+      "semanticRegions": 37
     },
     {
       "id": "family-waterfall-wide-light",
@@ -15310,7 +16962,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 27
     },
     {
       "id": "family-waterfall-compact-horizontal-light",
@@ -15518,7 +17170,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 20
+      "semanticRegions": 27
     },
     {
       "id": "family-waterfall-compact-horizontal-dark",
@@ -19892,7 +21544,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 19
     },
     {
       "id": "family-trend-line-compact-precision-light",
@@ -19926,7 +21578,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 19
     },
     {
       "id": "family-trend-line-wide-dark",
@@ -20030,7 +21682,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 19
     },
     {
       "id": "family-trend-line-compact-precision-dark",
@@ -20064,7 +21716,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 14
+      "semanticRegions": 19
     },
     {
       "id": "family-polar-wide-light",
@@ -20687,6 +22339,94 @@
       "semanticRegions": 6
     },
     {
+      "id": "family-pyramid-dense-light",
+      "family": "pyramid",
+      "familyLabel": "Pyramid",
+      "group": "proportion",
+      "title": "Allocation by service",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "Pyramid"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-pyramid-dense-light.csharp.txt",
+      "gallerySource": "family-pyramid-dense-light.gallery.csharp.txt",
+      "svg": "family-pyramid-dense-light.svg",
+      "png": "family-pyramid-dense-light.png",
+      "html": "family-pyramid-dense-light.html",
+      "thumbnail": "family-pyramid-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-pyramid-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
+    },
+    {
+      "id": "family-pyramid-compact-dense-light",
+      "family": "pyramid",
+      "familyLabel": "Pyramid",
+      "group": "proportion",
+      "title": "Allocation by service",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "Pyramid"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 280,
+      "naturalAspect": 1.3928571428571428,
+      "compact": true,
+      "source": "family-pyramid-compact-dense-light.csharp.txt",
+      "gallerySource": "family-pyramid-compact-dense-light.gallery.csharp.txt",
+      "svg": "family-pyramid-compact-dense-light.svg",
+      "png": "family-pyramid-compact-dense-light.png",
+      "html": "family-pyramid-compact-dense-light.html",
+      "thumbnail": "family-pyramid-compact-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-pyramid-compact-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden"
+      ],
+      "diagnosticMessages": [
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 32
+    },
+    {
       "id": "family-pyramid-options-light",
       "family": "pyramid",
       "familyLabel": "Pyramid",
@@ -20821,6 +22561,94 @@
       "diagnostics": [],
       "diagnosticMessages": [],
       "semanticRegions": 6
+    },
+    {
+      "id": "family-pyramid-dense-dark",
+      "family": "pyramid",
+      "familyLabel": "Pyramid",
+      "group": "proportion",
+      "title": "Allocation by service",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "Pyramid"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 440,
+      "naturalAspect": 1.8181818181818181,
+      "compact": false,
+      "source": "family-pyramid-dense-dark.csharp.txt",
+      "gallerySource": "family-pyramid-dense-dark.gallery.csharp.txt",
+      "svg": "family-pyramid-dense-dark.svg",
+      "png": "family-pyramid-dense-dark.png",
+      "html": "family-pyramid-dense-dark.html",
+      "thumbnail": "family-pyramid-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-pyramid-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 32
+    },
+    {
+      "id": "family-pyramid-compact-dense-dark",
+      "family": "pyramid",
+      "familyLabel": "Pyramid",
+      "group": "proportion",
+      "title": "Allocation by service",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "Pyramid"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 280,
+      "naturalAspect": 1.3928571428571428,
+      "compact": true,
+      "source": "family-pyramid-compact-dense-dark.csharp.txt",
+      "gallerySource": "family-pyramid-compact-dense-dark.gallery.csharp.txt",
+      "svg": "family-pyramid-compact-dense-dark.svg",
+      "png": "family-pyramid-compact-dense-dark.png",
+      "html": "family-pyramid-compact-dense-dark.html",
+      "thumbnail": "family-pyramid-compact-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-pyramid-compact-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden",
+        "pyramid.label-hidden"
+      ],
+      "diagnosticMessages": [
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions.",
+        "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions."
+      ],
+      "semanticRegions": 32
     },
     {
       "id": "family-pyramid-options-dark",
@@ -23070,7 +24898,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 21
     },
     {
       "id": "family-difference-area-compact-light",
@@ -23104,7 +24932,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 21
     },
     {
       "id": "family-difference-area-dated-gaps-light",
@@ -23208,7 +25036,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-step-middle-light",
@@ -23242,7 +25070,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-step-end-light",
@@ -23276,7 +25104,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-compact-step-middle-light",
@@ -23310,7 +25138,143 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-difference-area-singleton-light",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "singleton",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-difference-area-singleton-light.csharp.txt",
+      "gallerySource": "family-difference-area-singleton-light.gallery.csharp.txt",
+      "svg": "family-difference-area-singleton-light.svg",
+      "png": "family-difference-area-singleton-light.png",
+      "html": "family-difference-area-singleton-light.html",
+      "thumbnail": "family-difference-area-singleton-light.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-singleton-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-difference-area-compact-singleton-light",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "compact-singleton",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-difference-area-compact-singleton-light.csharp.txt",
+      "gallerySource": "family-difference-area-compact-singleton-light.gallery.csharp.txt",
+      "svg": "family-difference-area-compact-singleton-light.svg",
+      "png": "family-difference-area-compact-singleton-light.png",
+      "html": "family-difference-area-compact-singleton-light.html",
+      "thumbnail": "family-difference-area-compact-singleton-light.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-compact-singleton-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-difference-area-dense-light",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "light",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-difference-area-dense-light.csharp.txt",
+      "gallerySource": "family-difference-area-dense-light.gallery.csharp.txt",
+      "svg": "family-difference-area-dense-light.svg",
+      "png": "family-difference-area-dense-light.png",
+      "html": "family-difference-area-dense-light.html",
+      "thumbnail": "family-difference-area-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 71
+    },
+    {
+      "id": "family-difference-area-compact-dense-light",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-difference-area-compact-dense-light.csharp.txt",
+      "gallerySource": "family-difference-area-compact-dense-light.gallery.csharp.txt",
+      "svg": "family-difference-area-compact-dense-light.svg",
+      "png": "family-difference-area-compact-dense-light.png",
+      "html": "family-difference-area-compact-dense-light.html",
+      "thumbnail": "family-difference-area-compact-dense-light.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-compact-dense-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 55
     },
     {
       "id": "family-difference-area-wide-dark",
@@ -23344,7 +25308,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 21
     },
     {
       "id": "family-difference-area-compact-dark",
@@ -23378,7 +25342,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 21
     },
     {
       "id": "family-difference-area-dated-gaps-dark",
@@ -23482,7 +25446,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-step-middle-dark",
@@ -23516,7 +25480,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-step-end-dark",
@@ -23550,7 +25514,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 22
     },
     {
       "id": "family-difference-area-compact-step-middle-dark",
@@ -23584,7 +25548,143 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 18
+      "semanticRegions": 22
+    },
+    {
+      "id": "family-difference-area-singleton-dark",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "singleton",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-difference-area-singleton-dark.csharp.txt",
+      "gallerySource": "family-difference-area-singleton-dark.gallery.csharp.txt",
+      "svg": "family-difference-area-singleton-dark.svg",
+      "png": "family-difference-area-singleton-dark.png",
+      "html": "family-difference-area-singleton-dark.html",
+      "thumbnail": "family-difference-area-singleton-dark.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-singleton-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-difference-area-compact-singleton-dark",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "compact-singleton",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-difference-area-compact-singleton-dark.csharp.txt",
+      "gallerySource": "family-difference-area-compact-singleton-dark.gallery.csharp.txt",
+      "svg": "family-difference-area-compact-singleton-dark.svg",
+      "png": "family-difference-area-compact-singleton-dark.png",
+      "html": "family-difference-area-compact-singleton-dark.html",
+      "thumbnail": "family-difference-area-compact-singleton-dark.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-compact-singleton-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 11
+    },
+    {
+      "id": "family-difference-area-dense-dark",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "dense",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "dark",
+      "width": 760,
+      "height": 440,
+      "naturalAspect": 1.7272727272727273,
+      "compact": false,
+      "source": "family-difference-area-dense-dark.csharp.txt",
+      "gallerySource": "family-difference-area-dense-dark.gallery.csharp.txt",
+      "svg": "family-difference-area-dense-dark.svg",
+      "png": "family-difference-area-dense-dark.png",
+      "html": "family-difference-area-dense-dark.html",
+      "thumbnail": "family-difference-area-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 71
+    },
+    {
+      "id": "family-difference-area-compact-dense-dark",
+      "family": "difference-area",
+      "familyLabel": "Difference Area",
+      "group": "trends",
+      "title": "Actual and forecast requests",
+      "variant": "compact-dense",
+      "primary": false,
+      "seriesKinds": [
+        "DifferenceArea"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 320,
+      "naturalAspect": 1.21875,
+      "compact": true,
+      "source": "family-difference-area-compact-dense-dark.csharp.txt",
+      "gallerySource": "family-difference-area-compact-dense-dark.gallery.csharp.txt",
+      "svg": "family-difference-area-compact-dense-dark.svg",
+      "png": "family-difference-area-compact-dense-dark.png",
+      "html": "family-difference-area-compact-dense-dark.html",
+      "thumbnail": "family-difference-area-compact-dense-dark.thumbnail.svg",
+      "thumbnailPng": "family-difference-area-compact-dense-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 55
     },
     {
       "id": "family-radial-column-mixed-light",
@@ -24111,6 +26211,902 @@
       "semanticRegions": 23
     },
     {
+      "id": "combination-vertical-secondary-light",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "vertical-secondary",
+      "primary": false,
+      "seriesKinds": [
+        "Bar",
+        "Bubble"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-vertical-secondary-light.csharp.txt",
+      "gallerySource": "combination-vertical-secondary-light.gallery.csharp.txt",
+      "svg": "combination-vertical-secondary-light.svg",
+      "png": "combination-vertical-secondary-light.png",
+      "html": "combination-vertical-secondary-light.html",
+      "thumbnail": "combination-vertical-secondary-light.thumbnail.svg",
+      "thumbnailPng": "combination-vertical-secondary-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 28
+    },
+    {
+      "id": "combination-vertical-secondary-compact-light",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "vertical-secondary",
+      "primary": false,
+      "seriesKinds": [
+        "Bar",
+        "Bubble"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-vertical-secondary-compact-light.csharp.txt",
+      "gallerySource": "combination-vertical-secondary-compact-light.gallery.csharp.txt",
+      "svg": "combination-vertical-secondary-compact-light.svg",
+      "png": "combination-vertical-secondary-compact-light.png",
+      "html": "combination-vertical-secondary-compact-light.html",
+      "thumbnail": "combination-vertical-secondary-compact-light.thumbnail.svg",
+      "thumbnailPng": "combination-vertical-secondary-compact-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 28
+    },
+    {
+      "id": "combination-horizontal-light",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "HorizontalBar",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-horizontal-light.csharp.txt",
+      "gallerySource": "combination-horizontal-light.gallery.csharp.txt",
+      "svg": "combination-horizontal-light.svg",
+      "png": "combination-horizontal-light.png",
+      "html": "combination-horizontal-light.html",
+      "thumbnail": "combination-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "combination-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 55
+    },
+    {
+      "id": "combination-horizontal-compact-light",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "HorizontalBar",
+        "Line"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-horizontal-compact-light.csharp.txt",
+      "gallerySource": "combination-horizontal-compact-light.gallery.csharp.txt",
+      "svg": "combination-horizontal-compact-light.svg",
+      "png": "combination-horizontal-compact-light.png",
+      "html": "combination-horizontal-compact-light.html",
+      "thumbnail": "combination-horizontal-compact-light.thumbnail.svg",
+      "thumbnailPng": "combination-horizontal-compact-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 31
+    },
+    {
+      "id": "combination-mixed-radial-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Orders by location",
+      "variant": "mixed-radial",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-mixed-radial-light.csharp.txt",
+      "gallerySource": "combination-mixed-radial-light.gallery.csharp.txt",
+      "svg": "combination-mixed-radial-light.svg",
+      "png": "combination-mixed-radial-light.png",
+      "html": "combination-mixed-radial-light.html",
+      "thumbnail": "combination-mixed-radial-light.thumbnail.svg",
+      "thumbnailPng": "combination-mixed-radial-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
+      "id": "combination-mixed-radial-compact-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Orders by location",
+      "variant": "mixed-radial",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-mixed-radial-compact-light.csharp.txt",
+      "gallerySource": "combination-mixed-radial-compact-light.gallery.csharp.txt",
+      "svg": "combination-mixed-radial-compact-light.svg",
+      "png": "combination-mixed-radial-compact-light.png",
+      "html": "combination-mixed-radial-compact-light.html",
+      "thumbnail": "combination-mixed-radial-compact-light.thumbnail.svg",
+      "thumbnailPng": "combination-mixed-radial-compact-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
+      "id": "combination-updated-vertical-secondary-light",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "updated-vertical-secondary",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Bar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-updated-vertical-secondary-light.csharp.txt",
+      "gallerySource": "combination-updated-vertical-secondary-light.gallery.csharp.txt",
+      "svg": "combination-updated-vertical-secondary-light.svg",
+      "png": "combination-updated-vertical-secondary-light.png",
+      "html": "combination-updated-vertical-secondary-light.html",
+      "thumbnail": "combination-updated-vertical-secondary-light.thumbnail.svg",
+      "thumbnailPng": "combination-updated-vertical-secondary-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "combination-updated-vertical-secondary-compact-light",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "updated-vertical-secondary",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Bar"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-updated-vertical-secondary-compact-light.csharp.txt",
+      "gallerySource": "combination-updated-vertical-secondary-compact-light.gallery.csharp.txt",
+      "svg": "combination-updated-vertical-secondary-compact-light.svg",
+      "png": "combination-updated-vertical-secondary-compact-light.png",
+      "html": "combination-updated-vertical-secondary-compact-light.html",
+      "thumbnail": "combination-updated-vertical-secondary-compact-light.thumbnail.svg",
+      "thumbnailPng": "combination-updated-vertical-secondary-compact-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "combination-updated-horizontal-light",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "updated-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "Line",
+        "HorizontalBar"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-updated-horizontal-light.csharp.txt",
+      "gallerySource": "combination-updated-horizontal-light.gallery.csharp.txt",
+      "svg": "combination-updated-horizontal-light.svg",
+      "png": "combination-updated-horizontal-light.png",
+      "html": "combination-updated-horizontal-light.html",
+      "thumbnail": "combination-updated-horizontal-light.thumbnail.svg",
+      "thumbnailPng": "combination-updated-horizontal-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 55
+    },
+    {
+      "id": "combination-updated-horizontal-compact-light",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "updated-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "Line",
+        "HorizontalBar"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-updated-horizontal-compact-light.csharp.txt",
+      "gallerySource": "combination-updated-horizontal-compact-light.gallery.csharp.txt",
+      "svg": "combination-updated-horizontal-compact-light.svg",
+      "png": "combination-updated-horizontal-compact-light.png",
+      "html": "combination-updated-horizontal-compact-light.html",
+      "thumbnail": "combination-updated-horizontal-compact-light.thumbnail.svg",
+      "thumbnailPng": "combination-updated-horizontal-compact-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 31
+    },
+    {
+      "id": "combination-updated-mixed-radial-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Orders by location",
+      "variant": "updated-mixed-radial",
+      "primary": false,
+      "seriesKinds": [
+        "Radar",
+        "RadialColumn"
+      ],
+      "theme": "light",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-updated-mixed-radial-light.csharp.txt",
+      "gallerySource": "combination-updated-mixed-radial-light.gallery.csharp.txt",
+      "svg": "combination-updated-mixed-radial-light.svg",
+      "png": "combination-updated-mixed-radial-light.png",
+      "html": "combination-updated-mixed-radial-light.html",
+      "thumbnail": "combination-updated-mixed-radial-light.thumbnail.svg",
+      "thumbnailPng": "combination-updated-mixed-radial-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
+      "id": "combination-updated-mixed-radial-compact-light",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Orders by location",
+      "variant": "updated-mixed-radial",
+      "primary": false,
+      "seriesKinds": [
+        "Radar",
+        "RadialColumn"
+      ],
+      "theme": "light",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-updated-mixed-radial-compact-light.csharp.txt",
+      "gallerySource": "combination-updated-mixed-radial-compact-light.gallery.csharp.txt",
+      "svg": "combination-updated-mixed-radial-compact-light.svg",
+      "png": "combination-updated-mixed-radial-compact-light.png",
+      "html": "combination-updated-mixed-radial-compact-light.html",
+      "thumbnail": "combination-updated-mixed-radial-compact-light.thumbnail.svg",
+      "thumbnailPng": "combination-updated-mixed-radial-compact-light.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
+      "id": "combination-vertical-secondary-dark",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "vertical-secondary",
+      "primary": false,
+      "seriesKinds": [
+        "Bar",
+        "Bubble"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-vertical-secondary-dark.csharp.txt",
+      "gallerySource": "combination-vertical-secondary-dark.gallery.csharp.txt",
+      "svg": "combination-vertical-secondary-dark.svg",
+      "png": "combination-vertical-secondary-dark.png",
+      "html": "combination-vertical-secondary-dark.html",
+      "thumbnail": "combination-vertical-secondary-dark.thumbnail.svg",
+      "thumbnailPng": "combination-vertical-secondary-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 28
+    },
+    {
+      "id": "combination-vertical-secondary-compact-dark",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "vertical-secondary",
+      "primary": false,
+      "seriesKinds": [
+        "Bar",
+        "Bubble"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-vertical-secondary-compact-dark.csharp.txt",
+      "gallerySource": "combination-vertical-secondary-compact-dark.gallery.csharp.txt",
+      "svg": "combination-vertical-secondary-compact-dark.svg",
+      "png": "combination-vertical-secondary-compact-dark.png",
+      "html": "combination-vertical-secondary-compact-dark.html",
+      "thumbnail": "combination-vertical-secondary-compact-dark.thumbnail.svg",
+      "thumbnailPng": "combination-vertical-secondary-compact-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 28
+    },
+    {
+      "id": "combination-horizontal-dark",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "HorizontalBar",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-horizontal-dark.csharp.txt",
+      "gallerySource": "combination-horizontal-dark.gallery.csharp.txt",
+      "svg": "combination-horizontal-dark.svg",
+      "png": "combination-horizontal-dark.png",
+      "html": "combination-horizontal-dark.html",
+      "thumbnail": "combination-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "combination-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 55
+    },
+    {
+      "id": "combination-horizontal-compact-dark",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "HorizontalBar",
+        "Line"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-horizontal-compact-dark.csharp.txt",
+      "gallerySource": "combination-horizontal-compact-dark.gallery.csharp.txt",
+      "svg": "combination-horizontal-compact-dark.svg",
+      "png": "combination-horizontal-compact-dark.png",
+      "html": "combination-horizontal-compact-dark.html",
+      "thumbnail": "combination-horizontal-compact-dark.thumbnail.svg",
+      "thumbnailPng": "combination-horizontal-compact-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 31
+    },
+    {
+      "id": "combination-mixed-radial-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Orders by location",
+      "variant": "mixed-radial",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-mixed-radial-dark.csharp.txt",
+      "gallerySource": "combination-mixed-radial-dark.gallery.csharp.txt",
+      "svg": "combination-mixed-radial-dark.svg",
+      "png": "combination-mixed-radial-dark.png",
+      "html": "combination-mixed-radial-dark.html",
+      "thumbnail": "combination-mixed-radial-dark.thumbnail.svg",
+      "thumbnailPng": "combination-mixed-radial-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
+      "id": "combination-mixed-radial-compact-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Orders by location",
+      "variant": "mixed-radial",
+      "primary": false,
+      "seriesKinds": [
+        "RadialColumn",
+        "Radar"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-mixed-radial-compact-dark.csharp.txt",
+      "gallerySource": "combination-mixed-radial-compact-dark.gallery.csharp.txt",
+      "svg": "combination-mixed-radial-compact-dark.svg",
+      "png": "combination-mixed-radial-compact-dark.png",
+      "html": "combination-mixed-radial-compact-dark.html",
+      "thumbnail": "combination-mixed-radial-compact-dark.thumbnail.svg",
+      "thumbnailPng": "combination-mixed-radial-compact-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
+      "id": "combination-updated-vertical-secondary-dark",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "updated-vertical-secondary",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Bar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-updated-vertical-secondary-dark.csharp.txt",
+      "gallerySource": "combination-updated-vertical-secondary-dark.gallery.csharp.txt",
+      "svg": "combination-updated-vertical-secondary-dark.svg",
+      "png": "combination-updated-vertical-secondary-dark.png",
+      "html": "combination-updated-vertical-secondary-dark.html",
+      "thumbnail": "combination-updated-vertical-secondary-dark.thumbnail.svg",
+      "thumbnailPng": "combination-updated-vertical-secondary-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "combination-updated-vertical-secondary-compact-dark",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "updated-vertical-secondary",
+      "primary": false,
+      "seriesKinds": [
+        "Bubble",
+        "Bar"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-updated-vertical-secondary-compact-dark.csharp.txt",
+      "gallerySource": "combination-updated-vertical-secondary-compact-dark.gallery.csharp.txt",
+      "svg": "combination-updated-vertical-secondary-compact-dark.svg",
+      "png": "combination-updated-vertical-secondary-compact-dark.png",
+      "html": "combination-updated-vertical-secondary-compact-dark.html",
+      "thumbnail": "combination-updated-vertical-secondary-compact-dark.thumbnail.svg",
+      "thumbnailPng": "combination-updated-vertical-secondary-compact-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 27
+    },
+    {
+      "id": "combination-updated-horizontal-dark",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "updated-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "Line",
+        "HorizontalBar"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-updated-horizontal-dark.csharp.txt",
+      "gallerySource": "combination-updated-horizontal-dark.gallery.csharp.txt",
+      "svg": "combination-updated-horizontal-dark.svg",
+      "png": "combination-updated-horizontal-dark.png",
+      "html": "combination-updated-horizontal-dark.html",
+      "thumbnail": "combination-updated-horizontal-dark.thumbnail.svg",
+      "thumbnailPng": "combination-updated-horizontal-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 55
+    },
+    {
+      "id": "combination-updated-horizontal-compact-dark",
+      "family": "cartesian",
+      "familyLabel": "Combination chart",
+      "group": "trends",
+      "title": "Orders by location",
+      "variant": "updated-horizontal",
+      "primary": false,
+      "seriesKinds": [
+        "Line",
+        "HorizontalBar"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-updated-horizontal-compact-dark.csharp.txt",
+      "gallerySource": "combination-updated-horizontal-compact-dark.gallery.csharp.txt",
+      "svg": "combination-updated-horizontal-compact-dark.svg",
+      "png": "combination-updated-horizontal-compact-dark.png",
+      "html": "combination-updated-horizontal-compact-dark.html",
+      "thumbnail": "combination-updated-horizontal-compact-dark.thumbnail.svg",
+      "thumbnailPng": "combination-updated-horizontal-compact-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [],
+      "diagnosticMessages": [],
+      "semanticRegions": 31
+    },
+    {
+      "id": "combination-updated-mixed-radial-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Orders by location",
+      "variant": "updated-mixed-radial",
+      "primary": false,
+      "seriesKinds": [
+        "Radar",
+        "RadialColumn"
+      ],
+      "theme": "dark",
+      "width": 800,
+      "height": 460,
+      "naturalAspect": 1.7391304347826086,
+      "compact": false,
+      "source": "combination-updated-mixed-radial-dark.csharp.txt",
+      "gallerySource": "combination-updated-mixed-radial-dark.gallery.csharp.txt",
+      "svg": "combination-updated-mixed-radial-dark.svg",
+      "png": "combination-updated-mixed-radial-dark.png",
+      "html": "combination-updated-mixed-radial-dark.html",
+      "thumbnail": "combination-updated-mixed-radial-dark.thumbnail.svg",
+      "thumbnailPng": "combination-updated-mixed-radial-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
+      "id": "combination-updated-mixed-radial-compact-dark",
+      "family": "radial-column",
+      "familyLabel": "Radial Column",
+      "group": "compare",
+      "title": "Orders by location",
+      "variant": "updated-mixed-radial",
+      "primary": false,
+      "seriesKinds": [
+        "Radar",
+        "RadialColumn"
+      ],
+      "theme": "dark",
+      "width": 390,
+      "height": 360,
+      "naturalAspect": 1.0833333333333333,
+      "compact": true,
+      "source": "combination-updated-mixed-radial-compact-dark.csharp.txt",
+      "gallerySource": "combination-updated-mixed-radial-compact-dark.gallery.csharp.txt",
+      "svg": "combination-updated-mixed-radial-compact-dark.svg",
+      "png": "combination-updated-mixed-radial-compact-dark.png",
+      "html": "combination-updated-mixed-radial-compact-dark.html",
+      "thumbnail": "combination-updated-mixed-radial-compact-dark.thumbnail.svg",
+      "thumbnailPng": "combination-updated-mixed-radial-compact-dark.thumbnail.png",
+      "thumbnailWidth": 400,
+      "thumbnailHeight": 280,
+      "supportedOutputs": [
+        "svg",
+        "png",
+        "html"
+      ],
+      "diagnostics": [
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow",
+        "numeric-radial.label-overflow"
+      ],
+      "diagnosticMessages": [
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions.",
+        "Numeric radial text was shortened or omitted to fit its mark and avoid collisions within the viewport; complete source text remains available in descriptive regions."
+      ],
+      "semanticRegions": 18
+    },
+    {
       "id": "chart-grid-wide-light",
       "family": "chart-grid",
       "familyLabel": "Chart grid",
@@ -24434,7 +27430,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-compact-light",
@@ -24468,7 +27464,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-density-light",
@@ -24502,7 +27498,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-compact-density-light",
@@ -24536,7 +27532,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-sum-light",
@@ -24570,7 +27566,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-compact-sum-light",
@@ -24604,7 +27600,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-mean-light",
@@ -24638,7 +27634,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-compact-mean-light",
@@ -24672,7 +27668,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-wide-dark",
@@ -24706,7 +27702,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-compact-dark",
@@ -24740,7 +27736,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-density-dark",
@@ -24774,7 +27770,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-compact-density-dark",
@@ -24808,7 +27804,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-sum-dark",
@@ -24842,7 +27838,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-compact-sum-dark",
@@ -24876,7 +27872,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-mean-dark",
@@ -24910,7 +27906,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "histogram-compact-mean-dark",
@@ -24944,7 +27940,7 @@
       ],
       "diagnostics": [],
       "diagnosticMessages": [],
-      "semanticRegions": 17
+      "semanticRegions": 22
     },
     {
       "id": "family-line-x-viewport-light",

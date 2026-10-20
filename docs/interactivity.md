@@ -595,6 +595,11 @@ font size for an arbitrary graph. Static SVG and PNG measure their complete
 chosen node captions and badges within the design frame. Their requested output
 dimensions scale that frame without reflowing authored node positions.
 
+Small-graph physics includes captions and badges in overlap avoidance through the
+same geometry used for layout separation. Pausing preserves the current moving
+pose; it does not complete the final arrangement. Resume until stabilization if
+spacing still needs to settle. Fixed nodes and crowded scenes can still overlap.
+
 ## Topology motion with HTML controls
 
 Use `ChartForgeX.Stories` and `ChartForgeX.Interactivity.Html` together when a topology needs script-free SVG motion and browser controls:

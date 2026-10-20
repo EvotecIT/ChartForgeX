@@ -15,7 +15,7 @@
         "ext": "svg",
         "w": 760,
         "h": 300,
-        "kb": 9.1
+        "kb": 5.6
       },
       "interactivity": {
         "base": "/site/examples/interactive-topology",
@@ -58,7 +58,7 @@
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 31.7
+        "kb": 31.6
       }
     },
     "surfaces": {
@@ -74,7 +74,7 @@
         "ext": "svg",
         "w": 1200,
         "h": 630,
-        "kb": 15.8
+        "kb": 17.5
       },
       "chart": {
         "base": "/site/docs/surface-chart",
@@ -112,7 +112,7 @@
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 31.7
+        "kb": 31.6
       }
     }
   },
@@ -158,7 +158,7 @@
     "ext": "svg",
     "w": 560,
     "h": 300,
-    "kb": 23.8,
+    "kb": 25.9,
     "total": 60
   },
   "generatedBy": "Website/tools/SiteVisuals",
@@ -189,7 +189,7 @@
         "ext": "svg",
         "w": 775,
         "h": 581,
-        "kb": 19,
+        "kb": 18.9,
         "source": "C4Context\ntitle System Context\nPerson(customer, \u0022Banking Customer\u0022, \u0022A customer of the bank\u0022)\nSystem(system, \u0022Internet Banking System\u0022, \u0022Allows customers to view balances\u0022)\nSystem_Ext(mail, \u0022E-mail System\u0022, \u0022Sends notifications\u0022)\nRel(customer, system, \u0022Uses\u0022, \u0022HTTPS\u0022)\nRel(system, mail, \u0022Sends e-mails\u0022, \u0022SMTP\u0022)",
         "lines": 7,
         "warnings": 1
@@ -349,7 +349,7 @@
         "ext": "svg",
         "w": 903,
         "h": 677,
-        "kb": 26.4,
+        "kb": 26.3,
         "source": "---\ntitle: Sign-in requirements\n---\nrequirementDiagram\ndirection LR\nfunctionalRequirement mfa_req {\n  id: \u0022SEC-1\u0022\n  text: Every account signs in with a strong method.\n  risk: High\n  verifymethod: Test\n}\nperformanceRequirement report_req {\n  id: \u0022OPS-4\u0022\n  text: The weekly report renders in under a second.\n  risk: Low\n  verifymethod: Analysis\n}\nelement auth_service {\n  type: service\n  docref: \u0022Identity provider\u0022\n}\nelement report_job {\n  type: job\n  docref: \u0022ChartForgeX report\u0022\n}\nauth_service - satisfies -\u003E mfa_req\nreport_job - verifies -\u003E mfa_req\nreport_job - satisfies -\u003E report_req",
         "lines": 28,
         "warnings": 0
@@ -485,7 +485,7 @@
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 31.7
+        "kb": 31.6
       },
       "examples": {
         "base": "/site/nav/examples",
