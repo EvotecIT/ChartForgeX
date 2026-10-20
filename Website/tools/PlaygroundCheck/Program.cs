@@ -1,5 +1,5 @@
 // Renders every playground sample through the same engine code the browser runs, in both themes.
-// Usage: dotnet run --project Website/tools/PlaygroundCheck -c Release [-- --fixtures <dir-with-.mmd-files>]
+// Usage: dotnet run --project Website/tools/PlaygroundCheck -c Release [-- --theme-proof [output-dir] --fixtures <dir-with-.mmd-files>]
 // Exit code 1 when a sample fails, a theme is not applied, or an error path stops returning structured JSON.
 using System;
 using System.Collections.Generic;
@@ -87,6 +87,11 @@ ExpectFailure("markup bad version", "chartforgex", "```chartforgex chart v2\nval
 ExpectFailure("markup bad option", "chartforgex", "```chartforgex chart v1\ntype bar\nvalues 1 2\noption legend maybe\n```", "dark", true);
 var fenced = Render("mermaid", "```mermaid\npie\n  \"A\" : 1\n  \"B\" : 2\n```", "light");
 if (!fenced.GetProperty("ok").GetBoolean()) failures.Add("a pasted ```mermaid fence should render");
+var themeProofIndex = Array.IndexOf(args, "--theme-proof");
+PlaygroundThemeContracts.Check(failures,
+    themeProofIndex >= 0 && themeProofIndex + 1 < args.Length
+        && !args[themeProofIndex + 1].StartsWith("--", StringComparison.Ordinal)
+        ? args[themeProofIndex + 1] : null);
 
 // Optional: every Mermaid fixture, to document which families or constructs the playground cannot render.
 var fixtureIndex = Array.IndexOf(args, "--fixtures");

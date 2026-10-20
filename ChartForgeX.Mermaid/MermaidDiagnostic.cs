@@ -4,7 +4,7 @@ namespace ChartForgeX.Mermaid;
 /// Describes a Mermaid parser diagnostic.
 /// </summary>
 public sealed class MermaidDiagnostic {
-    /// <summary>Gets or sets the stable diagnostic identifier, or an empty string for an unclassified diagnostic.</summary>
+    /// <summary>Gets or sets the stable diagnostic identifier. Library-produced diagnostics use <see cref="MermaidDiagnosticCodes"/>; caller-created diagnostics may leave it empty.</summary>
     public string Code { get; set; } = string.Empty;
 
     /// <summary>Gets or sets diagnostic severity.</summary>

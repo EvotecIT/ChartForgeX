@@ -5186,6 +5186,30 @@
       }
     },
     {
+      "name": "mermaid-flowchart-class-styles",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 640,
+      "height": 320,
+      "logicalWidth": 640.0,
+      "logicalHeight": 320.0,
+      "svg": {
+        "minVisualNodes": 13,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 102400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 480,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-flowchart-closing-endpoints",
       "layout": {
         "heightMode": "fixed",
@@ -5590,6 +5614,30 @@
         "minVisiblePixels": 268798,
         "minTransparentPixels": 2,
         "minDistinctColors": 468,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-gitgraph-cherry-pick-parent",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 980,
+      "height": 460,
+      "logicalWidth": 980.0,
+      "logicalHeight": 460.0,
+      "svg": {
+        "minVisualNodes": 14,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 225400,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 561,
         "maxEdgeInkPixels": 0
       }
     },

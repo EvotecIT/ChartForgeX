@@ -1,0 +1,9 @@
+gitGraph
+  commit id: "base"
+  branch work
+  commit id: "work"
+  checkout main
+  merge work id: "merged"
+  branch consumer
+  commit id: "consumer"
+  cherry-pick id: "merged" parent: "consumer"

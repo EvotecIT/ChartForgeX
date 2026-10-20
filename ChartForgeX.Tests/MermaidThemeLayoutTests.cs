@@ -49,12 +49,15 @@ public sealed class MermaidThemeLayoutTests {
 
     private static VisualArtifact Render(string source, bool unsupported = false) {
         var rendered = MermaidRenderer.Render(source);
+        if (rendered.Document is MermaidTimelineDocument)
+            Assert.Single(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.ApproximateMapping);
+        var appearanceDiagnostics = rendered.Diagnostics.Where(item => item.Code != MermaidDiagnosticCodes.ApproximateMapping).ToArray();
         if (unsupported) {
-            var diagnostic = Assert.Single(rendered.Diagnostics);
+            var diagnostic = Assert.Single(appearanceDiagnostics);
             Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, diagnostic.Code);
             Assert.Equal(MermaidDiagnosticSeverity.Warning, diagnostic.Severity);
             Assert.Contains("'unknown'", diagnostic.Message);
-        } else Assert.Empty(rendered.Diagnostics);
+        } else Assert.Empty(appearanceDiagnostics);
         Assert.False(rendered.HasErrors);
         return Assert.IsType<VisualArtifact>(rendered.Artifact);
     }

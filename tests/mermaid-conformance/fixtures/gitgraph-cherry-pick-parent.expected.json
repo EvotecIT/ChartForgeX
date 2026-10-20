@@ -1,0 +1,13 @@
+{
+  "gitgraph": {
+    "branches": ["main", "work", "consumer"],
+    "commits": [
+      ["base", "main", [], "Normal", ""],
+      ["work", "work", ["base"], "Normal", ""],
+      ["merged", "main", ["base", "work"], "Highlight", ""],
+      ["consumer", "consumer", ["merged"], "Normal", ""],
+      [null, "consumer", ["consumer", "merged"], "CherryPick", "cherry-pick:merged|parent:base"]
+    ],
+    "selectedParent": "base"
+  }
+}

@@ -158,7 +158,7 @@
   };
   const appendExportedEdgeLabel = (document, group, edge, paint, root, palette) => {
     if (!edge.label || !edge.showLabel) return null;
-    const point = edgeLabelPoint(paint.rendered, paint.control);
+    const point = edgeLabelPoint(paint.rendered, paint.control, paint.labelObstacles);
     const classes = ['cfx-graph-edge-label'];
     if (edge.el.classList.contains('cfx-graph-selected') || edge.el.classList.contains('cfx-graph-highlighted')) classes.push('cfx-graph-label-selected');
     if (edge.el.classList.contains('cfx-graph-neighborhood-related')) classes.push('cfx-graph-neighborhood-related');
@@ -187,13 +187,15 @@
     const paths = new Map(Array.from(scene.querySelectorAll('[data-cfx-role="graph-edge"]')).map(path => [attr(path, 'data-edge-id'), path]));
     const labels = new Map(Array.from(scene.querySelectorAll('[data-cfx-role="graph-edge-label"]')).map(label => [attr(label, 'data-edge-label-for'), label]));
     const palette = graphThemePalette(root), dense = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview') || state.edges.length > 250;
+    const labelObstacles = graphEdgeLabelObstacles(root, state);
     state.edges.forEach(edge => {
       const path = paths.get(edge.id);
       if (!path) return;
-      const paint = graphEdgePaint(root, edge, state.byId, palette, dense, false);
+      const paint = graphEdgePaint(root, edge, state.byId, palette, dense, false, labelObstacles);
+      const label = labels.get(edge.id);
+      syncGraphEdgeGeometry(path, label, paint.rendered, paint.control, labelObstacles);
       const stamp = JSON.stringify([attr(path, 'd'), attr(edge.el, 'class'), paint.color, paint.width, paint.alpha, paint.arrowAlpha,
         edge.sourceArrow, edge.targetArrow, edge.directed, edge.dashed && edge.dashPattern, edge.labelColor, palette.edgeLabel, palette.paper]);
-      const label = labels.get(edge.id);
       if (path.__cfxSvgPaintStamp !== stamp || path.__cfxSvgPaintLabel !== label) {
         applySvgEdgePaint(path, edge, paint);
         const arrows = appendExportedEdgeArrows(scene.ownerDocument, path.parentNode, edge, paint, arrowGroups.get(edge.id));
@@ -239,8 +241,9 @@
     const marks = svgNode(document, 'g', { 'data-cfx-runtime-overlay': 'true' });
     const details = svgNode(document, 'g', { class: 'cfx-graph-node-details-layer', 'data-cfx-runtime-overlay': 'true', 'pointer-events': 'none' });
     const palette = graphThemePalette(root), dense = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview') || state.edges.length > 250;
+    const labelObstacles = graphEdgeLabelObstacles(root, state);
     state.edges.filter(edge => !visibleOnly || visible(edge.el)).forEach(edge => {
-      const paint = graphEdgePaint(root, edge, state.byId, palette, dense, false);
+      const paint = graphEdgePaint(root, edge, state.byId, palette, dense, false, labelObstacles);
       const path = svgNode(document, 'path', {
         class: attr(edge.el, 'class') || 'cfx-graph-edge',
         'data-cfx-role': 'graph-edge',

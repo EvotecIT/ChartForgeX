@@ -137,9 +137,11 @@ internal static class MermaidParserUtilities {
         return starts;
     }
 
-    public static void Add(MermaidParseResult<MermaidDocument> result, MermaidSourceSpan span, MermaidDiagnosticSeverity severity, string message, string? code = null) {
+    public static void Add<TDocument>(MermaidParseResult<TDocument> result, MermaidSourceSpan span, MermaidDiagnosticSeverity severity, string message, string? code = null) where TDocument : MermaidDocument {
         result.Diagnostics.Add(new MermaidDiagnostic {
-            Code = code ?? string.Empty,
+            Code = string.IsNullOrWhiteSpace(code)
+                ? severity == MermaidDiagnosticSeverity.Error ? MermaidDiagnosticCodes.InvalidStatement : MermaidDiagnosticCodes.UnsupportedStatement
+                : code!,
             Severity = severity,
             Message = message,
             Span = span

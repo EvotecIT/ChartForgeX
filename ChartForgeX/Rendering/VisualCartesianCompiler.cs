@@ -134,17 +134,18 @@ internal static partial class VisualCartesianCompiler {
             throw new ArgumentOutOfRangeException("viewport", "The X viewport cannot project the source coordinates into finite logical units.");
         var plotRegions = ResolvePlotRegions(chart, range, secondaryRange, map, secondaryMap);
         DrawPlotRegionFills(builder, plotRegions, colors);
-        var axisBuilder = chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)
+        var axisBuilder = !SameAxisFrame(plot, labelBounds)
+            || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)
             ? new VisualSceneBuilder(builder.Size, context.Font) : builder;
         using (axisBuilder.PushClip(viewport)) {
             if (horizontal) DrawHorizontalAxes(chart, context, axisBuilder, plot, range, map, colors, viewport, axisLabels, labelBounds.Left);
-            else DrawAxes(chart, context, axisBuilder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels);
+            else DrawAxes(chart, context, axisBuilder, plot, range, map, secondaryRange, secondaryMap, colors, viewport, axisLabels, labelBounds);
         }
         var obstacles = new List<LabelObstacle>();
         if (!ReferenceEquals(axisBuilder, builder)) {
             var axes = axisBuilder.Build();
             builder.Append(axes);
-            CaptureAnnotationAxisText(axes, obstacles);
+            CaptureAxisTextObstacles(axes, obstacles);
         }
         // The owned viewport starts after the measured frame and legend. Its upper
         // title strip can hold a complete guide caption without moving either axis.

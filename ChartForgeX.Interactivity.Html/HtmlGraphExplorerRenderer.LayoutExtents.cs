@@ -14,9 +14,14 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     /// <summary>Shares one badge measurement between both axes and the independent static viewport/neighborhood callers.</summary>
     private static PreparedNodeExtents MeasurePreparedNodeExtents(GraphSceneNode node, bool includeLabels) {
-        var size = SafeNodeSize(node);
         var mark = PreparedNodeRadius(node);
-        var halfWidth = mark; var halfHeight = mark;
+        return MeasurePreparedNodeExtents(node, includeLabels, new PreparedNodeExtents(mark, mark));
+    }
+
+    /// <summary>Expands a caller's per-axis body bounds without adding layout spacing to painted obstacles.</summary>
+    private static PreparedNodeExtents MeasurePreparedNodeExtents(GraphSceneNode node, bool includeLabels, PreparedNodeExtents mark) {
+        var size = SafeNodeSize(node);
+        var halfWidth = mark.HalfWidth; var halfHeight = mark.HalfHeight;
         if (includeLabels && !string.IsNullOrWhiteSpace(node.BadgeText)) {
             var badge = NodeBadgeBounds(node, size);
             halfWidth = Math.Max(halfWidth, Math.Max(Math.Abs(badge.Left), Math.Abs(badge.Right)) + 1);

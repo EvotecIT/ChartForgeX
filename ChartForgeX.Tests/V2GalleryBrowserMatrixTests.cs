@@ -2,31 +2,40 @@ using ChartForgeX.Core;
 using ChartForgeX.Themes;
 using System.Text.Json;
 using Xunit;
+using Xunit.Abstractions;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
 
 namespace ChartForgeX.Tests;
 
 /// <summary>Checks the published examples at their native geometry in one bounded browser session.</summary>
 public sealed class V2GalleryBrowserMatrixTests {
+    private readonly ITestOutputHelper _output;
+
+    public V2GalleryBrowserMatrixTests(ITestOutputHelper output) => _output = output;
+
     [BrowserFact(RequiresGallery = true)]
     public async Task EveryFamilyKeepsReadableNativeSvgAndHealthyPairedPng() {
         var url = BrowserTestPrerequisites.RequireGalleryUrl();
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>", 1200, 900);
-        await session.Page.GotoAsync(url);
-        await session.Page.EvaluateAsync("async () => { await document.fonts.ready; }");
+        string[] defects;
+        try {
+            await session.Page.GotoAsync(url);
+            await session.Page.EvaluateAsync("async () => { await document.fonts.ready; }");
 
-        // Fetch a small batch at a time, then measure one native SVG at a time. This avoids
-        // 196 page launches, loading their embedded factory listings, or a screenshot golden.
-        var defects = await session.Page.EvaluateAsync<string[]>("""
+            // Fetch a small batch at a time, then measure one native SVG at a time. This avoids
+            // separate page launches, their embedded factory listings, and screenshot goldens.
+            defects = await session.Page.EvaluateAsync<string[]>("""
             async expected => {
                 const defects = [];
                 const report = (artifact, message) => defects.push(artifact.id + ': ' + message);
                 const deadline = performance.now() + 25000;
                 const signal = AbortSignal.timeout(25000);
                 const fetchAsset = async (file, binary = false) => {
-                    const response = await fetch(new URL(file, location.href), { signal });
-                    if (!response.ok) throw new Error(file + ': HTTP ' + response.status);
-                    return binary ? response.blob() : response.text();
+                    try {
+                        const response = await fetch(new URL(file, location.href), { signal });
+                        if (!response.ok) throw new Error('HTTP ' + response.status);
+                        return await (binary ? response.blob() : response.text());
+                    } catch (error) { throw new Error(file + ': ' + (error?.message || String(error))); }
                 };
                 const manifest = JSON.parse(await fetchAsset('manifest.json'));
                 const artifacts = manifest.artifacts.filter(item => (item.id.startsWith('family-') || item.family === 'histogram')
@@ -181,6 +190,18 @@ public sealed class V2GalleryBrowserMatrixTests {
                 light = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Background.ToHex(),
                 dark = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Background.ToHex()
             }).WaitAsync(TimeSpan.FromSeconds(30));
+        } catch (Exception error) {
+            // HtmlTinkerX already records transport failures. Keep them in the TRX even
+            // when evaluation fails before the normal matrix/console receipt is written.
+            _output.WriteLine(JsonSerializer.Serialize(new {
+                error = error.Message,
+                network = session.NetworkLog.TakeLast(32).Select(request => new {
+                    request.Url, request.Status, request.FailureText, request.Started, request.Finished
+                }).ToArray(),
+                console = session.ConsoleLog.TakeLast(32).Select(entry => new { entry.Type, entry.Text }).ToArray()
+            }, new JsonSerializerOptions { WriteIndented = true }));
+            throw;
+        }
         var captures = Environment.GetEnvironmentVariable("CFX_V2_CAPTURE_ROOT");
         if (!string.IsNullOrWhiteSpace(captures)) {
             if (!Path.IsPathRooted(captures)) throw new InvalidOperationException("CFX_V2_CAPTURE_ROOT must be an explicit task-owned absolute output path.");

@@ -41,14 +41,16 @@ function fixture(kind = 'line') {
     node.querySelector = selector => node.querySelectorAll(selector)[0] || null;
     node.cloneNode = deep => {
       const clone = element(name, { ...values, class: node.getAttribute('class') });
+      clone.textContent = node.textContent;
       if (deep) node.children.forEach(child => clone.appendChild(child.cloneNode(true)));
       return clone;
     };
     return node;
   }
-  const scene = element('svg'), layer = element('g'); scene.appendChild(layer);
+  const scene = element('svg', { 'data-cfx-role': 'graph-scene' }), layer = element('g'); scene.appendChild(layer);
   const root = api.graphVirtualElement('root', { 'data-cfx-graph-theme-active': 'light' }, []);
-  root.querySelector = () => scene;
+  root.querySelectorAll = selector => api.graphVirtualMatches(scene, selector) ? [scene] : scene.querySelectorAll(selector);
+  root.querySelector = selector => root.querySelectorAll(selector)[0] || null;
   const a = { id: 'a', x: 100, y: 100, size: 20, shape: 'circle', el: api.graphVirtualElement('graph-node', {}, []) };
   const b = { id: 'b', x: 350, y: 240, size: 24, shape: 'circle', el: api.graphVirtualElement('graph-node', {}, []) };
   const edge = { id: 'e', source: a, target: kind === 'loop' ? a : b, shape: kind === 'curve' ? 'curve' : 'line',
@@ -56,7 +58,8 @@ function fixture(kind = 'line') {
     el: api.graphVirtualElement('graph-edge', {}, ['cfx-graph-edge']), dashPattern: [8, 4] };
   if (kind === 'route') edge.routePoints = [{ x: 100, y: 100 }, { x: 100, y: 240 }, { x: 350, y: 240 }];
   const path = element('path', { 'data-cfx-role': 'graph-edge', 'data-edge-id': 'e' }); layer.appendChild(path);
-  const state = { nodes: [], edges: [edge], byId: new Map([['a', a], ['b', b]]) };
+  path.classList.add('cfx-graph-edge'); edge.el = path;
+  const state = { nodes: [], clusters: [], edges: [edge], byId: new Map([['a', a], ['b', b]]) };
   const sync = () => {
     path.setAttribute('d', api.edgePathData(edge, api.edgeControl(edge)));
     api.syncPhysicalSvgEdgePaint(root, state);
@@ -111,7 +114,12 @@ test('arrow reconciliation preserves source/target order and directed aliases th
 });
 
 test('physical export materialization updates clone-local arrows and leaves live nodes owned by the scene', () => {
-  const f = fixture('curve'), live = f.sync(), liveSides = [...live.children], original = paintSnapshot(live);
+  const f = fixture('curve');
+  f.edge.label = 'Connection'; f.edge.showLabel = true;
+  const label = f.element('text', { 'data-cfx-role': 'graph-edge-label', 'data-edge-label-for': 'e' });
+  label.textContent = f.edge.label; f.layer.appendChild(label);
+  const live = f.sync(), liveSides = [...live.children], original = paintSnapshot(live);
+  const pathBefore = f.path.getAttribute('d'), labelBefore = [label.getAttribute('x'), label.getAttribute('y')];
   const clone = f.scene.cloneNode(true), cloneGroup = clone.querySelector('[data-cfx-role="graph-edge-arrows"]');
   const cloneSides = [...cloneGroup.children];
   f.a.x += 70; f.edge.strokeColor = '#7c3aed';
@@ -119,6 +127,11 @@ test('physical export materialization updates clone-local arrows and leaves live
   assert.equal(clone.querySelector('[data-cfx-role="graph-edge-arrows"]'), cloneGroup);
   assert.deepEqual(cloneGroup.children, cloneSides);
   assert.notDeepEqual(paintSnapshot(cloneGroup), original);
+  assert.equal(f.path.getAttribute('d'), pathBefore, 'export geometry must not update the live path');
+  assert.deepEqual([label.getAttribute('x'), label.getAttribute('y')], labelBefore, 'export geometry must not move the live caption');
+  assert.notEqual(clone.querySelector('[data-cfx-role="graph-edge"]').getAttribute('d'), pathBefore, 'clone path reflects supplied positions');
+  const cloneLabel = clone.querySelector('[data-cfx-role="graph-edge-label"]');
+  assert.notDeepEqual([cloneLabel.getAttribute('x'), cloneLabel.getAttribute('y')], labelBefore, 'clone caption reflects supplied positions');
   assert.deepEqual(paintSnapshot(live), original);
   assert.equal(live.parentNode, f.layer); assert.deepEqual(live.children, liveSides);
   f.sync(); assert.deepEqual(paintSnapshot(live), paintSnapshot(cloneGroup));

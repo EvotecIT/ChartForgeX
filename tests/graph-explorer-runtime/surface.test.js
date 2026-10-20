@@ -4,7 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
-const source = graphRuntimeSource('return { graphSurfaceFit, scenePoint, canvasContext };');
+const source = graphRuntimeSource('return { graphSurfaceFit, scenePoint, canvasContext, graphStageHasLayout };');
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`);
 function fixture(width, height, ratio, renderer = 'canvas') {
   const transforms = [], rect = {left:17, top:31, width, height};
@@ -43,20 +43,23 @@ test('hidden export surfaces use scene dimensions and remain finite', () => {
   assert.deepEqual(transforms.at(-1),[2,0,0,2,0,0]);
 });
 test('resizing a touched or fixed viewport redraws without resetting it and coalesces callbacks', t => {
-  const frames = new Map(), painted = [], stage = {}, state = {};
+  let layout = { width: 390, height: 600 };
+  const frames = new Map(), painted = [], stage = { getBoundingClientRect: () => layout }, state = {};
   let callback, next = 0, disconnected = false;
   const queueFrame = action => { frames.set(++next, action); return next; };
   const lifetimes = adapterLifetimes({ requestAnimationFrame: queueFrame, cancelAnimationFrame: id => frames.delete(id) });
   t.after(() => lifetimes.dispose());
   const viewportSource = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/graph-explorer.05-viewport.js'), 'utf8');
-  const bind = new Function('ResizeObserver','requestAnimationFrame','cancelAnimationFrame','drawCanvas','graphState','hasFeature','graphLifetime', viewportSource+'\nreturn bindGraphSurfaceResize;')(
+  const bind = new Function('ResizeObserver','requestAnimationFrame','cancelAnimationFrame','drawCanvas','graphState','hasFeature','graphLifetime','graphStageHasLayout', viewportSource+'\nreturn bindGraphSurfaceResize;')(
     class { constructor(action) { callback=action; } observe(value) { assert.equal(value,stage); } disconnect() { disconnected=true; } },
-    queueFrame, id=>frames.delete(id), (root, actual)=>{assert.equal(actual,state);painted.push(root);}, ()=>{throw new Error('Rebuilt stale attributes');}, root=>root.viewportEnabled, lifetimes.graphLifetime);
+    queueFrame, id=>frames.delete(id), (root, actual)=>{assert.equal(actual,state);painted.push(root);}, ()=>{throw new Error('Rebuilt stale attributes');}, root=>root.viewportEnabled, lifetimes.graphLifetime, fixture(390,600,1).runtime.graphStageHasLayout);
   const root={__cfxGraphState:state,querySelector:()=>stage,__cfxGraphViewportTouched:true,viewportEnabled:true};
   lifetimes.mount(root);
   bind(root); callback(); callback(); assert.equal(frames.size,1);
   const flush=()=>{const pending=[...frames.values()];frames.clear();pending.forEach(action=>action());};
   flush(); assert.deepEqual(painted,[root]);
   root.viewportEnabled=false;root.__cfxGraphViewportTouched=false;callback();flush();assert.equal(painted.length,2);
-  root.isConnected=false;lifetimes.notifyMutations();callback();flush();assert.equal(painted.length,2);assert.equal(disconnected,true);
+  layout={width:0,height:0};callback();flush();assert.equal(painted.length,2);
+  layout={width:480,height:600};callback();flush();assert.equal(painted.length,3);
+  root.isConnected=false;lifetimes.notifyMutations();callback();flush();assert.equal(painted.length,3);assert.equal(disconnected,true);
 });

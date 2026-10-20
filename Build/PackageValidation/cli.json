@@ -12,8 +12,12 @@
         {
           "Name": "Packed CLI help",
           "FileName": "{ToolPath}",
-          "Arguments": ["--help"],
-          "OutputContains": ["chartforgex-markup validate"],
+          "Arguments": [
+            "--help"
+          ],
+          "OutputContains": [
+            "chartforgex-markup validate"
+          ],
           "TimeoutSeconds": 60
         },
         {
@@ -35,8 +39,12 @@
             "--output",
             "{WorkRoot}/service-map.svg"
           ],
-          "OutputContains": ["Wrote"],
-          "NonEmptyFiles": ["{WorkRoot}/service-map.svg"],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/service-map.svg"
+          ],
           "TimeoutSeconds": 60
         },
         {
@@ -48,9 +56,70 @@
             "--output",
             "{WorkRoot}/service-map.png"
           ],
-          "OutputContains": ["Wrote"],
-          "NonEmptyFiles": ["{WorkRoot}/service-map.png"],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/service-map.png"
+          ],
           "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed Mermaid class-style SVG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/mermaid-flowchart-styles.md",
+            "--output",
+            "{WorkRoot}/mermaid-styles.svg"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/mermaid-styles.svg"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed Mermaid class-style PNG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/mermaid-flowchart-styles.md",
+            "--output",
+            "{WorkRoot}/mermaid-styles.png"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/mermaid-styles.png"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed Mermaid approximation warning",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "validate",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/mermaid-journey-approximation.md"
+          ],
+          "OutputContains": [
+            "Valid visual markup. Artifacts: 1"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed Mermaid invalid GitGraph rejection",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "validate",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/mermaid-gitgraph-invalid.md"
+          ],
+          "ExpectedExitCode": 2,
+          "TimeoutSeconds": 60,
+          "ExpectedOutput": ""
         }
       ]
     }

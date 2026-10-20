@@ -21,10 +21,11 @@
     context.save();
     context.transform(view.scale, 0, 0, view.scale, view.x, view.y);
     context.lineCap = 'round';
+    const labelObstacles = graphEdgeLabelObstacles(root, state);
     fallbackEdges.forEach(item => drawCanvasEdge(context, root, item.edge, { ...item.paint, labels: false }, palette));
     state.edges.forEach(edge => {
       if (!edge.label || !edge.showLabel || !visible(edge.el) || !edgeHasVisibleEndpoints(edge, byId)) return;
-      drawCanvasEdgeLabel(context, root, edge, graphEdgePaint(root, edge, byId, palette, dense, moving), palette);
+      drawCanvasEdgeLabel(context, root, edge, graphEdgePaint(root, edge, byId, palette, dense, moving, labelObstacles), palette);
     });
     drawCanvasNodes(context, root, state.nodes, compact, moving, fallbackEdges.length ? undefined : mesh.nodePoints.nodes, palette);
     context.restore();

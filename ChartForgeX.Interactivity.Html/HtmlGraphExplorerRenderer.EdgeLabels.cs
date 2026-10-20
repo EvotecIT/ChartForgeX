@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Interactivity;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -8,16 +10,15 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static readonly double[] EdgeLabelCollisionOffsets = { 20, 36, 54, 76, 102, 136, 176, 220, 280 };
     private static readonly double[] EdgeLabelRouteFractions = { 0.45, 0.55, 0.35, 0.65, 0.25, 0.75 };
 
-    private static Point AvoidEdgeLabelNodeCollisions(Point candidate, string? label, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? sourceBoundaryInset, double? targetBoundaryInset, IReadOnlyList<GraphScenePoint>? route = null) {
-        if (string.IsNullOrWhiteSpace(label) || !EdgeLabelIntersectsEndpoint(candidate, label!, source, sourceNode, sourceBoundaryInset) && !EdgeLabelIntersectsEndpoint(candidate, label!, target, targetNode, targetBoundaryInset)) return candidate;
+    private static Point AvoidEdgeLabelNodeCollisions(Point candidate, string? label, Point source, Point target, LabelSpatialIndex obstacles, IReadOnlyList<GraphScenePoint>? route = null) {
+        if (string.IsNullOrWhiteSpace(label) || !EdgeLabelIntersectsObstacles(candidate, label!, obstacles)) return candidate;
 
         if (route is { Count: > 1 }) {
             // Keep a routed edge's label on its rendered path even when the route
             // passes beneath an endpoint card. A straight midpoint can be remote.
             foreach (var fraction in EdgeLabelRouteFractions) {
                 var routed = PolylinePointAt(route, fraction, -7);
-                if (!EdgeLabelIntersectsEndpoint(routed, label!, source, sourceNode, sourceBoundaryInset) &&
-                    !EdgeLabelIntersectsEndpoint(routed, label!, target, targetNode, targetBoundaryInset)) return routed;
+                if (!EdgeLabelIntersectsObstacles(routed, label!, obstacles)) return routed;
             }
 
             return candidate;
@@ -26,8 +27,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         // A short curved route can pull its control-point midpoint under a card.
         // The geometric midpoint often has enough room between the endpoints.
         var center = new Point((source.X + target.X) / 2, (source.Y + target.Y) / 2 - 7);
-        if (!EdgeLabelIntersectsEndpoint(center, label!, source, sourceNode, sourceBoundaryInset) &&
-            !EdgeLabelIntersectsEndpoint(center, label!, target, targetNode, targetBoundaryInset)) return center;
+        if (!EdgeLabelIntersectsObstacles(center, label!, obstacles)) return center;
 
         var dx = target.X - source.X;
         var dy = target.Y - source.Y;
@@ -37,23 +37,18 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var preferredSign = normalY > 0 ? -1d : 1d;
         foreach (var offset in EdgeLabelCollisionOffsets) {
             var preferred = new Point(candidate.X + normalX * offset * preferredSign, candidate.Y + normalY * offset * preferredSign);
-            if (!EdgeLabelIntersectsEndpoint(preferred, label!, source, sourceNode, sourceBoundaryInset) && !EdgeLabelIntersectsEndpoint(preferred, label!, target, targetNode, targetBoundaryInset)) return preferred;
+            if (!EdgeLabelIntersectsObstacles(preferred, label!, obstacles)) return preferred;
             var alternate = new Point(candidate.X - normalX * offset * preferredSign, candidate.Y - normalY * offset * preferredSign);
-            if (!EdgeLabelIntersectsEndpoint(alternate, label!, source, sourceNode, sourceBoundaryInset) && !EdgeLabelIntersectsEndpoint(alternate, label!, target, targetNode, targetBoundaryInset)) return alternate;
+            if (!EdgeLabelIntersectsObstacles(alternate, label!, obstacles)) return alternate;
         }
 
         var finalOffset = EdgeLabelCollisionOffsets[EdgeLabelCollisionOffsets.Length - 1];
         return new Point(candidate.X + normalX * finalOffset * preferredSign, candidate.Y + normalY * finalOffset * preferredSign);
     }
 
-    private static bool EdgeLabelIntersectsEndpoint(Point labelPoint, string label, Point nodePoint, GraphSceneNode? node, double? boundaryInset) {
+    private static bool EdgeLabelIntersectsObstacles(Point labelPoint, string label, LabelSpatialIndex obstacles) {
         var labelHalfWidth = Math.Max(14, EstimatedEdgeLabelWidth(label) / 2);
-        const double labelHalfHeight = 10;
-        const double collisionGap = 6;
-        var labelCenterY = labelPoint.Y - 4;
-        NodeCollisionExtents(node, boundaryInset, out var nodeHalfWidth, out var nodeHalfHeight);
-        return Math.Abs(labelPoint.X - nodePoint.X) < labelHalfWidth + nodeHalfWidth + collisionGap
-            && Math.Abs(labelCenterY - nodePoint.Y) < labelHalfHeight + nodeHalfHeight + collisionGap;
+        return obstacles.Intersects(new ChartRect(labelPoint.X - labelHalfWidth, labelPoint.Y - 14, labelHalfWidth * 2, 20), null);
     }
 
     private static double EstimatedEdgeLabelWidth(string label) {
@@ -72,17 +67,4 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return width + 8;
     }
 
-    private static void NodeCollisionExtents(GraphSceneNode? node, double? boundaryInset, out double halfWidth, out double halfHeight) {
-        if (boundaryInset.HasValue) {
-            halfWidth = boundaryInset.Value;
-            halfHeight = boundaryInset.Value;
-            return;
-        }
-
-        var size = Math.Max(4, node?.Size ?? 8);
-        var shape = EffectiveNodeShape(node);
-        if (TryNodeBoundaryExtents(node, shape, size, out halfWidth, out halfHeight)) return;
-        halfWidth = size;
-        halfHeight = size;
-    }
 }

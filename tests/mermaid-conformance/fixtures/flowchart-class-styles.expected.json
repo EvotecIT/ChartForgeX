@@ -1,0 +1,71 @@
+{
+  "nodes": [
+    "start",
+    "work",
+    "box",
+    "finish"
+  ],
+  "edges": [
+    [
+      "start",
+      "work"
+    ],
+    [
+      "work",
+      "box"
+    ],
+    [
+      "work",
+      "finish"
+    ]
+  ],
+  "flowchartStyles": {
+    "nodeClasses": {
+      "start": [],
+      "work": [
+        "color",
+        "box"
+      ],
+      "box": [
+        "box"
+      ],
+      "finish": [
+        "external-xml",
+        "read-only"
+      ]
+    },
+    "nodeStyles": {
+      "start": {
+        "fill": "#dbeafe",
+        "stroke": "#1e3a8a",
+        "color": "#172554"
+      },
+      "work": {
+        "fill": "#fef9c3",
+        "stroke": "#c2410c",
+        "color": "#7c2d12"
+      },
+      "box": {
+        "fill": "#fed7aa",
+        "stroke": "#1e3a8a",
+        "color": "#7c2d12"
+      },
+      "finish": {
+        "fill": "#dbeafe",
+        "stroke": "#0f766e",
+        "color": "#14532d"
+      }
+    },
+    "edgeStyles": [
+      {
+        "stroke": "#dc2626"
+      },
+      {
+        "stroke": "#16a34a"
+      },
+      {
+        "stroke": "#475569"
+      }
+    ]
+  }
+}
