@@ -4144,16 +4144,27 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
     // Mount has already fitted this size. The observer's initial delivery is
     // not a resize and must not refit a search entered before that delivery.
     const initialSize = stage.getBoundingClientRect();
+    const printing = root.ownerDocument.defaultView.matchMedia('print');
     let width = initialSize.width, height = initialSize.height;
     let frame = 0;
     const observer = new ResizeObserver(() => {
+      // Print owns a separate SVG surface. Its temporary stage dimensions
+      // must not replace the last screen frame or trigger a refit on return.
+      if (printing.matches) return;
       const size = stage.getBoundingClientRect();
       if (size.width === width && size.height === height) return;
-      width = size.width; height = size.height;
       if (frame) graphLifetime(root)?.cancelFrame(frame);
+      frame = 0;
+      // Remember ordinary layout loss even if hide/reveal coalesces before
+      // the next frame: accelerated surfaces still need a redraw on reveal.
+      if (size.width <= 0 || size.height <= 0) { width = size.width; height = size.height; return; }
       frame = graphLifetime(root)?.frame(() => {
         frame = 0;
         if (root.isConnected === false) { observer.disconnect(); return; }
+        if (printing.matches) return;
+        const current = stage.getBoundingClientRect();
+        if (current.width === width && current.height === height) return;
+        width = current.width; height = current.height;
         if (!graphStageHasLayout(root)) return;
         if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched) fitViewport(root);
         else drawCanvas(root, root.__cfxGraphState || graphState(root));

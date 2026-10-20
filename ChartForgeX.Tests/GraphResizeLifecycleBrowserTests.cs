@@ -108,6 +108,61 @@ public sealed class GraphResizeLifecycleBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserTheory]
+    [InlineData(HtmlGraphRenderBackend.Svg)]
+    [InlineData(HtmlGraphRenderBackend.Canvas)]
+    [InlineData(HtmlGraphRenderBackend.WebGl)]
+    public async Task PrintingAnUntouchedFitDoesNotRefitTheRestoredScreenFrame(HtmlGraphRenderBackend backend) {
+        await using var session = await OpenAsync(Page(backend), 980, 900);
+        var page = session.Page;
+        await page.EmulateMediaAsync(new() { Media = Media.Screen, ForcedColors = ForcedColors.Active, ReducedMotion = ReducedMotion.Reduce });
+        await page.EvaluateAsync("()=>document.fonts.ready");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Fit graph to view", Exact = true }).ClickAsync();
+        await page.EvaluateAsync("""
+            async()=>{
+                await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+                const root=document.querySelector('.cfx-graph-explorer'),stage=root.querySelector('.cfx-graph-stage');
+                const snapshot=()=>{
+                    const camera=ChartForgeXGraphExplorer.captureState(root).viewport,box=stage.getBoundingClientRect();
+                    return {camera:[camera.x,camera.y,camera.scale],width:box.width,height:box.height,
+                        positions:ChartForgeXGraphExplorer.positions(root).map(node=>[node.id,node.x,node.y]),print:matchMedia('print').matches};
+                };
+                window.printResizeProof={before:snapshot(),events:[],sizes:[],snapshot};
+                root.addEventListener('cfxgraphviewport',()=>printResizeProof.events.push(snapshot()));
+                printResizeProof.observer=new ResizeObserver(()=>printResizeProof.sizes.push(snapshot()));
+                printResizeProof.observer.observe(stage);
+            }
+            """);
+        await page.EmulateMediaAsync(new() { Media = Media.Print, ForcedColors = ForcedColors.Active, ReducedMotion = ReducedMotion.Reduce });
+        await page.WaitForFunctionAsync("()=>!!document.querySelector('[data-cfx-role=graph-print-surface]')");
+        await page.EvaluateAsync("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
+        await page.EmulateMediaAsync(new() { Media = Media.Screen, ForcedColors = ForcedColors.Active, ReducedMotion = ReducedMotion.Reduce });
+        await page.WaitForFunctionAsync("()=>!document.querySelector('[data-cfx-role=graph-print-surface]')");
+        var facts = await page.EvaluateAsync<JsonElement>("""
+            async()=>{
+                await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+                const before=printResizeProof.before,after=printResizeProof.snapshot();
+                return {before,after,statePreserved:JSON.stringify(before)===JSON.stringify(after),events:printResizeProof.events,sizes:printResizeProof.sizes,
+                    renderer:document.querySelector('.cfx-graph-explorer').dataset.cfxGraphRendererActive};
+            }
+            """);
+        await CaptureAsync(page, "print-untouched-" + backend, facts);
+        Assert.Equal(backend.ToString().ToLowerInvariant(), facts.GetProperty("renderer").GetString());
+        Assert.True(facts.GetProperty("statePreserved").GetBoolean(), facts.GetRawText());
+        Assert.Empty(facts.GetProperty("events").EnumerateArray());
+
+        // A real host resize during print still belongs to the screen resize owner on return.
+        await page.EmulateMediaAsync(new() { Media = Media.Print, ForcedColors = ForcedColors.Active, ReducedMotion = ReducedMotion.Reduce });
+        await page.WaitForFunctionAsync("()=>!!document.querySelector('[data-cfx-role=graph-print-surface]')");
+        await page.EvaluateAsync("()=>document.querySelector('.cfx-graph-explorer').style.width='310px'");
+        await page.EmulateMediaAsync(new() { Media = Media.Screen, ForcedColors = ForcedColors.Active, ReducedMotion = ReducedMotion.Reduce });
+        await page.WaitForFunctionAsync("()=>!document.querySelector('[data-cfx-role=graph-print-surface]')&&printResizeProof.events.length>0");
+        var resizedCamera = await CameraAsync(page);
+        Assert.False(Numbers(facts.GetProperty("before").GetProperty("camera")).SequenceEqual(resizedCamera));
+        await page.EvaluateAsync("()=>printResizeProof.observer.disconnect()");
+        AssertNoConsoleErrors(session);
+    }
+
     private static string Page(HtmlGraphRenderBackend backend) {
         var graph = GraphScene.Create("resize-lifecycle", "Services")
             .AddNode("a", "Source", node => { node.Fixed = true; node.X = 200; node.Y = 170; node.Size = 24; })

@@ -44,6 +44,7 @@ test('hidden export surfaces use scene dimensions and remain finite', () => {
 });
 test('resizing a touched or fixed viewport redraws without resetting it and coalesces callbacks', t => {
   let layout = { width: 390, height: 600 };
+  const printing = { matches: false };
   const frames = new Map(), painted = [], stage = { getBoundingClientRect: () => layout }, state = {};
   let callback, next = 0, disconnected = false;
   const queueFrame = action => { frames.set(++next, action); return next; };
@@ -53,7 +54,7 @@ test('resizing a touched or fixed viewport redraws without resetting it and coal
   const bind = new Function('ResizeObserver','requestAnimationFrame','cancelAnimationFrame','drawCanvas','graphState','hasFeature','graphLifetime','graphStageHasLayout', viewportSource+'\nreturn bindGraphSurfaceResize;')(
     class { constructor(action) { callback=action; } observe(value) { assert.equal(value,stage); } disconnect() { disconnected=true; } },
     queueFrame, id=>frames.delete(id), (root, actual)=>{assert.equal(actual,state);painted.push(root);}, ()=>{throw new Error('Rebuilt stale attributes');}, root=>root.viewportEnabled, lifetimes.graphLifetime, fixture(390,600,1).runtime.graphStageHasLayout);
-  const root={__cfxGraphState:state,querySelector:()=>stage,__cfxGraphViewportTouched:true,viewportEnabled:true};
+  const root={ownerDocument:{defaultView:{matchMedia:()=>printing}},__cfxGraphState:state,querySelector:()=>stage,__cfxGraphViewportTouched:true,viewportEnabled:true};
   lifetimes.mount(root);
   bind(root); callback(); callback(); assert.equal(frames.size,0); assert.equal(painted.length,0);
   // The initial same-size notification owns no redraw; real changes still coalesce.
@@ -63,5 +64,12 @@ test('resizing a touched or fixed viewport redraws without resetting it and coal
   root.viewportEnabled=false;root.__cfxGraphViewportTouched=false;layout={width:440,height:600};callback();flush();assert.equal(painted.length,2);
   layout={width:0,height:0};callback();flush();assert.equal(painted.length,2);
   layout={width:480,height:600};callback();flush();assert.equal(painted.length,3);
-  root.isConnected=false;lifetimes.notifyMutations();callback();flush();assert.equal(painted.length,3);assert.equal(disconnected,true);
+  printing.matches=true;layout={width:0,height:0};callback();flush();assert.equal(painted.length,3);
+  printing.matches=false;layout={width:480,height:600};callback();flush();assert.equal(painted.length,3);
+  // A pending real resize survives a print interruption and commits only on screen.
+  layout={width:500,height:600};callback();printing.matches=true;layout={width:0,height:0};callback();flush();assert.equal(painted.length,3);
+  printing.matches=false;layout={width:500,height:600};callback();flush();assert.equal(painted.length,4);
+  // Ordinary hide/update/reveal at the same size still redraws when coalesced.
+  layout={width:0,height:0};callback();layout={width:500,height:600};callback();flush();assert.equal(painted.length,5);
+  root.isConnected=false;lifetimes.notifyMutations();callback();flush();assert.equal(painted.length,5);assert.equal(disconnected,true);
 });
