@@ -32,6 +32,9 @@ public readonly struct ChartMapPoint {
     /// </summary>
     public readonly ChartColor? Color;
 
+    /// <summary>Gets an independent numeric color measurement, or null for a missing color measurement. <see cref="Value"/> remains the point weight.</summary>
+    public double? ColorValue { get; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartMapPoint"/> struct.
     /// </summary>
@@ -46,6 +49,7 @@ public readonly struct ChartMapPoint {
         Latitude = latitude;
         Value = null;
         Color = color;
+        ColorValue = null;
     }
 
     /// <summary>
@@ -65,7 +69,24 @@ public readonly struct ChartMapPoint {
         Latitude = latitude;
         Value = value;
         Color = color;
+        ColorValue = null;
     }
+
+    private ChartMapPoint(ChartMapPoint point, double? colorValue) {
+        if (colorValue.HasValue) ChartGuards.Finite(colorValue.Value, nameof(colorValue));
+        Label = point.Label; Longitude = point.Longitude; Latitude = point.Latitude;
+        Value = point.Value; Color = point.Color; ColorValue = colorValue;
+    }
+
+    /// <summary>Returns a point with the same location, weight and explicit paint and a replacement independent color measurement.</summary>
+    /// <param name="value">A finite signed color measurement, or null to clear it.</param>
+    /// <returns>An independent point. Its weight is unchanged.</returns>
+    public ChartMapPoint WithColorValue(double? value) => new(this, value);
+
+    /// <summary>Revalidates a complete typed point, including defaults, while preserving independent weight and color measurements.</summary>
+    internal ChartMapPoint ValidatedCopy() => (Value.HasValue
+        ? new ChartMapPoint(Label, Longitude, Latitude, Value.Value, Color)
+        : new ChartMapPoint(Label, Longitude, Latitude, Color)).WithColorValue(ColorValue);
 
     private static void Validate(string label, double longitude, double latitude) {
         if (string.IsNullOrWhiteSpace(label)) throw new ArgumentException("Map point labels must not be empty.", nameof(label));

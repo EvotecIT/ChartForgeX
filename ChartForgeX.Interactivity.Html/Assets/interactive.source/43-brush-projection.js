@@ -1,8 +1,37 @@
+  const validTimeSessions = sessions => sessions === undefined || Array.isArray(sessions) && sessions.length > 0
+    && sessions.every((session, index) => session && [session.minimum, session.maximum, session.offset].every(Number.isFinite)
+      && session.minimum >= 0 && session.maximum > session.minimum && session.offset >= 0
+      && (index === 0 ? session.offset === 0 : session.minimum >= sessions[index - 1].maximum
+        && session.offset === sessions[index - 1].offset + (sessions[index - 1].maximum - sessions[index - 1].minimum)));
+  const timeSessionIndex = (sessions, value, field) => {
+    let low = 0, high = sessions.length - 1;
+    while (low <= high) {
+      const middle = low + Math.floor((high - low) / 2);
+      if (sessions[middle][field] <= value) low = middle + 1; else high = middle - 1;
+    }
+    return high;
+  };
+  const projectedSessionValue = (sessions, value) => {
+    const last = sessions.at(-1), total = last.offset + (last.maximum - last.minimum);
+    if (value < 0) return sessions[0].minimum + value;
+    if (value >= total) return last.maximum + (value - total);
+    const index = timeSessionIndex(sessions, value, 'offset');
+    return sessions[index].minimum + (value - sessions[index].offset);
+  };
+  const transformedSessionValue = (sessions, value) => {
+    const index = timeSessionIndex(sessions, value, 'minimum');
+    if (index < 0) return value - sessions[0].minimum;
+    const session = sessions[index];
+    if (value > session.maximum) return index < sessions.length - 1 ? sessions[index + 1].offset
+      : session.offset + (session.maximum - session.minimum) + (value - session.maximum);
+    return session.offset + (value - session.minimum);
+  };
   const validDataProjection = projection => {
     const plot = projection?.plotBounds;
     const axis = value => !!value && [value.minimum, value.maximum, value.transformedMinimum, value.transformedMaximum, value.threshold].every(Number.isFinite)
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
+      && validTimeSessions(value.timeSessions) && (value.timeSessions === undefined || value.scale === 'time')
       && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
         tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')))
       && (value.displayBounds === undefined || Array.isArray(value.displayBounds) && value.displayBounds.every(tick =>
@@ -26,11 +55,12 @@
     const span = axis.transformedMaximum - axis.transformedMinimum;
     const value = Number.isFinite(span) ? axis.transformedMinimum + ratio * span
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
-    const raw = axis.scale === 'logarithmic' ? Math.pow(10, value)
+    const raw = axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic' ? Math.pow(10, value)
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
     return clamp(raw, axis.minimum, axis.maximum);
   };
-  const transformedAxisValue = (axis, value) => axis.scale === 'logarithmic' ? Math.log10(value)
+  const transformedAxisValue = (axis, value) => axis.timeSessions ? transformedSessionValue(axis.timeSessions, value)
+    : axis.scale === 'logarithmic' ? Math.log10(value)
     : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * Math.log10(1 + Math.abs(value) / axis.threshold) : value;
   const enclosingAxisTicks = (axis, values) => {
     const ticks = [...(axis.displayTicks || []), ...(axis.displayBounds || [])]

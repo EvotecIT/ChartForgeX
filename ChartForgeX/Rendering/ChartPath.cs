@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ internal sealed class ChartPath {
 
     private static int CubicSteps(ChartPoint start, ChartPoint control1, ChartPoint control2, ChartPoint end, double maxSegmentLength) {
         var length = Distance(start, control1) + Distance(control1, control2) + Distance(control2, end);
-        return Math.Max(6, (int)Math.Ceiling(length / maxSegmentLength));
+        return Math.Max(6, ChartCurveFlattening.LengthSegments(length, maxSegmentLength));
     }
 
     private static double Distance(ChartPoint a, ChartPoint b) {

@@ -25,7 +25,9 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
     public async Task RepeatedAnnotationCaptionsAndValuesRoundTripIndividualCommandAndActivationTargets(bool dark) {
         if (!Enabled) return;
         var chart = Model(dark);
-        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Options), dark ? 390 : 800, 720);
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            Options(options); options.Interaction.Features |= ChartInteractionFeatures.CompareMarkers;
+        }), dark ? 390 : 800, 720);
         var page = session.Page;
         await Bind(page);
         var paint = await NativePaint(page);
@@ -44,6 +46,10 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
             Assert.Equal(selected.GetProperty("target").GetProperty("targetId").GetString(),
                 Assert.Single(selected.GetProperty("selected").EnumerateArray()).GetProperty("targetId").GetString());
             Assert.Equal(1, selected.GetProperty("highlighted").GetInt32());
+            var caption = selected.GetProperty("target").GetProperty("label").GetString();
+            Assert.False(string.IsNullOrWhiteSpace(caption));
+            Assert.Equal(caption, await page.Locator(".cfx-compare-chip").InnerTextAsync());
+            Assert.Equal(caption, await page.Locator(".cfx-compare-chip").GetAttributeAsync("title"));
         }
         Assert.Equal(paint, await NativePaint(page));
         await page.EvaluateAsync("()=>{annotationController.clearHighlight();annotationController.clearSelection();}");

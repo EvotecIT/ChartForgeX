@@ -22,7 +22,7 @@ internal static partial class VisualMapCompiler {
         var valued = weights.Where(value => value.HasValue).Select(value => value!.Value).ToArray();
         var min = valued.Length > 0 ? valued.Min() : 0; var max = valued.Length > 0 ? valued.Max() : 0;
         var initial = Fit(plot, longitudeSpan, latitudeSpan);
-        var dot = Math.Min(Same(viewport, ChartMapViewport.World()) || Same(viewport, ChartMapViewport.Europe()) || Same(viewport, ChartMapViewport.Poland()) ? 3.6 : 5.2,
+        var dot = Math.Min(UsesCompactMapDot(viewport) ? 3.6 : 5.2,
             Math.Min(initial.Width / Math.Max(1, longitudeSpan / 3.5), initial.Height / Math.Max(1, latitudeSpan / 3.5)) * .42);
         var maxRadius = series.MarkerRadius ?? PointRadius(dot, valued.Length > 0 ? max : (double?)null, min, max);
         var map = Fit(plot, longitudeSpan, latitudeSpan, Math.Max(dot * 2.45, maxRadius * 1.85) + Math.Max(1, dot * .55) / 2);
@@ -41,34 +41,8 @@ internal static partial class VisualMapCompiler {
                 DottedLand(chart, context, builder, map, viewport, dot, colors);
                 Routes(chart, context, builder, map, plot, viewport, dot, weights, min, max, colors, labels);
             }
-            for (var index = 0; index < series.RenderPoints.Count; index++) {
-                var source = series.RenderPoints[index]; var visible = Visible(source, viewport); var point = Geographic(source, viewport, map);
-                var category = series.MapPoints[index].Label;
-                var formatted = weights[index].HasValue ? ChartNumericFormatter.FormatValue(chart.Options, weights[index]!.Value) : "";
-                var full = category + (formatted.Length > 0 ? ": " + formatted : "") + "; " + N(source.X) + ", " + N(source.Y);
-                var id = "series-0-point-" + index; var radius = series.MarkerRadius ?? PointRadius(dot, weights[index], min, max);
-                var bounds = visible ? new ChartRect(point.X - radius, point.Y - radius, radius * 2, radius * 2) : map;
-                builder.AddRegion(new VisualSemanticRegion(id, "dotted-map-point", bounds, full));
-                using (builder.PushGroup(id, "dotted-map-point-source", new Dictionary<string, string> {
-                    ["data-cfx-series"] = "0", ["data-cfx-point"] = N(index), ["data-cfx-label"] = category, ["data-cfx-longitude"] = N(source.X), ["data-cfx-latitude"] = N(source.Y),
-                    ["data-cfx-value"] = weights[index].HasValue ? N(weights[index]!.Value) : "", ["data-cfx-formatted-value"] = formatted,
-                    ["data-cfx-visible"] = visible ? "true" : "false", ["aria-label"] = full
-                })) {
-                    if (!visible) continue;
-                    var (color, paint) = DottedPaint(series, index, colors);
-                    var halo = Math.Max(dot * 2.45, radius * 1.85);
-                    builder.Ellipse(point.X, point.Y, halo, halo, ChartColorMath.WithOpacity(color, .18), role: "dotted-map-point-halo", paint: VisualChartPaint.Fill(paint.WithOpacity(ChartColorMath.WithOpacity(color, .18), .18)));
-                    builder.Ellipse(point.X, point.Y, radius, radius, color, colors.Surface, Math.Max(1, dot * .55), "dotted-map-point", paint: new VisualScenePaintBinding(paint, SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
-                    obstacles.Add(new LabelObstacle(id, new ChartRect(point.X - halo, point.Y - halo, halo * 2, halo * 2)));
-                    if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) {
-                        var text = index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]!
-                            : category + (formatted.Length > 0 ? " " + formatted : "");
-                        AddMapLabel(builder, labels, text, text, point, MapDataStyle(chart, context, index), id + "-label", "dotted-map-data-label", plot, radius + context.Theme.Spacing, 50,
-                            series.DataLabelPlacement ?? chart.Options.DataLabelPlacement, leaderColor: color, leaderPaint: paint,
-                            leaderRadius: radius + Math.Max(1, dot * .55) / 2);
-                    }
-                }
-            }
+            DrawPoints(chart, context, builder, map, plot, dot, weights, min, max, colors, labels, obstacles,
+                new MapDataset(chart, 0), point => Geographic(point, viewport, map), point => Visible(point, viewport));
             DrawMapLabels(builder, plot, labels, obstacles, context.Theme.Spacing);
         }
         if (series.RenderPoints.Count == 0) builder.AddDiagnostic(new VisualDiagnostic("map.no-data", "The dotted map has no observations."));
@@ -96,4 +70,7 @@ internal static partial class VisualMapCompiler {
 
     private static bool Same(ChartMapViewport a, ChartMapViewport b) => ChartMath.SameCoordinate(a.MinimumLongitude, b.MinimumLongitude) && ChartMath.SameCoordinate(a.MaximumLongitude, b.MaximumLongitude)
         && ChartMath.SameCoordinate(a.MinimumLatitude, b.MinimumLatitude) && ChartMath.SameCoordinate(a.MaximumLatitude, b.MaximumLatitude);
+
+    internal static bool UsesCompactMapDot(ChartMapViewport viewport) => Same(viewport, ChartMapViewport.World())
+        || Same(viewport, ChartMapViewport.Europe()) || Same(viewport, ChartMapViewport.Poland());
 }

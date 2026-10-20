@@ -8,7 +8,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
-internal static class Program {
+internal static partial class Program {
     private static void Main() {
         PackageAssertions.CoreFixtures();
         ThemeSnapshots();
@@ -17,6 +17,9 @@ internal static class Program {
         CallbackOwnership();
         PolarPaint();
         ReversedStackCaptionLanes();
+        FinancialSessionLifecycle();
+        NativeCoordinateDrawings();
+        GeographicDatasetLifecycle();
         PackageAssertions.Payload("ChartForgeX");
         Console.WriteLine("Core package boundaries, typed ownership, themes and static exports passed.");
     }

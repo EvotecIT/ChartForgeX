@@ -56,6 +56,10 @@ public sealed class HtmlChartInteractionOptions {
     /// </summary>
     public bool IncludeResetButton { get; set; }
 
+    /// <summary>Gets or sets whether right-click and the Context Menu key expose the chart's existing reset and export actions.</summary>
+    /// <remarks>Disabled by default. Actions retain their feature flags, translations and ordinary toolbar behavior.</remarks>
+    public bool IncludeContextMenu { get; set; }
+
     /// <summary>
     /// Gets or sets shared asset references. When set, <see cref="HtmlInteractiveChartRenderer.RenderPage(ChartForgeX.Core.Chart, System.Action{HtmlChartInteractionOptions})"/>
     /// links the runtime and stylesheet from <see cref="HtmlAssetReferences.BasePath"/> instead of inlining them; write the
@@ -83,6 +87,9 @@ public sealed class HtmlChartInteractionOptions {
 
     /// <summary>Gets the transient mark and branch emphasis options.</summary>
     public HtmlChartHighlightOptions Highlight { get; } = new HtmlChartHighlightOptions();
+
+    /// <summary>Gets optional source-domain navigator, range preset and position scrollbar controls.</summary>
+    public HtmlChartXNavigationOptions XNavigation { get; } = new HtmlChartXNavigationOptions();
 
     /// <summary>Gets HTML control translations, language and direction independently from native data formatting.</summary>
     public HtmlChartLocalization Localization { get; } = new HtmlChartLocalization();

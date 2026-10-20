@@ -46,7 +46,7 @@ public sealed class HtmlChartSectionTests {
         var renderer = new HtmlInteractiveChartRenderer();
         var full = renderer.PrepareSection(chart);
         var narrowed = renderer.PrepareSection(chart, new ChartXViewport(3, 7));
-        var reset = renderer.PrepareSection(chart, viewport: null);
+        var reset = renderer.PrepareSection(chart, viewport: (ChartXViewport?)null);
         Assert.Equal(AxisLabels(full.PreparedVisual, "axis-y-label"), AxisLabels(narrowed.PreparedVisual, "axis-y-label"));
         Assert.NotEqual(AxisLabels(full.PreparedVisual, "axis-x-label"), AxisLabels(narrowed.PreparedVisual, "axis-x-label"));
         Assert.Equal(full.Html, reset.Html); Assert.Equal(full.PreparedVisual.ToPng(), reset.PreparedVisual.ToPng());

@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawPoints(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartMapper map,
         ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles, ChartSeriesColorSurface? colorSurface = null, bool clipMarks = true,
-        ChartXViewport? xViewport = null) {
+        ChartXViewport? xViewport = null, ChartYViewport? yViewport = null) {
         var series = chart.Series[index];
         var horizontal = ChartCartesianOrientation.IsHorizontalLine(chart, series);
         var points = new List<ChartPoint>(series.RenderPoints.Count);
@@ -70,7 +70,7 @@ internal static partial class VisualCartesianCompiler {
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
             var sourceX = series.RenderPoints[pointIndex].X;
-            var insideSourceX = xViewport == null || sourceX >= xViewport.Minimum && sourceX <= xViewport.Maximum;
+            var insideSourceX = ViewportObservationVisible(xViewport, yViewport, sourceX, stacks.Point(index, pointIndex).End, stacks.Point(index, pointIndex).End);
             var bounds = VisualMarkerScene.Bounds(point.X, point.Y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
             var visible = radius > 0 && insideSourceX && (!clipMarks || inside)

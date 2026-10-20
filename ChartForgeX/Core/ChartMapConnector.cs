@@ -9,6 +9,7 @@ namespace ChartForgeX.Core;
 /// Represents a connector line between two longitude/latitude positions on a map chart.
 /// </summary>
 public readonly struct ChartMapConnector {
+    private readonly IReadOnlyList<ChartMapPoint>? _routePoints;
     /// <summary>
     /// Gets the connector label.
     /// </summary>
@@ -42,7 +43,7 @@ public readonly struct ChartMapConnector {
     /// <summary>
     /// Gets the optional ordered route points. When empty, renderers use the source and target coordinates as a simple connector.
     /// </summary>
-    public readonly ChartMapPoint[] RoutePoints;
+    public IReadOnlyList<ChartMapPoint> RoutePoints => _routePoints ?? Array.Empty<ChartMapPoint>();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChartMapConnector"/> struct.
@@ -57,7 +58,7 @@ public readonly struct ChartMapConnector {
         ToLongitude = toLongitude;
         ToLatitude = toLatitude;
         Color = color;
-        RoutePoints = Array.Empty<ChartMapPoint>();
+        _routePoints = Array.Empty<ChartMapPoint>();
     }
 
     /// <summary>
@@ -66,7 +67,7 @@ public readonly struct ChartMapConnector {
     public ChartMapConnector(string label, IEnumerable<ChartMapPoint> routePoints, ChartColor? color = null) {
         if (string.IsNullOrWhiteSpace(label)) throw new ArgumentException("Map connector labels must not be empty.", nameof(label));
         if (routePoints == null) throw new ArgumentNullException(nameof(routePoints));
-        var points = routePoints.ToArray();
+        var points = routePoints.Select(point => point.ValidatedCopy()).ToArray();
         if (points.Length < 2) throw new ArgumentException("Map route connectors require at least two route points.", nameof(routePoints));
         Label = label.Trim();
         FromLongitude = points[0].Longitude;
@@ -74,7 +75,7 @@ public readonly struct ChartMapConnector {
         ToLongitude = points[points.Length - 1].Longitude;
         ToLatitude = points[points.Length - 1].Latitude;
         Color = color;
-        RoutePoints = points;
+        _routePoints = Array.AsReadOnly(points);
     }
 
     private static void ValidateCoordinate(double longitude, double latitude, string longitudeName, string latitudeName) {

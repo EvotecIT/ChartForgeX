@@ -11,23 +11,32 @@ internal static partial class VisualMapCompiler {
     private static void Routes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect map, ChartRect plot, ChartMapViewport viewport,
         double dot, double?[] weights, double min, double max, VisualThemeColors colors, List<MapLabel> labels) {
         var series = chart.Series[0];
-        for (var index = 0; index < chart.Options.MapConnectors.Count; index++) {
-            var connector = chart.Options.MapConnectors[index];
+        DrawRoutes(chart, context, builder, map, plot, dot, weights, min, max, colors, labels, series, 0,
+            chart.Options.MapConnectors.Concat(series.MapConnectors).ToArray(), point => Geographic(point, viewport, map), point => Visible(point, viewport));
+    }
+
+    /// <summary>Draws the same route geometry for standalone and composed datasets on one caller-owned coordinate frame.</summary>
+    private static void DrawRoutes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect map, ChartRect plot,
+        double dot, double?[] weights, double min, double max, VisualThemeColors colors, List<MapLabel> labels,
+        ChartSeries series, int seriesIndex, IReadOnlyList<ChartMapConnector> connectors, Func<ChartPoint, ChartPoint> project, Func<ChartPoint, bool> visiblePoint,
+        ChartMapPointSizeScale? sizeScale = null) {
+        for (var index = 0; index < connectors.Count; index++) {
+            var connector = connectors[index];
             if (string.IsNullOrWhiteSpace(connector.Label)) throw new InvalidOperationException("A map route needs a label.");
             var waypoints = connector.RoutePoints ?? Array.Empty<ChartMapPoint>();
-            if (waypoints.Length == 1) throw new InvalidOperationException("A map route needs at least two waypoints.");
-            var source = waypoints.Length > 0 ? waypoints.Select(point => new ChartPoint(point.Longitude, point.Latitude)).ToArray()
+            if (waypoints.Count == 1) throw new InvalidOperationException("A map route needs at least two waypoints.");
+            var source = waypoints.Count > 0 ? waypoints.Select(point => new ChartPoint(point.Longitude, point.Latitude)).ToArray()
                 : new[] { new ChartPoint(connector.FromLongitude, connector.FromLatitude), new ChartPoint(connector.ToLongitude, connector.ToLatitude) };
             foreach (var point in source) ValidateCoordinate(point);
-            var visible = source.All(point => Visible(point, viewport)); var id = "map-route-" + index;
-            var route = source.Select(point => Geographic(point, viewport, map)).ToArray();
+            var visible = source.All(visiblePoint); var id = (seriesIndex == 0 ? "map-route-" : "series-" + N(seriesIndex) + "-map-route-") + index;
+            var route = source.Select(project).ToArray();
             var color = connector.Color ?? series.Color ?? ChartSeriesColours.State(series.StateRole, colors, colors.Status.Medium.Fill);
             var paint = SvgPaint.Of(color, connector.Color.HasValue || series.Color.HasValue ? SvgColorRole.Series : SvgColorRole.Status);
             builder.AddRegion(new VisualSemanticRegion(id, "dotted-map-connector", visible ? Intersect(Bounds(route), map) : map,
                 connector.Label + ": " + string.Join(" → ", source.Select(point => N(point.X) + ", " + N(point.Y)))));
             using (builder.PushGroup(id, "dotted-map-connector-source", new Dictionary<string, string> {
-                ["data-cfx-connector"] = N(index), ["data-cfx-label"] = connector.Label, ["data-cfx-route-kind"] = waypoints.Length > 0 ? "waypoint" : "arc",
-                ["data-cfx-waypoint-count"] = N(waypoints.Length), ["data-cfx-route-coordinates"] = string.Join(";", source.Select(point => N(point.X) + "," + N(point.Y))),
+                ["data-cfx-series"] = N(seriesIndex), ["data-cfx-connector"] = N(index), ["data-cfx-label"] = connector.Label, ["data-cfx-route-kind"] = waypoints.Count > 0 ? "waypoint" : "arc",
+                ["data-cfx-waypoint-count"] = N(waypoints.Count), ["data-cfx-route-coordinates"] = string.Join(";", source.Select(point => N(point.X) + "," + N(point.Y))),
                 ["data-cfx-visible"] = visible ? "true" : "false", ["aria-label"] = connector.Label
             })) {
                 if (!visible) continue;
@@ -37,10 +46,10 @@ internal static partial class VisualMapCompiler {
                 if (Math.Abs(last.X - first.X) >= Math.Abs(last.Y - first.Y) ? py > 0 : (center.X > map.Left + map.Width / 2 ? px > 0 : px < 0)) { px = -px; py = -py; }
                 var curve = Math.Min(length * .16, Math.Min(map.Width, map.Height) * .18);
                 var control = new ChartPoint(VisualRadialPrimitives.Clamp(center.X + px * curve, map.Left, map.Right), VisualRadialPrimitives.Clamp(center.Y + py * curve, map.Top, map.Bottom));
-                route[0] = Trim(first, waypoints.Length > 0 ? route[1] : control, EndpointTrim(series, source[0], weights, dot, min, max));
-                route[route.Length - 1] = Trim(last, waypoints.Length > 0 ? route[route.Length - 2] : control, EndpointTrim(series, source[source.Length - 1], weights, dot, min, max));
+                route[0] = Trim(first, waypoints.Count > 0 ? route[1] : control, EndpointTrim(series, source[0], weights, dot, min, max, sizeScale));
+                route[route.Length - 1] = Trim(last, waypoints.Count > 0 ? route[route.Length - 2] : control, EndpointTrim(series, source[source.Length - 1], weights, dot, min, max, sizeScale));
                 ChartPath geometry;
-                if (waypoints.Length > 0) geometry = ChartPathBuilder.FromPoints(route, ChartInterpolation.Smooth);
+                if (waypoints.Count > 0) geometry = ChartPathBuilder.FromPoints(route, ChartInterpolation.Smooth);
                 else geometry = new ChartPath(new[] { ChartPathCommand.MoveTo(route[0].X, route[0].Y), ChartPathCommand.CubicTo(
                     route[0].X + (control.X - route[0].X) * 2 / 3, route[0].Y + (control.Y - route[0].Y) * 2 / 3,
                     route[1].X + (control.X - route[1].X) * 2 / 3, route[1].Y + (control.Y - route[1].Y) * 2 / 3, route[1].X, route[1].Y) });
@@ -60,7 +69,7 @@ internal static partial class VisualMapCompiler {
                         paint: new VisualScenePaintBinding(paint.WithOpacity(ChartColorMath.WithOpacity(color, .78), .78), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 }
                 if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) {
-                    var style = MapDataStyle(chart, context, -1, color);
+                    var style = MapDataStyle(chart, context, -1, color, series);
                     AddMapLabel(builder, labels, connector.Label, ChartRouteLabelCompaction.Compact(connector.Label), Along(samples, .36), style,
                         id + "-label", "dotted-map-connector-label", plot, context.Theme.Spacing + dot, 30,
                         paint: VisualChartPaint.ExplicitDataLabelColor(chart) ? VisualChartPaint.Text(style) : paint);
@@ -69,10 +78,12 @@ internal static partial class VisualMapCompiler {
         }
     }
 
-    private static double EndpointTrim(ChartSeries series, ChartPoint coordinate, double?[] weights, double dot, double min, double max) {
+    private static double EndpointTrim(ChartSeries series, ChartPoint coordinate, double?[] weights, double dot, double min, double max, ChartMapPointSizeScale? sizeScale) {
         var trim = dot * 2;
+        if (series.Kind != ChartSeriesKind.DottedMap) return trim;
         for (var index = 0; index < series.RenderPoints.Count; index++) if (ChartMath.SameCoordinate(series.RenderPoints[index].X, coordinate.X) && ChartMath.SameCoordinate(series.RenderPoints[index].Y, coordinate.Y))
-            trim = Math.Max(trim, (series.MarkerRadius ?? PointRadius(dot, weights[index], min, max)) + Math.Max(1, dot * .55) + Math.Max(1.5, dot * .45));
+            trim = Math.Max(trim, (sizeScale?.Radius(weights[index], dot) ?? series.MarkerRadius ?? PointRadius(dot, weights[index], min, max))
+                + Math.Max(1, dot * .55) + Math.Max(1.5, dot * .45));
         return trim;
     }
     private static ChartPoint Trim(ChartPoint point, ChartPoint toward, double distance) {

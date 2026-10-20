@@ -6,7 +6,7 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Represents a static line or band annotation on a chart.
 /// </summary>
-public sealed class ChartAnnotation {
+public sealed partial class ChartAnnotation {
     /// <summary>Gets the authored source identity, or null for an anonymous annotation local to the current chart source.</summary>
     public ChartAnnotationId? Id { get; }
 
@@ -66,6 +66,8 @@ public sealed class ChartAnnotation {
     /// <param name="showLabel">Whether to paint the label. False retains its accessible and semantic content.</param>
     public ChartAnnotation(ChartAnnotationKind kind, double value, double? endValue, string label, ChartColor color, double opacity, bool showLabel = true) {
         if (!Enum.IsDefined(typeof(ChartAnnotationKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown annotation kind.");
+        if (kind is ChartAnnotationKind.Note or ChartAnnotationKind.LineSegment or ChartAnnotationKind.ParallelChannel)
+            throw new ArgumentException("Source-coordinate annotations require a source geometry factory.", nameof(kind));
         ChartGuards.Finite(value, nameof(value));
         if (endValue.HasValue) ChartGuards.Finite(endValue.Value, nameof(endValue));
         if (kind == ChartAnnotationKind.HorizontalBand || kind == ChartAnnotationKind.VerticalBand) {

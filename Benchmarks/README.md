@@ -97,6 +97,20 @@ Compare `Baseline` and `Candidate` rows for the same scenario in PowerForge's `c
 
 Keep both source and adapter hashes, fixture hash, actual browser versions, policy flags, host activity and raw samples with the result. Freeze inputs during measurement; an immutable scratch copy lets ordinary implementation continue elsewhere. The suite is optional and adds no timing threshold to correctness CI.
 
+## Adaptive native section preparation
+
+`Invoke-SectionPreparationBenchmark.ps1` measures one public `PrepareSection` call, including the native scenes and wide/narrow SVG/HTML it creates. The `Shared` matrix compares full-domain and X-window preparation through public APIs present in both binary bundles. `Cartesian` measures current-only Y/XY windows separately. Both use 3-point edge-padding and 1,000-point scatter fixtures with explicit or automatic full domains, an 800 × 440 drawing and a 390 × 440 alternate.
+
+```powershell
+./Benchmarks/Invoke-SectionPreparationBenchmark.ps1 -ProductBinaryRoot /path/to/current/net8.0 -BaselineBinaryRoot /path/to/baseline/net8.0 -OutputRoot /path/to/results/shared -Matrix Shared -Plan
+./Benchmarks/Invoke-SectionPreparationBenchmark.ps1 -ProductBinaryRoot /path/to/current/net8.0 -BaselineBinaryRoot /path/to/baseline/net8.0 -OutputRoot /path/to/results/shared -Matrix Shared -SkipFixtureBuild
+./Benchmarks/Invoke-SectionPreparationBenchmark.ps1 -ProductBinaryRoot /path/to/current/net8.0 -OutputRoot /path/to/results/cartesian -Matrix Cartesian
+```
+
+`-Plan` builds the isolated fixtures unless `-SkipFixtureBuild` is supplied; it does not prepare scenes or start a browser. `-Case small-auto-x` selects a focused smoke case. Every lane validates complete source identities/coordinates, native dimensions, requested windows, unchanged authored axes and deterministic HTML outside timing. Current drawings additionally require aligned full X/Y domains and inverse projections. Historical automatic envelopes may differ between widths and are recorded in receipts. First/final HTML and native SVG/PNG receipts are written after measurements; identical outputs share stored artifacts. PNG encoding, file IO, model construction, font setup and validation are outside the measured call.
+
+Use separate output roots for independent launches, retain all rotated samples and losses, and record observed host activity with `-HostNoise` and before/after environment receipts. The default policy is two warmups, nine measurements and no outlier removal. There is no browser or quiet-host requirement. Results describe warm section-generation latency and managed thread allocations for these fixtures; they do not measure browser paint, native connection round trips, cold startup, concurrency or historical Y/XY support.
+
 ## Accepted rendering history
 
 `Invoke-RenderingHistory.ps1` uses PowerForge's `Test-BenchmarkHistory` to verify three fixed 500 × 180 rendering cases: twelve composition labels with default and full hinting, and twelve imported SVG labels. The original portable font fixture avoids installed-font discovery. Every case checks dimensions and visible ink in all twelve rows outside timing. The benchmark fixture is excluded from solution and package builds.

@@ -26,11 +26,15 @@ internal static partial class ChartTimeScale {
                 if (regularObservations == null) return null;
                 interval = ChooseInterval(interval.ApproximateDays * 1.01); continue;
             }
+            if (axis.TimeSessions != null && ticks.Count >= MaximumTicks) {
+                interval = ChooseInterval(interval.ApproximateDays * 1.01);
+                continue;
+            }
             var intervalTicks = ticks;
             if (selectTicks != null) ticks = selectTicks(ticks);
             var tryFiveDays = false;
             if (ticks.Count > 0) {
-                var ordinaryInterval = axis.HasExplicitTickCount || interval.ApproximateDays + 1e-10 >= Math.Max(minimumStepDays, (max - min) / (limit - 1));
+                var ordinaryInterval = axis.HasExplicitTickCount || interval.ApproximateDays + 1e-10 >= Math.Max(minimumStepDays, VisibleTimeSpan(axis, min, max) / (limit - 1));
                 var completeFits = ordinaryInterval && ticks.Count <= limit && fits(ticks);
                 // Keep the broad weekly rhythm. A measured four-day failure may
                 // still fit five-day captions before jumping straight to a week.
@@ -75,7 +79,8 @@ internal static partial class ChartTimeScale {
         for (var stride = 2; stride < ticks.Count; stride++) {
             var values = new List<double>();
             for (var index = 0; index < ticks.Count; index += stride) values.Add(ticks[index]);
-            IReadOnlyList<double> selected = selectTicks != null ? selectTicks(values) : values;
+            var retained = PreserveFormatting(ticks, values);
+            IReadOnlyList<double> selected = selectTicks != null ? selectTicks(retained) : retained;
             if (selected.Count > 1 && selected.Count <= limit && fits(selected)) return selected;
         }
         return null;
@@ -107,7 +112,7 @@ internal static partial class ChartTimeScale {
     // A calendar phase can put just one boundary inside a nominal two-tick
     // window. Try a finer actual calendar interval before accepting that loss.
     private static TimeInterval FittingStartInterval(ChartAxis axis, double min, double max, int limit, double minimumStepDays) {
-        var interval = ChooseInterval(Math.Max(minimumStepDays, (max - min) / (limit - 1)));
+        var interval = ChooseInterval(Math.Max(minimumStepDays, VisibleTimeSpan(axis, min, max) / (limit - 1)));
         if (axis.HasExplicitTickCount && TryGenerateFittingInterval(axis, min, max, interval) is { Count: >= 2 }) return interval;
         // Inspect the preceding real step as well. Its measured stride can
         // preserve clock precision when ordinary day boundaries all read 00:00.

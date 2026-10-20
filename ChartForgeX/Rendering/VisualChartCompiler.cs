@@ -12,6 +12,7 @@ internal static class VisualChartCompiler {
     internal static VisualChartFamily Family(Chart chart) {
         if (chart.Series.All(series => VisualCartesianCompiler.Supports(series.Kind))) return VisualChartFamily.Cartesian;
         if (ChartSeriesKindTraits.UsesNumericRadialCoordinates(chart)) return VisualChartFamily.NumericRadial;
+        if (chart.Series.All(series => ChartMapComposition.IsGeographic(series.Kind))) return VisualChartFamily.Map;
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("These chart families cannot share one coordinate system.");
         return kind switch {
@@ -43,22 +44,22 @@ internal static class VisualChartCompiler {
         VisualChartFamily.Scalar => VisualScalarProgressCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Matrix => VisualMatrixCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Schedule => VisualScheduleCompiler.LegendEntries(chart, colors),
-        VisualChartFamily.Map => VisualMapCompiler.LegendEntries(chart, colors),
+        VisualChartFamily.Map => VisualMapCompiler.LegendEntries(chart, colors, colorScales),
         VisualChartFamily.Hierarchy => VisualHierarchyCompiler.LegendEntries(chart, colors, colorScales),
         VisualChartFamily.Sankey => VisualSankeyCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Chord => VisualChordCompiler.LegendEntries(chart, colors),
         _ => VisualSpecialtyCompiler.LegendEntries(chart, colors)
     };
 
-    internal static ChartXProjection? Build(VisualChartFamily family, Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content,
+    internal static ChartCartesianProjection? Build(VisualChartFamily family, Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect content,
         ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartColorPresentationSet? colorScales = null, double legendHeight = 0,
-        ChartXViewport? xViewport = null, TileMapLegendInset? mapLegendInset = null) {
+        ChartCartesianViewport? viewport = null, TileMapLegendInset? mapLegendInset = null, ChartCartesianFullDomain? fullDomain = null) {
         using var coordinateScope = family is VisualChartFamily.Radial or VisualChartFamily.RadialProgress or VisualChartFamily.Polar or VisualChartFamily.NumericRadial
             || family == VisualChartFamily.Gauge && chart.Options.Gauge.Form != ChartGaugeForm.Linear
             || family == VisualChartFamily.Hierarchy && chart.Series[0].Kind == ChartSeriesKind.Sunburst
             ? builder.PushGroup(null, "coordinate-system", new Dictionary<string, string> { ["data-cfx-coordinate-system"] = "polar" }) : null;
         switch (family) {
-            case VisualChartFamily.Cartesian: return VisualCartesianCompiler.BuildInViewport(chart, context, builder, content, bubbleScale, axisLabels, colorScales, legendHeight, xViewport);
+            case VisualChartFamily.Cartesian: return VisualCartesianCompiler.BuildInViewport(chart, context, builder, content, bubbleScale, axisLabels, colorScales, legendHeight, viewport, fullDomain);
             case VisualChartFamily.Radial: VisualRadialCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Gauge: VisualGaugeCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.RadialProgress: VisualRadialProgressCompiler.Build(chart, context, builder, content); break;
@@ -67,7 +68,7 @@ internal static class VisualChartCompiler {
             case VisualChartFamily.Scalar: VisualScalarProgressCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Matrix: VisualMatrixCompiler.Build(chart, context, builder, content, colorScales?.Heatmap); break;
             case VisualChartFamily.Schedule: VisualScheduleCompiler.Build(chart, context, builder, content); break;
-            case VisualChartFamily.Map: VisualMapCompiler.Build(chart, context, builder, content, colorScales?.Map, mapLegendInset); break;
+            case VisualChartFamily.Map: VisualMapCompiler.Build(chart, context, builder, content, colorScales?.Map, mapLegendInset, colorScales); break;
             case VisualChartFamily.Hierarchy: VisualHierarchyCompiler.Build(chart, context, builder, content, colorScales); break;
             case VisualChartFamily.Sankey: VisualSankeyCompiler.Build(chart, context, builder, content); break;
             case VisualChartFamily.Chord: VisualChordCompiler.Build(chart, context, builder, content, colorScales); break;

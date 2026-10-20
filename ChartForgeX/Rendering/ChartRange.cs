@@ -180,6 +180,7 @@ internal sealed class ChartRange {
         }
 
         foreach (var annotation in chart.Annotations) {
+            if (annotation.HasSourceGeometry) continue; // Drawings follow the data domain instead of changing it.
             range.Include(annotation, ChartCartesianOrientation.AnnotationKind(annotation, hasHorizontalSeries));
         }
         // An opted-in category catalog describes the automatic domain even where a leaf has
@@ -402,6 +403,15 @@ internal sealed class ChartRange {
     }
 
     private void ApplyBarPadding(List<double> xValues, ChartAxis axis, List<double>? scalarCategories = null) {
+        if (axis.TimeSessions is { } sessions) {
+            var includedPadding = Math.Max(CategoryPadding(xValues.Select(sessions.Forward).ToList()),
+                scalarCategories == null ? 0 : CategoryPadding(scalarCategories.Select(sessions.Forward).ToList()));
+            if (includedPadding > 0) {
+                MinX = Math.Min(MinX, sessions.Inverse(sessions.Forward(MinX) - includedPadding));
+                MaxX = Math.Max(MaxX, sessions.Inverse(sessions.Forward(MaxX) + includedPadding));
+            }
+            return;
+        }
         // Scalar bars size their slots independently of interval and reference marks.
         // Preserve each padding requirement when the supported families are mixed.
         var padding = Math.Max(CategoryPadding(xValues), scalarCategories == null ? 0 : CategoryPadding(scalarCategories));

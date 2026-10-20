@@ -548,4 +548,18 @@ public enum HtmlChartText {
     GraphManipulationClusters,
     /// <summary>Built-in graph validation UI: This graph scene does not enable manipulation.</summary>
     GraphManipulationDisabled,
+    /// <summary>Heading and accessible name for native X navigation.</summary>
+    XNavigation,
+    /// <summary>Control selecting the full source-coordinate range.</summary>
+    XFullRange,
+    /// <summary>Accessible name and visible label of the lower range handle.</summary>
+    XRangeStart,
+    /// <summary>Accessible name and visible label of the upper range handle.</summary>
+    XRangeEnd,
+    /// <summary>Accessible name and visible label of the source-window position scrollbar.</summary>
+    XWindowPosition,
+    /// <summary>Live status while native range preparation is pending.</summary>
+    XRangeUpdating,
+    /// <summary>Live status after a native range preparation fails.</summary>
+    XRangeFailed,
 }

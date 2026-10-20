@@ -9,7 +9,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawRangeEnvelope(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
+        ChartXViewport? xViewport = null, ChartYViewport? yViewport = null) {
         var series = chart.Series[index]; var count = series.RenderPoints.Count / 2;
         var paired = new ChartPairedBoundaryGeometry(series, map);
         var lower = paired.First; var upper = paired.Second; var middle = new List<ChartPoint>();
@@ -53,13 +54,12 @@ internal static partial class VisualCartesianCompiler {
             var bounds = Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius));
             var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("lower", low.Y) + "–" + format("upper", high.Y));
             var values = new[] { ("x", low.X), ("lower", low.Y), ("upper", high.Y) };
+            var visible = ViewportObservationVisible(xViewport, yViewport, low.X, low.Y, high.Y);
             // Adapters use the captured native midpoint; averaging mapped boundaries is wrong on nonlinear axes.
-            using (area
-                ? ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label,
-                    new Dictionary<string, string> { ["data-cfx-midline-y"] = Number(middle[item].Y) }, values)
-                : ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, values)) {
+            using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, visible,
+                area ? new Dictionary<string, string> { ["data-cfx-midline-y"] = Number(middle[item].Y) } : null, values)) {
                 // Per-observation colours/textures are represented by boundary markers rather than repainting the continuous envelope.
-                if (showMarkers) {
+                if (visible && showMarkers) {
                     var pointColor = PointColor(series, index, item, colors);
                     var pointPaint = VisualChartPaint.Series(series, pointColor, item);
                     VisualMarkerScene.Draw(builder, series, item, upper[item].X, upper[item].Y, radius, pointColor, pointPaint, "range-marker",
@@ -68,6 +68,7 @@ internal static partial class VisualCartesianCompiler {
                         pattern: ObservationPattern(series, item), backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "range-marker-pattern");
                 }
             }
+            if (!visible) continue;
             var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
             var anchor = placement == ChartDataLabelPlacement.Below ? lower[item]
                 : placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right ? middle[item] : upper[item];

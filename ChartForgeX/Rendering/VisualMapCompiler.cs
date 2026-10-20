@@ -12,7 +12,8 @@ namespace ChartForgeX.Rendering;
 /// <summary>Compiles geographic points, reusable region geometry and categorical hex tiles into one numeric scene.</summary>
 internal static partial class VisualMapCompiler {
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartColorPresentation? presentation = null,
-        TileMapLegendInset? legendInset = null) {
+        TileMapLegendInset? legendInset = null, ChartColorPresentationSet? colorScales = null) {
+        if (UsesDatasetComposition(chart)) { Composed(chart, context, builder, plot, colorScales); return; }
         if (chart.Series.Count != 1) throw new InvalidOperationException("Prepared map charts require one map series.");
         var series = chart.Series[0];
         presentation ??= new ChartColorPresentation(chart.Options.MapColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
@@ -39,9 +40,13 @@ internal static partial class VisualMapCompiler {
     }
 
     private static Dictionary<string, int> Values(Chart chart, Func<string, string?> resolve) {
+        return Values(chart.Series[0], resolve);
+    }
+
+    private static Dictionary<string, int> Values(ChartSeries series, Func<string, string?> resolve) {
         var values = new Dictionary<string, int>(StringComparer.Ordinal);
-        for (var index = 0; index < chart.Series[0].RenderPoints.Count; index++) {
-            var key = chart.Series[0].RegionValues[index].Region;
+        for (var index = 0; index < series.RenderPoints.Count; index++) {
+            var key = series.RegionValues[index].Region;
             var code = resolve(key);
             if (code == null) throw new InvalidOperationException("A map observation must identify a known, unambiguous region.");
             if (values.ContainsKey(code)) throw new InvalidOperationException("Map observations must contain one aggregated value per region.");

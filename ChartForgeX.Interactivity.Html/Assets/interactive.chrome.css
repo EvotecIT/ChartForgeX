@@ -1,5 +1,23 @@
 
 /* Graphite keeps host controls separate from the chart's single frame. */
+.cfx-chart-context-menu {
+  position: fixed; z-index: 1000; box-sizing: border-box;
+  width: 220px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow: auto;
+  padding: 6px; border: 1px solid var(--cfx-tooltip-line); border-radius: 8px;
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+  font: 14px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, sans-serif);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 22%);
+}
+.cfx-chart-context-menu button {
+  display: block; box-sizing: border-box; width: 100%; padding: 8px 10px;
+  border: 0; border-radius: 4px; background: transparent; color: inherit;
+  font: inherit; text-align: start; cursor: pointer;
+}
+.cfx-chart-context-menu button:focus-visible {
+  outline: 2px solid currentColor; outline-offset: -2px;
+}
+.cfx-chart-context-menu button:disabled { opacity: .5; cursor: default; }
+
 .cfx-interactive-chart[data-cfx-look="graphite"] {
   background: var(--cfx-host-background, transparent); color: var(--cfx-tooltip-text);
   font-family: var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, system-ui, sans-serif);
@@ -262,6 +280,50 @@
 .cfx-legend-overflow__entry > .cfx-tool { flex: 0 0 auto; }
 .cfx-legend-overflow__entry > .cfx-legend-overflow__toggle { flex: 1 1 auto; min-width: 0; white-space: normal; text-align: start; }
 .cfx-legend-overflow__toggle[aria-pressed="true"] > span { text-decoration: line-through; }
+
+/* Native range controls live outside the plot and use the same Graphite surface roles. */
+.cfx-x-navigation {
+  display: grid; gap: 10px; width: 100%; max-width: var(--cfx-native-width); margin: 10px auto 0;
+  padding: 12px; border: 1px solid var(--cfx-tooltip-line); border-radius: 6px;
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); box-sizing: border-box;
+  font: 13px/1.4 var(--cfx-tooltip-font, Calibri, Carlito, "Segoe UI", Arial, system-ui, sans-serif);
+}
+.cfx-x-navigation[hidden] { display: none !important; }
+.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-x-navigation { max-width: none; }
+.cfx-x-navigation__header, .cfx-x-navigation__presets { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cfx-x-navigation__header { justify-content: space-between; }
+.cfx-x-navigation__header strong { font-size: 13px; font-weight: 600; }
+.cfx-x-navigation__presets .cfx-tool { min-height: 30px; padding: 5px 10px; font-size: 12px; }
+.cfx-x-navigation__overview {
+  position: relative; overflow: hidden; height: 64px; border: 1px solid var(--cfx-tooltip-line); border-radius: 3px;
+  touch-action: none; cursor: crosshair;
+}
+.cfx-x-navigation__overview > svg { display: block; width: 100%; height: 100%; opacity: .72; pointer-events: none; }
+.cfx-x-navigation__window {
+  position: absolute; inset-block: 0; box-sizing: border-box; pointer-events: none;
+  border: 2px solid var(--cfx-host-accent, var(--cfx-default-host-accent));
+  background: color-mix(in srgb, var(--cfx-host-accent, var(--cfx-default-host-accent)) 12%, transparent);
+}
+.cfx-x-navigation__limits { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.cfx-x-navigation__range { display: grid; gap: 5px; min-width: 0; }
+.cfx-x-navigation__range > span { display: flex; justify-content: space-between; gap: 8px; color: var(--cfx-tooltip-muted); }
+.cfx-x-navigation__range output { min-width: 0; color: var(--cfx-tooltip-text); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; text-align: end; }
+.cfx-x-navigation__range input {
+  width: 100%; height: 20px; min-width: 0; margin: 0; cursor: ew-resize;
+  accent-color: var(--cfx-host-accent, var(--cfx-default-host-accent));
+}
+.cfx-x-navigation__range input:focus-visible { outline: 2px solid var(--cfx-host-accent, var(--cfx-default-host-accent)); outline-offset: 3px; }
+.cfx-x-navigation__range input:disabled { cursor: default; opacity: .45; }
+.cfx-x-navigation__status { min-height: 1.4em; color: var(--cfx-tooltip-muted); }
+@media (max-width: 430px) {
+  .cfx-x-navigation__limits { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .cfx-x-navigation__header { align-items: flex-start; }
+}
+@media (forced-colors: active) {
+  .cfx-x-navigation__window { border-color: Highlight; background: transparent; }
+  .cfx-x-navigation__range input { accent-color: Highlight; }
+}
+@media print { .cfx-x-navigation { display: none !important; } }
 .cfx-legend-overflow [data-cfx-legend-page]:disabled { cursor: default; opacity: .5; }
 
 /* Persistent selection and host highlights keep a native SVG cue when filters do not paint. */

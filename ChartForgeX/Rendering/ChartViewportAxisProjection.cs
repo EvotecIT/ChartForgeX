@@ -1,0 +1,85 @@
+using System;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+
+namespace ChartForgeX.Rendering;
+
+/// <summary>One detached axis transform and confinement owner used by the public X and Y projections.</summary>
+internal sealed class ChartViewportAxisProjection {
+    private readonly ChartAxis _axis;
+    private readonly double _logicalMinimum, _logicalMaximum;
+    private readonly bool _logicalReversed;
+    internal ChartViewportAxisProjection(double fullMinimum, double fullMaximum, double minimum, double maximum,
+        double logicalMinimum, double logicalMaximum, ChartAxis axis, bool vertical) {
+        FullMinimum = fullMinimum; FullMaximum = fullMaximum; Minimum = minimum; Maximum = maximum;
+        _logicalMinimum = logicalMinimum; _logicalMaximum = logicalMaximum; _logicalReversed = axis.Reversed ^ vertical;
+        _axis = new ChartAxis { Scale = axis.Scale, Reversed = axis.Reversed,
+            SymmetricLogarithmThreshold = axis.SymmetricLogarithmThreshold, TimeSessions = axis.TimeSessions };
+        TransformedFullMinimum = Forward(fullMinimum); TransformedFullMaximum = Forward(fullMaximum);
+        TransformedMinimum = Forward(minimum); TransformedMaximum = Forward(maximum);
+    }
+    internal double FullMinimum { get; }
+    internal double FullMaximum { get; }
+    internal double Minimum { get; }
+    internal double Maximum { get; }
+    internal bool Reversed => _axis.Reversed;
+    internal ChartScaleKind Scale => _axis.Scale;
+    internal double Threshold => _axis.SymmetricLogarithmThreshold;
+    internal ChartTimeSessionDomain? TimeSessions => _axis.TimeSessions;
+    internal double TransformedMinimum { get; }
+    internal double TransformedMaximum { get; }
+    internal double TransformedFullMinimum { get; }
+    internal double TransformedFullMaximum { get; }
+    private double Forward(double value) => ChartScaleTransform.Forward(value, _axis);
+    private double Inverse(double value) => ChartScaleTransform.Inverse(value, _axis);
+
+    internal double Project(double source) {
+        ChartPrimitiveGuards.Finite(source, nameof(source));
+        if (_axis.Scale == ChartScaleKind.Logarithmic && source <= 0)
+            throw new ArgumentOutOfRangeException(nameof(source), source, "A logarithmic source coordinate must be positive.");
+        var result = ChartMath.InterpolateOrExtrapolateRange(_logicalMinimum, _logicalMaximum,
+            ChartScaleTransform.Normalize(Forward(source), TransformedMinimum, TransformedMaximum, _logicalReversed));
+        ChartPrimitiveGuards.Finite(result, nameof(source)); return result;
+    }
+    internal double Unproject(double logical) {
+        var result = Inverse(UnprojectCoordinate(logical));
+        ChartPrimitiveGuards.Finite(result, nameof(logical)); return result;
+    }
+    private double UnprojectCoordinate(double logical) {
+        ChartPrimitiveGuards.Finite(logical, nameof(logical));
+        var ratio = ChartMath.Normalize(logical, _logicalMinimum, _logicalMaximum);
+        var result = ChartMath.InterpolateOrExtrapolateRange(TransformedMinimum, TransformedMaximum, _logicalReversed ? 1 - ratio : ratio);
+        ChartPrimitiveGuards.Finite(result, nameof(logical)); return result;
+    }
+    internal (double Minimum, double Maximum)? ConstrainLogical(double firstLogical, double secondLogical) {
+        var first = UnprojectCoordinate(firstLogical); var second = UnprojectCoordinate(secondLogical);
+        var minimum = Math.Min(first, second); var maximum = Math.Max(first, second);
+        if (maximum <= minimum) throw new ArgumentOutOfRangeException(nameof(secondLogical), secondLogical, "The gesture requires a nonempty axis span.");
+        var span = maximum - minimum; var fullSpan = TransformedFullMaximum - TransformedFullMinimum;
+        var spanIsFinite = ChartMath.IsFinite(span); var fullSpanIsFinite = ChartMath.IsFinite(fullSpan);
+        var halfSpan = maximum / 2 - minimum / 2; var fullHalfSpan = TransformedFullMaximum / 2 - TransformedFullMinimum / 2;
+        if (spanIsFinite && fullSpanIsFinite ? span >= fullSpan : halfSpan >= fullHalfSpan) return null;
+        if (minimum < TransformedFullMinimum) {
+            minimum = TransformedFullMinimum;
+            maximum = spanIsFinite ? Math.Min(TransformedFullMaximum, minimum + span)
+                : ChartMath.InterpolateRange(TransformedFullMinimum, TransformedFullMaximum, halfSpan / fullHalfSpan);
+        } else if (maximum > TransformedFullMaximum) {
+            maximum = TransformedFullMaximum;
+            minimum = spanIsFinite ? Math.Max(TransformedFullMinimum, maximum - span)
+                : ChartMath.InterpolateRange(TransformedFullMinimum, TransformedFullMaximum, 1 - halfSpan / fullHalfSpan);
+        }
+        var lower = Math.Max(FullMinimum, Inverse(minimum)); var upper = Math.Min(FullMaximum, Inverse(maximum));
+        ChartPrimitiveGuards.Finite(lower, nameof(firstLogical)); ChartPrimitiveGuards.Finite(upper, nameof(secondLogical));
+        if (upper <= lower) throw new ArgumentOutOfRangeException(nameof(secondLogical), "The confined axis window is not representable.");
+        return (lower, upper);
+    }
+    internal (double Minimum, double Maximum)? ConstrainSource(double minimum, double maximum) {
+        if (_axis.Scale == ChartScaleKind.Logarithmic && minimum <= 0)
+            throw new ArgumentOutOfRangeException(nameof(minimum), minimum, "A logarithmic source coordinate must be positive.");
+        if (Forward(maximum) <= Forward(minimum))
+            throw new ArgumentOutOfRangeException(nameof(maximum), "The window has no projected width.");
+        if (minimum >= FullMinimum && maximum <= FullMaximum)
+            return minimum == FullMinimum && maximum == FullMaximum ? null : (minimum, maximum);
+        return ConstrainLogical(Project(minimum), Project(maximum));
+    }
+}

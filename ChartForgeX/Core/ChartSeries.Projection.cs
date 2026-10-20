@@ -20,7 +20,7 @@ public sealed partial class ChartSeries {
 
     private IReadOnlyList<ChartPoint> ProjectObservations() {
         var points = new List<ChartPoint>();
-        foreach (var value in MapPoints) points.Add(new ChartPoint(value.Longitude, value.Latitude));
+        foreach (var value in MapPoints) points.Add(new ChartPoint(value.Longitude, value.Latitude).WithColorValue(value.ColorValue));
         foreach (var value in CalendarItems) points.Add(new ChartPoint(value.Date, value.Value));
         for (var index = 0; index < RegionValues.Count; index++) points.Add(new ChartPoint(index + 1, RegionValues[index].Value));
         for (var column = 0; column < HeatmapCells.Count; column++)

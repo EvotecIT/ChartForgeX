@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using HtmlTinkerX;
 using Microsoft.Playwright;
 
@@ -97,6 +98,69 @@ internal static class PackageBrowserProbe {
                 "Packed HTML runtime reported an error: " + string.Join("; ", errors));
         }
         Console.WriteLine("Packed HTML keyboard selection and graph editor add/undo/redo/Fit passed in " + engine + ".");
+    }
+
+    internal static async Task RunNativeChartAsync(string initial, string window, string edited, string reset) {
+        if (Environment.GetEnvironmentVariable("HFX_TEST_ENABLE_PLAYWRIGHT") != "1") {
+            Console.WriteLine("Packed native exploration browser execution not requested.");
+            return;
+        }
+        foreach (var width in new[] { 390, 900 }) {
+            await using var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
+                Browser = Engine(), Headless = true, ViewportWidth = width, ViewportHeight = 1000, Timeout = 15000
+            });
+            var page = session.Page; var errors = new System.Collections.Generic.List<string>();
+            page.PageError += (_, error) => errors.Add(error);
+            await page.SetContentAsync(initial);
+            await page.EvaluateAsync("""
+                ({window:windowHtml,edited,reset})=>{
+                    window.depth=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));
+                    window.depthChanges=[];window.depthErrors=[];
+                    depth.root.addEventListener('cfxviewportchange',event=>depthChanges.push(event.detail));
+                    depth.root.addEventListener('cfxannotationchange',event=>depthChanges.push(event.detail));
+                    depth.root.addEventListener('cfxviewporterror',event=>depthErrors.push(event.detail));
+                    depth.root.addEventListener('cfxannotationerror',event=>depthErrors.push(event.detail));
+                    depth.connectViewport(request=>{
+                        if(request.kind==='reset')return reset;
+                        if(request.kind!=='window'||request.sourceViewport.x.minimum!==2||request.sourceViewport.y.maximum!==80)
+                            throw new Error('Unexpected packed native source request');
+                        return windowHtml;
+                    },{axes:'xy'});
+                    depth.connectAnnotations(request=>{
+                        if(request.kind!=='replace'||request.annotationId!=='review'||request.sourceDrawing.start.x!==6
+                            ||!Object.isFrozen(request.sourceDrawing.start))throw new Error('Packed source command facts changed');
+                        return edited;
+                    });
+                    depth.select({targets:[depth.resolveTargets().find(target=>target.annotationId==='review')]});
+                    depth.setViewport({x:{minimum:2,maximum:8},y:{minimum:20,maximum:80}});
+                }
+                """, new { window, edited, reset });
+            await page.WaitForFunctionAsync("()=>depthChanges.length===1");
+            PackageAssertions.Require(await page.EvaluateAsync<bool>("()=>depth.getXWindow().minimum===2&&depth.getYWindow().maximum===80"),
+                "Packed browser did not commit both native source windows.");
+            await page.EvaluateAsync("()=>depth.applyAnnotationChange({operation:'replace',id:'review',drawing:{kind:'Note',start:{x:6,y:45},label:'Reviewed'}})");
+            await page.WaitForFunctionAsync("()=>depthChanges.length===2");
+            PackageAssertions.Require(await page.EvaluateAsync<bool>("()=>depth.getSelection()[0]?.annotationId==='review'&&depth.getXWindow().minimum===2&&depth.getYWindow().minimum===20"),
+                "Packed native drawing edit lost the source window or identified selection.");
+            await page.Locator("[data-cfx-annotation-id=review]").FocusAsync();
+            await page.Keyboard.PressAsync("Shift+F10");
+            var menu = page.Locator(".cfx-chart-context-menu");
+            var download = await page.RunAndWaitForDownloadAsync(() => menu.Locator("[data-cfx-context-action=svg]").ClickAsync());
+            var path = await download.PathAsync() ?? throw new InvalidOperationException("Packed native menu did not export SVG.");
+            var svg = XDocument.Load(path);
+            var note = svg.Descendants().Single(node => (string?)node.Attribute("data-cfx-annotation-id") == "review");
+            PackageAssertions.Require((string?)note.Attribute("data-cfx-source-x") == "6" && (string?)note.Attribute("data-cfx-label") == "Reviewed",
+                "Packed export did not contain the committed native source drawing.");
+            await Capture(page, "packed-native-commands-" + width + "-net" + Environment.Version.Major + "-" + Engine());
+            await page.Locator("[data-cfx-reset]").ClickAsync();
+            await page.WaitForFunctionAsync("()=>depthChanges.length===3");
+            PackageAssertions.Require(await page.EvaluateAsync<bool>("()=>depth.getXWindow().minimum===0&&depth.getYWindow().maximum===100&&depth.getSelection().length===0"),
+                "Packed reset did not restore both source domains and clear reader selection.");
+            PackageAssertions.Require(errors.Count == 0 && await page.EvaluateAsync<bool>("()=>depthErrors.length===0")
+                && !session.ConsoleLog.Any(entry => entry.Type == HtmlConsoleMessageType.Error),
+                "Packed native exploration reported a runtime error: " + string.Join("; ", errors));
+        }
+        Console.WriteLine("Packed native XY windows, source commands and menu export passed in " + Engine() + ".");
     }
 
     private static HtmlBrowserEngine Engine() => Environment.GetEnvironmentVariable("CFX_TEST_BROWSER")?.Trim().ToLowerInvariant() switch {

@@ -91,15 +91,16 @@ public sealed partial class HtmlInteractiveChartRenderer {
         return PrepareSection(chart, configure: configure).Html;
     }
 
-    /// <summary>Prepares an asset-free interactive section and its matching detached native scene once.</summary>
+    /// <summary>Prepares an asset-free interactive section and its matching detached native scene.</summary>
     /// <param name="chart">The chart to prepare.</param>
-    /// <param name="viewport">An optional explicit numeric or time X window for supported vertical line, area, scatter and bubble charts.
+    /// <param name="viewport">An optional explicit numeric or time X window for supported vertical point, financial and paired-boundary charts.
     /// Null prepares the full domain, including when resetting a previous viewport.</param>
     /// <param name="configure">An optional callback configuring the HTML interaction adapter.</param>
     /// <returns>The section markup and the prepared scene used to render it.</returns>
     /// <remarks>The host owns native re-preparation after a browser viewport request. Use the returned
     /// PreparedVisual.XProjection to convert logical gesture positions through its ConstrainViewport method,
-    /// then prepare the next section. Unsupported and empty charts have no X projection.</remarks>
+    /// then prepare the next section. Unsupported and empty charts have no X projection.
+    /// An enabled native navigator prepares an additional full-domain scene for a windowed section.</remarks>
     /// <exception cref="ArgumentNullException">The chart is null.</exception>
     /// <exception cref="NotSupportedException">An explicit viewport is requested for an unsupported chart.</exception>
     /// <exception cref="ArgumentOutOfRangeException">An explicit viewport extends outside the full X domain or cannot be mapped.</exception>
@@ -108,6 +109,19 @@ public sealed partial class HtmlInteractiveChartRenderer {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var options = new HtmlChartInteractionOptions();
         configure?.Invoke(options);
+        var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
+        return PrepareChartSection(chart, options, title, "host", viewport == null ? null : new ChartCartesianViewport(x: viewport));
+    }
+
+    /// <summary>Prepares an interactive section within explicit native X, primary Y or XY source windows.</summary>
+    /// <param name="chart">The mutable source chart, which preparation does not modify.</param>
+    /// <param name="viewport">The explicit source windows.</param>
+    /// <param name="configure">Optional HTML adapter policy.</param>
+    /// <returns>The section and its matching detached native projections.</returns>
+    public HtmlChartSection PrepareSection(Chart chart, ChartCartesianViewport viewport, Action<HtmlChartInteractionOptions>? configure = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        if (viewport == null) throw new ArgumentNullException(nameof(viewport));
+        var options = new HtmlChartInteractionOptions(); configure?.Invoke(options);
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         return PrepareChartSection(chart, options, title, "host", viewport);
     }
@@ -136,8 +150,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
     internal static string BuildChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource) =>
         PrepareChartSection(chart, options, titleFallback, assetSource, null).Html;
 
-    private static HtmlChartSection PrepareChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource, ChartXViewport? viewport,
-        VisualRenderContext? drawingContext = null, bool narrow = false) {
+    private static HtmlChartSection PrepareChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource, ChartCartesianViewport? viewport,
+        VisualRenderContext? drawingContext = null, bool narrow = false, PreparedVisual? preparedDrawing = null, PreparedVisual? fullDrawing = null, PreparedVisual? narrowDrawing = null, PreparedVisual? fullNarrowDrawing = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (options == null) throw new ArgumentNullException(nameof(options));
         var identityScope = options.IdScope ?? options.Interaction.ChartId ?? Slugify(ChartTitle(chart, titleFallback));
@@ -146,14 +160,20 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var request = VisualExportRequest.ForChart(chart);
         // The authored request remains the intrinsic host basis when a narrow drawing becomes active.
         var context = drawingContext ?? request.Context;
-        var prepared = viewport == null ? chart.Prepare(context) : chart.Prepare(context, viewport);
+        var adaptive = options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive;
+        if (adaptive) ValidateAdaptiveOptions(options.Adaptive);
+        if (adaptive && !narrow && preparedDrawing == null) {
+            var aligned = chart.PrepareAligned(context, AdaptiveDrawingContext(context, options.Adaptive), viewport,
+                retainFullDrawings: options.XNavigation.Enabled && options.XNavigation.IncludeNavigator);
+            preparedDrawing = aligned.First; narrowDrawing = aligned.Second;
+            fullDrawing = aligned.FullFirst; fullNarrowDrawing = aligned.FullSecond;
+        }
+        var prepared = preparedDrawing ?? (viewport == null ? chart.Prepare(context) : chart.Prepare(context, viewport));
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
         if (!Enum.IsDefined(typeof(HtmlChartToolbarLayout), options.Toolbar)) throw new ArgumentOutOfRangeException(nameof(options.Toolbar));
         if (!Enum.IsDefined(typeof(HtmlChartTooltipMode), options.Tooltip.Mode)) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.Mode));
         if (options.Tooltip.DelayMilliseconds < 0) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.DelayMilliseconds));
-        var adaptive = options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive;
-        if (adaptive) ValidateAdaptiveOptions(options.Adaptive);
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
             .Attribute("class", "cfx-interactive-chart")
@@ -178,6 +198,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Attribute("data-cfx-adaptive-breakpoint", adaptive ? options.Adaptive.Breakpoint.ToString(CultureInfo.InvariantCulture) : null)
             .Attribute("data-cfx-adaptive-drawing", adaptive ? narrow ? "narrow" : "wide" : null)
             .Attribute("data-cfx-toolbar", options.Toolbar.ToString().ToLowerInvariant())
+            .Attribute("data-cfx-context-menu", options.IncludeContextMenu ? "true" : null)
             .Attribute("data-cfx-selection-mode", options.Interaction.SelectionMode.ToString().ToLowerInvariant())
             .Attribute("data-cfx-brush-axis", options.Interaction.BrushAxis.ToString().ToLowerInvariant())
             .Attribute("data-cfx-dim-others-selected", options.Highlight.DimOthersWhileSelected ? "true" : "false")
@@ -223,6 +244,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .RawTrusted(BuildRevealLayer(options))
             .EndElement().Line()
             .RawTrusted(BuildResetControl(options))
+            .RawTrusted(BuildXNavigation(chart, options, prepared, context, viewport, scope, fullDrawing))
             .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("data-cfx-pinned-label", options.Localization[HtmlChartText.Pinned])
@@ -230,7 +252,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         HtmlChartSection? narrowSection = null;
         if (adaptive && !narrow) {
             var narrowContext = AdaptiveDrawingContext(context, options.Adaptive);
-            narrowSection = PrepareChartSection(chart, options, titleFallback, assetSource, viewport, narrowContext, true);
+            narrowSection = PrepareChartSection(chart, options, titleFallback, assetSource, viewport, narrowContext, true, narrowDrawing, fullNarrowDrawing);
             writer.StartElement("template").Attribute("data-cfx-adaptive-narrow", "true").EndStartElement()
                 .RawTrusted(narrowSection.Html)
                 .EndElement().Line();

@@ -75,14 +75,14 @@ public sealed class PreparedVisual {
     private readonly Lazy<string>? _semanticInterchange;
     private readonly VisualSvgOptions? _defaultSvgOptions;
     internal PreparedVisual(VisualScene scene, VisualAccessibility? accessibility = null, VisualArtifactInterchangeEnvelope? semanticInterchange = null,
-        VisualSvgOptions? svgOptions = null, ChartXProjection? xProjection = null) {
+        VisualSvgOptions? svgOptions = null, ChartXProjection? xProjection = null, ChartYProjection? yProjection = null) {
         _scene = scene; _accessibility = accessibility?.Clone() ?? new VisualAccessibility();
         // Portable-envelope budgets apply when semantics cross that boundary, not to static rendering.
         // Capture all mutable DTO collections now; serialize only if a host requests interchange.
         var semanticSnapshot = semanticInterchange == null ? null : VisualArtifactInterchangeSnapshot.Capture(semanticInterchange);
         _semanticInterchange = semanticSnapshot == null ? null : new Lazy<string>(semanticSnapshot.ToJson);
         _defaultSvgOptions = svgOptions;
-        XProjection = xProjection;
+        XProjection = xProjection; YProjection = yProjection;
         _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
@@ -90,7 +90,7 @@ public sealed class PreparedVisual {
     private PreparedVisual(VisualScene scene, PreparedVisual basis, VisualSvgOptions? svgOptions) {
         _scene = scene; _accessibility = basis._accessibility.Clone();
         _semanticInterchange = basis._semanticInterchange; _defaultSvgOptions = svgOptions;
-        XProjection = basis.XProjection;
+        XProjection = basis.XProjection; YProjection = basis.YProjection;
         _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
@@ -102,10 +102,13 @@ public sealed class PreparedVisual {
     public IReadOnlyList<VisualDiagnostic> Diagnostics => _scene.Diagnostics;
     /// <summary>Gets descriptive source regions.</summary>
     public IReadOnlyList<VisualSemanticRegion> Regions => _scene.Regions;
-    /// <summary>Gets the detached numeric X projection for a usable linear-X Line or StepLine scene, or null otherwise.</summary>
+    /// <summary>Gets the detached X projection for a supported usable vertical Cartesian scene, or null otherwise.</summary>
     /// <remarks>Ordinary preparation captures the full resolved window. This fact does not change static paint or SVG metadata.
     /// It is absent for empty, unsupported, sparkline or composite scenes that have no single supported X projection.</remarks>
     public ChartXProjection? XProjection { get; }
+    /// <summary>Gets the detached primary Y projection when the chart has one unambiguous supported Y owner.</summary>
+    /// <remarks>It is absent for secondary-axis, empty, unsupported, sparkline or composite scenes.</remarks>
+    public ChartYProjection? YProjection { get; }
     /// <summary>Gets an independent copy of the text alternative.</summary>
     public VisualAccessibility Accessibility => _accessibility.Clone();
     /// <summary>Exports script-free SVG without repeating layout.</summary>

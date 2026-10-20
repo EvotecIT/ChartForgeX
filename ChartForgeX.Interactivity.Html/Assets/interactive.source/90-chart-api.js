@@ -6,8 +6,8 @@
     if (existing && !existing.disposed) return existing.controller;
     readChartSection(root);
     if (!root.isConnected) throw new TypeError('Mount the chart after inserting its section into the document.');
-    const lifetime = { cleanups: new Set(), disposed: false, controller: null, xViewportConnection: null,
-      xViewportPending: null, sceneRevision: nextChartSceneRevision() };
+    const lifetime = { cleanups: new Set(), disposed: false, controller: null, preparationConnections: {},
+      preparationPending: null, sceneRevision: nextChartSceneRevision() };
     lifetime.adaptive = readAdaptiveLayout(root);
     const requireMounted = () => {
       if (lifetime.disposed || !root.isConnected) { controller.dispose(); throw new Error('The chart controller is disposed; mount the connected section again.'); }
@@ -30,13 +30,44 @@
         emitHostEvent(root, 'cfxupdated', {});
         return controller;
       },
+      connectAnnotations: connection => {
+        requireMounted();
+        setNativePreparationConnection(root, 'annotation', connection);
+        return controller;
+      },
+      applyAnnotationChange: change => {
+        requireMounted();
+        if (!requestAnnotationChange(root, change)) throw new TypeError('The native annotation request cannot start on this scene.');
+        return controller;
+      },
       connectXViewport: connection => {
         requireMounted();
         if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected an X viewport callback or null to disconnect.');
-        cancelXViewportRequest(lifetime);
-        lifetime.xViewportConnection = connection;
+        setNativePreparationConnection(root, 'viewport', connection, { axes: 'x', legacy: true });
         if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
         syncXViewportControls(root);
+        return controller;
+      },
+      connectViewport: (connection, options = {}) => {
+        requireMounted();
+        const axes = options.axes || 'xy';
+        if (!['x', 'y', 'xy'].includes(axes)) throw new TypeError('Native viewport axes must be x, y or xy.');
+        if (connection !== null && (!chartXProjection(root) || axes.includes('y') && !chartYProjection(root)))
+          throw new TypeError('This chart has no unambiguous native projection for the requested axes.');
+        setNativePreparationConnection(root, 'viewport', connection, { axes, legacy: false });
+        if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
+        syncXViewportControls(root); return controller;
+      },
+      getViewport: () => { requireMounted(); return copyHostValue(nativeViewportWindows(root)); },
+      setViewport: viewport => {
+        requireMounted();
+        if (!requestNativeCartesianWindow(root, viewport)) throw new TypeError('A native viewport requires connected supported axes and finite increasing source windows.');
+        return controller;
+      },
+      getYWindow: () => { requireMounted(); return copyHostValue(nativeYWindow(root)); },
+      setYWindow: (minimum, maximum) => {
+        requireMounted();
+        if (!requestNativeCartesianWindow(root, { y: { minimum, maximum } })) throw new TypeError('A native Y window requires a connected unambiguous primary axis and finite increasing source bounds.');
         return controller;
       },
       getXWindow: () => { requireMounted(); return copyHostValue(nativeXWindow(root)); },

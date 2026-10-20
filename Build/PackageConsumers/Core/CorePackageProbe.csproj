@@ -15,7 +15,7 @@
     <PackageReference Include="ChartForgeX" Version="$(PackageVersion)" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup Condition="'$(RecipeSource)' != ''">
-    <Compile Remove="Program.cs" />
+    <Compile Remove="Program*.cs" />
     <Compile Include="$(RecipeSource)" Link="Program.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">

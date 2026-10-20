@@ -24,7 +24,7 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static FinancialMarkStyle FinancialStyle(ChartSeries series, int index, int item, bool rising, VisualThemeColors colors) {
-        var options = rising ? series.Financial.Rising : series.Financial.Falling;
+        var options = series.FinancialItemOptions(item, rising);
         var fallback = FinancialColor(series, index, item, rising, colors);
         var fallbackRole = SemanticMarkPaintRole(series, item);
         var point = item >= 0 && item < series.PointColors.Count ? series.PointColors[item] : null;
@@ -116,7 +116,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? FinancialLegend(Chart chart, ChartSeries series,
         int index, VisualThemeColors colors, int point = -1, ChartFillPattern pattern = ChartFillPattern.None) {
-        if (!series.Financial.HasOverrides || series.Kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) return null;
+        if (!series.HasFinancialStyleOverrides || series.Kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) return null;
         var candle = series.Kind == ChartSeriesKind.Candlestick;
         var rising = point < 0 || series.RenderPoints[point * 4 + 3].Y >= series.RenderPoints[point * 4].Y;
         var first = FinancialStyle(series, index, point, rising, colors);

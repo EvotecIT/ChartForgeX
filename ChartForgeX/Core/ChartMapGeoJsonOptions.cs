@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ChartForgeX.Core;
 
 /// <summary>
-/// Configures how GeoJSON features are converted into map regions.
+/// Configures how GeoJSON features are converted into map regions and geographic observations.
 /// </summary>
 public sealed class ChartMapGeoJsonOptions {
     private string[] _codePropertyNames = new[] { "NUTS_ID", "nuts_id", "id", "code", "CODE", "ISO_A2", "iso_a2", "GEOID", "geoid" };
@@ -17,6 +17,31 @@ public sealed class ChartMapGeoJsonOptions {
     private double? _maximumLongitude;
     private double? _minimumLatitude;
     private double? _maximumLatitude;
+    private string? _valuePropertyName;
+    private string? _colorValuePropertyName;
+    private int _maximumObservations = 100_000;
+    private int _maximumExpandedLabelCharacters = 4 * 1024 * 1024;
+
+    /// <summary>Gets or sets the positive maximum number of imported point positions or route waypoints per observation import.
+    /// Coordinate-filtered features do not consume this output budget. The default is 100,000.</summary>
+    public int MaximumObservations {
+        get => _maximumObservations;
+        set {
+            if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "The observation limit must be positive.");
+            _maximumObservations = value;
+        }
+    }
+
+    /// <summary>Gets or sets the positive aggregate UTF-16 character budget for imported point, route and waypoint labels.
+    /// The default is 4,194,304 characters. This limits multipart name expansion before label strings are constructed;
+    /// it does not replace the host's input-size policy.</summary>
+    public int MaximumExpandedLabelCharacters {
+        get => _maximumExpandedLabelCharacters;
+        set {
+            if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "The expanded label limit must be positive.");
+            _maximumExpandedLabelCharacters = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets property names searched for canonical region codes.
@@ -27,11 +52,31 @@ public sealed class ChartMapGeoJsonOptions {
     }
 
     /// <summary>
-    /// Gets or sets property names searched for region display names.
+    /// Gets or sets property names searched for region, point and route display names.
     /// </summary>
     public string[] NamePropertyNames {
         get => Clone(_namePropertyNames);
         set => _namePropertyNames = NormalizeNames(value, nameof(value));
+    }
+
+    /// <summary>Gets or sets the optional numeric feature property used for imported point weights.
+    /// Missing or null values create unweighted points; present values must be finite nonnegative JSON numbers.</summary>
+    public string? ValuePropertyName {
+        get => _valuePropertyName;
+        set {
+            if (value != null && string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Value property names must not be empty.", nameof(value));
+            _valuePropertyName = value?.Trim();
+        }
+    }
+
+    /// <summary>Gets or sets the optional finite numeric feature property used for point color, independently of point weight.
+    /// Missing or null values retain a missing color measurement.</summary>
+    public string? ColorValuePropertyName {
+        get => _colorValuePropertyName;
+        set {
+            if (value != null && string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Color value property names must not be empty.", nameof(value));
+            _colorValuePropertyName = value?.Trim();
+        }
     }
 
     /// <summary>
@@ -54,12 +99,12 @@ public sealed class ChartMapGeoJsonOptions {
     }
 
     /// <summary>
-    /// Gets or sets the coordinate projection used for longitude/latitude coordinates.
+    /// Gets or sets the coordinate projection used for polygon geometry. Point and route imports retain raw longitude/latitude.
     /// </summary>
     public ChartMapGeoJsonProjection Projection { get; set; } = ChartMapGeoJsonProjection.Equirectangular;
 
     /// <summary>
-    /// Gets or sets a value indicating whether unsupported non-polygon geometries are skipped.
+    /// Gets or sets a value indicating whether geometries unsupported by the selected import method are skipped.
     /// </summary>
     public bool SkipUnsupportedGeometries { get; set; } = true;
 
@@ -213,6 +258,7 @@ public sealed class ChartMapGeoJsonOptions {
     }
 
     internal void Validate() {
+        ChartGeographicProjection.Validate(Projection);
         if (_minimumLongitude.HasValue && _maximumLongitude.HasValue && _maximumLongitude.Value <= _minimumLongitude.Value) {
             throw new ArgumentOutOfRangeException(nameof(MaximumLongitude), _maximumLongitude.Value, "Maximum longitude must be greater than minimum longitude.");
         }

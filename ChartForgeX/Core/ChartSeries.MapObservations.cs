@@ -75,9 +75,7 @@ public sealed partial class ChartSeries {
         return this;
     }
 
-    private static ChartMapPoint ValidateMapPoint(ChartMapPoint value) => value.Value.HasValue
-        ? new ChartMapPoint(value.Label, value.Longitude, value.Latitude, value.Value.Value, value.Color)
-        : new ChartMapPoint(value.Label, value.Longitude, value.Latitude, value.Color);
+    private static ChartMapPoint ValidateMapPoint(ChartMapPoint value) => value.ValidatedCopy();
 
     private static ChartCalendarHeatmapItem ValidateCalendarItem(ChartCalendarHeatmapItem value) {
         var item = new ChartCalendarHeatmapItem(value.Date, value.Value, value.Color);

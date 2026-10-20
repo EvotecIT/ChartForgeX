@@ -34,7 +34,7 @@ internal static partial class ChartTimeScale {
         // OLE dates before 1899-12-30 store the time of day with an inverted sign, so they are not ordered within a day.
         if (min < 0 || !IsRepresentable(max) || max - min < DaysPerSecond) return null;
         var desiredCount = Math.Max(2, axis.TickCount);
-        var interval = ChooseInterval((max - min) / (desiredCount - 1));
+        var interval = ChooseInterval(VisibleTimeSpan(axis, min, max) / (desiredCount - 1));
         try {
             for (var attempt = 0; attempt < 32; attempt++) {
                 var ticks = GenerateInterval(axis, min, max, inside, interval);
@@ -63,7 +63,7 @@ internal static partial class ChartTimeScale {
         }
     }
 
-    private static IReadOnlyList<double> GenerateInterval(ChartAxis axis, double min, double max, bool inside, TimeInterval interval) {
+    private static IReadOnlyList<double> GenerateContinuousInterval(ChartAxis axis, double min, double max, bool inside, TimeInterval interval) {
             var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
             var localMin = ToLocal(min, zone);
             var localMax = ToLocal(max, zone);

@@ -15,7 +15,7 @@ internal static partial class VisualHierarchyCompiler {
         ChartSunburstModel model, ChartSunburstNode node, ChartColor fill, SvgPaint fillPaint, string? secondary) {
         var style = LabelStyle(chart, context, fill, node.Index);
         var series = chart.Series[0];
-        var original = node.Index < series.PointLabels.Count && series.PointLabels[node.Index] != null ? series.PointLabels[node.Index]! : node.Label;
+        var original = HierarchyCaption(series, node.Index, node.Label);
         var metrics = builder.MeasureText(original, style);
         var sweep = node.EndAngle - node.StartAngle;
         var mid = node.StartAngle + sweep / 2;

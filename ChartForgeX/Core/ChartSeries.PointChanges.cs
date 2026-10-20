@@ -26,78 +26,32 @@ public sealed partial class ChartSeries {
     public ChartSeries ApplyPointChanges(IEnumerable<ChartPointChange> changes, int? maximumObservations = null,
         int maximumChanges = 4096, CancellationToken cancellationToken = default) {
         if (changes == null) throw new ArgumentNullException(nameof(changes));
-        if (maximumChanges <= 0) throw new ArgumentOutOfRangeException(nameof(maximumChanges));
-        if (maximumObservations.HasValue && maximumObservations.Value <= 0) throw new ArgumentOutOfRangeException(nameof(maximumObservations));
+        ValidateObservationChangeLimits(maximumObservations, maximumChanges);
         RequireMutableNumericObservations();
         if (!ChartSeriesKindTraits.SupportsPointSeriesMapping(Kind))
             throw new NotSupportedException("Keyed point changes require a point-mapped numeric series family.");
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var ordered = new List<PointChangeEntry>(_points.Count);
-        var indexed = new Dictionary<ChartObservationId, PointChangeEntry>();
-        for (var index = 0; index < _points.Count; index++) {
-            if (!_observationIds.TryGetValue(index, out var id))
-                throw new InvalidOperationException("Assign an explicit identity to every observation before applying keyed changes.");
-            var entry = new PointChangeEntry(id, _points[index], index);
-            ordered.Add(entry); indexed.Add(id, entry);
-        }
-        var seen = new HashSet<ChartObservationId>();
-        var count = 0;
-        foreach (var change in changes) {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (++count > maximumChanges) throw new ArgumentException("The batch exceeds maximumChanges; split or coalesce updates in the host.", nameof(changes));
-            _ = change.Id.Value;
-            if (!seen.Add(change.Id)) throw new ArgumentException("Each observation ID may occur only once in a batch.", nameof(changes));
-            if (change.Kind == ChartPointChangeKind.Append) {
-                if (indexed.ContainsKey(change.Id)) throw new ArgumentException("An appended observation ID already exists.", nameof(changes));
-                var added = new PointChangeEntry(change.Id, change.Point!.Value, -1);
-                indexed.Add(change.Id, added); ordered.Add(added);
-            } else {
-                if (!indexed.TryGetValue(change.Id, out var entry)) throw new ArgumentException("A replaced or removed observation ID does not exist.", nameof(changes));
-                if (change.Kind == ChartPointChangeKind.Remove) entry.Removed = true;
-                else entry.Point = change.Point!.Value;
-            }
-        }
-
-        var retained = ordered.Where(entry => !entry.Removed).ToList();
-        if (maximumObservations.HasValue && retained.Count > maximumObservations.Value)
-            retained.RemoveRange(0, retained.Count - maximumObservations.Value);
-        var points = retained.Select(entry => entry.Point).ToArray();
-        var colors = RemapPointOverrides(PointColors, retained);
-        var patterns = RemapPointOverrides(PointFillPatterns, retained);
-        var labels = RemapPointOverrides(PointLabels, retained);
-        var styles = RemapPointOverrides(PointDataLabelStyles, retained);
-        var offsets = RemapPointOverrides(PointSliceOffsets, retained);
+        var retained = PlanObservationChanges(_points, TypedPointChanges(changes), point => point,
+            maximumObservations, maximumChanges, cancellationToken);
+        var points = retained.Select(entry => entry.Value).ToArray();
+        var presentation = CaptureObservationChangePresentation(retained);
         cancellationToken.ThrowIfCancellationRequested();
 
         _points.Clear(); _points.AddRange(points);
-        InstallPointOverrides(PointColors, colors); InstallPointOverrides(PointFillPatterns, patterns);
-        InstallPointOverrides(PointLabels, labels); InstallPointOverrides(PointDataLabelStyles, styles);
-        InstallPointOverrides(PointSliceOffsets, offsets);
-        _observationIds.Clear();
-        for (var index = 0; index < retained.Count; index++) _observationIds.Add(index, retained[index].Id);
+        InstallObservationChangePresentation(retained, presentation);
         return this;
     }
 
-    private static T[] RemapPointOverrides<T>(List<T> original, List<PointChangeEntry> retained) {
-        var length = 0;
-        for (var index = 0; index < retained.Count; index++)
-            if (retained[index].OriginalIndex >= 0 && retained[index].OriginalIndex < original.Count) length = index + 1;
-        var result = new T[length];
-        for (var index = 0; index < length; index++) {
-            var source = retained[index].OriginalIndex;
-            result[index] = source >= 0 && source < original.Count ? original[source] : default!;
+    private static IEnumerable<ChartObservationChange<ChartPoint>> TypedPointChanges(IEnumerable<ChartPointChange> changes) {
+        foreach (var change in changes) {
+            _ = change.Id.Value;
+            yield return change.Kind switch {
+                ChartObservationChangeKind.Append => ChartObservationChange<ChartPoint>.Append(change.Id, change.Point!.Value),
+                ChartObservationChangeKind.Replace => ChartObservationChange<ChartPoint>.Replace(change.Id, change.Point!.Value),
+                _ => ChartObservationChange<ChartPoint>.Remove(change.Id)
+            };
         }
-        return result;
     }
 
     private static void InstallPointOverrides<T>(List<T> target, T[] values) { target.Clear(); target.AddRange(values); }
 
-    private sealed class PointChangeEntry {
-        internal ChartObservationId Id { get; }
-        internal ChartPoint Point { get; set; }
-        internal int OriginalIndex { get; }
-        internal bool Removed { get; set; }
-        internal PointChangeEntry(ChartObservationId id, ChartPoint point, int originalIndex) { Id = id; Point = point; OriginalIndex = originalIndex; }
-    }
 }

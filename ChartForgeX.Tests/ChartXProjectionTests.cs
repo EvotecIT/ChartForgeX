@@ -103,7 +103,7 @@ public sealed class ChartXProjectionTests {
     [Fact]
     public void PublicPreparationRequiresBothContextAndExplicitViewport() {
         var chart = Line();
-        Assert.Throws<ArgumentNullException>(() => chart.Prepare(Context(), null!));
+        Assert.Throws<ArgumentNullException>(() => chart.Prepare(Context(), (ChartXViewport)null!));
         Assert.Throws<ArgumentNullException>(() => chart.Prepare(null!, new ChartXViewport(1, 2)));
     }
 

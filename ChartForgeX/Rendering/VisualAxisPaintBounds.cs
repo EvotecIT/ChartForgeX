@@ -30,7 +30,9 @@ internal sealed class VisualAxisPaintBounds {
         if (_extents.Count == 0 || !(pixels > 0) || !(maximum > minimum) || fixedMinimum && fixedMaximum) return false;
         var fullWidthConflict = !fixedMinimum && !fixedMaximum && HasFullWidthConflict(pixels);
         var low = maximum - minimum;
-        if (TryPosition(low, out _)) return false;
+        // Verify the existing range in the same pixel coordinates as the paint. The equivalent
+        // source-space feasibility equations can disagree by one rounding step at a fitted edge.
+        if (ContainsPaint() || TryPosition(low, out _)) return false;
         var high = low;
         var found = false;
         for (var pass = 0; pass < 64; pass++) {
@@ -49,6 +51,18 @@ internal sealed class VisualAxisPaintBounds {
         expandedMinimum = fixedMinimum ? minimum : Math.Min(minimum, position);
         expandedMaximum = fixedMaximum ? maximum : Math.Max(maximum, position + high);
         return expandedMinimum < minimum || expandedMaximum > maximum;
+
+        bool ContainsPaint() {
+            if (!ChartMath.IsFinite(minimum) || !ChartMath.IsFinite(maximum)) return false;
+            foreach (var extent in _extents) {
+                if (extent.Key * 2 > pixels || fullWidthConflict && extent.Key * 2 == pixels) continue;
+                var first = ChartMath.Normalize(extent.Value.Minimum, minimum, maximum) * pixels;
+                var last = ChartMath.Normalize(extent.Value.Maximum, minimum, maximum) * pixels;
+                if (!ChartMath.IsFinite(first) || !ChartMath.IsFinite(last)
+                    || !fixedMinimum && first - extent.Key < 0 || !fixedMaximum && last + extent.Key > pixels) return false;
+            }
+            return true;
+        }
 
         bool TryPosition(double span, out double position) {
             var lower = fixedMinimum ? minimum : maximum - span;

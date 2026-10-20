@@ -29,6 +29,9 @@ public sealed class ChartMapDefinition {
     /// </summary>
     public ChartRect Bounds { get; }
 
+    /// <summary>Gets the geographic projection already applied to the paths, or null for arbitrary source coordinates.</summary>
+    public ChartMapGeoJsonProjection? GeographicProjection { get; private set; }
+
     /// <summary>
     /// Gets the drawable regions.
     /// </summary>
@@ -91,6 +94,14 @@ public sealed class ChartMapDefinition {
     /// <returns>A reusable map definition.</returns>
     public static ChartMapDefinition FromGeoJson(string id, string name, string geoJson, ChartMapGeoJsonOptions? options = null) =>
         ChartMapGeoJson.ToMapDefinition(id, name, geoJson, options);
+
+    /// <summary>Returns an independent definition declaring the geographic projection already used by its paths.</summary>
+    /// <param name="projection">The transform already applied to longitude/latitude positions. This declaration does not transform existing paths.</param>
+    /// <returns>A new immutable definition suitable for composition with geographic points, routes and equally projected geometry.</returns>
+    public ChartMapDefinition WithGeographicProjection(ChartMapGeoJsonProjection projection) {
+        ChartGeographicProjection.Validate(projection);
+        return new ChartMapDefinition(Id, Name, Bounds, Regions) { GeographicProjection = projection };
+    }
 
     /// <summary>
     /// Resolves a caller-provided region code or alias to the canonical region code.

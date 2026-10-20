@@ -53,6 +53,7 @@ internal sealed class ChartDataAxisProjection {
     private ChartDataAxisProjection(double minimum, double maximum, ChartAxis axis, double transformedMinimum, double transformedMaximum) {
         Minimum = minimum; Maximum = maximum; Scale = axis.Scale;
         Threshold = axis.SymmetricLogarithmThreshold; Reversed = axis.Reversed;
+        TimeSessions = axis.TimeSessions;
         TransformedMinimum = transformedMinimum; TransformedMaximum = transformedMaximum;
     }
 
@@ -69,6 +70,7 @@ internal sealed class ChartDataAxisProjection {
     internal double TransformedMaximum { get; }
     internal ChartScaleKind Scale { get; }
     internal double Threshold { get; }
+    internal ChartTimeSessionDomain? TimeSessions { get; }
     internal bool Reversed { get; }
     internal IReadOnlyList<ChartDataAxisCaption> DisplayTicks { get; private set; } = System.Array.Empty<ChartDataAxisCaption>();
     internal IReadOnlyList<ChartDataAxisCaption> DisplayBounds { get; private set; } = System.Array.Empty<ChartDataAxisCaption>();
