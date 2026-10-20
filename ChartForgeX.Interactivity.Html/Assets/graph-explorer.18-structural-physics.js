@@ -1,8 +1,9 @@
   const physicsCommunityKey = (node) => node.cluster ? `cluster:${node.cluster}` : node.groupId ? `group:${node.groupId}` : node.kind ? `kind:${node.kind}` : 'graph';
   const physicsNodeRadius = (node, includeLabels) => {
-    const mark = Math.max(4, Number(node.size) || 8) * (node.card ? 1.55 : node.shape === 'box' || node.shape === 'database' ? 1.3 : node.shape === 'image' ? 1.18 : 1);
-    const label = includeLabels ? Math.min(90, Math.max(0, String(node.label || '').length * 3.2)) : 0;
-    return Math.max(mark, label);
+    // Workers receive the canonical geometry as numbers; main-thread nodes
+    // resolve it through the same owner as deliberate layout separation.
+    const serialized = includeLabels ? node.labelCollisionRadius : node.collisionRadius;
+    return Number.isFinite(serialized) ? serialized : nodeCollisionRadius(node, includeLabels);
   };
   const physicsCommunityAnchors = (state, layout) => {
     const groups = new Map();

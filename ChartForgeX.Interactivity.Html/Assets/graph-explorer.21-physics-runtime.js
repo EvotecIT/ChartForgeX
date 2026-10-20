@@ -2,7 +2,8 @@
   const serializePhysicsState = (state) => {
     const nodeIndex = new Map(state.nodes.map((node, index) => [node.id, index]));
     return {
-      nodes: state.nodes.map(node => ({ id: node.id, label: node.label, shape: node.shape, x: node.x, y: node.y, homeX: node.homeX, homeY: node.homeY, vx: node.vx, vy: node.vy, fixed: node.fixed, degree: node.degree, size: node.size, level: node.level, cluster: node.cluster, groupId: node.groupId, kind: node.kind })),
+      nodes: state.nodes.map(node => ({ id: node.id, label: node.label, shape: node.shape, x: node.x, y: node.y, homeX: node.homeX, homeY: node.homeY, vx: node.vx, vy: node.vy, fixed: node.fixed, degree: node.degree, size: node.size, level: node.level, cluster: node.cluster, groupId: node.groupId, kind: node.kind,
+        collisionRadius: nodeCollisionRadius(node, false), labelCollisionRadius: nodeCollisionRadius(node, true) })),
       edges: state.edges.filter(edge => edge.physics !== false).map(edge => ({ sourceIndex: nodeIndex.get(edge.source.id), targetIndex: nodeIndex.get(edge.target.id), length: edge.length, weight: edge.weight })).filter(edge => Number.isInteger(edge.sourceIndex) && Number.isInteger(edge.targetIndex))
     };
   };
