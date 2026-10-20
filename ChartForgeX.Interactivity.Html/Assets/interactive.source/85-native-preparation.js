@@ -46,10 +46,16 @@
   const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null) => {
     // Validate alternates before releasing the committed scene.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
-    // A native reply carries fresh wide/narrow scenes. Commit the active drawing
-    // directly, rather than briefly installing wide chrome before an observer swaps it.
-    if (nativeKind && adaptive && lifetime.adaptive) {
-      adaptive.current = lifetime.adaptive.current;
+    // Commit one active drawing before notifying hosts or exposing fresh controls.
+    // Native replies retain their captured layout policy; ordinary updates use the
+    // current host width and the new breakpoint. Hidden hosts retain their drawing.
+    if (adaptive && !adaptiveDrawing) {
+      if (nativeKind && lifetime.adaptive) adaptive.current = lifetime.adaptive.current;
+      else {
+        const width = root.getBoundingClientRect().width;
+        if (width > 0) adaptive.current = width < adaptive.breakpoint ? 'narrow' : 'wide';
+        else if (lifetime.adaptive) adaptive.current = lifetime.adaptive.current;
+      }
       next = adaptive[adaptive.current].cloneNode(true);
     }
     const state = chartUpdateState(root, !!adaptiveDrawing);

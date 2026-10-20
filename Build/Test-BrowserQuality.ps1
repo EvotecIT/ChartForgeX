@@ -87,6 +87,8 @@ try {
         'GraphReadabilityBrowserTests.FitMeasuresUntruncatedPrimaryAndSecondaryCaptionsInPhysicalAndVirtualScenes',
         'GraphReadabilityBrowserTests.NativeStaticFitIncludesTheSameCompletePrimaryAndSecondaryCaptions',
         'InteractiveChartLifecycleBrowserTests.HostAccentSurvivesReplacementAndAdaptiveDrawingsWhileDefaultsFollowTheNewTheme',
+        'InteractiveChartLifecycleBrowserTests.AdaptiveUpdateCommitsItsActiveDrawingBeforeHostNotificationAndKeepsFocusAndExportControlsUntilResize',
+        'InteractiveChartLifecycleBrowserTests.AdaptiveUpdateUsesTheCurrentPositiveHostWidthAndNewBreakpointWhileHiddenHostsKeepTheirActiveDrawing',
         'SupportedCombinationBrowserTests.ReplacementRetainsSelectedSourceAndLegendStateAcrossSupportedCompositions',
         'GaugeScalePrecisionBrowserTests.NeedleAtScaleEdgesClearsMeasuredSummaryInRenderedSvg',
         'GaugeScalePrecisionBrowserTests.CloseGaugeBoundsRemainDistinctAndContainedInNativeSvgAndPairedPng',
