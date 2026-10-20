@@ -5,14 +5,21 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InteractivityBenchmarkProfile Condition="'$(InteractivityBenchmarkProfile)' == ''">Acquisition</InteractivityBenchmarkProfile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="InteractivityBenchmarkLane.cs" />
+    <Compile Remove="SectionPreparationBenchmarkFixture.cs;CartesianSectionPreparationBenchmarkFixture.cs" Condition="'$(InteractivityBenchmarkProfile)' == 'Acquisition'" />
+    <Compile Remove="InteractivityBenchmarkFixture.cs" Condition="'$(InteractivityBenchmarkProfile)' != 'Acquisition'" />
+    <Compile Remove="CartesianSectionPreparationBenchmarkFixture.cs" Condition="'$(InteractivityBenchmarkProfile)' == 'SectionShared'" />
     <Reference Include="ChartForgeX"><HintPath>$(ProductBinaryRoot)/ChartForgeX.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="ChartForgeX.Interactivity"><HintPath>$(ProductBinaryRoot)/ChartForgeX.Interactivity.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="ChartForgeX.Interactivity.Html"><HintPath>$(ProductBinaryRoot)/ChartForgeX.Interactivity.Html.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="HtmlTinkerX"><HintPath>$(ProductBinaryRoot)/HtmlTinkerX.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="Microsoft.Playwright"><HintPath>$(ProductBinaryRoot)/Microsoft.Playwright.dll</HintPath><Private>false</Private></Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces"><HintPath>$(ProductBinaryRoot)/Microsoft.Bcl.AsyncInterfaces.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="HtmlTinkerX" Condition="'$(InteractivityBenchmarkProfile)' == 'Acquisition'"><HintPath>$(ProductBinaryRoot)/HtmlTinkerX.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Microsoft.Playwright" Condition="'$(InteractivityBenchmarkProfile)' == 'Acquisition'"><HintPath>$(ProductBinaryRoot)/Microsoft.Playwright.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(InteractivityBenchmarkProfile)' == 'Acquisition'"><HintPath>$(ProductBinaryRoot)/Microsoft.Bcl.AsyncInterfaces.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>
+  <Target Name="ValidateInteractivityBenchmarkProfile" BeforeTargets="CoreCompile">
+    <Error Condition="'$(InteractivityBenchmarkProfile)' != 'Acquisition' and '$(InteractivityBenchmarkProfile)' != 'SectionShared' and '$(InteractivityBenchmarkProfile)' != 'SectionCurrent'" Text="InteractivityBenchmarkProfile must be Acquisition, SectionShared or SectionCurrent." />
+  </Target>
 </Project>
