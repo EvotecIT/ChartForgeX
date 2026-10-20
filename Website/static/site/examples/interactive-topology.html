@@ -4141,8 +4141,15 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
   const bindGraphSurfaceResize = root => {
     const stage = root.querySelector('.cfx-graph-stage');
     if (!stage || typeof ResizeObserver === 'undefined') return;
+    // Mount has already fitted this size. The observer's initial delivery is
+    // not a resize and must not refit a search entered before that delivery.
+    const initialSize = stage.getBoundingClientRect();
+    let width = initialSize.width, height = initialSize.height;
     let frame = 0;
     const observer = new ResizeObserver(() => {
+      const size = stage.getBoundingClientRect();
+      if (size.width === width && size.height === height) return;
+      width = size.width; height = size.height;
       if (frame) graphLifetime(root)?.cancelFrame(frame);
       frame = graphLifetime(root)?.frame(() => {
         frame = 0;
