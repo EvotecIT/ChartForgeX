@@ -80,6 +80,7 @@ try {
         'GraphReadabilityBrowserTests.TallCompactFitKeepsPaintClearOfFloatingControls',
         'GraphReadabilityBrowserTests.PreparedAndLiveCaptionsUseClearSpaceAlongTheirRoute',
         'GraphReadabilityBrowserTests.ShortRelationshipUsesEmptySpaceBetweenPaintedNodeDetails',
+        'GraphReadabilityBrowserTests.ShortCurvedCardsKeepTheCaptionInTheirPaintedGap',
         'GraphReadabilityBrowserTests.FitMeasuresUntruncatedPrimaryAndSecondaryCaptionsInPhysicalAndVirtualScenes',
         'GraphReadabilityBrowserTests.NativeStaticFitIncludesTheSameCompletePrimaryAndSecondaryCaptions',
         'InteractiveChartLifecycleBrowserTests.HostAccentSurvivesReplacementAndAdaptiveDrawingsWhileDefaultsFollowTheNewTheme',

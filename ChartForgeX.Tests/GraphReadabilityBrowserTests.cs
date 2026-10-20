@@ -220,6 +220,30 @@ public sealed class GraphReadabilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserTheory]
+    [InlineData(HtmlGraphRenderBackend.Svg)]
+    [InlineData(HtmlGraphRenderBackend.Canvas)]
+    [InlineData(HtmlGraphRenderBackend.WebGl)]
+    public async Task ShortCurvedCardsKeepTheCaptionInTheirPaintedGap(HtmlGraphRenderBackend backend) {
+        const string caption = "Forest / Bidirectional";
+        var scene = GraphScene.Create("short-card-route", "Short card route")
+            .AddNode("source", "Source", node => { node.X = 600; node.Y = 386; node.Size = 90; node.Shape = GraphNodeShape.Box; node.Metadata["topology.card"] = "true"; })
+            .AddNode("target", "Target", node => { node.X = 380; node.Y = 513; node.Size = 90; node.Shape = GraphNodeShape.Box; node.Metadata["topology.card"] = "true"; })
+            .AddEdge("transfer", "source", "target", caption, edge => { edge.Shape = GraphEdgeShape.Curve; edge.Directed = true; edge.SourceArrow = true; });
+        scene.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Export;
+        if (backend == HtmlGraphRenderBackend.Svg) {
+            await using var prepared = await OpenAsync("<html><body><section id='proof'>" + scene.ToGraphSvg() + "</section><img alt='Native PNG' src='data:image/png;base64," + Convert.ToBase64String(scene.ToGraphPng()) + "'></body></html>", 1000, 1200);
+            var native = await CaptionFacts(prepared.Page, "#proof");
+            await Capture(prepared.Page, "card-gap-native", native);
+            AssertCaption(native, expectedCaption: caption);
+        }
+        await using var session = await OpenAsync(scene.ToGraphExplorerHtmlPage(o => o.RenderBackend = backend), 980, 760);
+        var live = await CaptionFacts(session.Page, ".cfx-graph-explorer");
+        await Capture(session.Page, "card-gap-live-" + backend, live);
+        AssertCaption(live, expectedCaption: caption);
+        AssertNoConsoleErrors(session);
+    }
+
     private static void Place(GraphSceneNode node, double x, double y) { node.Fixed = true; node.X = x; node.Y = y; node.Size = 8; }
 
     private static Task<JsonElement> FitFacts(IPage page, string selector = ".cfx-graph-explorer") => page.EvaluateAsync<JsonElement>("""
@@ -239,8 +263,8 @@ public sealed class GraphReadabilityBrowserTests {
             return {distance,collisions,text:label.textContent,point,bend:Math.abs(path.getPointAtLength(length/2).y-280)};}
         """, selector);
 
-    private static void AssertCaption(JsonElement facts, double maximumDistance = 35) {
-        Assert.Equal("replication", facts.GetProperty("text").GetString());
+    private static void AssertCaption(JsonElement facts, double maximumDistance = 35, string expectedCaption = "replication") {
+        Assert.Equal(expectedCaption, facts.GetProperty("text").GetString());
         Assert.True(facts.GetProperty("distance").GetDouble() <= maximumDistance, facts.GetRawText());
         Assert.Empty(facts.GetProperty("collisions").EnumerateArray());
     }

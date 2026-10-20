@@ -567,7 +567,19 @@ internal static partial class SmokeTests {
                 new ChartInterval(1, 20, 42),
                 new ChartInterval(2, 30, 55)
             });
+        rangeBar.Series[0].WithPointLabel(0, "QA").WithPointLabel(1, "IT");
         Assert(rangeBar.ToSvg().Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Range-bar labels should render when center placement is configured.");
+        var centered = rangeBar.Prepare(VisualExportRequest.ForChart(rangeBar).Context);
+        var centeredLabels = centered.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
+        Assert(centeredLabels.Length == 2, "Center placement should retain both short authored interval captions.");
+        Assert(centeredLabels.Select(label => label.Text.Lines.Single().Text).SequenceEqual(new[] { "QA", "IT" }),
+            "Center placement should keep each interval's short authored caption complete.");
+        foreach (var label in centeredLabels) {
+            var point = centered.Regions.Single(region => label.Id == region.Id + "-label");
+            Assert(LabelPlacementService.Contains(point.Bounds, new ChartRect(label.X, label.Baseline - label.Text.Ascent,
+                label.Text.Metrics.Width, label.Text.Metrics.Height)), "Centered interval captions should fit inside their own interval marks.");
+        }
+        ScatterBubbleColorRenderingTests.Capture(centered, "smoke-rangebar-centered-authored-captions");
         Assert(rangeBar.ToPng().Length > 64, "Range-bar center label placement should render PNG output.");
 
         var dumbbell = Chart.Create().WithTheme(VisualTheme.Report())

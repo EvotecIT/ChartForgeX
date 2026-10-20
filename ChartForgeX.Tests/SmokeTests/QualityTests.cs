@@ -428,8 +428,8 @@ internal static partial class SmokeTests {
             .WithSize(180, 120)
             .WithPadding(24, 16, 18, 24)
             .WithDataLabels()
-            .WithValueFormatter(_ => "Extremely long remediation status label that must fit")
             .AddBar("Values", Points(72), ChartColor.FromRgb(37, 99, 235));
+        chart.Series[0].WithPointLabel(0, "Extremely long remediation status label that must fit");
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;
@@ -439,6 +439,7 @@ internal static partial class SmokeTests {
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        ScatterBubbleColorRenderingTests.Capture(prepared, "smoke-readable-label-plot-bounds");
         var label = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "data-label");
         // Layout reserves space for visible captions. Isolate their ink without changing
         // that measured projection by removing only their paint from the detached scene.
@@ -457,11 +458,11 @@ internal static partial class SmokeTests {
                 && y >= Math.Floor(label.Baseline - label.Text.Ascent) - 1 && y <= Math.Ceiling(label.Baseline - label.Text.Ascent + measured.Height) + 1,
                 "Native fitted text ink should stay within the prepared label bounds.");
         }
-        Assert(label.Text.Lines.Any(line => line.Text.EndsWith("…", StringComparison.Ordinal)), "Long formatter text should be visibly shortened.");
+        Assert(label.Text.Lines.Any(line => line.Text.EndsWith("…", StringComparison.Ordinal)), "Long authored captions should be visibly shortened.");
         Assert(prepared.Regions.Any(region => region.Role == "point" && region.Label?.Contains("Extremely long remediation status label that must fit", StringComparison.Ordinal) == true),
             "Fitting should preserve the complete source text in detached point semantics.");
 
-        Assert(labelPixels > 8, "PNG readable labels should remain visible after fitting long formatter output.");
+        Assert(labelPixels > 8, "PNG readable labels should remain visible after fitting long authored captions.");
         Assert(rightEdgeLabelPixels == 0, $"PNG readable labels should fit before clamping instead of being clipped at the canvas edge. Actual right-edge label pixels: {rightEdgeLabelPixels}.");
     }
 
