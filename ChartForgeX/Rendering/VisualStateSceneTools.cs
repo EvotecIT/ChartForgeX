@@ -93,13 +93,20 @@ internal static class VisualStateSceneTools {
             return metrics.Width <= bounds.Width && metrics.Height <= bounds.Height;
         });
         var fit = ChartTextFitting.TrimEnd(displayed, style.EffectiveFontSize, bounds.Width, (value, _) => builder.MeasureText(value, style).Width);
-        if (fit != text) builder.AddDiagnostic(new VisualDiagnostic("text.overflow", "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."));
+        // A layout may replace word separators with line breaks before this final fit.
+        // Only removed content is overflow; a complete reflow retains its source words.
+        if (fit != displayed || displayedText != null && !SameWords(text, displayed))
+            builder.AddDiagnostic(new VisualDiagnostic("text.overflow", "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."));
         if (builder.MeasureText(fit, style).Height > bounds.Height + .000001) return;
         style.Alignment = alignment;
         var x = alignment == TextAlignment.Center ? bounds.Left + bounds.Width / 2 : alignment == TextAlignment.Right ? bounds.Right : bounds.Left;
         var y = bounds.Top + (bounds.Height - builder.MeasureText(fit, style).Height) / 2 + builder.TextAscent(style);
         using (builder.PushClip(bounds)) builder.Text(fit, x, y, style, role, id, paint ?? VisualChartPaint.Text(style));
     }
+
+    private static bool SameWords(string source, string displayed) =>
+        string.Join(" ", source.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+        == string.Join(" ", displayed.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     internal static ChartPath RoundedRect(ChartRect bounds, double radius) {
         // A rectangle's existing cubic contour owner also handles the zero-radius case.

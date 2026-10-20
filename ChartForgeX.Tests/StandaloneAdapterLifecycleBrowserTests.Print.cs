@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Raster;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
@@ -44,10 +46,15 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             graph.Options.Features |= GraphSceneFeatures.LevelOfDetail;
             graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
         }
+        var consoleEntries = new ConcurrentQueue<object>();
         await using var session = await OpenAsync(Instrument(graph.ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = backend; options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
             options.PersistThemePreference = false; options.FillAvailableHeight = true;
-        })).Replace("<head>", "<head><script>" + GraphPrintContextProbe + "</script>", StringComparison.Ordinal), width, 720);
+        })).Replace("<head>", "<head><script>" + GraphPrintContextProbe + "</script>", StringComparison.Ordinal), width, 720,
+            configurePage: page => page.Console += (_, message) => consoleEntries.Enqueue(new {
+                receivedUnixMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                type = message.Type, text = message.Text, location = message.Location?.ToString()
+            }));
         var page = session.Page;
         await MarkGraphPrintContextPhaseAsync(page, "committed-state");
         await page.EvaluateAsync("""
@@ -102,19 +109,42 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         await MarkGraphPrintContextPhaseAsync(page, "print-before-pdf");
         await CaptureGraphPrintPdfAsync(page, backend);
 
+        await page.EvaluateAsync("""
+            ()=>{
+                window.graphPrintRestoreViewportEvents=[];
+                const observe=event=>graphPrintRestoreViewportEvents.push(event.detail);
+                retainedGraph.addEventListener('cfxgraphviewport',observe);
+                window.releaseGraphPrintRestoreViewportProbe=()=>retainedGraph.removeEventListener('cfxgraphviewport',observe);
+            }
+            """);
         await MarkGraphPrintContextPhaseAsync(page, "screen-initial-request");
         await page.EmulateMediaAsync(new() { Media = Media.Screen });
         await page.WaitForFunctionAsync("()=>!document.querySelector('[data-cfx-role=graph-print-surface]')");
         Assert.Equal(before, await GraphCommittedStateAsync(page));
         await MarkGraphPrintContextPhaseAsync(page, "screen-restored");
-        await CaptureAsync(page, "graph-print-" + backend + "-restored");
-        await page.SetViewportSizeAsync(width + 80, 720);
-        await WaitForGraphScreenBackingAsync(page);
+        await AssertGraphPrintScreenPaintAsync(page, backend);
         Assert.Equal(before, await GraphCommittedStateAsync(page));
-        await CaptureAsync(page, "graph-print-" + backend + "-visible-resize");
-        await page.SetViewportSizeAsync(width, 720);
+        Assert.Equal(0, await page.EvaluateAsync<int>("()=>{releaseGraphPrintRestoreViewportProbe();return graphPrintRestoreViewportEvents.length;}"));
+        await MarkGraphPrintContextPhaseAsync(page, "screen-restored-capture-request");
+        await CaptureAsync(page, "graph-print-" + backend + "-restored");
+        await MarkGraphPrintContextPhaseAsync(page, "screen-restored-capture-complete");
+        await MarkGraphPrintContextPhaseAsync(page, "screen-grow-request");
+        await page.SetViewportSizeAsync(width + 80, 720);
+        await MarkGraphPrintContextPhaseAsync(page, "screen-grow-applied");
         await WaitForGraphScreenBackingAsync(page);
+        await MarkGraphPrintContextPhaseAsync(page, "screen-grow-backing-ready");
+        Assert.Equal(before, await GraphCommittedStateAsync(page));
+        await MarkGraphPrintContextPhaseAsync(page, "screen-grown-capture-request");
+        await CaptureAsync(page, "graph-print-" + backend + "-visible-resize");
+        await MarkGraphPrintContextPhaseAsync(page, "screen-grown-capture-complete");
+        await MarkGraphPrintContextPhaseAsync(page, "screen-reset-request");
+        await page.SetViewportSizeAsync(width, 720);
+        await MarkGraphPrintContextPhaseAsync(page, "screen-reset-applied");
+        await WaitForGraphScreenBackingAsync(page);
+        await MarkGraphPrintContextPhaseAsync(page, "screen-reset-backing-ready");
+        await MarkGraphPrintContextPhaseAsync(page, "dim-highlight-request");
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.highlight(retainedGraph,[{role:'graph-node',id:'n2'},{role:'graph-edge',id:'e2'}],{dim:true})");
+        await MarkGraphPrintContextPhaseAsync(page, "dim-highlight-complete");
         await MarkGraphPrintContextPhaseAsync(page, "dimmed-artifacts");
         await AssertGraphArtifactPaintAsync(page, backend, dark, true);
         await MarkGraphPrintContextPhaseAsync(page, "print-dimmed-request");
@@ -161,8 +191,62 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             ()=>{const probe=window.graphPrintContextProbe;try{probe.mark('before-console-assert');return probe.read();}finally{probe.release();}}
             """);
         await WriteReceiptAsync("graph-print-" + backend + "-context-events",
-            JsonSerializer.SerializeToElement(new { engine = Engine.ToString(), requested = backend.ToString(), observation = contextReceipt }));
+            JsonSerializer.SerializeToElement(new {
+                engine = Engine.ToString(), requested = backend.ToString(), observation = contextReceipt,
+                consoleCoverage = "Playwright console observations registered before adapter scripts; UTC host receipt times are not browser emission times.",
+                consoleEntries = consoleEntries.ToArray()
+            }));
         AssertNoConsoleErrors(session);
+    }
+
+    // The screen painter has its own buffer: a forced export cannot prove it refreshed after print.
+    private static async Task AssertGraphPrintScreenPaintAsync(IPage page, HtmlGraphRenderBackend backend) {
+        var facts = await ReadGraphPrintScreenPaintAsync(page, "graph-print-" + backend + "-restored-live");
+        Assert.False(facts.GetProperty("sourceDimmed").GetBoolean());
+        Assert.All(facts.GetProperty("samples").EnumerateArray(), sample => Assert.True(sample.GetProperty("solidPixels").GetInt32() > 0,
+            "The restored screen must paint the current full-opacity mark without resizing: " + facts.GetRawText()));
+    }
+
+    private static async Task<JsonElement> ReadGraphPrintScreenPaintAsync(IPage page, string name, JsonElement? retainedPaint = null) {
+        GraphEnvironmentFrame frame;
+        if (retainedPaint is { } retained) {
+            // Disposed adapters have no public get/positions view. Retain the
+            // previously observed geometry and inspect the actual screen bytes.
+            await page.EvaluateAsync("()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
+            var png = await page.ScreenshotAsync(new() { Animations = ScreenshotAnimations.Disabled });
+            frame = new(png, retained.GetProperty("samples")[1].GetProperty("witness"));
+            if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
+                Assert.True(Path.IsPathRooted(output));
+                Directory.CreateDirectory(output);
+                await File.WriteAllBytesAsync(Path.Combine(output, name + ".png"), png);
+            }
+        } else frame = await CaptureGraphEnvironmentFrameAsync(page, "n1", name);
+        var image = PngReader.Decode(frame.Png);
+        var samples = new List<object>();
+        foreach (var expected in new[] { (Id: "n0", R: 37, G: 99, B: 235), (Id: "n1", R: 22, G: 163, B: 74) }) {
+            var witness = retainedPaint is { } retainedFacts
+                ? retainedFacts.GetProperty("samples").EnumerateArray().Single(sample => sample.GetProperty("id").GetString() == expected.Id).GetProperty("witness")
+                : expected.Id == "n1" ? frame.Witness : await GraphEnvironmentWitnessAsync(page, expected.Id);
+            var sx = image.Width / witness.GetProperty("viewport").GetProperty("width").GetDouble();
+            var sy = image.Height / witness.GetProperty("viewport").GetProperty("height").GetDouble();
+            var x = (int)Math.Round(witness.GetProperty("center").GetProperty("x").GetDouble() * sx);
+            var y = (int)Math.Round(witness.GetProperty("center").GetProperty("y").GetDouble() * sy);
+            var radius = Math.Max(1, Math.Min(5, (int)(witness.GetProperty("radius").GetDouble() * Math.Min(sx, sy) / 4)));
+            var pixels = 0; var patch = new List<byte>();
+            for (var row = Math.Max(0, y - radius); row <= Math.Min(image.Height - 1, y + radius); row++)
+                for (var column = Math.Max(0, x - radius); column <= Math.Min(image.Width - 1, x + radius); column++) {
+                    var offset = (row * image.Width + column) * 4;
+                    for (var channel = 0; channel < 4; channel++) patch.Add(image.Pixels[offset + channel]);
+                    if (image.Pixels[offset + 3] >= 250 && Math.Abs(image.Pixels[offset] - expected.R) <= 3
+                        && Math.Abs(image.Pixels[offset + 1] - expected.G) <= 3 && Math.Abs(image.Pixels[offset + 2] - expected.B) <= 3) pixels++;
+                }
+            samples.Add(new { id = expected.Id, expected = new[] { expected.R, expected.G, expected.B }, solidPixels = pixels,
+                pixels = Convert.ToBase64String(patch.ToArray()), witness });
+        }
+        var facts = JsonSerializer.SerializeToElement(new { samples, sourceDimmed = await page.EvaluateAsync<bool>(
+            "()=>retainedGraph.__cfxGraphHighlight?.dim===true") });
+        await WriteReceiptAsync(name + "-paint", facts);
+        return facts;
     }
 
     private static Task MarkGraphPrintContextPhaseAsync(IPage page, string phase) =>
@@ -212,7 +296,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             document.addEventListener('webglcontextrestored',observe,options);
             window.graphPrintContextProbe={
                 mark(value){phase=value;checkpoints.push(sample());},
-                read(){return {coverage:'document capture before adapter scripts; attached-canvas DOM events only; event samples precede target handlers',events,checkpoints};},
+                read(){return {coverage:'document capture before adapter scripts; attached-canvas DOM events only; event samples precede target handlers',timeOrigin:performance.timeOrigin,events,checkpoints};},
                 release(){document.removeEventListener('webglcontextlost',observe,options);document.removeEventListener('webglcontextrestored',observe,options);}
             };
         })();
