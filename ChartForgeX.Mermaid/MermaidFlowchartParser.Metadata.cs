@@ -68,8 +68,10 @@ internal static partial class MermaidFlowchartParser {
             return;
         }
         node.Properties[key] = value;
-        if (key == "label") node.Text = value;
-        else if (key == "shape") {
+        if (key == "label") {
+            node.Text = value;
+            node.LabelSpan = MermaidFlowchartText.AtOffset(property, span, scalarStart, scalar.Length);
+        } else if (key == "shape") {
             if (TryResolveShape(value, out var shape)) node.Shape = shape;
             else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Flowchart shape '" + value + "' is retained but rendered as a rectangle.");
         } else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Flowchart node property '" + key + "' is retained but not rendered.");

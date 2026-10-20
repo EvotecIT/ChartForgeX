@@ -60,7 +60,10 @@ internal static partial class MermaidFlowchartParser {
             return;
         }
 
-        if (candidate.Text != null) existing.Text = candidate.Text;
+        if (candidate.Text != null) {
+            existing.Text = candidate.Text;
+            existing.LabelSpan = candidate.LabelSpan;
+        }
         if (candidate.Shape != MermaidFlowchartNodeShape.Default) existing.Shape = candidate.Shape;
         if (candidate.SubgraphId != null) existing.SubgraphId = candidate.SubgraphId;
         if (candidate.Href != null) existing.Href = candidate.Href;

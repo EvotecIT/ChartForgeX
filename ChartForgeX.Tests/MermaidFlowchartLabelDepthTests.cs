@@ -61,6 +61,53 @@ public sealed class MermaidFlowchartLabelDepthTests {
         Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, Assert.Single(result.Diagnostics).Code);
     }
 
+    [Theory]
+    [InlineData("  A[\"`**Review**`\"]", "`**Review**`", MermaidDiagnosticCodes.ApproximateMapping, 3, 1)]
+    [InlineData("  A[\"<b>Review</b>\"]", "<b>Review</b>", MermaidDiagnosticCodes.UnsupportedStatement, 3, 1)]
+    [InlineData("  A[\"$$x^2$$\"]", "$$x^2$$", MermaidDiagnosticCodes.UnsupportedStatement, 3, 1)]
+    [InlineData("  A@{ label: \"`**Review**`\" }", "`**Review**`", MermaidDiagnosticCodes.ApproximateMapping, 14, 14)]
+    [InlineData("  A@{ label: \"<b>Review</b>\" }", "<b>Review</b>", MermaidDiagnosticCodes.UnsupportedStatement, 14, 15)]
+    [InlineData("  A@{ label: \"$$x^2$$\" }", "$$x^2$$", MermaidDiagnosticCodes.UnsupportedStatement, 14, 9)]
+    public void ReplacedLabelDiagnosticsLocateTheDeclarationWithoutMovingTheOriginalNodeReference(
+        string declaration, string label, string code, int column, int length) {
+        var source = "flowchart LR\n  A --> B\n" + declaration + "\n  A --> C";
+        var parsed = new MermaidParser().Parse(source);
+        var rendered = MermaidRenderer.Render(source);
+        foreach (var result in new[] { (parsed.Document, parsed.Diagnostics, parsed.HasErrors), (rendered.Document, rendered.Diagnostics, rendered.HasErrors) }) {
+            Assert.False(result.HasErrors);
+            var document = Assert.IsType<MermaidFlowchartDocument>(result.Document);
+            var node = document.Nodes.Single(item => item.Id == "A");
+            Assert.Equal(label, node.Text);
+            Assert.Equal((2, 3, 1), (node.Span.Line, node.Span.Column, node.Span.Length));
+            var diagnostic = Assert.Single(result.Diagnostics);
+            Assert.Equal(code, diagnostic.Code);
+            Assert.Equal((3, column, length), (diagnostic.Span.Line, diagnostic.Span.Column, diagnostic.Span.Length));
+        }
+
+        var fenced = new MermaidVisualMarkupParser().Parse("Intro\n\n```mermaid\n" + source + "\n```");
+        Assert.False(fenced.HasErrors);
+        Assert.Single(fenced.Artifacts);
+        var mapped = Assert.Single(fenced.Diagnostics);
+        Assert.Equal(code, mapped.Code);
+        Assert.Equal(6, mapped.Line);
+    }
+
+    [Fact]
+    public void RepeatedMultilineMetadataLabelsUseTheFinalScalarLocationInDirectAndFencedDiagnostics() {
+        const string source = "flowchart LR\nA[\"`**First**`\"] --> B\nA@{ label: \"`**Second**`\" }\nA[\"Old\ncaption\"]@{ label: \"`**Final**\ncaption`\" }\nA --> C";
+        var direct = MermaidRenderer.Render(source);
+        Assert.False(direct.HasErrors);
+        var node = Assert.IsType<MermaidFlowchartDocument>(direct.Document).Nodes.Single(item => item.Id == "A");
+        Assert.Equal("`**Final**\ncaption`", node.Text);
+        Assert.Equal(2, node.Span.Line);
+        var diagnostic = Assert.Single(direct.Diagnostics);
+        Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, diagnostic.Code);
+        Assert.Equal((5, 20, 21), (diagnostic.Span.Line, diagnostic.Span.Column, diagnostic.Span.Length));
+        var fenced = new MermaidVisualMarkupParser().Parse("Intro\n```mermaid\n" + source + "\n```");
+        Assert.False(fenced.HasErrors);
+        Assert.Equal(7, Assert.Single(fenced.Diagnostics).Line);
+    }
+
     [Fact]
     public void TrailingErrorsAfterMultilineCaptionsKeepTheirPhysicalLineAndColumn() {
         const string source = "---\nconfig:\n  theme: dark\n---\nflowchart LR\nA[\"First\nsecond\"] --> B:::";

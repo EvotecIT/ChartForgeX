@@ -5,7 +5,7 @@ namespace ChartForgeX.Mermaid;
 
 internal static partial class MermaidFlowchartParser {
     private static void AddLabelDiagnostics(MermaidFlowchartDocument document, MermaidParseResult<MermaidDocument> result) {
-        foreach (var node in document.Nodes) Check(node.Text, node.Span);
+        foreach (var node in document.Nodes) Check(node.Text, node.LabelSpan);
         foreach (var edge in document.Edges) Check(edge.Label, edge.Span);
         foreach (var group in document.Subgraphs) Check(group.Title, group.Span);
 
