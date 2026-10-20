@@ -69,17 +69,22 @@ internal static partial class Program {
         var prepared = chart.Prepare(DepthContext(chart, showLegend: false),
             new ChartCartesianViewport(new ChartXViewport(2, 8), new ChartYViewport(20, 80)));
         var x = prepared.XProjection!; var y = prepared.YProjection!;
-        var anchor = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Single(node => node.Role == "annotation-anchor");
+        var svg = prepared.ToSvg(); var png = prepared.ToPng(); var xml = XDocument.Parse(svg);
+        var anchor = xml.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "annotation-anchor");
+        var anchorX = anchor.Attribute("cx")!.Value;
+        var anchorY = anchor.Attribute("cy")!.Value;
         PackageAssertions.Require(x.Minimum == 2 && x.Maximum == 8 && x.FullMinimum == 0 && x.FullMaximum == 10
             && y.Minimum == 20 && y.Maximum == 80 && y.FullMinimum == 0 && y.FullMaximum == 100
-            && Math.Abs(anchor.Cx - x.Project(3)) < 1e-7 && Math.Abs(anchor.Cy - y.Project(40)) < 1e-7
-            && prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Any(node => node.Role == "marker"
-                && Math.Abs(node.Cx - anchor.Cx) < 1e-7 && Math.Abs(node.Cy - anchor.Cy) < 1e-7),
+            // SVG ink uses three fractional decimal places; compare its serialized positions exactly.
+            && anchorX == x.Project(3).ToString("0.###", CultureInfo.InvariantCulture)
+            && anchorY == y.Project(40).ToString("0.###", CultureInfo.InvariantCulture)
+            && xml.Descendants().Any(node => (string?)node.Attribute("data-cfx-role") == "marker"
+                && (string?)node.Attribute("cx") == anchorX && (string?)node.Attribute("cy") == anchorY),
             "Packed XY preparation did not align source notes and native measurements on the same unchanged full domains.");
-        var svg = prepared.ToSvg(); var png = prepared.ToPng();
         PackageAssertions.Require(PackageAssertions.Contains(svg, "data-cfx-channel-offset=\"8\"")
             && PackageAssertions.Contains(svg, "data-cfx-annotation-id=\"plan\"")
-            && Math.Abs(y.Unproject(anchor.Cy) - 40) < 1e-7,
+            && Math.Abs(x.Unproject(x.Project(3)) - 3) < 1e-7
+            && Math.Abs(y.Unproject(y.Project(40)) - 40) < 1e-7,
             "Packed source drawings lost authored channel/line facts or the detached inverse projection.");
         chart.Annotations.Clear(); chart.Series[0].Points[1] = new ChartPoint(3, 15);
         chart.Options.YAxis.Reversed = true;
