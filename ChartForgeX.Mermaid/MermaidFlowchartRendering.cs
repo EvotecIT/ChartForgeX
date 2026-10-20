@@ -115,7 +115,8 @@ public static class MermaidFlowchartRendering {
             if (document.Kind == MermaidDiagramKind.UseCase) target.Routing = TopologyEdgeRouting.Straight;
             var edgeColor = StyleValue(edge.Styles, "stroke");
             if (!string.IsNullOrWhiteSpace(edgeColor)) target.Color = edgeColor;
-            if (edge.Styles.ContainsKey("stroke-dasharray")) target.LineStyle = TopologyEdgeLineStyle.Dashed;
+            if (edge.Styles.TryGetValue("stroke-dasharray", out var dashArray) && MermaidFlowchartStyleValues.TryDash(dashArray, out var dashed))
+                target.LineStyle = dashed ? TopologyEdgeLineStyle.Dashed : TopologyEdgeLineStyle.Solid;
             if (document.Kind == MermaidDiagramKind.UseCase && edge.Operator == "--|>") target.TargetMarker = TopologyMarkerKind.OpenTriangle;
             // UML relationship stereotypes need room between their two use-case surfaces.
             if (document.Kind == MermaidDiagramKind.UseCase && !string.IsNullOrWhiteSpace(edge.Label)) target.MinimumRankSpan = 2;
@@ -212,7 +213,7 @@ public static class MermaidFlowchartRendering {
     }
 
     private static string? StyleValue(System.Collections.Generic.Dictionary<string, string> styles, string key) =>
-        styles.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value) ? value : null;
+        styles.TryGetValue(key, out var value) && MermaidFlowchartStyleValues.IsColor(value) ? value : null;
 
     private static void WriteStyleMetadata(System.Collections.Generic.Dictionary<string, string> metadata, System.Collections.Generic.Dictionary<string, string> styles, string prefix) {
         foreach (var item in styles) metadata[prefix + item.Key] = item.Value;

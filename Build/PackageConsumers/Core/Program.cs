@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using ChartForgeX;
@@ -15,8 +16,31 @@ internal static class Program {
         NumericOwnershipAndWindowDimensions();
         CallbackOwnership();
         PolarPaint();
+        ReversedStackCaptionLanes();
         PackageAssertions.Payload("ChartForgeX");
         Console.WriteLine("Core package boundaries, typed ownership, themes and static exports passed.");
+    }
+
+    private static void ReversedStackCaptionLanes() {
+        var chart = Chart.Create().WithSize(360, 360).WithHeader(false).WithLegend(false)
+            .WithXLabels("North", "South", "East", "West").WithStackTotals().WithDataLabels(false);
+        for (var index = 0; index < 4; index++) {
+            chart.AddSeries(ChartSeries.CreateBar(new ChartSeriesId("stack-" + index), "Measure " + index,
+                ChartPoints.FromValues(40 + index, 50 + index, 60 + index, 70 + index))
+                .WithStackGroup(index < 2 ? "first" : "second").WithNormalization(100));
+        }
+        chart.Options.YAxis.WithBounds(0, 100).WithReversal()
+            .WithLabelFormatter(value => value.ToString(CultureInfo.InvariantCulture) + "%");
+        var texts = XDocument.Parse(chart.ToSvg()).Descendants().Where(node => node.Name.LocalName == "text").ToArray();
+        var categories = texts.Where(node => new[] { "North", "South", "East", "West" }.Contains(node.Value)).ToArray();
+        var totals = texts.Where(node => node.Value == "100").ToArray();
+        PackageAssertions.Require(categories.Length == 4 && totals.Length == 8,
+            "Packed grouped stacks lost category captions or complete normalized totals.");
+        PackageAssertions.Require(categories.All(category => totals.All(total =>
+            double.Parse(category.Attribute("y")!.Value, CultureInfo.InvariantCulture)
+                - double.Parse(total.Attribute("y")!.Value, CultureInfo.InvariantCulture) >= 10)),
+            "Packed reversed stacks put category captions in the total-label lane.");
+        PackageAssertions.Png(chart.ToPng());
     }
 
     private static void ThemeSnapshots() {

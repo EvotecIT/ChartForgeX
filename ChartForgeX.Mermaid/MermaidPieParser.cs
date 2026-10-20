@@ -130,10 +130,6 @@ internal static class MermaidPieParser {
     }
 
     private static void Add<TDocument>(MermaidParseResult<TDocument> result, int line, int column, int length, MermaidDiagnosticSeverity severity, string message) where TDocument : MermaidDocument {
-        result.Diagnostics.Add(new MermaidDiagnostic {
-            Span = new MermaidSourceSpan(line, column, length),
-            Severity = severity,
-            Message = message
-        });
+        MermaidParserUtilities.Add(result, new MermaidSourceSpan(line, column, length), severity, message);
     }
 }

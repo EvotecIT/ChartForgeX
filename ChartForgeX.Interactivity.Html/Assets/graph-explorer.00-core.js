@@ -45,6 +45,11 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
     const width = Number.isFinite(parts[2]) && parts[2] > 0 ? parts[2] : 960, height = Number.isFinite(parts[3]) && parts[3] > 0 ? parts[3] : 560;
     return { width, height, centerX: width / 2, centerY: height / 2 };
   };
+  // Hidden stages skip ordinary screen painting; explicit exports still render.
+  const graphStageHasLayout = root => {
+    const rect = root.querySelector('.cfx-graph-stage')?.getBoundingClientRect();
+    return !!rect && rect.width > 0 && rect.height > 0;
+  };
   const searchable = (node) => [
     attr(node, 'data-node-id'),
     attr(node, 'data-node-label'),
@@ -213,6 +218,7 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
     if (typeof syncNodeDetailLayers === 'function') syncNodeDetailLayers(state);
     if ((root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer')) === 'svg' && !options?.force &&
       typeof syncPhysicalSvgEdgePaint === 'function') syncPhysicalSvgEdgePaint(root, state);
+    if (!options?.force && !graphStageHasLayout(root)) return;
     if ((root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer')) === 'svg' && attr(root, 'data-cfx-graph-accelerated-markup') === 'true' && !options?.force) {
       if (typeof drawAcceleratedSvgRuntime === 'function' && drawAcceleratedSvgRuntime(root, state)) return;
     }
@@ -236,10 +242,11 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
     const compact = root.classList.contains('cfx-graph-lod-compact') || root.classList.contains('cfx-graph-semantic-overview');
     const dense = compact || state.edges.length > 250;
     const moving = root.dataset.cfxGraphPhysicsState === 'running' && !options?.force;
+    const labelObstacles = graphEdgeLabelObstacles(root, state);
     drawCanvasClusters(context, root, state, byId, palette, moving);
     state.edges.forEach(edge => {
       if (!visible(edge.el) || !edgeHasVisibleEndpoints(edge, byId)) return;
-      drawCanvasEdge(context, root, edge, graphEdgePaint(root, edge, byId, palette, dense, moving), palette);
+      drawCanvasEdge(context, root, edge, graphEdgePaint(root, edge, byId, palette, dense, moving, labelObstacles), palette);
     });
     drawCanvasNodes(context, root, state.nodes, compact, moving, undefined, palette);
     context.restore();

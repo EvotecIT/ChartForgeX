@@ -1,6 +1,6 @@
 namespace ChartForgeX.Mermaid;
 
-/// <summary>Stable identifiers for diagram selection and native conversion diagnostics.</summary>
+/// <summary>Stable identifiers for diagram selection, source validation and native rendering limits.</summary>
 public static class MermaidDiagnosticCodes {
     /// <summary>The source declares an unknown diagram family.</summary>
     public const string UnknownDiagram = "CFXM001";
@@ -25,4 +25,7 @@ public static class MermaidDiagnosticCodes {
 
     /// <summary>A recognized notation statement or block boundary is invalid.</summary>
     public const string InvalidStatement = "CFXM008";
+
+    /// <summary>The source uses a deliberately approximate native mapping whose geometry or notation differs semantically.</summary>
+    public const string ApproximateMapping = "CFXM009";
 }

@@ -225,8 +225,9 @@ public enum ChartSeriesKind {
     Ohlc,
 
     /// <summary>
-    /// Renders equal-angle radial segments with radius scaled by value.
+    /// Renders equal-angle radial segments with area proportional to each positive value.
     /// </summary>
+    /// <remarks>Positive values use square-root radius scaling; zero-valued categories retain visible placeholder slots.</remarks>
     PolarArea,
 
     /// <summary>

@@ -68,9 +68,11 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         var before = await GraphCommittedStateAsync(page);
         await MarkGraphPrintContextPhaseAsync(page, "screen-before-print");
         await CaptureAsync(page, "graph-print-" + backend + "-screen");
+        var screenBacking = await GraphWebGlBackingAsync(page);
         await MarkGraphPrintContextPhaseAsync(page, "print-initial");
         await page.EmulateMediaAsync(new() { Media = Media.Print });
         await WaitForGraphPrintSurfaceAsync(page);
+        Assert.Equal(screenBacking, await GraphWebGlBackingAsync(page));
         var printed = await GraphPrintFactsAsync(page);
         await WriteReceiptAsync("graph-print-" + backend + "-print", printed);
         await CaptureAsync(page, "graph-print-" + backend + "-print");
@@ -90,6 +92,13 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         AssertGraphEdgePaint(printed.GetProperty("edgePaint"), dark, false);
         AssertGraphDetailPaint(printed.GetProperty("detailPaint"), dark);
         Assert.Equal(before, await GraphCommittedStateAsync(page));
+        // Change the paint only after print has hidden the stage. Forced PNG export
+        // must render these new pixels rather than returning the prior screen buffer.
+        await MarkGraphPrintContextPhaseAsync(page, "print-hidden-artifacts");
+        await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.highlight(retainedGraph,[{role:'graph-node',id:'n2'},{role:'graph-edge',id:'e2'}],{dim:true})");
+        await AssertGraphArtifactPaintAsync(page, backend, dark, true);
+        Assert.Equal(screenBacking, await GraphWebGlBackingAsync(page));
+        await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.highlight(retainedGraph,[{role:'graph-node',id:'n2'},{role:'graph-edge',id:'e2'}])");
         await MarkGraphPrintContextPhaseAsync(page, "print-before-pdf");
         await CaptureGraphPrintPdfAsync(page, backend);
 
@@ -99,6 +108,12 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         Assert.Equal(before, await GraphCommittedStateAsync(page));
         await MarkGraphPrintContextPhaseAsync(page, "screen-restored");
         await CaptureAsync(page, "graph-print-" + backend + "-restored");
+        await page.SetViewportSizeAsync(width + 80, 720);
+        await WaitForGraphScreenBackingAsync(page);
+        Assert.Equal(before, await GraphCommittedStateAsync(page));
+        await CaptureAsync(page, "graph-print-" + backend + "-visible-resize");
+        await page.SetViewportSizeAsync(width, 720);
+        await WaitForGraphScreenBackingAsync(page);
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.highlight(retainedGraph,[{role:'graph-node',id:'n2'},{role:'graph-edge',id:'e2'}],{dim:true})");
         await MarkGraphPrintContextPhaseAsync(page, "dimmed-artifacts");
         await AssertGraphArtifactPaintAsync(page, backend, dark, true);
@@ -152,6 +167,20 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
 
     private static Task MarkGraphPrintContextPhaseAsync(IPage page, string phase) =>
         page.EvaluateAsync("phase=>window.graphPrintContextProbe.mark(phase)", phase);
+
+    private static Task<int[]> GraphWebGlBackingAsync(IPage page) => page.EvaluateAsync<int[]>("""
+        ()=>{const canvas=retainedGraph.querySelector('[data-cfx-role=graph-webgl]');return canvas?[canvas.width,canvas.height]:[];}
+        """);
+
+    private static Task WaitForGraphScreenBackingAsync(IPage page) => page.WaitForFunctionAsync("""
+        ()=>{
+            const renderer=retainedGraph.dataset.cfxGraphRendererActive;
+            if(!['canvas','webgl'].includes(renderer))return true;
+            const canvas=retainedGraph.querySelector('[data-cfx-role=graph-'+renderer+']');
+            const rect=canvas.getBoundingClientRect(),ratio=Math.max(1,devicePixelRatio||1);
+            return rect.width>0&&rect.height>0&&canvas.width===Math.round(rect.width*ratio)&&canvas.height===Math.round(rect.height*ratio);
+        }
+        """);
 
     // Observe real events without creating a context, canceling loss, or requesting recovery.
     // Capture starts before adapter scripts; losses with no DOM event remain unobserved.

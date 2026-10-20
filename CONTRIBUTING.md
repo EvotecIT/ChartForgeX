@@ -110,9 +110,9 @@ Commit the refreshed baseline only with the renderer or example change that just
 
 ## Topology Visual Coverage
 
-Topology and geographic topology examples are not part of `visual-baseline.json` yet. They are release-gated through `ChartForgeX.Examples/bin/Release/net8.0/output/topology-demo/visual-capability-manifest.json`, required SVG metadata fragments, generated SVG/HTML/PNG artifacts, and PNG size checks.
+Topology and geographic topology SVG/PNG pairs participate in the shared `ChartForgeX.Examples/visual-baseline.json`. The quality loop also checks `topology-demo/visual-capability-manifest.json` in the selected examples output directory, required SVG metadata, generated SVG/HTML/PNG artifacts, and PNG size. Every topology pair must appear in the shared comparison and baseline.
 
-Keep that split until dense routing and geographic layout polish settle enough for numeric visual baselines. When promoting topology artifacts into the regular baseline, start with the manifest's `baselineCandidates` list and update `Build.ps1`, `ChartForgeX.Examples/visual-baseline.json`, `TODO.md`, and this guide in the same PR.
+Treat numerical health as one check. Inspect complete SVG and native PNG output for readable labels, routing and fitting before accepting or refreshing a baseline. Geometry and browser regressions should protect concrete failures such as labels occupying the same lane; matching dimensions and visible pixels cannot establish that a diagram is readable.
 
 ## Release Qualification
 

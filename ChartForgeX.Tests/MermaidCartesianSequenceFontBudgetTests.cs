@@ -22,7 +22,9 @@ public sealed class MermaidCartesianSequenceFontBudgetTests {
     public async Task AuthoredCartesianPointAndTaskCaptionsFitBeforeTheyAreShortened(string kind, int size) {
         var body = kind == "quadrant" ? "quadrantChart\nx-axis Low --> High\ny-axis Low --> High\nAlpha: [0.25, 0.25]\nBeta: [0.75, 0.75]"
             : "journey\nsection Work\nAlpha: 5: Sam\nBeta: 3: Sam";
-        var result = MermaidRenderer.Render(Source(size, body)); Assert.Empty(result.Diagnostics);
+        var result = MermaidRenderer.Render(Source(size, body));
+        if (kind == "journey") Assert.Equal(MermaidDiagnosticCodes.ApproximateMapping, Assert.Single(result.Diagnostics).Code);
+        else Assert.Empty(result.Diagnostics);
         var artifact = result.Artifact!; var svg = artifact.ToSvg(); var png = artifact.ToPng();
         await Capture(svg, png, kind + "-" + size, 960, 720);
         var labels = XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "data-label")

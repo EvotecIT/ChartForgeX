@@ -1,21 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-269870c6" width="584" height="274" viewBox="0 0 584 274" role="img" aria-labelledby="cfx-visual-grid-269870c6-title cfx-visual-grid-269870c6-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-grid-269870c6-title">Endpoint snapshot</title>
-<desc id="cfx-visual-grid-269870c6-desc">Static visual grid containing charts and visual blocks.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-40e045e9" width="584" height="274" viewBox="0 0 584 274" role="img" aria-labelledby="cfx-visual-grid-40e045e9-title cfx-visual-grid-40e045e9-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-grid-40e045e9-title">Endpoint snapshot</title>
+<desc id="cfx-visual-grid-40e045e9-desc">Static visual grid containing charts and visual blocks.</desc>
 <defs>
-<style>#cfx-visual-grid-269870c6 .cfx-guide-stroke,#cfx-visual-grid-269870c6 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-269870c6 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<style>#cfx-visual-grid-40e045e9 .cfx-guide-stroke,#cfx-visual-grid-40e045e9 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-40e045e9 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
 </defs>
 <rect width="100%" height="100%" fill="#F2F3F4"/>
-<text data-cfx-role="visual-grid-title" data-cfx-target="title" x="24" y="36.75" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="17" font-weight="700">Endpoint snapshot</text>
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-fff00a74" width="260" height="150" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-fff00a74-title cfx-visual-fff00a74-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="24" y="100" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-fff00a74-title">CPU load</title>
-<desc id="cfx-visual-fff00a74-desc">Static ChartForgeX visual block.</desc>
+<text data-cfx-role="visual-grid-title" data-cfx-target="title" x="24" y="36.75" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="17" font-weight="700">Endpoint snapshot</text>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-e00449aa" width="260" height="150" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-e00449aa-title cfx-visual-e00449aa-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="24" y="100" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-e00449aa-title">CPU load</title>
+<desc id="cfx-visual-e00449aa-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-fff00a74 .cfx-guide-stroke,#cfx-visual-fff00a74 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-fff00a74 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-fff00a74-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="3"/></clipPath>
+<style>#cfx-visual-e00449aa .cfx-guide-stroke,#cfx-visual-e00449aa .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-e00449aa text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-e00449aa-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="3"/></clipPath>
 </defs>
 <rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="2.5" fill="#FFFFFF" stroke="#E2E4E7"/>
-<text data-cfx-role="metric-label" x="18" y="29.5" fill="#4D525B" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13.5" font-weight="700">CPU load</text>
-<text data-cfx-role="metric-value" x="18" y="97.5" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="54" font-weight="700">38%</text>
+<text data-cfx-role="metric-label" x="18" y="29.5" fill="#4D525B" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">CPU load</text>
+<text data-cfx-role="metric-value" x="18" y="97.5" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="54" font-weight="700">38%</text>
 <g data-cfx-role="metric-mini-sparkline" data-cfx-style="area" data-cfx-min="38" data-cfx-max="52">
 <polygon data-cfx-role="metric-mini-sparkline-fill" points="390,113.58 390,57.58 418,73.58 446,89.58 474,101.58 502,113.58 502,113.58" fill="rgba(42,120,214,0.173)"/>
 <polyline data-cfx-role="metric-mini-sparkline-line" points="390,57.58 418,73.58 446,89.58 474,101.58 502,113.58" fill="none" stroke="#2A78D6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -23,16 +23,16 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-cf0e2c07" width="260" height="150" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-cf0e2c07-title cfx-visual-cf0e2c07-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="300" y="100" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-cf0e2c07-title">Memory used</title>
-<desc id="cfx-visual-cf0e2c07-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-a2defadc" width="260" height="150" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-a2defadc-title cfx-visual-a2defadc-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="300" y="100" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-a2defadc-title">Memory used</title>
+<desc id="cfx-visual-a2defadc-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-cf0e2c07 .cfx-guide-stroke,#cfx-visual-cf0e2c07 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-cf0e2c07 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-cf0e2c07-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="3"/></clipPath>
+<style>#cfx-visual-a2defadc .cfx-guide-stroke,#cfx-visual-a2defadc .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-a2defadc text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-a2defadc-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="3"/></clipPath>
 </defs>
 <rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="2.5" fill="#FFFFFF" stroke="#E2E4E7"/>
-<text data-cfx-role="metric-label" x="18" y="29.5" fill="#4D525B" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="13.5" font-weight="700">Memory used</text>
-<text data-cfx-role="metric-value" x="18" y="97.5" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, system-ui, sans-serif" font-size="54" font-weight="700">71%</text>
+<text data-cfx-role="metric-label" x="18" y="29.5" fill="#4D525B" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">Memory used</text>
+<text data-cfx-role="metric-value" x="18" y="97.5" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="54" font-weight="700">71%</text>
 <g data-cfx-role="metric-mini-bars" data-cfx-min="0" data-cfx-max="100">
 <rect data-cfx-role="metric-mini-bar" data-cfx-index="0" data-cfx-value="55" x="390" y="82.78" width="18.4" height="30.8" rx="5" fill="rgba(77,82,91,0.275)"/>
 <rect data-cfx-role="metric-mini-bar" data-cfx-index="1" data-cfx-value="59" x="413.4" y="80.54" width="18.4" height="33.04" rx="5" fill="rgba(77,82,91,0.275)"/>

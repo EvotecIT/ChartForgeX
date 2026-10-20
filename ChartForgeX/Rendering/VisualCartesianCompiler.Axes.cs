@@ -154,7 +154,8 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRange range,
-        ChartMapper map, ChartRange? secondaryRange, ChartMapper? secondaryMap, VisualThemeColors colors, ChartRect viewport, AxisLabelCache labels) {
+        ChartMapper map, ChartRange? secondaryRange, ChartMapper? secondaryMap, VisualThemeColors colors, ChartRect viewport, AxisLabelCache labels,
+        ChartRect labelBounds) {
         var xTicks = labels.Ticks(chart.Options.XAxis, range.MinX, range.MaxX);
         var yTicks = labels.Ticks(chart.Options.YAxis, range.MinY, range.MaxY);
         if (chart.Options.ShowGrid) {
@@ -186,11 +187,14 @@ internal static partial class VisualCartesianCompiler {
             var title = XAxisTitle(chart);
             var titleHeight = string.IsNullOrEmpty(title) ? 0 : builder.MeasureText(title,
                 chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground })).Height + spacing;
-            var available = Math.Max(0, viewport.Bottom - plot.Bottom - spacing);
+            // Outside bar labels and stack totals own the strip between the mapper
+            // and labelBounds. Category captions start after that strip, including
+            // negative or reversed totals that sit below the plotted marks.
+            var available = Math.Max(0, viewport.Bottom - labelBounds.Bottom - spacing);
             var groupHeight = CategoryGroupBandSizes(builder, labels, style, spacing, range.MinX, range.MaxX,
                 plot.Width, Math.Max(0, available - tickHeight - titleHeight)).Sum();
             titleHeight = FitAxisTitleReservation(tickHeight + groupHeight, titleHeight, available);
-            var bounds = new ChartRect(viewport.Left, plot.Bottom + spacing, viewport.Width,
+            var bounds = new ChartRect(viewport.Left, labelBounds.Bottom + spacing, viewport.Width,
                 Math.Max(0, Math.Min(tickHeight, available - titleHeight - groupHeight)));
             DrawAxisLabels(builder, chart.Options, chart.Options.XAxis, xTicks, map.X, true, false, bounds, style, spacing, null, labels, plot.Width);
             DrawCategoryGroups(chart, context, builder, labels, map.X, range.MinX, range.MaxX,
@@ -204,7 +208,7 @@ internal static partial class VisualCartesianCompiler {
             var bounds = new ChartRect(viewport.Left, viewport.Top, Math.Max(0, plot.Left - viewport.Left - spacing), viewport.Height);
             DrawAxisLabels(builder, chart.Options, chart.Options.YAxis, yTicks, map.Y, false, false, bounds, style, spacing, chart.Options.ValueFormatter, labels, plot.Height);
             if (!string.IsNullOrEmpty(chart.YAxisTitle)) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,
-                new ChartRect(plot.Left, viewport.Top, Math.Max(0, secondaryMap != null && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0 ? plot.Width / 2 - spacing / 2 : plot.Width), Math.Max(0, plot.Top - viewport.Top - spacing)),
+                new ChartRect(plot.Left, viewport.Top, Math.Max(0, secondaryMap != null && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0 ? plot.Width / 2 - spacing / 2 : plot.Width), Math.Max(0, labelBounds.Top - viewport.Top - spacing)),
                 colors, TextAlignment.Left, "axis-y-title");
         }
         if (secondaryMap != null && secondaryRange != null && chart.Options.SecondaryYAxis.Visible) {
@@ -215,7 +219,7 @@ internal static partial class VisualCartesianCompiler {
             if (!string.IsNullOrEmpty(chart.SecondaryYAxisTitle)) {
                 var width = chart.YAxisTitle.Length > 0 && chart.Options.YAxis.Visible ? plot.Width / 2 - spacing / 2 : plot.Width;
                 DrawAxisTitle(chart, context, builder, chart.SecondaryYAxisTitle,
-                    new ChartRect(plot.Right - width, viewport.Top, Math.Max(0, width), Math.Max(0, plot.Top - viewport.Top - spacing)),
+                    new ChartRect(plot.Right - width, viewport.Top, Math.Max(0, width), Math.Max(0, labelBounds.Top - viewport.Top - spacing)),
                     colors, TextAlignment.Right, "axis-secondary-y-title");
             }
         }

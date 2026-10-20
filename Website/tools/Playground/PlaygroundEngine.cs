@@ -196,9 +196,12 @@ public static class PlaygroundEngine {
         RenderArtifacts(parsed.Artifacts, new PageTheme(dark), outcome);
     }
 
-    // ChartForgeX markup has no theme syntax, so the page theme is applied to each model the way the site generator does.
-    // Returns null when the model has no theme hook; the caller then renders its fixed palette.
+    // Apply the page default to native markup and unthemed Mermaid fences. The
+    // Mermaid producer records an authored palette in its common artifact metadata;
+    // preserve that same source precedence as the direct Mermaid language path.
+    // Null retains the producer's authored or fixed palette.
     private static string? RenderThemed(VisualArtifact artifact, PageTheme theme, string scope) {
+        if (artifact.SourceLanguage == VisualArtifactSourceLanguage.Mermaid && artifact.Metadata.ContainsKey("mermaid.config.theme")) return null;
         switch (artifact.Model) {
             case Chart chart:
                 chart.WithThemeMode(theme.Mode);

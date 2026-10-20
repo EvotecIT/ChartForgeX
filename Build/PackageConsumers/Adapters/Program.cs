@@ -21,6 +21,7 @@ internal static class Program {
         PackageAssertions.CoreFixtures();
         NativeViewportSection();
         RadarSourcePaint();
+        MermaidSourceDiagnostics();
         var values = ChartSeries.CreateLine(new ChartSeriesId("package-values"), "Values",
             new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
         var bubble = ChartSeries.CreateBubble(new ChartSeriesId("0"), "Values", new[] { new ChartBubble(1.5, 2.5, 7) })
@@ -145,6 +146,27 @@ internal static class Program {
         PackageAssertions.Payload("ChartForgeX", "ChartForgeX.Visuals", "ChartForgeX.Interactivity",
             "ChartForgeX.Interactivity.Html", "ChartForgeX.Markup", "ChartForgeX.Mermaid", "ChartForgeX.Markup.Mermaid");
         Console.WriteLine("Adapter package consumer and Markup table producer passed.");
+    }
+
+    private static void MermaidSourceDiagnostics() {
+        const string flow = "flowchart LR\nclassDef default fill:#dbeafe\nclassDef color,box color:#7c2d12\nA:::color --> B:::box";
+        var rendered = MermaidRenderer.Render(flow);
+        PackageAssertions.Require(!rendered.HasErrors && rendered.Diagnostics.Count == 0 && rendered.Artifact != null,
+            "Packed flowchart classes no longer reach the native renderer.");
+        var artifact = rendered.Artifact ?? throw new InvalidOperationException("Packed flowchart did not produce an artifact.");
+        var topology = artifact.Model as TopologyChart
+            ?? throw new InvalidOperationException("Packed flowchart did not produce the native topology model.");
+        PackageAssertions.Require(topology.Nodes.All(node => node.BackgroundColor == "#dbeafe"),
+            "Packed default Mermaid classes did not apply to every node.");
+        PackageAssertions.Png(artifact.ToPng());
+        var invalid = MermaidRenderer.Render("gitGraph\ncommit type: BAD");
+        PackageAssertions.Require(invalid.HasErrors && invalid.Artifact == null
+            && invalid.Diagnostics.All(item => item.Code == MermaidDiagnosticCodes.InvalidStatement),
+            "Packed GitGraph accepted an invalid commit type without its stable error code.");
+        var approximation = new MermaidVisualMarkupParser().Parse("Intro\n\n```mermaid\njourney\nsection Work\nTask: 4: User\n```");
+        PackageAssertions.Require(!approximation.HasErrors && approximation.Artifacts.Count == 1
+            && approximation.Diagnostics.Any(item => item.Code == MermaidDiagnosticCodes.ApproximateMapping && item.Line == 4),
+            "Packed Markdown bridge lost the native mapping warning or its source location.");
     }
 
     private static void NativeViewportSection() {

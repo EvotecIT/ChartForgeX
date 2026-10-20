@@ -12,6 +12,8 @@ $gallery = Join-Path $output 'gallery'
 $captures = Join-Path $output 'captures'
 $results = Join-Path $output 'results'
 New-Item -ItemType Directory -Path $output, $captures, $results -Force | Out-Null
+node --test (Join-Path $PSScriptRoot 'Serve-BrowserGallery.test.cjs')
+if ($LASTEXITCODE) { throw 'Browser gallery server contracts failed.' }
 $project = Join-Path $repository 'ChartForgeX.Tests/ChartForgeX.Tests.csproj'
 if (-not $SkipBuild) {
     dotnet build $project -c Release
@@ -21,9 +23,8 @@ dotnet run --project (Join-Path $repository 'ChartForgeX.Examples/ChartForgeX.Ex
 if ($LASTEXITCODE) { throw 'Fresh browser gallery generation failed.' }
 if (-not (Test-Path -LiteralPath (Join-Path $gallery 'manifest.json'))) { throw 'The generated gallery has no manifest.' }
 
-$addressFile = Join-Path $output 'gallery-address.txt'
+$addressFile = Join-Path $output ('gallery-address-' + [Guid]::NewGuid().ToString('N') + '.txt')
 $serverLog = Join-Path $output 'gallery-server.log'
-[IO.File]::WriteAllText($addressFile, '')
 $start = [Diagnostics.ProcessStartInfo]::new('node')
 $start.CreateNoWindow = $true
 $start.UseShellExecute = $false
@@ -42,17 +43,25 @@ try {
     $standardError = $server.StandardError.ReadToEndAsync()
     $startupTimeoutSeconds = 60
     $startupTimer = [Diagnostics.Stopwatch]::StartNew()
-    while ([IO.File]::ReadAllText($addressFile).Length -eq 0) {
+    while (-not [IO.File]::Exists($addressFile)) {
         if ($server.HasExited) { throw "Gallery server exited with code $($server.ExitCode) before readiness. See $serverLog." }
         if ($startupTimer.Elapsed.TotalSeconds -ge $startupTimeoutSeconds) {
             throw "Gallery server did not become ready within $startupTimeoutSeconds seconds (PID $($server.Id); readiness file: $addressFile). See $serverLog."
         }
         Start-Sleep -Milliseconds 100
     }
+    # The server publishes a complete, closed file by rename. Read once after
+    # publication so no reader can deny the writer access on Windows.
+    $address = [IO.File]::ReadAllText($addressFile)
+    $galleryUri = $null
+    if (-not [Uri]::TryCreate($address, [UriKind]::Absolute, [ref] $galleryUri) -or
+        $galleryUri.Scheme -ne 'http' -or -not $galleryUri.IsLoopback -or $galleryUri.AbsolutePath -ne '/catalog.html') {
+        throw "Gallery server published an invalid readiness address. See $serverLog."
+    }
     $env:HFX_TEST_ENABLE_PLAYWRIGHT = '1'
     $env:CFX_TEST_REQUIRE_BROWSER = '1'
     $env:CFX_TEST_BROWSER = 'chromium'
-    $env:CFX_V2_GALLERY_URL = [IO.File]::ReadAllText($addressFile)
+    $env:CFX_V2_GALLERY_URL = $galleryUri.AbsoluteUri
     $env:CFX_V2_CAPTURE_ROOT = $captures
     $env:CFX_BROWSER_CAPTURE_DIRECTORY = $captures
     Invoke-WebRequest -Uri $env:CFX_V2_GALLERY_URL -TimeoutSec 10 | Out-Null
@@ -177,6 +186,11 @@ try {
             [IO.File]::WriteAllText($serverLog, $capturedOutput + $capturedError)
             if ($capturedOutput -or $capturedError) { Write-Host ($capturedOutput + $capturedError) }
             else { Write-Host 'Gallery server produced no stdout or stderr.' }
-        } finally { $server.Dispose() }
+        } finally {
+            # This per-attempt file has no retained evidence value; the address is
+            # already in the server log. Keep it only if termination was incomplete.
+            if ($server.HasExited -and [IO.File]::Exists($addressFile)) { [IO.File]::Delete($addressFile) }
+            $server.Dispose()
+        }
     }
 }

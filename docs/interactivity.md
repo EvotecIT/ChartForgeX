@@ -579,6 +579,13 @@ Graph selection edge details include `sourceNodeId` and `targetNodeId`.
 Graph notifications also cross shadow boundaries. Use `event.detail.graphId`
 outside the shadow root, where `event.target` refers to the component host.
 
+Graph relationship captions check visible node bodies, captions and badges,
+including collapsed aggregates. Filtering refreshes their SVG positions. Placement
+tries a fixed set of candidates; a crowded scene can leave a caption displaced
+from its edge. Graph scenes also retain their design dimensions when scaled into
+a narrower host, rather than preparing a new layout. Responsive preparation and
+closer caption-to-edge placement remain in the [roadmap](../TODO.md).
+
 ## Topology motion with HTML controls
 
 Use `ChartForgeX.Stories` and `ChartForgeX.Interactivity.Html` together when a topology needs script-free SVG motion and browser controls:

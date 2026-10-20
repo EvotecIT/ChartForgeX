@@ -503,12 +503,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
             : "M " + Number(renderSource.X) + " " + Number(renderSource.Y) + " L " + Number(renderTarget.X) + " " + Number(renderTarget.Y);
     }
 
-    private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset = null, double? sourceBoundaryInset = null) {
+    private static Point EdgeLabelPoint(GraphSceneEdge edge, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, ChartForgeX.Rendering.LabelSpatialIndex obstacles, double? targetBoundaryInset = null, double? sourceBoundaryInset = null) {
         if (string.Equals(edge.SourceNodeId, edge.TargetNodeId, StringComparison.Ordinal)) return SelfLoopLabelPoint(target, targetNode);
         if (edge.RoutePoints.Count > 1 && !targetBoundaryInset.HasValue && !sourceBoundaryInset.HasValue) {
             var route = PolylineRenderPoints(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset);
             var routedPoint = PolylineMidpoint(route, -7);
-            return AvoidEdgeLabelNodeCollisions(routedPoint, edge.Label, source, target, sourceNode, targetNode, sourceBoundaryInset, targetBoundaryInset, route);
+            return AvoidEdgeLabelNodeCollisions(routedPoint, edge.Label, source, target, obstacles, route);
         }
         var control = EdgeControl(edge, source, target);
         var renderSource = SourceBoundaryPoint(edge, source, target, control, sourceNode, sourceBoundaryInset);
@@ -516,7 +516,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var point = control.HasValue
             ? new Point((renderSource.X + 2 * control.Value.X + renderTarget.X) / 4, (renderSource.Y + 2 * control.Value.Y + renderTarget.Y) / 4 - 7)
             : new Point((renderSource.X + renderTarget.X) / 2, (renderSource.Y + renderTarget.Y) / 2 - 7);
-        return AvoidEdgeLabelNodeCollisions(point, edge.Label, source, target, sourceNode, targetNode, sourceBoundaryInset, targetBoundaryInset);
+        return AvoidEdgeLabelNodeCollisions(point, edge.Label, source, target, obstacles);
     }
 
     private static Point? EdgeControl(GraphSceneEdge edge, Point source, Point target) {
