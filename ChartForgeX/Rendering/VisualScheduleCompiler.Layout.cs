@@ -96,8 +96,8 @@ internal static partial class VisualScheduleCompiler {
             var fittedName = ChartTextFitting.TrimEnd(name, style.EffectiveFontSize, labelWidth,
                 (text, _) => builder.MeasureText(text, style).Width);
             if (fittedName.Length == 0) fittedName = name;
-            VisualStateSceneTools.Text(builder, fittedName, new ChartRect(viewport.Left, top, labelWidth, height), LaneLabelStyle(builder, style, fittedName, height, labelWidth),
-                "schedule-row-label", "schedule-row-" + index, TextAlignment.Right);
+            VisualStateSceneTools.Text(builder, name, new ChartRect(viewport.Left, top, labelWidth, height), LaneLabelStyle(builder, style, fittedName, height, labelWidth),
+                "schedule-row-label", "schedule-row-" + index, TextAlignment.Right, displayedText: fittedName);
         }
         if (layout.HasSummary && summary != null)
             VisualStateSceneTools.Text(builder, summary, new ChartRect(layout.SummaryLeft, top, Math.Max(0, viewport.Right - layout.SummaryLeft), height), style,
