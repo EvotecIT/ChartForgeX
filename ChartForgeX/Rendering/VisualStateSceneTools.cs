@@ -82,7 +82,10 @@ internal static class VisualStateSceneTools {
         string id, TextAlignment alignment = TextAlignment.Left, bool shrink = false, SvgPaint? paint = null, string? displayedText = null) {
         builder.AddRegion(new VisualSemanticRegion(id, role, bounds, text));
         var displayed = displayedText ?? text;
-        if (bounds.Width <= 0 || bounds.Height <= 0 || displayed.Length == 0) return;
+        if (bounds.Width <= 0 || bounds.Height <= 0 || displayed.Length == 0) {
+            if (text.Length > 0) builder.AddDiagnostic(new VisualDiagnostic("text.overflow", "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."));
+            return;
+        }
         style = style.Clone();
         if (shrink) {
             var measured = builder.MeasureText(displayed, style);
@@ -93,13 +96,21 @@ internal static class VisualStateSceneTools {
             return metrics.Width <= bounds.Width && metrics.Height <= bounds.Height;
         });
         var fit = ChartTextFitting.TrimEnd(displayed, style.EffectiveFontSize, bounds.Width, (value, _) => builder.MeasureText(value, style).Width);
-        if (fit != text) builder.AddDiagnostic(new VisualDiagnostic("text.overflow", "Text was shortened to fit the fixed viewport; complete text remains in descriptive regions."));
-        if (builder.MeasureText(fit, style).Height > bounds.Height + .000001) return;
+        var height = builder.MeasureText(fit, style).Height;
+        var omitted = height > bounds.Height + .000001;
+        // A complete word-preserving reflow is lossless only when it is still drawn.
+        if (omitted || fit != displayed || displayedText != null && !SameWords(text, displayed))
+            builder.AddDiagnostic(new VisualDiagnostic("text.overflow", "Text was shortened or omitted to fit the fixed viewport; complete text remains in descriptive regions."));
+        if (omitted) return;
         style.Alignment = alignment;
         var x = alignment == TextAlignment.Center ? bounds.Left + bounds.Width / 2 : alignment == TextAlignment.Right ? bounds.Right : bounds.Left;
-        var y = bounds.Top + (bounds.Height - builder.MeasureText(fit, style).Height) / 2 + builder.TextAscent(style);
+        var y = bounds.Top + (bounds.Height - height) / 2 + builder.TextAscent(style);
         using (builder.PushClip(bounds)) builder.Text(fit, x, y, style, role, id, paint ?? VisualChartPaint.Text(style));
     }
+
+    private static bool SameWords(string source, string displayed) =>
+        string.Join(" ", source.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+        == string.Join(" ", displayed.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     internal static ChartPath RoundedRect(ChartRect bounds, double radius) {
         // A rectangle's existing cubic contour owner also handles the zero-radius case.

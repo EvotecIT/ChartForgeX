@@ -1,0 +1,94 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
+FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+var model = SupportedCombinationRecipe.Create("mixed-radial", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 360)), theme, mode,
+    new VisualFrame("Orders by location", "Grouped categories, stable observations and independent configuration", showLegend: true, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+
+/// <summary>Retained series handles share categories while keeping their own configuration, identities and scales.</summary>
+public static class SupportedCombinationRecipe {
+    /// <summary>Builds a grouped secondary-axis, horizontal bar/line or mixed radial chart, optionally after a data update.</summary>
+    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        var updated = variant.StartsWith("updated-", StringComparison.Ordinal);
+        var layout = updated ? variant.Substring(8) : variant;
+        if (layout is "wide" or "compact") layout = "vertical-secondary";
+        if (layout is not ("vertical-secondary" or "horizontal" or "mixed-radial"))
+            throw new ArgumentOutOfRangeException(nameof(variant));
+        var radial = layout == "mixed-radial";
+        var horizontal = layout == "horizontal";
+        var labels = new[] {
+            new ChartAxisLabel(1, "Central", "North"), new ChartAxisLabel(2, "Remote", "North"),
+            new ChartAxisLabel(3, "Central", "South"), new ChartAxisLabel(4, "Remote", "South")
+        };
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Completed orders",
+            radial ? ChartSeriesKind.RadialColumn : horizontal ? ChartSeriesKind.HorizontalBar : ChartSeriesKind.Bar,
+            new[] { new ChartPoint(1, 28), new ChartPoint(3, 41), new ChartPoint(4, 0) })
+            .WithObservationIds(Ids("north-central", "south-central", "south-remote"));
+        ChartSeries reference;
+        if (layout == "vertical-secondary") {
+            reference = ChartSeries.CreateBubble(new ChartSeriesId("reference"), "On-time share",
+                new[] { new ChartBubble(1, .72, 8), new ChartBubble(2, .86, 12), new ChartBubble(3, .79, 10), new ChartBubble(4, .91, 14) });
+        } else {
+            reference = new ChartSeries(new ChartSeriesId("reference"), "Target",
+                radial ? ChartSeriesKind.Radar : ChartSeriesKind.Line,
+                new[] { new ChartPoint(1, 45), new ChartPoint(2, 50), new ChartPoint(3, 55), new ChartPoint(4, 60) });
+            reference.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
+            if (radial) reference.ConfigureRadar(options => options.Form = ChartLineAreaForm.Line);
+        }
+        reference.WithObservationIds(Ids("north-central", "north-remote", "south-central", "south-remote"));
+        var chart = Chart.Create().WithSize(800, 460).WithTheme(VisualTheme.Graphite(), mode)
+            .WithTitle("Orders by location").WithSubtitle("Source identities survive updates; an absent order count stays absent")
+            .WithLegend().WithDataLabels(false).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture))
+            .AddSeries(observed).AddSeries(reference);
+        if (horizontal) {
+            chart.Options.LineOrientation = ChartOrientation.Horizontal;
+            chart.WithXAxis("Orders").WithYAxis("Location");
+            chart.ConfigureXAxis(axis => { axis.Minimum = 0; axis.Maximum = 70; });
+            chart.ConfigureYAxis(axis => { foreach (var label in labels) axis.Labels.Add(label); axis.Reversed = true; });
+        } else {
+            chart.WithXLabels(radial ? labels.Select(label => new ChartAxisLabel(label.Value, string.Join(" / ", label.Groups) + " / " + label.Text)) : labels)
+                .WithYAxis("Orders");
+            chart.ConfigureYAxis(axis => { axis.Minimum = 0; axis.Maximum = 70; });
+            if (!radial) {
+                reference.UseSecondaryYAxis();
+                reference.ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Diamond);
+                chart.WithSecondaryYAxis("On-time share", value => value.ToString("0%", CultureInfo.InvariantCulture));
+                chart.ConfigureSecondaryYAxis(axis => { axis.Minimum = 0; axis.Maximum = 1; });
+            }
+        }
+        if (updated) {
+            observed.Points[0] = new ChartPoint(1, 34); // Indexed numeric updates retain this observation's identity.
+            if (layout == "vertical-secondary") {
+                // Full typed replacement clears observation metadata: reassign IDs in the new source order.
+                reference.ReplaceBubbles(new[] { new ChartBubble(3, .83, 11), new ChartBubble(1, .94, 16), new ChartBubble(4, .88, 13) })
+                    .WithObservationIds(Ids("south-central", "north-central", "south-remote"));
+            } else reference.Points[0] = new ChartPoint(1, 48);
+            reference.WithName(layout == "vertical-secondary" ? "Updated on-time share" : "Updated target");
+            chart.MoveSeries(reference, 0);
+        }
+        return chart;
+    }
+
+    private static IEnumerable<ChartObservationId> Ids(params string[] ids) => ids.Select(id => new ChartObservationId(id));
+}

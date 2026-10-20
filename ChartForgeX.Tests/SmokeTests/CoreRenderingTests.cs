@@ -165,14 +165,28 @@ internal static partial class SmokeTests {
         Assert(System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text" && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") == "data-label"))
             .All(element => double.TryParse((string?)element.Attribute("y"), NumberStyles.Float, CultureInfo.InvariantCulture, out _)), "Data labels should export their measured numeric baselines.");
 
-        var longSvg = Chart.Create().WithTheme(VisualTheme.Report())
+        const string longCaption = "Extremely long remediation status label that must fit";
+        var authored = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(220, 140)
             .WithDataLabels()
-            .WithValueFormatter(_ => "Extremely long remediation status label that must fit")
-            .AddBar("Values", Points(72))
-            .ToSvg();
+            .AddBar("Values", Points(72));
+        authored.Series[0].WithPointLabel(0, longCaption);
+        var prepared = authored.Prepare(VisualExportRequest.ForChart(authored).Context);
+        var longSvg = prepared.ToSvg();
         Assert(longSvg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal), "Long SVG data labels should still render as identifiable data labels.");
-        Assert(longSvg.Contains("…</text>", StringComparison.Ordinal), "SVG data labels should shorten formatter output that cannot fit inside the plot.");
+        Assert(longSvg.Contains("…</text>", StringComparison.Ordinal), "SVG data labels should shorten authored prose that cannot fit inside the plot.");
+        ScatterBubbleColorRenderingTests.Capture(prepared, "smoke-identifiable-authored-label-styling");
+
+        authored.Series[0].UseFormattedPointLabel(0);
+        const string numericCaption = "72.0000 milliseconds per remediation action";
+        authored.WithValueFormatter(value => value.ToString("0.0000", CultureInfo.InvariantCulture) + " milliseconds per remediation action");
+        var numeric = authored.Prepare(VisualExportRequest.ForChart(authored).Context);
+        Assert(!numeric.Scene.Nodes.Any(node => node.Role == "data-label"), "Generated numeric captions that cannot fit should be omitted whole instead of painting fragments.");
+        Assert(numeric.Diagnostics.Any(diagnostic => diagnostic.Code == "cartesian.data-label-overflow"), "Whole numeric caption omission should be diagnosed.");
+        var numericPoint = numeric.Scene.Nodes.OfType<VisualSceneGroup>().Single(node => node.Role == "point");
+        Assert(numericPoint.Metadata["data-cfx-label"] == numericCaption && numericPoint.Metadata["data-cfx-y"] == "72",
+            "Omitted generated captions should retain their complete semantic label and exact raw value.");
+        ScatterBubbleColorRenderingTests.Capture(numeric, "smoke-generated-caption-whole-omission");
     }
 
     private static void CustomValueFormatterAffectsSvgValues() {

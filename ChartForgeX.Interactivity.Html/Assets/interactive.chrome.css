@@ -20,7 +20,7 @@
 .cfx-interactive-chart .cfx-scenario:hover,
 .cfx-interactive-chart .cfx-scenario:focus-visible,
 .cfx-interactive-chart .cfx-scenario[aria-pressed="true"] {
-  border-color: var(--cfx-host-accent); color: var(--cfx-tooltip-text);
+  border-color: var(--cfx-host-accent, var(--cfx-default-host-accent)); color: var(--cfx-tooltip-text);
 }
 /* Scenario captions use the same readable surface roles as other host controls. */
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel,
@@ -32,15 +32,15 @@
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li[aria-current="step"] { color: var(--cfx-tooltip-text); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__meta { color: var(--cfx-tooltip-muted); }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li::before {
-  background: var(--cfx-tooltip-line); color: var(--cfx-tooltip-text); border: 1px solid var(--cfx-scenario-color, var(--cfx-host-accent));
+  background: var(--cfx-tooltip-line); color: var(--cfx-tooltip-text); border: 1px solid var(--cfx-scenario-color, var(--cfx-host-accent, var(--cfx-default-host-accent)));
 }
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li[aria-current="step"] { border-color: var(--cfx-scenario-color, var(--cfx-host-accent)); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li[aria-current="step"] { border-color: var(--cfx-scenario-color, var(--cfx-host-accent, var(--cfx-default-host-accent))); }
 .cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-scenario-playback="playing"] [data-cfx-scenario-step-control="play"] {
-  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); border-color: var(--cfx-scenario-color, var(--cfx-host-accent));
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); border-color: var(--cfx-scenario-color, var(--cfx-host-accent, var(--cfx-default-host-accent)));
 }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress__bar {
   inset: auto auto 0 0; height: 3px; background: var(--cfx-tooltip-muted);
-  box-shadow: inset -2px 0 0 var(--cfx-scenario-color, var(--cfx-host-accent));
+  box-shadow: inset -2px 0 0 var(--cfx-scenario-color, var(--cfx-host-accent, var(--cfx-default-host-accent)));
 }
 @media (forced-colors: active) {
   .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress {
@@ -75,7 +75,7 @@
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page:hover:not(:disabled),
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page:focus-visible,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:hover,
-.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:focus-visible { border-color: var(--cfx-host-accent); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:focus-visible { border-color: var(--cfx-host-accent, var(--cfx-default-host-accent)); }
 .cfx-dashboard { gap: 16px; }
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-tooltip {
   background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
@@ -171,11 +171,11 @@
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"] { text-decoration: line-through; }
 .cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1 !important; }
 .cfx-interactive-chart :focus:not(:focus-visible) { outline: none; }
-.cfx-interactive-chart :focus-visible { outline: 2px solid var(--cfx-host-accent); outline-offset: 2px; }
+.cfx-interactive-chart :focus-visible { outline: 2px solid var(--cfx-host-accent, var(--cfx-default-host-accent)); outline-offset: 2px; }
 .cfx-interactive-chart[data-cfx-keyboard-focus] .cfx-stage svg :focus-visible { outline: none; }
 .cfx-interactive-chart [data-cfx-keyboard-focus-outline] { pointer-events: none; }
 .cfx-interactive-chart [data-cfx-focus-halo] { stroke: var(--cfx-tooltip-surface); stroke-width: 5px; }
-.cfx-interactive-chart [data-cfx-focus-ink] { stroke: var(--cfx-host-accent); stroke-width: 2px; }
+.cfx-interactive-chart [data-cfx-focus-ink] { stroke: var(--cfx-host-accent, var(--cfx-default-host-accent)); stroke-width: 2px; }
 /* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
 .cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series]:not(:where([data-cfx-highlight-managed],.cfx-linked-dim,.cfx-selection-dim)),
 .cfx-interactive-chart[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series]:not(:where([data-cfx-highlight-managed],.cfx-linked-dim,.cfx-selection-dim)) { opacity: 1 !important; }
@@ -211,7 +211,7 @@
 }
 .cfx-interactive-chart .cfx-highlighted:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-highlighted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
-  filter: drop-shadow(0 0 3px var(--cfx-host-accent));
+  filter: drop-shadow(0 0 3px var(--cfx-host-accent, var(--cfx-default-host-accent)));
 }
 /* A connected line/fill has one owner. Dim its observations once, and retain the
    selected or host-highlighted series while the pointer explores a different mark. */
@@ -219,7 +219,7 @@
 .cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="series"].cfx-linked-series-dim [data-cfx-point]:where(.cfx-linked-dim,.cfx-selection-dim) { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="series"].cfx-linked-series-active:not(.cfx-series-muted):not(.cfx-series-isolated-out) { opacity: 1 !important; }
 .cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="series"].cfx-linked-series-active:not(.cfx-series-muted):not(.cfx-series-isolated-out) [data-cfx-role="line"] {
-  filter: drop-shadow(0 0 2px var(--cfx-host-accent));
+  filter: drop-shadow(0 0 2px var(--cfx-host-accent, var(--cfx-default-host-accent)));
 }
 .cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="legend-item"].cfx-linked-series-dim:not([data-cfx-muted="true"]):not(.cfx-series-isolated-out) { opacity: .3 !important; }
 .cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="legend-item"].cfx-linked-series-active:not([data-cfx-muted="true"]):not(.cfx-series-isolated-out) { opacity: 1 !important; }
@@ -254,7 +254,7 @@
   overflow-wrap: anywhere;
 }
 .cfx-legend-overflow summary { cursor: pointer; font-weight: 600; }
-.cfx-legend-overflow summary:focus-visible { outline: 2px solid var(--cfx-host-accent, #38bdf8); outline-offset: 3px; }
+.cfx-legend-overflow summary:focus-visible { outline: 2px solid var(--cfx-host-accent, var(--cfx-default-host-accent, #38bdf8)); outline-offset: 3px; }
 .cfx-legend-overflow__navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-block: 10px; }
 .cfx-legend-overflow__range { margin-inline-end: auto; color: var(--cfx-tooltip-muted, #94a3b8); }
 .cfx-legend-overflow__entries { display: grid; gap: 6px; }

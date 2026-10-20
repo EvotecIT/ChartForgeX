@@ -112,7 +112,8 @@ for (const { folder, file, hasExpected } of files) {
   if (contract.syntax[referenceId] === 'rejected') {
     if (!syntaxFailed) failures.push(`${folder}/${file}: reference ${reference.version} unexpectedly accepts syntax marked rejected.`);
     else if (isReferenceRejection(syntaxError, reference.version, /^gitGraph\b/m.test(source) ? 'gitGraph'
-      : /^(?:flowchart(?:-elk)?|graph)\b/m.test(source) ? 'flowchart' : '')) rejected++;
+      : /^(?:flowchart(?:-elk)?|graph)\b/m.test(source) ? 'flowchart'
+      : /^packet(?:-beta)?\b/m.test(source) ? 'packet' : '')) rejected++;
     else failures.push(`${folder}/${file}: unexpected engine failure, not a qualified syntax rejection: ${syntaxError?.message ?? syntaxError}`);
     continue;
   }
@@ -164,6 +165,9 @@ for (const { folder, file, hasExpected } of files) {
           assert.equal(path.split('.').reduce((current, key) => current?.[key], configuration), undefined, `Configuration ${path} is unavailable`);
       }
       if (expected.flowchartStyles) assert.deepEqual(flowchartStyleFacts(diagram.db), expected.flowchartStyles);
+      if (expected.groups) assert.deepEqual(diagram.db.getSubGraphs().map(group => ({
+        id: group.id, title: group.title, members: [...group.nodes].sort()
+      })), expected.groups);
       if (expected.gitgraph) assert.deepEqual(gitGraphFacts(diagram.db, expected.gitgraph), expected.gitgraph);
       if (expected.nodes) {
         const vertices = diagram.db.getVertices();

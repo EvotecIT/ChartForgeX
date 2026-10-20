@@ -75,9 +75,9 @@
     };
   };
   const installChartSection = (root, next) => {
-    // Host attributes and non-adapter CSS properties belong to the embedding application.
+    // Host attributes, the documented accent override and non-adapter properties belong to the embedding application.
     for (const attribute of Array.from(root.attributes)) if (attribute.name.startsWith('data-cfx-')) root.removeAttribute(attribute.name);
-    for (const property of Array.from(root.style)) if (property.startsWith('--cfx-')) root.style.removeProperty(property);
+    for (const property of Array.from(root.style)) if (property.startsWith('--cfx-') && property !== '--cfx-host-accent') root.style.removeProperty(property);
     for (const attribute of Array.from(next.attributes)) {
       if (attribute.name.startsWith('data-cfx-') && attribute.name !== 'data-cfx-runtime-bound'
         || attribute.name === 'role' || attribute.name === 'aria-label' || attribute.name === 'lang' || attribute.name === 'dir') root.setAttribute(attribute.name, attribute.value);

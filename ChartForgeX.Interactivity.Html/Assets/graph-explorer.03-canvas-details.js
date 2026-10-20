@@ -1,5 +1,8 @@
+  // Match the SVG's inherited family without changing the host's UI typography.
+  const graphNodeFontFamily = root => root?.ownerDocument?.defaultView?.getComputedStyle(root)?.fontFamily
+    || 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   const graphNodePrimaryRingPaint = node => ({ radius: node.size + 9, color: '#0f766e', width: 3 });
-  const drawCanvasNodeDetails = (context, root, node, compact, moving, gpuNodes) => {
+  const drawCanvasNodeDetails = (context, root, node, compact, moving, gpuNodes, fontFamily) => {
     if (!visible(node.el)) return;
     const dimmed = node.el.classList.contains('cfx-graph-neighborhood-dim');
     const primary = node.el.classList.contains('cfx-graph-neighborhood-primary');
@@ -52,7 +55,7 @@
       context.stroke();
     }
     if (labels) {
-      context.font = card ? '700 12.5px Inter, Segoe UI, Arial, sans-serif' : '12px Inter, Segoe UI, Arial, sans-serif';
+      context.font = `${card ? '720 12.5px' : '12px'} ${fontFamily}`;
       context.textAlign = card ? 'left' : 'center';
       context.textBaseline = node.shape === 'text' ? 'middle' : card ? 'alphabetic' : 'top';
       context.lineWidth = 4;
@@ -80,7 +83,7 @@
       context.strokeText(label, labelX, labelY);
       context.fillText(label, labelX, labelY);
       if (node.secondaryLabel && (!hasFeature(root, 'LevelOfDetail') || root.classList.contains('cfx-graph-semantic-detail'))) {
-        context.font = card ? '10px Inter, Segoe UI, Arial, sans-serif' : '9.5px Inter, Segoe UI, Arial, sans-serif';
+        context.font = `${card ? '10px' : '9.5px'} ${fontFamily}`;
         context.fillStyle = nodeColors.secondary;
         context.lineWidth = 3;
         const secondaryLabel = card ? graphCardText(node.secondaryLabel, node.size, true) : node.secondaryLabel;
@@ -98,5 +101,6 @@
       drawNodeMark(context, node, node.el.classList.contains('cfx-graph-selected') || node.el.classList.contains('cfx-graph-highlighted'), compact, root, moving, palette.selected, palette);
       context.restore();
     });
-    nodes.forEach(node => drawCanvasNodeDetails(context, root, node, compact, moving, gpuNodes));
+    const fontFamily = graphNodeFontFamily(root);
+    nodes.forEach(node => drawCanvasNodeDetails(context, root, node, compact, moving, gpuNodes, fontFamily));
   };

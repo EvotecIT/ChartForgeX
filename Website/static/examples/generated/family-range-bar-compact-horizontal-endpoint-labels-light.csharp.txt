@@ -28,10 +28,26 @@ public static class RangeBarRecipe {
     /// <summary>Creates the selected range-bar example with vertical or horizontal intervals.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal"
-            or "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels"))
+            or "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels"
+            or "dense" or "compact-dense" or "dense-horizontal" or "compact-dense-horizontal" or "sparse-catalog" or "compact-sparse-catalog"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         Chart chart;
-        if (variant is "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels")
+        if (variant is "dense" or "compact-dense" or "dense-horizontal" or "compact-dense-horizontal") {
+            chart = Chart.Create().WithTitle("Signed delivery intervals")
+                .WithXLabels(Enumerable.Range(1, 24).Select(index => "R" + index.ToString("00", CultureInfo.InvariantCulture)).ToArray())
+                .WithBarStyle(ChartBarStyle.Flat).WithDataLabels()
+                .ConfigureRangeBar(options => options.Orientation = variant.Contains("horizontal") ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("range"), "Delivery range", Enumerable.Range(1, 24).Select(index => {
+                    var start = index % 6 == 0 ? 0 : Math.Sin(index * .9) * 20;
+                    return new ChartInterval(index, start, index % 6 == 0 ? 0 : start + (index % 3 == 0 ? -10 : 10));
+                })));
+        }
+        else if (variant is "sparse-catalog" or "compact-sparse-catalog")
+            chart = Chart.Create().WithTitle("Observed service intervals")
+                .WithXLabels(Enumerable.Range(1, 8).Select(index => "Region " + index).ToArray()).WithDataLabels()
+                .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("range"), "Delivery range",
+                    new[] { new ChartInterval(1, -7, -1), new ChartInterval(4, 0, 0), new ChartInterval(8, 4, -4) }));
+        else if (variant is "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels")
             chart = EndpointLabels(variant);
         else if (variant is "options" or "compact-options" or "horizontal" or "compact-horizontal")
             chart = GroupedIntervals(variant);

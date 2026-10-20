@@ -186,6 +186,14 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
     const scale = Math.min(width / size.width, height / size.height);
     return { scale: scale > 0 ? scale : 1, offsetX: (width - size.width * scale) / 2, offsetY: (height - size.height * scale) / 2 };
   };
+  // SVG meet scaling leaves usable space outside its logical design frame in
+  // tall/wide hosts. Fit and detached exports must describe the same surface.
+  const graphSurfaceFrame = root => {
+    const size = sceneSize(root), rect = root.querySelector('[data-cfx-role="graph-scene"]')?.getBoundingClientRect();
+    if (!(rect?.width > 0 && rect?.height > 0)) return root.__cfxGraphSurfaceFrame || { x: 0, y: 0, width: size.width, height: size.height, scale: 1, pixelWidth: size.width, pixelHeight: size.height };
+    const fit = graphSurfaceFit(size, rect.width, rect.height), width = rect.width / fit.scale, height = rect.height / fit.scale;
+    return root.__cfxGraphSurfaceFrame = { x: (size.width - width) / 2, y: (size.height - height) / 2, width, height, scale: fit.scale, pixelWidth: rect.width, pixelHeight: rect.height };
+  };
   const scenePoint = (root, event) => {
     const renderer = root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer');
     const surface = root.querySelector(`[data-cfx-role="graph-${renderer === 'svg' ? 'scene' : renderer}"]`) || root.querySelector('.cfx-graph-stage') || root;
@@ -202,8 +210,9 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
     const ratio = Math.max(1, window.devicePixelRatio || 1);
     const size = sceneSize(root);
     const hasLayoutBox = rect.width > 0 && rect.height > 0;
-    const width = Math.max(1, hasLayoutBox ? rect.width : size.width);
-    const height = Math.max(1, hasLayoutBox ? rect.height : size.height);
+    const frame = hasLayoutBox ? null : graphSurfaceFrame(root);
+    const width = Math.max(1, hasLayoutBox ? rect.width : frame.pixelWidth);
+    const height = Math.max(1, hasLayoutBox ? rect.height : frame.pixelHeight);
     if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) {
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);

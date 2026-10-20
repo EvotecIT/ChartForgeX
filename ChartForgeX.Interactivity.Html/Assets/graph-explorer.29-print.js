@@ -71,6 +71,7 @@
     const clear = () => {
       surface?.remove(); surface = null;
       root.removeAttribute('data-cfx-graph-print-ready');
+      paintPendingGraphScreen(root);
     };
     const prepare = () => {
       clear();
@@ -84,12 +85,18 @@
       const camera = svg.querySelector('[data-cfx-role="graph-viewport"]');
       camera?.removeAttribute('transform'); camera?.style.removeProperty('transform');
       svg.setAttribute('role', 'img'); svg.setAttribute('aria-hidden', 'false'); svg.setAttribute('focusable', 'false');
+      // Print prepares a full scene at its design aspect, independently of a
+      // portrait screen snapshot's physical dimensions and current camera.
+      const design = sceneSize(root);
+      svg.setAttribute('width', String(design.width)); svg.setAttribute('height', String(design.height));
+      ['width', 'height', 'aspect-ratio'].forEach(name => svg.style.removeProperty(name));
       surface = root.ownerDocument.createElement('div');
       surface.className = 'cfx-graph-print-surface';
       surface.setAttribute('data-cfx-role', 'graph-print-surface');
       surface.appendChild(svg);
       root.after(surface);
       root.setAttribute('data-cfx-graph-print-ready', 'true');
+      root.__cfxGraphScreenPaintPending = true;
       const heading = root.querySelector('.cfx-graph-header');
       surface.style.setProperty('--cfx-graph-print-reserved-height', `${Math.ceil(heading?.getBoundingClientRect().height || 0) + 16}px`);
       // beforeprint may precede the print media change. A synchronous visible measurement
@@ -112,6 +119,6 @@
     listenGraph(root, view, 'beforeprint', prepare);
     listenGraph(root, view, 'afterprint', clear);
     listenGraph(root, media, 'change', () => media.matches ? prepare() : clear());
-    lifetime.own(clear);
+    lifetime.own(() => { clear(); delete root.__cfxGraphScreenPaintPending; });
     if (media.matches) prepare();
   };

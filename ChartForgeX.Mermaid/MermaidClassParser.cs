@@ -10,7 +10,9 @@ internal static class MermaidClassParser {
     public static void ParseStatements(MermaidClassDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var classes = new Dictionary<string, MermaidClassNode>(StringComparer.Ordinal);
         MermaidClassNode? activeClass = null;
+        MermaidSourceSpan activeClassOpening = document.HeaderSpan;
         var namespaces = new Stack<string>();
+        var namespaceOpenings = new Stack<MermaidSourceSpan>();
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
@@ -30,11 +32,14 @@ internal static class MermaidClassParser {
             if (trimmed.StartsWith("namespace ", StringComparison.Ordinal) && trimmed.EndsWith("{", StringComparison.Ordinal)) {
                 var name = trimmed.Substring(10, trimmed.Length - 11).Trim();
                 if (name.Length == 0) MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Class namespace names must not be empty.");
-                else namespaces.Push(namespaces.Count == 0 ? name : namespaces.Peek() + "." + name);
+                else {
+                    namespaces.Push(namespaces.Count == 0 ? name : namespaces.Peek() + "." + name);
+                    namespaceOpenings.Push(span);
+                }
                 continue;
             }
             if (trimmed == "}") {
-                if (namespaces.Count > 0) namespaces.Pop();
+                if (namespaces.Count > 0) { namespaces.Pop(); namespaceOpenings.Pop(); }
                 else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Class diagram closing brace has no open class or namespace.");
                 continue;
             }
@@ -59,6 +64,7 @@ internal static class MermaidClassParser {
                 }
                 var previousStyleCount = document.StyleStatements.Count;
                 ParseClassOrStyle(document, classes, trimmed, span, ref activeClass);
+                if (activeClass != null) activeClassOpening = span;
                 if (document.StyleStatements.Count > previousStyleCount)
                     MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class style");
                 if (namespaces.Count > 0 && trimmed.StartsWith("class ", StringComparison.Ordinal)) {
@@ -98,8 +104,12 @@ internal static class MermaidClassParser {
             document.StyleStatements.Add(new MermaidClassStyleStatement(trimmed, span));
         }
 
-        if (activeClass != null || namespaces.Count > 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Class definitions and namespaces must close with '}'.");
+        if (activeClass != null) Unclosed(activeClassOpening);
+        foreach (var opening in namespaceOpenings) Unclosed(opening);
         if (document.Classes.Count == 0 && document.Relationships.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid class diagrams require at least one class or relationship.");
+
+        void Unclosed(MermaidSourceSpan opening) => MermaidParserUtilities.Add(result, opening, MermaidDiagnosticSeverity.Error,
+            "Class definitions and namespaces must close with '}'.");
     }
 
     private static void ParseClassOrStyle(MermaidClassDocument document, Dictionary<string, MermaidClassNode> classes, string text, MermaidSourceSpan span, ref MermaidClassNode? activeClass) {

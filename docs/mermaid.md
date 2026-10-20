@@ -183,6 +183,18 @@ The conversion target for flowcharts is `TopologyChart`. Subgraphs become topolo
 
 Link length is a native rank constraint: `A --> B` requests one rank, `A ---> B` requests two, and `A ----> B` requests three. Thick and dotted links use the same rank-spacing owner, and inline labels take their length from the closing operator. Hyphens or dots within labels remain label text. Swimlane conversion applies the same rule. Longer links can cause the fitted canvas to grow; they do not request a fixed pixel distance. Shared routing reserves a corridor for links that skip intermediate ranks while preserving explicit native ports and waypoints.
 
+Quoted Flowchart captions can span physical lines. Node, edge and subgraph captions translate authored `<br>` breaks and Mermaid `#name;` / `#decimal;` entities into inert text. Encoded markup stays literal. Markdown strings enclosed in double quotes and backticks preserve their text and line breaks; common bold/italic markers become plain native captions and produce `CFXM009` because the native caption style does not reproduce Markdown emphasis. HTML tags other than line breaks and `$$` math remain visible literal text with `CFXM007`; they are never executed or fetched. The AST and `mermaid.label` metadata retain the authored caption.
+
+```mermaid
+flowchart LR
+A["`**Review** the
+*request*`"] -->|"`Send **now**`"| B["Ready<br>to ship"]
+```
+
+Repeated `linkStyle` declarations replace the earlier declaration for the same selector. Explicit edge selectors override the default declaration. This matches the pinned upstream engines; it does not use CSS property merging across separate linkStyle statements.
+
+Automatic group compaction replans generated rank-skipping routes against final member positions. Bypass edges retain orthogonal endpoint legs and separate attachment points from adjacent direct edges in all four global directions. Authored ports and waypoints remain authoritative. Nested shells, group endpoints and local subgraph directions still need dedicated native geometry.
+
 ## Class Diagrams
 
 Class diagrams are parsed into `MermaidClassDocument` and converted to topology previews with visible members, namespace groups, endpoint multiplicities, and UML inheritance, composition, and aggregation markers.
@@ -1498,7 +1510,7 @@ Fence attributes such as `id`, `title`, `subtitle`, `width`, `height`, and famil
 
 ## Mermaid.js Conformance Fixtures
 
-The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. The corpus contains 102 native fixture sources, five recognition-only sources and 12 invalid sources, with 62 shared semantic expectation files. Shared facts include flowchart classes and resolved node/link paints, GitGraph relationships and cherry-pick parent selection, and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. The harness does not render upstream reference images.
+The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. The corpus contains 105 native fixture sources, five recognition-only sources and 16 invalid sources, with 65 shared semantic expectation files. Shared facts include flowchart classes and resolved node/link paints, GitGraph relationships and cherry-pick parent selection, and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. A separate opt-in browser lane renders selected upstream fixtures through HtmlTinkerX and records native SVG/PNG beside them.
 
 ```powershell
 Set-Location .\tests\mermaid-conformance
@@ -1508,7 +1520,15 @@ npm run validate
 
 `Build.ps1` runs the same three-reference validation before the solution build and .NET test suite. The default command validates `fixtures/`, `recognition/` and `invalid/`; use `node validate-mermaid.mjs fixtures --reference 10` for a focused folder/version run. New fixtures require version metadata. Documented syntax and semantic rejections are checked independently of accepted-source facts, so a failed semantic comparison cannot be counted as an expected source rejection.
 
-The 12.2.0 reference accepts all 107 positive sources and rejects all 12 invalid sources. These lanes qualify the checked examples rather than every syntax form in those major versions. Older sequence autonumber and requirement sources have dedicated fixtures; newer families and spellings are marked unavailable on references that reject them. Mermaid 10 also handles an excluded Gantt endpoint differently: an interval ending January 5 with January 5 excluded schedules its successor on January 5, while Mermaid 11/12 schedules it on January 6. ChartForgeX uses the current result and keeps the older expectation visible in the corpus instead of introducing a version-dependent renderer.
+The 12.2.0 reference accepts all 110 positive sources and rejects all 16 invalid sources. These lanes qualify the checked examples rather than every syntax form in those major versions. Older sequence autonumber and requirement sources have dedicated fixtures; newer families and spellings are marked unavailable on references that reject them. Mermaid 10 also handles an excluded Gantt endpoint differently: an interval ending January 5 with January 5 excluded schedules its successor on January 5, while Mermaid 11/12 schedules it on January 6. ChartForgeX uses the current result and keeps the older expectation visible in the corpus instead of introducing a version-dependent renderer.
+
+Run the observed reference-render lane with an absolute task output directory (`$outputDirectory` below):
+
+```powershell
+./Build/Test-MermaidReferenceRendering.ps1 -OutputRoot $outputDirectory
+```
+
+This uses the same pinned npm packages and the existing HtmlTinkerX browser cache. It loads Mermaid only inside the test browser, with explicit classic look and Dagre layout to keep appearance defaults controlled across versions. The lane checks label content, relationship counts, native caption containment and script-free native output for multiline/Markdown labels, repeated linkStyle replacement and a compound bypass route. Captures show upstream SVG, native SVG and native PNG in compact/light and wide/dark examples; layout, palette, Markdown emphasis and exact dimensions deliberately differ. These observations qualify those fixtures, not every Flowchart form or pixel fidelity. Hosted execution of this optional lane remains separate from the normal quality workflow.
 
 ````markdown
 ```mermaid {#incident-flow title="Incident Flow" subtitle="Static preview" width=1180 height=720}

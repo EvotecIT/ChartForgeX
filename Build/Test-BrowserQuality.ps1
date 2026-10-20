@@ -76,6 +76,18 @@ try {
     }
     $requiredContracts = @(
         'V2GalleryBrowserMatrixTests.EveryFamilyKeepsReadableNativeSvgAndHealthyPairedPng',
+        'GraphReadabilityBrowserTests.CompactFitUsesScreenSpaceAndResizePreservesTouchedCamera',
+        'GraphResizeLifecycleBrowserTests.ImmediateSearchAfterRemountDoesNotTurnInitialResizeNotificationIntoFit',
+        'GraphResizeLifecycleBrowserTests.HiddenRemountRefitsOnRevealAndActualResizePreservesTouchedCamera',
+        'GraphResizeLifecycleBrowserTests.PrintingAnUntouchedFitDoesNotRefitTheRestoredScreenFrame',
+        'GraphReadabilityBrowserTests.TallCompactFitKeepsPaintClearOfFloatingControls',
+        'GraphReadabilityBrowserTests.PreparedAndLiveCaptionsUseClearSpaceAlongTheirRoute',
+        'GraphReadabilityBrowserTests.ShortRelationshipUsesEmptySpaceBetweenPaintedNodeDetails',
+        'GraphReadabilityBrowserTests.ShortCurvedCardsKeepTheCaptionInTheirPaintedGap',
+        'GraphReadabilityBrowserTests.FitMeasuresUntruncatedPrimaryAndSecondaryCaptionsInPhysicalAndVirtualScenes',
+        'GraphReadabilityBrowserTests.NativeStaticFitIncludesTheSameCompletePrimaryAndSecondaryCaptions',
+        'InteractiveChartLifecycleBrowserTests.HostAccentSurvivesReplacementAndAdaptiveDrawingsWhileDefaultsFollowTheNewTheme',
+        'SupportedCombinationBrowserTests.ReplacementRetainsSelectedSourceAndLegendStateAcrossSupportedCompositions',
         'GaugeScalePrecisionBrowserTests.NeedleAtScaleEdgesClearsMeasuredSummaryInRenderedSvg',
         'GaugeScalePrecisionBrowserTests.CloseGaugeBoundsRemainDistinctAndContainedInNativeSvgAndPairedPng',
         'InteractiveTopologyPresentationTests.PointerReleaseOutsideViewportDoesNotResumePanningOnReentry',

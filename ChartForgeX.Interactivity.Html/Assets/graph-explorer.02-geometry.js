@@ -56,7 +56,9 @@
         graphNodeMeasureContext ||= document.createElement('canvas').getContext('2d');
         if (graphNodeMeasureContext) {
           graphNodeMeasureContext.font = '800 7px Inter, "Segoe UI", Arial, sans-serif';
-          width = graphNodeMeasureContext.measureText(text).width;
+          const metrics = graphNodeMeasureContext.measureText(text);
+          const ink = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight;
+          width = Math.max(metrics.width, Number.isFinite(ink) ? ink : 0);
         }
       }
       if (cache) {
@@ -259,56 +261,6 @@
   const selfLoopPath = (node) => {
     const loop = selfLoopGeometry(node);
     return `M ${loop.start.x.toFixed(3)} ${loop.start.y.toFixed(3)} C ${loop.c1.x.toFixed(3)} ${loop.c1.y.toFixed(3)} ${loop.c2.x.toFixed(3)} ${loop.c2.y.toFixed(3)} ${loop.end.x.toFixed(3)} ${loop.end.y.toFixed(3)}`;
-  };
-  const graphEstimatedEdgeLabelWidth = value => {
-    let width = 8;
-    Array.from(String(value || '')).forEach(character => {
-      width += character === ' ' ? 3.2
-        : '.,:;!|'.includes(character) ? 3.6
-          : 'MW@%&'.includes(character) ? 9
-            : /[A-Z]/.test(character) ? 7.2
-              : /[0-9]/.test(character) ? 6.2
-                : 5.8;
-    });
-    return width;
-  };
-  const avoidEdgeLabelNodeCollisions = (edge, candidate, obstacles) => {
-    const label = graphLabelText(edge.label) || graphLabelText(attr(edge.el, 'data-edge-label'));
-    const intersects = point => edgeLabelIntersectsObstacles(point, label, obstacles);
-    if (!label || !intersects(candidate)) return candidate;
-    if (edgeHasRoute(edge)) {
-      const points = routeRenderPoints(edge);
-      for (const fraction of [.45, .55, .35, .65, .25, .75]) {
-        const point = routePointAt(points, fraction, -7);
-        if (!intersects(point)) return point;
-      }
-      return candidate;
-    }
-    const center = { x: (edge.source.x + edge.target.x) / 2, y: (edge.source.y + edge.target.y) / 2 - 7 };
-    if (!intersects(center)) return center;
-    const dx = edge.target.x - edge.source.x;
-    const dy = edge.target.y - edge.source.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const normal = distance < .001 ? { x: 0, y: -1 } : { x: -dy / distance, y: dx / distance };
-    const preferredSign = normal.y > 0 ? -1 : 1;
-    const offsets = [20, 36, 54, 76, 102, 136, 176, 220, 280];
-    for (const offset of offsets) {
-      const preferred = { x: candidate.x + normal.x * offset * preferredSign, y: candidate.y + normal.y * offset * preferredSign };
-      if (!intersects(preferred)) return preferred;
-      const alternate = { x: candidate.x - normal.x * offset * preferredSign, y: candidate.y - normal.y * offset * preferredSign };
-      if (!intersects(alternate)) return alternate;
-    }
-    const offset = offsets[offsets.length - 1];
-    return { x: candidate.x + normal.x * offset * preferredSign, y: candidate.y + normal.y * offset * preferredSign };
-  };
-  const edgeLabelPoint = (edge, control, obstacles) => {
-    if (edge.source === edge.target) return selfLoopGeometry(edge.source).label;
-    if (edgeHasRoute(edge)) return avoidEdgeLabelNodeCollisions(edge, routeMidpoint(routeRenderPoints(edge), -7), obstacles);
-    const endpoints = edgeRenderEndpoints(edge, control);
-    const point = control
-      ? { x: (endpoints.source.x + 2 * control.x + endpoints.target.x) / 4, y: (endpoints.source.y + 2 * control.y + endpoints.target.y) / 4 - 7 }
-      : { x: (endpoints.source.x + endpoints.target.x) / 2, y: (endpoints.source.y + endpoints.target.y) / 2 - 7 };
-    return avoidEdgeLabelNodeCollisions(edge, point, obstacles);
   };
   const edgeArrowGeometry = (edge, control, side, size = 8) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;

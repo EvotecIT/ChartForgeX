@@ -28,8 +28,12 @@ internal static partial class SmokeTests {
             .ToGraphExplorerHtmlFragment();
 
         var label = ExtractGraphEdgeLabelPoint(html, "relationship");
-        Assert(Math.Abs(label.X - 490) < 14 && label.Y > 430 && label.Y < 475,
-            "Short curved relationships should use the readable gap between card nodes before moving labels away from their route.");
+        // The caption may move along the clipped curve. Its old midpoint X
+        // constraint rejected a clear position nearer the actual painted path.
+        Assert(label.X > 380 && label.X < 600 && label.Y - 12 > 386 + 36 && label.Y < 513 - 36,
+            "Short curved relationships should keep a complete caption row in the painted gap between the two cards.");
+        Assert(html.Contains(">Forest / Bidirectional</text>", StringComparison.Ordinal),
+            "The relationship caption should remain complete in the available card gap.");
     }
 
     private static void GraphExplorerEdgeGeometryKeepsBidirectionalArrowLabelsAligned() {

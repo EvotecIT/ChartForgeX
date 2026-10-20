@@ -175,13 +175,17 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private readonly struct ResolvedPointLabel {
-        internal ResolvedPointLabel(string text, string displayedText, TextStyle style, IReadOnlyDictionary<string, string>? numericCaptions = null, bool authored = false) {
+        internal ResolvedPointLabel(string text, string displayedText, TextStyle style, IReadOnlyDictionary<string, string>? numericCaptions = null,
+            bool authored = false, LabelFallbackRule? fallback = null) {
             Text = text; DisplayedText = displayedText; Style = style; NumericCaptions = numericCaptions; Authored = authored;
+            Fallback = fallback ?? (authored ? LabelFallbackRule.EllipsisThenDrop : LabelFallbackRule.Drop);
         }
         internal string Text { get; }
         internal string DisplayedText { get; }
         internal TextStyle Style { get; }
         internal bool Authored { get; }
+        // Custom endpoint text keeps its single-line shortening policy without enabling authored Auto wrapping.
+        internal LabelFallbackRule Fallback { get; }
         private IReadOnlyDictionary<string, string>? NumericCaptions { get; }
         internal string? NumericCaption(string member) => NumericCaptions != null && NumericCaptions.TryGetValue(member, out var text) ? text : null;
     }
@@ -311,7 +315,8 @@ internal static partial class VisualCartesianCompiler {
         if (inside) { style = insideStyle; paint = insidePaint; }
         var request = new LabelPlacementRequest(resolvedLabel.Text, anchor, style, candidates) {
             AssociatedMarkId = associatedId ?? PointId(seriesIndex, pointIndex), Paint = paint,
-            AllowWrapping = resolvedLabel.Authored && placement == ChartDataLabelPlacement.Auto
+            AllowWrapping = resolvedLabel.Authored && placement == ChartDataLabelPlacement.Auto,
+            Fallback = resolvedLabel.Fallback
         };
         if (labelId != null) ((CartesianLabels)labels).LabelIds.Add(request, labelId);
         if (inside) request.Bounds = mark;

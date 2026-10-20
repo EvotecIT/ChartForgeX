@@ -83,11 +83,13 @@ public sealed class GraphBadgeLayoutTests {
         if (backend == HtmlGraphRenderBackend.Canvas)
             await page.WaitForFunctionAsync("() => badgePaint.includes('+1234567890')");
         else {
-            var fits = await page.Locator("[data-node-details-for=root] .cfx-graph-node-badge").EvaluateAsync<bool>("""
-                badge=>{const text=badge.querySelector('text'),surface=badge.querySelector('rect');if(!surface)return false;
-                  const t=text.getBBox(),s=surface.getBBox();return text.textContent==='+1234567890'&&t.x>=s.x+3&&t.x+t.width<=s.x+s.width-3;}
+            var measured = await page.Locator("[data-node-details-for=root] .cfx-graph-node-badge").EvaluateAsync<JsonElement>("""
+                badge=>{const text=badge.querySelector('text'),surface=badge.querySelector('rect'),t=text.getBBox(),s=surface.getBBox(),font=getComputedStyle(text).font;
+                  const context=document.createElement('canvas').getContext('2d');context.font=font;const metrics=context.measureText(text.textContent);
+                  return {text:text.textContent,font,left:t.x-s.x,right:s.x+s.width-t.x-t.width,surface:s.width,glyph:t.width,advance:metrics.width,ink:metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight};}
                 """);
-            Assert.True(fits, "The complete live badge needs measured horizontal padding.");
+            Assert.Equal("+1234567890", measured.GetProperty("text").GetString());
+            Assert.True(measured.GetProperty("left").GetDouble() >= 3 && measured.GetProperty("right").GetDouble() >= 3, measured.GetRawText());
         }
         await page.EvaluateAsync("() => ChartForgeXGraphExplorer.export('badge-live','svg')");
         var exported = XDocument.Parse(await page.EvaluateAsync<string>("() => badgeExport"));

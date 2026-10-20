@@ -1029,6 +1029,67 @@
         "12": "rejected"
       },
       "provenance": "Authored invalid-source regression applying linkStyle 0 before its edge declaration. Qualified against pinned official Mermaid 10.9.8 (explicit edge-bounds error), 11.17.2 and 12.2.0 (exact missing-edge style assignment error). Numeric selectors must refer to existing edges at declaration time; default remains valid before edges."
+    },
+    "fixtures/flowchart-multiline-markdown.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/flowchart.html; bounded ChartForgeX regression for flowchart-multiline-markdown"
+    },
+    "fixtures/flowchart-link-style-replacement.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/flowchart.html; bounded ChartForgeX regression for flowchart-link-style-replacement"
+    },
+    "fixtures/flowchart-compound-long-edge.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/flowchart.html; bounded ChartForgeX regression for flowchart-compound-long-edge"
+    },
+    "invalid/packet-noncontiguous.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.2.0 rejection probe; missing block closure or noncontiguous packet range",
+      "notes": {
+        "10": "Packet family is unavailable; this version establishes family rejection, not range validation.",
+        "11": "Accepted packet family rejects a gap after bits 0-3.",
+        "12": "Accepted packet family rejects a gap after bits 0-3."
+      }
+    },
+    "invalid/class-unclosed-body.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.2.0 rejection probe; missing block closure or noncontiguous packet range"
+    },
+    "invalid/state-unclosed-composite.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.2.0 rejection probe; missing block closure or noncontiguous packet range"
+    },
+    "invalid/er-unclosed-attributes.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "rejected"
+      },
+      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.2.0 rejection probe; missing block closure or noncontiguous packet range"
     }
   }
 }

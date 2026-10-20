@@ -1,0 +1,7 @@
+{
+  "nodes": ["one", "middle", "last", "other"],
+  "edges": [["one", "middle"], ["middle", "last"], ["one", "last"]],
+  "nodeLabels": {"one": "One", "middle": "Middle", "last": "Last", "other": "Other"},
+  "edgeLabels": ["", "", "Bypass"],
+  "groups": [{"id": "a", "title": "Delivery", "members": ["last", "middle", "one"]}, {"id": "b", "title": "Other lane", "members": ["other"]}]
+}

@@ -69,3 +69,14 @@ test('Pinned GitGraph grammar and semantic failures are scoped to their source f
   assert.equal(isReferenceRejection(grammar, '12.2.0', 'flowchart'), false);
   assert.equal(isReferenceRejection(grammar, '13.0.0', 'gitGraph'), false);
 });
+
+test('Packet contiguity failures remain scoped semantic rejection evidence', () => {
+  const message = 'Packet block 8 - 10 is not contiguous. It should start from 4.';
+  for (const version of ['11.17.2', '12.2.0']) {
+    assert.equal(isReferenceRejection(new Error(message), version, 'packet'), true);
+    assert.equal(isReferenceRejection(new TypeError(message), version, 'packet'), false);
+    assert.equal(isReferenceRejection(new Error(message), version, 'flowchart'), false);
+    assert.equal(isReferenceRejection(new Error('Internal packet failure'), version, 'packet'), false);
+  }
+  assert.equal(isReferenceRejection(new Error(message), '10.9.8', 'packet'), false);
+});

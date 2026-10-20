@@ -97,6 +97,7 @@ public sealed class MermaidFlowchartNode : MermaidAstNode {
     /// <summary>Initializes a parsed flowchart node.</summary>
     public MermaidFlowchartNode(string id, MermaidSourceSpan span) : base(span) {
         _id = string.IsNullOrWhiteSpace(id) ? throw new System.ArgumentException("Node id is required.", nameof(id)) : id;
+        LabelSpan = span;
     }
 
     /// <summary>Gets or sets the Mermaid node identifier.</summary>
@@ -104,6 +105,9 @@ public sealed class MermaidFlowchartNode : MermaidAstNode {
 
     /// <summary>Gets or sets the optional node label text.</summary>
     public string? Text { get; set; }
+
+    /// <summary>Tracks the current label declaration while the node span retains its first reference.</summary>
+    internal MermaidSourceSpan LabelSpan { get; set; }
 
     /// <summary>Gets or sets the explicit Mermaid node shape.</summary>
     public MermaidFlowchartNodeShape Shape { get; set; }

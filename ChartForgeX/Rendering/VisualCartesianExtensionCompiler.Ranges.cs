@@ -48,8 +48,7 @@ internal static partial class VisualCartesianCompiler {
         }
         for (var item = 0; item < count; item++) {
             var low = series.RenderPoints[item * 2]; var high = series.RenderPoints[item * 2 + 1];
-            var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
-            var showMarkers = VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue);
+            var showMarkers = PairedObservationMarkersEnabled(series, item);
             var radius = showMarkers ? series.MarkerRadius ?? context.Theme.MarkerRadius : 0;
             var bounds = Extents(lower[item].X, lower[item].Y, upper[item].X, upper[item].Y, VisualMarkerScene.Extent(series, radius));
             var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("lower", low.Y) + "–" + format("upper", high.Y));

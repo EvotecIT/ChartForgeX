@@ -200,6 +200,44 @@ public sealed class RangeBarEndpointLabelTests {
         Assert.NotEmpty(prepared.ToPng());
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CustomEndpointProseKeepsSingleLineShorteningAndCompleteSourceFacts(bool horizontal) {
+        const string start = "Preparation complete in regional queue";
+        const string end = "Delivery complete in regional queue";
+        var chart = Fixture(horizontal).WithSize(220, 180); chart.RemoveSeries(chart.Series[1]);
+        chart.Series[0].UpdateInterval(0, new ChartInterval(1, -10, 30));
+        chart.Options.RangeBar.EndpointLabelFormatter = context => context.Endpoint == ChartRangeBarEndpoint.Start ? start : end;
+        var prepared = Prepare(chart); var captions = Labels(prepared);
+        Assert.Equal(2, captions.Length);
+        Assert.All(captions, caption => {
+            Assert.EndsWith("…", Assert.Single(caption.Text.Lines).Text);
+            Assert.Equal(12, caption.Text.Size);
+        });
+        var point = Assert.Single(Points(prepared));
+        Assert.Equal(start, point.Metadata["data-cfx-start-label"]); Assert.Equal(end, point.Metadata["data-cfx-end-label"]);
+        Assert.Equal("-10", point.Metadata["data-cfx-start"]); Assert.Equal("30", point.Metadata["data-cfx-end"]);
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
+        ScatterBubbleColorRenderingTests.Capture(prepared, "endpoint-prose-" + (horizontal ? "horizontal" : "vertical"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GeneratedEndpointNumbersStillOmitWholeInsteadOfShortening(bool horizontal) {
+        const string number = "123456789012345678901234567890.123456789";
+        var chart = Fixture(horizontal).WithSize(220, 180); chart.RemoveSeries(chart.Series[1]);
+        chart.WithValueFormatter(_ => number);
+        var prepared = Prepare(chart);
+        Assert.Empty(Labels(prepared));
+        var point = Assert.Single(Points(prepared));
+        Assert.Equal(number, point.Metadata["data-cfx-start-label"]); Assert.Equal(number, point.Metadata["data-cfx-end-label"]);
+        Assert.Equal("30", point.Metadata["data-cfx-start"]); Assert.Equal("-10", point.Metadata["data-cfx-end"]);
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
     internal static Chart Fixture(bool horizontal = false) {
         var chart = Chart.Create().WithSize(800, 440).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels()
             .WithXLabels("Express").WithBarStyle(ChartBarStyle.Flat)

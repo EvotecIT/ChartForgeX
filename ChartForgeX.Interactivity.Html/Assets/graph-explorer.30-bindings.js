@@ -140,6 +140,12 @@
       if (root.classList.contains(name)) clone.classList.add(name);
     });
     applyGraphExportStyles(root, svg, clone);
+    const frame = graphSurfaceFrame(root);
+    clone.setAttribute('viewBox', `${frame.x} ${frame.y} ${frame.width} ${frame.height}`);
+    clone.setAttribute('width', String(frame.pixelWidth)); clone.setAttribute('height', String(frame.pixelHeight));
+    clone.style.width = `${frame.pixelWidth}px`; clone.style.height = `${frame.pixelHeight}px`; clone.style.aspectRatio = 'auto';
+    const background = clone.querySelector('.cfx-graph-bg');
+    if (background) for (const name of ['x', 'y', 'width', 'height']) background.setAttribute(name, String(frame[name]));
     return new XMLSerializer().serializeToString(clone);
   };
   const syncPhysicsControls = (root) => {

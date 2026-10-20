@@ -26,7 +26,7 @@ internal static partial class InteractiveChartBrowser {
         _ => throw new InvalidOperationException(EngineVariable + " must be chromium, firefox or webkit.")
     };
 
-    internal static async Task<HtmlBrowserSession> OpenAsync(string html, int width = 700, int height = 460, bool touch = false) {
+    internal static async Task<HtmlBrowserSession> OpenAsync(string html, int width = 700, int height = 460, bool touch = false, Action<IPage>? configurePage = null) {
         var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
             Browser = Engine,
             Headless = true,
@@ -37,6 +37,7 @@ internal static partial class InteractiveChartBrowser {
             IsMobile = touch
         });
         try {
+            configurePage?.Invoke(session.Page);
             await session.Page.SetContentAsync(html);
             return session;
         } catch {

@@ -109,9 +109,39 @@
   const endpointVisible = (node) => node && (visible(node.el) || attr(node.el, 'data-node-hidden') === 'true');
   const visualEdge = (edge, byId) => { const source = edgeVisualNode(edge, 'source', byId), target = edgeVisualNode(edge, 'target', byId); return { ...edge, source, target, sourceCollapsed: source !== edge.source, targetCollapsed: target !== edge.target }; };
   const edgeHasVisibleEndpoints = (edge, byId) => endpointVisible(edgeVisualNode(edge, 'source', byId)) && endpointVisible(edgeVisualNode(edge, 'target', byId));
-  const contentBounds = (root, state) => {
+  // Fit measures painted captions independently of capped layout/physics extents.
+  // Virtual accelerated nodes use the same Canvas fonts; physical SVG details
+  // additionally contribute their actual glyph boxes, including host typography.
+  const graphNodeFitExtents = (node, fontFamily) => {
+    const extents = nodeLayoutExtents(node, false);
+    if (!node.card) {
+      const measure = (value, font, secondary) => {
+        let width = graphEstimatedCardTextWidth(value, secondary);
+        if (typeof document !== 'undefined' && typeof document.createElement === 'function') {
+          graphNodeMeasureContext ||= document.createElement('canvas').getContext('2d');
+          if (graphNodeMeasureContext) { graphNodeMeasureContext.font = font; width = graphNodeMeasureContext.measureText(value).width; }
+        }
+        return width;
+      };
+      const primary = node.label || attr(node.el, 'data-node-label');
+      const secondary = node.secondaryLabel || attr(node.el, 'data-node-secondary-label');
+      extents.x = Math.max(extents.x, measure(primary, `12px ${fontFamily}`, false) / 2 + (node.labelBackgroundColor ? 11 : 4));
+      if (secondary) extents.x = Math.max(extents.x, measure(secondary, `9.5px ${fontFamily}`, true) / 2 + 4);
+    }
+    const details = node.detailsEl;
+    if (typeof details?.getBBox === 'function') {
+      const box = details.getBBox();
+      if ([box.x, box.y, box.width, box.height].every(Number.isFinite)) {
+        extents.x = Math.max(extents.x, Math.abs(box.x) + 4, Math.abs(box.x + box.width) + 4);
+        extents.y = Math.max(extents.y, Math.abs(box.y) + 4, Math.abs(box.y + box.height) + 4);
+      }
+    }
+    return extents;
+  };
+  const contentBounds = (root, state, measurePaintedCaptions = false) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     const labelObstacles = graphEdgeLabelObstacles(root, state);
+    const fontFamily = measurePaintedCaptions ? graphNodeFontFamily(root) : '';
     const bounds = [];
     const pushPoint = (point, pad) => {
       if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
@@ -125,8 +155,8 @@
     };
     state.nodes.forEach(node => {
       if (!visible(node.el)) return;
-      const pad = 30;
-      bounds.push({ minX: node.x - nodeHalfWidth(node) - pad, minY: node.y - nodeHalfHeight(node) - pad, maxX: node.x + nodeHalfWidth(node) + pad, maxY: node.y + nodeHalfHeight(node) + pad });
+      const pad = 8, extents = measurePaintedCaptions ? graphNodeFitExtents(node, fontFamily) : nodeLayoutExtents(node, false);
+      bounds.push({ minX: node.x - extents.x - pad, minY: node.y - extents.y - pad, maxX: node.x + extents.x + pad, maxY: node.y + extents.y + pad });
     });
     state.edges.forEach(edge => {
       if (!visible(edge.el) || !edge.source || !edge.target || !edgeHasVisibleEndpoints(edge, byId)) return;
@@ -163,8 +193,22 @@
       maxY: Math.max(...bounds.map(item => item.maxY))
     };
   };
+  const graphFitArea = (root, frame) => {
+    const rect = root.querySelector('[data-cfx-role="graph-scene"]')?.getBoundingClientRect();
+    let top = 0, bottom = 0;
+    if (rect?.width > 0 && rect?.height > 0) {
+      root.querySelectorAll('.cfx-graph-command-rail,.cfx-graph-breadcrumbs,.cfx-graph-neighborhood-navigation').forEach(control => {
+        const box = control.getBoundingClientRect();
+        if (!(box.width > 0 && box.height > 0) || box.bottom <= rect.top || box.top >= rect.bottom) return;
+        if ((box.top + box.bottom) / 2 < (rect.top + rect.bottom) / 2) top = Math.max(top, box.bottom - rect.top + 10);
+        else bottom = Math.max(bottom, rect.bottom - box.top + 10);
+      });
+    }
+    return { width: frame.width, height: Math.max(1, frame.height - (top + bottom) / frame.scale),
+      centerY: sceneSize(root).centerY + (top - bottom) / (2 * frame.scale) };
+  };
   const fitViewport = (root) => {
-    const bounds = contentBounds(root, root.__cfxGraphState || graphState(root));
+    const bounds = contentBounds(root, root.__cfxGraphState || graphState(root), true);
     const size = sceneSize(root);
     if (!bounds) {
       setViewport(root, { x: 0, y: 0, scale: 1 });
@@ -173,7 +217,11 @@
     const padding = Math.max(34, Math.min(84, Math.min(size.width, size.height) * 0.08));
     const width = Math.max(1, bounds.maxX - bounds.minX);
     const height = Math.max(1, bounds.maxY - bounds.minY);
-    const scale = Math.min(1.35, Math.max(0.2, Math.min((size.width - padding * 2) / width, (size.height - padding * 2) / height)));
+    const frame = graphSurfaceFrame(root), area = graphFitArea(root, frame);
+    // Small hosts must not inherit a wide scene's logical zoom ceiling. Keep
+    // the existing camera range and fit all content without changing positions.
+    const maximumScale = Math.min(4, 1.35 / Math.min(1, frame.scale));
+    const scale = Math.min(maximumScale, Math.max(0.2, Math.min((area.width - padding * 2) / width, (area.height - padding * 2) / height)));
     const centerX = (bounds.minX + bounds.maxX) / 2;
     const centerY = (bounds.minY + bounds.maxY) / 2;
     root.dataset.cfxGraphFitScale = scale.toFixed(3);
@@ -182,22 +230,51 @@
     setViewport(root, {
       scale,
       x: size.centerX - centerX * scale,
-      y: size.centerY - centerY * scale
+      y: area.centerY - centerY * scale
     });
+  };
+
+  // Print can hide the live surface while its committed paint continues to change.
+  // Consume that invalidation on screen reveal without treating it as a camera resize.
+  const paintPendingGraphScreen = root => {
+    if (!root.__cfxGraphScreenPaintPending || !graphLifetime(root)?.active || !root.isConnected ||
+      root.ownerDocument.defaultView.matchMedia('print').matches || !graphStageHasLayout(root)) return false;
+    drawCanvas(root, root.__cfxGraphState || graphState(root));
+    delete root.__cfxGraphScreenPaintPending;
+    return true;
   };
 
   const bindGraphSurfaceResize = root => {
     const stage = root.querySelector('.cfx-graph-stage');
     if (!stage || typeof ResizeObserver === 'undefined') return;
+    // Mount has already fitted this size. The observer's initial delivery is
+    // not a resize and must not refit a search entered before that delivery.
+    const initialSize = stage.getBoundingClientRect();
+    const printing = root.ownerDocument.defaultView.matchMedia('print');
+    let width = initialSize.width, height = initialSize.height;
     let frame = 0;
     const observer = new ResizeObserver(() => {
+      // Print owns a separate SVG surface. Its temporary stage dimensions
+      // must not replace the last screen frame or trigger a refit on return.
+      if (printing.matches) return;
+      const size = stage.getBoundingClientRect();
+      if (size.width === width && size.height === height) { paintPendingGraphScreen(root); return; }
       if (frame) graphLifetime(root)?.cancelFrame(frame);
+      frame = 0;
+      // Remember ordinary layout loss even if hide/reveal coalesces before
+      // the next frame: accelerated surfaces still need a redraw on reveal.
+      if (size.width <= 0 || size.height <= 0) { width = size.width; height = size.height; return; }
       frame = graphLifetime(root)?.frame(() => {
         frame = 0;
         if (root.isConnected === false) { observer.disconnect(); return; }
+        if (printing.matches) return;
+        const current = stage.getBoundingClientRect();
+        if (current.width === width && current.height === height) { paintPendingGraphScreen(root); return; }
+        width = current.width; height = current.height;
         if (!graphStageHasLayout(root)) return;
         if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched) fitViewport(root);
         else drawCanvas(root, root.__cfxGraphState || graphState(root));
+        delete root.__cfxGraphScreenPaintPending;
       });
     });
     observer.observe(stage);

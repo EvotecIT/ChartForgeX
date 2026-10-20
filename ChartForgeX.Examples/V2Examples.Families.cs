@@ -40,6 +40,16 @@ public static partial class V2Examples {
                 variants.Add("gradient-color-legend"); variants.Add("compact-gradient-color-legend");
                 variants.Add("swatch-color-legend"); variants.Add("compact-swatch-color-legend");
             }
+            if (kind == ChartSeriesKind.Pyramid) { variants.Add("dense"); variants.Add("compact-dense"); }
+            if (kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea) {
+                variants.AddRange(new[] { "singleton", "compact-singleton" });
+                if (kind != ChartSeriesKind.RangeArea) variants.AddRange(new[] { "dense", "compact-dense" });
+            }
+            if (kind == ChartSeriesKind.RangeBar) variants.AddRange(new[] {
+                "dense", "compact-dense", "dense-horizontal", "compact-dense-horizontal", "sparse-catalog", "compact-sparse-catalog"
+            });
+            if (kind == ChartSeriesKind.Bullet) variants.AddRange(new[] { "dense", "compact-dense" });
+            if (kind == ChartSeriesKind.Gauge) variants.AddRange(new[] { "dense-scale", "compact-dense-scale" });
             if (kind == ChartSeriesKind.Scatter) { variants.Add("quadrants"); variants.Add("compact-quadrants"); }
             if (kind == ChartSeriesKind.Bubble) { variants.Add("plot-regions"); variants.Add("compact-plot-regions"); }
             if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.Scatter) {
@@ -86,6 +96,13 @@ public static partial class V2Examples {
                 var family = FamilyName(kind); var id = "family-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 var compact = IsCompactVariant(variant);
                 var width = compact ? 360 : 800; var height = compact ? 360 : 440;
+                if (kind == ChartSeriesKind.Pyramid && variant == "compact-dense") { width = 390; height = 280; }
+                var rangeAcceptance = kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea or ChartSeriesKind.RangeBar
+                    && variant is "singleton" or "compact-singleton" or "dense" or "compact-dense" or "dense-horizontal" or "compact-dense-horizontal" or "sparse-catalog" or "compact-sparse-catalog";
+                var scalarAcceptance = kind is ChartSeriesKind.Bullet or ChartSeriesKind.Gauge
+                    && variant is "dense" or "compact-dense" or "dense-scale" or "compact-dense-scale";
+                if (rangeAcceptance || scalarAcceptance) { width = compact ? 390 : 760; height = compact ? scalarAcceptance ? 300 : 320 : 440; }
+                if (kind == ChartSeriesKind.Pyramid && variant is "dense" or "compact-dense") title = "Allocation by service";
                 // Let the shared policy decide whether a legend adds information. The indicator
                 // options example intentionally demonstrates an explicitly requested legend.
                 bool? legend = variant == "options" && kind is ChartSeriesKind.Gauge or ChartSeriesKind.Bullet ? true : null;
@@ -95,7 +112,7 @@ public static partial class V2Examples {
                     : variant is "step-start" ? "Paired values change at the preceding observation; missing sections stay open"
                     : variant is "step-middle" or "compact-step-middle" ? "Paired values change halfway between observations; missing sections stay open"
                     : variant is "step-end" ? "Paired values change at the following observation; missing sections stay open"
-                    : "Blue shows Actual above Forecast; amber shows Actual below Forecast"
+                    : "Shading compares Actual above and below Forecast"
                     : precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
                     : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"
                     : variant is "angular-reversal" or "compact-angular-reversal" ? kind == ChartSeriesKind.Polar ? "Clockwise authored radians retain their source directions and values"
@@ -132,6 +149,7 @@ public static partial class V2Examples {
             if (kind == ChartSeriesKind.RadialBar) WriteNumericRadialAxes(output, artifacts, mode);
         }
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) WriteMixedRadial(output, artifacts, mode);
+        WriteSupportedCombinations(output, artifacts);
         WriteExpandedDiagrams(output, artifacts, curated);
     }
 

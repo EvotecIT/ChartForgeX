@@ -34,7 +34,7 @@ internal static partial class MermaidFlowchartParser {
             if (MermaidFlowchartText.ReadQuotedCharacter(text, ref position, ref quote, metadata: true)) { position++; continue; }
             if (ch == ',' || ch == '}') {
                 AddNodeProperty(text.Substring(propertyStart, position - propertyStart), node,
-                    new MermaidSourceSpan(span.Line, span.Column + propertyStart, position - propertyStart), result);
+                    MermaidFlowchartText.AtOffset(text, span, propertyStart, position - propertyStart), result);
                 position++;
                 if (ch == '}') return;
                 propertyStart = position;
@@ -42,7 +42,7 @@ internal static partial class MermaidFlowchartParser {
             }
             position++;
         }
-        MermaidParserUtilities.Add(result, new MermaidSourceSpan(span.Line, span.Column + start, text.Length - start), MermaidDiagnosticSeverity.Error, "Flowchart node metadata must close with '}'.");
+        MermaidParserUtilities.Add(result, MermaidFlowchartText.AtOffset(text, span, start, text.Length - start), MermaidDiagnosticSeverity.Error, "Flowchart node metadata must close with '}'.");
     }
 
     private static void AddNodeProperty(string property, MermaidFlowchartNode node, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
@@ -68,8 +68,10 @@ internal static partial class MermaidFlowchartParser {
             return;
         }
         node.Properties[key] = value;
-        if (key == "label") node.Text = value;
-        else if (key == "shape") {
+        if (key == "label") {
+            node.Text = value;
+            node.LabelSpan = MermaidFlowchartText.AtOffset(property, span, scalarStart, scalar.Length);
+        } else if (key == "shape") {
             if (TryResolveShape(value, out var shape)) node.Shape = shape;
             else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Flowchart shape '" + value + "' is retained but rendered as a rectangle.");
         } else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Warning, "Flowchart node property '" + key + "' is retained but not rendered.");

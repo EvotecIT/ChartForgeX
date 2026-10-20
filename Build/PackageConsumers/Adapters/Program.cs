@@ -81,11 +81,17 @@ internal static class Program {
                 node.Status = "warning";
             })
             .AddEdge("api-db", "api", "db", "queries", edge => edge.Kind = "dependency");
-        graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization);
+        graph.Options.Enable(GraphSceneFeatures.RuntimePhysics | GraphSceneFeatures.Stabilization | GraphSceneFeatures.IncrementalUpdates | GraphSceneFeatures.Manipulation | GraphSceneFeatures.History);
+        graph.Options.Manipulation.EnableEditing();
         graph.Options.Physics.Solver = GraphPhysicsSolver.Repulsion;
         var graphHtml = graph.ToGraphExplorerHtmlPage();
         if (!graphHtml.Contains("data-cfx-graph-id=\"package-graph\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer package surface missing.");
         if (!graphHtml.Contains("data-cfx-graph-physics=\"Repulsion\"", StringComparison.Ordinal)) throw new InvalidOperationException("Graph explorer physics profile missing.");
+#if CFX_PACKAGE_BROWSER
+        PackageBrowserProbe.RunAsync(html, graphHtml).GetAwaiter().GetResult();
+#else
+        Console.WriteLine("Static adapter smoke excludes browser execution; use Build/Test-PackageQualification.ps1 with HFX_TEST_ENABLE_PLAYWRIGHT=1 for browser qualification.");
+#endif
 
         var mermaid = new MermaidParser().ParseFlowchart("---\nconfig:\n  theme: dark\n---\nflowchart LR\n  a[Start] --> b[Done]");
         if (mermaid.HasErrors || mermaid.Document is null) throw new InvalidOperationException("Mermaid package parser failed.");

@@ -3,7 +3,7 @@ const vm = require('node:vm');
 const test = require('node:test');
 
 const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
-const code = graphRuntimeSource('this.api = { workerPhysicsSource, profile, startWorkerPhysics, stopWorkerPhysics, updatePhysicsNodes, updateDraggedPhysicsNode, releaseDraggedPhysicsNode, graphVirtualElement, webGlUpload };');
+const code = graphRuntimeSource('this.api = { workerPhysicsSource, serializePhysicsState, physicsNodeRadius, applyOverlapPressure, profile, startWorkerPhysics, stopWorkerPhysics, updatePhysicsNodes, updateDraggedPhysicsNode, releaseDraggedPhysicsNode, graphVirtualElement, webGlUpload };');
 
 function runtime() {
   const frames = new Map();
@@ -37,7 +37,8 @@ function solver() {
   } };
   vm.runInNewContext(host.api.workerPhysicsSource(), { self, setTimeout: fn => { timers.push(fn); return timers.length; }, clearTimeout() {}, Float64Array, Date });
   const settings = { ...host.api.profile(host.root), iterations: 100, minVelocity: -1 };
-  self.onmessage({ data: { type: 'start', interval: 1, settings, nodes: [{ id: 'a', x: 1, y: 2, vx: 0, vy: 0, fixed: true, size: 10 }], edges: [] } });
+  const state = host.api.serializePhysicsState({ nodes: [{ el: host.api.graphVirtualElement('node', {}, []), id: 'a', x: 1, y: 2, vx: 0, vy: 0, fixed: true, size: 10 }], edges: [] });
+  self.onmessage({ data: { type: 'start', interval: 1, settings, ...state } });
   return { self, timers, messages };
 }
 
@@ -177,4 +178,27 @@ test('reduced motion hides intermediate worker positions but presents the final 
   assert.equal(node.y, 200);
   assert.equal(host.root.dataset.cfxGraphPhysicsState, 'stabilized');
   assert.equal(worker.stopped, true);
+});
+
+// A small moving graph must reserve secondary captions and badges just as
+// deliberate layout separation does; the worker receives those same bounds.
+test('structural overlap pressure protects secondary captions and badges in main and worker physics', () => {
+  for (const details of [{ secondaryLabel: '4 sites · 18 workloads' }, { badge: '+12345678901234567890' }]) {
+    const host = runtime();
+    const makeNode = (id, x) => ({ el: host.api.graphVirtualElement('node', {}, []), id, label: 'EU', shape: 'circle',
+      x, y: 200, homeX: x, homeY: 200, vx: 0, vy: 0, fixed: false, size: 8, ...details });
+    const nodes = [makeNode('a', 100), makeNode('b', 170)];
+    const settings = { linkDistance: 70, overlapPressure: .08, avoidOverlap: 1 };
+    const serialized = host.api.serializePhysicsState({ nodes, edges: [] });
+    const worker = { self: {}, setTimeout() {}, clearTimeout() {}, Float64Array, Date };
+    vm.runInNewContext(host.api.workerPhysicsSource() + '\nthis.pressure = applyOverlapPressure;', worker);
+    assert.ok(host.api.applyOverlapPressure(nodes, settings) > 0, 'painted details require separation');
+    assert.ok(nodes[0].vx < 0 && nodes[1].vx > 0);
+    assert.ok(worker.pressure(serialized.nodes, settings) > 0);
+    for (let i = 0; i < nodes.length; i++) {
+      assert.equal(serialized.nodes[i].vx, nodes[i].vx);
+      assert.equal(serialized.nodes[i].vy, nodes[i].vy);
+    }
+    assert.ok(host.api.physicsNodeRadius(nodes[0], false) < 20, 'mark-only large-graph policy stays independent');
+  }
 });

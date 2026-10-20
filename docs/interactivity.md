@@ -246,7 +246,7 @@ Prepare replacement content through the same C# chart API used for the original 
 
 The [light lifecycle example](../Website/static/examples/generated/graphite-light-chart-lifecycle.html) and [dark lifecycle example](../Website/static/examples/generated/graphite-dark-chart-lifecycle.html) let you select measurements, update their values and order, dispose the chart, and mount it again. Generate both through the existing `--graphite-only` examples command.
 
-The controller retains the original section element, host attributes such as `id` and `slot`, and host CSS properties outside the `--cfx-` namespace. Existing host event listeners remain attached. The replacement supplies the chart's generated attributes, theme variables, controls, SVG and readout. `cfxupdated` fires on the section after its replacement is ready.
+The controller retains the original section element, host attributes such as `id` and `slot`, the host's `--cfx-host-accent` override, and host CSS properties outside the `--cfx-` namespace. The accent override also survives adaptive redraw and native-window replies, including its CSS priority. Existing host event listeners remain attached. The replacement supplies the chart's generated attributes, theme variables, controls, SVG and readout; charts without an accent override follow the replacement's theme. `cfxupdated` fires on the section after its replacement is ready.
 
 Selection and legend mute/isolation follow surviving explicitly identified series. Point selection and point-legend mute/isolation also require an authored observation ID; full replacement clears state for anonymous ordinal points. Named nodes, links and regions retain their identity within their explicit series. Removed targets lose their state. Hover, pinned or delayed tooltips and focus trails clear; keyboard focus follows a surviving identified target or returns to the chart section. The geometric viewport remains in place.
 
@@ -580,11 +580,26 @@ Graph notifications also cross shadow boundaries. Use `event.detail.graphId`
 outside the shadow root, where `event.target` refers to the component host.
 
 Graph relationship captions check visible node bodies, captions and badges,
-including collapsed aggregates. Filtering refreshes their SVG positions. Placement
-tries a fixed set of candidates; a crowded scene can leave a caption displaced
-from its edge. Graph scenes also retain their design dimensions when scaled into
-a narrower host, rather than preparing a new layout. Responsive preparation and
-closer caption-to-edge placement remain in the [roadmap](../TODO.md).
+including collapsed aggregates. Filtering refreshes their SVG positions. When a
+midpoint is obstructed, placement searches clear positions along the painted
+line, curve or polyline before moving farther away. A fully crowded route can
+still require a displaced caption; placement does not reroute authored edges.
+
+Fit includes complete node captions and badges and adjusts its zoom ceiling for
+the host's screen size. Small scenes can use a compact host without inheriting
+the wide scene's zoom limit. Node positions and the logical scene frame stay
+unchanged. Resizing refits an untouched camera; after a user zooms or pans, it
+preserves that camera until Fit is requested. Typing or clearing search changes
+visibility without moving the camera; Enter selects and centers the first matching
+node. Large scenes can still require zooming or filtering to read individual captions; Fit does not promise a minimum
+font size for an arbitrary graph. Static SVG and PNG measure their complete
+chosen node captions and badges within the design frame. Their requested output
+dimensions scale that frame without reflowing authored node positions.
+
+Small-graph physics includes captions and badges in overlap avoidance through the
+same geometry used for layout separation. Pausing preserves the current moving
+pose; it does not complete the final arrangement. Resume until stabilization if
+spacing still needs to settle. Fixed nodes and crowded scenes can still overlap.
 
 ## Topology motion with HTML controls
 

@@ -242,10 +242,37 @@ internal static partial class TopologyRenderPrimitives {
         }
 
         var horizontal = OrthogonalRouteIsHorizontal(source, target, sourcePort, targetPort);
-        sourcePort = OrthogonalShapePort(source, sourcePort, horizontal, targetCenter);
-        targetPort = OrthogonalShapePort(target, targetPort, horizontal, sourceCenter);
+        sourcePort = OrthogonalEndpointPort(source, sourcePort, horizontal, targetCenter);
+        targetPort = OrthogonalEndpointPort(target, targetPort, horizontal, sourceCenter);
         var sourcePoint = BoundaryPoint(source, targetCenterX, targetCenterY, sourcePort);
         var targetPoint = BoundaryPoint(target, sourceCenterX, sourceCenterY, targetPort);
+        return OrthogonalRoutePoints(sourcePoint, targetPoint, horizontal, routeLane);
+    }
+
+    /// <summary>Keeps distinct ordinary automatic attachments without changing the default corridor's escape axis.</summary>
+    internal static List<ChartPoint> ObstacleOrthogonalDefaultPoints(TopologyNode source, TopologyNode target, TopologyEdgePort sourcePort, TopologyEdgePort targetPort, double routeLane) {
+        var horizontal = OrthogonalRouteIsHorizontal(source, target, sourcePort, targetPort);
+        var sourcePoint = ObstacleDefaultEndpoint(source, target, sourcePort, horizontal);
+        var targetPoint = ObstacleDefaultEndpoint(target, source, targetPort, horizontal);
+        return OrthogonalRoutePoints(sourcePoint, targetPoint, horizontal, routeLane);
+    }
+
+    private static ChartPoint ObstacleDefaultEndpoint(TopologyNode node, TopologyNode other, TopologyEdgePort port, bool horizontal) {
+        var toward = TopologyNodeShapeGeometry.RoutingCenter(other);
+        var axisPort = OrthogonalEndpointPort(node, port, horizontal, toward);
+        var axisPoint = BoundaryPoint(node, toward.X, toward.Y, axisPort);
+        if (port != TopologyEdgePort.Auto || node.Shape.HasValue) return axisPoint;
+        var ray = BoundaryPoint(node, toward.X, toward.Y, TopologyEdgePort.Auto);
+        // A wide or tall card's centre ray can hit another side, or pass its corner.
+        // Retain its useful cross-axis position only when the first leg still leaves
+        // through the chosen physical side with its normal pointing out of the card.
+        var sameSide = horizontal
+            ? Math.Abs(ray.X - axisPoint.X) < .001 && ray.Y >= node.Y && ray.Y <= node.Y + node.Height
+            : Math.Abs(ray.Y - axisPoint.Y) < .001 && ray.X >= node.X && ray.X <= node.X + node.Width;
+        return sameSide ? ray : axisPoint;
+    }
+
+    private static List<ChartPoint> OrthogonalRoutePoints(ChartPoint sourcePoint, ChartPoint targetPoint, bool horizontal, double routeLane) {
         if (horizontal) {
             var middleX = (sourcePoint.X + targetPoint.X) / 2 + routeLane;
             return new List<ChartPoint> {
