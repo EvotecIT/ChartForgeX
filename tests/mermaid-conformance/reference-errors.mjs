@@ -13,6 +13,9 @@ export function isReferenceRejection(error, version, family = '') {
       && error.constructor?.name === 'TypeError'
       && error.message === "Cannot set properties of undefined (setting 'style')") return true;
   if (error?.name !== 'Error' || typeof error.message !== 'string') return false;
+  // A reachable packet semantic rejection, captured from the accepting 11/12 engines.
+  if (family === 'packet' && version !== '10.9.8' && error.constructor?.name === 'Error'
+      && /^Packet block \d+ - \d+ is not contiguous\. It should start from \d+\.$/.test(error.message)) return true;
   if (family === 'flowchart' && version === '10.9.8' && error.constructor?.name === 'Error'
       && /^The index \d+ for linkStyle is out of bounds\. Valid indices for linkStyle are between 0 and -?\d+\. \(Help: Ensure that the index is within the range of existing edges\.\)$/.test(error.message)) return true;
   if (family === 'gitGraph') {

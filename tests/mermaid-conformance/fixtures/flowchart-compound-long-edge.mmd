@@ -1,0 +1,8 @@
+flowchart LR
+subgraph a[Delivery]
+one[One] --> middle[Middle] --> last[Last]
+one -->|Bypass| last
+end
+subgraph b[Other lane]
+other[Other]
+end

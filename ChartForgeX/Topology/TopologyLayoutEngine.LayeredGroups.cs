@@ -42,6 +42,7 @@ internal static partial class TopologyLayoutEngine {
             ((authoredNodes.TryGetValue(e.SourceNodeId, out var source) && source.GroupId == id)
              || (authoredNodes.TryGetValue(e.TargetNodeId, out var target) && target.GroupId == id))));
         var horizontal = chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft;
+        var positionsBeforePacking = chart.Nodes.ToDictionary(node => node.Id, node => new ChartPoint(node.X, node.Y), StringComparer.Ordinal);
         var nodeSpacing = options?.LayeredNodeSpacing ?? (horizontal ? 24 : 28);
         var members = chart.Nodes.Where(n => n.GroupId != null).GroupBy(n => n.GroupId!, StringComparer.Ordinal)
             .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
@@ -134,15 +135,27 @@ internal static partial class TopologyLayoutEngine {
             placed.Add(group);
         }
         var nodesById = chart.Nodes.ToDictionary(n => n.Id, StringComparer.Ordinal);
+        var membersMoved = chart.Nodes.Any(node => positionsBeforePacking.TryGetValue(node.Id, out var before)
+            && (Math.Abs(node.X - before.X) > .001 || Math.Abs(node.Y - before.Y) > .001));
         foreach (var edge in chart.Edges) {
             if (!nodesById.TryGetValue(edge.SourceNodeId, out var source) || !nodesById.TryGetValue(edge.TargetNodeId, out var target)) continue;
-            var moved = shiftedGroupIds.Contains(source.GroupId ?? "") || shiftedGroupIds.Contains(target.GroupId ?? "");
+            // Compaction can move a member inside an unchanged shell. Its old corridor is
+            // just as stale as a translated shell's corridor, including the final target leg.
+            var moved = shiftedGroupIds.Contains(source.GroupId ?? "") || shiftedGroupIds.Contains(target.GroupId ?? "")
+                || membersMoved;
             if (!moved || !edge.Metadata.TryGetValue("layout.route", out var route) || route != "long-edge-lane") continue;
             // These corridors were inferred before packing. Replan against the final node and header
             // obstacles through the shared obstacle-aware router instead of retaining stale coordinates.
             if (!authoredEdges.TryGetValue(edge, out var original)) continue;
             edge.Waypoints.Clear(); edge.Waypoints.AddRange(original.Waypoints);
             edge.SourcePort = original.SourcePort; edge.TargetPort = original.TargetPort;
+            // Keep the shared rank-facing port policy so direct and skipping edges can
+            // spread their arrows independently after the obstacle-aware route is planned.
+            var sourceBefore = horizontal ? target.X >= source.X : target.Y >= source.Y;
+            if (edge.SourcePort == TopologyEdgePort.Auto) edge.SourcePort = horizontal ? sourceBefore ? TopologyEdgePort.Right : TopologyEdgePort.Left
+                : sourceBefore ? TopologyEdgePort.Bottom : TopologyEdgePort.Top;
+            if (edge.TargetPort == TopologyEdgePort.Auto) edge.TargetPort = horizontal ? sourceBefore ? TopologyEdgePort.Left : TopologyEdgePort.Right
+                : sourceBefore ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
             edge.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
             edge.Metadata["layout.route"] = "packed-group-obstacle-route";
         }
