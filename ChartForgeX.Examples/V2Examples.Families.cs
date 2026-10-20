@@ -112,7 +112,7 @@ public static partial class V2Examples {
                     : variant is "step-start" ? "Paired values change at the preceding observation; missing sections stay open"
                     : variant is "step-middle" or "compact-step-middle" ? "Paired values change halfway between observations; missing sections stay open"
                     : variant is "step-end" ? "Paired values change at the following observation; missing sections stay open"
-                    : "Blue shows Actual above Forecast; amber shows Actual below Forecast"
+                    : "Shading compares Actual above and below Forecast"
                     : precision ? kind == ChartSeriesKind.Gauge ? "Close bounds, measurement and target retain distinct captions" : "Measured differences stay in their original units"
                     : kind == ChartSeriesKind.RangeBar && variant.EndsWith("endpoint-labels", StringComparison.Ordinal) ? "Start and end captions retain the authored interval order"
                     : variant is "angular-reversal" or "compact-angular-reversal" ? kind == ChartSeriesKind.Polar ? "Clockwise authored radians retain their source directions and values"

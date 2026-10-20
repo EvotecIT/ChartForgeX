@@ -176,6 +176,40 @@ public sealed class GraphReadabilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserTheory]
+    [InlineData(HtmlGraphRenderBackend.Svg)]
+    [InlineData(HtmlGraphRenderBackend.Canvas)]
+    [InlineData(HtmlGraphRenderBackend.WebGl)]
+    public async Task ShortRelationshipUsesEmptySpaceBetweenPaintedNodeDetails(HtmlGraphRenderBackend backend) {
+        var scene = GraphScene.Create("short-caption", "Regional services")
+            .AddNode("global", "Global", n => { Place(n, 479.47, 190.73); n.BadgeText = "42"; })
+            .AddNode("europe", "Europe", n => { Place(n, 606.12, 267.10); n.SecondaryLabel = "4 sites · 18 workloads"; n.Status = "warning"; })
+            .AddNode("americas", "Americas", n => { Place(n, 341.25, 266.80); n.SecondaryLabel = "3 sites · 14 workloads"; })
+            .AddNode("apac", "Asia Pacific", n => { Place(n, 493.57, 277.66); n.SecondaryLabel = "2 sites · 10 workloads"; })
+            .AddEdge("eu", "global", "europe", configure: e => e.Directed = true)
+            .AddEdge("us", "global", "americas", configure: e => e.Directed = true)
+            .AddEdge("ap", "global", "apac", configure: e => e.Directed = true)
+            .AddEdge("transfer", "europe", "apac", "replication");
+        scene.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Export;
+        if (backend == HtmlGraphRenderBackend.Svg) {
+            await using var prepared = await OpenAsync("<html><body><section id='proof'>" + scene.ToGraphSvg() + "</section><img alt='Native PNG' src='data:image/png;base64," + Convert.ToBase64String(scene.ToGraphPng()) + "'></body></html>", 1000, 1200);
+            var native = await CaptionFacts(prepared.Page, "#proof");
+            await Capture(prepared.Page, "short-caption-native", native);
+            AssertCaption(native);
+        }
+        await using var session = await OpenAsync(scene.ToGraphExplorerHtmlPage(o => o.RenderBackend = backend), 390, 844);
+        var live = await CaptionFacts(session.Page, ".cfx-graph-explorer");
+        await Capture(session.Page, "short-caption-live-" + backend, live);
+        AssertCaption(live);
+        await session.Page.EmulateMediaAsync(new() { Media = Media.Print });
+        await session.Page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-role=graph-print-surface] svg')");
+        var printed = await CaptionFacts(session.Page, "[data-cfx-role=graph-print-surface]");
+        await Capture(session.Page, "short-caption-print-" + backend, printed);
+        AssertCaption(printed);
+        await session.Page.EmulateMediaAsync(new() { Media = Media.Screen });
+        AssertNoConsoleErrors(session);
+    }
+
     private static void Place(GraphSceneNode node, double x, double y) { node.Fixed = true; node.X = x; node.Y = y; node.Size = 8; }
 
     private static Task<JsonElement> FitFacts(IPage page, string selector = ".cfx-graph-explorer") => page.EvaluateAsync<JsonElement>("""
@@ -191,7 +225,7 @@ public sealed class GraphReadabilityBrowserTests {
         selector=>{const root=document.querySelector(selector),label=root.querySelector('[data-edge-label-for=transfer]'),path=root.querySelector('[data-edge-id=transfer]'),
             point={x:+label.getAttribute('x'),y:+label.getAttribute('y')},length=path.getTotalLength();let distance=Infinity;
             for(let i=0;i<=1000;i++){const p=path.getPointAtLength(length*i/1000);distance=Math.min(distance,Math.hypot(p.x-point.x,p.y-(point.y-4)));}
-            const box=label.getBoundingClientRect(),collisions=[...root.querySelectorAll('[data-cfx-role=graph-node],.cfx-graph-node-label')].filter(n=>{const b=n.getBoundingClientRect();return Math.min(b.right,box.right)>Math.max(b.left,box.left)&&Math.min(b.bottom,box.bottom)>Math.max(b.top,box.top);}).map(n=>n.textContent||n.dataset.nodeId);
+            const box=label.getBoundingClientRect(),collisions=[...root.querySelectorAll('[data-cfx-role=graph-node],.cfx-graph-node-label,.cfx-graph-node-secondary,.cfx-graph-node-badge')].filter(n=>{const b=n.getBoundingClientRect();return Math.min(b.right,box.right)>Math.max(b.left,box.left)&&Math.min(b.bottom,box.bottom)>Math.max(b.top,box.top);}).map(n=>n.textContent||n.dataset.nodeId);
             return {distance,collisions,text:label.textContent,point,bend:Math.abs(path.getPointAtLength(length/2).y-280)};}
         """, selector);
 

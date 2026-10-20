@@ -79,6 +79,7 @@ try {
         'GraphReadabilityBrowserTests.CompactFitUsesScreenSpaceAndResizePreservesTouchedCamera',
         'GraphReadabilityBrowserTests.TallCompactFitKeepsPaintClearOfFloatingControls',
         'GraphReadabilityBrowserTests.PreparedAndLiveCaptionsUseClearSpaceAlongTheirRoute',
+        'GraphReadabilityBrowserTests.ShortRelationshipUsesEmptySpaceBetweenPaintedNodeDetails',
         'GraphReadabilityBrowserTests.FitMeasuresUntruncatedPrimaryAndSecondaryCaptionsInPhysicalAndVirtualScenes',
         'GraphReadabilityBrowserTests.NativeStaticFitIncludesTheSameCompletePrimaryAndSecondaryCaptions',
         'InteractiveChartLifecycleBrowserTests.HostAccentSurvivesReplacementAndAdaptiveDrawingsWhileDefaultsFollowTheNewTheme',
