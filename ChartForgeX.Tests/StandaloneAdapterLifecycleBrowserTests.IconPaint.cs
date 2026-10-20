@@ -97,7 +97,11 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
     private const string GraphIconPaintFacts = """
         async()=>{
             const root=retainedGraph,actual=root.dataset.cfxGraphRendererActive,source=ChartForgeXGraphExplorer.get(root),icons=[];
-            const rgb=value=>{const c=document.createElement('canvas').getContext('2d');c.fillStyle=value;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3);};
+            // Read CSS color channels directly; pixel readback is reserved for the rendered-ink check.
+            const rgb=value=>{const c=document.createElement('canvas').getContext('2d');c.fillStyle=value;const color=c.fillStyle;
+                if(/^#[0-9a-f]{6}$/i.test(color))return[1,3,5].map(index=>parseInt(color.slice(index,index+2),16));
+                const channels=/^rgba?\(\s*([\d.]+)[, ]+([\d.]+)[, ]+([\d.]+)/i.exec(color);
+                if(!channels)throw new Error('Unsupported fixture color: '+color);return channels.slice(1,4).map(Number);};
             const luminance=values=>values.map(v=>v/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
             const contrast=(a,b)=>{const x=luminance(rgb(a)),y=luminance(rgb(b));return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
             const project=(box,m)=>{const a=new DOMPoint(box.x,box.y).matrixTransform(m),b=new DOMPoint(box.x+box.width,box.y+box.height).matrixTransform(m);return{left:a.x,top:a.y,right:b.x,bottom:b.y};};
