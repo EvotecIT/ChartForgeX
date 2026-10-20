@@ -68,7 +68,7 @@ public sealed class TopologyObstacleAutomaticPortTests {
                 width: horizontal ? 200 : 50, height: horizontal ? 50 : 200)
             .AddNode("target", "T", horizontal ? reversed ? 0 : 400 : 150,
                 horizontal ? 150 : reversed ? 0 : 400, width: horizontal ? 200 : 50, height: horizontal ? 50 : 200)
-            .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+            .AddEdge("route", "source", "target", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
         var sourceNode = chart.Nodes.Single(node => node.Id == "source");
         var targetNode = chart.Nodes.Single(node => node.Id == "target");
         var candidate = TopologyRenderPrimitives.ObstacleOrthogonalDefaultPoints(sourceNode, targetNode,
