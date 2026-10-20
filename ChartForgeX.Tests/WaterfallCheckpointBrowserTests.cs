@@ -77,6 +77,7 @@ public sealed class WaterfallCheckpointBrowserTests {
             Assert.Equal("false", await openingMark.GetAttributeAsync("aria-selected"));
             await MoveAwayAsync(page);
             var openingCaption = await BoxAsync(page, "[data-cfx-label-for='series-0-point-0'] text");
+            if (horizontal) Assert.Equal("IB", await page.Locator("[data-cfx-label-for='series-0-point-0'] text").TextContentAsync());
             var captionX = (float)(openingCaption.X + openingCaption.Width * .4); var captionY = (float)(openingCaption.Y + openingCaption.Height * .5);
             await page.Mouse.MoveAsync(captionX, captionY, new MouseMoveOptions { Steps = 4 });
             AssertRows(await TooltipRowsAsync(page), "Initial balance", Signed(120, sign), "Start", "0", "End", Signed(120, sign));
@@ -222,7 +223,8 @@ public sealed class WaterfallCheckpointBrowserTests {
         }
         if (opening.HasValue) {
             chart.ConfigureLabels(labels => labels.OpeningBalance = "Initial balance");
-            if (!horizontal) chart.Series[0].WithPointLabel(0, "Opening caption");
+            // Required caption hit-testing uses a short authored label: compact numeric captions may be omitted whole.
+            chart.Series[0].WithPointLabel(0, horizontal ? "IB" : "Opening caption");
         }
         return chart;
     }
