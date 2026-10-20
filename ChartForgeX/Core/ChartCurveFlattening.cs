@@ -13,6 +13,13 @@ internal static class ChartCurveFlattening {
     internal const double Tolerance = 0.05;
     private const int MaximumSegments = 2048;
 
+    /// <summary>Bounds a length-based subdivision plan before converting large or overflowed device lengths to an integer.</summary>
+    internal static int LengthSegments(double length, double maximumSegmentLength) {
+        var segments = Math.Ceiling(length / maximumSegmentLength);
+        if (!(segments > 1)) return 1;
+        return segments >= MaximumSegments ? MaximumSegments : (int)segments;
+    }
+
     /// <summary>Segments for a circular arc of <paramref name="radius"/> device pixels sweeping <paramref name="sweep"/> radians.</summary>
     internal static int ArcSegments(double radius, double sweep) {
         sweep = Math.Abs(sweep);

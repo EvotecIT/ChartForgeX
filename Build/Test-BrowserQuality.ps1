@@ -110,6 +110,7 @@ try {
         'InteractiveNativeXViewportBrowserTests.NativeSourceWindowsReprepareSmoothAreaAndBubbleOnLinearAndTimeAxes',
         'InteractiveNativeXViewportBrowserTests.NativeWheelKeepsThePointerSourceAnchorWhileButtonsUseThePlotCentre',
         'InteractiveNativeXViewportBrowserTests.NativeRangeControlsCarryTheCompleteWorkflowAcrossTupleFamilies',
+        'InteractiveNativeXViewportBrowserTests.NativeRangeKeyboardUsesConsistentSourceStepsAndKeepsFocusAcrossCommittedScenes',
         'InteractiveNativeXViewportBrowserTests.NavigatorDragSelectsNativeSourceRangeAndSynchronizesAReversedPeer',
         'InteractiveNativeXViewportBrowserTests.IncludedTimeNavigationPreservesWeekendBoundsAndMovesByIncludedDuration',
         'InteractiveNativeXViewportBrowserTests.NativePrimaryYAndXYWindowsKeepGesturesBookmarksAndExportsOnTheCommittedScene',

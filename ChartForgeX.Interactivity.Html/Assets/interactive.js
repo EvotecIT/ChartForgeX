@@ -5454,7 +5454,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     }
     panel.querySelectorAll('[data-cfx-x-range]').forEach(input => {
       let draft = null;
-      listenChart(root, input, 'input', () => {
+      const updateDraft = () => {
         const committed = ratios();
         if (!committed || !connectedXViewport(root)) return;
         const value = clamp(Number(input.value), 0, 1), kind = input.dataset.cfxXRange;
@@ -5470,10 +5470,32 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
             maximum: kind === 'end' ? projectedAxisValue(axis, draft[1]) : projection.maximum });
         }
         paintXNavigationRange(root, draft[0], draft[1], draft[2]);
-      });
-      listenChart(root, input, 'change', () => { if (draft) commit(...draft); draft = null; });
+      };
+      const commitDraft = () => { if (draft) commit(...draft); draft = null; };
+      listenChart(root, input, 'input', updateDraft);
+      listenChart(root, input, 'change', commitDraft);
       listenChart(root, input, 'keydown', event => {
         if (event.key === 'Escape') { draft = null; syncXNavigation(root); }
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || input.disabled || !connectedXViewport(root)) return;
+        const current = Number(input.value), horizontal = input.dir === 'rtl' ? -1 : 1;
+        let next;
+        switch (event.key) {
+          case 'ArrowLeft': next = current - .01 * horizontal; break;
+          case 'ArrowRight': next = current + .01 * horizontal; break;
+          case 'ArrowDown': next = current - .01; break;
+          case 'ArrowUp': next = current + .01; break;
+          case 'PageDown': next = current - .1; break;
+          case 'PageUp': next = current + .1; break;
+          case 'Home': next = 0; break;
+          case 'End': next = 1; break;
+          default: return;
+        }
+        event.preventDefault();
+        next = clamp(next, 0, 1);
+        if (next === current) return;
+        input.value = String(next);
+        updateDraft();
+        commitDraft();
       });
       listenChart(root, input, 'pointercancel', () => { draft = null; syncXNavigation(root); });
     });
