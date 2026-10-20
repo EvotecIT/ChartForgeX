@@ -109,6 +109,35 @@
   const endpointVisible = (node) => node && (visible(node.el) || attr(node.el, 'data-node-hidden') === 'true');
   const visualEdge = (edge, byId) => { const source = edgeVisualNode(edge, 'source', byId), target = edgeVisualNode(edge, 'target', byId); return { ...edge, source, target, sourceCollapsed: source !== edge.source, targetCollapsed: target !== edge.target }; };
   const edgeHasVisibleEndpoints = (edge, byId) => endpointVisible(edgeVisualNode(edge, 'source', byId)) && endpointVisible(edgeVisualNode(edge, 'target', byId));
+  // Fit measures painted captions independently of capped layout/physics extents.
+  // Virtual accelerated nodes use the same Canvas fonts; physical SVG details
+  // additionally contribute their actual glyph boxes, including host typography.
+  const graphNodeFitExtents = node => {
+    const extents = nodeLayoutExtents(node, false);
+    if (!node.card) {
+      const measure = (value, font, secondary) => {
+        let width = graphEstimatedCardTextWidth(value, secondary);
+        if (typeof document !== 'undefined' && typeof document.createElement === 'function') {
+          graphNodeMeasureContext ||= document.createElement('canvas').getContext('2d');
+          if (graphNodeMeasureContext) { graphNodeMeasureContext.font = font; width = graphNodeMeasureContext.measureText(value).width; }
+        }
+        return width;
+      };
+      const primary = node.label || attr(node.el, 'data-node-label');
+      const secondary = node.secondaryLabel || attr(node.el, 'data-node-secondary-label');
+      extents.x = Math.max(extents.x, measure(primary, '12px Inter, Segoe UI, Arial, sans-serif', false) / 2 + (node.labelBackgroundColor ? 11 : 4));
+      if (secondary) extents.x = Math.max(extents.x, measure(secondary, '9.5px Inter, Segoe UI, Arial, sans-serif', true) / 2 + 4);
+    }
+    const details = node.detailsEl;
+    if (typeof details?.getBBox === 'function') {
+      const box = details.getBBox();
+      if ([box.x, box.y, box.width, box.height].every(Number.isFinite)) {
+        extents.x = Math.max(extents.x, Math.abs(box.x) + 4, Math.abs(box.x + box.width) + 4);
+        extents.y = Math.max(extents.y, Math.abs(box.y) + 4, Math.abs(box.y + box.height) + 4);
+      }
+    }
+    return extents;
+  };
   const contentBounds = (root, state) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     const labelObstacles = graphEdgeLabelObstacles(root, state);
@@ -125,7 +154,7 @@
     };
     state.nodes.forEach(node => {
       if (!visible(node.el)) return;
-      const pad = 8, extents = nodeLayoutExtents(node, false);
+      const pad = 8, extents = graphNodeFitExtents(node);
       bounds.push({ minX: node.x - extents.x - pad, minY: node.y - extents.y - pad, maxX: node.x + extents.x + pad, maxY: node.y + extents.y + pad });
     });
     state.edges.forEach(edge => {

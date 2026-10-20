@@ -76,6 +76,45 @@ public sealed class GraphReadabilityBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserTheory]
+    [InlineData(HtmlGraphRenderBackend.Svg, false)]
+    [InlineData(HtmlGraphRenderBackend.Svg, true)]
+    [InlineData(HtmlGraphRenderBackend.Canvas, false)]
+    [InlineData(HtmlGraphRenderBackend.Canvas, true)]
+    [InlineData(HtmlGraphRenderBackend.WebGl, false)]
+    [InlineData(HtmlGraphRenderBackend.WebGl, true)]
+    public async Task FitMeasuresUntruncatedPrimaryAndSecondaryCaptionsInPhysicalAndVirtualScenes(HtmlGraphRenderBackend backend, bool secondary) {
+        const string caption = "north-europe-production-authentication-service.example.internal — retained complete hostname and service description";
+        var scene = GraphScene.Create("long-fit", "Complete service captions").AddNode("service", secondary ? "Worker" : caption, n => {
+            Place(n, 480, 280); if (secondary) n.SecondaryLabel = caption;
+        });
+        scene.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Export;
+        if (backend != HtmlGraphRenderBackend.Svg) {
+            scene.Options.Features |= GraphSceneFeatures.LevelOfDetail;
+            scene.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
+            scene.Options.LevelOfDetail.OverviewScaleThreshold = .01;
+            scene.Options.LevelOfDetail.DetailScaleThreshold = .02;
+        }
+        var errors = new List<string>();
+        await using var session = await OpenAsync(scene.ToGraphExplorerHtmlPage(o => o.RenderBackend = backend), 390, 844,
+            configurePage: page => page.PageError += (_, error) => errors.Add(error));
+        var page = session.Page;
+        var snapshot = await page.EvaluateAsync<string>("""
+            async()=>{const root=document.querySelector('.cfx-graph-explorer');let content;
+                root.addEventListener('cfxgraphexport',e=>{content=e.detail.content;e.preventDefault();});
+                await ChartForgeXGraphExplorer.export(root,'svg');return content;}
+            """);
+        Assert.Contains(caption, snapshot, StringComparison.Ordinal);
+        await page.EvaluateAsync("""
+            source=>{const host=document.createElement('section');host.id='long-snapshot';host.append(document.importNode(new DOMParser().parseFromString(source,'image/svg+xml').documentElement,true));document.body.append(host);}
+            """, snapshot);
+        var facts = await FitFacts(page, "#long-snapshot");
+        Assert.True(facts.GetProperty("inside").GetBoolean(), facts.GetRawText());
+        await Capture(page, "long-fit-" + backend + "-" + secondary, facts);
+        Assert.Empty(errors);
+        AssertNoConsoleErrors(session);
+    }
+
     [BrowserFact]
     public async Task TallCompactFitKeepsPaintClearOfFloatingControls() {
         var scene = GraphScene.Create("tall-fit", "Service chain");
@@ -99,14 +138,15 @@ public sealed class GraphReadabilityBrowserTests {
         var scene = GraphScene.Create("near-route", "Route with a middle obstruction")
             .AddNode("source", "Source", n => Place(n, 100, 280))
             .AddNode("target", "Target", n => Place(n, 860, 280))
-            .AddNode("middle", "Unrelated service", n => { Place(n, 480, curved ? 320 : 280); n.Shape = GraphNodeShape.Box; n.Size = 65; })
-            .AddEdge("transfer", "source", "target", "replication", e => { e.Curvature = curved ? .16 : 0; });
+            .AddNode("middle", "Unrelated service", n => { Place(n, 480, curved ? 410 : 280); n.Shape = GraphNodeShape.Box; n.Size = 65; })
+            .AddEdge("transfer", "source", "target", "replication", e => { e.Curvature = curved ? 260 : 0; });
         scene.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Export;
         var svg = scene.ToGraphSvg();
         var png = scene.ToGraphPng();
         await using (var prepared = await OpenAsync("<html><body><section id='proof'>" + svg + "</section><img width='960' alt='Native PNG' src='data:image/png;base64," + Convert.ToBase64String(png) + "'></body></html>", 1000, 1200)) {
             var facts = await CaptionFacts(prepared.Page, "#proof");
             AssertCaption(facts);
+            if (curved) Assert.True(facts.GetProperty("bend").GetDouble() > 100, facts.GetRawText());
             await Capture(prepared.Page, "near-route-prepared-" + curved, facts);
             AssertNoConsoleErrors(prepared);
         }
@@ -133,7 +173,7 @@ public sealed class GraphReadabilityBrowserTests {
             point={x:+label.getAttribute('x'),y:+label.getAttribute('y')},length=path.getTotalLength();let distance=Infinity;
             for(let i=0;i<=1000;i++){const p=path.getPointAtLength(length*i/1000);distance=Math.min(distance,Math.hypot(p.x-point.x,p.y-(point.y-4)));}
             const box=label.getBoundingClientRect(),collisions=[...root.querySelectorAll('[data-cfx-role=graph-node],.cfx-graph-node-label')].filter(n=>{const b=n.getBoundingClientRect();return Math.min(b.right,box.right)>Math.max(b.left,box.left)&&Math.min(b.bottom,box.bottom)>Math.max(b.top,box.top);}).map(n=>n.textContent||n.dataset.nodeId);
-            return {distance,collisions,text:label.textContent,point};}
+            return {distance,collisions,text:label.textContent,point,bend:Math.abs(path.getPointAtLength(length/2).y-280)};}
         """, selector);
 
     private static void AssertCaption(JsonElement facts) {

@@ -27,7 +27,10 @@
     const invalidateText = () => {
       root.__cfxGraphBadgeMeasurements?.clear();
       delete root.__cfxGraphEdgeMesh;
-      if (lifetime.active && root.isConnected) applyLayout(root, root.__cfxGraphState || graphState(root));
+      if (lifetime.active && root.isConnected) {
+        applyLayout(root, root.__cfxGraphState || graphState(root));
+        if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched && graphStageHasLayout(root)) fitViewport(root);
+      }
     };
     listenGraph(root, root.ownerDocument.fonts, 'loadingdone', invalidateText);
     return lifetime;
