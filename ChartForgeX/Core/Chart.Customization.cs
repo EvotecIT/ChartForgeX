@@ -311,6 +311,8 @@ public sealed partial class Chart {
     /// <summary>
     /// Adds a connector line between two existing dotted-map point labels.
     /// </summary>
+    /// <remarks>Repeated labels are accepted when every match has exactly the same longitude and latitude.
+    /// Use explicit coordinates when a label names different locations.</remarks>
     /// <param name="label">The connector label.</param>
     /// <param name="fromPointLabel">The source dotted-map point label.</param>
     /// <param name="toPointLabel">The target dotted-map point label.</param>
@@ -343,7 +345,8 @@ public sealed partial class Chart {
             if (series.Kind == ChartSeriesKind.DottedMap) {
                 hasDottedMap = true;
                 foreach (var point in series.MapPoints) if (string.Equals(point.Label, trimmed, System.StringComparison.OrdinalIgnoreCase)) {
-                    if (found.HasValue) throw new System.ArgumentException("Map point labels must identify one observation across the geographic datasets: " + trimmed + ".", parameterName);
+                    if (found.HasValue && (found.Value.X != point.Longitude || found.Value.Y != point.Latitude))
+                        throw new System.ArgumentException("Map point labels must identify one geographic location across the datasets: " + trimmed + ".", parameterName);
                     found = new ChartPoint(point.Longitude, point.Latitude);
                 }
             }

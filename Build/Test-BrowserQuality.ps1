@@ -117,6 +117,8 @@ try {
         'InteractiveNativeXViewportBrowserTests.NativeLogarithmicYConfinementAndReversedPeerSynchronizationShareOneSourceWindow',
         'InteractiveNativeXViewportBrowserTests.AdaptiveAutomaticMarkerPaddingKeepsNarrowEdgeWindowsPortableThroughLinkedWideResetAndExport',
         'InteractiveNativeXViewportBrowserTests.NativeBookmarksCannotPartiallyApplyWhenTheirCompleteWindowCannotStart',
+        'InteractiveNativeXViewportBrowserTests.LinkedCartesianPeersKeepCompatibleXWhenYIsMissingOrUsesAnotherScale',
+        'InteractiveNativeXViewportBrowserTests.ResetAfterLosingYStillPreparesFullNativeXAndCommitsReaderResetOnlyAfterAcceptance',
         'SourceAnnotationBrowserTests.NativeSourceDrawingsKeepPaintedCaptionsAndAuthoredStateAcrossReplacement',
         'SourceAnnotationBrowserTests.ConnectedSourceCommandsCommitNativeFactsKeepReaderStateAndExportTheCommittedDrawing',
         'SourceAnnotationBrowserTests.SourceCommandsRejectInvalidRepliesAndShareCancellationWithViewportUpdateAndDisposal',
