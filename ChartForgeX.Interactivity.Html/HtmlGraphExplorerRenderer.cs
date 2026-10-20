@@ -516,7 +516,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var point = control.HasValue
             ? new Point((renderSource.X + 2 * control.Value.X + renderTarget.X) / 4, (renderSource.Y + 2 * control.Value.Y + renderTarget.Y) / 4 - 7)
             : new Point((renderSource.X + renderTarget.X) / 2, (renderSource.Y + renderTarget.Y) / 2 - 7);
-        return AvoidEdgeLabelNodeCollisions(point, edge.Label, source, target, obstacles);
+        return AvoidEdgeLabelNodeCollisions(point, edge.Label, renderSource, renderTarget, obstacles, control: control);
     }
 
     private static Point? EdgeControl(GraphSceneEdge edge, Point source, Point target) {

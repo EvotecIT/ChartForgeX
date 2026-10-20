@@ -84,6 +84,11 @@
       const camera = svg.querySelector('[data-cfx-role="graph-viewport"]');
       camera?.removeAttribute('transform'); camera?.style.removeProperty('transform');
       svg.setAttribute('role', 'img'); svg.setAttribute('aria-hidden', 'false'); svg.setAttribute('focusable', 'false');
+      // Print prepares a full scene at its design aspect, independently of a
+      // portrait screen snapshot's physical dimensions and current camera.
+      const design = sceneSize(root);
+      svg.setAttribute('width', String(design.width)); svg.setAttribute('height', String(design.height));
+      ['width', 'height', 'aspect-ratio'].forEach(name => svg.style.removeProperty(name));
       surface = root.ownerDocument.createElement('div');
       surface.className = 'cfx-graph-print-surface';
       surface.setAttribute('data-cfx-role', 'graph-print-surface');

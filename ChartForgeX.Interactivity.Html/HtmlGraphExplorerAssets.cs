@@ -17,6 +17,7 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-lifetime.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.01-document.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-geometry.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-edge-labels.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-label-obstacles.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.03-canvas-nodes.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.03-canvas-details.js",

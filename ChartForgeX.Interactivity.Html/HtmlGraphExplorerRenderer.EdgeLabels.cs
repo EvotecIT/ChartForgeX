@@ -8,9 +8,11 @@ namespace ChartForgeX.Interactivity.Html;
 
 public sealed partial class HtmlGraphExplorerRenderer {
     private static readonly double[] EdgeLabelCollisionOffsets = { 20, 36, 54, 76, 102, 136, 176, 220, 280 };
+    private static readonly double[] EdgeLabelPathOffsets = { 0, -12, 12, -24, 24 };
+    private static readonly double[] EdgeLabelPathFractions = { 0.45, 0.55, 0.35, 0.65, 0.25, 0.75, 0.15, 0.85 };
     private static readonly double[] EdgeLabelRouteFractions = { 0.45, 0.55, 0.35, 0.65, 0.25, 0.75 };
 
-    private static Point AvoidEdgeLabelNodeCollisions(Point candidate, string? label, Point source, Point target, LabelSpatialIndex obstacles, IReadOnlyList<GraphScenePoint>? route = null) {
+    private static Point AvoidEdgeLabelNodeCollisions(Point candidate, string? label, Point source, Point target, LabelSpatialIndex obstacles, IReadOnlyList<GraphScenePoint>? route = null, Point? control = null) {
         if (string.IsNullOrWhiteSpace(label) || !EdgeLabelIntersectsObstacles(candidate, label!, obstacles)) return candidate;
 
         if (route is { Count: > 1 }) {
@@ -24,10 +26,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
             return candidate;
         }
 
-        // A short curved route can pull its control-point midpoint under a card.
-        // The geometric midpoint often has enough room between the endpoints.
-        var center = new Point((source.X + target.X) / 2, (source.Y + target.Y) / 2 - 7);
-        if (!EdgeLabelIntersectsObstacles(center, label!, obstacles)) return center;
+        // Prefer clear positions on the painted path to remote normal offsets.
+        foreach (var offset in EdgeLabelPathOffsets) {
+            foreach (var fraction in EdgeLabelPathFractions) {
+                var point = EdgeCaptionPathPoint(source, target, control, fraction, offset);
+                if (!EdgeLabelIntersectsObstacles(point, label!, obstacles)) return point;
+            }
+        }
 
         var dx = target.X - source.X;
         var dy = target.Y - source.Y;
@@ -44,6 +49,17 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
         var finalOffset = EdgeLabelCollisionOffsets[EdgeLabelCollisionOffsets.Length - 1];
         return new Point(candidate.X + normalX * finalOffset * preferredSign, candidate.Y + normalY * finalOffset * preferredSign);
+    }
+
+    /// <summary>Finds a baseline beside the clipped line or quadratic curve, with a local normal offset.</summary>
+    private static Point EdgeCaptionPathPoint(Point source, Point target, Point? control, double t, double offset) {
+        var u = 1 - t;
+        var x = control.HasValue ? u * u * source.X + 2 * u * t * control.Value.X + t * t * target.X : source.X + (target.X - source.X) * t;
+        var y = control.HasValue ? u * u * source.Y + 2 * u * t * control.Value.Y + t * t * target.Y : source.Y + (target.Y - source.Y) * t;
+        var dx = control.HasValue ? 2 * u * (control.Value.X - source.X) + 2 * t * (target.X - control.Value.X) : target.X - source.X;
+        var dy = control.HasValue ? 2 * u * (control.Value.Y - source.Y) + 2 * t * (target.Y - control.Value.Y) : target.Y - source.Y;
+        var length = Math.Max(0.001, Math.Sqrt(dx * dx + dy * dy));
+        return new Point(x - dy / length * offset, y + dx / length * offset - 7);
     }
 
     private static bool EdgeLabelIntersectsObstacles(Point labelPoint, string label, LabelSpatialIndex obstacles) {

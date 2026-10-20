@@ -580,11 +580,18 @@ Graph notifications also cross shadow boundaries. Use `event.detail.graphId`
 outside the shadow root, where `event.target` refers to the component host.
 
 Graph relationship captions check visible node bodies, captions and badges,
-including collapsed aggregates. Filtering refreshes their SVG positions. Placement
-tries a fixed set of candidates; a crowded scene can leave a caption displaced
-from its edge. Graph scenes also retain their design dimensions when scaled into
-a narrower host, rather than preparing a new layout. Responsive preparation and
-closer caption-to-edge placement remain in the [roadmap](../TODO.md).
+including collapsed aggregates. Filtering refreshes their SVG positions. When a
+midpoint is obstructed, placement searches clear positions along the painted
+line, curve or polyline before moving farther away. A fully crowded route can
+still require a displaced caption; placement does not reroute authored edges.
+
+Fit includes complete node captions and badges and adjusts its zoom ceiling for
+the host's screen size. Small scenes can use a compact host without inheriting
+the wide scene's zoom limit. Node positions and the logical scene frame stay
+unchanged. Resizing refits an untouched camera; after a user zooms or pans, it
+preserves that camera until Fit is requested. Large scenes can still require
+zooming or filtering to read individual captions; Fit does not promise a minimum
+font size for an arbitrary graph.
 
 ## Topology motion with HTML controls
 

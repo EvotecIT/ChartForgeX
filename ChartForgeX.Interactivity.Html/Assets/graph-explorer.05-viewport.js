@@ -125,8 +125,8 @@
     };
     state.nodes.forEach(node => {
       if (!visible(node.el)) return;
-      const pad = 30;
-      bounds.push({ minX: node.x - nodeHalfWidth(node) - pad, minY: node.y - nodeHalfHeight(node) - pad, maxX: node.x + nodeHalfWidth(node) + pad, maxY: node.y + nodeHalfHeight(node) + pad });
+      const pad = 8, extents = nodeLayoutExtents(node, false);
+      bounds.push({ minX: node.x - extents.x - pad, minY: node.y - extents.y - pad, maxX: node.x + extents.x + pad, maxY: node.y + extents.y + pad });
     });
     state.edges.forEach(edge => {
       if (!visible(edge.el) || !edge.source || !edge.target || !edgeHasVisibleEndpoints(edge, byId)) return;
@@ -163,6 +163,20 @@
       maxY: Math.max(...bounds.map(item => item.maxY))
     };
   };
+  const graphFitArea = (root, frame) => {
+    const rect = root.querySelector('[data-cfx-role="graph-scene"]')?.getBoundingClientRect();
+    let top = 0, bottom = 0;
+    if (rect?.width > 0 && rect?.height > 0) {
+      root.querySelectorAll('.cfx-graph-command-rail,.cfx-graph-breadcrumbs,.cfx-graph-neighborhood-navigation').forEach(control => {
+        const box = control.getBoundingClientRect();
+        if (!(box.width > 0 && box.height > 0) || box.bottom <= rect.top || box.top >= rect.bottom) return;
+        if ((box.top + box.bottom) / 2 < (rect.top + rect.bottom) / 2) top = Math.max(top, box.bottom - rect.top + 10);
+        else bottom = Math.max(bottom, rect.bottom - box.top + 10);
+      });
+    }
+    return { width: frame.width, height: Math.max(1, frame.height - (top + bottom) / frame.scale),
+      centerY: sceneSize(root).centerY + (top - bottom) / (2 * frame.scale) };
+  };
   const fitViewport = (root) => {
     const bounds = contentBounds(root, root.__cfxGraphState || graphState(root));
     const size = sceneSize(root);
@@ -173,7 +187,11 @@
     const padding = Math.max(34, Math.min(84, Math.min(size.width, size.height) * 0.08));
     const width = Math.max(1, bounds.maxX - bounds.minX);
     const height = Math.max(1, bounds.maxY - bounds.minY);
-    const scale = Math.min(1.35, Math.max(0.2, Math.min((size.width - padding * 2) / width, (size.height - padding * 2) / height)));
+    const frame = graphSurfaceFrame(root), area = graphFitArea(root, frame);
+    // Small hosts must not inherit a wide scene's logical zoom ceiling. Keep
+    // the existing camera range and fit all content without changing positions.
+    const maximumScale = Math.min(4, 1.35 / Math.min(1, frame.scale));
+    const scale = Math.min(maximumScale, Math.max(0.2, Math.min((area.width - padding * 2) / width, (area.height - padding * 2) / height)));
     const centerX = (bounds.minX + bounds.maxX) / 2;
     const centerY = (bounds.minY + bounds.maxY) / 2;
     root.dataset.cfxGraphFitScale = scale.toFixed(3);
@@ -182,7 +200,7 @@
     setViewport(root, {
       scale,
       x: size.centerX - centerX * scale,
-      y: size.centerY - centerY * scale
+      y: area.centerY - centerY * scale
     });
   };
 
