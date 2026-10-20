@@ -30,6 +30,7 @@ internal static partial class VisualSpecialtyCompiler {
             if (!needsRail) rail = 0;
         }
         var layout = ChartPyramidLayout.Compute(series.RenderPoints, plot, options, rail, placement, context.Theme.Spacing);
+        var captions = show ? PyramidCaptions(chart, context, builder, layout, placement, colors) : null;
         var encoding = options.ValueEncoding == ChartPyramidValueEncoding.Height ? "height" : "area";
         var collapsed = false;
         using var group = builder.PushGroup("pyramid-chart", "pyramid-chart", new Dictionary<string, string> {
@@ -58,7 +59,7 @@ internal static partial class VisualSpecialtyCompiler {
                         paint: VisualChartPaint.Fill(VisualChartPaint.Series(series, color, index)));
                     Pattern(chart, builder, index, stage.Segment, color);
                 }
-                if (show) PyramidLabel(chart, context, builder, stage, layout.LabelSide, placement, color, colors);
+                if (show) PyramidLabel(chart, context, builder, stage, layout.LabelSide, placement, color, colors, captions!);
             }
         }
         if (collapsed) builder.AddDiagnostic(new VisualDiagnostic("pyramid.precision", "A positive pyramid partition is below floating-point coordinate precision; its complete source value remains represented without an invented minimum size."));
@@ -73,13 +74,19 @@ internal static partial class VisualSpecialtyCompiler {
         + VisualStateSceneTools.Value(chart, chart.Series[0], index, chart.Series[0].RenderPoints[index].Y);
 
     private static void PyramidLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartPyramidStageLayout stage,
-        ChartDataLabelPlacement side, ChartDataLabelPlacement placement, ChartColor color, VisualThemeColors colors) {
+        ChartDataLabelPlacement side, ChartDataLabelPlacement placement, ChartColor color, VisualThemeColors colors,
+        IReadOnlyDictionary<int, PyramidCaption> captions) {
         var index = stage.SourceIndex; var text = PyramidLabel(chart, index);
         var insideStyle = Style(chart, context, index, ChartColorMath.AccessibleTextOnBackground(color));
         var measured = builder.MeasureText(text, insideStyle);
         var inside = placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Inside or ChartDataLabelPlacement.Center
             && stage.InsideLabel.Width >= measured.Width && stage.InsideLabel.Height >= measured.Height;
-        var bounds = inside ? stage.InsideLabel : stage.OutsideLabel;
+        if (!captions.TryGetValue(index, out var caption)) {
+            builder.AddRegion(new VisualSemanticRegion(Id(index) + "-label", "pyramid-label", stage.OutsideLabel, text));
+            builder.AddDiagnostic(new VisualDiagnostic("pyramid.label-hidden", "A pyramid label did not fit at its requested size without crowding adjacent captions; complete text remains in descriptive regions."));
+            return;
+        }
+        var bounds = caption.Bounds;
         var style = inside ? insideStyle : Style(chart, context, index, colors.Foreground);
         if (!inside && stage.HasGeometry) {
             var end = side switch {
@@ -92,6 +99,6 @@ internal static partial class VisualSpecialtyCompiler {
         }
         StageText(builder, text, bounds, style, "pyramid-label", Id(index) + "-label", TextAlignment.Center,
             VisualChartPaint.ExplicitDataLabelColor(chart, index) || !inside ? VisualChartPaint.Text(style)
-                : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "pyramid");
+                : SvgPaint.Contrast(color, VisualChartPaint.SeriesRole(chart.Series[0], index)), "pyramid", caption.Text);
     }
 }
