@@ -56,7 +56,9 @@
         graphNodeMeasureContext ||= document.createElement('canvas').getContext('2d');
         if (graphNodeMeasureContext) {
           graphNodeMeasureContext.font = '800 7px Inter, "Segoe UI", Arial, sans-serif';
-          width = graphNodeMeasureContext.measureText(text).width;
+          const metrics = graphNodeMeasureContext.measureText(text);
+          const ink = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight;
+          width = Math.max(metrics.width, Number.isFinite(ink) ? ink : 0);
         }
       }
       if (cache) {

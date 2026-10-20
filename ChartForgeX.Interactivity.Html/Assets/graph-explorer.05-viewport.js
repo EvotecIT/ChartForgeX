@@ -112,7 +112,7 @@
   // Fit measures painted captions independently of capped layout/physics extents.
   // Virtual accelerated nodes use the same Canvas fonts; physical SVG details
   // additionally contribute their actual glyph boxes, including host typography.
-  const graphNodeFitExtents = node => {
+  const graphNodeFitExtents = (node, fontFamily) => {
     const extents = nodeLayoutExtents(node, false);
     if (!node.card) {
       const measure = (value, font, secondary) => {
@@ -125,8 +125,8 @@
       };
       const primary = node.label || attr(node.el, 'data-node-label');
       const secondary = node.secondaryLabel || attr(node.el, 'data-node-secondary-label');
-      extents.x = Math.max(extents.x, measure(primary, '12px Inter, Segoe UI, Arial, sans-serif', false) / 2 + (node.labelBackgroundColor ? 11 : 4));
-      if (secondary) extents.x = Math.max(extents.x, measure(secondary, '9.5px Inter, Segoe UI, Arial, sans-serif', true) / 2 + 4);
+      extents.x = Math.max(extents.x, measure(primary, `12px ${fontFamily}`, false) / 2 + (node.labelBackgroundColor ? 11 : 4));
+      if (secondary) extents.x = Math.max(extents.x, measure(secondary, `9.5px ${fontFamily}`, true) / 2 + 4);
     }
     const details = node.detailsEl;
     if (typeof details?.getBBox === 'function') {
@@ -138,9 +138,10 @@
     }
     return extents;
   };
-  const contentBounds = (root, state) => {
+  const contentBounds = (root, state, measurePaintedCaptions = false) => {
     const byId = state.byId || new Map(state.nodes.map(node => [node.id, node]));
     const labelObstacles = graphEdgeLabelObstacles(root, state);
+    const fontFamily = measurePaintedCaptions ? graphNodeFontFamily(root) : '';
     const bounds = [];
     const pushPoint = (point, pad) => {
       if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
@@ -154,7 +155,7 @@
     };
     state.nodes.forEach(node => {
       if (!visible(node.el)) return;
-      const pad = 8, extents = graphNodeFitExtents(node);
+      const pad = 8, extents = measurePaintedCaptions ? graphNodeFitExtents(node, fontFamily) : nodeLayoutExtents(node, false);
       bounds.push({ minX: node.x - extents.x - pad, minY: node.y - extents.y - pad, maxX: node.x + extents.x + pad, maxY: node.y + extents.y + pad });
     });
     state.edges.forEach(edge => {
@@ -207,7 +208,7 @@
       centerY: sceneSize(root).centerY + (top - bottom) / (2 * frame.scale) };
   };
   const fitViewport = (root) => {
-    const bounds = contentBounds(root, root.__cfxGraphState || graphState(root));
+    const bounds = contentBounds(root, root.__cfxGraphState || graphState(root), true);
     const size = sceneSize(root);
     if (!bounds) {
       setViewport(root, { x: 0, y: 0, scale: 1 });

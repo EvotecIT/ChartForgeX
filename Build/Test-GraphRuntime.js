@@ -8,6 +8,7 @@ const tests = [
   'tests/graph-explorer-runtime/physics.test.js',
   'tests/graph-explorer-runtime/picking.test.js',
   'tests/graph-explorer-runtime/surface.test.js',
+  'tests/graph-explorer-runtime/fit-bounds.test.js',
   'tests/graph-explorer-runtime/state.test.js',
   'tests/graph-explorer-runtime/webgl.test.js',
   'tests/graph-explorer-runtime/svg-arrows.test.js',

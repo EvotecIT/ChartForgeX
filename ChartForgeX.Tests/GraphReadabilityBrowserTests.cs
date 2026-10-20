@@ -109,9 +109,28 @@ public sealed class GraphReadabilityBrowserTests {
             source=>{const host=document.createElement('section');host.id='long-snapshot';host.append(document.importNode(new DOMParser().parseFromString(source,'image/svg+xml').documentElement,true));document.body.append(host);}
             """, snapshot);
         var facts = await FitFacts(page, "#long-snapshot");
-        Assert.True(facts.GetProperty("inside").GetBoolean(), facts.GetRawText());
         await Capture(page, "long-fit-" + backend + "-" + secondary, facts);
+        Assert.True(facts.GetProperty("inside").GetBoolean(), facts.GetRawText());
         Assert.Empty(errors);
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NativeStaticFitIncludesTheSameCompletePrimaryAndSecondaryCaptions(bool secondary) {
+        const string caption = "north-europe-production-authentication-service.example.internal — retained complete hostname and service description";
+        var scene = GraphScene.Create("native-long-fit", "Complete service captions").AddNode("service", secondary ? "Worker" : caption, n => {
+            Place(n, 480, 280); if (secondary) n.SecondaryLabel = caption;
+        });
+        void Options(GraphSceneStaticRenderOptions options) { options.Width = 390; options.Height = 280; }
+        var svg = scene.ToGraphSvg(configure: Options);
+        var png = scene.ToGraphPng(configure: Options);
+        await using var session = await OpenAsync("<html><body style='margin:0'><section id='native-long-fit'>" + svg +
+            "</section><img alt='Native PNG' width='390' height='280' src='data:image/png;base64," + Convert.ToBase64String(png) + "'></body></html>", 430, 700);
+        var facts = await FitFacts(session.Page, "#native-long-fit");
+        Assert.True(facts.GetProperty("inside").GetBoolean(), facts.GetRawText());
+        await Capture(session.Page, "native-long-fit-" + secondary, facts);
         AssertNoConsoleErrors(session);
     }
 
@@ -160,9 +179,9 @@ public sealed class GraphReadabilityBrowserTests {
     private static void Place(GraphSceneNode node, double x, double y) { node.Fixed = true; node.X = x; node.Y = y; node.Size = 8; }
 
     private static Task<JsonElement> FitFacts(IPage page, string selector = ".cfx-graph-explorer") => page.EvaluateAsync<JsonElement>("""
-        selector=>{const root=document.querySelector(selector),svg=root.querySelector('[data-cfx-role=graph-scene]'),frame=svg.getBoundingClientRect(),
+        selector=>{const root=document.querySelector(selector),svg=root.querySelector('[data-cfx-role=graph-scene]')||root.querySelector('svg'),frame=svg.getBoundingClientRect(),
             labels=[...svg.querySelectorAll('.cfx-graph-node-label')].filter(n=>n.getClientRects().length&&getComputedStyle(n).display!=='none');
-            return {minimumFont:Math.min(...labels.map(n=>parseFloat(getComputedStyle(n).fontSize)*Math.hypot(n.getScreenCTM().a,n.getScreenCTM().b))),
+            return {frame:frame.toJSON(),captions:[...svg.querySelectorAll('text')].map(n=>({text:n.textContent,font:getComputedStyle(n).font,box:n.getBBox(),screen:n.getBoundingClientRect().toJSON()})),minimumFont:Math.min(...labels.map(n=>parseFloat(getComputedStyle(n).fontSize)*Math.hypot(n.getScreenCTM().a,n.getScreenCTM().b))),
                 inside:[...svg.querySelectorAll('text')].filter(n=>n.getClientRects().length&&getComputedStyle(n).display!=='none').every(n=>{const b=n.getBoundingClientRect();return b.left>=frame.left&&b.right<=frame.right&&b.top>=frame.top&&b.bottom<=frame.bottom;}),
                 camera:[root.dataset.cfxViewportX,root.dataset.cfxViewportY,root.dataset.cfxViewportScale],
                 nodes:[...svg.querySelectorAll('[data-cfx-role=graph-node]')].map(n=>[n.dataset.nodeId,n.dataset.nodeX,n.dataset.nodeY])};}

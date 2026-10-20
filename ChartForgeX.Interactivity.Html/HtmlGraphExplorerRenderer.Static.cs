@@ -90,8 +90,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         foreach (var node in scene.Nodes) {
             var point = positions[node.Id];
             var includeLabel = labeledNodeIds.Contains(node.Id);
-            var halfWidth = PreparedNodeHalfWidth(node, includeLabel);
-            var halfHeight = PreparedNodeHalfHeight(node, includeLabel);
+            var extents = MeasureStaticNodeExtents(node, includeLabel);
+            var halfWidth = extents.HalfWidth;
+            var halfHeight = extents.HalfHeight;
             minX = Math.Min(minX, point.X - halfWidth); maxX = Math.Max(maxX, point.X + halfWidth);
             minY = Math.Min(minY, point.Y - halfHeight); maxY = Math.Max(maxY, point.Y + halfHeight);
         }

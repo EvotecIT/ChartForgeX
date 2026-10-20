@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Interactivity;
+using ChartForgeX.Primitives;
+using ChartForgeX.Typography;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -36,6 +38,21 @@ public sealed partial class HtmlGraphExplorerRenderer {
             halfHeight = Math.Max(halfHeight, labelBottom);
         }
         return new PreparedNodeExtents(halfWidth, halfHeight);
+    }
+
+    /// <summary>Measures complete painted static captions without changing bounded layout and physics estimates.</summary>
+    private static PreparedNodeExtents MeasureStaticNodeExtents(GraphSceneNode node, bool includeLabels) {
+        var extents = MeasurePreparedNodeExtents(node, includeLabels);
+        if (!includeLabels || IsCardNode(node)) return extents;
+        var font = FontSpec.FromFamily("Inter, Segoe UI, Arial, sans-serif");
+        var primary = TextLayoutEngine.Measure(node.Label, new TextStyle { Font = font, FontSize = 12 }).Width;
+        var halfWidth = Math.Max(extents.HalfWidth, Math.Max(primary, EstimatedCardTextWidth(node.Label, false)) / 2 + 8);
+        if (!string.IsNullOrWhiteSpace(node.Style.LabelBackgroundColor)) halfWidth = Math.Max(halfWidth, Math.Max(24, node.Label.Length * 3.8));
+        if (!string.IsNullOrWhiteSpace(node.SecondaryLabel)) {
+            var secondary = TextLayoutEngine.Measure(node.SecondaryLabel!, new TextStyle { Font = font, FontSize = 9.5 }).Width;
+            halfWidth = Math.Max(halfWidth, Math.Max(secondary, EstimatedCardTextWidth(node.SecondaryLabel!, true)) / 2 + 8);
+        }
+        return new PreparedNodeExtents(halfWidth, extents.HalfHeight);
     }
 
     private static double PreparedNodeHalfWidth(GraphSceneNode node, bool includeLabels = true) =>
