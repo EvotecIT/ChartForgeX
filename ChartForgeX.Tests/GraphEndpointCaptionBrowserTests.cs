@@ -78,12 +78,22 @@ public sealed class GraphEndpointCaptionBrowserTests {
             var filtered = await MeasureAsync(page, ".cfx-graph-explorer");
             await CaptureAsync(page, "graph-endpoint-filtered", filtered);
             Assert.Empty(filtered.GetProperty("collisions").EnumerateArray());
-            var filteredPoint = filtered.GetProperty("facts")[0].GetProperty("x").GetString();
+            var filteredPoint = filtered.GetProperty("facts")[0];
+            // Restore a real painted obstacle at the clear filtered caption,
+            // rather than requiring a particular coordinate to change by chance.
+            await page.EvaluateAsync("""
+                ()=>{const label=captionRoot.querySelector('[data-edge-label-for=secondary-edge]');
+                    ChartForgeXGraphExplorer.update(captionRoot,{upsertNodes:[{id:'global',label:'Global',
+                        x:+label.getAttribute('x'),y:+label.getAttribute('y'),size:8,fixed:true,badgeText:'42'}]});}
+                """);
             await page.Locator("[data-cfx-graph-search]").FillAsync("");
             var restored = await MeasureAsync(page, ".cfx-graph-explorer");
             await CaptureAsync(page, "graph-endpoint-filter-restored", restored);
             AssertFacts(restored);
-            Assert.NotEqual(filteredPoint, restored.GetProperty("facts")[0].GetProperty("x").GetString());
+            Assert.DoesNotContain("cfx-graph-hidden", await page.Locator("[data-node-id=global]").GetAttributeAsync("class"));
+            var restoredPoint = restored.GetProperty("facts")[0];
+            Assert.True(filteredPoint.GetProperty("x").GetString() != restoredPoint.GetProperty("x").GetString()
+                || filteredPoint.GetProperty("y").GetString() != restoredPoint.GetProperty("y").GetString());
         }
         await page.EmulateMediaAsync(new() { Media = Media.Print });
         await page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-role=graph-print-surface] svg')");

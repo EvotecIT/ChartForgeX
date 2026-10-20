@@ -177,10 +177,13 @@ public sealed class GraphReadabilityBrowserTests {
     }
 
     [BrowserTheory]
-    [InlineData(HtmlGraphRenderBackend.Svg)]
-    [InlineData(HtmlGraphRenderBackend.Canvas)]
-    [InlineData(HtmlGraphRenderBackend.WebGl)]
-    public async Task ShortRelationshipUsesEmptySpaceBetweenPaintedNodeDetails(HtmlGraphRenderBackend backend) {
+    [InlineData(HtmlGraphRenderBackend.Svg, false)]
+    [InlineData(HtmlGraphRenderBackend.Canvas, false)]
+    [InlineData(HtmlGraphRenderBackend.WebGl, false)]
+    [InlineData(HtmlGraphRenderBackend.Svg, true)]
+    [InlineData(HtmlGraphRenderBackend.Canvas, true)]
+    [InlineData(HtmlGraphRenderBackend.WebGl, true)]
+    public async Task ShortRelationshipUsesEmptySpaceBetweenPaintedNodeDetails(HtmlGraphRenderBackend backend, bool moved) {
         var scene = GraphScene.Create("short-caption", "Regional services")
             .AddNode("global", "Global", n => { Place(n, 479.47, 190.73); n.BadgeText = "42"; })
             .AddNode("europe", "Europe", n => { Place(n, 606.12, 267.10); n.SecondaryLabel = "4 sites · 18 workloads"; n.Status = "warning"; })
@@ -190,22 +193,29 @@ public sealed class GraphReadabilityBrowserTests {
             .AddEdge("us", "global", "americas", configure: e => e.Directed = true)
             .AddEdge("ap", "global", "apac", configure: e => e.Directed = true)
             .AddEdge("transfer", "europe", "apac", "replication");
+        if (moved) {
+            var positions = new[] { (472.929, 222.855), (566.219, 249.577), (373.954, 248.593), (508.383, 286.183) };
+            for (var i = 0; i < positions.Length; i++) { scene.Nodes[i].X = positions[i].Item1; scene.Nodes[i].Y = positions[i].Item2; }
+        }
+        // The moved short edge needs one caption row of normal clearance; the
+        // original clear-gap scene keeps the stricter near-route bound.
+        var maximumDistance = moved ? 55 : 35;
         scene.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Export;
         if (backend == HtmlGraphRenderBackend.Svg) {
             await using var prepared = await OpenAsync("<html><body><section id='proof'>" + scene.ToGraphSvg() + "</section><img alt='Native PNG' src='data:image/png;base64," + Convert.ToBase64String(scene.ToGraphPng()) + "'></body></html>", 1000, 1200);
             var native = await CaptionFacts(prepared.Page, "#proof");
-            await Capture(prepared.Page, "short-caption-native", native);
-            AssertCaption(native);
+            await Capture(prepared.Page, "short-caption-native-" + moved, native);
+            AssertCaption(native, maximumDistance);
         }
         await using var session = await OpenAsync(scene.ToGraphExplorerHtmlPage(o => o.RenderBackend = backend), 390, 844);
         var live = await CaptionFacts(session.Page, ".cfx-graph-explorer");
-        await Capture(session.Page, "short-caption-live-" + backend, live);
-        AssertCaption(live);
+        await Capture(session.Page, "short-caption-live-" + backend + "-" + moved, live);
+        AssertCaption(live, maximumDistance);
         await session.Page.EmulateMediaAsync(new() { Media = Media.Print });
         await session.Page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-role=graph-print-surface] svg')");
         var printed = await CaptionFacts(session.Page, "[data-cfx-role=graph-print-surface]");
-        await Capture(session.Page, "short-caption-print-" + backend, printed);
-        AssertCaption(printed);
+        await Capture(session.Page, "short-caption-print-" + backend + "-" + moved, printed);
+        AssertCaption(printed, maximumDistance);
         await session.Page.EmulateMediaAsync(new() { Media = Media.Screen });
         AssertNoConsoleErrors(session);
     }
@@ -229,9 +239,9 @@ public sealed class GraphReadabilityBrowserTests {
             return {distance,collisions,text:label.textContent,point,bend:Math.abs(path.getPointAtLength(length/2).y-280)};}
         """, selector);
 
-    private static void AssertCaption(JsonElement facts) {
+    private static void AssertCaption(JsonElement facts, double maximumDistance = 35) {
         Assert.Equal("replication", facts.GetProperty("text").GetString());
-        Assert.True(facts.GetProperty("distance").GetDouble() <= 35, facts.GetRawText());
+        Assert.True(facts.GetProperty("distance").GetDouble() <= maximumDistance, facts.GetRawText());
         Assert.Empty(facts.GetProperty("collisions").EnumerateArray());
     }
 

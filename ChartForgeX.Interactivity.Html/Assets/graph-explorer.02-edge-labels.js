@@ -34,7 +34,7 @@
     }
     // Search the painted line/curve before moving a caption away from it.
     // A clear midpoint normal can otherwise be hundreds of units from its edge.
-    for (const offset of [0, -12, 12, -24, 24]) {
+    for (const offset of [0, -12, 12, -24, 24, -36, 36, -48, 48, -60, 60]) {
       for (const fraction of [.45, .55, .35, .65, .25, .75, .15, .85]) {
         const point = graphEdgeCaptionPathPoint(edge, control, fraction, offset);
         if (!intersects(point)) return point;

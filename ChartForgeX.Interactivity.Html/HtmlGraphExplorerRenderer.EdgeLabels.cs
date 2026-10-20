@@ -8,7 +8,7 @@ namespace ChartForgeX.Interactivity.Html;
 
 public sealed partial class HtmlGraphExplorerRenderer {
     private static readonly double[] EdgeLabelCollisionOffsets = { 20, 36, 54, 76, 102, 136, 176, 220, 280 };
-    private static readonly double[] EdgeLabelPathOffsets = { 0, -12, 12, -24, 24 };
+    private static readonly double[] EdgeLabelPathOffsets = { 0, -12, 12, -24, 24, -36, 36, -48, 48, -60, 60 };
     private static readonly double[] EdgeLabelPathFractions = { 0.45, 0.55, 0.35, 0.65, 0.25, 0.75, 0.15, 0.85 };
     private static readonly double[] EdgeLabelRouteFractions = { 0.45, 0.55, 0.35, 0.65, 0.25, 0.75 };
 
