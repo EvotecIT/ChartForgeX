@@ -1,0 +1,9 @@
+{
+  "nodes": ["A", "B", "C"],
+  "edges": [["A", "B"], ["B", "C"]],
+  "flowchartStyles": {
+    "nodeClasses": {"A": [], "B": [], "C": []},
+    "nodeStyles": {"A": {}, "B": {}, "C": {}},
+    "edgeStyles": [{"stroke-dasharray": "0"}, {"stroke-dasharray": "5 5"}]
+  }
+}

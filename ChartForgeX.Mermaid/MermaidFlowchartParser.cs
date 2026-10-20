@@ -29,6 +29,7 @@ internal static partial class MermaidFlowchartParser {
         foreach (var subgraph in subgraphs) MermaidParserUtilities.Add(result, subgraph.Span, MermaidDiagnosticSeverity.Error, "Flowchart subgraph '" + subgraph.Id + "' must close with 'end'.");
         ApplyClassDefinitions(document);
         ApplyLinkStyles(document);
+        AddLabelDiagnostics(document, result);
     }
 
     private static void ParseStatement(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, string text, MermaidSourceSpan span, MermaidFlowchartSubgraph? subgraph, MermaidParseResult<MermaidDocument> result) {
@@ -49,7 +50,7 @@ internal static partial class MermaidFlowchartParser {
             current = target;
         }
         SkipWhitespace(text, ref position);
-        if (position < text.Length) MermaidParserUtilities.Add(result, new MermaidSourceSpan(span.Line, span.Column + position, text.Length - position), MermaidDiagnosticSeverity.Error, "Flowchart statement contains malformed or unsupported trailing syntax.");
+        if (position < text.Length) MermaidParserUtilities.Add(result, MermaidFlowchartText.AtOffset(text, span, position, text.Length - position), MermaidDiagnosticSeverity.Error, "Flowchart statement contains malformed or unsupported trailing syntax.");
     }
 
     private static void AddOrUpdateNode(MermaidFlowchartDocument document, Dictionary<string, MermaidFlowchartNode> nodes, MermaidFlowchartNode candidate) {
@@ -77,7 +78,7 @@ internal static partial class MermaidFlowchartParser {
         if (position == start) return false;
 
         var id = text.Substring(start, position - start);
-        var nodeSpan = new MermaidSourceSpan(statementSpan.Line, statementSpan.Column + start, id.Length);
+        var nodeSpan = MermaidFlowchartText.AtOffset(text, statementSpan, start, id.Length);
         node = new MermaidFlowchartNode(id, nodeSpan);
         SkipWhitespace(text, ref position);
 

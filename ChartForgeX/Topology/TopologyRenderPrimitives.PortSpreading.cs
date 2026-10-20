@@ -114,12 +114,13 @@ internal static partial class TopologyRenderPrimitives {
 
     private static TopologyEdgePort EffectiveEndpointPort(TopologyEdge edge, TopologyNode node, TopologyNode other, bool fromSource) {
         var port = fromSource ? edge.SourcePort : edge.TargetPort;
-        if (port != TopologyEdgePort.Auto || !node.Shape.HasValue || edge.Routing != TopologyEdgeRouting.Orthogonal || edge.Waypoints.Count > 0) return port;
+        if (port != TopologyEdgePort.Auto || edge.Routing != TopologyEdgeRouting.Orthogonal || edge.Waypoints.Count > 0) return port;
         if (!string.IsNullOrWhiteSpace(fromSource ? edge.SourcePortId : edge.TargetPortId)) return port;
         var center = TopologyNodeShapeGeometry.RoutingCenter(node);
         var toward = TopologyNodeShapeGeometry.RoutingCenter(other);
         var horizontal = OrthogonalRouteIsHorizontal(node, other, edge.SourcePort, edge.TargetPort);
-        return OrthogonalShapePort(node, port, horizontal, toward);
+        return horizontal ? toward.X >= center.X ? TopologyEdgePort.Right : TopologyEdgePort.Left
+            : toward.Y >= center.Y ? TopologyEdgePort.Bottom : TopologyEdgePort.Top;
     }
 
     private static TopologyEdgePort OrthogonalShapePort(TopologyNode node, TopologyEdgePort port, bool horizontal, ChartPoint toward) {

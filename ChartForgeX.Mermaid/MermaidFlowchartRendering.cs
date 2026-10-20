@@ -36,7 +36,7 @@ public static class MermaidFlowchartRendering {
             var subgraph = document.Subgraphs[index];
             chart.AddAutoGroup(
                 subgraph.Id,
-                subgraph.Title,
+                MermaidFlowchartText.DisplayCaption(subgraph.Title),
                 TopologyHealthStatus.Unknown,
                 cssClass: "cfx-mermaid-subgraph");
             var target = chart.Groups[chart.Groups.Count - 1];
@@ -100,7 +100,7 @@ public static class MermaidFlowchartRendering {
                 edgeId,
                 edge.SourceId,
                 edge.TargetId,
-                edge.Label,
+                edge.Label == null ? null : MermaidFlowchartText.DisplayCaption(edge.Label),
                 TopologyEdgeKind.Dependency,
                 TopologyHealthStatus.Unknown,
                 MermaidFlowchartOperators.Direction(edge.Operator),

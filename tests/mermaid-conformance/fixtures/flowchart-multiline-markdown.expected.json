@@ -1,0 +1,8 @@
+{
+  "nodes": ["A", "B", "C", "D"],
+  "edges": [["A", "B"], ["C", "D"]],
+  "nodeLabels": {"A": "**Review** the\n*request*", "B": "Ready<br>to ship", "C": "First\nsecond", "D": "Done"},
+  "edgeLabels": ["Send **now**", ""],
+  "displayLabels": {"A": "Review the\nrequest", "B": "Ready\nto ship", "C": "First\nsecond", "D": "Done"},
+  "displayEdgeLabels": ["Send now", ""]
+}

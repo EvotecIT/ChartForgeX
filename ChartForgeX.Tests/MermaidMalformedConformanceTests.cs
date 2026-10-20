@@ -11,6 +11,10 @@ public sealed class MermaidMalformedConformanceTests {
     [InlineData("flowchart-unclosed-subgraph.mmd", 2, 1, 16)]
     [InlineData("flowchart-forward-link-style.mmd", 2, 1, 23)]
     [InlineData("sequence-orphan-branch.mmd", 3, 1, 13)]
+    [InlineData("packet-noncontiguous.mmd", 3, 1, 11)]
+    [InlineData("class-unclosed-body.mmd", 2, 1, 9)]
+    [InlineData("state-unclosed-composite.mmd", 2, 1, 14)]
+    [InlineData("er-unclosed-attributes.mmd", 2, 1, 8)]
     public void CurrentReferenceRejectedSourcesKeepLocatedErrorsWithoutDirectOrFenceArtifacts(string fixture, int line, int column, int length) {
         var path = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "invalid", fixture);
         var source = File.ReadAllText(path);

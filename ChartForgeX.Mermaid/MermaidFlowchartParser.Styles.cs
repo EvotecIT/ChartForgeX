@@ -14,7 +14,7 @@ internal static partial class MermaidFlowchartParser {
                 && !IsClassLinkBoundary(text, position)) position++;
             // Unlike a class statement's comma-separated list, an inline suffix is one class name.
             if (position > start) classes.Add(text.Substring(start, position - start));
-            else MermaidParserUtilities.Add(result, new MermaidSourceSpan(span.Line, span.Column + start - 3, 3),
+            else MermaidParserUtilities.Add(result, MermaidFlowchartText.AtOffset(text, span, start - 3, 3),
                 MermaidDiagnosticSeverity.Error, "Flowchart inline classes require a class name after ':::'.", MermaidDiagnosticCodes.InvalidStatement);
             SkipWhitespace(text, ref position);
         }

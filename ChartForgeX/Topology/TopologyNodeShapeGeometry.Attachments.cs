@@ -38,7 +38,6 @@ internal static partial class TopologyNodeShapeGeometry {
         if (!node.Shape.HasValue || points.Count < 2) return;
         var endpoint = points[endpointIndex];
         var adjacent = points[adjacentIndex];
-        var center = RoutingCenter(node);
         if (offset.HasValue && port != TopologyEdgePort.Auto) {
             points[endpointIndex] = NamedPortPoint(node, port, offset.Value, gap);
             return;
@@ -52,7 +51,9 @@ internal static partial class TopologyNodeShapeGeometry {
                 TopologyEdgePort.Left => new ChartPoint(-1, 0),
                 _ => new ChartPoint(adjacent.X - endpoint.X, adjacent.Y - endpoint.Y)
             };
-        points[endpointIndex] = SurfacePoint(node, port == TopologyEdgePort.Auto ? endpoint : center, direction, gap);
+        // A fixed side determines the leg's axis, not a return to the side's centre.
+        // Fitted exports must retain the cross-axis fan offset already applied to this route.
+        points[endpointIndex] = SurfacePoint(node, endpoint, direction, gap);
     }
 
     private static ChartPoint NamedPortPoint(TopologyNode node, TopologyEdgePort port, double offset, double gap) {
