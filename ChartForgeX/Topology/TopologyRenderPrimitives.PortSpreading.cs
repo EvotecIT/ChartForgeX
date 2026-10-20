@@ -116,15 +116,15 @@ internal static partial class TopologyRenderPrimitives {
         var port = fromSource ? edge.SourcePort : edge.TargetPort;
         if (port != TopologyEdgePort.Auto || edge.Routing != TopologyEdgeRouting.Orthogonal || edge.Waypoints.Count > 0) return port;
         if (!string.IsNullOrWhiteSpace(fromSource ? edge.SourcePortId : edge.TargetPortId)) return port;
-        var center = TopologyNodeShapeGeometry.RoutingCenter(node);
         var toward = TopologyNodeShapeGeometry.RoutingCenter(other);
         var horizontal = OrthogonalRouteIsHorizontal(node, other, edge.SourcePort, edge.TargetPort);
-        return horizontal ? toward.X >= center.X ? TopologyEdgePort.Right : TopologyEdgePort.Left
-            : toward.Y >= center.Y ? TopologyEdgePort.Bottom : TopologyEdgePort.Top;
+        return OrthogonalEndpointPort(node, port, horizontal, toward);
     }
 
-    private static TopologyEdgePort OrthogonalShapePort(TopologyNode node, TopologyEdgePort port, bool horizontal, ChartPoint toward) {
-        if (!node.Shape.HasValue || port != TopologyEdgePort.Auto) return port;
+    // Route construction and fan grouping must choose the same physical side, including
+    // ordinary rectangular cards whose Shape is null. A diagonal ray can hit another side.
+    private static TopologyEdgePort OrthogonalEndpointPort(TopologyNode node, TopologyEdgePort port, bool horizontal, ChartPoint toward) {
+        if (port != TopologyEdgePort.Auto) return port;
         var center = TopologyNodeShapeGeometry.RoutingCenter(node);
         return horizontal ? (toward.X >= center.X ? TopologyEdgePort.Right : TopologyEdgePort.Left)
             : (toward.Y >= center.Y ? TopologyEdgePort.Bottom : TopologyEdgePort.Top);

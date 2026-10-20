@@ -242,8 +242,8 @@ internal static partial class TopologyRenderPrimitives {
         }
 
         var horizontal = OrthogonalRouteIsHorizontal(source, target, sourcePort, targetPort);
-        sourcePort = OrthogonalShapePort(source, sourcePort, horizontal, targetCenter);
-        targetPort = OrthogonalShapePort(target, targetPort, horizontal, sourceCenter);
+        sourcePort = OrthogonalEndpointPort(source, sourcePort, horizontal, targetCenter);
+        targetPort = OrthogonalEndpointPort(target, targetPort, horizontal, sourceCenter);
         var sourcePoint = BoundaryPoint(source, targetCenterX, targetCenterY, sourcePort);
         var targetPoint = BoundaryPoint(target, sourceCenterX, sourceCenterY, targetPort);
         if (horizontal) {
