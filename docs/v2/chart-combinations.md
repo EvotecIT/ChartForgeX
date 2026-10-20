@@ -57,7 +57,19 @@ RadialBar and RadialColumn support signed linear, positive logarithmic and symme
 
 Category-axis reversal is supported for numeric radial charts, Radar and Polar, including mixed columns/radar. Numeric radius reversal uses the selected value axis. Polar-area radius reversal and schedule reversal reject. Equivalent coordinates within one radar or mixed-radial series are ambiguous and reject before preparation or export; cross-series equivalents align through the shared category owner.
 
-The compiled [mixed radial recipe](../../ChartForgeX.Examples/Recipes/MixedRadialRecipe.cs) demonstrates retained series handles, independent scales, curved radar forms and category reversal. The [comparison recipe](../../ChartForgeX.Examples/Recipes/ComparisonRecipe.cs) demonstrates ordinary line/area/bar mixtures. Their gallery downloads include the selected factory and ordinary package imports.
+The compiled [mixed radial recipe](../../ChartForgeX.Examples/Recipes/MixedRadialRecipe.cs) demonstrates retained series handles, curved radar forms and category reversal. The [comparison recipe](../../ChartForgeX.Examples/Recipes/ComparisonRecipe.cs) demonstrates ordinary line/area/bar mixtures. Their gallery downloads include the selected factory and ordinary package imports.
+
+## Constructing and updating supported combinations
+
+The compiled [supported combination recipe](../../ChartForgeX.Examples/Recipes/SupportedCombinationRecipe.cs) uses the same series and chart vocabulary for three layouts:
+
+- `vertical-secondary` combines grouped bars with typed Bubble observations on a secondary percentage axis. Bubble size remains independent of its percentage value.
+- `horizontal` combines grouped horizontal bars with a Line on the primary physical X value axis. The category captions and parent groups belong to physical Y.
+- `mixed-radial` combines RadialColumn with a Radar line on a shared numeric scale. Complete location names identify each radial category.
+
+Each layout retains explicit series and observation IDs. Repeated leaf captions retain their parent context, omitted observations stay absent, and an authored zero keeps its identity. Prefix a variant with `updated-` to exercise changed values and paint order. The vertical variant replaces the complete typed Bubble collection, then assigns observation IDs in its new order; full typed replacement clears earlier observation metadata. The numeric variants update an item through `Points[index]`, preserving its ID. `MoveSeries` changes paint order without changing identity or configuration.
+
+Prepare a new scene after source changes and reuse the immutable paired theme with the intended mode. A previously prepared scene remains detached from later source, axis and theme edits. `ToSvg()` and `ToPng()` on that preparation export the same committed facts. In a browser host, pass a newly generated section to the existing controller's `update`; surviving explicit identities retain selection, legend state and keyboard focus. These recipes exercise supported mixtures without widening horizontal or radial compatibility rules.
 
 ## Independent layouts and qualification
 
