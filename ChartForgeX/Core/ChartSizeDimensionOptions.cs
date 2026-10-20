@@ -2,7 +2,7 @@ using System;
 
 namespace ChartForgeX.Core;
 
-/// <summary>Controls the name, number display and optional numeric key of the shared Bubble size measurement.</summary>
+/// <summary>Controls the name, number display and optional numeric key of a numeric marker-size measurement.</summary>
 public sealed class ChartSizeDimensionOptions {
     private string? _name;
 

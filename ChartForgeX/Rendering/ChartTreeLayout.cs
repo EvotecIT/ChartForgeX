@@ -8,7 +8,7 @@ namespace ChartForgeX.Rendering;
 
 internal static class ChartTreeLayout {
     public static ChartTreeModel Build(Chart chart, ChartRect plot, bool fitViewport = false,
-        Func<int, double>? requestedNodeHeight = null, double nodeStrokeWidth = 0, double nodeGap = 0) {
+        Func<int, double, double>? requestedNodeHeight = null, double nodeStrokeWidth = 0, double nodeGap = 0) {
         var series = chart.Series.FirstOrDefault(item => item.Kind == ChartSeriesKind.Tree);
         if (series?.Relationships == null || series.Nodes.Count == 0) return ChartTreeModel.Empty;
         var facts = series.Relationships;
@@ -27,7 +27,7 @@ internal static class ChartTreeLayout {
         var root = facts.Root;
         ApplyDepths(nodes, children, root, 0);
         LayoutNodes(nodes, children, root, plot, fitViewport, out var nodeWidth, out var maxDepth);
-        if (requestedNodeHeight != null) FitNodeHeights(nodes, plot, requestedNodeHeight, nodeStrokeWidth, nodeGap);
+        if (requestedNodeHeight != null) FitNodeHeights(nodes, plot, index => requestedNodeHeight(index, nodeWidth), nodeStrokeWidth, nodeGap);
         var maxLinkValue = links.Count == 0 ? 1 : links.Max(link => link.Value);
         return new ChartTreeModel(nodes, links, nodeWidth, maxDepth, maxLinkValue);
     }

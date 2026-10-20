@@ -37,15 +37,15 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawExtensionSeries(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
         ChartBubbleSizeScale? bubbleScale, IReadOnlyDictionary<double, string>? categoryCaptions, ChartSeriesColorSurface? colorSurface = null,
-        ChartXViewport? xViewport = null) {
+        ChartXViewport? xViewport = null, ChartYViewport? yViewport = null) {
         var series = chart.Series[index];
         switch (series.Kind) {
             case ChartSeriesKind.DifferenceArea:
-                DrawDifferenceArea(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+                DrawDifferenceArea(chart, context, builder, plot, map, index, colors, labels, obstacles, xViewport, yViewport); break;
             case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea:
-                DrawRangeEnvelope(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+                DrawRangeEnvelope(chart, context, builder, plot, map, index, colors, labels, obstacles, xViewport, yViewport); break;
             case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc:
-                DrawFinancial(chart, context, builder, plot, map, index, colors, labels, obstacles); break;
+                DrawFinancial(chart, context, builder, plot, map, index, colors, labels, obstacles, xViewport, yViewport); break;
             case ChartSeriesKind.BoxPlot:
                 DrawBoxPlots(chart, context, builder, plot, map, index, colors, labels, obstacles, categoryCaptions!); break;
             case ChartSeriesKind.RangeBar:
@@ -54,7 +54,7 @@ internal static partial class VisualCartesianCompiler {
                 DrawPreparedHorizontalBars(chart, context, builder, plot, map, stacks, index, colors, labels, obstacles); break;
             case ChartSeriesKind.Waterfall:
                 DrawPreparedWaterfall(chart, context, builder, plot, map, index, colors, labels, obstacles, categoryCaptions!); break;
-            default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles, bubbleScale, colorSurface, xViewport); break;
+            default: DrawExtensionPoints(chart, context, builder, plot, map, index, colors, labels, obstacles, bubbleScale, colorSurface, xViewport, yViewport); break;
         }
     }
 
@@ -101,6 +101,11 @@ internal static partial class VisualCartesianCompiler {
     private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
         int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, IReadOnlyDictionary<string, string> facts, params (string Name, double Value)[] values) =>
         ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, null, values, facts);
+
+    private static IDisposable ObservationGroup(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
+        int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, bool visible,
+        IReadOnlyDictionary<string, string>? facts, params (string Name, double Value)[] values) =>
+        ObservationGroupCore(builder, series, seriesIndex, observation, rawStart, rawCount, bounds, label, null, null, values, facts, visible: visible);
 
     private static IDisposable ObservationGroupCore(VisualSceneBuilder builder, ChartSeries series, int seriesIndex, int observation,
         int rawStart, int rawCount, ChartRect bounds, ResolvedPointLabel label, ChartStackPoint? stack, ChartSeriesColorSurface? colorSurface,

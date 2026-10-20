@@ -134,10 +134,22 @@ internal static partial class VisualCartesianCompiler {
     internal static bool SupportsXViewport(Chart chart) => chart.Series.Count > 0 && !chart.Options.IsSparkline
         && !ChartCartesianOrientation.IsHorizontal(chart)
         && (chart.Options.XAxis.Scale is ChartScaleKind.Linear or ChartScaleKind.Time)
-        && chart.Series.All(series => IsPointSeries(series.Kind) || series.Kind == ChartSeriesKind.Bubble);
+        && chart.Series.All(series => IsPointSeries(series.Kind) || series.Kind is ChartSeriesKind.Bubble
+            or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc or ChartSeriesKind.RangeBand
+            or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea or ChartSeriesKind.ErrorBar
+            or ChartSeriesKind.Lollipop or ChartSeriesKind.Dumbbell or ChartSeriesKind.Slope or ChartSeriesKind.TrendLine);
+
+    internal static bool SupportsYViewport(Chart chart) => SupportsXViewport(chart)
+        && chart.Series.All(series => series.YAxis == ChartAxisSide.Primary);
+
+    internal static void ValidateViewport(Chart chart, ChartCartesianViewport viewport) {
+        ValidateXViewport(chart);
+        if (viewport.Y != null && !SupportsYViewport(chart))
+            throw new NotSupportedException("A primary Y or XY viewport requires supported vertical series without a secondary Y axis.");
+    }
 
     internal static void ValidateXViewport(Chart chart) {
-        if (!SupportsXViewport(chart)) throw new NotSupportedException("An X viewport requires ordinary vertical line, area, scatter or bubble series with a linear or time X axis.");
+        if (!SupportsXViewport(chart)) throw new NotSupportedException("An X viewport requires supported vertical line, area, scatter, bubble, financial or paired-boundary series with a linear or time X axis.");
         if (!chart.Series.Any(series => series.HasSourceData)) throw new InvalidOperationException("An X viewport requires source observations.");
     }
 }

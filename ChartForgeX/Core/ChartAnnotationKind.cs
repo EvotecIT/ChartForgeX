@@ -22,5 +22,14 @@ public enum ChartAnnotationKind {
     /// <summary>
     /// Renders a vertical band between two x-axis values.
     /// </summary>
-    VerticalBand
+    VerticalBand,
+
+    /// <summary>Renders a caption anchored to one Cartesian source coordinate.</summary>
+    Note,
+
+    /// <summary>Renders a finite line between two Cartesian source coordinates.</summary>
+    LineSegment,
+
+    /// <summary>Renders a source-coordinate line and its parallel source-Y offset, with a filled channel between them.</summary>
+    ParallelChannel
 }

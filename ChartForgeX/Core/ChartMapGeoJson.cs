@@ -7,9 +7,9 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 /// <summary>
-/// Creates map definitions from GeoJSON polygon features.
+/// Creates map geometry and geographic observations from GeoJSON features.
 /// </summary>
-public static class ChartMapGeoJson {
+public static partial class ChartMapGeoJson {
     /// <summary>
     /// Creates a map definition from a GeoJSON FeatureCollection or Feature.
     /// </summary>
@@ -45,7 +45,7 @@ public static class ChartMapGeoJson {
         }
 
         if (regions.Count == 0) throw new ArgumentException("GeoJSON did not contain any polygon or multipolygon features matching the import options.", nameof(geoJson));
-        return new ChartMapDefinition(id, name, MaterializeBounds(bounds), regions);
+        return new ChartMapDefinition(id, name, MaterializeBounds(bounds), regions).WithGeographicProjection(options.Projection);
     }
 
     private static List<GeoJsonFeature> ReadFeatures(Dictionary<string, GeoJsonValue> root) {
@@ -98,7 +98,7 @@ public static class ChartMapGeoJson {
                 if (position.Count < 2) throw new ArgumentException("GeoJSON positions must contain at least longitude and latitude.");
                 var lon = position[0].AsNumber("longitude");
                 var lat = position[1].AsNumber("latitude");
-                var point = Project(lon, lat, options.Projection);
+                var point = ChartGeographicProjection.Project(lon, lat, options.Projection);
                 Include(ref bounds, point);
                 Include(ref coordinates, lon, lat);
                 if (outerRingPoints != null) outerRingPoints.Add(point);
@@ -108,19 +108,6 @@ public static class ChartMapGeoJson {
 
             if (!first) sb.Append('Z');
         }
-    }
-
-    private static ChartPoint Project(double lon, double lat, ChartMapGeoJsonProjection projection) {
-        ChartGuards.Finite(lon, nameof(lon));
-        ChartGuards.Finite(lat, nameof(lat));
-        if (projection == ChartMapGeoJsonProjection.WebMercator) {
-            var clipped = Math.Max(-85.05112878, Math.Min(85.05112878, lat));
-            var radians = clipped * Math.PI / 180.0;
-            var y = Math.Log(Math.Tan(Math.PI / 4.0 + radians / 2.0)) * 180.0 / Math.PI;
-            return new ChartPoint(lon, -y);
-        }
-
-        return new ChartPoint(lon, -lat);
     }
 
     private static ChartPoint Average(List<ChartPoint> points) {

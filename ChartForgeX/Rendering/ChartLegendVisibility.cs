@@ -1,4 +1,5 @@
 using ChartForgeX.Core;
+using System.Linq;
 
 namespace ChartForgeX.Rendering;
 
@@ -16,9 +17,12 @@ internal static class ChartLegendVisibility {
             var series = chart.Series[index];
             if (series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble && series.ColorScale != null
                 && colorScales[index]!.Presentation.ShowLegend && series.AuthoredObservationCount > 0) return true;
+            if (series.Kind == ChartSeriesKind.DottedMap && series.ColorScale != null && colorScales.MapDataset(index).Presentation.ShowLegend) return true;
+            if (series.Kind == ChartSeriesKind.DottedMap && series.MapPointSize.SizeDimension.ShowLegend && series.MapPoints.Any(point => point.Value.HasValue)) return true;
             if (colorScales.Heatmap.ShowLegend && (series.Kind == ChartSeriesKind.CalendarHeatmap
                 || (series.Kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap) && !series.IsCategoricalHeatmapRow)) return true;
-            if (colorScales.Map.ShowLegend && series.Kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap) return true;
+            if (series.Kind == ChartSeriesKind.RegionMap && colorScales.MapDataset(index).Presentation.ShowLegend) return true;
+            if (colorScales.Map.ShowLegend && series.Kind == ChartSeriesKind.TileMap) return true;
             if (series.Kind == ChartSeriesKind.Chord && colorScales.Chord.ShowLegend
                 && (chart.Options.Chord.ColorScale != null || System.Linq.Enumerable.Any(series.FlowLinks, link => link.ColorValue.HasValue))) return true;
             if (series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) {

@@ -67,10 +67,11 @@
   const releaseChartLifetime = (root) => {
     const lifetime = chartLifetimes.get(root);
     if (!lifetime || lifetime.disposed) return;
-    cancelXViewportRequest(lifetime);
+    cancelNativePreparation(lifetime);
     lifetime.disposed = true;
     for (const cleanup of Array.from(lifetime.cleanups)) cleanup();
     clearChartBrowserState(root);
     mountedCharts.delete(root); chartLifetimes.delete(root); watchChartLifetimes();
+    syncXNavigation(root);
     syncResetControl(root);
   };

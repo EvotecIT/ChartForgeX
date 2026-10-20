@@ -8,12 +8,13 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
-    private static TextStyle MapDataStyle(Chart chart, VisualRenderContext context, int index, ChartColor? color = null) {
-        var style = chart.Series[0].DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
+    private static TextStyle MapDataStyle(Chart chart, VisualRenderContext context, int index, ChartColor? color = null, ChartSeries? series = null) {
+        series ??= chart.Series[0];
+        var style = series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
             Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = color ?? context.Theme.Resolve(context.ThemeMode).Foreground
         }));
-        return index >= 0 && index < chart.Series[0].PointDataLabelStyles.Count && chart.Series[0].PointDataLabelStyles[index] != null
-            ? chart.Series[0].PointDataLabelStyles[index]!.Resolve(style) : style;
+        return index >= 0 && index < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[index] != null
+            ? series.PointDataLabelStyles[index]!.Resolve(style) : style;
     }
     private static void AddMapLabel(VisualSceneBuilder builder, List<MapLabel> labels, string full, string visible, ChartPoint anchor, TextStyle style,
         string id, string role, ChartRect bounds, double gap, int priority, ChartDataLabelPlacement placement = ChartDataLabelPlacement.Auto, SvgPaint? paint = null,
@@ -26,11 +27,17 @@ internal static partial class VisualMapCompiler {
         else if (placement == ChartDataLabelPlacement.Below) candidates.Add(new LabelCandidate(0, gap, .5, 0));
         candidates.Add(new LabelCandidate(0, -gap, .5, 1)); candidates.Add(new LabelCandidate(gap, 0, 0, .5));
         candidates.Add(new LabelCandidate(-gap, 0, 1, .5)); candidates.Add(new LabelCandidate(0, gap, .5, 0));
+        if (role == "dotted-map-connector-label") for (var band = 2; band <= 4; band++) {
+            candidates.Add(new LabelCandidate(gap * band, gap * band, 0, .5));
+            candidates.Add(new LabelCandidate(-gap * band, gap * band, 1, .5));
+            candidates.Add(new LabelCandidate(gap * band, -gap * band, 0, .5));
+            candidates.Add(new LabelCandidate(-gap * band, -gap * band, 1, .5));
+        }
         labels.Add(new MapLabel(new LabelPlacementRequest(visible, anchor, style, candidates, priority) { MeasuredSize = builder.MeasureText(visible, style),
             AssociatedMarkId = id.EndsWith("-label", System.StringComparison.Ordinal) ? id.Substring(0, id.Length - 6) : null }, id, role, full, paint ?? VisualChartPaint.Text(style),
             leaderColor, leaderPaint, leaderRadius));
     }
-    private static void DrawMapLabels(VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<MapLabel> labels, IReadOnlyList<LabelObstacle> obstacles, double gap) {
+    private static void DrawMapLabels(VisualSceneBuilder builder, ChartRect plot, IReadOnlyList<MapLabel> labels, IReadOnlyList<LabelObstacle> obstacles, double gap, bool outline = false) {
         var placed = new LabelPlacementService().Place(labels.Select(label => label.Request).ToArray(), plot, obstacles, gap / 3, builder.MeasureText);
         for (var index = 0; index < placed.Count; index++) {
             var result = placed[index]; var label = labels[index];
@@ -40,7 +47,10 @@ internal static partial class VisualMapCompiler {
                 DrawMapLabelLeader(builder, label, result);
                 var style = result.Request.Style.Clone(); style.FontSize = style.EffectiveFontSize; style.TextCase = TextCaseTransform.None;
                 style.Baseline = TextBaseline.Normal; style.Alignment = TextAlignment.Left;
-                builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(style), style, label.Role, label.Id, paint: label.Paint);
+                var halo = outline ? ChartColorMath.AccessibleTextOnBackground(style.Color) : (ChartColor?)null;
+                builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(style), style, label.Role, label.Id, paint: label.Paint,
+                    stroke: halo, strokeWidth: outline ? ChartTextHalo.SvgStrokeWidth(style.EffectiveFontSize, style.Font.Weight >= 700) : 0,
+                    strokePaint: outline ? SvgPaint.Contrast(style.Color, label.Paint) : null);
             }
         }
     }

@@ -23,6 +23,7 @@
         || !Array.isArray(item.indices) || item.indices.some(index => !Number.isSafeInteger(index) || index < 0))
       || new Set(metadata.series.map(item => item.key)).size !== metadata.series.length
       || metadata.xProjection !== undefined && !validXProjection(metadata.xProjection)
+      || metadata.yProjection !== undefined && !validXProjection(metadata.yProjection)
       || metadata.dataProjection !== undefined && !validDataProjection(metadata.dataProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
       || metadata.categoryLabels !== undefined && (!Array.isArray(metadata.categoryLabels)
@@ -62,7 +63,7 @@
     });
   };
   const chartUpdateState = (root, sameSource = false) => {
-    const active = root.getRootNode().activeElement;
+    const active = root._cfxContextMenuSourceFocus || root.getRootNode().activeElement;
     const focused = interactiveTargets(root).find(node => targetFocusNode(node) === active);
     return {
       selected: selectedTargets(root).filter(target => sameSource || durableChartTarget(target)),

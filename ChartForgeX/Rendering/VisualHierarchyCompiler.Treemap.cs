@@ -26,7 +26,7 @@ internal static partial class VisualHierarchyCompiler {
         void Draw(int itemIndex) {
             var item = series.HierarchyItems[itemIndex]; var children = index.Children(itemIndex);
             var value = index.HierarchyValues[itemIndex]; var formatted = ChartNumericFormatter.FormatValue(chart.Options, value);
-            var full = itemIndex < series.PointLabels.Count && series.PointLabels[itemIndex] != null ? series.PointLabels[itemIndex]! : item.Label;
+            var full = HierarchyCaption(series, itemIndex, item.Label);
             var metadata = ChartRelationshipMetadata.Node(series, item.Id, item.Label, itemIndex);
             metadata["data-cfx-full-label"] = full; metadata["data-cfx-depth"] = N(index.Depths[itemIndex]);
             metadata["data-cfx-value"] = N(value); metadata["data-cfx-formatted-value"] = formatted;

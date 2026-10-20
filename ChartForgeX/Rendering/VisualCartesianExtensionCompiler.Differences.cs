@@ -8,7 +8,8 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void DrawDifferenceArea(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
-        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles) {
+        ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
+        ChartXViewport? xViewport = null, ChartYViewport? yViewport = null) {
         var series = chart.Series[index]; var geometry = new ChartPairedBoundaryGeometry(series, map);
         var color = Color(series, index, colors); var paint = VisualChartPaint.Series(series, color);
         var stroke = series.HasExplicitStrokeWidth ? series.StrokeWidth : context.Theme.SeriesStrokeWidth;
@@ -40,15 +41,17 @@ internal static partial class VisualCartesianCompiler {
                 ["data-cfx-formatted-first"] = firstText, ["data-cfx-formatted-second"] = secondText,
                 ["data-cfx-formatted-y"] = firstText
             };
-            using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, facts,
+            var visible = ViewportObservationVisible(xViewport, yViewport, first.X, Math.Min(first.Y, second.Y), Math.Max(first.Y, second.Y));
+            using (ObservationGroup(builder, series, index, item, item * 2, 2, bounds, label, visible, facts,
                 ("x", first.X), ("first", first.Y), ("second", second.Y))) {
-                if (showMarkers) {
+                if (visible && showMarkers) {
                     var pointColor = PointColor(series, index, item, colors); var pointPaint = VisualChartPaint.Series(series, pointColor, item);
                     foreach (var point in new[] { a, b }) VisualMarkerScene.Draw(builder, series, item, point.X, point.Y, radius,
                         pointColor, pointPaint, "difference-marker", pattern: ObservationPattern(series, item),
                         backdrop: ChartStateMark.Backdrop(chart.Options, colors, context.Frame), patternRole: "difference-marker-pattern");
                 }
             }
+            if (!visible) continue;
             var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
             var y = placement == ChartDataLabelPlacement.Below ? Math.Max(a.Y, b.Y)
                 : placement is ChartDataLabelPlacement.Left or ChartDataLabelPlacement.Right ? a.Y / 2 + b.Y / 2 : Math.Min(a.Y, b.Y);

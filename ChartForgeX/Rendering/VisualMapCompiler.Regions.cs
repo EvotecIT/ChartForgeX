@@ -24,29 +24,39 @@ internal static partial class VisualMapCompiler {
         })) using (builder.PushClip(map)) {
             Surface(chart, context, builder, map, colors, "region-map-surface");
             Layers(chart.Options.MapBaseLayers, builder, source, map, "base");
-            foreach (var region in definition.Regions) {
-                var paths = ChartMapPathParser.ParseSubpaths(region.Path, map.Width / source.Width);
-                var projected = paths.Select(path => (IReadOnlyList<ChartPoint>)path.Points.Select(point => Project(point, source, map)).ToArray()).ToArray();
-                var geometry = Path(projected); var bounds = Intersect(Bounds(projected.SelectMany(path => path)), map);
-                int? index = values.TryGetValue(region.Code, out var found) ? found : (int?)null;
-                var full = Formatted(chart, index, presentation); var id = index.HasValue ? "series-0-point-" + index.Value : "region-map-empty-" + region.Code;
-                var blend = Fill(chart, colors, index, min, max); var fill = blend.Color;
-                builder.AddRegion(new VisualSemanticRegion(id, "region-map-region", bounds, region.Name + ": " + full));
-                using (builder.PushGroup(id, "region-map-region-source", Source(chart, region.Code, region.Name, index, index.HasValue ? chart.Series[0].RenderPoints[index.Value].Y : (double?)null, full, min, max, presentation))) {
-                    builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "region-map-region", close: true,
-                        paint: new VisualScenePaintBinding(blend.Paint, SvgPaint.Of(chart.Options.MapRegionStrokeColor ?? colors.Surface, SvgColorRole.Surface)));
-                    var pattern = Pattern(chart.Series[0], index);
-                    if (index.HasValue && pattern != ChartFillPattern.None) builder.Pattern(geometry, pattern, ChartColorMath.AccessibleTextOnBackground(fill).WithAlpha(90), role: "region-map-pattern");
-                    if (chart.Options.ShowMapLabels && bounds.Width > 0 && bounds.Height > 0) {
-                        var anchor = region.HasLabel ? Project(region.Label, source, map) : new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
-                        var area = Intersect(new ChartRect(anchor.X - bounds.Width / 2, anchor.Y - bounds.Height / 2, bounds.Width, bounds.Height), bounds);
-                        var style = TickStyle(chart, context, ChartColorMath.AccessibleTextOnBackground(fill));
-                        VisualRadialPrimitives.Text(builder, region.Code, area, style, "region-map-label", id + "-label",
-                            chart.Options.TickLabelStyle.Color.HasValue ? VisualChartPaint.Text(style) : SvgPaint.Literal(style.Color));
-                    }
+            DrawRegions(chart, context, builder, source, map, colors, new MapDataset(chart, 0, presentation));
+            Layers(chart.Options.MapOverlayLayers, builder, source, map, "overlay");
+        }
+    }
+
+    /// <summary>Draws polygon facts on the caller's shared source-to-scene frame.</summary>
+    private static void DrawRegions(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect source, ChartRect map,
+        VisualThemeColors colors, MapDataset data) {
+        var definition = data.Series.RegionMapDefinition!;
+        var values = data.RegionIndices();
+        var width = chart.Options.MapRegionStrokeWidth;
+        foreach (var region in definition.Regions) {
+            var paths = ChartMapPathParser.ParseSubpaths(region.Path, map.Width / source.Width);
+            var projected = paths.Select(path => (IReadOnlyList<ChartPoint>)path.Points.Select(point => Project(point, source, map)).ToArray()).ToArray();
+            var geometry = Path(projected); var bounds = Intersect(Bounds(projected.SelectMany(path => path)), map);
+            int? index = values.TryGetValue(region.Code, out var found) ? found : (int?)null;
+            var full = index.HasValue ? data.Presentation.Value(data.ColorValues[index.Value]!.Value) : data.Presentation.NoData;
+            var id = index.HasValue ? data.Prefix + "-point-" + index.Value : (data.Index == 0 ? "region-map-empty-" : data.Prefix + "-region-empty-") + region.Code;
+            var blend = data.RegionFill(colors, index); var fill = blend.Color;
+            builder.AddRegion(new VisualSemanticRegion(id, "region-map-region", bounds, region.Name + ": " + full));
+            using (builder.PushGroup(id, "region-map-region-source", data.RegionSource(region.Code, region.Name, index, full))) {
+                builder.Path(geometry, fill, chart.Options.MapRegionStrokeColor ?? colors.Surface, width, "region-map-region", close: true,
+                    paint: new VisualScenePaintBinding(blend.Paint, SvgPaint.Of(chart.Options.MapRegionStrokeColor ?? colors.Surface, SvgColorRole.Surface)));
+                var pattern = Pattern(data.Series, index);
+                if (index.HasValue && pattern != ChartFillPattern.None) builder.Pattern(geometry, pattern, ChartColorMath.AccessibleTextOnBackground(fill).WithAlpha(90), role: "region-map-pattern");
+                if (chart.Options.ShowMapLabels && bounds.Width > 0 && bounds.Height > 0) {
+                    var anchor = region.HasLabel ? Project(region.Label, source, map) : new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
+                    var area = Intersect(new ChartRect(anchor.X - bounds.Width / 2, anchor.Y - bounds.Height / 2, bounds.Width, bounds.Height), bounds);
+                    var style = TickStyle(chart, context, ChartColorMath.AccessibleTextOnBackground(fill));
+                    VisualRadialPrimitives.Text(builder, region.Code, area, style, "region-map-label", id + "-label",
+                        chart.Options.TickLabelStyle.Color.HasValue ? VisualChartPaint.Text(style) : SvgPaint.Literal(style.Color));
                 }
             }
-            Layers(chart.Options.MapOverlayLayers, builder, source, map, "overlay");
         }
     }
 

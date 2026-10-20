@@ -11,7 +11,7 @@ internal static partial class VisualCartesianCompiler {
     /// <summary>Composes per-series bottom keys within the frame's combined categorical and numeric legend budget.</summary>
     private static ChartRect NumericScaleViewport(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect viewport, ChartColorPresentationSet surfaces, double frameLegendHeight, ChartBubbleSizeScale? bubbleScale,
-        out VisualBubbleSizeKeyScene? sizeKey) {
+        out VisualMarkerSizeKeyScene? sizeKey) {
         sizeKey = null;
         if (!context.Frame.ShowLegend) return viewport;
         var keys = Enumerable.Range(0, chart.Series.Count).Where(index => surfaces[index]?.Presentation.ShowLegend == true
@@ -34,13 +34,13 @@ internal static partial class VisualCartesianCompiler {
                 keyStyle, gap, viewport.Width, double.MaxValue, surfaces[index]!.Missing, surfaces[index]!.Presentation.ScaleValues,
                 surfaces[index]!.HasDomain, compact, surfaces[index]!.Minimum, surfaces[index]!.Maximum, missingWidths[index] > 0, legendStyle: surfaces[index]!.Presentation.LegendStyle);
         }).ToArray();
-        if (showSize) sizeKey = VisualBubbleSizeKeyScene.Measure(builder, bubbleScale!, style, gap, viewport, compact: false);
+        if (showSize) sizeKey = VisualMarkerSizeKeyScene.Measure(builder, bubbleScale!, style, gap, viewport, compact: false);
         var heights = Measure(); var requested = heights.Sum() + gap * keys.Length + (sizeKey?.Height ?? 0);
         if (requested > budget) {
             compact = true; gap /= 2;
             keyStyle = style.Clone(); keyStyle.FontSize = style.EffectiveFontSize; keyStyle.Baseline = TextBaseline.Normal;
             var minimum = Math.Min(VisualTextFitting.MinimumOrdinaryFontSize, style.EffectiveFontSize);
-            if (showSize) sizeKey = VisualBubbleSizeKeyScene.Measure(builder, bubbleScale!, style, gap, viewport, compact: true);
+            if (showSize) sizeKey = VisualMarkerSizeKeyScene.Measure(builder, bubbleScale!, style, gap, viewport, compact: true);
             heights = Measure(); requested = heights.Sum() + gap * keys.Length + (sizeKey?.Height ?? 0);
             if (showSize && keys.Length == 1 && TrySharedNumericKeyRow(chart, context, builder, viewport, surfaces[keys[0]]!,
                 keys[0], bubbleScale!, style, gap, budget, out var sharedViewport, out var sharedSizeKey)) {
@@ -52,7 +52,7 @@ internal static partial class VisualCartesianCompiler {
                 heights = Measure(); requested = heights.Sum() + gap * keys.Length + (sizeKey?.Height ?? 0);
             }
         }
-        if (sizeKey != null && !sizeKey.Fits && !compact) sizeKey = VisualBubbleSizeKeyScene.Measure(builder, bubbleScale!, style, gap, viewport, compact: true);
+        if (sizeKey != null && !sizeKey.Fits && !compact) sizeKey = VisualMarkerSizeKeyScene.Measure(builder, bubbleScale!, style, gap, viewport, compact: true);
         if (sizeKey != null && (!sizeKey.Fits || heights.Sum() + gap * keys.Length + sizeKey.Height > budget + .000001)) {
             sizeKey.Omit();
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.size-scale-overflow",
@@ -80,9 +80,9 @@ internal static partial class VisualCartesianCompiler {
     /// <summary>Places independent numeric dimensions alongside each other before omitting a normal compact key.</summary>
     private static bool TrySharedNumericKeyRow(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
         ChartSeriesColorSurface surface, int index, ChartBubbleSizeScale bubbleScale, TextStyle style, double gap, double budget,
-        out ChartRect content, out VisualBubbleSizeKeyScene sizeKey) {
+        out ChartRect content, out VisualMarkerSizeKeyScene sizeKey) {
         content = viewport;
-        sizeKey = VisualBubbleSizeKeyScene.Measure(builder, bubbleScale, style, gap, viewport, compact: true);
+        sizeKey = VisualMarkerSizeKeyScene.Measure(builder, bubbleScale, style, gap, viewport, compact: true);
         var sizeWidth = Math.Ceiling(sizeKey.RequiredWidth); var colorWidth = viewport.Width - sizeWidth - gap * 2;
         var titleWidth = Math.Ceiling(builder.MeasureText(surface.Presentation.Name, style).Width) + 1;
         if (!sizeKey.Fits || colorWidth < titleWidth) return false;

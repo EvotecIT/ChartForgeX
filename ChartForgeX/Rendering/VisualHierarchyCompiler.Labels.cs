@@ -11,12 +11,18 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualHierarchyCompiler {
     private const double LabelInsetLimit = 8;
 
-    /// <summary>Requests one measured line with the existing padding; geometry still bounds the actual body.</summary>
-    private static double LabelBodyHeight(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, int pointIndex) =>
-        builder.MeasureText("M", LabelStyle(chart, context, context.Theme.Resolve(context.ThemeMode).Foreground, pointIndex)).Height + LabelInsetLimit * 2;
+    /// <summary>Requests only the complete name rows that fit the width; peer spacing still bounds the actual body.</summary>
+    private static double LabelBodyHeight(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, int pointIndex, double width) {
+        var style = LabelStyle(chart, context, context.Theme.Resolve(context.ThemeMode).Foreground, pointIndex);
+        var inset = Math.Min(LabelInsetLimit, width / 5);
+        var text = HierarchyCaption(chart.Series[0], pointIndex, chart.Series[0].Nodes[pointIndex].Label);
+        var displayed = ChartLabelWrapping.TryComplete(text, style.EffectiveFontSize, Math.Max(0, width - inset * 2), 3,
+            (value, _) => builder.MeasureText(value, style).Width, out var lines) ? string.Join("\n", lines) : "M";
+        return builder.MeasureText(displayed, style).Height + LabelInsetLimit * 2;
+    }
 
     private static void Label(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
-        ChartColor fill, int pointIndex, string role, bool center = false, SvgPaint? fillPaint = null, double insetLimit = LabelInsetLimit, int maximumLines = 2) {
+        ChartColor fill, int pointIndex, string role, bool center = false, SvgPaint? fillPaint = null, double insetLimit = LabelInsetLimit, int maximumLines = 3) {
         var style = LabelStyle(chart, context, fill, pointIndex);
         var inset = Math.Min(insetLimit, Math.Min(bounds.Width, bounds.Height) / 5);
         double width = Math.Max(0, bounds.Width - inset * 2), height = Math.Max(0, bounds.Height - inset * 2);
@@ -25,18 +31,28 @@ internal static partial class VisualHierarchyCompiler {
             return measured.Width <= width && measured.Height <= height;
         });
         var metrics = builder.MeasureText("M", style);
-        int count = Math.Min(maximumLines, (int)Math.Floor(height / metrics.LineHeight));
-        if (count < 1 || width < 6) { builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A hierarchy label was omitted to fit its mark; complete text remains in source semantics.")); return; }
-        var paragraphs = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
-        var wrapped = new List<string>();
-        for (var i = 0; i < paragraphs.Length; i++) {
-            // Reserve one row for each following paragraph, including the leaf's factual value.
-            var spareRows = count - wrapped.Count - (paragraphs.Length - i - 1);
-            if (spareRows > 1) wrapped.AddRange(ChartLabelWrapping.BalancedTwoLine(paragraphs[i], style.EffectiveFontSize, width,
-                (value, _) => builder.MeasureText(value, style).Width));
-            else wrapped.Add(paragraphs[i]);
+        int count = Math.Min(maximumLines, (int)Math.Floor((height + .000001) / metrics.LineHeight));
+        if (width < 6) { Omit(); return; }
+        if (!ChartLabelWrapping.TryComplete(text, style.EffectiveFontSize, width, count,
+            (value, _) => builder.MeasureText(value, style).Width, out var lines)) {
+            // The body cap or peer spacing can leave slightly less than a padded row. Yield vertical
+            // padding before losing a complete caption; the centered text still clears the mark.
+            var compactCount = Math.Min(maximumLines, (int)Math.Floor((bounds.Height - Math.Min(2, inset) * 2 + .000001) / metrics.LineHeight));
+            if (compactCount > count && ChartLabelWrapping.TryComplete(text, style.EffectiveFontSize, width, compactCount,
+                (value, _) => builder.MeasureText(value, style).Width, out lines)) count = compactCount;
+            else {
+                if (count < 1) { Omit(); return; }
+                var paragraphs = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+                var wrapped = new List<string>();
+                for (var i = 0; i < paragraphs.Length; i++) {
+                    var spareRows = count - wrapped.Count - (paragraphs.Length - i - 1);
+                    if (spareRows > 1) wrapped.AddRange(ChartLabelWrapping.BalancedTwoLine(paragraphs[i], style.EffectiveFontSize, width,
+                        (value, _) => builder.MeasureText(value, style).Width));
+                    else wrapped.Add(paragraphs[i]);
+                }
+                lines = wrapped.ToArray();
+            }
         }
-        var lines = wrapped.ToArray();
         var fitted = new List<string>();
         bool shortened = lines.Length > count;
         for (int i = 0; i < Math.Min(count, lines.Length); i++) {
@@ -54,7 +70,13 @@ internal static partial class VisualHierarchyCompiler {
         // SVG consumers can substitute a wider fallback font; keep painted captions inside their mark.
         using (builder.PushClip(bounds))
             builder.Text(displayed, center ? bounds.X + bounds.Width / 2 : bounds.X + inset, y + builder.TextAscent(style), style, role, paint: paint);
+
+        void Omit() => builder.AddDiagnostic(new VisualDiagnostic("hierarchy.label-overflow", "A hierarchy label was omitted to fit its mark; complete text remains in source semantics."));
     }
+
+    /// <summary>Uses authored per-observation captions consistently without changing source hierarchy names.</summary>
+    private static string HierarchyCaption(ChartSeries series, int index, string fallback) =>
+        index < series.PointLabels.Count && series.PointLabels[index] != null ? series.PointLabels[index]! : fallback;
 
     /// <summary>Resolves the same authored caption typography for rectangular and radial hierarchy marks.</summary>
     private static TextStyle LabelStyle(Chart chart, VisualRenderContext context, ChartColor fill, int pointIndex) {

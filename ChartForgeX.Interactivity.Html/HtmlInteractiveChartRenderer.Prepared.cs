@@ -102,20 +102,40 @@ public sealed partial class HtmlInteractiveChartRenderer {
                 .Append(",\"width\":").Append(plot.Width.ToString("R", CultureInfo.InvariantCulture))
                 .Append(",\"height\":").Append(plot.Height.ToString("R", CultureInfo.InvariantCulture)).Append("}}");
         }
-        if (prepared.XProjection is ChartXProjection projection) {
-            var plot = projection.PlotBounds;
-            json.Append(",\"xProjection\":{\"fullMinimum\":").Append(projection.FullMinimum.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"fullMaximum\":").Append(projection.FullMaximum.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"minimum\":").Append(projection.Minimum.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"maximum\":").Append(projection.Maximum.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"scale\":").Append(HtmlJsonString.Encode(projection.Scale.ToString().ToLowerInvariant()))
-                .Append(",\"reversed\":").Append(projection.Reversed ? "true" : "false")
-                .Append(",\"plotBounds\":{\"x\":").Append(plot.X.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"y\":").Append(plot.Y.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"width\":").Append(plot.Width.ToString("R", CultureInfo.InvariantCulture))
-                .Append(",\"height\":").Append(plot.Height.ToString("R", CultureInfo.InvariantCulture)).Append("}}");
+        if (prepared.XProjection is ChartXProjection xProjection) {
+            json.Append(",\"xProjection\":");
+            AppendViewportAxis(json, xProjection.FullMinimum, xProjection.FullMaximum, xProjection.Minimum, xProjection.Maximum,
+                xProjection.TransformedFullMinimum, xProjection.TransformedFullMaximum, xProjection.TransformedMinimum, xProjection.TransformedMaximum,
+                xProjection.Scale, 1, xProjection.Reversed, xProjection.PlotBounds, xProjection.TimeSessions);
+        }
+        if (prepared.YProjection is ChartYProjection yProjection) {
+            json.Append(",\"yProjection\":");
+            AppendViewportAxis(json, yProjection.FullMinimum, yProjection.FullMaximum, yProjection.Minimum, yProjection.Maximum,
+                yProjection.TransformedFullMinimum, yProjection.TransformedFullMaximum, yProjection.TransformedMinimum, yProjection.TransformedMaximum,
+                yProjection.Scale, yProjection.Threshold, yProjection.Reversed, yProjection.PlotBounds, null);
         }
         return json.Append('}').ToString();
+    }
+
+    private static void AppendViewportAxis(StringBuilder json, double fullMinimum, double fullMaximum, double minimum, double maximum,
+        double transformedFullMinimum, double transformedFullMaximum, double transformedMinimum, double transformedMaximum,
+        ChartScaleKind scale, double threshold, bool reversed, ChartForgeX.Primitives.ChartRect plot, ChartTimeSessionDomain? sessions) {
+        json.Append("{\"fullMinimum\":").Append(fullMinimum.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"fullMaximum\":").Append(fullMaximum.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"minimum\":").Append(minimum.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"maximum\":").Append(maximum.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"transformedMinimum\":").Append(transformedMinimum.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"transformedMaximum\":").Append(transformedMaximum.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"transformedFullMinimum\":").Append(transformedFullMinimum.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"transformedFullMaximum\":").Append(transformedFullMaximum.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"scale\":").Append(HtmlJsonString.Encode(scale.ToString().ToLowerInvariant()))
+            .Append(",\"threshold\":").Append(threshold.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"reversed\":").Append(reversed ? "true" : "false");
+        AppendTimeSessions(json, sessions);
+        json.Append(",\"plotBounds\":{\"x\":").Append(plot.X.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"y\":").Append(plot.Y.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"width\":").Append(plot.Width.ToString("R", CultureInfo.InvariantCulture))
+            .Append(",\"height\":").Append(plot.Height.ToString("R", CultureInfo.InvariantCulture)).Append("}}");
     }
 
     private static void AppendDataAxis(StringBuilder json, ChartDataAxisProjection axis) {
@@ -126,7 +146,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
         .Append(",\"transformedMaximum\":").Append(axis.TransformedMaximum.ToString("R", CultureInfo.InvariantCulture))
         .Append(",\"scale\":").Append(HtmlJsonString.Encode(axis.Scale.ToString().ToLowerInvariant()))
         .Append(",\"threshold\":").Append(axis.Threshold.ToString("R", CultureInfo.InvariantCulture))
-        .Append(",\"reversed\":").Append(axis.Reversed ? "true" : "false").Append(",\"displayTicks\":[");
+        .Append(",\"reversed\":").Append(axis.Reversed ? "true" : "false");
+        AppendTimeSessions(json, axis.TimeSessions);
+        json.Append(",\"displayTicks\":[");
         for (var index = 0; index < axis.DisplayTicks.Count; index++) {
             if (index > 0) json.Append(',');
             var tick = axis.DisplayTicks[index];
@@ -145,5 +167,18 @@ public sealed partial class HtmlInteractiveChartRenderer {
             json.Append('}');
         }
         json.Append("]}");
+    }
+
+    private static void AppendTimeSessions(StringBuilder json, ChartTimeSessionDomain? domain) {
+        if (domain == null) return;
+        json.Append(",\"timeSessions\":[");
+        for (var index = 0; index < domain.Sessions.Count; index++) {
+            if (index > 0) json.Append(',');
+            var session = domain.Sessions[index];
+            json.Append("{\"minimum\":").Append(session.Minimum.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"maximum\":").Append(session.Maximum.ToString("R", CultureInfo.InvariantCulture))
+                .Append(",\"offset\":").Append(domain.Offsets[index].ToString("R", CultureInfo.InvariantCulture)).Append('}');
+        }
+        json.Append(']');
     }
 }

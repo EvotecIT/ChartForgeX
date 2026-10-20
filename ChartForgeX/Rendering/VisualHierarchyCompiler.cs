@@ -66,7 +66,7 @@ internal static partial class VisualHierarchyCompiler {
     private static void Tree(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, VisualThemeColors colors) {
         var series = chart.Series[0]; var showLabels = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
         var model = ChartTreeLayout.Build(chart, plot, fitViewport: true,
-            requestedNodeHeight: showLabels ? index => LabelBodyHeight(chart, context, builder, index) : (Func<int, double>?)null,
+            requestedNodeHeight: showLabels ? (index, width) => LabelBodyHeight(chart, context, builder, index, width) : (Func<int, double, double>?)null,
             nodeStrokeWidth: context.Theme.AxisStrokeWidth, nodeGap: Math.Max(1, context.Theme.Spacing / 4));
         foreach (var link in model.Links) {
             var source = model.Nodes[link.Parent]; var target = model.Nodes[link.Child];
@@ -85,7 +85,9 @@ internal static partial class VisualHierarchyCompiler {
         }
         foreach (var node in model.Nodes) {
             var b = new ChartRect(node.X, node.Y, model.NodeWidth, node.Height); var color = Color(series, node.Index, colors, node.Depth);
+            var caption = HierarchyCaption(series, node.Index, node.Label);
             var metadata = ChartRelationshipMetadata.Node(series, node.Id, node.Label, node.Index);
+            metadata["data-cfx-full-label"] = caption;
             metadata["data-cfx-state"] = ChartRelationshipPaint.State(series, node.Index).ToString();
             metadata["data-cfx-depth"] = N(node.Depth);
             if (node.Depth > 0) {
@@ -99,9 +101,9 @@ internal static partial class VisualHierarchyCompiler {
                 builder.Rect(b, color, colors.Surface, context.Theme.AxisStrokeWidth, Math.Min(context.Theme.BarRadius, node.Height / 2), "tree-node-mark",
                     paint: new VisualScenePaintBinding(ChartRelationshipPaint.Paint(series, color, node.Index), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 Pattern(builder, Rectangle(b), series, node.Index, color, "tree-node-pattern");
-                if (showLabels) Label(chart, context, builder, node.Label, b, color, node.Index, "tree-node-label", center: true);
+                if (showLabels) Label(chart, context, builder, caption, b, color, node.Index, "tree-node-label", center: true);
             }
-            builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", b, node.Label + ": level " + N(node.Depth)));
+            builder.AddRegion(new VisualSemanticRegion(ChartRelationshipMetadata.SourceId("node", node.Id), "tree-node", b, caption + ": level " + N(node.Depth)));
         }
     }
 

@@ -223,6 +223,7 @@ public sealed partial class ChartSeries {
     private void ClearObservationMetadata() {
         PointColors.Clear(); PointFillPatterns.Clear(); PointLabels.Clear();
         PointDataLabelStyles.Clear(); PointSliceOffsets.Clear(); ClearObservationKeys();
+        _financialStyles = Array.Empty<ChartFinancialItemOptions?>();
     }
 
     private void UpdateObservation<T>(ref IReadOnlyList<T> target, int index, T value, Func<T, T> validate) {

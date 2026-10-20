@@ -5,10 +5,16 @@ namespace ChartForgeX.Core;
 
 public sealed partial class ChartOptions {
     private ChartMapScaleLegendPosition _mapScaleLegendPosition = ChartMapScaleLegendPosition.Bottom;
+    private ChartMapViewport _mapViewport = ChartMapViewport.World();
     /// <summary>
     /// Gets or sets the longitude/latitude window rendered by dotted map charts.
     /// </summary>
-    public ChartMapViewport MapViewport { get; set; } = ChartMapViewport.World();
+    public ChartMapViewport MapViewport {
+        get => _mapViewport;
+        set { _mapViewport = value; HasExplicitMapViewport = true; }
+    }
+
+    internal bool HasExplicitMapViewport { get; private set; }
 
     /// <summary>
     /// Gets or sets optional source coordinate bounds used to frame region maps.

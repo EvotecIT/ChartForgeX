@@ -7,7 +7,7 @@
     for (const item of entries) {
       if (!item || typeof item.id !== 'string' || !item.id.trim() || item.id !== item.id.trim()
         || typeof item.sourceId !== 'string' || !item.sourceId.startsWith('annotation-id-')
-        || !['HorizontalLine', 'VerticalLine', 'HorizontalBand', 'VerticalBand'].includes(item.kind)
+        || !['HorizontalLine', 'VerticalLine', 'HorizontalBand', 'VerticalBand', 'Note', 'LineSegment', 'ParallelChannel'].includes(item.kind)
         || ids.has(item.id) || sources.has(item.sourceId)) invalid();
       const node = nodes.find(node => node.dataset.cfxSourceId === item.sourceId), data = node?.dataset;
       if (!data || data.cfxAnnotationId !== item.id || data.cfxKind !== item.kind

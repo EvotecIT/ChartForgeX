@@ -40,6 +40,7 @@ public static partial class V2Examples {
         WriteFamilies(output, artifacts, curated);
         WriteHistograms(output, artifacts);
         WriteViewports(output, artifacts);
+        WriteLayeredData(output, artifacts);
         WriteCatalog(output, artifacts, curated);
         ValidateOutput(output);
     }

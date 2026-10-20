@@ -61,6 +61,20 @@ public sealed class ChartFinancialItemOptions {
         return copy;
     }
 
+    /// <summary>Applies a detached observation's non-null overrides to the selected direction.</summary>
+    internal ChartFinancialItemOptions Overlay(ChartFinancialItemOptions observation) {
+        var copy = Clone();
+        copy._fill = observation._fill ?? _fill;
+        copy._fillOpacity = observation._fillOpacity ?? _fillOpacity;
+        copy._stroke = observation._stroke ?? _stroke;
+        copy._strokeOpacity = observation._strokeOpacity ?? _strokeOpacity;
+        copy._strokeWidth = observation._strokeWidth ?? _strokeWidth;
+        copy._dashPattern = observation._dashPattern ?? _dashPattern;
+        copy._dashOffset = observation._dashOffset ?? _dashOffset;
+        copy.Wick = Wick.Overlay(observation.Wick);
+        return copy;
+    }
+
     internal static IReadOnlyList<double>? CopyPattern(IReadOnlyList<double>? value) {
         if (value == null) return null;
         var copy = new double[value.Count];
@@ -119,4 +133,13 @@ public sealed class ChartFinancialWickOptions {
     internal bool HasOverrides => Stroke.HasValue || StrokeOpacity.HasValue || StrokeWidth.HasValue || DashPattern != null || DashOffset.HasValue;
 
     internal ChartFinancialWickOptions Clone() => (ChartFinancialWickOptions)MemberwiseClone();
+
+    /// <summary>Inherits each unspecified observation wick property from the financial direction.</summary>
+    internal ChartFinancialWickOptions Overlay(ChartFinancialWickOptions observation) => new() {
+        _stroke = observation._stroke ?? _stroke,
+        _strokeOpacity = observation._strokeOpacity ?? _strokeOpacity,
+        _strokeWidth = observation._strokeWidth ?? _strokeWidth,
+        _dashPattern = observation._dashPattern ?? _dashPattern,
+        _dashOffset = observation._dashOffset ?? _dashOffset
+    };
 }

@@ -14,6 +14,7 @@ internal static class ChartScaleTransform {
     }
 
     public static double Forward(double value, ChartAxis axis) {
+        if (axis.Scale == ChartScaleKind.Time && axis.TimeSessions != null) return axis.TimeSessions.Forward(value);
         switch (axis.Scale) {
             case ChartScaleKind.Logarithmic:
                 if (value <= 0) throw new InvalidOperationException("Logarithmic axes can render positive values only.");
@@ -26,6 +27,7 @@ internal static class ChartScaleTransform {
     }
 
     public static double Inverse(double value, ChartAxis axis) {
+        if (axis.Scale == ChartScaleKind.Time && axis.TimeSessions != null) return axis.TimeSessions.Inverse(value);
         switch (axis.Scale) {
             case ChartScaleKind.Logarithmic:
                 return Math.Pow(10, value);

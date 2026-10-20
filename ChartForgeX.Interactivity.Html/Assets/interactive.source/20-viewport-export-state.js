@@ -22,7 +22,7 @@
   };
   // Reset is visible only for a changed view.
   const viewChanged = (root) => {
-    if (connectedXViewport(root) && nativeXWindowChanged(root)) return true;
+    if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
     if (root.dataset.cfxBrush || root.dataset.cfxIsolatedSeries) return true;
@@ -122,6 +122,7 @@
       source: source || '',
       viewport: getState(root),
       xWindow: connectedXViewport(root) ? nativeXWindow(root) : null,
+      yWindow: cartesianViewportConnected(root) ? nativeYWindow(root) : null,
       mode: root.dataset.cfxMode || '',
       brush: root.dataset.cfxBrush || '',
       selectedTargets: selectedTargets(root),
@@ -145,7 +146,11 @@
   };
   const applyInteractionState = (root, snapshot, emit, sync, nativeAccepted = false) => {
     if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
-    if (!nativeAccepted && snapshot.xWindow && connectedXViewport(root)) {
+    if (!nativeAccepted && (snapshot.xWindow || snapshot.yWindow) && cartesianViewportConnected(root)) {
+      const captured = copyHostValue(snapshot);
+      if (requestNativeCartesianWindow(root, { x: captured.xWindow, y: captured.yWindow }, false,
+        () => applyInteractionState(root, captured, emit, sync, true))) return;
+    } else if (!nativeAccepted && snapshot.xWindow && connectedXViewport(root)) {
       // Capture now and replay only after this request installs its accepted scene.
       const captured = copyHostValue(snapshot);
       if (requestNativeXWindow(root, captured.xWindow, false,
@@ -179,10 +184,10 @@
     }
     if (sync !== false) emitSync(root, { action: 'state', state: { ...snapshot, selectedTargets: selectedTargets(root) } });
   };
-  const zoomBy = (root, factor, logicalX) => {
+  const zoomBy = (root, factor, logicalX, logicalY) => {
     if (!hasFeature(root, 'Zoom')) return;
-    if (chartLifetimes.get(root)?.xViewportConnection) {
-      requestXViewportZoom(root, factor, logicalX);
+    if (connectedXViewport(root)) {
+      requestXViewportZoom(root, factor, logicalX, logicalY);
       return;
     }
     const state = getState(root);

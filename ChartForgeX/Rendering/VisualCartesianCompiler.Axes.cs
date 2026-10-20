@@ -56,6 +56,7 @@ internal static partial class VisualCartesianCompiler {
             var ticks = _fittedTicks.TryGetValue(axis, out var fitted) ? fitted
                 : _ticks.TryGetValue(axis, out var authored) ? ChartTicks.PreserveFormatting(authored, authored.Where(value => value >= minimum && value <= maximum).ToArray())
                 : ChartTicks.ForAxis(axis, minimum, maximum);
+            ticks = ChartTimeScale.UniqueSessionTicks(axis, ticks);
             RefreshFormatter(axis, ticks);
             return ticks;
         }

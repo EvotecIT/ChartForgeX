@@ -155,15 +155,16 @@ public sealed class V2MapTests {
     public void DottedArcAndWaypointRoutesAreNativeTrimmedAndDetachedFromMutableWaypoints() {
         var chart = Chart.Create().AddDottedMap("Route", new[] { new ChartMapPoint("Start", 0, 0), new ChartMapPoint("End", 20, 20) }).WithDataLabels();
         chart.Options.MapViewport = new ChartMapViewport("Custom", -10, 30, -10, 30);
-        var route = new ChartMapConnector("A complete waypoint route label retained after fitting", new[] {
-            new ChartMapPoint("A", 0, 0), new ChartMapPoint("Via", 12, 3), new ChartMapPoint("B", 20, 20) });
+        var waypoints = new[] { new ChartMapPoint("A", 0, 0), new ChartMapPoint("Via", 12, 3), new ChartMapPoint("B", 20, 20) };
+        var route = new ChartMapConnector("A complete waypoint route label retained after fitting", waypoints);
         chart.Options.MapConnectors.Add(new ChartMapConnector("Direct", 0, 0, 20, 20)); chart.Options.MapConnectors.Add(route);
         var scene = Compile(chart); var paths = scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "dotted-map-connector").ToArray();
         Assert.Equal(2, paths.Length); Assert.All(paths, path => Assert.Contains(path.Commands, command => command.Kind == ChartPathCommandKind.CubicTo));
         var source = scene.Nodes.OfType<VisualSceneEllipse>().First(point => point.Role == "dotted-map-point");
         Assert.All(paths, path => Assert.True(Math.Sqrt(Math.Pow(path.Commands[0].X - source.Cx, 2) + Math.Pow(path.Commands[0].Y - source.Cy, 2)) > source.Rx));
         Assert.Equal(2, scene.Nodes.Count(node => node.Role == "dotted-map-connector-arrow"));
-        var before = VisualSceneSvgRenderer.Render(scene); route.RoutePoints[1] = new ChartMapPoint("Changed", -5, -5);
+        var before = VisualSceneSvgRenderer.Render(scene); waypoints[1] = new ChartMapPoint("Changed", -5, -5);
+        Assert.Throws<NotSupportedException>(() => ((IList<ChartMapPoint>)route.RoutePoints)[1] = waypoints[1]);
         Assert.Equal(before, VisualSceneSvgRenderer.Render(scene));
         var artifact = new PreparedVisual(scene).ToArtifact("routes", VisualArtifactKind.Chart);
         Assert.Contains(artifact.Regions, region => region.Label == route.Label); Assert.Contains(route.Label, artifact.ToSvg());

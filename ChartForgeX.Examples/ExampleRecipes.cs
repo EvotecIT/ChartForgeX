@@ -75,7 +75,10 @@ public static class ExampleRecipes {
         ["findings"] = new(nameof(FindingsRecipe), FindingsRecipe.Create),
         ["line-viewport"] = new(nameof(LineViewportRecipe), LineViewportRecipe.Create),
         ["step-line-viewport"] = new(nameof(StepLineViewportRecipe), StepLineViewportRecipe.Create),
-        ["keyed-point-changes"] = new(nameof(KeyedPointChangesRecipe), KeyedPointChangesRecipe.Create)
+        ["keyed-point-changes"] = new(nameof(KeyedPointChangesRecipe), KeyedPointChangesRecipe.Create),
+        ["financial-layers"] = new(nameof(FinancialLayersRecipe), FinancialLayersRecipe.Create),
+        ["geographic-datasets"] = new(nameof(GeographicDatasetsRecipe), GeographicDatasetsRecipe.Create),
+        ["source-drawings"] = new(nameof(SourceDrawingsRecipe), SourceDrawingsRecipe.Create)
     });
 
     private static readonly IReadOnlyDictionary<(ChartSeriesKind Kind, string Variant), ExampleRecipe> Options = OptionRecipes();

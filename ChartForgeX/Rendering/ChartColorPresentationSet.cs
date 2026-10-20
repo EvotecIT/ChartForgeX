@@ -10,6 +10,7 @@ namespace ChartForgeX.Rendering;
 internal sealed class ChartColorPresentationSet {
     private readonly Chart _chart;
     private readonly ChartSeriesColorSurface?[] _series;
+    private readonly VisualMapCompiler.MapDataset?[] _maps;
     private readonly Dictionary<ChartValueFormat, Dictionary<double, string>> _values = new();
     private ChartHierarchySurface? _hierarchy;
     private ChartChordColorSurface? _chord;
@@ -24,8 +25,13 @@ internal sealed class ChartColorPresentationSet {
             ChartValueFormat.InvariantCompact, compactDefault: true, preparation: this);
         _series = chart.Series.Select(series => series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble
             ? new ChartSeriesColorSurface(series, new ChartColorPresentation(series.ColorDimension, labels, labels.Color, ChartValueFormat.InvariantCompact, compactDefault: true, preparation: this)) : null).ToArray();
+        _maps = new VisualMapCompiler.MapDataset?[chart.Series.Count];
     }
     internal ChartSeriesColorSurface? this[int index] => _series[index];
+    /// <summary>Shares the same captured map observations and formatting cache across legends, keys and marks.</summary>
+    internal VisualMapCompiler.MapDataset MapDataset(int index) => _maps[index] ??= new VisualMapCompiler.MapDataset(_chart, index,
+        new ChartColorPresentation(_chart.Series[index].ColorDimension.HasOverrides ? _chart.Series[index].ColorDimension : _chart.Options.MapColorDimension,
+            _chart.Options.Labels, _chart.Options.Labels.Value, _chart.Options.ValueFormat, preparation: this));
     internal ChartColorPresentation Map { get; }
     internal ChartColorPresentation Heatmap { get; }
     internal ChartColorPresentation Hierarchy { get; }

@@ -336,22 +336,20 @@ public sealed partial class Chart {
 
     private ChartPoint ResolveDottedMapPoint(string pointLabel, string parameterName) {
         if (string.IsNullOrWhiteSpace(pointLabel)) throw new System.ArgumentException("Map point labels must not be empty.", parameterName);
-        ChartSeries? dottedMap = null;
+        ChartPoint? found = null;
+        var hasDottedMap = false;
+        var trimmed = pointLabel.Trim();
         foreach (var series in Series) {
             if (series.Kind == ChartSeriesKind.DottedMap) {
-                dottedMap = series;
-                break;
+                hasDottedMap = true;
+                foreach (var point in series.MapPoints) if (string.Equals(point.Label, trimmed, System.StringComparison.OrdinalIgnoreCase)) {
+                    if (found.HasValue) throw new System.ArgumentException("Map point labels must identify one observation across the geographic datasets: " + trimmed + ".", parameterName);
+                    found = new ChartPoint(point.Longitude, point.Latitude);
+                }
             }
         }
-
-        if (dottedMap == null) throw new System.InvalidOperationException("Map routes between points require AddDottedMap to be called before the route is added.");
-        var trimmed = pointLabel.Trim();
-        var count = dottedMap.MapPoints.Count;
-        for (var i = 0; i < count; i++) {
-            if (string.Equals(dottedMap.MapPoints[i].Label, trimmed, System.StringComparison.OrdinalIgnoreCase))
-                return new ChartPoint(dottedMap.MapPoints[i].Longitude, dottedMap.MapPoints[i].Latitude);
-        }
-
+        if (!hasDottedMap) throw new System.InvalidOperationException("Map routes between points require AddDottedMap to be called before the route is added.");
+        if (found.HasValue) return found.Value;
         throw new System.ArgumentException("Map point label was not found in the current dotted map: " + trimmed + ".", parameterName);
     }
 

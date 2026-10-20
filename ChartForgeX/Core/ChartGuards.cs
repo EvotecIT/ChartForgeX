@@ -6,7 +6,7 @@ using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Core;
 
-internal static class ChartGuards {
+internal static partial class ChartGuards {
     public static void Finite(double value, string parameterName) {
         if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite.");
     }
@@ -47,9 +47,11 @@ internal static class ChartGuards {
         chart.ValidateHourWeekdayHeatmapOwnership();
         chart.ValidateExplicitGanttDependencies();
         ValidateRenderableChart(chart, preparing);
+        ValidateSourceAnnotations(chart);
+        ChartTimeSessionValidation.Validate(chart);
         _ = ChartCategoryGroupPlan.TryCreate(chart);
         chart.ValidatePlotRegions();
-        if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap))
+        if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap && series.Kind != ChartSeriesKind.DottedMap))
             throw new InvalidOperationException("Map color presentation requires numeric region or tile maps.");
         if (chart.Options.HeatmapColorDimension.HasOverrides && chart.Series.Any(series => series.IsCategoricalHeatmapRow
             || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
@@ -91,6 +93,7 @@ internal static class ChartGuards {
             ValidateMixedNumericRadial(chart);
             return;
         }
+        if (ChartMapComposition.ValidateMultiple(chart)) return;
         var exclusiveKinds = chart.Series.Select(series => series.Kind).Where(ChartSeriesKindTraits.IsExclusive).Distinct().ToArray();
         if (exclusiveKinds.Length == 0) return;
         if (exclusiveKinds.Length > 1 || chart.Series.Any(series => series.Kind != exclusiveKinds[0])) {
@@ -153,7 +156,7 @@ internal static class ChartGuards {
     private static void ValidateRenderableChart(Chart chart, bool preparing) {
         for (var i = 0; i < chart.Series.Count; i++) {
             if (chart.Series[i] == null) throw new InvalidOperationException("Chart series collection must not contain null entries.");
-            ValidateSeriesShape(chart.Series[i], preparing);
+            ValidateSeriesShape(chart.Series[i], preparing, chart.Options);
             chart.Series[i].ValidateDifferenceArea(chart.Options);
             if (preparing && chart.Series[i].Kind == ChartSeriesKind.Sunburst && chart.Series[i].Relationships != null)
                 _ = chart.Series[i].Relationships!.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
@@ -186,12 +189,13 @@ internal static class ChartGuards {
         }
     }
 
-    private static void ValidateSeriesShape(ChartSeries series, bool preparing) {
+    private static void ValidateSeriesShape(ChartSeries series, bool preparing, ChartOptions options) {
         series.ValidateWaterfall();
         series.ValidateInterpolation();
         series.ValidateMarkerAndRadarOptions();
         series.ValidateFinancialOptions();
-        series.ValidateColorValues();
+        series.ValidateMapPointSize();
+        series.ValidateColorValues(options);
         if (ChartSeries.IsRelationshipKind(series.Kind)) series.ValidateRelationships(preparing);
         if (series.RenderPoints.Any(point => point.BreakBefore) && series.Kind != ChartSeriesKind.Line && series.Kind != ChartSeriesKind.StepLine && series.Kind != ChartSeriesKind.Area && series.Kind != ChartSeriesKind.StepArea && series.Kind != ChartSeriesKind.Scatter
             && series.Kind != ChartSeriesKind.StackedArea && series.Kind != ChartSeriesKind.RangeBand && series.Kind != ChartSeriesKind.RangeArea && series.Kind != ChartSeriesKind.DifferenceArea)

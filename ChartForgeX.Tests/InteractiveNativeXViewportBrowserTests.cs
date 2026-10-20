@@ -171,15 +171,22 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         private readonly bool _time;
         private readonly int _width;
         private readonly string? _group;
-        private readonly bool _scenarios;
+        private readonly bool _scenarios, _navigation, _adaptive, _sessions, _automaticBounds, _yReversed;
+        private readonly ChartScaleKind _yScale;
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         internal NativeHost(bool dark = false, bool reversed = false, ChartSeriesKind kind = ChartSeriesKind.Line,
-            bool time = false, int width = 800, string id = "native-readings", string? group = null, bool scenarios = false) {
-            _dark = dark; _reversed = reversed; _kind = kind; _time = time; _width = width; Id = id; _group = group; _scenarios = scenarios;
+            bool time = false, int width = 800, string id = "native-readings", string? group = null, bool scenarios = false,
+            bool navigation = false, bool adaptive = false, bool sessions = false, bool automaticBounds = false, ChartScaleKind yScale = ChartScaleKind.Linear, bool yReversed = false) {
+            _dark = dark; _reversed = reversed; _kind = kind; _time = time || sessions; _width = width; Id = id; _group = group; _scenarios = scenarios;
+            _navigation = navigation; _adaptive = adaptive; _sessions = sessions;
+            _automaticBounds = automaticBounds; _yScale = yScale; _yReversed = yReversed;
             _sections.Add("initial", _renderer.PrepareSection(Chart(), configure: ConfigureSection));
         }
         internal string Id { get; }
-        internal double Origin => _time ? new DateTime(2026, 1, 28, 0, 0, 0, DateTimeKind.Utc).ToOADate() : 0;
+        internal double Origin => _sessions ? new DateTime(2026, 1, 30, 9, 0, 0, DateTimeKind.Utc).ToOADate()
+            : _time ? new DateTime(2026, 1, 28, 0, 0, 0, DateTimeKind.Utc).ToOADate() : 0;
+        internal double Maximum => Coordinate(12);
+        private double Coordinate(int index) => !_sessions ? Origin + index : index <= 6 ? Origin + index / 24d : Origin + 3 + (index - 7) / 24d;
         internal int PreparedCount { get { lock (_sections) return _sections.Count; } }
         internal string Initial => _sections["initial"].Html;
         internal string Window(double minimum, double maximum) => _renderer.PrepareSection(Chart(), new ChartXViewport(minimum, maximum), ConfigureSection).Html;
@@ -188,6 +195,18 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
         private void ConfigureSection(HtmlChartInteractionOptions options) {
             Configure(options); options.Interaction.ChartId = Id;
+            options.XNavigation.Enabled = _navigation;
+            if (_navigation) {
+                if (_sessions) {
+                    options.XNavigation.RangePresets.Add(HtmlChartXRangePreset.FromDuration("Last day", TimeSpan.FromDays(1)));
+                    options.XNavigation.RangePresets.Add(HtmlChartXRangePreset.FromDuration("Last 4 hours", TimeSpan.FromHours(4)));
+                } else {
+                    options.XNavigation.RangePresets.Add(_time ? HtmlChartXRangePreset.FromDuration("Last 4 days", TimeSpan.FromDays(4))
+                        : new HtmlChartXRangePreset("Latest four", 4));
+                    options.XNavigation.RangePresets.Add(new HtmlChartXRangePreset("Latest eight", 8));
+                }
+            }
+            if (_adaptive) options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive;
             if (_scenarios) options.Interaction.AddScenario("review", "Review measurements",
                 scenario => scenario.AddSeriesStep(new ChartSeriesId("samples"), "Measurements"));
             if (_group != null) {
@@ -199,26 +218,63 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             lock (_sections) {
                 var basis = _sections[request.GetProperty("basis").GetString()!];
                 var kind = request.GetProperty("kind").GetString();
-                var viewport = kind == "reset" ? null : basis.PreparedVisual.XProjection!.ConstrainViewport(
-                    request.GetProperty("left").GetDouble(), request.GetProperty("right").GetDouble());
-                var section = _renderer.PrepareSection(Chart(), viewport, ConfigureSection);
+                var basisScene = request.TryGetProperty("drawing", out var drawing) && drawing.GetString() == "narrow"
+                    ? basis.NarrowPreparedVisual! : basis.PreparedVisual;
+                ChartXViewport? x = null; ChartYViewport? y = null;
+                if (kind != "reset") {
+                    var projection = basisScene.XProjection!;
+                    x = projection.Minimum != projection.FullMinimum || projection.Maximum != projection.FullMaximum ? new ChartXViewport(projection.Minimum, projection.Maximum) : null;
+                    var primary = basisScene.YProjection;
+                    if (primary != null && (primary.Minimum != primary.FullMinimum || primary.Maximum != primary.FullMaximum)) y = new ChartYViewport(primary.Minimum, primary.Maximum);
+                    if (request.TryGetProperty("sourceWindow", out var sourceWindow))
+                        x = projection.ConstrainViewport(new ChartXViewport(sourceWindow.GetProperty("minimum").GetDouble(), sourceWindow.GetProperty("maximum").GetDouble()));
+                    else if (request.TryGetProperty("sourceViewport", out var sourceViewport)) {
+                        if (sourceViewport.TryGetProperty("x", out var sourceX)) x = projection.ConstrainViewport(new ChartXViewport(sourceX.GetProperty("minimum").GetDouble(), sourceX.GetProperty("maximum").GetDouble()));
+                        if (sourceViewport.TryGetProperty("y", out var sourceY)) y = primary!.ConstrainViewport(new ChartYViewport(sourceY.GetProperty("minimum").GetDouble(), sourceY.GetProperty("maximum").GetDouble()));
+                    } else {
+                        var axes = request.TryGetProperty("axes", out var configuredAxes) ? configuredAxes.GetString()! : "x";
+                        if (axes.Contains('x')) x = projection.ConstrainViewport(request.GetProperty("left").GetDouble(), request.GetProperty("right").GetDouble());
+                        if (axes.Contains('y')) y = primary!.ConstrainViewport(request.GetProperty("top").GetDouble(), request.GetProperty("bottom").GetDouble());
+                    }
+                }
+                var section = x == null && y == null ? _renderer.PrepareSection(Chart(), configure: ConfigureSection)
+                    : _renderer.PrepareSection(Chart(), new ChartCartesianViewport(x, y), ConfigureSection);
                 var token = "prepared-" + _sections.Count; _sections.Add(token, section);
                 return new { token, html = section.Html };
             }
         }
         private Chart Chart() {
-            var points = Enumerable.Range(0, 13).Select(index => new ChartPoint(Origin + index, index is 0 or 12 ? 95 : 20 + index * 4)).ToArray();
-            var series = _kind == ChartSeriesKind.Bubble
-                ? ChartSeries.CreateBubble(new ChartSeriesId("samples"), "Measurements", points.Select((point, index) => new ChartBubble(point.X, point.Y, 10 + index * 3)))
-                : new ChartSeries(new ChartSeriesId("samples"), "Measurements", _kind, points);
+            var points = Enumerable.Range(0, 13).Select(index => new ChartPoint(Coordinate(index), index is 0 or 12 ? 95 : 20 + index * 4)).ToArray();
+            var id = new ChartSeriesId("samples");
+            var financial = points.Select(point => new ChartCandlestick(point.X, point.Y, point.Y + 4, point.Y - 8, point.Y + 2));
+            var ranges = points.Select(point => new ChartRangeBand(point.X, point.Y - 8, point.Y + 4));
+            var series = _kind switch {
+                ChartSeriesKind.Bubble => ChartSeries.CreateBubble(id, "Measurements", points.Select((point, index) => new ChartBubble(point.X, point.Y, 10 + index * 3))),
+                ChartSeriesKind.Candlestick => ChartSeries.CreateCandlestick(id, "Measurements", financial),
+                ChartSeriesKind.Ohlc => ChartSeries.CreateOhlc(id, "Measurements", financial),
+                ChartSeriesKind.RangeBand => ChartSeries.CreateRangeBand(id, "Measurements", ranges),
+                ChartSeriesKind.RangeArea => ChartSeries.CreateRangeArea(id, "Measurements", ranges),
+                ChartSeriesKind.DifferenceArea => ChartSeries.CreateDifferenceArea(id, "Measurements", points.Select(point => new ChartDifferencePoint(point.X, point.Y + 4, point.Y - 8))),
+                _ => new ChartSeries(id, "Measurements", _kind, points)
+            };
             if (_kind == ChartSeriesKind.Area) series.WithSmooth();
             for (var index = 0; index < 13; index++) series.WithObservationId(index, new ChartObservationId("sample-" + index));
-            series.ConfigureMarkers(markers => { markers.Enabled = true; if (_kind != ChartSeriesKind.Bubble) markers.Radius = 4; });
+            if (_kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc))
+                series.ConfigureMarkers(markers => { markers.Enabled = true; if (_kind != ChartSeriesKind.Bubble) markers.Radius = _automaticBounds ? 18 : 4; });
             var chart = ChartForgeX.Core.Chart.Create().WithSize(_width, 440).WithTheme(VisualTheme.Graphite(), _dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
                 .WithTitle("Inspect a native X window").WithSubtitle("Native ticks and fixed Y bounds follow the committed window")
-                .WithXAxisBounds(Origin, Origin + 12).WithYAxisBounds(0, 100).WithLegend().AddSeries(series)
-                .AddSeries(new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.StepLine, new[] { new ChartPoint(Origin, 30), new ChartPoint(Origin + 12, 30) }));
+                .WithLegend().AddSeries(series)
+                .AddSeries(new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.StepLine, new[] { new ChartPoint(Origin, 30), new ChartPoint(Maximum, 30) }));
+            if (!_automaticBounds) chart.WithXAxisBounds(Origin, Maximum).WithYAxisBounds(_yScale == ChartScaleKind.Logarithmic ? 1 : 0, _yScale == ChartScaleKind.Logarithmic ? 1000 : 100);
+            chart.WithYAxisScale(_yScale); chart.Options.YAxis.Reversed = _yReversed;
             if (_time) chart.WithXAxisScale(ChartScaleKind.Time);
+            if (_sessions) {
+                chart.ConfigureXAxis(axis => axis.WithTimeSessions(new ChartTimeSessionDomain(new[] {
+                    new ChartTimeSession(Origin, Coordinate(6)), new ChartTimeSession(Coordinate(7), Maximum)
+                })));
+                chart.AddSeries(new ChartSeries(new ChartSeriesId("companion"), "Companion", ChartSeriesKind.Line, points.Select(point => new ChartPoint(point.X, point.Y / 2))));
+                chart.AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("envelope"), "Envelope", points.Select(point => new ChartRangeBand(point.X, point.Y / 2 - 6, point.Y / 2 + 6))));
+            }
             chart.Options.XAxis.Reversed = _reversed;
             return chart;
         }
@@ -230,16 +286,21 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             () => {
                 window.chartControllers=[...document.querySelectorAll('.cfx-interactive-chart')].map(root=>ChartForgeXCharts.mount(root));
                 window.chartController=chartControllers[0];
-                window.nativeRequests=[];window.nativeChanges=[];window.nativeErrors=[];
+                window.nativeRequests=[];window.nativeChanges=[];window.nativeErrors=[];window.nativeCallbackFrozen=[];window.nativeCallbacks=new Map();
                 window.nativeBases=new Map(chartControllers.map(controller=>[controller.sceneRevision,'initial']));window.nativeCandidates=new Map();
                 chartControllers.forEach(controller=>{
                 controller.root.addEventListener('cfxviewportrequest',event=>nativeRequests.push(event.detail));
+                controller.root.addEventListener('cfxlayoutchange',event=>{
+                    const layout=event.detail;nativeBases.set(layout.sceneRevision,nativeBases.get(layout.previousSceneRevision));
+                });
                 controller.root.addEventListener('cfxviewporterror',event=>nativeErrors.push(event.detail));
                 controller.root.addEventListener('cfxviewportchange',event=>{
                     const commit=event.detail;nativeBases.set(commit.sceneRevision,nativeCandidates.get(commit.requestId));
                     nativeCandidates.delete(commit.requestId);nativeChanges.push(commit);
                 });
-                controller.connectXViewport(async(request,signal)=>{
+                const callback=async(request,signal)=>{
+                    nativeCallbackFrozen.push(Object.isFrozen(request)&&(!request.sourceWindow||Object.isFrozen(request.sourceWindow))
+                        &&(!request.sourceViewport||Object.isFrozen(request.sourceViewport)&&Object.values(request.sourceViewport).every(Object.isFrozen)));
                     const basis=nativeBases.get(request.sceneRevision);
                     if(!basis)throw new Error('No native preparation belongs to the committed browser revision.');
                     const result=await nativeHostPrepare({...request,basis});
@@ -247,7 +308,8 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                     nativeCandidates.set(request.requestId,result.token);
                     signal.addEventListener('abort',()=>nativeCandidates.delete(request.requestId),{once:true});
                     return result.html;
-                });
+                };
+                nativeCallbacks.set(controller,callback);controller.connectXViewport(callback);
                 });
             }
             """);
@@ -266,8 +328,28 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         if (string.IsNullOrWhiteSpace(directory)) return;
         if (!Path.IsPathRooted(directory)) throw new InvalidOperationException("Capture output must be absolute.");
         Directory.CreateDirectory(directory);
+        const string layoutScript = """
+            ()=>{
+                const root=chartController.root,stage=root.querySelector('.cfx-stage'),svg=stage?.querySelector('svg'),title=svg?.querySelector('text');
+                const rect=node=>{if(!node)return null;const b=node.getBoundingClientRect(),s=getComputedStyle(node);return{
+                    x:b.x,y:b.y,width:b.width,height:b.height,scrollTop:node.scrollTop,scrollLeft:node.scrollLeft,
+                    scrollWidth:node.scrollWidth,scrollHeight:node.scrollHeight,clientWidth:node.clientWidth,clientHeight:node.clientHeight,
+                    overflowX:s.overflowX,overflowY:s.overflowY,transform:s.transform};};
+                const matrix=svg?.getScreenCTM(),focus=root.getRootNode().activeElement;
+                let titleBBox=null;try{const b=title?.getBBox();if(b)titleBBox={x:b.x,y:b.y,width:b.width,height:b.height};}catch{}
+                return{viewport:{width:innerWidth,height:innerHeight,scrollX,scrollY},root:rect(root),stage:rect(stage),svg:rect(svg),
+                    document:rect(document.scrollingElement),body:rect(document.body),toolbar:rect(root.querySelector('.cfx-toolbar')),
+                    title:{text:title?.textContent,client:rect(title),native:titleBBox},
+                    screenMatrix:matrix?{a:matrix.a,b:matrix.b,c:matrix.c,d:matrix.d,e:matrix.e,f:matrix.f}:null,
+                    drawing:root.dataset.cfxAdaptiveDrawing,state:{zoom:root.dataset.cfxZoom,panX:root.dataset.cfxPanX,panY:root.dataset.cfxPanY},
+                    focus:focus?{tag:focus.tagName,id:focus.id,role:focus.getAttribute('data-cfx-role'),owned:root.contains(focus)}:null};
+            }
+            """;
+        var before = await page.EvaluateAsync<JsonElement>(layoutScript);
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, "native-x-" + name + ".png"), FullPage = true });
+        var after = await page.EvaluateAsync<JsonElement>(layoutScript);
         await File.WriteAllTextAsync(Path.Combine(directory, "native-x-" + name + ".json"), JsonSerializer.Serialize(evidence));
+        await File.WriteAllTextAsync(Path.Combine(directory, "native-x-" + name + ".layout.json"), JsonSerializer.Serialize(new { before, after }));
     }
     private static async Task SaveDownloadAsync(IDownload download, string name) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

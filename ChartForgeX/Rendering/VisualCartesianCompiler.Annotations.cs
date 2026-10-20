@@ -43,13 +43,16 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, ChartMapper map, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles,
-        bool constrainXToPlot, ChartXViewport? xViewport = null, ChartRect? labelBounds = null, bool clipGeometry = false) {
+        bool constrainXToPlot, ChartXViewport? xViewport = null, ChartRect? labelBounds = null, bool clipGeometry = false,
+        ChartMapper? secondaryMap = null) {
         var horizontalValues = ChartCartesianOrientation.IsHorizontal(chart);
         VisualAnnotationCompiler.Draw(chart.Annotations, context, builder, plot, map.X, map.Y, colors, bands, obstacles,
             kindSelector: annotation => ChartCartesianOrientation.AnnotationKind(annotation, horizontalValues),
             isVisible: constrainXToPlot ? annotation => IsAnnotationVisible(annotation, plot, map, xViewport,
                 ChartCartesianOrientation.AnnotationKind(annotation, horizontalValues)) : null,
             labelBounds: labelBounds, clipGeometry: clipGeometry);
+        VisualAnnotationCompiler.DrawSources(chart.Annotations, context, builder, plot, map.X,
+            (annotation, value) => (annotation.SourceYAxis == ChartAxisSide.Secondary ? secondaryMap! : map).Y(value), colors, bands, obstacles);
     }
 
     private static bool IsAnnotationVisible(ChartAnnotation annotation, ChartRect plot, ChartMapper map, ChartXViewport? xViewport, ChartAnnotationKind kind) {

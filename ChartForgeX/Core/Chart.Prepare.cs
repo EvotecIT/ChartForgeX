@@ -15,7 +15,7 @@ public sealed partial class Chart : IVisualRenderable {
     /// <param name="context">The logical size, frame, theme and typography used for preparation.</param>
     /// <param name="viewport">An increasing window contained in the resolved full X domain.</param>
     /// <returns>A prepared scene with its detached X projection.</returns>
-    /// <remarks>Supports ordinary vertical line, area, scatter and bubble series with linear or time X axes; sparklines are excluded.
+    /// <remarks>Supports ordinary vertical line, area, scatter, bubble, financial and paired-boundary series with linear or time X axes; sparklines are excluded.
     /// Time bounds use the same OLE Automation date units as source observations. Interpolation and full-data stack calculations are retained.
     /// Full-data primary Y and secondary Y domains and authored series paint remain fixed. Marks are clipped to the plot even
     /// when ClipMarksToPlot is false; automatic marker padding does not expand the requested X bounds.
@@ -27,19 +27,30 @@ public sealed partial class Chart : IVisualRenderable {
     /// <exception cref="InvalidOperationException">The chart has no observations or no usable plot rectangle.</exception>
     public PreparedVisual Prepare(VisualRenderContext context, ChartXViewport viewport) {
         if (viewport == null) throw new ArgumentNullException(nameof(viewport));
+        return PrepareCore(context, new ChartCartesianViewport(x: viewport));
+    }
+
+    /// <summary>Prepares native geometry within an explicit X, primary Y or XY source window.</summary>
+    /// <param name="context">The native layout, frame and theme.</param>
+    /// <param name="viewport">The explicit source windows. Y windows require no secondary-axis series.</param>
+    /// <returns>A detached scene with matching X and eligible primary Y projections.</returns>
+    /// <remarks>Full-data calculations remain unchanged. Every requested axis is clipped to its exact source bounds;
+    /// an omitted axis retains its full-data domain. The mutable chart and authored axes are unchanged.</remarks>
+    public PreparedVisual Prepare(VisualRenderContext context, ChartCartesianViewport viewport) {
+        if (viewport == null) throw new ArgumentNullException(nameof(viewport));
         return PrepareCore(context, viewport);
     }
 
-    private PreparedVisual PrepareCore(VisualRenderContext context, ChartXViewport? viewport) {
+    private PreparedVisual PrepareCore(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain = null) {
         if (context == null) throw new ArgumentNullException(nameof(context));
         var view = (Chart)MemberwiseClone();
         view.Options = Options.PresentationView(context);
-        return view.PrepareScene(context, viewport);
+        return view.PrepareScene(context, viewport, fullDomain);
     }
 
-    private PreparedVisual PrepareScene(VisualRenderContext context, ChartXViewport? viewport) {
+    private PreparedVisual PrepareScene(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain) {
         ChartGuards.RenderCompatibility(this, preparing: true);
-        if (viewport != null) VisualCartesianCompiler.ValidateXViewport(this);
+        if (viewport != null) VisualCartesianCompiler.ValidateViewport(this, viewport);
         var family = VisualChartCompiler.Family(this);
         var bubbleScale = Series.Any(series => series.Kind == ChartSeriesKind.Bubble) ? ChartBubbleSizeScale.Create(this) : null;
         var colorScales = new ChartColorPresentationSet(this);
@@ -66,7 +77,7 @@ public sealed partial class Chart : IVisualRenderable {
         var mapLegendInset = family == VisualChartFamily.Map && !sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition
             ? VisualMapCompiler.ResolveTileLegendInset(this, context, builder, entries, colorScales.Map) : null;
         var content = VisualFrameLayout.Build(builder, context, mapLegendInset == null ? entries : Array.Empty<VisualLegendEntry>(), out var legendHeight);
-        var projection = VisualChartCompiler.Build(family, this, context, builder, content, axisLabels, bubbleScale, colorScales, legendHeight, viewport, mapLegendInset);
+        var projection = VisualChartCompiler.Build(family, this, context, builder, content, axisLabels, bubbleScale, colorScales, legendHeight, viewport, mapLegendInset, fullDomain);
         if (mapLegendInset != null) VisualFrameLayout.PaintOverlayLegend(builder, context, entries, mapLegendInset.LegendArea);
         builder.CaptureChartIdentity(this);
         var accessibility = Accessibility.Clone();
@@ -74,6 +85,6 @@ public sealed partial class Chart : IVisualRenderable {
             : !string.IsNullOrWhiteSpace(Title) ? Title : Options.Labels.UntitledChart;
         accessibility.Description ??= Options.Labels.Describe(ChartAccessibleDescription.Facts(this));
         return new PreparedVisual(builder.Build(), accessibility,
-            svgOptions: new VisualSvgOptions(colorVariables: Options.SvgColorVariables), xProjection: projection);
+            svgOptions: new VisualSvgOptions(colorVariables: Options.SvgColorVariables), xProjection: projection?.X, yProjection: projection?.Y);
     }
 }

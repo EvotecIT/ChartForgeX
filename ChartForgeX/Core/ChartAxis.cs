@@ -174,6 +174,12 @@ public sealed class ChartAxis {
     /// </summary>
     public TimeZoneInfo? TimeZone { get; set; }
 
+    /// <summary>Gets or sets explicitly included intervals for a compressed time X axis, or null for continuous elapsed time.</summary>
+    /// <remarks>Supported vertical Cartesian series share this immutable domain. Closed gaps have no width;
+    /// observations and source annotation anchors must belong to included sessions. Raw viewport bounds may lie
+    /// in closures when the window still contains included time. Y/XY compression and market-calendar inference are not provided.</remarks>
+    public ChartTimeSessionDomain? TimeSessions { get; set; }
+
     /// <summary>
     /// Gets or sets the time-zone designator shown when <see cref="ShowTimeZone"/> is enabled.
     /// Null uses <c>UTC</c> when <see cref="TimeZone"/> is null, otherwise the zone identifier. Zone identifiers differ
@@ -234,6 +240,11 @@ public sealed class ChartAxis {
         TimeZoneLabel = label;
         return this;
     }
+
+    /// <summary>Selects a time scale with an explicit shared session domain; null restores continuous elapsed time.</summary>
+    /// <param name="domain">The immutable included intervals, or null to remove compression.</param>
+    /// <returns>The current axis. Existing display zone and formatting policies are retained.</returns>
+    public ChartAxis WithTimeSessions(ChartTimeSessionDomain? domain) { Scale = ChartScaleKind.Time; TimeSessions = domain; return this; }
 
     /// <summary>Sets the label formatter.</summary>
     public ChartAxis WithLabelFormatter(Func<double, string>? formatter) { LabelFormatter = formatter; return this; }

@@ -299,7 +299,9 @@
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
       return;
     }
-    if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
+    if (detail.action === 'viewport' && (detail.xWindow || detail.yWindow) && cartesianViewportConnected(root))
+      requestNativeCartesianWindow(root, { x: detail.xWindow, y: detail.yWindow }, false);
+    else if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
     else if (detail.action === 'viewport' && detail.state && !connectedXViewport(root)) applyViewport(root, detail.state);
     else if (detail.action === 'brush') {
       if (detail.clear) clearBrush(root);

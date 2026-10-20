@@ -33,7 +33,8 @@ internal static partial class VisualHierarchyCompiler {
             var verticalInset = Math.Min(inset, Math.Max(0, (bounds.Height - lineHeight) / 2));
             var width = Math.Max(0, bounds.Width - inset * 2);
             var height = Math.Max(0, bounds.Height - verticalInset * 2);
-            var rows = Math.Min(header ? 1 : value == null ? 2 : 3, (int)Math.Floor((height + .000001) / lineHeight));
+            var rows = (int)Math.Floor((height + .000001) / lineHeight);
+            if (header) rows = Math.Min(1, rows);
             if (rows < 1 || width < 6) return false;
             var paragraphs = name.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
             var lines = new List<string>();
@@ -42,8 +43,9 @@ internal static partial class VisualHierarchyCompiler {
             for (var paragraph = 0; paragraph < paragraphs.Length; paragraph++) {
                 var spare = rows - lines.Count - reserved - (paragraphs.Length - paragraph - 1);
                 if (spare < 1) return false;
-                lines.AddRange(spare > 1 ? ChartLabelWrapping.BalancedTwoLine(paragraphs[paragraph], style.EffectiveFontSize, width,
-                    (text, _) => builder.MeasureText(text, style).Width) : new[] { paragraphs[paragraph] });
+                if (!ChartLabelWrapping.TryComplete(paragraphs[paragraph], style.EffectiveFontSize, width, spare,
+                    (text, _) => builder.MeasureText(text, style).Width, out var complete)) return false;
+                lines.AddRange(complete);
             }
             if (reserved > 0) lines.Add(value!);
             var displayed = string.Join("\n", lines);
