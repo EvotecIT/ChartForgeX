@@ -17,7 +17,11 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
     [InlineData(true)]
     public async Task AuthoredAnnotationsRetainStateAcrossReplacementAndRejectInvalidCatalogsAtomically(bool dark) {
         if (!Enabled) return;
-        var html = AuthoredModel(dark).ToInteractiveHtmlPage(AuthoredOptions);
+        void CompareOptions(HtmlChartInteractionOptions options) {
+            AuthoredOptions(options);
+            options.Interaction.Features |= ChartInteractionFeatures.CompareMarkers;
+        }
+        var html = AuthoredModel(dark).ToInteractiveHtmlPage(CompareOptions);
         await using var session = await OpenAsync(html, dark ? 390 : 900, 800);
         var page = session.Page;
         await Bind(page);
@@ -37,7 +41,8 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
                 return annotationController.getSelection()[0];}
             """);
         Assert.Equal("warning", original.GetProperty("annotationId").GetString());
-        var replacement = AuthoredModel(dark, reversed: true).ToInteractiveHtmlFragmentWithoutAssets(AuthoredOptions);
+        Assert.Equal("Limit", await page.Locator(".cfx-compare-chip").InnerTextAsync());
+        var replacement = AuthoredModel(dark, reversed: true).ToInteractiveHtmlFragmentWithoutAssets(CompareOptions);
         await page.EvaluateAsync("fragment=>annotationController.update(fragment)", replacement);
         var retained = await page.EvaluateAsync<JsonElement>("""
             ()=>({selected:annotationController.getSelection(),
@@ -47,6 +52,8 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
         var selected = Assert.Single(retained.GetProperty("selected").EnumerateArray());
         Assert.Equal("warning", selected.GetProperty("annotationId").GetString());
         Assert.Equal("Localized limit", selected.GetProperty("label").GetString());
+        Assert.Equal("Localized limit", await page.Locator(".cfx-compare-chip").InnerTextAsync());
+        Assert.Equal("Localized limit", await page.Locator(".cfx-compare-chip").GetAttributeAsync("title"));
         Assert.Equal(6, selected.GetProperty("numericValue").GetDouble());
         Assert.Equal(original.GetProperty("targetId").GetString(), selected.GetProperty("targetId").GetString());
         Assert.Equal(new[] { "warning" }, retained.GetProperty("highlighted").EnumerateArray().Select(item => item.GetString()));
@@ -82,7 +89,7 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
         await CaptureAuthored(session, "authored-annotation-retained-" + dark, html);
 
         var missing = AuthoredModel(dark, reversed: true, warningId: "replacement")
-            .AddHorizontalLine(8, original.GetProperty("targetId").GetString()!).ToInteractiveHtmlFragmentWithoutAssets(AuthoredOptions);
+            .AddHorizontalLine(8, original.GetProperty("targetId").GetString()!).ToInteractiveHtmlFragmentWithoutAssets(CompareOptions);
         await page.EvaluateAsync("fragment=>annotationController.update(fragment)", missing);
         Assert.Empty(await page.EvaluateAsync<string[]>("()=>annotationController.getSelection().map(t=>t.annotationId)"));
         Assert.Equal(0, await page.Locator("[data-cfx-role=annotation].cfx-highlighted").CountAsync());

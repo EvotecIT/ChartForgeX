@@ -20,6 +20,7 @@ internal static class Program {
     private static void Main() {
         PackageAssertions.CoreFixtures();
         NativeViewportSection();
+        NativeCartesianAndDrawingSection();
         RadarSourcePaint();
         MermaidSourceDiagnostics();
         var values = ChartSeries.CreateLine(new ChartSeriesId("package-values"), "Values",
@@ -200,6 +201,45 @@ internal static class Program {
         PackageAssertions.Require(renderer.PrepareSection(chart).Html == full.Html && chart.Options.XAxis.Minimum == 0 && chart.Options.XAxis.Maximum == 10,
             "Packed native reset did not recover the full section or mutated authored bounds.");
     }
+    private static void NativeCartesianAndDrawingSection() {
+        var chart = Chart.Create().WithSize(800, 480).WithTitle("Packed native exploration")
+            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100).WithLegend(false)
+            .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("measurements"), "Measurements",
+                new[] { new ChartPoint(0, 10), new ChartPoint(5, 40), new ChartPoint(10, 90) })
+                .WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("middle"), new ChartObservationId("last") }))
+            .AddNote(new ChartPoint(5, 40), "Review", id: new ChartAnnotationId("review"));
+        void Configure(HtmlChartInteractionOptions options) {
+            options.Interaction.ChartId = "packed-depth";
+            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Export);
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive;
+            options.IncludeContextMenu = true; options.XNavigation.Enabled = true;
+            options.XNavigation.RangePresets.Add(new HtmlChartXRangePreset("Latest six", 6));
+        }
+        var renderer = new HtmlInteractiveChartRenderer();
+        var full = renderer.PrepareSection(chart, configure: Configure);
+        var requested = new ChartCartesianViewport(new ChartXViewport(2, 8), new ChartYViewport(20, 80));
+        var window = renderer.PrepareSection(chart, requested, Configure);
+        PackageAssertions.Require(window.PreparedVisual.YProjection?.Minimum == 20 && window.NarrowPreparedVisual?.YProjection?.Maximum == 80
+            && window.PreparedVisual.XProjection?.Minimum == 2 && window.NarrowPreparedVisual?.XProjection?.Maximum == 8,
+            "Packed adaptive HTML sections lost an explicit source axis window.");
+        PackageAssertions.Require(window.Html.Contains("data-cfx-context-menu=\"true\"", StringComparison.Ordinal)
+            && window.Html.Contains("data-cfx-x-navigation=\"true\"", StringComparison.Ordinal)
+            && !window.Html.Contains("<script", StringComparison.OrdinalIgnoreCase),
+            "Packed optional controls lost their section/asset boundary.");
+        var initialHtml = chart.ToInteractiveHtmlPage(Configure);
+        chart.Annotations.Clear();
+        chart.AddNote(new ChartPoint(6, 45), "Reviewed", id: new ChartAnnotationId("review"));
+        var edited = renderer.PrepareSection(chart, requested, Configure);
+        var reset = renderer.PrepareSection(chart, configure: Configure);
+        PackageAssertions.Require(full.PreparedVisual.YProjection?.Minimum == 0 && reset.PreparedVisual.YProjection?.Maximum == 100
+            && chart.Options.XAxis.Minimum == 0 && chart.Options.YAxis.Maximum == 100,
+            "Packed native exploration mutated authored bounds or lost the full reset domain.");
+        PackageAssertions.Png(edited.PreparedVisual.ToPng());
+#if CFX_PACKAGE_BROWSER
+        PackageBrowserProbe.RunNativeChartAsync(initialHtml, window.Html, edited.Html, reset.Html).GetAwaiter().GetResult();
+#endif
+    }
+
     private static void RadarSourcePaint() {
         const string source = "%%{init: {'themeVariables': {'cScale0': '#2563EB', 'radar': {'curveStrokeWidth': 0, 'curveOpacity': 0, 'axisStrokeWidth': 3}}}}%%\nradar-beta\naxis A,B,C\ncurve c{20,40,30}\nmax 100";
         var parsed = new MermaidParser().ParseRadar(source);

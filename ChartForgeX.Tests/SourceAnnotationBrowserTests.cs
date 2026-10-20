@@ -26,11 +26,15 @@ public sealed partial class SourceAnnotationBrowserTests {
         await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-annotation-id='note']"));
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("note", (await page.EvaluateAsync<JsonElement>("() => drawings.getSelection()[0]")).GetProperty("annotationId").GetString());
+        Assert.Equal("Review", await page.Locator(".cfx-compare-chip").InnerTextAsync());
+        Assert.Equal("Review", await page.Locator(".cfx-compare-chip").GetAttributeAsync("title"));
         await Capture(page, width, mode, "selected");
         await page.EvaluateAsync("html => drawings.update(html)", Model(width, mode, true).ToInteractiveHtmlFragmentWithoutAssets(Options));
         var selected = await page.EvaluateAsync<JsonElement>("() => drawings.getSelection()[0]");
         Assert.Equal("note", selected.GetProperty("annotationId").GetString());
         Assert.Equal("Reviewed", selected.GetProperty("label").GetString());
+        Assert.Equal("Reviewed", await page.Locator(".cfx-compare-chip").InnerTextAsync());
+        Assert.Equal("Reviewed", await page.Locator(".cfx-compare-chip").GetAttributeAsync("title"));
         Assert.True(await page.Locator("[data-cfx-annotation-id='note']").EvaluateAsync<bool>("node => node === document.activeElement"));
         Assert.Equal("6", await page.Locator("[data-cfx-annotation-id='note']").GetAttributeAsync("data-cfx-source-x"));
         Assert.Equal(1, await page.Locator("[data-cfx-role='annotation-channel']").CountAsync());

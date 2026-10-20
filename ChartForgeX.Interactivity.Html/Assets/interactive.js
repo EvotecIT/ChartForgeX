@@ -496,8 +496,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (!key || seen.has(key)) return;
       seen.add(key);
       const data = node.dataset || {};
-      let label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
-        ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
+      let label = target.targetKind === 'annotation'
+        ? target.label || target.role || target.id || 'Target'
+        : data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
+          ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
       const series = seriesLabel(node);
       if (timeTarget(node) && label && series && label !== series) label = series + ' · ' + label;
       items.push({ label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target });
@@ -2531,15 +2533,15 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
   const applyInteractionState = (root, snapshot, emit, sync, nativeAccepted = false) => {
     if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
-    if (!nativeAccepted && (snapshot.xWindow || snapshot.yWindow) && cartesianViewportConnected(root)) {
+    if (!nativeAccepted && (snapshot.xWindow || snapshot.yWindow)) {
       const captured = copyHostValue(snapshot);
-      if (requestNativeCartesianWindow(root, { x: captured.xWindow, y: captured.yWindow }, false,
-        () => applyInteractionState(root, captured, emit, sync, true))) return;
-    } else if (!nativeAccepted && snapshot.xWindow && connectedXViewport(root)) {
-      // Capture now and replay only after this request installs its accepted scene.
-      const captured = copyHostValue(snapshot);
-      if (requestNativeXWindow(root, captured.xWindow, false,
-        () => applyInteractionState(root, captured, emit, sync, true))) return;
+      const accepted = () => applyInteractionState(root, captured, emit, sync, true);
+      if (cartesianViewportConnected(root))
+        requestNativeCartesianWindow(root, { x: captured.xWindow, y: captured.yWindow }, false, accepted);
+      else if (!captured.yWindow && captured.xWindow && connectedXViewport(root))
+        requestNativeXWindow(root, captured.xWindow, false, accepted);
+      // Native bounds are one transaction. Unsupported or disconnected replays leave reader state unchanged.
+      return;
     }
     const previousSelection = selectedTargets(root).map(targetKey).join('\n');
     if (!nativeAccepted && snapshot.viewport) applyViewport(root, Object.assign({}, snapshot.viewport));

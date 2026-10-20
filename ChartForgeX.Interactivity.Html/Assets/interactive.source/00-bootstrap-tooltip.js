@@ -297,8 +297,10 @@
       if (!key || seen.has(key)) return;
       seen.add(key);
       const data = node.dataset || {};
-      let label = data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
-        ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
+      let label = target.targetKind === 'annotation'
+        ? target.label || target.role || target.id || 'Target'
+        : data.cfxAuthoredLabel ?? targetCategory(node) ?? data.cfxRangeLabel
+          ?? (timeTarget(node) ? data.cfxDisplayLabel : undefined) ?? seriesLabel(node);
       const series = seriesLabel(node);
       if (timeTarget(node) && label && series && label !== series) label = series + ' · ' + label;
       items.push({ label: label ?? target.label ?? target.role ?? target.id ?? 'Target', target });

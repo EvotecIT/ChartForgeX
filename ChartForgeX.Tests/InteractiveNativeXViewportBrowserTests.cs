@@ -189,6 +189,16 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         private double Coordinate(int index) => !_sessions ? Origin + index : index <= 6 ? Origin + index / 24d : Origin + 3 + (index - 7) / 24d;
         internal int PreparedCount { get { lock (_sections) return _sections.Count; } }
         internal string Initial => _sections["initial"].Html;
+        internal string BookmarkReplacement(string capability) {
+            var chart = Chart();
+            if (capability == "xy-missing-y") chart.Series[1].UseSecondaryYAxis();
+            else if (capability is "legacy-unsupported" or "legacy-empty") {
+                chart = ChartForgeX.Core.Chart.Create().WithSize(_width, 440).AddSeries(new ChartSeries(new ChartSeriesId("samples"), "Measurements",
+                    capability == "legacy-empty" ? ChartSeriesKind.Line : ChartSeriesKind.Bar,
+                    capability == "legacy-empty" ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(0, 3), new ChartPoint(12, 8) }));
+            }
+            return _renderer.PrepareSection(chart, configure: ConfigureSection).Html;
+        }
         internal string Window(double minimum, double maximum) => _renderer.PrepareSection(Chart(), new ChartXViewport(minimum, maximum), ConfigureSection).Html;
         internal string Page(params NativeHost[] peers) => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
             + "</style></head><body style='margin:12px'>" + Initial + string.Concat(peers.Select(peer => peer.Initial))
