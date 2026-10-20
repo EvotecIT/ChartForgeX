@@ -170,7 +170,8 @@ internal static partial class Program {
 
     private static void GeographicDatasetLifecycle() {
         var options = new ChartMapGeoJsonOptions {
-            Projection = ChartMapGeoJsonProjection.WebMercator, WeightPropertyName = "traffic", ColorValuePropertyName = "delay"
+            Projection = ChartMapGeoJsonProjection.WebMercator, WeightPropertyName = "traffic", ColorValuePropertyName = "delay",
+            MaximumObservations = 3, MaximumExpandedLabelCharacters = 256
         };
         var definition = ChartMapGeoJson.ToMapDefinition("service", "Service area", DepthGeoJson, options);
         var imported = ChartMapGeoJson.ToMapPoints(DepthGeoJson, options);
@@ -180,6 +181,14 @@ internal static partial class Program {
             && imported[0].Weight == 8 && imported[0].ColorValue == -5 && imported[1].Weight == 100 && imported[1].ColorValue == 20
             && routes.Count == 1 && routes[0].RoutePoints.Count == 3 && routes[0].RoutePoints[1].Longitude == 10,
             "Packed GeoJSON imports lost their declared polygon projection, raw point/route positions or source order.");
+        options.MaximumObservations = 1;
+        var limitedImportRejected = false;
+        try { ChartMapGeoJson.ToMapPoints(DepthGeoJson, options); }
+        catch (ArgumentException error) { limitedImportRejected = error.ParamName == "geoJson"; }
+        PackageAssertions.Require(limitedImportRejected && imported.Count == 2 && imported[0].Weight == 8
+            && imported[1].ColorValue == 20 && routes[0].RoutePoints.Count == 3,
+            "Packed GeoJSON observation limits failed to reject expanded output or changed earlier imported facts.");
+        Console.WriteLine("Map import resource limits rejected excess observations while retaining prior point and route facts.");
         var routeInput = imported.ToArray();
         var snapshotRoute = new ChartMapConnector("Dispatch facts", routeInput);
         routeInput[0] = new ChartMapPoint("Changed", 0, 0);
