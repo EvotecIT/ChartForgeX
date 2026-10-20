@@ -26,8 +26,9 @@ public sealed class CompoundLongEdgePortTests {
         var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
         Assert.Empty(fenced.Diagnostics);
         var artifact = Assert.Single(fenced.Artifacts);
-        Assert.Equal(direct.Artifact!.ToSvg(), artifact.ToSvg());
-        Assert.Equal(direct.Artifact.ToPng(), artifact.ToPng());
+        var nativeArtifact = Assert.IsType<VisualArtifact>(direct.Artifact);
+        Assert.Equal(nativeArtifact.ToSvg(), artifact.ToSvg());
+        Assert.Equal(nativeArtifact.ToPng(), artifact.ToPng());
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         Assert.Equal(expected.RootElement.GetProperty("nodes").EnumerateArray().Select(item => item.GetString()), envelope.Nodes.Select(node => node.Id));
         Assert.Equal(expected.RootElement.GetProperty("edges").EnumerateArray().Select(edge => (edge[0].GetString(), edge[1].GetString())),
