@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../PackageAssertions.cs" Link="PackageAssertions.cs" />
+    <Compile Include="../PackageBrowserProbe.cs" Link="PackageBrowserProbe.cs" />
     <PackageReference Include="ChartForgeX" Version="$(PackageVersion)" PrivateAssets="all" />
     <PackageReference Include="ChartForgeX.Interactivity" Version="$(PackageVersion)" PrivateAssets="all" />
     <PackageReference Include="ChartForgeX.Interactivity.Html" Version="$(PackageVersion)" PrivateAssets="all" />
@@ -17,5 +18,6 @@
     <PackageReference Include="ChartForgeX.Mermaid" Version="$(PackageVersion)" PrivateAssets="all" />
     <PackageReference Include="ChartForgeX.Markup.Mermaid" Version="$(PackageVersion)" PrivateAssets="all" />
     <PackageReference Include="ChartForgeX.Visuals" Version="$(PackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="HtmlTinkerX" Version="3.0.5" PrivateAssets="all" />
   </ItemGroup>
 </Project>

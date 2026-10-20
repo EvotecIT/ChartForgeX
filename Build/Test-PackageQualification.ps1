@@ -33,15 +33,15 @@ $compileRoot = Join-Path ([IO.Path]::GetTempPath()) ('ChartForgeX-package-compil
 New-Item -ItemType Directory -Path $compileRoot | Out-Null
 $compilationSucceeded = $false
 try {
-    foreach ($lane in @('Core', 'Visuals', 'Stories', 'Adapters')) {
+    foreach ($lane in @('Core', 'Visuals', 'Stories', 'Adapters', 'Downstream')) {
         $contractPath = Join-Path $PSScriptRoot "PackageValidation/$($lane.ToLowerInvariant()).json"
         $laneRoot = Join-Path $compileRoot $lane
         $destination = Join-Path $laneRoot $lane
         $feed = Join-Path $laneRoot 'feed'
         New-Item -ItemType Directory -Path $destination, $feed | Out-Null
-        Copy-Item -LiteralPath (Join-Path $sourceRoot 'PackageAssertions.cs') -Destination $laneRoot
+        Get-ChildItem -LiteralPath $sourceRoot -Filter '*.cs' -File | Copy-Item -Destination $laneRoot
         Copy-Item -LiteralPath (Join-Path $sourceRoot "$lane/${lane}PackageProbe.csproj") -Destination $destination
-        Copy-Item -LiteralPath (Join-Path $sourceRoot "$lane/Program.cs") -Destination $destination
+        Get-ChildItem -LiteralPath (Join-Path $sourceRoot $lane) -Filter '*.cs' -File | Copy-Item -Destination $destination
         $contract = Get-Content -LiteralPath $contractPath -Raw | ConvertFrom-Json
         foreach ($package in $contract.Packages.Items) {
             Copy-Item -LiteralPath (Join-Path $packageRootResolved "$($package.Id).$($metadata.Version).nupkg") -Destination $feed

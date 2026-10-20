@@ -120,6 +120,67 @@
           "ExpectedExitCode": 2,
           "TimeoutSeconds": 60,
           "ExpectedOutput": ""
+        },
+        {
+          "Name": "Packed native compact chart SVG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-chart.md",
+            "--output",
+            "{WorkRoot}/consumer-chart.svg"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/consumer-chart.svg"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed native compact chart PNG export",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "export",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-native-chart.md",
+            "--output",
+            "{WorkRoot}/consumer-chart.png"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/consumer-chart.png"
+          ],
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed multi-artifact report validation",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "validate",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-report.md"
+          ],
+          "ExpectedOutput": "Valid visual markup. Artifacts: 2",
+          "TimeoutSeconds": 60
+        },
+        {
+          "Name": "Packed multi-artifact report HTML preview",
+          "FileName": "{ToolPath}",
+          "Arguments": [
+            "preview",
+            "{ProjectRoot}/ChartForgeX.Tests/Fixtures/markup/consumer-report.md",
+            "--output",
+            "{WorkRoot}/consumer-report.html"
+          ],
+          "OutputContains": [
+            "Wrote"
+          ],
+          "NonEmptyFiles": [
+            "{WorkRoot}/consumer-report.html"
+          ],
+          "TimeoutSeconds": 60
         }
       ]
     }
