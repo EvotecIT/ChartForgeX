@@ -47,7 +47,7 @@ function scene(siteCount, edgeSpecs, renderer = 'canvas') {
     if (child.getAttribute('data-cfx-role') === 'graph-edge-label') physicalLabels.push(child);
     append(child);
   };
-  const stage = { appendChild(note) { root.note = note; } };
+  const stage = { appendChild(note) { root.note = note; }, getBoundingClientRect: () => ({ width: 960, height: 560 }) };
   const root = runtime.graphVirtualElement('root', { 'data-cfx-graph-id': 'bundle-test', 'data-cfx-graph-features': 'Selection,Clustering' }, []);
   root.dataset = { cfxGraphRendererActive: renderer };
   root.dispatchEvent = () => true;

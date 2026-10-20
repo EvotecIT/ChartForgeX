@@ -24,7 +24,10 @@ const server = http.createServer((request, response) => {
     response.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream', 'Content-Length': stat.size });
     if (request.method === 'HEAD') { response.end(); return; }
     const stream = fs.createReadStream(file);
-    stream.on('error', () => response.destroy());
+    stream.on('error', error => {
+      console.error('Gallery read failed: ' + request.url + ' (' + error.code + ')');
+      response.destroy();
+    });
     response.on('close', () => stream.destroy());
     stream.pipe(response);
   });

@@ -194,6 +194,7 @@
       frame = graphLifetime(root)?.frame(() => {
         frame = 0;
         if (root.isConnected === false) { observer.disconnect(); return; }
+        if (!graphStageHasLayout(root)) return;
         if (hasFeature(root, 'Viewport') && !root.__cfxGraphViewportTouched) fitViewport(root);
         else drawCanvas(root, root.__cfxGraphState || graphState(root));
       });
