@@ -18,6 +18,6 @@ public sealed partial class HtmlInteractiveChartRenderer {
             + ";--cfx-tooltip-line:var(--cfx-surface-line," + t.CardBorder.ToCss() + ")"
             + ";--cfx-tooltip-shadow:var(--cfx-shadow-tooltip," + shadow + ")"
             + ";--cfx-crosshair-axis:var(--cfx-guide-axis," + t.Axis.ToCss() + ")"
-            + ";--cfx-host-accent:var(--cfx-accent-base," + t.Palette[0].ToCss() + ")";
+            + ";--cfx-default-host-accent:var(--cfx-accent-base," + t.Palette[0].ToCss() + ")";
     }
 }

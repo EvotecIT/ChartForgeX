@@ -71,6 +71,7 @@ public static class ExampleRecipes {
         ["mixed-radial"] = new(nameof(MixedRadialRecipe), (variant, mode) => MixedRadialRecipe.Create(variant, mode)),
         ["radial-bar-scales"] = new(nameof(RadialBarScalesRecipe), RadialBarScalesRecipe.Create),
         ["comparison"] = new(nameof(ComparisonRecipe), ComparisonRecipe.Create),
+        ["supported-combinations"] = new(nameof(SupportedCombinationRecipe), SupportedCombinationRecipe.Create),
         ["findings"] = new(nameof(FindingsRecipe), FindingsRecipe.Create),
         ["line-viewport"] = new(nameof(LineViewportRecipe), LineViewportRecipe.Create),
         ["step-line-viewport"] = new(nameof(StepLineViewportRecipe), StepLineViewportRecipe.Create),
