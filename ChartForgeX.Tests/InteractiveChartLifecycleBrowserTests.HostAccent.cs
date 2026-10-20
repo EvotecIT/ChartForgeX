@@ -26,6 +26,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 if(hostAccent)root.style.setProperty('--cfx-host-accent','#ff00aa','important');
                 document.body.append(root);window.chartController=ChartForgeXCharts.mount(root);
                 chartController.select({observationIds:['north']});
+                chartController.highlight({observationIds:['south']},{dim:false});
             }
             """, new { html = Readings().ToInteractiveHtmlFragmentWithoutAssets(Configure), hostAccent });
         async Task AssertAccent(bool dark, string state) {
@@ -36,8 +37,25 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             Assert.Equal(expected, await page.Locator("[data-cfx-focus-ink]").First.EvaluateAsync<string>("node=>getComputedStyle(node).stroke"));
             Assert.Equal(hostAccent ? "important" : "", await page.Locator(Root).EvaluateAsync<string>("root=>root.style.getPropertyPriority('--cfx-host-accent')"));
             Assert.Equal("north", Assert.Single((await page.EvaluateAsync<System.Text.Json.JsonElement>("()=>chartController.getSelection()")).EnumerateArray()).GetProperty("observationId").GetString());
+            // The host-highlight cue follows the current accent, while selection retains its distinct cyan cue.
+            // Do not reapply highlight after replacement: the durable observation identity must restore it.
+            await page.WaitForFunctionAsync("""
+                ()=>['north','south'].every(id=>{
+                    const point=chartController.root.querySelector('g[data-cfx-role=point][data-cfx-observation-id="'+id+'"]');
+                    return point?.querySelectorAll('[data-cfx-state-ink]').length===1;
+                })
+                """);
+            var selectedCue = page.Locator(North + " [data-cfx-state-ink]");
+            var highlightedCue = page.Locator("g[data-cfx-role=point][data-cfx-observation-id=south] [data-cfx-state-ink]");
+            var selectionStroke = await selectedCue.EvaluateAsync<string>("node=>getComputedStyle(node).stroke");
+            var highlightStroke = await highlightedCue.EvaluateAsync<string>("node=>getComputedStyle(node).stroke");
+            Assert.Equal("rgb(56, 189, 248)", selectionStroke);
+            Assert.Equal(expected, highlightStroke);
+            Assert.Equal("none", await selectedCue.EvaluateAsync<string>("node=>getComputedStyle(node).fill"));
+            Assert.Equal("none", await highlightedCue.EvaluateAsync<string>("node=>getComputedStyle(node).fill"));
             await CaptureAsync(page, "host-accent-" + hostAccent + "-" + state, new {
-                pageErrors, consoleErrors = session.ConsoleLog.Where(entry => entry.Type == HtmlTinkerX.HtmlConsoleMessageType.Error).Select(entry => entry.Text).ToArray()
+                pageErrors, selectionStroke, highlightStroke,
+                consoleErrors = session.ConsoleLog.Where(entry => entry.Type == HtmlTinkerX.HtmlConsoleMessageType.Error).Select(entry => entry.Text).ToArray()
             });
         }
         await AssertAccent(false, "initial");

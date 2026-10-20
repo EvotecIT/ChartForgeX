@@ -1949,7 +1949,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return paint;
   };
   const styleSelectionCuePaint = (paint, selected, width) => {
-    stateCueStyle(paint, '--cfx-state-color', selected ? 'rgb(56, 189, 248)' : 'var(--cfx-host-accent)');
+    stateCueStyle(paint, '--cfx-state-color', selected ? 'rgb(56, 189, 248)' : 'var(--cfx-host-accent, var(--cfx-default-host-accent))');
     stateCueStyle(paint, '--cfx-state-halo-width', String(width + 6));
     stateCueStyle(paint, '--cfx-state-ink-width', String(width + 3));
   };
