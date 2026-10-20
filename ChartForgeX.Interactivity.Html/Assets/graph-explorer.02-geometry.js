@@ -274,7 +274,8 @@
   };
   const edgeLabelIntersectsNode = (point, label, node) => {
     if (!node) return false;
-    const extents = nodeShapeExtents(node);
+    // Collapsed proxies show their aggregate body, rather than the hidden member's details.
+    const extents = attr(node.el, 'data-cfx-role') === 'graph-cluster' ? nodeShapeExtents(node) : nodeLayoutExtents(node);
     const labelHalfWidth = Math.max(14, graphEstimatedEdgeLabelWidth(label) / 2);
     return Math.abs(point.x - node.x) < labelHalfWidth + extents.x + 6
       && Math.abs(point.y - 4 - node.y) < 10 + extents.y + 6;

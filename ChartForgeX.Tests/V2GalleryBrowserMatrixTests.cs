@@ -23,7 +23,7 @@ public sealed class V2GalleryBrowserMatrixTests {
             await session.Page.EvaluateAsync("async () => { await document.fonts.ready; }");
 
             // Fetch a small batch at a time, then measure one native SVG at a time. This avoids
-            // 196 page launches, loading their embedded factory listings, or a screenshot golden.
+            // separate page launches, their embedded factory listings, and screenshot goldens.
             defects = await session.Page.EvaluateAsync<string[]>("""
             async expected => {
                 const defects = [];

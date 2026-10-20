@@ -79,10 +79,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
             return;
         }
 
-        var size = Math.Max(4, node?.Size ?? 8);
-        var shape = EffectiveNodeShape(node);
-        if (TryNodeBoundaryExtents(node, shape, size, out halfWidth, out halfHeight)) return;
-        halfWidth = size;
-        halfHeight = size;
+        if (node != null) {
+            var extents = MeasurePreparedNodeExtents(node, includeLabels: true);
+            halfWidth = extents.HalfWidth;
+            halfHeight = extents.HalfHeight;
+            return;
+        }
+
+        halfWidth = halfHeight = 8;
     }
 }
