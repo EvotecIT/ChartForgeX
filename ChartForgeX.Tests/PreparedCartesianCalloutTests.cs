@@ -46,7 +46,7 @@ public sealed class PreparedCartesianCalloutTests {
             Assert.Equal("Apr", (string?)metadata.Attribute("data-cfx-label"));
             Assert.Equal("false", (string?)metadata.Attribute("data-cfx-show-label"));
             chart.Series[2].WithPointLabel(0, "Changed");
-            chart.Annotations.Clear();
+            chart.ClearAnnotations();
             Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
             Assert.NotEqual(svg, chart.ToSvg());
         } finally {

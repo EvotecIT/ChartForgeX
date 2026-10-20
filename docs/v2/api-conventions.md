@@ -9,7 +9,7 @@ These rules govern the shared prepared-rendering contracts and their model entry
 | `With*` | Set a scalar value or configuration object on a mutable model builder and return that builder. Do not add data. | `chart.WithTitle("Capacity")`, `chart.WithBarVisualStyle(style)` |
 | `Add*` | Add model data or a semantic child and return the builder. Do not silently replace configuration. | `chart.AddLine("Used", points)` |
 | `Configure*` | Configure a sub-object through a typed callback, preserving the operation's ownership rules, then return the builder. | `chart.ConfigureXAxis(axis => axis.Minimum = 0)` |
-| `ApplyPointChanges` | Commit a bounded keyed numeric data transaction while retaining surviving observations' presentation. | `series.ApplyPointChanges(changes, maximumObservations: 500)` |
+| `Apply*Changes` | Commit a bounded keyed observation transaction while retaining surviving observations' presentation. | `series.ApplyPointChanges(changes, maximumObservations: 500)` |
 | `Prepare` | Validate and compile a model with an explicit render context; return a detached prepared result. | `chart.Prepare(context)` |
 | `To*` | Return an in-memory representation without writing a file or changing the model. | `prepared.ToSvg()`, `prepared.ToPng()`, `prepared.ToRgba()` |
 | `Save*` | Write to an explicitly supplied path or stream. Keep file ownership and format options visible. | File-saving helpers are outside the Phase 1 prepared contract. |
@@ -111,7 +111,11 @@ Line and band annotations accept an immutable `ChartAnnotationId` at constructio
 chart.AddHorizontalLine(new ChartAnnotationId("threshold.warning"), 15, "Limit");
 ```
 
-Annotation IDs are trimmed, case-sensitive and unique within one chart, independently of kind, caption, coordinates and collection order. Typed additions reject duplicates before changing the collection; preparation also validates direct `Annotations` list edits. Rebuilding an annotation with the same ID preserves its native semantic identity. Existing constructors and overloads create anonymous annotations with source-local ordinal identities. Statistical and focus helpers continue creating anonymous annotations. Annotation IDs do not change native geometry or paint.
+`Annotations` is a stable `IReadOnlyList<ChartAnnotation>` in paint order. Use `AddAnnotation`, `ReplaceAnnotation`, `RemoveAnnotation` and `ClearAnnotations` to edit membership. The typed `Add*` conveniences use the same validation. An annotation instance can occur once in a chart; explicit IDs are trimmed, case-sensitive and unique within that chart, independently of kind, caption or coordinates. Invalid membership edits leave the collection unchanged.
+
+`ReplaceAnnotation(replacement)` finds an existing annotation by the replacement's explicit ID. `ReplaceAnnotation(existing, replacement)` addresses an attached instance, including an anonymous guide. Both preserve paint position and authored identity; remove and add to change identity. `RemoveAnnotation` accepts an explicit ID or an attached instance, and `ClearAnnotations` also clears owned focus-guide tracking. A retained read-only collection view reflects successful edits.
+
+Constructors and overloads without IDs create anonymous annotations with source-local ordinal identities. Statistical and focus helpers keep using anonymous guides. Geometry and identity are fixed; optional `StrokeStyle` remains mutable authoring state. Preparation captures independent geometry, style and semantic output. Coordinate-system compatibility is checked during preparation, so an annotation can be authored before its required series or axes are configured.
 
 `AddNote`, `AddLineSegment` and `AddParallelChannel` add drawings at exact Cartesian source coordinates:
 
@@ -123,7 +127,7 @@ chart.AddParallelChannel(new ChartPoint(2, 65), new ChartPoint(8, 75), 10, "Targ
     id: new ChartAnnotationId("target"));
 ```
 
-The `ChartAnnotation.Note`, `LineSegment` and `ParallelChannel` factories create the same authored objects for direct collection replacement. Source geometry and identity are fixed; `StrokeStyle` remains mutable authoring state captured during preparation. `SourceStart`, `SourceEnd`, `ChannelOffset` and `SourceYAxis` retain their source facts. Use the same ID when replacing a drawing. The optional `yAxis` selects primary Y or an existing secondary series' Y domain. Source drawings require a vertical Cartesian chart; they follow its axes and viewport without expanding the data domain. Notes outside the plot and line/channel geometry outside the clip retain their descriptive facts. A caption follows its source anchor or line midpoint when that anchor is in the visible plot, using the shared measured label placement.
+The `ChartAnnotation.Note`, `LineSegment` and `ParallelChannel` factories create the same authored objects for `AddAnnotation` or `ReplaceAnnotation`. `SourceStart`, `SourceEnd`, `ChannelOffset` and `SourceYAxis` retain their source facts. Use the same ID when replacing a drawing. The optional `yAxis` selects primary Y or an existing secondary series' Y domain. Source drawings require a vertical Cartesian chart; they follow its axes and viewport without expanding the data domain. Notes outside the plot and line/channel geometry outside the clip retain their descriptive facts. A caption follows its source anchor or line midpoint when that anchor is in the visible plot, using the shared measured label placement.
 
 A channel offset is signed source Y distance, not perpendicular screen distance. Both boundaries map through the selected axis, so logarithmic boundaries need positive values and need not be parallel on screen. A zero channel offset and coincident line endpoints reject. SVG and native PNG consume the same prepared geometry; later annotation, axis or data edits do not change an earlier preparation. Source drawing APIs provide the native model and export contract; host editing controls use the optional interaction adapter or the consuming editor.
 
@@ -151,7 +155,7 @@ to assign or replace one ID independently.
 
 Ordinary numeric `Points` keeps its `IList<ChartPoint>` surface. Replacing an item by index preserves its identity and overrides. Insert/remove operations shift observation IDs, labels, colors, patterns, text styles and slice offsets with the existing observations; a new inserted observation starts without those overrides. `Clear` clears both data and observation metadata, and `SourcePointCount` follows the current ordinary point count. A retained numeric list becomes read-only if its series switches to typed waterfall data.
 
-For keyed live updates, use `ApplyPointChanges` after assigning an explicit ID to every observation:
+For keyed live updates, use `ApplyPointChanges` with the shared `ChartObservationChange<ChartPoint>` payload after assigning an explicit ID to every observation:
 
 ```csharp
 completed.WithObservationIds(new[] {
@@ -159,9 +163,9 @@ completed.WithObservationIds(new[] {
     new ChartObservationId("wed"), new ChartObservationId("thu"), new ChartObservationId("fri")
 });
 completed.ApplyPointChanges(new[] {
-    ChartPointChange.Remove(new ChartObservationId("mon")),
-    ChartPointChange.Replace(new ChartObservationId("fri"), new ChartPoint(5, 39)),
-    ChartPointChange.Append(new ChartObservationId("sat"), new ChartPoint(6, 45))
+    ChartObservationChange<ChartPoint>.Remove(new ChartObservationId("mon")),
+    ChartObservationChange<ChartPoint>.Replace(new ChartObservationId("fri"), new ChartPoint(5, 39)),
+    ChartObservationChange<ChartPoint>.Append(new ChartObservationId("sat"), new ChartPoint(6, 45))
 }, maximumObservations: 5);
 ```
 
@@ -169,7 +173,7 @@ Append requires a new key; replacement and removal require existing keys. A key 
 
 This operation supports the eleven point-mapped families: Line, StepLine, Area, StepArea, StackedArea, Scatter, Bar, HorizontalBar, RadialBar, RadialColumn and Lollipop. The [compiled rolling-window recipe](../../ChartForgeX.Examples/Recipes/KeyedPointChangesRecipe.cs) shows the complete model workflow. Browser hosts prepare a new section and call the existing controller's `update`; surviving explicit identities retain selection and legend state, while accepted replacement clears transient screen-space brush and readout state. A canceled batch leaves the committed model and browser scene intact.
 
-Typed Bubble, Candlestick/OHLC, RangeBand/RangeArea and DifferenceArea observations use the same bounded transaction policy through `ApplyBubbleChanges`, `ApplyFinancialChanges`, `ApplyRangeChanges` and `ApplyDifferenceChanges`. Supply `ChartObservationChange<T>.Append`, `Replace` or `Remove` with the corresponding complete typed observation. Surviving IDs retain all presentation, including materialized financial datum styles; new IDs start with family defaults. Both members of a range or difference, and all four financial prices, change atomically. Full typed replacement still clears observation metadata, while a keyed transaction remaps it by identity. Other typed families keep their existing replacement/indexed update APIs.
+Typed Bubble, Candlestick/OHLC, RangeBand/RangeArea and DifferenceArea observations use the same payload and bounded transaction policy through `ApplyBubbleChanges`, `ApplyFinancialChanges`, `ApplyRangeChanges` and `ApplyDifferenceChanges`. Supply `ChartObservationChange<T>.Append`, `Replace` or `Remove` with the corresponding complete observation. Its `Value` contains the appended or replacement value and is null for removal; `Kind` uses `ChartObservationChangeKind`. Numeric payloads retain the complete point, including segment breaks and independent color measurements. Surviving IDs retain all presentation, including materialized financial datum styles; new IDs start with family defaults. Both members of a range or difference, and all four financial prices, change atomically. Full typed replacement still clears observation metadata, while a keyed transaction remaps it by identity. Other typed families keep their existing replacement/indexed update APIs.
 
 Decimation, histogram and regression factories expose read-only derived `Points`. Change complete source observations and rebuild the derived series rather than editing a reduced point, bin aggregate or fitted endpoint independently of its source provenance. Original-input counts, mappings and source snapshots remain consistent. Presentation overrides remain configurable.
 
@@ -181,17 +185,17 @@ Lane factories and full replacements order items by start, end and input order. 
 
 Categorical `HeatmapCells` includes null masked cells in column order. Observation indices and IDs refer to those columns. `UpdateHeatmapCell(index, null)` masks one cell while preserving later cells' identities; restoring the cell restores its existing ID. Use `CreateHeatmapCategoryRow` for categorical data and the numeric row APIs for numeric data.
 
-`MapPoints` keeps each dotted-map label, longitude, latitude, optional nonnegative weight and color together. `WithColorValue` supplies an independent nullable signed color measurement; missing color stays distinct from an observed zero. Repeated coordinates retain separate observations. `CalendarItems` owns wall-clock dates, values and optional colors. `RegionValues` owns canonical region codes, values and optional colors for region and tile maps; their immutable geometry belongs to `series.RegionMapDefinition` or `series.TileMapDefinition`. Chart options own the common map viewport and default presentation. Geographic datasets can own independent scales, size/color dimensions and routes. Changing Cartesian axis labels does not change map observations.
+`MapPoints` keeps each dotted-map label, longitude, latitude, optional nonnegative `Weight` and explicit color together. Supply a point weight through the `ChartMapPoint` constructor's `weight` argument. `WithColorValue` supplies an independent nullable signed color measurement; missing color stays distinct from an observed zero. Missing weight is unweighted, while zero is an observed weight. Repeated coordinates retain separate observations. `CalendarItems` owns wall-clock dates, values and optional colors. `RegionValues` owns canonical region codes, values and optional colors for region and tile maps; their immutable geometry belongs to `series.RegionMapDefinition` or `series.TileMapDefinition`. Chart options own the common map viewport and default presentation. Geographic datasets can own independent scales, size/color dimensions and routes. Changing Cartesian axis labels does not change map observations.
 
 RegionMap and DottedMap datasets share a geographic chart when every region definition declares the same `GeographicProjection`. GeoJSON polygon import records its selected projection. `ChartMapDefinition.WithGeographicProjection` returns an independent definition declaring the transform already applied to its paths; it does not transform them. Arbitrary-coordinate region maps remain standalone, and TileMap does not join geographic compositions. Each dataset keeps its retained series identity and paint order, `ColorScale` and `ColorDimension`; chart `MapColorScale` remains the region-scale fallback. Numeric keys follow the dataset's name, format and visibility independently of its categorical entry.
 
 `ConfigureMapPointSize` controls one dotted dataset's `WithSizeDomain`, optional `MinimumRadius`/`MaximumRadius`, `Reversed` and `SizeDimension` naming, formatting and optional numeric key. Automatic domains include all source weights, including offscreen observations. Missing weight remains unweighted; zero remains an observation. An explicit series `MarkerRadius` takes precedence. Domain clamping affects radius only, preserving raw weight and independent color facts. The size key uses the same logical radii as the points and does not claim proportional painted areas. The [geographic dataset recipe](../../ChartForgeX.Examples/Recipes/GeographicDatasetsRecipe.cs) combines independent coverage, delay and traffic measurements.
 
-`ChartMapGeoJson.ToMapPoints` imports Point/MultiPoint features, using optional `ValuePropertyName` and `ColorValuePropertyName` for separate weight and color. `ToMapConnectors` imports LineString/MultiLineString features. Both retain raw longitude/latitude and source order; projection and polygon coordinate precision do not alter these observations. Names fall back to codes/IDs, and multipart names receive one-based suffixes. Bounds filters retain complete matching feature geometries without clipping. These primitives do not retain feature IDs/properties as metadata: assign observation IDs explicitly on the series. `ReplaceMapConnectors` captures an ordered detached route collection for one dotted dataset; every connector's `RoutePoints` is a read-only snapshot. Routes retain their captured waypoints when point observations change.
+`ChartMapGeoJson.ToMapPoints` imports Point/MultiPoint features, using optional `WeightPropertyName` and `ColorValuePropertyName` for separate weight and color. `ToMapConnectors` imports LineString/MultiLineString features. Both retain raw longitude/latitude and source order; projection and polygon coordinate precision do not alter these observations. Names fall back to codes/IDs, and multipart names receive one-based suffixes. Bounds filters retain complete matching feature geometries without clipping. These primitives do not retain feature IDs/properties as metadata: assign observation IDs explicitly on the series. `ReplaceMapConnectors` captures an ordered detached route collection for one dotted dataset; every connector's `RoutePoints` is a read-only snapshot. Routes retain their captured waypoints when point observations change.
 
-`ChartRegionMapItem.Value` accepts any finite signed scalar, including temperatures or balances. Duplicate region observations can cancel to an observed zero; omitting a region means no data. Explicit color scales retain their signed domain, midpoint and formatting policies. Without an explicit scale, a range containing negative values uses its observed minimum and maximum with safe normalization. Dotted-map values remain nonnegative because they can control point radius.
+`ChartRegionMapItem.Value` accepts any finite signed scalar, including temperatures or balances. Duplicate region observations can cancel to an observed zero; omitting a region means no data. Explicit color scales retain their signed domain, midpoint and formatting policies. Without an explicit scale, a range containing negative values uses its observed minimum and maximum with safe normalization. Dotted-map weights remain nonnegative because they can control point radius.
 
-`WithPointLegend()` gives dotted maps one key per typed location, using that location's label and resolved dot color. The keys retain observation IDs, coordinates and optional values, including for locations outside the selected viewport. HTML legend actions address the corresponding location and reconcile authored IDs through updates. Region and tile maps retain their independent numeric color keys.
+`WithPointLegend()` gives dotted maps one key per typed location, using that location's label and resolved dot color. The keys retain observation IDs, coordinates and optional weights, including for locations outside the selected viewport. HTML legend actions address the corresponding location and reconcile authored IDs through updates. Region and tile maps retain their independent numeric color keys.
 
 Calendar factories and `ReplaceCalendarItems` sum duplicate dates and sort by date. Region/tile factories and `ReplaceRegionValues` resolve codes, names and aliases through the owned definition, sum duplicate canonical regions and sort by code. Both keep the last explicit input color. Their counts and observation indices refer to normalized items. Single-item updates preserve their ordinal, even when the date or region changes, and reject collisions with another observation. Empty retained series export their no-data state and can be refilled. The fluent map/calendar `Add*` conveniences accept empty observations with their required geometry and accept an optional named `id`; they prepare the same no-data state as an emptied retained series.
 
@@ -809,25 +813,37 @@ Secondary typography inherits chart, series and ordinal node data-label styling 
 
 Full secondary text remains in `data-cfx-secondary-label` and descriptive node regions even when no caption fits. The optional HTML adapter exposes it as plain text in pointer and keyboard tooltips, separately from size, color, supplied totals and remainders. IDs, numeric metadata and target counts stay unchanged. A non-null formatter on a populated non-Sunburst chart fails preparation; style or spacing configuration without a formatter remains inactive. Treemap retains its own label and numeric-value captions.
 
-## Numeric X viewports
+## Cartesian viewports
 
-`Chart.Prepare(context, new ChartXViewport(minimum, maximum))` prepares a numeric X window for charts containing Line and StepLine series with linear or step interpolation on a linear X axis. Bounds must be finite, increasing and inside the resolved full X domain. Other families, smooth interpolation, nonlinear X scales, sparklines, charts without observations and layouts without a usable plot reject the viewport request explicitly. Ordinary preparation remains available for every supported chart family.
+`Chart.Prepare(context, viewport)` accepts one optional `ChartCartesianViewport` for X, primary Y or XY windows. Its `X` and `Y` values are immutable `ChartXViewport` and `ChartYViewport` inputs; an omitted axis keeps its full-data domain. Pass null, or use `Prepare(context)`, for the full view. A `ChartCartesianViewport` must contain at least one window, so `new ChartCartesianViewport()` is not a reset request.
+
+Explicit windows support vertical Line, StepLine, Area, StepArea, StackedArea, Scatter, Bubble, Candlestick, OHLC, RangeBand, RangeArea, DifferenceArea, ErrorBar, Lollipop, Dumbbell, Slope and TrendLine series on linear or time X axes. Authored interpolation and full-data stack calculations remain in effect. An explicit Y or XY window requires every series to use primary Y; X-only windows preserve secondary-axis domains. Other families, horizontal layouts, sparklines, unsupported X scales, empty observations and unusable plots reject explicit windows. Full-domain preparation remains available for every supported family.
 
 ```csharp
+var chart = Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(0, 100)
+    .AddLine("Load", new[] {
+        new ChartPoint(0, 20), new ChartPoint(5, 80), new ChartPoint(10, 40)
+    });
+var context = VisualExportRequest.ForChart(chart).Context;
 var overview = chart.Prepare(context);
-var detail = chart.Prepare(context, new ChartXViewport(2, 8));
+var viewport = new ChartCartesianViewport(
+    x: new ChartXViewport(2, 8), y: new ChartYViewport(20, 80));
+var detail = chart.Prepare(context, viewport);
 var projection = detail.XProjection!;
 double logicalX = projection.Project(5);
 double sourceX = projection.Unproject(logicalX);
 string svg = detail.ToSvg("detail");
 byte[] png = detail.ToPng();
+var reset = chart.Prepare(context, null);
 ```
 
-The immutable viewport is a preparation input. It does not change authored axis bounds, series, source indices or decimation settings. Preparation resolves the full-data primary and secondary Y domains, then lays out the requested X ticks and marks through the shared Cartesian compiler. Marks, annotations and labels clip to the visible plot even when ordinary mark clipping is disabled. Crossing segments remain visible when both source endpoints lie outside the window, while authored gaps stay disconnected. Plot regions intersect the visible domain and retain their authored bounds. Off-window reference annotations retain their source facts without guide or caption paint; partially visible bands use their visible intersection.
+Bounds must be finite, increasing, contained in their resolved full domains and representable in the requested layout. Time coordinates use the same OLE Automation date units as source points. Included-time sessions retain their authored raw bounds and source identities. An X-only window keeps full-data Y domains; it does not autoscale Y to visible X observations.
 
-`ChartXProjection` captures `FullMinimum`, `FullMaximum`, `Minimum`, `Maximum`, `PlotBounds` and `Reversed` as detached values. Supported ordinary preparation exposes the full-domain projection through `PreparedVisual.XProjection`; other charts and unusable plots return null. Source or axis mutations after preparation cannot change the projection or its SVG/PNG exports. Prepare the full domain again to reset the window. The available detail is the retained source model, including any earlier decimation.
+The viewport does not change authored axis bounds, series, source indices or decimation settings. Marks, annotations and labels clip to the visible plot even when ordinary mark clipping is disabled. Crossing segments remain visible when both source endpoints lie outside the window, while authored gaps stay disconnected. Plot regions intersect the visible domain and retain their authored bounds. Off-window reference annotations retain their source facts without guide or caption paint; partially visible bands use their visible intersection.
 
-These native windows repeat Core layout for each request. The HTML adapter's existing geometry zoom keeps its current behavior; standalone data-domain interaction requires its own prepared tick/layer plan and lifecycle support.
+`ChartXProjection` and the eligible primary `ChartYProjection` capture `FullMinimum`, `FullMaximum`, `Minimum`, `Maximum`, `PlotBounds`, `Scale` and `Reversed` as detached values. Supported preparation exposes them through `PreparedVisual.XProjection` and `YProjection`; unsupported charts and unusable plots return null. Source or axis mutations after preparation cannot change these projections or the prepared SVG/PNG exports. The available detail is the retained source model, including any earlier decimation.
+
+The HTML adapter uses the same nullable Cartesian input through `HtmlInteractiveChartRenderer.PrepareSection(chart, viewport: null, configure: ...)`. Omitting the viewport and explicitly passing null both prepare the full view; passing a Cartesian window prepares matching native geometry and section metadata. Browser requests require a host connection that prepares and commits the next section. See [connected native X windows](../interactivity.md#connected-native-x-windows) for that lifecycle and its limits.
 
 ## Enforcement boundary
 

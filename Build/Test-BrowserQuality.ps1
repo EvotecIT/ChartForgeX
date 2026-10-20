@@ -121,6 +121,8 @@ try {
         'SourceAnnotationBrowserTests.ConnectedSourceCommandsCommitNativeFactsKeepReaderStateAndExportTheCommittedDrawing',
         'SourceAnnotationBrowserTests.SourceCommandsRejectInvalidRepliesAndShareCancellationWithViewportUpdateAndDisposal',
         'SourceAnnotationBrowserTests.ExplicitSecondarySourceCommandsDoNotRequireAnAmbiguousPrimaryYInverse',
+        'ManagedNativeConnectionBrowserTests.ManagedConnectionCarriesOnlyCommittedBasisAcrossDeferredViewportAndAnnotationCommands',
+        'ManagedNativeConnectionBrowserTests.ManagedConnectionRejectsUncommittedRepliesAndOwnsCrossChannelUpdateReconnectAndDisposal',
         'ChartContextMenuBrowserTests.ExistingActionsKeepTranslationsKeyboardFocusExportsAndOwnedLifetime',
         'HierarchyCompleteCaptionBrowserTests.CompleteCaptionsStayInsideTheirMarksWithTheNativeFont',
         'GeographicMapCompositionBrowserTests.IndependentMapKeysReadoutsAndSelectionSurviveTypedReplacementAndDatasetOrder',

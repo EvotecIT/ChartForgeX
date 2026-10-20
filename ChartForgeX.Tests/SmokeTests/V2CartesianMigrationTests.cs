@@ -226,7 +226,7 @@ public sealed class V2CartesianMigrationTests {
         var highlight = ChartColor.FromHex("#AF356A");
         chart.Options.XAxis.Labels.AddRange(new[] { new ChartAxisLabel(1, "First"), new ChartAxisLabel(2, "Second") });
         chart.WithHighlightedXAxisLabel(1, highlight).WithHighlightedXAxisRange(1, 2, highlight, label: "Full selected interval description");
-        chart.Annotations.Add(new ChartAnnotation(ChartAnnotationKind.HorizontalLine, 4, null, "Complete target description", highlight, 1));
+        chart.AddAnnotation(new ChartAnnotation(ChartAnnotationKind.HorizontalLine, 4, null, "Complete target description", highlight, 1));
         var scene = Compile(chart, measured: true);
         Assert.Contains(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "axis-x-label" && text.Color.Equals(highlight));
         var bands = scene.Nodes.Select((node, index) => (node, index)).Where(item => item.node is VisualSceneRectangle && item.node.Role == "annotation-band").ToArray();

@@ -9,18 +9,6 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects keyed live transactions, rolling source ownership and detached exports.</summary>
 public sealed class KeyedPointChangesTests {
     [Fact]
-    public void NumericAndTypedChangesExposeTheSameStableOperationKinds() {
-        var numeric = new[] { ChartPointChange.Append(Id("new"), new ChartPoint(1, 2)),
-            ChartPointChange.Replace(Id("current"), new ChartPoint(2, 3)), ChartPointChange.Remove(Id("old")) };
-        var typed = new[] { ChartObservationChange<ChartBubble>.Append(Id("new"), new ChartBubble(1, 2, 3)),
-            ChartObservationChange<ChartBubble>.Replace(Id("current"), new ChartBubble(2, 3, 4)), ChartObservationChange<ChartBubble>.Remove(Id("old")) };
-        ChartObservationChangeKind[] numericKinds = numeric.Select(change => change.Kind).ToArray();
-        Assert.Equal(new[] { ChartObservationChangeKind.Append, ChartObservationChangeKind.Replace, ChartObservationChangeKind.Remove }, numericKinds);
-        Assert.Equal(numericKinds, typed.Select(change => change.Kind));
-        Assert.Equal(new[] { 0, 1, 2 }, numericKinds.Select(kind => (int)kind));
-    }
-
-    [Fact]
     public void RollingTransactionKeepsSurvivingKeysAndEveryPresentationOverride() {
         var series = Series().WithPointColor(1, "#123456").WithPointLabel(1, "Second")
             .WithPointFillPattern(1, ChartFillPattern.Crosshatch)
@@ -31,10 +19,10 @@ public sealed class KeyedPointChangesTests {
         var pointsView = series.Points;
         var labelsView = series.PointLabels;
         series.ApplyPointChanges(new[] {
-            ChartPointChange.Replace(Id("b"), new ChartPoint(2, 25)),
-            ChartPointChange.Remove(Id("a")),
-            ChartPointChange.Append(Id("d"), new ChartPoint(4, 40)),
-            ChartPointChange.Append(Id("e"), new ChartPoint(5, 50))
+            ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 25)),
+            ChartObservationChange<ChartPoint>.Remove(Id("a")),
+            ChartObservationChange<ChartPoint>.Append(Id("d"), new ChartPoint(4, 40)),
+            ChartObservationChange<ChartPoint>.Append(Id("e"), new ChartPoint(5, 50))
         }, maximumObservations: 4);
         Assert.Same(pointsView, series.Points); Assert.Same(labelsView, series.PointLabels);
         Assert.Equal(new[] { "b", "c", "d", "e" }, series.ObservationIds.OrderBy(entry => entry.Key).Select(entry => entry.Value.Value));
@@ -46,7 +34,7 @@ public sealed class KeyedPointChangesTests {
             && node.Metadata.TryGetValue("data-cfx-observation-id", out var id) && id == "b");
         Assert.Equal("25", mark.Metadata["data-cfx-y"]);
         Assert.Equal(svg, frozen.ToSvg()); Assert.Equal(png, frozen.ToPng());
-        series.ApplyPointChanges(Array.Empty<ChartPointChange>(), maximumObservations: 2);
+        series.ApplyPointChanges(Array.Empty<ChartObservationChange<ChartPoint>>(), maximumObservations: 2);
         Assert.Equal(new[] { "d", "e" }, series.ObservationIds.OrderBy(entry => entry.Key).Select(entry => entry.Value.Value));
         Assert.Empty(series.PointLabels); Assert.Empty(series.PointColors); Assert.Empty(series.PointDataLabelStyles);
         Assert.NotEmpty(Prepare(chart).ToPng());
@@ -57,21 +45,21 @@ public sealed class KeyedPointChangesTests {
         var series = Series().WithPointColor(1, "#123456").WithPointLabel(1, "Second");
         var chart = Chart.Create().AddSeries(series); var before = Prepare(chart).ToSvg();
         var invalid = new[] {
-            new[] { ChartPointChange.Replace(Id("b"), new ChartPoint(2, 99)), ChartPointChange.Append(Id("a"), new ChartPoint(7, 70)) },
-            new[] { ChartPointChange.Replace(Id("b"), new ChartPoint(2, 99)), ChartPointChange.Remove(Id("missing")) },
-            new[] { ChartPointChange.Replace(Id("b"), new ChartPoint(2, 99)), ChartPointChange.Remove(Id("b")) }
+            new[] { ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 99)), ChartObservationChange<ChartPoint>.Append(Id("a"), new ChartPoint(7, 70)) },
+            new[] { ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 99)), ChartObservationChange<ChartPoint>.Remove(Id("missing")) },
+            new[] { ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 99)), ChartObservationChange<ChartPoint>.Remove(Id("b")) }
         };
         foreach (var changes in invalid) Assert.Throws<ArgumentException>(() => series.ApplyPointChanges(changes));
         Assert.Throws<InvalidOperationException>(() => series.ApplyPointChanges(Throwing()));
         var visited = 0;
-        IEnumerable<ChartPointChange> Endless() {
-            for (var index = 0; ; index++) { visited++; yield return ChartPointChange.Append(Id("new-" + index), new ChartPoint(index, 1)); }
+        IEnumerable<ChartObservationChange<ChartPoint>> Endless() {
+            for (var index = 0; ; index++) { visited++; yield return ChartObservationChange<ChartPoint>.Append(Id("new-" + index), new ChartPoint(index, 1)); }
         }
         Assert.Throws<ArgumentException>(() => series.ApplyPointChanges(Endless(), maximumChanges: 2));
         Assert.Equal(3, visited);
         using var cancellation = new CancellationTokenSource();
-        IEnumerable<ChartPointChange> Canceled() {
-            yield return ChartPointChange.Replace(Id("b"), new ChartPoint(2, 99));
+        IEnumerable<ChartObservationChange<ChartPoint>> Canceled() {
+            yield return ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 99));
             cancellation.Cancel();
         }
         Assert.Throws<OperationCanceledException>(() => series.ApplyPointChanges(Canceled(), cancellationToken: cancellation.Token));
@@ -83,25 +71,25 @@ public sealed class KeyedPointChangesTests {
     [Fact]
     public void EmptySeriesCanStartFromKeyedChangesAndDerivedTypedOrAnonymousSourcesRejectWithoutChanges() {
         var empty = ChartSeries.CreateLine(new ChartSeriesId("live"), "Live", Array.Empty<ChartPoint>());
-        empty.ApplyPointChanges(new[] { ChartPointChange.Append(Id("first"), new ChartPoint(1, 0)) });
+        empty.ApplyPointChanges(new[] { ChartObservationChange<ChartPoint>.Append(Id("first"), new ChartPoint(1, 0)) });
         Assert.Equal("first", empty.ObservationIds[0].Value); Assert.Single(empty.Points);
-        empty.ApplyPointChanges(new[] { ChartPointChange.Remove(Id("first")) });
+        empty.ApplyPointChanges(new[] { ChartObservationChange<ChartPoint>.Remove(Id("first")) });
         Assert.Empty(empty.Points); Assert.Empty(empty.ObservationIds);
-        empty.ApplyPointChanges(new[] { ChartPointChange.Append(Id("refilled"), new ChartPoint(2, 8)) });
+        empty.ApplyPointChanges(new[] { ChartObservationChange<ChartPoint>.Append(Id("refilled"), new ChartPoint(2, 8)) });
         Assert.NotEmpty(Prepare(Chart.Create().AddSeries(empty)).ToPng());
         var anonymous = ChartSeries.CreateLine(new ChartSeriesId("anonymous"), "Anonymous", new[] { new ChartPoint(1, 1) });
-        Assert.Throws<InvalidOperationException>(() => anonymous.ApplyPointChanges(new[] { ChartPointChange.Remove(Id("first")) }));
+        Assert.Throws<InvalidOperationException>(() => anonymous.ApplyPointChanges(new[] { ChartObservationChange<ChartPoint>.Remove(Id("first")) }));
         Assert.Single(anonymous.Points);
         var derived = ChartSeries.CreateTrendLine(new ChartSeriesId("fit"), "Fit", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) });
         var typed = ChartSeries.CreateBubble(new ChartSeriesId("typed"), "Typed", new[] { new ChartBubble(1, 2, 3) });
         foreach (var series in new[] { derived, typed }) {
             var sourceCount = series.SourcePointCount;
-            Assert.Throws<NotSupportedException>(() => series.ApplyPointChanges(Array.Empty<ChartPointChange>()));
+            Assert.Throws<NotSupportedException>(() => series.ApplyPointChanges(Array.Empty<ChartObservationChange<ChartPoint>>()));
             Assert.Equal(sourceCount, series.SourcePointCount);
         }
-        Assert.Throws<InvalidOperationException>(() => empty.ApplyPointChanges(new[] { default(ChartPointChange) }));
+        Assert.Throws<InvalidOperationException>(() => empty.ApplyPointChanges(new[] { default(ChartObservationChange<ChartPoint>) }));
         Assert.Equal("refilled", empty.ObservationIds[0].Value);
-        Assert.Throws<ArgumentOutOfRangeException>(() => empty.ApplyPointChanges(Array.Empty<ChartPointChange>(), maximumObservations: 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => empty.ApplyPointChanges(Array.Empty<ChartObservationChange<ChartPoint>>(), maximumObservations: 0));
     }
 
     [Theory]
@@ -122,21 +110,21 @@ public sealed class KeyedPointChangesTests {
             .WithObservationIds(new[] { Id("a"), Id("b"), Id("c") });
         var chart = Chart.Create().WithSize(640, 360).AddSeries(series);
         var frozen = Prepare(chart); var original = frozen.ToSvg();
-        series.ApplyPointChanges(new[] { ChartPointChange.Replace(Id("b"), new ChartPoint(2, 25)),
-            ChartPointChange.Append(Id("d"), new ChartPoint(4, 40)) }, maximumObservations: 3);
+        series.ApplyPointChanges(new[] { ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 25)),
+            ChartObservationChange<ChartPoint>.Append(Id("d"), new ChartPoint(4, 40)) }, maximumObservations: 3);
         var updated = Prepare(chart);
         Assert.Equal(new[] { "b", "c", "d" }, series.ObservationIds.OrderBy(entry => entry.Key).Select(entry => entry.Value.Value));
         Assert.Contains("data-cfx-observation-id=\"d\"", updated.ToSvg());
         Assert.NotEmpty(updated.ToPng());
         Assert.Equal(original, frozen.ToSvg());
         var updatedSvg = updated.ToSvg();
-        series.ApplyPointChanges(new[] { ChartPointChange.Remove(Id("b")), ChartPointChange.Remove(Id("c")), ChartPointChange.Remove(Id("d")) });
+        series.ApplyPointChanges(new[] { ChartObservationChange<ChartPoint>.Remove(Id("b")), ChartObservationChange<ChartPoint>.Remove(Id("c")), ChartObservationChange<ChartPoint>.Remove(Id("d")) });
         var empty = Prepare(chart);
         Assert.Empty(series.Points); Assert.Empty(series.ObservationIds);
         Assert.Contains(empty.Diagnostics, diagnostic => diagnostic.Code.EndsWith(".no-data", StringComparison.Ordinal));
         Assert.DoesNotContain("data-cfx-observation-id=", empty.ToSvg());
         Assert.NotEmpty(empty.ToPng());
-        series.ApplyPointChanges(new[] { ChartPointChange.Append(Id("zero"), new ChartPoint(5, 0)) });
+        series.ApplyPointChanges(new[] { ChartObservationChange<ChartPoint>.Append(Id("zero"), new ChartPoint(5, 0)) });
         var singleton = Prepare(chart);
         Assert.Single(series.Points); Assert.Equal(0, series.Points[0].Y);
         Assert.Contains("data-cfx-observation-id=\"zero\"", singleton.ToSvg());
@@ -145,8 +133,8 @@ public sealed class KeyedPointChangesTests {
         Assert.Equal(original, frozen.ToSvg());
     }
 
-    private static IEnumerable<ChartPointChange> Throwing() {
-        yield return ChartPointChange.Replace(Id("b"), new ChartPoint(2, 99));
+    private static IEnumerable<ChartObservationChange<ChartPoint>> Throwing() {
+        yield return ChartObservationChange<ChartPoint>.Replace(Id("b"), new ChartPoint(2, 99));
         throw new InvalidOperationException("Upstream batch failed.");
     }
     private static ChartObservationId Id(string value) => new(value);

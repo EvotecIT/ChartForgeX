@@ -20,7 +20,7 @@ public static partial class V2Examples {
                     var subtitle = compact ? "Full-data Y; gap at 6; labels in X 2–8" : "Utilization labels within X 2–8; full-data Y scales; gap at sample 6";
                     var recipe = ExampleRecipes.Named(steps ? "step-line-viewport" : "line-viewport");
                     var chart = (Chart)recipe.Create(variant, mode);
-                    var viewport = new ChartXViewport(2, 8);
+                    var viewport = new ChartCartesianViewport(x: new ChartXViewport(2, 8));
                     var model = new ViewportExample(chart, viewport);
                     var prepared = model.Prepare(GalleryContext(width, height, mode, title, subtitle, !compact));
                     ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));
@@ -37,9 +37,9 @@ public static partial class V2Examples {
     // Downloaded programs call Chart.Prepare(context, viewport) directly and do not depend on this private wrapper.
     private sealed class ViewportExample : IVisualRenderable {
         private readonly Chart _chart;
-        private readonly ChartXViewport _viewport;
+        private readonly ChartCartesianViewport _viewport;
 
-        public ViewportExample(Chart chart, ChartXViewport viewport) { _chart = chart; _viewport = viewport; }
+        public ViewportExample(Chart chart, ChartCartesianViewport viewport) { _chart = chart; _viewport = viewport; }
         public PreparedVisual Prepare(VisualRenderContext context) => _chart.Prepare(context, _viewport);
     }
 

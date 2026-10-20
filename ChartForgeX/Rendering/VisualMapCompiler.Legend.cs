@@ -27,7 +27,7 @@ internal static partial class VisualMapCompiler {
                     ["data-cfx-series"] = N(seriesIndex), ["data-cfx-point"] = N(index), ["data-cfx-source-point"] = N(index),
                     ["data-cfx-label"] = point.Label, ["data-cfx-longitude"] = N(point.Longitude), ["data-cfx-latitude"] = N(point.Latitude)
                 };
-                if (point.Value.HasValue) metadata["data-cfx-value"] = N(point.Value.Value);
+                if (point.Weight.HasValue) metadata["data-cfx-value"] = N(point.Weight.Value);
                 data.AddColorFacts(metadata, index);
                 return new VisualLegendEntry(point.Label, color, prefix + "-point-" + N(index), series.Kind,
                     stateRole: series.StateRole, seriesKey: series.InteractionIdentityKey, paint: paint, metadata: metadata,

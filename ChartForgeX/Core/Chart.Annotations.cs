@@ -12,7 +12,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddHorizontalLine(double value, string label = "", ChartColor? color = null) {
         ChartGuards.Finite(value, nameof(value));
-        Annotations.Add(new ChartAnnotation(ChartAnnotationKind.HorizontalLine, value, null, label, color ?? Options.ResolvedTheme.Text2, 1) { UsesThemeColor = !color.HasValue });
+        AddAnnotation(new ChartAnnotation(ChartAnnotationKind.HorizontalLine, value, null, label, color ?? Options.ResolvedTheme.Text2, 1) { UsesThemeColor = !color.HasValue });
         return this;
     }
 
@@ -25,7 +25,7 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddVerticalLine(double value, string label = "", ChartColor? color = null) {
         ChartGuards.Finite(value, nameof(value));
-        Annotations.Add(new ChartAnnotation(ChartAnnotationKind.VerticalLine, value, null, label, color ?? Options.ResolvedTheme.Text2, 1) { UsesThemeColor = !color.HasValue });
+        AddAnnotation(new ChartAnnotation(ChartAnnotationKind.VerticalLine, value, null, label, color ?? Options.ResolvedTheme.Text2, 1) { UsesThemeColor = !color.HasValue });
         return this;
     }
 
@@ -42,7 +42,7 @@ public sealed partial class Chart {
         ChartGuards.Finite(start, nameof(start));
         ChartGuards.Finite(end, nameof(end));
         ChartGuards.UnitInterval(opacity, nameof(opacity));
-        Annotations.Add(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, start, end, label, color ?? Options.ResolvedTheme.Axis, opacity));
+        AddAnnotation(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, start, end, label, color ?? Options.ResolvedTheme.Axis, opacity));
         return this;
     }
 
@@ -59,7 +59,7 @@ public sealed partial class Chart {
         ChartGuards.Finite(start, nameof(start));
         ChartGuards.Finite(end, nameof(end));
         ChartGuards.UnitInterval(opacity, nameof(opacity));
-        Annotations.Add(new ChartAnnotation(ChartAnnotationKind.VerticalBand, start, end, label, color ?? Options.ResolvedTheme.Axis, opacity));
+        AddAnnotation(new ChartAnnotation(ChartAnnotationKind.VerticalBand, start, end, label, color ?? Options.ResolvedTheme.Axis, opacity));
         return this;
     }
 }

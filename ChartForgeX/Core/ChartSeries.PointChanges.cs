@@ -23,14 +23,14 @@ public sealed partial class ChartSeries {
     /// <param name="maximumChanges">The positive maximum number of operations accepted in this call.</param>
     /// <param name="cancellationToken">Cancellation checked while capturing operations and before installation.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries ApplyPointChanges(IEnumerable<ChartPointChange> changes, int? maximumObservations = null,
+    public ChartSeries ApplyPointChanges(IEnumerable<ChartObservationChange<ChartPoint>> changes, int? maximumObservations = null,
         int maximumChanges = 4096, CancellationToken cancellationToken = default) {
         if (changes == null) throw new ArgumentNullException(nameof(changes));
         ValidateObservationChangeLimits(maximumObservations, maximumChanges);
         RequireMutableNumericObservations();
         if (!ChartSeriesKindTraits.SupportsPointSeriesMapping(Kind))
             throw new NotSupportedException("Keyed point changes require a point-mapped numeric series family.");
-        var retained = PlanObservationChanges(_points, TypedPointChanges(changes), point => point,
+        var retained = PlanObservationChanges(_points, changes, point => point,
             maximumObservations, maximumChanges, cancellationToken);
         var points = retained.Select(entry => entry.Value).ToArray();
         var presentation = CaptureObservationChangePresentation(retained);
@@ -39,17 +39,6 @@ public sealed partial class ChartSeries {
         _points.Clear(); _points.AddRange(points);
         InstallObservationChangePresentation(retained, presentation);
         return this;
-    }
-
-    private static IEnumerable<ChartObservationChange<ChartPoint>> TypedPointChanges(IEnumerable<ChartPointChange> changes) {
-        foreach (var change in changes) {
-            _ = change.Id.Value;
-            yield return change.Kind switch {
-                ChartObservationChangeKind.Append => ChartObservationChange<ChartPoint>.Append(change.Id, change.Point!.Value),
-                ChartObservationChangeKind.Replace => ChartObservationChange<ChartPoint>.Replace(change.Id, change.Point!.Value),
-                _ => ChartObservationChange<ChartPoint>.Remove(change.Id)
-            };
-        }
     }
 
     private static void InstallPointOverrides<T>(List<T> target, T[] values) { target.Clear(); target.AddRange(values); }

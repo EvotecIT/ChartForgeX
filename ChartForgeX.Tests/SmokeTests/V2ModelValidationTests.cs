@@ -30,10 +30,10 @@ public sealed class V2ModelValidationTests {
     }
 
     [Fact]
-    public void SharedMutableCollectionsAreValidatedForSpecializedFamilies() {
+    public void OwnedAnnotationsAndMutableLayersAreValidatedForSpecializedFamilies() {
         var gauge = Chart.Create().AddGauge("Score", 70);
-        gauge.Annotations.Add(null!);
-        Reject(gauge);
+        Assert.Throws<ArgumentNullException>(() => gauge.AddAnnotation(null!));
+        Assert.Empty(gauge.Annotations);
         var radial = Chart.Create().AddLayeredRadial("Layer", new[] { new ChartRadialLayer("Value", 40) });
         radial.Series[0].RadialLayers[0].Maximum = 0;
         Reject(radial);

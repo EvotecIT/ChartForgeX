@@ -12,10 +12,10 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
-/// <summary>Measures an actual adaptive section call through APIs shared by the historical and current products.</summary>
+/// <summary>Measures an actual adaptive section call through the canonical Cartesian viewport API.</summary>
 public class SectionPreparationBenchmarkFixture {
     private readonly ChartPoint[] _points;
-    private readonly ChartXViewport? _xWindow;
+    private readonly ChartCartesianViewport? _xViewport;
     private readonly double? _authoredXMinimum, _authoredXMaximum, _authoredYMinimum, _authoredYMaximum;
     private HtmlChartSection? _first, _last;
     private string? _expectedDigest;
@@ -48,7 +48,7 @@ public class SectionPreparationBenchmarkFixture {
         if (parts[1] == "explicit") SourceChart.WithXAxisBounds(0, 12).WithYAxisBounds(0, 40);
         _authoredXMinimum = SourceChart.Options.XAxis.Minimum; _authoredXMaximum = SourceChart.Options.XAxis.Maximum;
         _authoredYMinimum = SourceChart.Options.YAxis.Minimum; _authoredYMaximum = SourceChart.Options.YAxis.Maximum;
-        _xWindow = Window == "x" ? new ChartXViewport(2, 10) : null;
+        _xViewport = Window == "x" ? new ChartCartesianViewport(x: new ChartXViewport(2, 10)) : null;
         var source = new StringBuilder("section-preparation-v1|800x440|390x440|640|24|light|samples|")
             .Append(caseName).Append('|').Append(radius).Append('|').Append(Hash(tokens)).Append('|')
             .Append(Hash(File.ReadAllBytes(fontPath))).Append('|').Append(Hash(File.ReadAllBytes(boldFontPath))).Append('|')
@@ -118,9 +118,9 @@ public class SectionPreparationBenchmarkFixture {
     }
 
     /// <summary>Calls the shared full-domain or X-window public API.</summary>
-    protected virtual HtmlChartSection PrepareSection() => _xWindow == null
+    protected virtual HtmlChartSection PrepareSection() => _xViewport == null
         ? Renderer.PrepareSection(SourceChart, configure: ConfigureAdaptive)
-        : Renderer.PrepareSection(SourceChart, _xWindow, ConfigureAdaptive);
+        : Renderer.PrepareSection(SourceChart, _xViewport, ConfigureAdaptive);
 
     /// <summary>Applies only options present in both measured API versions.</summary>
     protected static void ConfigureAdaptive(HtmlChartInteractionOptions options) {

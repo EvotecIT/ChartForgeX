@@ -32,7 +32,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var initial = await page.Locator(".cfx-stage svg").EvaluateAsync<string>("svg=>svg.outerHTML");
         using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
         Assert.Throws<OperationCanceledException>(() => series.ApplyPointChanges(new[] {
-            ChartPointChange.Replace(new ChartObservationId("b"), new ChartPoint(2, 99))
+            ChartObservationChange<ChartPoint>.Replace(new ChartObservationId("b"), new ChartPoint(2, 99))
         }, cancellationToken: cancellation.Token));
         Assert.Equal(brush, await page.Locator(Root).GetAttributeAsync("data-cfx-brush"));
         Assert.Equal(initial, await page.Locator(".cfx-stage svg").EvaluateAsync<string>("svg=>svg.outerHTML"));
@@ -42,9 +42,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var retained = "g[data-cfx-role=point][data-cfx-observation-id=b]";
         await FocusWithKeyboardAsync(page, page.Locator(retained));
         series.ApplyPointChanges(new[] {
-            ChartPointChange.Remove(new ChartObservationId("a")),
-            ChartPointChange.Replace(new ChartObservationId("b"), new ChartPoint(2, 25)),
-            ChartPointChange.Append(new ChartObservationId("d"), new ChartPoint(4, 40))
+            ChartObservationChange<ChartPoint>.Remove(new ChartObservationId("a")),
+            ChartObservationChange<ChartPoint>.Replace(new ChartObservationId("b"), new ChartPoint(2, 25)),
+            ChartObservationChange<ChartPoint>.Append(new ChartObservationId("d"), new ChartPoint(4, 40))
         }, maximumObservations: 3);
         await UpdateAsync(page, chart.ToInteractiveHtmlFragmentWithoutAssets(Options));
         var selection = await page.EvaluateAsync<JsonElement>("()=>chartController.getSelection()");

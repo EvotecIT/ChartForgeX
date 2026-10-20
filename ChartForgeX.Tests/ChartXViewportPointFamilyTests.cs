@@ -25,7 +25,7 @@ public sealed class ChartXViewportPointFamilyTests {
         };
         var chart = Chart.Create().WithLegend(false).WithXAxisBounds(0, 10).AddSeries(series);
         var context = VisualExportRequest.ForChart(chart).Context;
-        var full = chart.Prepare(context); var window = chart.Prepare(context, new ChartXViewport(4, 6));
+        var full = chart.Prepare(context); var window = chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(4, 6)));
         Assert.NotNull(window.XProjection);
         Assert.Equal(full.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label), window.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label));
         var groups = XDocument.Parse(window.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();

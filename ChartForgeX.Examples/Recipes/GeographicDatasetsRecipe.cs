@@ -14,7 +14,7 @@ public static class GeographicDatasetsRecipe {
             options.Name = "Coverage"; options.ValueFormat = ChartValueFormat.Number("0 '%'", CultureInfo.InvariantCulture);
         });
         var depots = ChartSeries.CreateDottedMap(new ChartSeriesId("depots"), "Depot delays", ChartMapGeoJson.ToMapPoints(GeoJson,
-            new ChartMapGeoJsonOptions { ValuePropertyName = "traffic", ColorValuePropertyName = "delay" }))
+            new ChartMapGeoJsonOptions { WeightPropertyName = "traffic", ColorValuePropertyName = "delay" }))
             .WithObservationIds(new[] { new ChartObservationId("madrid"), new ChartObservationId("warsaw"), new ChartObservationId("oslo") })
             .WithColorScale(ChartColorScale.Diverging(ChartColor.FromHex("#0D9488"), ChartColor.FromHex("#E2E8F0"), ChartColor.FromHex("#EA580C"), 0).WithValueRange(-10, 30))
             .ReplaceMapConnectors(ChartMapGeoJson.ToMapConnectors(GeoJson));

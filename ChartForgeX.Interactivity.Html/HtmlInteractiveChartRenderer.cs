@@ -93,35 +93,23 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
     /// <summary>Prepares an asset-free interactive section and its matching detached native scene.</summary>
     /// <param name="chart">The chart to prepare.</param>
-    /// <param name="viewport">An optional explicit numeric or time X window for supported vertical point, financial and paired-boundary charts.
-    /// Null prepares the full domain, including when resetting a previous viewport.</param>
+    /// <param name="viewport">Optional explicit X, primary Y or XY windows for supported vertical Cartesian charts.
+    /// Null prepares the full domain, including when resetting a previous viewport. An omitted axis retains its full-data domain;
+    /// primary Y windows require no secondary-axis series.</param>
     /// <param name="configure">An optional callback configuring the HTML interaction adapter.</param>
     /// <returns>The section markup and the prepared scene used to render it.</returns>
     /// <remarks>The host owns native re-preparation after a browser viewport request. Use the returned
-    /// PreparedVisual.XProjection to convert logical gesture positions through its ConstrainViewport method,
-    /// then prepare the next section. Unsupported and empty charts have no X projection.
+    /// PreparedVisual.XProjection and eligible YProjection to convert logical gesture positions through their ConstrainViewport methods,
+    /// then prepare the next section. Unsupported and empty charts have no native projections.
     /// An enabled native navigator prepares an additional full-domain scene for a windowed section.</remarks>
     /// <exception cref="ArgumentNullException">The chart is null.</exception>
     /// <exception cref="NotSupportedException">An explicit viewport is requested for an unsupported chart.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">An explicit viewport extends outside the full X domain or cannot be mapped.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">An explicit window extends outside its full domain or cannot be mapped.</exception>
     /// <exception cref="InvalidOperationException">An explicit viewport is requested without observations or a usable plot.</exception>
-    public HtmlChartSection PrepareSection(Chart chart, ChartXViewport? viewport = null, Action<HtmlChartInteractionOptions>? configure = null) {
+    public HtmlChartSection PrepareSection(Chart chart, ChartCartesianViewport? viewport = null, Action<HtmlChartInteractionOptions>? configure = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var options = new HtmlChartInteractionOptions();
         configure?.Invoke(options);
-        var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
-        return PrepareChartSection(chart, options, title, "host", viewport == null ? null : new ChartCartesianViewport(x: viewport));
-    }
-
-    /// <summary>Prepares an interactive section within explicit native X, primary Y or XY source windows.</summary>
-    /// <param name="chart">The mutable source chart, which preparation does not modify.</param>
-    /// <param name="viewport">The explicit source windows.</param>
-    /// <param name="configure">Optional HTML adapter policy.</param>
-    /// <returns>The section and its matching detached native projections.</returns>
-    public HtmlChartSection PrepareSection(Chart chart, ChartCartesianViewport viewport, Action<HtmlChartInteractionOptions>? configure = null) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        if (viewport == null) throw new ArgumentNullException(nameof(viewport));
-        var options = new HtmlChartInteractionOptions(); configure?.Invoke(options);
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         return PrepareChartSection(chart, options, title, "host", viewport);
     }
@@ -168,7 +156,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             preparedDrawing = aligned.First; narrowDrawing = aligned.Second;
             fullDrawing = aligned.FullFirst; fullNarrowDrawing = aligned.FullSecond;
         }
-        var prepared = preparedDrawing ?? (viewport == null ? chart.Prepare(context) : chart.Prepare(context, viewport));
+        var prepared = preparedDrawing ?? chart.Prepare(context, viewport);
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         if (!Enum.IsDefined(typeof(HtmlChartResponsiveLayout), options.ResponsiveLayout)) throw new ArgumentOutOfRangeException(nameof(options.ResponsiveLayout));
         if (!Enum.IsDefined(typeof(HtmlChartToolbarLayout), options.Toolbar)) throw new ArgumentOutOfRangeException(nameof(options.Toolbar));

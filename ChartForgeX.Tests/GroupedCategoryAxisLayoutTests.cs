@@ -75,7 +75,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
             "Year", index <= 3 ? "First" : "Second")));
         chart.Options.XAxis.Reversed = reversed;
         var full = Prepare(chart);
-        var view = chart.Prepare(VisualExportRequest.ForChart(chart).Context, new ChartXViewport(3, 7));
+        var view = chart.Prepare(VisualExportRequest.ForChart(chart).Context, new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
         var fullGroups = Groups(full); var viewGroups = Groups(view);
         Assert.Equal(fullGroups.Length, viewGroups.Length);
         for (var index = 0; index < fullGroups.Length; index++) Assert.Equal(fullGroups[index].Metadata, viewGroups[index].Metadata);

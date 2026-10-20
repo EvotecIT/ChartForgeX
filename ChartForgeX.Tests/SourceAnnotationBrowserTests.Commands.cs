@@ -85,7 +85,7 @@ public sealed partial class SourceAnnotationBrowserTests {
         await page.EvaluateAsync("html => pending[0].resolve(html)", host.Window());
         await page.EvaluateAsync("""
             async () => {const result=await annotationHostPrepare({...pending[1].request,basis:'initial'});
-                annotationCandidates.set(pending[1].request.requestId,result.token);pending[1].resolve(result.html);}
+                pending[1].resolve(result.html);}
             """);
         await WaitForAnnotationChanges(page, 1);
         Assert.Equal(0, await page.EvaluateAsync<double>("() => drawings.getXWindow().minimum"));
@@ -140,18 +140,15 @@ public sealed partial class SourceAnnotationBrowserTests {
         await page.ExposeFunctionAsync("annotationHostPrepare", (JsonElement request) => host.Prepare(request));
         await page.EvaluateAsync("""
             () => { window.drawings=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));
-                window.annotationChanges=[];window.annotationErrors=[];window.annotationFrozen=[];window.annotationCandidates=new Map();
-                window.annotationBases=new Map([[drawings.sceneRevision,'initial']]);
-                drawings.root.addEventListener('cfxlayoutchange',event=>annotationBases.set(event.detail.sceneRevision,annotationBases.get(event.detail.previousSceneRevision)));
+                window.annotationChanges=[];window.annotationErrors=[];window.annotationFrozen=[];
                 drawings.root.addEventListener('cfxannotationerror',event=>annotationErrors.push(event.detail));
-                drawings.root.addEventListener('cfxannotationchange',event=>{annotationChanges.push(event.detail);
-                    annotationBases.set(event.detail.sceneRevision,annotationCandidates.get(event.detail.requestId));});
-                drawings.connectAnnotations(async(request,signal)=>{
+                drawings.root.addEventListener('cfxannotationchange',event=>annotationChanges.push(event.detail));
+                drawings.connectNative(async(request,signal)=>{
                     const source=request.sourceDrawing;annotationFrozen.push(Object.isFrozen(request)&&(!source||Object.isFrozen(source)&&Object.isFrozen(source.start)&&(!source.end||Object.isFrozen(source.end))));
-                    const result=await annotationHostPrepare({...request,basis:annotationBases.get(request.sceneRevision)});
+                    const result=await annotationHostPrepare(request);
                     if(signal.aborted)throw new DOMException('Canceled','AbortError');
-                    annotationCandidates.set(request.requestId,result.token);return result.html;
-                }); }
+                    return {html:result.html,basis:result.token};
+                },{basis:'initial',axes:null}); }
             """);
     }
     private static void CommandOptions(HtmlChartInteractionOptions options) {
@@ -168,7 +165,7 @@ public sealed partial class SourceAnnotationBrowserTests {
         }
         internal string Initial => Create().ToInteractiveHtmlFragment(CommandOptions);
         internal string Fresh() => Create().ToInteractiveHtmlFragmentWithoutAssets(CommandOptions);
-        internal string Window() => new HtmlInteractiveChartRenderer().PrepareSection(Create(), new ChartXViewport(2, 8), CommandOptions).Html;
+        internal string Window() => new HtmlInteractiveChartRenderer().PrepareSection(Create(), new ChartCartesianViewport(x: new ChartXViewport(2, 8)), CommandOptions).Html;
         private Chart Create() {
             var chart = Model(_width, _mode, false);
             if (_secondary) chart.WithSecondaryYAxisBounds(1000, 2000).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("secondary"), "Secondary",
@@ -177,24 +174,27 @@ public sealed partial class SourceAnnotationBrowserTests {
         }
         internal object Prepare(JsonElement request) {
             lock (_scenes) {
-                var annotations = _scenes[request.GetProperty("basis").GetString()!].ToList();
+                var chart = Create().ClearAnnotations();
+                foreach (var annotation in _scenes[request.GetProperty("basis").GetString()!]) chart.AddAnnotation(annotation);
                 var id = new ChartAnnotationId(request.GetProperty("annotationId").GetString()!);
                 var operation = request.GetProperty("kind").GetString();
-                if (operation != "add") annotations.RemoveAt(annotations.FindIndex(annotation => annotation.Id == id));
-                if (operation != "remove") {
+                if (operation == "remove") chart.RemoveAnnotation(id);
+                else {
                     var source = request.GetProperty("sourceDrawing"); var start = Point(source.GetProperty("start"));
                     var label = source.GetProperty("label").GetString()!;
                     var axis = Enum.Parse<ChartAxisSide>(source.GetProperty("yAxis").GetString()!);
                     var color = ChartColor.FromHex("#278C74");
-                    annotations.Add(source.GetProperty("kind").GetString() switch {
+                    var replacement = source.GetProperty("kind").GetString() switch {
                         "Note" => ChartAnnotation.Note(start, label, color, id, axis),
                         "LineSegment" => ChartAnnotation.LineSegment(start, Point(source.GetProperty("end")), label, color, id, axis),
                         _ => ChartAnnotation.ParallelChannel(start, Point(source.GetProperty("end")), source.GetProperty("yOffset").GetDouble(), label, color, id, axis)
-                    });
+                    };
+                    if (operation == "add") chart.AddAnnotation(replacement);
+                    else if (operation == "replace") chart.ReplaceAnnotation(replacement);
+                    else throw new ArgumentException("Unknown annotation operation.", nameof(request));
                 }
-                var chart = Create(); chart.Annotations.Clear(); chart.Annotations.AddRange(annotations);
                 var html = chart.ToInteractiveHtmlFragmentWithoutAssets(CommandOptions);
-                var token = "candidate-" + _scenes.Count; _scenes.Add(token, annotations.ToArray());
+                var token = "candidate-" + _scenes.Count; _scenes.Add(token, chart.Annotations.ToArray());
                 return new { token, html };
             }
         }

@@ -22,7 +22,7 @@ internal static partial class VisualMapCompiler {
             HasValues = values.Length > 0;
             Missing = Series.Kind == ChartSeriesKind.RegionMap
                 ? Series.RegionValues.Count < Series.RegionMapDefinition!.Regions.Count : values.Length < ColorValues.Length;
-            Weights = Series.MapPoints.Select(item => item.Value).ToArray();
+            Weights = Series.MapPoints.Select(item => item.Weight).ToArray();
             var weights = Weights.Where(value => value.HasValue).Select(value => value!.Value).ToArray();
             MinimumWeight = weights.Length > 0 ? weights.Min() : 0; MaximumWeight = weights.Length > 0 ? weights.Max() : 0;
             if (Series.Kind == ChartSeriesKind.DottedMap) SizeScale = new ChartMapPointSizeScale(chart, Series, MinimumWeight, MaximumWeight, Weights);

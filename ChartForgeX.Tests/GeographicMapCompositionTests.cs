@@ -59,8 +59,8 @@ public sealed class GeographicMapCompositionTests {
         Assert.Equal("0", Target(updated, "gateways", "west").Attribute("data-cfx-series")!.Value);
         Assert.Equal("-1", Target(updated, "gateways", "west").Attribute("data-cfx-color-value")!.Value);
         Assert.Equal("true", Target(updated, "gateways", "north").Attribute("data-cfx-color-missing")!.Value);
-        Assert.Equal(50, sites.MapPoints[0].Value); Assert.Equal(-1, sites.MapPoints[0].ColorValue);
-        Assert.Null(sites.MapPoints[1].ColorValue); Assert.Equal(0, sites.MapPoints[1].Value);
+        Assert.Equal(50, sites.MapPoints[0].Weight); Assert.Equal(-1, sites.MapPoints[0].ColorValue);
+        Assert.Null(sites.MapPoints[1].ColorValue); Assert.Equal(0, sites.MapPoints[1].Weight);
         Assert.Equal(originalSvg, prepared.ToSvg()); Assert.Equal(originalPng, prepared.ToPng());
         var image = RasterImageDecoder.Decode(prepared.ToPng());
         Assert.Equal(width, image.Width); Assert.Equal(460, image.Height);
@@ -176,10 +176,10 @@ public sealed class GeographicMapCompositionTests {
         source[0] = new ChartMapPoint("Changed", 20, 30);
         Assert.Throws<NotSupportedException>(() => ((IList<ChartMapPoint>)route.RoutePoints)[0] = source[0]);
         Assert.Equal(-10, sites.MapConnectors[0].RoutePoints[0].ColorValue);
-        Assert.Equal(0, sites.MapConnectors[0].RoutePoints[0].Value);
+        Assert.Equal(0, sites.MapConnectors[0].RoutePoints[0].Weight);
         sites.WithObservationId(0, new ChartObservationId("start"));
         sites.UpdateMapPoint(0, new ChartMapPoint("Updated", 1, 2, 7).WithColorValue(-4));
-        Assert.Equal("start", sites.ObservationIds[0].Value); Assert.Equal(-4, sites.MapPoints[0].ColorValue); Assert.Equal(7, sites.MapPoints[0].Value);
+        Assert.Equal("start", sites.ObservationIds[0].Value); Assert.Equal(-4, sites.MapPoints[0].ColorValue); Assert.Equal(7, sites.MapPoints[0].Weight);
         Assert.Throws<ArgumentException>(() => sites.ReplaceMapConnectors(new[] { default(ChartMapConnector) }));
         Assert.Single(sites.MapConnectors);
     }

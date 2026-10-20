@@ -129,7 +129,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 .WithObservationId(0, new ChartObservationId("outside-left")).WithObservationId(1, new ChartObservationId("outside-right")));
         chart.Series[0].Markers.Enabled = false;
         var renderer = new HtmlInteractiveChartRenderer();
-        var window = renderer.PrepareSection(chart, new ChartXViewport(4, 6), Configure);
+        var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(4, 6)), Configure);
         var initial = renderer.PrepareSection(chart, configure: Configure);
         var html = "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
             + "</style></head><body style='margin:12px'>" + initial.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";
@@ -199,7 +199,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             }
             return _renderer.PrepareSection(chart, configure: ConfigureSection).Html;
         }
-        internal string Window(double minimum, double maximum) => _renderer.PrepareSection(Chart(), new ChartXViewport(minimum, maximum), ConfigureSection).Html;
+        internal string Window(double minimum, double maximum) => _renderer.PrepareSection(Chart(), new ChartCartesianViewport(x: new ChartXViewport(minimum, maximum)), ConfigureSection).Html;
         internal string Page(params NativeHost[] peers) => "<!doctype html><html><head><style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle()
             + "</style></head><body style='margin:12px'>" + Initial + string.Concat(peers.Select(peer => peer.Initial))
             + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script></body></html>";

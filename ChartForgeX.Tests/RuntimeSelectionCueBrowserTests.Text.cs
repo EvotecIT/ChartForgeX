@@ -19,7 +19,7 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
         var selector = "[data-cfx-role=word-cloud-term][data-cfx-point='0']";
         if (annotation) {
             chart.AddBar("Readings", new[] { new ChartPoint(1, 4), new ChartPoint(2, 10) });
-            chart.Annotations.Add(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, 6, 8, "Authored caption", ChartColor.FromHex("#ef4444"), 0));
+            chart.AddAnnotation(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, 6, 8, "Authored caption", ChartColor.FromHex("#ef4444"), 0));
             selector = "[data-cfx-role=annotation]";
         } else chart.AddWordCloud("Topics", new[] { new ChartWordCloudItem("Visible", 100), new ChartWordCloudItem("Companion", 50) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => Options(options, false, true)), 390, 680);

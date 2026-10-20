@@ -37,7 +37,7 @@ public sealed class SourceAnnotationTests {
         Assert.Contains("data-cfx-channel-offset=\"12\"", prepared.ToSvg());
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         Assert.False(before.ToPng(new VisualRenderOptions(supersampling: 1)).SequenceEqual(png));
-        chart.Annotations.Clear(); chart.Series[0].Points[1] = new ChartPoint(3, 1);
+        chart.ClearAnnotations(); chart.Series[0].Points[1] = new ChartPoint(3, 1);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.Contains("annotation-id-", prepared.ToArtifact("drawings", VisualArtifactKind.Chart).ToSvg());
         ScatterBubbleColorRenderingTests.Capture(prepared, $"source-annotations-{width}-{mode}-{reversed}");
@@ -55,7 +55,7 @@ public sealed class SourceAnnotationTests {
         var full = chart.Prepare(Context(900, VisualThemeMode.Light));
         var anchor = Assert.Single(full.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "annotation-anchor");
         Assert.Contains(full.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "marker" && Math.Abs(node.Cx - anchor.Cx) < 1e-7 && Math.Abs(node.Cy - anchor.Cy) < 1e-7);
-        var window = chart.Prepare(Context(390, VisualThemeMode.Dark), new ChartXViewport(4, 7));
+        var window = chart.Prepare(Context(390, VisualThemeMode.Dark), new ChartCartesianViewport(x: new ChartXViewport(4, 7)));
         Assert.DoesNotContain(window.Scene.Nodes, node => node.Role == "annotation-anchor");
         var note = window.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Metadata.TryGetValue("data-cfx-annotation-id", out var id) && id == "ratio");
         Assert.Equal("false", note.Metadata["data-cfx-visible"]);

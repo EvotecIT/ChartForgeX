@@ -17,7 +17,7 @@ public sealed class ChartMapGeoJsonOptions {
     private double? _maximumLongitude;
     private double? _minimumLatitude;
     private double? _maximumLatitude;
-    private string? _valuePropertyName;
+    private string? _weightPropertyName;
     private string? _colorValuePropertyName;
 
     /// <summary>
@@ -38,11 +38,11 @@ public sealed class ChartMapGeoJsonOptions {
 
     /// <summary>Gets or sets the optional numeric feature property used for imported point weights.
     /// Missing or null values create unweighted points; present values must be finite nonnegative JSON numbers.</summary>
-    public string? ValuePropertyName {
-        get => _valuePropertyName;
+    public string? WeightPropertyName {
+        get => _weightPropertyName;
         set {
-            if (value != null && string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Value property names must not be empty.", nameof(value));
-            _valuePropertyName = value?.Trim();
+            if (value != null && string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Weight property names must not be empty.", nameof(value));
+            _weightPropertyName = value?.Trim();
         }
     }
 

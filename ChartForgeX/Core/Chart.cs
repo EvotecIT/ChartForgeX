@@ -63,11 +63,6 @@ public sealed partial class Chart {
     public ChartOptions Options { get; private set; } = new();
 
     /// <summary>
-    /// Gets the chart annotations.
-    /// </summary>
-    public List<ChartAnnotation> Annotations { get; } = new();
-
-    /// <summary>
     /// Creates a new chart.
     /// </summary>
     /// <returns>A new chart instance.</returns>

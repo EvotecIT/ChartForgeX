@@ -24,16 +24,16 @@ internal static partial class SmokeTests {
             Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.js"));
 
         // A shipping-artifact budget catches accidental bundled tools or repeated runtime copies.
-        // Reviewed native keyboard navigation adds 238 gzip bytes to the shared runtime.
-        // The 81 KiB shipping budget retains a bounded margin without obscuring that code.
+        // The managed native connection adds 589 gzip bytes for shared basis and lifetime ownership.
+        // Its reviewed 83,330-byte artifact fits within 82 KiB, without bundled tools or a second runtime.
         using var compressed = new MemoryStream();
         using (var gzip = new GZipStream(compressed, CompressionLevel.Optimal, leaveOpen: true)) {
             var script = Encoding.UTF8.GetBytes(HtmlInteractiveChartRenderer.BuildInteractionScript());
             gzip.Write(script, 0, script.Length);
         }
-        const int maximumGzipBytes = 81 * 1024;
+        const int maximumGzipBytes = 82 * 1024;
         Assert(compressed.Length <= maximumGzipBytes,
-            "Interactive runtime exceeds its 81 KiB gzip budget: " + compressed.Length + " bytes. Review the shipped asset before increasing the budget.");
+            "Interactive runtime exceeds its 82 KiB gzip budget: " + compressed.Length + " bytes. Review the shipped asset before increasing the budget.");
     }
 
     private static void GraphExplorerCanvasConsumersPreferLivePhysicsState() {

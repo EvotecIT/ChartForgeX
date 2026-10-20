@@ -12,9 +12,38 @@
     const lifetime = chartLifetimes.get(root);
     if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected a native preparation callback or null to disconnect.');
     cancelNativePreparation(lifetime);
+    if (lifetime.preparationSession && lifetime.preparationSession !== settings.session) {
+      for (const key of Object.keys(lifetime.preparationConnections))
+        if (lifetime.preparationConnections[key]?.session === lifetime.preparationSession) delete lifetime.preparationConnections[key];
+      lifetime.preparationSession = null;
+      syncXViewportControls(root);
+    }
     lifetime.preparationConnections[channel] = connection ? Object.freeze({ ...settings, callback: connection }) : null;
   };
-  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false) => {
+  const nativePreparationBasis = basis => {
+    if (typeof basis !== 'string' || !basis.trim()) throw new TypeError('A managed native section requires its nonempty opaque basis token.');
+    return basis;
+  };
+  const connectNativePreparation = (root, connection, options = {}) => {
+    if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected a native preparation callback or null to disconnect.');
+    const axes = options.axes === undefined ? 'x' : options.axes;
+    if (axes !== null && !['x', 'y', 'xy'].includes(axes)) throw new TypeError('Native viewport axes must be x, y, xy or null for annotation-only preparation.');
+    const session = connection ? { basis: nativePreparationBasis(options.basis) } : null;
+    if (connection && axes !== null && (!chartXProjection(root) || axes.includes('y') && !chartYProjection(root)))
+      throw new TypeError('This chart has no unambiguous native projection for the requested axes.');
+    const lifetime = chartLifetimes.get(root);
+    cancelNativePreparation(lifetime);
+    lifetime.preparationConnections = {}; lifetime.preparationSession = session;
+    if (session) {
+      setNativePreparationConnection(root, 'annotation', connection, { session });
+      if (axes !== null) {
+        setNativePreparationConnection(root, 'viewport', connection, { session, axes, legacy: false });
+        applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
+      }
+    }
+    syncXViewportControls(root);
+  };
+  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null) => {
     // Validate alternates before releasing the committed scene.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
     // A native reply carries fresh wide/narrow scenes. Commit the active drawing
@@ -34,6 +63,8 @@
     installChartSection(root, next);
     // Retain the root and connection; replace scene-owned work.
     lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();
+    // Publish the accepted native basis before restoring state can notify a host.
+    if (nativeState && lifetime.preparationSession === nativeState.session) nativeState.session.basis = nativeState.basis;
     lifetime.adaptive = adaptive;
     if (adaptiveDrawing) adaptive.current = adaptiveDrawing;
     chartLifetimes.set(root, lifetime); mountedCharts.add(root);
@@ -52,6 +83,7 @@
     cancelNativePreparation(lifetime);
     const request = Object.freeze({ ...payload, chartId: root.dataset.cfxChartId,
       requestId: 'cfx-request-' + (++chartPreparationRequestSequence), sceneRevision: lifetime.sceneRevision,
+      ...(binding.session ? { channel, basis: binding.session.basis } : {}),
       ...(lifetime.adaptive ? { drawing: lifetime.adaptive.current } : {}) });
     const pending = { request, channel, abort: new AbortController() }; lifetime.preparationPending = pending;
     syncXNavigation(root);
@@ -59,14 +91,16 @@
       && nativePreparationBinding(root, channel) === binding && lifetime.preparationPending === pending
       && lifetime.sceneRevision === request.sceneRevision && !pending.abort.signal.aborted;
     emitHostEvent(root, hooks.eventPrefix + 'request', request);
-    Promise.resolve().then(() => current() ? binding.callback(request, pending.abort.signal) : undefined).then(html => {
+    Promise.resolve().then(() => current() ? binding.callback(request, pending.abort.signal) : undefined).then(reply => {
       if (!current()) return;
+      const nativeState = binding.session ? { session: binding.session, basis: nativePreparationBasis(reply?.basis) } : null;
+      const html = binding.session ? reply.html : reply;
       if (typeof html !== 'string') throw new TypeError('A native preparation callback must return a fresh generated section HTML string.');
       const next = readChartSection(html, true).cloneNode(true);
       if (next.dataset.cfxChartId !== request.chartId) throw new TypeError('A native preparation reply must retain the chart identity.');
       hooks.validate(next, request);
       const before = hooks.beforeCommit?.();
-      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true);
+      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true, nativeState);
       hooks.accepted?.(); hooks.committed?.(request, before);
       emitHostEvent(root, hooks.eventPrefix + 'change', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind: request.kind });
     }).catch(error => {

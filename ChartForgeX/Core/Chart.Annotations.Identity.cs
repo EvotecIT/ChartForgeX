@@ -1,4 +1,3 @@
-using System;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Core;
@@ -11,7 +10,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional explicit color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddHorizontalLine(ChartAnnotationId id, double value, string label = "", ChartColor? color = null) =>
-        AddAuthoredAnnotation(new ChartAnnotation(id, ChartAnnotationKind.HorizontalLine, value, null, label,
+        AddAnnotation(new ChartAnnotation(id, ChartAnnotationKind.HorizontalLine, value, null, label,
             color ?? Options.ResolvedTheme.Text2, 1) { UsesThemeColor = !color.HasValue });
 
     /// <summary>Adds an authored vertical line whose identity is independent of its x-axis value and caption.</summary>
@@ -21,7 +20,7 @@ public sealed partial class Chart {
     /// <param name="color">An optional explicit color.</param>
     /// <returns>The current chart.</returns>
     public Chart AddVerticalLine(ChartAnnotationId id, double value, string label = "", ChartColor? color = null) =>
-        AddAuthoredAnnotation(new ChartAnnotation(id, ChartAnnotationKind.VerticalLine, value, null, label,
+        AddAnnotation(new ChartAnnotation(id, ChartAnnotationKind.VerticalLine, value, null, label,
             color ?? Options.ResolvedTheme.Text2, 1) { UsesThemeColor = !color.HasValue });
 
     /// <summary>Adds an authored horizontal band whose identity is independent of its y-axis interval and caption.</summary>
@@ -33,7 +32,7 @@ public sealed partial class Chart {
     /// <param name="opacity">The band opacity.</param>
     /// <returns>The current chart.</returns>
     public Chart AddHorizontalBand(ChartAnnotationId id, double start, double end, string label = "", ChartColor? color = null, double opacity = .14) =>
-        AddAuthoredAnnotation(new ChartAnnotation(id, ChartAnnotationKind.HorizontalBand, start, end, label,
+        AddAnnotation(new ChartAnnotation(id, ChartAnnotationKind.HorizontalBand, start, end, label,
             color ?? Options.ResolvedTheme.Axis, opacity));
 
     /// <summary>Adds an authored vertical band whose identity is independent of its x-axis interval and caption.</summary>
@@ -45,15 +44,7 @@ public sealed partial class Chart {
     /// <param name="opacity">The band opacity.</param>
     /// <returns>The current chart.</returns>
     public Chart AddVerticalBand(ChartAnnotationId id, double start, double end, string label = "", ChartColor? color = null, double opacity = .14) =>
-        AddAuthoredAnnotation(new ChartAnnotation(id, ChartAnnotationKind.VerticalBand, start, end, label,
+        AddAnnotation(new ChartAnnotation(id, ChartAnnotationKind.VerticalBand, start, end, label,
             color ?? Options.ResolvedTheme.Axis, opacity));
 
-    private Chart AddAuthoredAnnotation(ChartAnnotation annotation) {
-        foreach (var current in Annotations) {
-            if (current?.Id == annotation.Id)
-                throw new InvalidOperationException("Annotation IDs must be unique within a chart.");
-        }
-        Annotations.Add(annotation);
-        return this;
-    }
 }

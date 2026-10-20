@@ -115,32 +115,42 @@ internal static class PackageBrowserProbe {
             await page.EvaluateAsync("""
                 ({window:windowHtml,edited,reset})=>{
                     window.depth=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));
-                    window.depthChanges=[];window.depthErrors=[];
+                    window.depthChanges=[];window.depthErrors=[];window.depthRequests=[];
                     depth.root.addEventListener('cfxviewportchange',event=>depthChanges.push(event.detail));
                     depth.root.addEventListener('cfxannotationchange',event=>depthChanges.push(event.detail));
                     depth.root.addEventListener('cfxviewporterror',event=>depthErrors.push(event.detail));
                     depth.root.addEventListener('cfxannotationerror',event=>depthErrors.push(event.detail));
-                    depth.connectViewport(request=>{
-                        if(request.kind==='reset')return reset;
-                        if(request.kind!=='window'||request.sourceViewport.x.minimum!==2||request.sourceViewport.y.maximum!==80)
-                            throw new Error('Unexpected packed native source request');
-                        return windowHtml;
-                    },{axes:'xy'});
-                    depth.connectAnnotations(request=>{
-                        if(request.kind!=='replace'||request.annotationId!=='review'||request.sourceDrawing.start.x!==6
-                            ||!Object.isFrozen(request.sourceDrawing.start))throw new Error('Packed source command facts changed');
-                        return edited;
-                    });
+                    depth.connectNative(async(request,signal)=>{
+                        if(!Object.isFrozen(request)||!(signal instanceof AbortSignal)||signal.aborted)
+                            throw new Error('Packed managed preparation lost its immutable request or live abort signal');
+                        depthRequests.push(request);
+                        await Promise.resolve();
+                        if(request.channel==='viewport'&&request.kind==='window'){
+                            if(request.basis!=='initial'||request.sourceViewport.x.minimum!==2||request.sourceViewport.x.maximum!==8
+                                ||request.sourceViewport.y.minimum!==20||request.sourceViewport.y.maximum!==80)
+                                throw new Error('Unexpected packed managed source window or committed basis');
+                            return {html:windowHtml,basis:'window'};
+                        }
+                        if(request.channel==='annotation'){
+                            if(request.basis!=='window'||request.kind!=='replace'||request.annotationId!=='review'
+                                ||request.sourceDrawing.start.x!==6||!Object.isFrozen(request.sourceDrawing.start))
+                                throw new Error('Packed managed source command facts or committed basis changed');
+                            return {html:edited,basis:'edited'};
+                        }
+                        if(request.channel==='viewport'&&request.kind==='reset'&&request.basis==='edited')
+                            return {html:reset,basis:'reset'};
+                        throw new Error('Unexpected packed managed preparation channel, operation or committed basis');
+                    },{basis:'initial',axes:'xy'});
                     depth.select({targets:[depth.resolveTargets().find(target=>target.annotationId==='review')]});
                     depth.setViewport({x:{minimum:2,maximum:8},y:{minimum:20,maximum:80}});
                 }
                 """, new { window, edited, reset });
             await page.WaitForFunctionAsync("()=>depthChanges.length===1");
-            PackageAssertions.Require(await page.EvaluateAsync<bool>("()=>depth.getXWindow().minimum===2&&depth.getYWindow().maximum===80"),
+            PackageAssertions.Require(await page.EvaluateAsync<bool>("()=>depth.getXWindow().minimum===2&&depth.getYWindow().maximum===80&&depthRequests.length===1&&depthRequests[0].basis==='initial'"),
                 "Packed browser did not commit both native source windows.");
             await page.EvaluateAsync("()=>depth.applyAnnotationChange({operation:'replace',id:'review',drawing:{kind:'Note',start:{x:6,y:45},label:'Reviewed'}})");
             await page.WaitForFunctionAsync("()=>depthChanges.length===2");
-            PackageAssertions.Require(await page.EvaluateAsync<bool>("()=>depth.getSelection()[0]?.annotationId==='review'&&depth.getXWindow().minimum===2&&depth.getYWindow().minimum===20"),
+            PackageAssertions.Require(await page.EvaluateAsync<bool>("()=>depth.getSelection()[0]?.annotationId==='review'&&depth.getXWindow().minimum===2&&depth.getYWindow().minimum===20&&depthRequests.length===2&&depthRequests[1].basis==='window'"),
                 "Packed native drawing edit lost the source window or identified selection.");
             await page.Locator("[data-cfx-annotation-id=review]").FocusAsync();
             await page.Keyboard.PressAsync("Shift+F10");
@@ -154,13 +164,19 @@ internal static class PackageBrowserProbe {
             await Capture(page, "packed-native-commands-" + width + "-net" + Environment.Version.Major + "-" + Engine());
             await page.Locator("[data-cfx-reset]").ClickAsync();
             await page.WaitForFunctionAsync("()=>depthChanges.length===3");
-            PackageAssertions.Require(await page.EvaluateAsync<bool>("()=>depth.getXWindow().minimum===0&&depth.getYWindow().maximum===100&&depth.getSelection().length===0"),
+            PackageAssertions.Require(await page.EvaluateAsync<bool>("""
+                ()=>depth.getXWindow().minimum===0&&depth.getYWindow().maximum===100&&depth.getSelection().length===0
+                    &&depthRequests.length===3&&depthRequests[2].basis==='edited'
+                    &&depthRequests.map(request=>request.channel).join(',')==='viewport,annotation,viewport'
+                    &&new Set(depthRequests.map(request=>request.sceneRevision)).size===3
+                    &&new Set(depthRequests.map(request=>request.requestId)).size===3
+                """),
                 "Packed reset did not restore both source domains and clear reader selection.");
             PackageAssertions.Require(errors.Count == 0 && await page.EvaluateAsync<bool>("()=>depthErrors.length===0")
                 && !session.ConsoleLog.Any(entry => entry.Type == HtmlConsoleMessageType.Error),
                 "Packed native exploration reported a runtime error: " + string.Join("; ", errors));
         }
-        Console.WriteLine("Packed native XY windows, source commands and menu export passed in " + Engine() + ".");
+        Console.WriteLine("Packed managed native connection advanced committed basis through XY windows, source commands, menu export and reset in " + Engine() + ".");
     }
 
     private static HtmlBrowserEngine Engine() => Environment.GetEnvironmentVariable("CFX_TEST_BROWSER")?.Trim().ToLowerInvariant() switch {

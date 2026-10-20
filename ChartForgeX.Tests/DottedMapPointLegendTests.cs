@@ -28,7 +28,7 @@ public sealed class DottedMapPointLegendTests {
             Assert.Equal(chart.Series[0].ObservationIds[index].Value, (string?)entry.Attribute("data-cfx-observation-id"));
             Assert.Equal(index.ToString(), (string?)entry.Attribute("data-cfx-source-point"));
             Assert.Equal(observation.Longitude.ToString("R", System.Globalization.CultureInfo.InvariantCulture), (string?)entry.Attribute("data-cfx-longitude"));
-            Assert.Equal(observation.Value!.Value.ToString("R", System.Globalization.CultureInfo.InvariantCulture), (string?)entry.Attribute("data-cfx-value"));
+            Assert.Equal(observation.Weight!.Value.ToString("R", System.Globalization.CultureInfo.InvariantCulture), (string?)entry.Attribute("data-cfx-value"));
             var markGroup = xml.Descendants().Single(node => Role(node) == "dotted-map-point-source"
                 && (string?)node.Attribute("data-cfx-point") == index.ToString());
             if (index < 2) {

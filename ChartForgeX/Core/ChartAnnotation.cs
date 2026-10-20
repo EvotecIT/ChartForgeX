@@ -4,7 +4,7 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 /// <summary>
-/// Represents a static line or band annotation on a chart.
+/// Represents fixed chart annotation geometry and identity with optional mutable authoring stroke styling.
 /// </summary>
 public sealed partial class ChartAnnotation {
     /// <summary>Gets the authored source identity, or null for an anonymous annotation local to the current chart source.</summary>
@@ -51,7 +51,8 @@ public sealed partial class ChartAnnotation {
     /// </summary>
     public double Opacity { get; }
 
-    /// <summary>Gets or sets optional reference-line stroke overrides. Band fills retain their own color and opacity.</summary>
+    /// <summary>Gets or sets optional reference-line stroke overrides used by the next preparation. Band fills retain their own color and opacity.</summary>
+    /// <remarks>This is mutable authoring state. Changing it does not alter previously prepared SVG, PNG or semantic output.</remarks>
     public ChartStrokeStyle? StrokeStyle { get; set; }
 
     /// <summary>

@@ -9,37 +9,24 @@ namespace ChartForgeX.Core;
 public sealed partial class Chart : IVisualRenderable {
     /// <summary>Prepares chart geometry, typography and semantics into a detached shared static scene.</summary>
     /// <remarks>Every chart family uses the same mutable-model validation before its scene is compiled.</remarks>
-    public PreparedVisual Prepare(VisualRenderContext context) => PrepareCore(context, null);
+    public PreparedVisual Prepare(VisualRenderContext context) => Prepare(context, null);
 
-    /// <summary>Prepares a detached Cartesian scene within an explicit source-coordinate X window.</summary>
+    /// <summary>Prepares a detached scene within optional source-coordinate Cartesian windows.</summary>
     /// <param name="context">The logical size, frame, theme and typography used for preparation.</param>
-    /// <param name="viewport">An increasing window contained in the resolved full X domain.</param>
-    /// <returns>A prepared scene with its detached X projection.</returns>
-    /// <remarks>Supports ordinary vertical line, area, scatter, bubble, financial and paired-boundary series with linear or time X axes; sparklines are excluded.
+    /// <param name="viewport">The explicit X, primary Y or XY windows. Null prepares the full domain, including when resetting a previous viewport.
+    /// An omitted axis retains its full-data domain. Y windows require no secondary-axis series.</param>
+    /// <returns>A prepared scene with its detached native projections when supported.</returns>
+    /// <remarks>Explicit windows support ordinary vertical line, area, scatter, bubble, financial and paired-boundary series with linear or time X axes; sparklines are excluded.
     /// Time bounds use the same OLE Automation date units as source observations. Interpolation and full-data stack calculations are retained.
-    /// Full-data primary Y and secondary Y domains and authored series paint remain fixed. Marks are clipped to the plot even
-    /// when ClipMarksToPlot is false; automatic marker padding does not expand the requested X bounds.
+    /// Unrequested primary Y and secondary Y domains and authored series paint remain fixed. Marks are clipped to the plot even
+    /// when ClipMarksToPlot is false; automatic marker padding does not expand the requested bounds.
     /// All source observations and disconnected paths are retained. The chart and authored axes are unchanged.
-    /// Call Prepare(context) to prepare the full domain again. This API does not add interactive HTML zoom.</remarks>
-    /// <exception cref="ArgumentNullException">Context or viewport is null.</exception>
-    /// <exception cref="NotSupportedException">The chart uses an unsupported series, interpolation or X scale.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">The viewport extends outside the resolved full X domain or cannot map source X coordinates into finite logical units.</exception>
-    /// <exception cref="InvalidOperationException">The chart has no observations or no usable plot rectangle.</exception>
-    public PreparedVisual Prepare(VisualRenderContext context, ChartXViewport viewport) {
-        if (viewport == null) throw new ArgumentNullException(nameof(viewport));
-        return PrepareCore(context, new ChartCartesianViewport(x: viewport));
-    }
-
-    /// <summary>Prepares native geometry within an explicit X, primary Y or XY source window.</summary>
-    /// <param name="context">The native layout, frame and theme.</param>
-    /// <param name="viewport">The explicit source windows. Y windows require no secondary-axis series.</param>
-    /// <returns>A detached scene with matching X and eligible primary Y projections.</returns>
-    /// <remarks>Full-data calculations remain unchanged. Every requested axis is clipped to its exact source bounds;
-    /// an omitted axis retains its full-data domain. The mutable chart and authored axes are unchanged.</remarks>
-    public PreparedVisual Prepare(VisualRenderContext context, ChartCartesianViewport viewport) {
-        if (viewport == null) throw new ArgumentNullException(nameof(viewport));
-        return PrepareCore(context, viewport);
-    }
+    /// Full-domain preparation also supports non-Cartesian charts. This API does not add interactive HTML zoom.</remarks>
+    /// <exception cref="ArgumentNullException">Context is null.</exception>
+    /// <exception cref="NotSupportedException">An explicit window uses an unsupported chart, scale or secondary Y axis.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">A requested window extends outside its resolved full domain or cannot map source coordinates into finite logical units.</exception>
+    /// <exception cref="InvalidOperationException">An explicit window is requested without observations or a usable plot rectangle.</exception>
+    public PreparedVisual Prepare(VisualRenderContext context, ChartCartesianViewport? viewport) => PrepareCore(context, viewport);
 
     private PreparedVisual PrepareCore(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain = null) {
         if (context == null) throw new ArgumentNullException(nameof(context));
