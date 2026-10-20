@@ -38,12 +38,30 @@ internal static partial class VisualCartesianCompiler {
             labels.SetFittedTicks(axis, timeTicks);
             return;
         }
-        for (var count = axis.TickCount; count >= 2; count--) {
+        for (var count = NumericFittingCount(axis, minimum, maximum, length, horizontal, style); count >= 2; count--) {
             policy.TickCount = count;
             ticks = ChartTicks.GenerateInside(policy, minimum, maximum);
             if (AxisLabelSequenceFits(builder, axis, ticks, Position, horizontal, style, gap, fallback, labels)) break;
         }
         labels.SetFittedTicks(axis, ticks);
+    }
+
+    /// <summary>Lets automatic horizontal numeric scales try whole-unit ticks before measured captions choose a coarser step.</summary>
+    private static int NumericFittingCount(ChartAxis axis, double minimum, double maximum, double length, bool horizontal, TextStyle style) {
+        if (!horizontal || axis.Scale != ChartScaleKind.Linear || axis.HasExplicitTickCount) return axis.TickCount;
+        var span = maximum - minimum;
+        if (!ChartMath.IsFinite(span)) return axis.TickCount;
+        // Keep the established fractional resolution on short domains. On larger
+        // domains, padding must not turn a fitting unit step into a step of two.
+        var unitCount = Math.Max(axis.TickCount, Math.Ceiling(span) + 1);
+        // Small domains must reach their unit-step candidate before a broad-domain
+        // density budget can limit them. Measured captions decide whether it fits.
+        if (unitCount <= 100) return (int)unitCount;
+        // A readable five-em pitch bounds the automatic search on wide numeric
+        // domains. Allow one extra boundary budget for nice-step alignment.
+        var budget = axis.LabelDensity == ChartLabelDensity.Dense ? 100
+            : Math.Max(axis.TickCount + 1, Math.Floor(length / (style.EffectiveFontSize * 5)) + 2);
+        return (int)Math.Min(100, Math.Min(budget, unitCount));
     }
 
     private static void FitCartesianTicks(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,

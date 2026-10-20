@@ -43,6 +43,7 @@ MermaidExamples.Write(output);
 ConsumerRenderingExamples.Write(Path.Combine(output, "consumer-regressions"));
 DenseSignalExamples.Write(output, DemoPngOutputScale);
 CartesianCategoryExamples.Write(output, DemoPngOutputScale);
+NumericAxisExamples.Write(output, DemoPngOutputScale);
 ReportingExamples.Write(output, DemoPngOutputScale);
 SunburstBranchHighlightExamples.Write(output);
 DenseLegendExamples.Write(output, DemoPngOutputScale);

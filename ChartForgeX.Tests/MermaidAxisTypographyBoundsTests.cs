@@ -44,8 +44,14 @@ public sealed class MermaidAxisTypographyBoundsTests {
         foreach (var caption in new[] { "Jan", "Feb", "Mar", "0", "100" }) Assert.Contains(caption, labels.Select(item => item.Value));
         var numericRole = horizontal ? "axis-x-label" : "axis-y-label";
         var numericLabels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(label => label.Role == numericRole).ToArray();
-        var numericAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        Assert.InRange(numericLabels.Length, 2, numericAxis.TickCount);
+        Assert.InRange(numericLabels.Length, 2, 100);
+        var ordered = numericLabels.OrderBy(label => horizontal ? label.X : label.Baseline).ToArray();
+        for (var index = 1; index < ordered.Length; index++) {
+            var previousEnd = horizontal ? ordered[index - 1].X + ordered[index - 1].Text.Metrics.Width
+                : ordered[index - 1].Baseline - ordered[index - 1].Text.Ascent + ordered[index - 1].Text.Metrics.Height;
+            var nextStart = horizontal ? ordered[index].X : ordered[index].Baseline - ordered[index].Text.Ascent;
+            Assert.True(previousEnd <= nextStart + .1, "Automatic numeric captions must remain separated at their painted size.");
+        }
         var values = numericLabels.Select(label => double.Parse(label.Text.Lines.Single().Text, CultureInfo.InvariantCulture)).ToArray();
         for (var index = 2; index < values.Length; index++) Assert.Equal(values[1] - values[0], values[index] - values[index - 1], 7);
         Assert.All(numericLabels, label => {

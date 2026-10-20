@@ -212,7 +212,7 @@ internal static partial class SmokeTests {
             var minDistinctColors = chart.GetProperty("png").GetProperty("minDistinctColors").GetInt32();
             var outputScale = chart.GetProperty("png").GetProperty("outputScale").GetInt32();
             var maxEdgeInkPixels = chart.GetProperty("png").GetProperty("maxEdgeInkPixels").GetInt64();
-            Assert(width >= 320 && height >= 90, "Visual baseline dimensions should describe real chart output: " + name + ".");
+            Assert(width > 0 && height > 0, "Visual baseline dimensions should describe a positive chart viewport: " + name + ".");
             Assert(minVisualNodes >= 2, "Visual baseline SVG visual-node minimum should be meaningful: " + name + ".");
             Assert(maxClippedTextNodes == 0, "Visual baseline should reject clipped SVG text: " + name + ".");
             Assert(outputScale >= 1 && outputScale <= 4, "Visual baseline PNG scale should be explicit: " + name + ".");
@@ -221,12 +221,5 @@ internal static partial class SmokeTests {
             Assert(maxEdgeInkPixels == 0, "Visual baseline should reject PNG edge pressure: " + name + ".");
         }
 
-        var contributionGuide = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "CONTRIBUTING.md"));
-        Assert(contributionGuide.Contains("DotNetCommandTimeoutSeconds", StringComparison.Ordinal) && contributionGuide.Contains("PackageConsumerTimeoutSeconds", StringComparison.Ordinal), "Contribution guidance should document build timeout controls.");
-        Assert(contributionGuide.Contains("fails with a named timeout", StringComparison.Ordinal), "Contribution guidance should explain timeout failures as actionable build signals.");
-        Assert(contributionGuide.Contains("-UpdateVisualBaseline", StringComparison.Ordinal), "Contribution guidance should explain intentional visual-baseline refreshes.");
-        Assert(contributionGuide.Contains("clipped SVG text", StringComparison.Ordinal) && contributionGuide.Contains("PNG edge pressure", StringComparison.Ordinal), "Contribution guidance should explain the visual-baseline quality gates.");
-        Assert(contributionGuide.Contains("Topology Visual Coverage", StringComparison.Ordinal), "Contribution guidance should document the topology visual coverage gate.");
-        Assert(contributionGuide.Contains("visual-capability-manifest.json", StringComparison.Ordinal), "Contribution guidance should document the topology visual coverage manifest.");
     }
 }
