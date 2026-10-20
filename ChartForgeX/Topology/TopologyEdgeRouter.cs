@@ -54,7 +54,7 @@ internal static partial class TopologyEdgeRouter {
         if (edge.SourcePort == TopologyEdgePort.Auto) sourcePoint = BoundaryPoint(source, CenterX(target), CenterY(target), portedEdge.SourcePort);
         if (edge.TargetPort == TopologyEdgePort.Auto) targetPoint = BoundaryPoint(target, CenterX(source), CenterY(source), portedEdge.TargetPort);
         var candidates = new List<RouteCandidate> {
-            new("orthogonal-default", EdgePoints(source, target, TopologyEdgeRouting.Orthogonal, edge.SourcePort, edge.TargetPort, routeLane))
+            new("orthogonal-default", ObstacleOrthogonalDefaultPoints(source, target, edge.SourcePort, edge.TargetPort, routeLane))
         };
         var aligned = AlignedEndpointRoute(source, target, edge);
         if (aligned != null) candidates.Add(new RouteCandidate("aligned-direct", aligned));
