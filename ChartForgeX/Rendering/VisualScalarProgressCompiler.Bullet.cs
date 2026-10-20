@@ -73,10 +73,10 @@ internal static partial class VisualScalarProgressCompiler {
                     var valueStyle = Style(chart, context, series, 0, colors.Foreground, context.Theme.Typography.DataLabelSize, 700);
                     var textWidth = Math.Min(builder.MeasureText(labels[index], valueStyle).Width, available * .6);
                     var valueColor = value < target ? colors.Status.Critical.Ink : colors.Foreground;
-                    Text(chart, context, builder, series, 0, labels[index], new ChartRect(textLeft, bounds.Top, textWidth, rowHeight),
+                    BulletNumber(chart, context, builder, series, labels[index], new ChartRect(textLeft, bounds.Top, textWidth, rowHeight),
                         "bullet-value-label", Id(sourceIndex) + "-value", valueColor, context.Theme.Typography.DataLabelSize, 700, alignment: TextAlignment.Left);
                     var targetLeft = textLeft + textWidth + gap / 2;
-                    Text(chart, context, builder, series, 0, "/ " + targets[index], new ChartRect(targetLeft, bounds.Top, Math.Max(0, plot.Right - targetLeft), rowHeight),
+                    BulletNumber(chart, context, builder, series, "/ " + targets[index], new ChartRect(targetLeft, bounds.Top, Math.Max(0, plot.Right - targetLeft), rowHeight),
                         "bullet-target-label", Id(sourceIndex) + "-target", colors.MutedForeground, context.Theme.Typography.DataLabelSize, alignment: TextAlignment.Left);
                 }
             }
@@ -87,17 +87,40 @@ internal static partial class VisualScalarProgressCompiler {
             var ticks = new double[5];
             for (var index = 0; index < ticks.Length; index++) ticks[index] = min + (max - min) * index / 4;
             var formatTick = ChartAxisValueFormatter.Create(chart.Options.XAxis, ticks, chart.Options.ValueFormatter);
-            for (var index = 0; index < 5; index++) {
+            var style = Style(chart, context, entries[0].Series, -1, colors.MutedForeground, context.Theme.Typography.AxisSize, 400, true);
+            var labelArea = new ChartRect(plot.Left, y + axisHeight / 6, plot.Width, axisHeight * 5 / 6);
+            var requests = new List<LabelPlacementRequest>();
+            for (var index = 0; index < ticks.Length; index++) {
                 var tick = ticks[index]; var x = X(tick);
                 builder.Line(x, y, x, y + axisHeight / 6, colors.Border, context.Theme.AxisStrokeWidth, "bullet-axis-tick", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
                 var text = formatTick(tick);
-                var boxWidth = width / 4;
-                var boxLeft = Math.Max(left, Math.Min(left + width - boxWidth, x - boxWidth / 2));
-                Text(chart, context, builder, entries[0].Series, -1, text, new ChartRect(boxLeft, y + axisHeight / 6, boxWidth, axisHeight * 5 / 6),
-                    "bullet-axis-label", "bullet-axis-label-" + index, colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
+                var measured = builder.MeasureText(text, style);
+                var anchor = Math.Max(labelArea.Left + measured.Width / 2, Math.Min(labelArea.Right - measured.Width / 2, x));
+                requests.Add(new LabelPlacementRequest(text, new ChartPoint(anchor, labelArea.Top + labelArea.Height / 2), style,
+                    new[] { new LabelCandidate(0, 0, .5, .5) }, priority: index == 0 || index == ticks.Length - 1 ? 1 : 0) {
+                    Bounds = labelArea, Fallback = LabelFallbackRule.Drop, MeasuredSize = measured
+                });
+            }
+            var placements = new LabelPlacementService().Place(requests, labelArea, null, gap / 2,
+                (text, labelStyle) => builder.MeasureText(text, labelStyle));
+            for (var index = 0; index < placements.Count; index++) {
+                var placement = placements[index]; var id = "bullet-axis-label-" + index;
+                if (placement.IsDropped) {
+                    builder.AddRegion(new VisualSemanticRegion(id, "bullet-axis-label", labelArea, requests[index].Text));
+                    builder.AddDiagnostic(new VisualDiagnostic("bullet.label-overflow",
+                        "A complete bullet scale caption was omitted because it cannot fit without overlapping; the exact fact remains in descriptive regions."));
+                } else BulletNumber(chart, context, builder, entries[0].Series, requests[index].Text, placement.Bounds,
+                    "bullet-axis-label", id, colors.MutedForeground, context.Theme.Typography.AxisSize, ticks: true);
             }
         }
     }
+
+    /// <summary>Keeps scalar facts complete at their resolved size; a constrained row omits the entire caption.</summary>
+    private static void BulletNumber(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
+        string text, ChartRect bounds, string role, string id, ChartColor color, double size, int weight = 400, bool ticks = false,
+        TextAlignment alignment = TextAlignment.Center) =>
+        VisualRadialPrimitives.Text(builder, text, bounds, Style(chart, context, series, ticks ? -1 : 0, color, size, weight, ticks),
+            role, id, alignment: alignment, fallback: LabelFallbackRule.Drop);
 
     private static bool HasBulletPaint(ChartSeries series) => series.Color.HasValue
         || series.PointColors.Count > 0 && series.PointColors[0].HasValue || series.StateRole != ChartSeriesState.None;

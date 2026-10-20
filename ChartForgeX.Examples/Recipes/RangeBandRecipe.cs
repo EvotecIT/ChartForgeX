@@ -2,8 +2,16 @@
 public static class RangeBandRecipe {
     /// <summary>Creates the selected range-band example.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "singleton" or "compact-singleton" or "dense" or "compact-dense"))
             throw new ArgumentOutOfRangeException(nameof(variant));
+        if (variant is "singleton" or "compact-singleton") return Chart.Create().WithTitle("One observed range")
+            .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId("expected-range"), "Expected range", new[] { new ChartRangeBand(0, 0, 7) })
+                .WithObservationId(0, new ChartObservationId("only-range")));
+        if (variant is "dense" or "compact-dense") return Chart.Create().WithTitle("Estimated uncertainty").WithXAxis("Observation").WithYAxis("Expected level")
+            .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId("expected-range"), "Expected range",
+                Enumerable.Range(0, 32).Select(index => new ChartRangeBand(index,
+                    index % 7 == 0 ? 0 : Math.Sin(index * .5) * 9,
+                    index % 7 == 0 ? 0 : Math.Sin(index * .5) * 9 + 4, index == 16))));
         var count = variant == "sparse" ? 2 : 5;
         var ranges = Enumerable.Range(1, count).Select(index => new ChartRangeBand(index, 20 + index * 2, 40 + index * 4));
         var expected = ChartSeries.CreateRangeBand(new ChartSeriesId("expected-range"), "Expected range", ranges);

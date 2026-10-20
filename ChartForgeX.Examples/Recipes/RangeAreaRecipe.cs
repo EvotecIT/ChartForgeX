@@ -2,10 +2,14 @@
 public static class RangeAreaRecipe {
     /// <summary>Creates the selected range-area example from typed lower and upper limits.</summary>
     public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
-        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
+        if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "singleton" or "compact-singleton"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
-        if (variant is "options" or "compact-options") {
+        if (variant is "singleton" or "compact-singleton") {
+            chart.WithTitle("One observed range").AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("expected-range"), "Expected range",
+                new[] { new ChartRangeBand(0, 0, 7) }).WithObservationId(0, new ChartObservationId("only-range")));
+        }
+        else if (variant is "options" or "compact-options") {
             var expected = ChartSeries.CreateRangeArea(new ChartSeriesId("expected-range"), "Expected range", new[] {
                 new ChartRangeBand(1, 15, 30), new ChartRangeBand(2, 25, 50), new ChartRangeBand(3, 20, 40),
                 new ChartRangeBand(4, 40, 65), new ChartRangeBand(5, 30, 55)

@@ -11,6 +11,16 @@ internal static partial class VisualCartesianCompiler {
 
     private static double ResolveMarkerRadius(ChartSeries series, VisualRenderContext context) => VisualMarkerScene.Radius(series, context);
 
+    /// <summary>Shows an otherwise degenerate isolated pair without adding a fictional connection or filled span.</summary>
+    private static bool PairedObservationMarkersEnabled(ChartSeries series, int item) {
+        var raw = item * 2;
+        var startsRun = raw == 0 || series.RenderPoints[raw].BreakBefore || series.RenderPoints[raw + 1].BreakBefore;
+        var endsRun = raw + 2 == series.RenderPoints.Count || series.RenderPoints[raw + 2].BreakBefore || series.RenderPoints[raw + 3].BreakBefore;
+        var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue
+            || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
+        return VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue || startsRun && endsRun);
+    }
+
     /// <summary>Contains finite-size marks by extending only automatic ends of the final pixel-space axes.</summary>
     private static bool ExpandMarkerRanges(Chart chart, VisualRenderContext context, ChartRect plot,
         ChartRange range, ChartRange? secondaryRange, ChartStackLayout stacks, ChartBubbleSizeScale? bubbleScale) {
@@ -42,9 +52,7 @@ internal static partial class VisualCartesianCompiler {
             for (var item = 0; item < count; item++) {
                 if (pointSeries && !ShowMarker(chart, series, item)) continue;
                 if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea) {
-                    var hasOverride = item < series.PointColors.Count && series.PointColors[item].HasValue
-                        || item < series.PointFillPatterns.Count && series.PointFillPatterns[item].HasValue;
-                    if (!VisualMarkerScene.Enabled(series, hasOverride || series.MarkerRadius.HasValue)) continue;
+                    if (!PairedObservationMarkersEnabled(series, item)) continue;
                 }
                 var raw = item * ObservationStride(series.Kind);
                 var point = series.RenderPoints[raw];
