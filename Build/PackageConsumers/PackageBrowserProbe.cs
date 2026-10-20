@@ -69,11 +69,34 @@ internal static class PackageBrowserProbe {
             await page.Locator("[data-cfx-graph-action='redo']").ClickAsync();
             PackageAssertions.Require(await page.Locator("[data-node-id='packed-worker'][data-cfx-role='graph-node']").CountAsync() == 1,
                 "Packed graph editor redo lost the added node.");
+            var physics = page.Locator("[data-cfx-graph-action='physics']");
+            if (await physics.GetAttributeAsync("aria-pressed") == "true") await physics.ClickAsync();
+            var positions = await page.EvaluateAsync<string>("()=>JSON.stringify(ChartForgeXGraphExplorer.positions(document.querySelector('.cfx-graph-explorer')))");
+            await page.Locator("[data-cfx-graph-action='fit']").ClickAsync();
+            PackageAssertions.Require(await page.EvaluateAsync<bool>("""
+                async()=>{
+                    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+                    const root=document.querySelector('.cfx-graph-explorer'),actual=root.dataset.cfxGraphRendererActive,
+                        surface=root.querySelector('[data-cfx-role="graph-'+(actual==='svg'?'scene':actual)+'"]'),box=surface.getBoundingClientRect(),
+                        view=root.querySelector('[data-cfx-role=graph-scene]').viewBox.baseVal,
+                        camera=ChartForgeXGraphExplorer.captureState(root).viewport,
+                        scale=Math.min(box.width/view.width,box.height/view.height),nodes=ChartForgeXGraphExplorer.positions(root);
+                    return nodes.length===3&&nodes.every(node=>{
+                        const x=box.left+(box.width-view.width*scale)/2+(node.x*camera.scale+camera.x)*scale,
+                            y=box.top+(box.height-view.height*scale)/2+(node.y*camera.scale+camera.y)*scale,
+                            hit=document.elementFromPoint(x,y);
+                        return x>=box.left&&x<=box.right&&y>=box.top&&y<=box.bottom&&
+                            (actual==='svg'?hit?.closest('[data-node-id]')?.dataset.nodeId===node.id:hit===surface);
+                    });
+                }
+                """), "Packed graph Fit did not expose all three edited nodes at " + width + " pixels.");
+            PackageAssertions.Require(positions == await page.EvaluateAsync<string>("()=>JSON.stringify(ChartForgeXGraphExplorer.positions(document.querySelector('.cfx-graph-explorer')))"),
+                "Packed graph Fit changed the edited node positions.");
             await Capture(page, "packed-editor-" + width + "-" + engine);
             PackageAssertions.Require(errors.Count == 0 && !session.ConsoleLog.Any(entry => entry.Type == HtmlConsoleMessageType.Error),
                 "Packed HTML runtime reported an error: " + string.Join("; ", errors));
         }
-        Console.WriteLine("Packed HTML keyboard selection and graph editor add/undo/redo passed in " + engine + ".");
+        Console.WriteLine("Packed HTML keyboard selection and graph editor add/undo/redo/Fit passed in " + engine + ".");
     }
 
     private static HtmlBrowserEngine Engine() => Environment.GetEnvironmentVariable("CFX_TEST_BROWSER")?.Trim().ToLowerInvariant() switch {
