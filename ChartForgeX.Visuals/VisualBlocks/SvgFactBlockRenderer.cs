@@ -17,13 +17,16 @@ public sealed partial class SvgFactBlockRenderer {
     /// <summary>Renders factual SVG with a caller-provided embedding identity.</summary>
     public string Render(IVisualBlock block, string idScope) {
         VisualFactBlockRendering.Validate(block);
-        return RenderOwned(block, idScope, RenderCore, layoutLabels: block is not ChartList && block is not MetricCard);
+        return RenderOwned(block, idScope, RenderCore, layoutLabels: NeedsLabelPlacement(block));
     }
     internal ChartLabelScene RenderLabelScene(IVisualBlock block) {
         var font = new Typography.FontSpec { Family = block.Options.ResolvedTheme.FontFamily };
         using var measurement = ChartLabelScene.OpenFontScope(font);
-        return ChartLabelScene.Create(RenderCore(block, BuildProvisionalId(block, string.Empty)), font, place: block is not ChartList && block is not MetricCard);
+        return ChartLabelScene.Create(RenderCore(block, BuildProvisionalId(block, string.Empty)), font, place: NeedsLabelPlacement(block));
     }
+    // These layouts already measure and fit their text inside owned cells or rows. A second scene-wide
+    // placement pass can move their captions into neighbouring rows or discard valid edge captions.
+    private static bool NeedsLabelPlacement(IVisualBlock block) => block is not ChartTable && block is not ChartList && block is not MetricCard;
     private static string RenderCore(IVisualBlock block, string id) => RenderSurface(block, id, writer => {
         if (block is ChartTable table) RenderTable(writer, table, id);
         else if (block is ChartList list) RenderList(writer, list);
