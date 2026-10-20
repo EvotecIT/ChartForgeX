@@ -10,6 +10,8 @@ Treemaps display their group and leaf captions by default. An explicit `WithData
 
 ## Unified authoring contracts
 
+Numeric and typed transactions share `ChartObservationChangeKind`. Replace `ChartPointChangeKind` in variables, switches and comparisons with that type; `ChartPointChange.Kind` returns it. The operation values remain `Append = 0`, `Replace = 1` and `Remove = 2`, and existing change factories and transaction behavior are unchanged.
+
 Use the same immutable `VisualTheme` and explicit `VisualThemeMode` for every visual model. Replace `ChartTheme` and `TopologyTheme` with paired presets such as `VisualTheme.Graphite()` or `VisualTheme.Report()`, then select `Dark` through `WithTheme(theme, VisualThemeMode.Dark)` or `ThemeMode`. Replace mutable theme and brand-kit edits with `theme.Configure(builder => ...)`; assign the returned snapshot. Palette colors live in `builder.Light` and `builder.Dark`, typography in `builder.Typography`, and geometry/effects in their named builder properties. Local canvas/story/window controls live in their owning style options.
 
 Replace independent `VisualCanvasTheme` text paints with `canvas.ConfigureStyle(...)`: `TileLabelColor`, `TileValueColor`, `TileDetailColor` and `HeroBadgeTextColor` preserve independent authored roles. A null override inherits the selected shared theme; changing the canvas mode does not discard an explicit color. Title and other positioned text keep their existing text-layer color options.

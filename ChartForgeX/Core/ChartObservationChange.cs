@@ -1,13 +1,13 @@
 namespace ChartForgeX.Core;
 
-/// <summary>The operation applied to one explicitly identified authored observation.</summary>
+/// <summary>The shared operation applied to one explicitly identified numeric or typed authored observation.</summary>
 public enum ChartObservationChangeKind {
     /// <summary>Appends a new observation after the existing observations.</summary>
-    Append,
+    Append = 0,
     /// <summary>Replaces the value of an existing observation, retaining its ordinal and presentation.</summary>
-    Replace,
+    Replace = 1,
     /// <summary>Removes an existing observation and its presentation.</summary>
-    Remove
+    Remove = 2
 }
 
 /// <summary>One immutable keyed operation in a typed observation transaction.</summary>

@@ -59,14 +59,15 @@ public sealed class ChartAnnotationIdentityTests {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AllFourKindsRetainAuthoredIdsWithoutChangingPaint(bool horizontalBars) {
-        var anonymous = AllKinds(false, horizontalBars);
-        var authored = AllKinds(true, horizontalBars);
+    public void AxisGuidesRetainAuthoredIdsWithoutChangingPaint(bool horizontalBars) {
+        var anonymous = AllAxisGuideKinds(false, horizontalBars);
+        var authored = AllAxisGuideKinds(true, horizontalBars);
         var before = anonymous.Prepare(new VisualRenderContext());
         var actual = authored.Prepare(new VisualRenderContext());
         Assert.Equal(before.ToPng(), actual.ToPng());
         Assert.Equal(4, actual.Scene.Annotations.Count);
-        Assert.Equal(Enum.GetNames<ChartAnnotationKind>().Order(), actual.Scene.Annotations.Select(item => item.Kind).Order());
+        Assert.Equal(new[] { nameof(ChartAnnotationKind.HorizontalBand), nameof(ChartAnnotationKind.HorizontalLine),
+            nameof(ChartAnnotationKind.VerticalBand), nameof(ChartAnnotationKind.VerticalLine) }, actual.Scene.Annotations.Select(item => item.Kind).Order());
         var svg = XDocument.Parse(actual.ToSvg());
         var groups = svg.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "annotation").ToArray();
         Assert.Equal(authored.Annotations.Select(item => item.Id!.Value.Value).Order(), groups.Select(node => (string)node.Attribute("data-cfx-annotation-id")!).Order());
@@ -86,7 +87,7 @@ public sealed class ChartAnnotationIdentityTests {
     private static Chart Create() => Chart.Create().WithSize(480, 300).WithLegend(false)
         .AddLine("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
 
-    private static Chart AllKinds(bool authored, bool horizontalBars) {
+    private static Chart AllAxisGuideKinds(bool authored, bool horizontalBars) {
         var chart = horizontalBars ? Chart.Create().WithSize(480, 300).WithLegend(false)
             .AddHorizontalBar("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }) : Create();
         if (authored) return chart.AddHorizontalLine(new ChartAnnotationId("annotation-0"), 3, "Limit")

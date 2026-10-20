@@ -9,6 +9,18 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects keyed live transactions, rolling source ownership and detached exports.</summary>
 public sealed class KeyedPointChangesTests {
     [Fact]
+    public void NumericAndTypedChangesExposeTheSameStableOperationKinds() {
+        var numeric = new[] { ChartPointChange.Append(Id("new"), new ChartPoint(1, 2)),
+            ChartPointChange.Replace(Id("current"), new ChartPoint(2, 3)), ChartPointChange.Remove(Id("old")) };
+        var typed = new[] { ChartObservationChange<ChartBubble>.Append(Id("new"), new ChartBubble(1, 2, 3)),
+            ChartObservationChange<ChartBubble>.Replace(Id("current"), new ChartBubble(2, 3, 4)), ChartObservationChange<ChartBubble>.Remove(Id("old")) };
+        ChartObservationChangeKind[] numericKinds = numeric.Select(change => change.Kind).ToArray();
+        Assert.Equal(new[] { ChartObservationChangeKind.Append, ChartObservationChangeKind.Replace, ChartObservationChangeKind.Remove }, numericKinds);
+        Assert.Equal(numericKinds, typed.Select(change => change.Kind));
+        Assert.Equal(new[] { 0, 1, 2 }, numericKinds.Select(kind => (int)kind));
+    }
+
+    [Fact]
     public void RollingTransactionKeepsSurvivingKeysAndEveryPresentationOverride() {
         var series = Series().WithPointColor(1, "#123456").WithPointLabel(1, "Second")
             .WithPointFillPattern(1, ChartFillPattern.Crosshatch)

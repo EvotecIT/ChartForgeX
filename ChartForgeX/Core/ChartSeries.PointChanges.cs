@@ -45,8 +45,8 @@ public sealed partial class ChartSeries {
         foreach (var change in changes) {
             _ = change.Id.Value;
             yield return change.Kind switch {
-                ChartPointChangeKind.Append => ChartObservationChange<ChartPoint>.Append(change.Id, change.Point!.Value),
-                ChartPointChangeKind.Replace => ChartObservationChange<ChartPoint>.Replace(change.Id, change.Point!.Value),
+                ChartObservationChangeKind.Append => ChartObservationChange<ChartPoint>.Append(change.Id, change.Point!.Value),
+                ChartObservationChangeKind.Replace => ChartObservationChange<ChartPoint>.Replace(change.Id, change.Point!.Value),
                 _ => ChartObservationChange<ChartPoint>.Remove(change.Id)
             };
         }

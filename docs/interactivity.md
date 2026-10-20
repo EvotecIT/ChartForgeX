@@ -696,7 +696,7 @@ The default theme lists Arial before the generic system font, keeping the browse
 
 ## State Bookmarks
 
-Standalone zoom and pan controls transform the complete rendered SVG, including its axes and labels. Connected hosts can use native X windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
+Standalone zoom and pan controls transform the complete rendered SVG, including its axes and labels. Connected hosts can use native X or primary-Y/XY windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
 
 ## Translated controls and text direction
 
