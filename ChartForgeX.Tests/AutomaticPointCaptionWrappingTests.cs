@@ -43,19 +43,32 @@ public sealed class AutomaticPointCaptionWrappingTests {
         Assert.Equal(Caption, Assert.Single(Assert.Single(Captions(prepared)).Text.Lines).Text);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ExplicitPlacementAndFormattedNumericValuesKeepSingleLinePolicy(bool numeric) {
+    [Fact]
+    public void ExplicitAuthoredPlacementKeepsSingleLineEllipsisPolicy() {
         var chart = Create(ChartSeriesKind.Scatter, 220);
-        if (numeric) {
-            chart.Series[0].UseFormattedPointLabel(0);
-            chart.Options.ValueFormatter = _ => Caption;
-        } else chart.Series[0].DataLabelPlacement = ChartDataLabelPlacement.Above;
+        chart.Series[0].DataLabelPlacement = ChartDataLabelPlacement.Above;
         var prepared = Prepare(chart);
         var caption = Assert.Single(Assert.Single(Captions(prepared)).Text.Lines).Text;
         Assert.EndsWith("…", caption);
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
+    }
+
+    [Fact]
+    public void NonfittingFormattedValueOmitsWholeCaptionAndKeepsExactSourceFact() {
+        var chart = Create(ChartSeriesKind.Scatter, 220);
+        chart.Series[0].UseFormattedPointLabel(0);
+        chart.Options.ValueFormatter = _ => Caption;
+        var prepared = Prepare(chart);
+        Assert.Empty(Captions(prepared));
+        Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
+        var source = Assert.Single(XDocument.Parse(prepared.ToSvg()).Descendants(),
+            node => (string?)node.Attribute("data-cfx-role") == "point");
+        Assert.Equal(Caption, (string?)source.Attribute("data-cfx-label"));
+        Assert.Equal(Caption, (string?)source.Attribute("data-cfx-formatted-y"));
+        Assert.Equal("5", (string?)source.Attribute("data-cfx-y"));
+        Assert.Equal("region-north", (string?)source.Attribute("data-cfx-observation-id"));
+        Assert.Contains(prepared.Regions, region => region.Role == "point" && region.Label!.Contains(Caption, StringComparison.Ordinal));
+        Assert.NotEmpty(prepared.ToPng());
     }
 
     [Fact]

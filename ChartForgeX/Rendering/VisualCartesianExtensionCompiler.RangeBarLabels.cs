@@ -34,7 +34,7 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void AddRangeBarEndpointLabels(Chart chart, VisualRenderContext context, ChartSeries series,
-        int index, int item, ChartRect body, double category, double start, double end, bool horizontal,
+        int index, int item, ChartRect body, double category, double start, double end, bool horizontal, bool customCaptions,
         ResolvedPointLabel observation, string? startText, string? endText, List<LabelPlacementRequest> labels) {
         Add(startText, start, start <= end, "start");
         Add(endText, end, end < start, "end");
@@ -47,7 +47,8 @@ internal static partial class VisualCartesianCompiler {
                 : new ChartRect(body.Left, body.Top + (leading ? 0 : body.Height / 2), body.Width, body.Height / 2);
             var anchor = horizontal ? new ChartPoint(endpoint, category) : new ChartPoint(category, endpoint);
             var direction = horizontal ? leading ? -1 : 1 : leading ? 1 : -1;
-            var label = new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, observation.Style.TextCase, CultureInfo.InvariantCulture), observation.Style);
+            var label = new ResolvedPointLabel(text, TextCaseTransformer.Apply(text, observation.Style.TextCase, CultureInfo.InvariantCulture), observation.Style,
+                fallback: customCaptions ? LabelFallbackRule.EllipsisThenDrop : LabelFallbackRule.Drop);
             AddLabel(chart, context, series, index, item, anchor, half, label, labels,
                 barDirection: direction, horizontal: horizontal, labelId: PointId(index, item) + "-" + suffix);
         }

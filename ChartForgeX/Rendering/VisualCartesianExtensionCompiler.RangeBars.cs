@@ -53,7 +53,7 @@ internal static partial class VisualCartesianCompiler {
             obstacles.Add(new LabelObstacle(PointId(index, item), obstacle));
             if (endpoints) {
                 AddRangeBarEndpointLabels(chart, context, series, index, item, bounds, category, start, end,
-                    horizontal, label, captions.Start, captions.End, labels);
+                    horizontal, endpointFormatter != null, label, captions.Start, captions.End, labels);
                 continue;
             }
             var high = horizontal ? map.X(Math.Max(first.Y, second.Y)) : map.Y(Math.Max(first.Y, second.Y));
