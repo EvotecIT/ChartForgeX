@@ -58,7 +58,7 @@
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 31.6
+        "kb": 31.7
       }
     },
     "surfaces": {
@@ -112,7 +112,7 @@
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 31.6
+        "kb": 31.7
       }
     }
   },
@@ -167,9 +167,9 @@
       "architecture": {
         "base": "/site/atlas/architecture",
         "ext": "svg",
-        "w": 911,
-        "h": 683,
-        "kb": 31.3,
+        "w": 1103,
+        "h": 690,
+        "kb": 31.5,
         "source": "---\ntitle: Report platform\n---\narchitecture-beta\ngroup edge(cloud)[Edge]\ngroup core(cloud)[Platform]\ngroup data(database)[Data] in core\nservice web(internet)[Web] in edge\nservice api(server)[API] in core\nservice renderer(server)[Renderer] in core\nservice sql(database)[SQL] in data\nservice blob(disk)[Cache] in data\nweb:R --\u003E L:api\napi:R --\u003E L:renderer\nrenderer:B --\u003E T:blob\napi:B --\u003E T:sql",
         "lines": 16,
         "warnings": 0
@@ -199,7 +199,7 @@
         "ext": "svg",
         "w": 1072,
         "h": 570,
-        "kb": 18.8,
+        "kb": 17.1,
         "source": "---\ntitle: Chart model\n---\nclassDiagram\n  class Chart {\n    \u002Bstring Title\n    \u002BWithSize(width, height)\n    \u002BToSvg() string\n  }\n  class ChartSeries {\n    \u002Bstring Name\n    \u002BChartPoint[] Points\n  }\n  class VisualTheme {\n    \u002BVisualTypography Typography\n  }\n  Chart \u00221\u0022 *-- \u0022many\u0022 ChartSeries : contains\n  Chart --\u003E VisualTheme : uses",
         "lines": 18,
         "warnings": 0
@@ -208,7 +208,7 @@
         "base": "/site/atlas/cynefin",
         "ext": "svg",
         "w": 940,
-        "h": 620,
+        "h": 621,
         "kb": 13.5,
         "source": "cynefin-beta\ntitle Service decisions\ncomplex\n \u0022Discover demand\u0022\ncomplicated\n \u0022Analyze capacity\u0022\nchaotic\n \u0022Contain outage\u0022\nclear\n \u0022Run checklist\u0022\nconfusion\n \u0022Investigate context\u0022\ncomplex --\u003E complicated : \u0022Learn\u0022",
         "lines": 13,
@@ -217,9 +217,9 @@
       "er": {
         "base": "/site/atlas/er",
         "ext": "svg",
-        "w": 1168,
+        "w": 1103,
         "h": 570,
-        "kb": 23.9,
+        "kb": 21,
         "source": "---\ntitle: Orders schema\n---\nerDiagram\n  CUSTOMER ||--o{ ORDER : places\n  ORDER ||--|{ LINE_ITEM : contains\n  PRODUCT ||--o{ LINE_ITEM : \u0022ordered in\u0022\n  CUSTOMER {\n    string id PK\n    string name\n    string email\n  }\n  ORDER {\n    string id PK\n    string customerId FK\n    date placed\n  }",
         "lines": 17,
         "warnings": 0
@@ -227,9 +227,9 @@
       "eventmodeling": {
         "base": "/site/atlas/eventmodeling",
         "ext": "svg",
-        "w": 1125,
+        "w": 1287,
         "h": 690,
-        "kb": 36.2,
+        "kb": 36.5,
         "source": "---\ntitle: Shopping cart events\n---\neventmodeling\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt Cart.ItemAdded [[ItemAdded01]]\ntf 04 rmo Cart.CartView -\u003E\u003E 03\nrf 05 pcr InventoryProcessor\ntimeframe 06 event Inventory.Reserved\ndata ItemAdded01 \u0060json\u0060{\n  \u0022sku\u0022: \u0022ABC\u0022,\n  \u0022quantity\u0022: 1\n}",
         "lines": 14,
         "warnings": 0
@@ -237,9 +237,9 @@
       "flowchart": {
         "base": "/site/atlas/flowchart",
         "ext": "svg",
-        "w": 721,
-        "h": 541,
-        "kb": 29.9,
+        "w": 760,
+        "h": 627,
+        "kb": 28.8,
         "source": "---\ntitle: Incident response\n---\nflowchart TD\n  alert([Alert raised]) --\u003E triage{Known issue?}\n  triage --\u003E|yes| runbook[Run the runbook]\n  triage --\u003E|no| owner[Page the\u003Cbr/\u003Eservice owner]\n  runbook --\u003E verify[Verify recovery]\n  owner --\u003E fix[Ship a fix]\n  fix --\u003E verify",
         "lines": 10,
         "warnings": 0
@@ -287,9 +287,9 @@
       "kanban": {
         "base": "/site/atlas/kanban",
         "ext": "svg",
-        "w": 743,
-        "h": 557,
-        "kb": 14.2,
+        "w": 861,
+        "h": 570,
+        "kb": 14.4,
         "source": "---\ntitle: Playground launch\n---\nkanban\n  todo[To do]\n    docs[Write playground docs]\n    share[Share links]\n  doing[In progress]\n    engine[WebAssembly engine]@{ priority: \u0022High\u0022 }\n  done[Done]\n    site[chartforgex.com]",
         "lines": 11,
         "warnings": 0
@@ -387,9 +387,9 @@
       "swimlane": {
         "base": "/site/atlas/swimlane",
         "ext": "svg",
-        "w": 735,
-        "h": 551,
-        "kb": 23,
+        "w": 1235,
+        "h": 632,
+        "kb": 22.5,
         "source": "---\ntitle: Pull request flow\n---\nswimlane-beta LR\nsubgraph Author\n A[Write source] --\u003E B[Open pull request]\nend\nsubgraph Build\n C{Checks pass?} --\u003E D[Render report]\nend\nsubgraph Reader\n E[Read in email]\nend\nB --\u003E C\nD --\u003E E",
         "lines": 15,
         "warnings": 0
@@ -427,9 +427,9 @@
       "usecase": {
         "base": "/site/atlas/usecase",
         "ext": "svg",
-        "w": 735,
-        "h": 551,
-        "kb": 20.4,
+        "w": 959,
+        "h": 570,
+        "kb": 19.8,
         "source": "---\ntitle: Online store\n---\nusecase-beta\ndirection LR\nactor Customer\nsystemBoundary Store[Online store]\n Browse(\u0022Browse products\u0022)\n Pay(\u0022Pay for order\u0022)\n Authenticate(\u0022Authenticate\u0022)\nend\nCustomer --\u003E Browse\nBrowse ..\u003E : include Authenticate\nPay --|\u003E Browse",
         "lines": 14,
         "warnings": 0
@@ -478,14 +478,14 @@
         "ext": "svg",
         "w": 1027,
         "h": 560,
-        "kb": 12.7
+        "kb": 11.1
       },
       "docs": {
         "base": "/site/docs/topology",
         "ext": "svg",
         "w": 1224,
         "h": 700,
-        "kb": 31.6
+        "kb": 31.7
       },
       "examples": {
         "base": "/site/nav/examples",

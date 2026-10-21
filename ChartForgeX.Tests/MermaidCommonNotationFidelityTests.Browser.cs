@@ -25,7 +25,7 @@ public sealed partial class MermaidCommonNotationFidelityTests {
         var body = family switch {
             "class" => "classDiagram\nclass Repository~Item~ {\n+List~Item~ items\n+find() Item\n}\nRepository \"1\" <|--|> Store : contracts\nnote for Repository \"One stable identity\\nTyped generic members\"",
             "state" => "stateDiagram-v2\nstate Fork <<fork>>\nstate Join <<join>>\nstate Choice <<choice>>\n[*] --> Fork\nFork --> Ready\nFork --> Waiting\nReady --> Join\nWaiting --> Join\nJoin --> Choice\nChoice --> Complete : approved\nnote right of Ready : Two independent paths",
-            _ => "erDiagram\nC[\"Customer account\"] {\nstring id PK, FK \"External key\"\nstring display_name\n}\nO[Orders] {\nint id PK\n}\nC ||--o{ O : places" 
+            _ => "erDiagram\nC[\"Customer account\"] {\nstring id PK, FK \"External key\"\nstring display_name\n}\nO[Orders] {\nint id PK\n}\nC ||--o{ O : places"
         };
         var source = "%%{init: {'fontFamily':'" + BrowserProofFonts.Family + "','theme':'" + (dark ? "dark" : "default") + "'}}%%\n" + body;
         var options = new MermaidTopologyRenderOptions { Width = width, Height = 620 };
