@@ -40,6 +40,9 @@
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\responsive-chart.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.responsive-chart.js" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\README.nuget.md" Pack="true" PackagePath="README.md" />

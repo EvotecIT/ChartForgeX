@@ -260,6 +260,46 @@ Synchronized host highlights and restored selection use the source chart's actua
 
 `resize()` refreshes browser hit geometry, navigation and active readout placement after host layout changes. The adapter also observes ordinary container resizing and hidden-host reveal. `Adaptive` layout switches between two native prepared drawings as described below. Other changes to the native design size use a fresh generated section passed to `update`; scaling a fixed SVG does not regenerate its ticks or typography.
 
+### Offline responsive drawings
+
+For a report that needs a drawing without interactive controls, use
+`new HtmlResponsiveChartRenderer().RenderFragment(chart, minimumWidth: 240, maximumWidth: 1600)`.
+It prepares native SVG geometry at bounded width bands, including the authored width
+and a 320-pixel phone content width. Native preparation chooses ticks, label density
+and legend wrapping. Explicit X tick requests act as preferred maxima and reduce with available width;
+the caller's axis object and authored settings are retained after preparation. Quarter,
+middle and three-quarter native samples validate each band's geometry within half a
+CSS pixel. Collision-avoiding annotation labels allow two pixels of placement variation.
+Bands split where geometry clamps or label
+decisions change. The ResizeObserver interpolates between compatible native drawings
+at the actual container width; it never extrapolates a local derivative. It never
+scales the SVG drawing, fonts or strokes. Height stays at the configured chart height,
+or the optional `height` argument. Wider panels centre the drawing at the cap; panels
+below the minimum scroll within their host.
+
+This uses the native scene's stable path structure within each band. Text and scene
+changes refine to the native engine's one-pixel width resolution, where the nearest
+native drawing supplies the labels. Preparation is bounded to 512 retained bands;
+a layout needing more transitions reports a clear error rather than generating a
+drawing for every possible viewport. Resizing runs offline, with no host
+callback or network request. The fallback SVG remains available without script.
+Responsive SVG uses native pattern tiles so hatched bars keep the same native brush
+without a different number of explicit hatch lines at every width. Static SVG and
+native PNG retain their default paint path; `VisualSvgOptions.WithPatternTiles()`
+also makes that SVG representation available to other hosts.
+`compressLayouts: true` compresses the layout payload and needs DecompressionStream.
+The host exposes `cfxResponsiveReady` and `cfxResponsive.dispose()` for asynchronous
+preparation and removal. Hosts inserting inert markup load `InitializationScript`
+once; `ChartForgeXResponsive.mount(scope)` and the shared insertion observer mount
+those drawings without executing scripts from templates. The interactive adapter's Fit and Adaptive modes retain
+their existing behavior.
+
+Regular stacked bars share one rounded envelope per signed stack, in SVG and native
+PNG. Segment joins stay square, including horizontal and negative stacks; an authored
+zero corner radius keeps the whole stack square. Segmented caps appear only at the
+outer end. `WithMaximumBarWidth` continues to cap the shared stack width and centre
+sparse category slots.
+
 `dispose()` releases chart listeners, observers, scheduled frames, pending readouts, exports and scenario playback immediately. It also clears the compare tray, brush rectangle, selection readouts and mute/isolation presentation while the section remains connected. It is safe to call more than once. Removing a chart also releases its work when the browser delivers the removal. Reinserted sections require a fresh `mount`; a disposed controller cannot update or resize them. Register shared assets once, and mount newly inserted sections explicitly instead of executing another copy of the runtime.
 
 ## Linking charts to other views

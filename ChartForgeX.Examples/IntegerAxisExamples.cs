@@ -4,6 +4,18 @@ using ChartForgeX.Themes;
 
 /// <summary>Count charts with whole-number tick positions in vertical and horizontal layouts.</summary>
 public static class IntegerAxisExamples {
+    /// <summary>Creates signed stacks with rounded exterior corners and square internal joins.</summary>
+    public static Chart CreateSignedStack(bool horizontal, int width, VisualThemeMode mode) {
+        var chart = Chart.Create().WithSize(width, 320).WithTheme(VisualTheme.Graphite(), mode)
+            .WithTitle("Signed category adjustments").WithSubtitle("Square stack joins · rounded outer ends")
+            .WithLegendPosition(ChartLegendPosition.TopLeft).WithStackedBars().WithMaximumBarWidth(48)
+            .WithBarVisualStyle(ChartBarVisualStyle.Flat().WithCornerRadius(10));
+        var first = new[] { new ChartPoint(1, 3), new ChartPoint(2, -3) };
+        var second = new[] { new ChartPoint(1, 2), new ChartPoint(2, -2) };
+        return horizontal
+            ? chart.WithXAxisIntegerTicks().AddHorizontalBar("First", first).AddHorizontalBar("Second", second)
+            : chart.WithYAxisIntegerTicks().AddBar("First", first).AddBar("Second", second);
+    }
     /// <summary>Creates a small count chart using the physical value axis's integer tick policy.</summary>
     public static Chart Create(int maximum, bool horizontal, int width, VisualThemeMode mode) {
         if (maximum < 1) throw new ArgumentOutOfRangeException(nameof(maximum));
@@ -25,6 +37,9 @@ public static class IntegerAxisExamples {
                 .AddBar("Passed", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) })
                 .AddBar("Pending", new[] { new ChartPoint(1, 1), new ChartPoint(2, 0) });
             ExampleArtifactWriter.SaveChart(sparse, output, "category-counts-" + mode.ToString().ToLowerInvariant(), scale);
+            foreach (var horizontal in new[] { false, true }) foreach (var width in new[] { 320, 1120 })
+                ExampleArtifactWriter.SaveChart(CreateSignedStack(horizontal, width, mode), output,
+                    "stacked-corners-" + (horizontal ? "horizontal-" : "vertical-") + width + "-" + mode.ToString().ToLowerInvariant(), scale);
         }
         foreach (var maximum in new[] { 1, 2, 3, 4, 1000000 })
             foreach (var horizontal in new[] { false, true })

@@ -10,12 +10,17 @@ namespace ChartForgeX.Tests;
 
 public sealed class CartesianTinySegmentTests {
     [Theory]
-    [InlineData(false, 1)]
-    [InlineData(false, -1)]
-    [InlineData(true, 1)]
-    [InlineData(true, -1)]
-    public void NonzeroCapsulesRetainColoredInkWithoutInventingZeroMarks(bool horizontal, int sign) {
+    [InlineData(false, 1, false)]
+    [InlineData(false, -1, false)]
+    [InlineData(true, 1, false)]
+    [InlineData(true, -1, false)]
+    [InlineData(false, 1, true)]
+    [InlineData(false, -1, true)]
+    [InlineData(true, 1, true)]
+    [InlineData(true, -1, true)]
+    public void NonzeroCapsulesRetainColoredInkWithoutInventingZeroMarks(bool horizontal, int sign, bool stacked) {
         var chart = Tiny(horizontal, sign);
+        if (stacked) chart.WithStackedBars();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var role = horizontal ? "horizontal-bar" : "bar";
         var mark = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == role);

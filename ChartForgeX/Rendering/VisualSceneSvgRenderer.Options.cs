@@ -29,12 +29,13 @@ internal static partial class VisualSceneSvgRenderer {
 
     private static string ExportIdentity(VisualScene scene, string identity, VisualSvgOptions? options) {
         var colorScopes = ColorScopeOptions(scene, options);
-        if (colorScopes == null && (options == null || options.Variables == null && options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive)) return identity;
+        if (colorScopes == null && (options == null || options.Variables == null && options.LinkTarget == VisualSvgLinkTarget.SameContext && !options.Responsive && !options.PatternTiles)) return identity;
         using var hash = SHA256.Create();
         using var stream = new CryptoStream(Stream.Null, hash, CryptoStreamMode.Write);
         using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true)) {
             writer.Write(identity); writer.Write((int)(options?.LinkTarget ?? VisualSvgLinkTarget.SameContext));
             if (options?.Responsive == true) writer.Write("responsive");
+            if (options?.PatternTiles == true) writer.Write("pattern-tiles");
             for (var i = 0; i < scene.Nodes.Count; i++) {
                 var node = scene.Nodes[i];
                 var paintOptions = colorScopes == null ? options : colorScopes[i];

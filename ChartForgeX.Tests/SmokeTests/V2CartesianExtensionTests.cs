@@ -80,7 +80,7 @@ public sealed class V2CartesianExtensionTests {
         Assert.DoesNotContain(prepared.Regions, region => region.Role == "axis-x-label" && region.Label?.Contains("Category one") == true);
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "horizontal-bar-pattern");
         if (style == ChartBarStyle.Solid) Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneGradient>(), gradient => gradient.Role == "horizontal-bar");
-        if (style == ChartBarStyle.SegmentedCapsule) Assert.Equal(4, prepared.Scene.Nodes.Count(node => node.Role == "horizontal-bar-cap"));
+        if (style == ChartBarStyle.SegmentedCapsule) Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "horizontal-bar-cap"));
     }
 
     [Fact]
