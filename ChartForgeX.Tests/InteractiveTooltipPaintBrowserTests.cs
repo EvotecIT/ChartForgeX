@@ -130,7 +130,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     public async Task UnpaintedBandsDoNotAcquireOrPinFromTheirRetainedBounds(ChartAnnotationKind kind) {
         if (!Enabled) return;
         var chart = AnnotationChart(false);
-        chart.Annotations.Add(new ChartAnnotation(kind, 6, 8, "Unpainted interval", ChartColor.FromHex("#ef4444"), 0, showLabel: false));
+        chart.AddAnnotation(new ChartAnnotation(kind, 6, 8, "Unpainted interval", ChartColor.FromHex("#ef4444"), 0, showLabel: false));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ExactFeatures), 950, 720);
         var page = session.Page;
         var selector = "[data-cfx-role='annotation'][data-cfx-kind='" + kind + "']";
@@ -164,7 +164,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     public async Task AnnotationCaptionAndLegendCaptionRemainRealNativeTargetsWithoutShapePaint(HtmlChartResponsiveLayout layout) {
         if (!Enabled) return;
         var chart = AnnotationChart(true).WithLegend(true);
-        chart.Annotations.Add(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, 6, 8, "Caption", ChartColor.FromHex("#ef4444"), 0));
+        chart.AddAnnotation(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, 6, 8, "Caption", ChartColor.FromHex("#ef4444"), 0));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => { ExactFeatures(options); options.ResponsiveLayout = layout; options.Interaction.Enable(ChartInteractionFeatures.LegendToggles); }), 340, 720);
         var page = session.Page;
         const string annotation = "[data-cfx-role='annotation']";

@@ -20,7 +20,6 @@ public sealed partial class Chart {
 
     private Chart AddSourceAnnotation(ChartAnnotation annotation, bool themeColor) {
         annotation.UsesThemeColor = themeColor;
-        if (annotation.Id.HasValue) return AddAuthoredAnnotation(annotation);
-        Annotations.Add(annotation); return this;
+        return AddAnnotation(annotation);
     }
 }

@@ -182,12 +182,12 @@ internal static class Program {
             .WithObservationId(1, new ChartObservationId("native-middle"));
         var chart = Chart.Create().WithSize(520, 320).WithLegend(false).WithXAxisBounds(0, 10).AddSeries(observations);
         var renderer = new HtmlInteractiveChartRenderer();
-        var full = renderer.PrepareSection(chart);
+        var full = renderer.PrepareSection(chart, null);
         var projection = full.PreparedVisual.XProjection ?? throw new InvalidOperationException("Packed HTML section omitted its native X projection.");
         var requested = projection.ConstrainViewport(projection.Project(3), projection.Project(7));
         PackageAssertions.Require(requested is not null && Math.Abs(requested.Minimum - 3) < 1e-9 && Math.Abs(requested.Maximum - 7) < 1e-9,
             "Packed logical gesture did not produce the source X window.");
-        var narrowed = renderer.PrepareSection(chart, requested);
+        var narrowed = renderer.PrepareSection(chart, requested == null ? null : new ChartCartesianViewport(x: requested));
         PackageAssertions.Require(narrowed.PreparedVisual.XProjection is ChartXProjection window && window.Minimum > 2.99 && window.Maximum < 7.01 &&
             narrowed.Html.Contains("data-cfx-observation-id=\"native-middle\"", StringComparison.Ordinal) &&
             !narrowed.Html.Contains("<script", StringComparison.OrdinalIgnoreCase), "Packed native section lost its window, source identity or asset-free contract.");
@@ -198,7 +198,7 @@ internal static class Program {
             .SequenceEqual(narrowed.PreparedVisual.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label)),
             "Packed viewport changed the full-data Y domain.");
         PackageAssertions.Png(narrowed.PreparedVisual.ToPng());
-        PackageAssertions.Require(renderer.PrepareSection(chart).Html == full.Html && chart.Options.XAxis.Minimum == 0 && chart.Options.XAxis.Maximum == 10,
+        PackageAssertions.Require(renderer.PrepareSection(chart, null).Html == full.Html && chart.Options.XAxis.Minimum == 0 && chart.Options.XAxis.Maximum == 10,
             "Packed native reset did not recover the full section or mutated authored bounds.");
     }
     private static void NativeCartesianAndDrawingSection() {
@@ -216,7 +216,24 @@ internal static class Program {
             options.XNavigation.RangePresets.Add(new HtmlChartXRangePreset("Latest six", 6));
         }
         var renderer = new HtmlInteractiveChartRenderer();
-        var full = renderer.PrepareSection(chart, configure: Configure);
+        var full = renderer.PrepareSection(chart, null, Configure);
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 480), chart.Options.Padding),
+            chart.Options.Theme, chart.Options.ThemeMode, new VisualFrame(chart.Title, chart.Subtitle, showLegend: false,
+                legendPosition: chart.Options.LegendPosition, showSurface: chart.Options.ShowPlotBackground,
+                transparentBackground: chart.Options.TransparentBackground, showCard: chart.Options.ShowCard));
+        var nativeFull = chart.Prepare(context, null);
+        PackageAssertions.Require(full.PreparedVisual.ToSvg() == nativeFull.ToSvg()
+            && nativeFull.ToSvg() == ((IVisualRenderable)chart).Prepare(context).ToSvg(),
+            "Packed HTML plain-null full preparation disagreed with Core or IVisualRenderable dispatch.");
+        foreach (var viewport in new[] { new ChartCartesianViewport(x: new ChartXViewport(2, 8)), new ChartCartesianViewport(y: new ChartYViewport(20, 80)) }) {
+            var section = renderer.PrepareSection(chart, viewport, Configure);
+            PackageAssertions.Require(section.PreparedVisual.ToSvg() == chart.Prepare(context, viewport).ToSvg()
+                && section.NarrowPreparedVisual!.XProjection!.Minimum == (viewport.X?.Minimum ?? 0)
+                && section.NarrowPreparedVisual.XProjection.Maximum == (viewport.X?.Maximum ?? 10)
+                && section.NarrowPreparedVisual.YProjection!.Minimum == (viewport.Y?.Minimum ?? 0)
+                && section.NarrowPreparedVisual.YProjection.Maximum == (viewport.Y?.Maximum ?? 100),
+                "Packed HTML X/Y Cartesian input changed the native scene or an omitted full domain.");
+        }
         var requested = new ChartCartesianViewport(new ChartXViewport(2, 8), new ChartYViewport(20, 80));
         var window = renderer.PrepareSection(chart, requested, Configure);
         PackageAssertions.Require(window.PreparedVisual.YProjection?.Minimum == 20 && window.NarrowPreparedVisual?.YProjection?.Maximum == 80
@@ -226,15 +243,31 @@ internal static class Program {
             && window.Html.Contains("data-cfx-x-navigation=\"true\"", StringComparison.Ordinal)
             && !window.Html.Contains("<script", StringComparison.OrdinalIgnoreCase),
             "Packed optional controls lost their section/asset boundary.");
+        PackageAssertions.Require(window.PreparedVisual.ToSvg() == chart.Prepare(context, requested).ToSvg(),
+            "Packed HTML XY Cartesian input disagreed with Core native preparation.");
+        var windowSvg = window.PreparedVisual.ToSvg();
         var initialHtml = chart.ToInteractiveHtmlPage(Configure);
-        chart.Annotations.Clear();
-        chart.AddNote(new ChartPoint(6, 45), "Reviewed", id: new ChartAnnotationId("review"));
+        var annotations = chart.Annotations;
+        var review = annotations.Single();
+        var anonymous = new ChartAnnotation(ChartAnnotationKind.HorizontalLine, 50, null, "Anonymous guide", review.Color, 1, showLabel: false);
+        var changedAnonymous = new ChartAnnotation(ChartAnnotationKind.HorizontalLine, 55, null, "Changed guide", review.Color, 1, showLabel: false);
+        chart.AddAnnotation(anonymous).ReplaceAnnotation(anonymous, changedAnonymous).RemoveAnnotation(changedAnonymous);
+        PackageAssertions.Require(ReferenceEquals(annotations, chart.Annotations) && annotations.Count == 1 && ReferenceEquals(annotations[0], review),
+            "Packed anonymous annotation operations detached the read-only view or changed a keyed neighbor.");
+        var reviewed = ChartAnnotation.Note(new ChartPoint(6, 45), "Reviewed", review.Color, id: new ChartAnnotationId("review"));
+        chart.ReplaceAnnotation(reviewed);
+        PackageAssertions.Require(ReferenceEquals(annotations[0], reviewed), "Packed keyed replacement failed to update the retained annotation view.");
         var edited = renderer.PrepareSection(chart, requested, Configure);
-        var reset = renderer.PrepareSection(chart, configure: Configure);
+        var reset = renderer.PrepareSection(chart, null, Configure);
         PackageAssertions.Require(full.PreparedVisual.YProjection?.Minimum == 0 && reset.PreparedVisual.YProjection?.Maximum == 100
             && chart.Options.XAxis.Minimum == 0 && chart.Options.YAxis.Maximum == 100,
             "Packed native exploration mutated authored bounds or lost the full reset domain.");
+        chart.RemoveAnnotation(new ChartAnnotationId("review"));
+        PackageAssertions.Require(annotations.Count == 0 && window.PreparedVisual.ToSvg() == windowSvg
+            && PackageAssertions.Contains(edited.Html, "data-cfx-label=\"Reviewed\""),
+            "Packed keyed removal changed an earlier native or HTML snapshot.");
         PackageAssertions.Png(edited.PreparedVisual.ToPng());
+        Console.WriteLine("HTML authoring facts: canonical full/X/Y/XY scenes agree with Core; plain-null reset and keyed/anonymous annotation snapshots passed.");
 #if CFX_PACKAGE_BROWSER
         PackageBrowserProbe.RunNativeChartAsync(initialHtml, window.Html, edited.Html, reset.Html).GetAwaiter().GetResult();
 #endif

@@ -49,8 +49,8 @@ public sealed class ChartCartesianViewportTests {
         Assert.Equal(3, groups.Length); Assert.Equal(new[] { "false", null, "false" }, groups.Select(group => (string?)group.Attribute("data-cfx-visible")));
         Assert.NotEmpty(groups[1].Elements()); Assert.Equal("80", (string?)groups[1].Attribute("data-cfx-open"));
         Assert.Equal(0, chart.Options.XAxis.Minimum); Assert.Equal(100, chart.Options.YAxis.Maximum); Assert.NotEmpty(prepared.ToPng());
-        chart.Annotations.Clear(); chart.Series[0].UseSecondaryYAxis();
-        Assert.NotNull(chart.Prepare(context, new ChartXViewport(2, 8)).XProjection);
+        chart.ClearAnnotations(); chart.Series[0].UseSecondaryYAxis();
+        Assert.NotNull(chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(2, 8))).XProjection);
         Assert.Null(chart.Prepare(context).YProjection);
         Assert.Throws<NotSupportedException>(() => chart.Prepare(context, new ChartCartesianViewport(y: new ChartYViewport(30, 60))));
         Assert.Throws<ArgumentException>(() => new ChartCartesianViewport());

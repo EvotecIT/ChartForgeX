@@ -17,14 +17,14 @@ public sealed class GeoJsonObservationImportTests {
 
     [Fact]
     public void PointAndRouteImportsShareFiltersAndRetainRawCoordinatesValuesAndSourceOrder() {
-        var options = new ChartMapGeoJsonOptions { ValuePropertyName = "load", ColorValuePropertyName = "delay", Projection = ChartMapGeoJsonProjection.WebMercator };
+        var options = new ChartMapGeoJsonOptions { WeightPropertyName = "load", ColorValuePropertyName = "delay", Projection = ChartMapGeoJsonProjection.WebMercator };
         options.IncludeFeaturePropertyValues("area", "north");
         var points = ChartMapGeoJson.ToMapPoints(Features, options);
         var routes = ChartMapGeoJson.ToMapConnectors(Features, options);
         Assert.Equal(new[] { "Ports [1]", "Ports [2]", "Oslo" }, points.Select(point => point.Label));
         Assert.Equal(new[] { 4.4792, 21.0122, 10.7522 }, points.Select(point => point.Longitude));
         Assert.Equal(new[] { 51.9244, 52.2297, 59.9139 }, points.Select(point => point.Latitude));
-        Assert.Equal(new double?[] { 0, 0, 25 }, points.Select(point => point.Value));
+        Assert.Equal(new double?[] { 0, 0, 25 }, points.Select(point => point.Weight));
         Assert.Equal(new double?[] { -8, -8, 15 }, points.Select(point => point.ColorValue));
         Assert.Equal(new[] { "Shipping [1]", "Shipping [2]" }, routes.Select(route => route.Label));
         Assert.Equal(new[] { 4.4792, 8, 10.7522 }, routes[0].RoutePoints.Select(point => point.Longitude));
@@ -51,10 +51,10 @@ public sealed class GeoJsonObservationImportTests {
               {"type":"Feature","id":"line","properties":{},"geometry":{"type":"LineString","coordinates":[[-5,5],[5,5],[15,5]]}}
             ]}
             """;
-        var options = new ChartMapGeoJsonOptions { ValuePropertyName = "load" };
+        var options = new ChartMapGeoJsonOptions { WeightPropertyName = "load" };
         options.WithCoordinateBounds(0, 10, 0, 10);
         var point = Assert.Single(ChartMapGeoJson.ToMapPoints(input, options));
-        Assert.Equal("site", point.Label); Assert.Null(point.Value);
+        Assert.Equal("site", point.Label); Assert.Null(point.Weight);
         var route = Assert.Single(ChartMapGeoJson.ToMapConnectors(input, options));
         Assert.Equal("line", route.Label);
         Assert.Equal(new[] { -5d, 5, 15 }, route.RoutePoints.Select(value => value.Longitude));
@@ -74,7 +74,7 @@ public sealed class GeoJsonObservationImportTests {
     public void MalformedPositionsWeightsAndRoutesFailAtTheImportBoundary(string geometry, string coordinates, string? value) {
         var input = "{\"type\":\"Feature\",\"id\":\"bad\",\"properties\":{" + (value == null ? "" : "\"load\":" + value)
             + "},\"geometry\":{\"type\":\"" + geometry + "\",\"coordinates\":" + coordinates + "}}";
-        var options = new ChartMapGeoJsonOptions { ValuePropertyName = "load" };
+        var options = new ChartMapGeoJsonOptions { WeightPropertyName = "load" };
         if (geometry == "Point") Assert.ThrowsAny<ArgumentException>(() => ChartMapGeoJson.ToMapPoints(input, options));
         else Assert.ThrowsAny<ArgumentException>(() => ChartMapGeoJson.ToMapConnectors(input, options));
     }

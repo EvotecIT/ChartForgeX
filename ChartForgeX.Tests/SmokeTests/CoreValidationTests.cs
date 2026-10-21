@@ -159,8 +159,7 @@ internal static partial class SmokeTests {
         var chartWithNullSeries = Chart.Create();
         AssertThrows<ArgumentNullException>(() => chartWithNullSeries.AddSeries(null!), "Series attachment should reject null before changing the chart.");
         var chartWithNullAnnotation = Chart.Create().AddLine("Values", Points(1, 2, 3));
-        chartWithNullAnnotation.Annotations.Add(null!);
-        AssertThrows<InvalidOperationException>(() => chartWithNullAnnotation.ToPng(), "Rendering should reject null entries in the public annotation collection.");
+        AssertThrows<ArgumentNullException>(() => chartWithNullAnnotation.AddAnnotation(null!), "Annotation attachment should reject null before changing the chart.");
         var chartWithDefaultAxisLabel = Chart.Create().AddLine("Values", Points(1, 2, 3));
         chartWithDefaultAxisLabel.Options.XAxisLabels.Add(default);
         AssertThrows<InvalidOperationException>(() => chartWithDefaultAxisLabel.ToSvg(), "Rendering should reject default axis labels added through the mutable options collection.");

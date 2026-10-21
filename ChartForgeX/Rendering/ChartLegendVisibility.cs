@@ -18,7 +18,7 @@ internal static class ChartLegendVisibility {
             if (series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble && series.ColorScale != null
                 && colorScales[index]!.Presentation.ShowLegend && series.AuthoredObservationCount > 0) return true;
             if (series.Kind == ChartSeriesKind.DottedMap && series.ColorScale != null && colorScales.MapDataset(index).Presentation.ShowLegend) return true;
-            if (series.Kind == ChartSeriesKind.DottedMap && series.MapPointSize.SizeDimension.ShowLegend && series.MapPoints.Any(point => point.Value.HasValue)) return true;
+            if (series.Kind == ChartSeriesKind.DottedMap && series.MapPointSize.SizeDimension.ShowLegend && series.MapPoints.Any(point => point.Weight.HasValue)) return true;
             if (colorScales.Heatmap.ShowLegend && (series.Kind == ChartSeriesKind.CalendarHeatmap
                 || (series.Kind is ChartSeriesKind.Heatmap or ChartSeriesKind.HexbinHeatmap) && !series.IsCategoricalHeatmapRow)) return true;
             if (series.Kind == ChartSeriesKind.RegionMap && colorScales.MapDataset(index).Presentation.ShowLegend) return true;

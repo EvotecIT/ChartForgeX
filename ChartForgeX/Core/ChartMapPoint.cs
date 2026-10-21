@@ -23,16 +23,16 @@ public readonly struct ChartMapPoint {
     public readonly double Latitude;
 
     /// <summary>
-    /// Gets an optional numeric value used by renderers that support weighted map points.
+    /// Gets the optional finite nonnegative point weight, independently of its color measurement.
     /// </summary>
-    public readonly double? Value;
+    public readonly double? Weight;
 
     /// <summary>
     /// Gets the optional point color.
     /// </summary>
     public readonly ChartColor? Color;
 
-    /// <summary>Gets an independent numeric color measurement, or null for a missing color measurement. <see cref="Value"/> remains the point weight.</summary>
+    /// <summary>Gets an independent numeric color measurement, or null for a missing color measurement. <see cref="Weight"/> remains the point weight.</summary>
     public double? ColorValue { get; }
 
     /// <summary>
@@ -47,27 +47,27 @@ public readonly struct ChartMapPoint {
         Label = label.Trim();
         Longitude = longitude;
         Latitude = latitude;
-        Value = null;
+        Weight = null;
         Color = color;
         ColorValue = null;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChartMapPoint"/> struct with a numeric value.
+    /// Initializes a new instance of the <see cref="ChartMapPoint"/> struct with a numeric point weight.
     /// </summary>
     /// <param name="label">The point label.</param>
     /// <param name="longitude">The longitude in degrees, from -180 to 180.</param>
     /// <param name="latitude">The latitude in degrees, from -90 to 90.</param>
-    /// <param name="value">The non-negative value associated with the point.</param>
+    /// <param name="weight">The finite nonnegative weight associated with the point.</param>
     /// <param name="color">An optional point color.</param>
-    public ChartMapPoint(string label, double longitude, double latitude, double value, ChartColor? color = null) {
+    public ChartMapPoint(string label, double longitude, double latitude, double weight, ChartColor? color = null) {
         Validate(label, longitude, latitude);
-        ChartGuards.Finite(value, nameof(value));
-        if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Map point values must be zero or greater.");
+        ChartGuards.Finite(weight, nameof(weight));
+        if (weight < 0) throw new ArgumentOutOfRangeException(nameof(weight), weight, "Map point weights must be zero or greater.");
         Label = label.Trim();
         Longitude = longitude;
         Latitude = latitude;
-        Value = value;
+        Weight = weight;
         Color = color;
         ColorValue = null;
     }
@@ -75,7 +75,7 @@ public readonly struct ChartMapPoint {
     private ChartMapPoint(ChartMapPoint point, double? colorValue) {
         if (colorValue.HasValue) ChartGuards.Finite(colorValue.Value, nameof(colorValue));
         Label = point.Label; Longitude = point.Longitude; Latitude = point.Latitude;
-        Value = point.Value; Color = point.Color; ColorValue = colorValue;
+        Weight = point.Weight; Color = point.Color; ColorValue = colorValue;
     }
 
     /// <summary>Returns a point with the same location, weight and explicit paint and a replacement independent color measurement.</summary>
@@ -84,8 +84,8 @@ public readonly struct ChartMapPoint {
     public ChartMapPoint WithColorValue(double? value) => new(this, value);
 
     /// <summary>Revalidates a complete typed point, including defaults, while preserving independent weight and color measurements.</summary>
-    internal ChartMapPoint ValidatedCopy() => (Value.HasValue
-        ? new ChartMapPoint(Label, Longitude, Latitude, Value.Value, Color)
+    internal ChartMapPoint ValidatedCopy() => (Weight.HasValue
+        ? new ChartMapPoint(Label, Longitude, Latitude, Weight.Value, Color)
         : new ChartMapPoint(Label, Longitude, Latitude, Color)).WithColorValue(ColorValue);
 
     private static void Validate(string label, double longitude, double latitude) {

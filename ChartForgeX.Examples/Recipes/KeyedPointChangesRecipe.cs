@@ -11,9 +11,9 @@ public static class KeyedPointChangesRecipe {
             .WithTitle("A rolling window with stable observations")
             .WithXAxis("Sample").WithYAxis("Reading").AddSeries(readings);
         readings.ApplyPointChanges(new[] {
-            ChartPointChange.Remove(new ChartObservationId("a")),
-            ChartPointChange.Replace(new ChartObservationId("b"), new ChartPoint(2, 25)),
-            ChartPointChange.Append(new ChartObservationId("d"), new ChartPoint(4, 40))
+            ChartObservationChange<ChartPoint>.Remove(new ChartObservationId("a")),
+            ChartObservationChange<ChartPoint>.Replace(new ChartObservationId("b"), new ChartPoint(2, 25)),
+            ChartObservationChange<ChartPoint>.Append(new ChartObservationId("d"), new ChartPoint(4, 40))
         }, maximumObservations: 3);
         return chart;
     }

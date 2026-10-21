@@ -24,19 +24,19 @@ public static partial class ChartMapGeoJson {
             var coordinates = feature.Geometry!.RequiredArray("coordinates");
             var positions = multiple ? coordinates : new List<GeoJsonValue> { GeoJsonValue.Array(coordinates) };
             var label = options.FindName(feature, options.FindCode(feature, index));
-            var value = PointValue(feature, options);
+            var weight = PointWeight(feature, options);
             var colorValue = NumericFeatureValue(feature, options.ColorValuePropertyName);
             var bounds = EmptyCoordinateBounds();
             long labelCharacters = 0;
             for (var part = 0; part < positions.Count; part++) {
-                var point = GeographicPosition(positions[part], "Position", value);
+                var point = GeographicPosition(positions[part], "Position", weight);
                 Include(ref bounds, point.Longitude, point.Latitude);
                 labelCharacters += PartLabelLength(label.Length, part, multiple);
             }
             if (positions.Count > 0 && options.IncludesCoordinateBounds(bounds.MinLongitude, bounds.MaxLongitude, bounds.MinLatitude, bounds.MaxLatitude)) {
                 budget.Reserve(positions.Count, labelCharacters);
                 for (var part = 0; part < positions.Count; part++)
-                    points.Add(GeographicPosition(positions[part], PartLabel(label, part, multiple), value).WithColorValue(colorValue));
+                    points.Add(GeographicPosition(positions[part], PartLabel(label, part, multiple), weight).WithColorValue(colorValue));
             }
             index++;
         }
@@ -108,9 +108,9 @@ public static partial class ChartMapGeoJson {
         return weight.HasValue ? new ChartMapPoint(label, longitude, latitude, weight.Value) : new ChartMapPoint(label, longitude, latitude);
     }
 
-    private static double? PointValue(GeoJsonFeature feature, ChartMapGeoJsonOptions options) {
-        var number = NumericFeatureValue(feature, options.ValuePropertyName);
-        if (number.HasValue && number.Value < 0) throw new ArgumentOutOfRangeException(nameof(options.ValuePropertyName), number, "Map point values must be zero or greater.");
+    private static double? PointWeight(GeoJsonFeature feature, ChartMapGeoJsonOptions options) {
+        var number = NumericFeatureValue(feature, options.WeightPropertyName);
+        if (number.HasValue && number.Value < 0) throw new ArgumentOutOfRangeException(nameof(options.WeightPropertyName), number, "Map point weights must be zero or greater.");
         return number;
     }
 

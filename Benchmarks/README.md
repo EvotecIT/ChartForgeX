@@ -99,7 +99,7 @@ Keep both source and adapter hashes, fixture hash, actual browser versions, poli
 
 ## Adaptive native section preparation
 
-`Invoke-SectionPreparationBenchmark.ps1` measures one public `PrepareSection` call, including the native scenes and wide/narrow SVG/HTML it creates. The `Shared` matrix compares full-domain and X-window preparation through public APIs present in both binary bundles. `Cartesian` measures current-only Y/XY windows separately. Both use 3-point edge-padding and 1,000-point scatter fixtures with explicit or automatic full domains, an 800 × 440 drawing and a 390 × 440 alternate.
+`Invoke-SectionPreparationBenchmark.ps1` measures one public `PrepareSection` call, including the native scenes and wide/narrow SVG/HTML it creates. The `Shared` matrix compares full-domain and X-window preparation through the canonical Cartesian viewport API. Both binary bundles must expose `ChartCartesianViewport` and the corresponding public preparation overload; a retired X-only baseline is incompatible. Full-domain lanes use the ordinary no-viewport call, and X lanes supply an explicit Cartesian input. `Cartesian` measures current-only Y/XY windows separately. Both use 3-point edge-padding and 1,000-point scatter fixtures with explicit or automatic full domains, an 800 × 440 drawing and a 390 × 440 alternate.
 
 ```powershell
 ./Benchmarks/Invoke-SectionPreparationBenchmark.ps1 -ProductBinaryRoot /path/to/current/net8.0 -BaselineBinaryRoot /path/to/baseline/net8.0 -OutputRoot /path/to/results/shared -Matrix Shared -Plan

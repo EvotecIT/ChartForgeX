@@ -16,7 +16,7 @@ internal static partial class VisualMapCompiler {
         foreach (var point in series.RenderPoints) ValidateCoordinate(point);
         var weights = new double?[series.RenderPoints.Count];
         for (var index = 0; index < weights.Length; index++) {
-            weights[index] = series.MapPoints[index].Value;
+            weights[index] = series.MapPoints[index].Weight;
             if (weights[index].HasValue && (!Finite(weights[index]!.Value) || weights[index]!.Value < 0)) throw new InvalidOperationException("Dotted map weights must be finite and non-negative.");
         }
         var valued = weights.Where(value => value.HasValue).Select(value => value!.Value).ToArray();

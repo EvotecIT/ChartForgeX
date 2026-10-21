@@ -149,7 +149,7 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
 
     private static Chart AuthoredModel(bool dark, bool reversed = false, string warningId = "warning") {
         var chart = Model(dark);
-        chart.Annotations.Clear();
+        chart.ClearAnnotations();
         chart.AddVerticalLine(5, "Limit");
         if (reversed) chart.AddHorizontalLine(new ChartAnnotationId("critical"), 7, "Limit");
         chart.AddHorizontalLine(new ChartAnnotationId(warningId), reversed ? 6 : 3, reversed ? "Localized limit" : "Limit");

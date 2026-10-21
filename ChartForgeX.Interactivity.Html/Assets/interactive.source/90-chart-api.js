@@ -7,7 +7,7 @@
     readChartSection(root);
     if (!root.isConnected) throw new TypeError('Mount the chart after inserting its section into the document.');
     const lifetime = { cleanups: new Set(), disposed: false, controller: null, preparationConnections: {},
-      preparationPending: null, sceneRevision: nextChartSceneRevision() };
+      preparationPending: null, preparationSession: null, sceneRevision: nextChartSceneRevision() };
     lifetime.adaptive = readAdaptiveLayout(root);
     const requireMounted = () => {
       if (lifetime.disposed || !root.isConnected) { controller.dispose(); throw new Error('The chart controller is disposed; mount the connected section again.'); }
@@ -23,11 +23,18 @@
       highlight: (match, options) => { requireMounted(); runHighlightCommand(root, match, options); return controller; },
       clearHighlight: options => { requireMounted(); clearHighlightCommand(root, options); return controller; },
       unpinTooltip: () => { requireMounted(); unpinTooltip(root); return controller; },
-      update: section => {
+      update: (section, options = {}) => {
         requireMounted();
+        const nativeState = lifetime.preparationSession
+          ? { session: lifetime.preparationSession, basis: nativePreparationBasis(options.basis) } : null;
         const next = readChartSection(section, true).cloneNode(true);
-        replaceChartSection(root, lifetime, next);
+        replaceChartSection(root, lifetime, next, '', '', false, nativeState);
         emitHostEvent(root, 'cfxupdated', {});
+        return controller;
+      },
+      connectNative: (connection, options = {}) => {
+        requireMounted();
+        connectNativePreparation(root, connection, options);
         return controller;
       },
       connectAnnotations: connection => {

@@ -85,6 +85,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData(ChartTimeTickUnit.Day)]
     [InlineData(ChartTimeTickUnit.Week)]
     [InlineData(ChartTimeTickUnit.Month)]
+    [Trait("BrowserSuite", "Compatibility")]
     public async Task AdjacentCadenceBucketsRoundTripWithoutSharingBoundaryObservations(ChartTimeTickUnit unit) {
         if (!Enabled) return;
         var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);

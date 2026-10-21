@@ -23,7 +23,7 @@ public sealed class ChartXViewportExtendedFamilyTests {
             chart.Options.XAxis.Reversed = reversed;
             var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 380)), VisualTheme.Graphite());
             var full = chart.Prepare(context);
-            var window = chart.Prepare(context, new ChartXViewport(origin + 4, origin + 6));
+            var window = chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(origin + 4, origin + 6)));
             var projection = Assert.IsType<ChartXProjection>(window.XProjection);
             Assert.Equal(origin, projection.FullMinimum); Assert.Equal(origin + 10, projection.FullMaximum);
             Assert.Equal(origin + 4, projection.Minimum); Assert.Equal(origin + 6, projection.Maximum);
@@ -52,7 +52,7 @@ public sealed class ChartXViewportExtendedFamilyTests {
     [InlineData(ChartSeriesKind.DifferenceArea, "difference-positive")]
     public void WindowBetweenPairsKeepsNativeCrossingGeometryWithoutInteractiveEndpoints(ChartSeriesKind kind, string role) {
         var chart = Create(kind, 0).WithXAxisBounds(0, 10);
-        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context, new ChartXViewport(1, 2));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context, new ChartCartesianViewport(x: new ChartXViewport(1, 2)));
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == role && path.Commands.Count > 3);
         var observations = XDocument.Parse(prepared.ToSvg()).Descendants()
             .Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
@@ -82,7 +82,7 @@ public sealed class ChartXViewportExtendedFamilyTests {
             Enumerable.Range(0, 100).Select(index => new ChartCandlestick(index, 20, 40, 10, 30)));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 380)), VisualTheme.Graphite());
         var full = chart.Prepare(context);
-        var window = chart.Prepare(context, new ChartXViewport(40, 42));
+        var window = chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(40, 42)));
         var fullBodies = XDocument.Parse(full.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "candlestick-body").ToArray();
         var bodies = XDocument.Parse(window.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "candlestick-body").ToArray();
         Assert.Equal(100, fullBodies.Length); Assert.Equal(3, bodies.Length);

@@ -13,7 +13,7 @@ public sealed class ChartXProjectionTests {
     public void ProjectionUsesTheNativeMappingAndExtrapolatesWithoutClamping(bool reversed) {
         var chart = Line().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
         chart.Options.XAxis.Reversed = reversed;
-        var prepared = chart.Prepare(Context(), new ChartXViewport(2, 6));
+        var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(2, 6)));
         var projection = Assert.IsType<ChartXProjection>(prepared.XProjection);
         var plot = projection.PlotBounds;
         Assert.Equal(reversed ? plot.Right : plot.Left, projection.Project(2), 9);
@@ -53,7 +53,7 @@ public sealed class ChartXProjectionTests {
     [InlineData(5, 11)]
     [InlineData(11, 12)]
     public void ViewportCannotExtendBeyondTheResolvedFullDomain(double minimum, double maximum) =>
-        Assert.Throws<ArgumentOutOfRangeException>(() => Line().WithXAxisBounds(0, 10).Prepare(Context(), new ChartXViewport(minimum, maximum)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Line().WithXAxisBounds(0, 10).Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(minimum, maximum))));
 
     [Theory]
     [InlineData(ChartSeriesKind.Bar)]
@@ -67,7 +67,7 @@ public sealed class ChartXProjectionTests {
             _ => Chart.Create().AddScatter("Observed", points)
         };
         Assert.Null(chart.Prepare(Context()).XProjection);
-        Assert.Throws<NotSupportedException>(() => chart.Prepare(Context(), new ChartXViewport(1, 2)));
+        Assert.Throws<NotSupportedException>(() => chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(1, 2))));
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public sealed class ChartXProjectionTests {
         var sparkline = Line(); sparkline.Options.IsSparkline = true;
         foreach (var chart in new[] { nonlinear, mixed, sparkline }) {
             Assert.Null(chart.Prepare(Context()).XProjection);
-            Assert.Throws<NotSupportedException>(() => chart.Prepare(Context(), new ChartXViewport(1, 2)));
+            Assert.Throws<NotSupportedException>(() => chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(1, 2))));
         }
     }
 
@@ -86,7 +86,7 @@ public sealed class ChartXProjectionTests {
     public void EmptyExhaustedAndUnrepresentableWindowsFailClearly() {
         var empty = Chart.Create().AddLine("Empty", Array.Empty<ChartPoint>());
         Assert.Null(empty.Prepare(Context()).XProjection);
-        Assert.Throws<InvalidOperationException>(() => empty.Prepare(Context(), new ChartXViewport(0, 1)));
+        Assert.Throws<InvalidOperationException>(() => empty.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(0, 1))));
         var context = Context(); var style = new TextStyle { Font = context.Font, FontSize = 20, LineHeight = 1 };
         var headerHeight = Math.Max(26, new VisualSceneBuilder(context.Layout.Size, context.Font).MeasureText("Mg", style).Height);
         // One heading fits, but its ordinary trailing frame gap exhausts the content rectangle.
@@ -94,17 +94,17 @@ public sealed class ChartXProjectionTests {
             frame: new VisualFrame(title: "Header", showLegend: false, titleStyle: style));
         var exhausted = Line().Prepare(tiny);
         Assert.Null(exhausted.XProjection); Assert.Contains(exhausted.Diagnostics, item => item.Code == "cartesian.insufficient-space");
-        Assert.Throws<InvalidOperationException>(() => Line().Prepare(tiny, new ChartXViewport(1, 2)));
+        Assert.Throws<InvalidOperationException>(() => Line().Prepare(tiny, new ChartCartesianViewport(x: new ChartXViewport(1, 2))));
         var error = Assert.Throws<ArgumentOutOfRangeException>(() => Line().WithXAxisBounds(0, 10)
-            .Prepare(Context(), new ChartXViewport(0, double.Epsilon)));
+            .Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(0, double.Epsilon))));
         Assert.Equal("viewport", error.ParamName);
     }
 
     [Fact]
-    public void PublicPreparationRequiresBothContextAndExplicitViewport() {
+    public void PublicPreparationAcceptsFullDomainResetAndStillRequiresContext() {
         var chart = Line();
-        Assert.Throws<ArgumentNullException>(() => chart.Prepare(Context(), (ChartXViewport)null!));
-        Assert.Throws<ArgumentNullException>(() => chart.Prepare(null!, new ChartXViewport(1, 2)));
+        Assert.Equal(chart.Prepare(Context()).ToSvg(), chart.Prepare(Context(), null).ToSvg());
+        Assert.Throws<ArgumentNullException>(() => chart.Prepare(null!, new ChartCartesianViewport(x: new ChartXViewport(1, 2))));
     }
 
     [Fact]

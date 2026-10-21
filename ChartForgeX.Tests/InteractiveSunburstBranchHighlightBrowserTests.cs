@@ -102,8 +102,11 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    [BrowserFact]
-    public async Task PendingPointerExitRestoresTheExistingKeyboardReadoutWithoutWaitingForPointerDelay() {
+    [BrowserTheory]
+    [Trait("BrowserSuite", "Compatibility")]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PendingPointerExitRestoresTheExistingKeyboardReadoutWithoutWaitingForPointerDelay(bool pointerAlreadyOverOtherTarget) {
         if (!Enabled) return;
         var html = SunburstBranchHighlightExamples.CreateChart().ToInteractiveHtmlPage(options => {
             Configure(options);
@@ -111,16 +114,32 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         });
         await using var session = await OpenAsync(html, 850, 650);
         var page = session.Page;
+        if (pointerAlreadyOverOtherTarget) {
+            var point = await NativeInteriorPointAsync(page, Node("operations-support"), "[data-cfx-role=sunburst-segment-mark]");
+            await page.Mouse.MoveAsync((float)point[0] + 2, (float)point[1] + 2, new MouseMoveOptions { Steps = 4 });
+        }
         await FocusWithKeyboardAsync(page, page.Locator(Node("engineering-support")));
         await WaitState(page, "engineering-support", "item");
         Assert.Contains("25", await TooltipTextAsync(page), StringComparison.Ordinal);
+        // Pointer entry can commit directly; movement within a native mark is frame-coalesced.
+        // Hold the delay clock so host scheduling cannot skip the pending state under test.
+        var clockStart = DateTime.UtcNow;
+        await page.Clock.InstallAsync(new ClockInstallOptions { TimeDate = clockStart });
+        await page.Clock.PauseAtAsync(clockStart.AddHours(1));
         await MoveToNative(page, Node("operations-support"));
+        await page.Clock.RunForAsync(32);
+        await WaitState(page, "operations-support", "item");
         Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("node => node.hidden"));
+        var pendingTime = await page.EvaluateAsync<double>("() => performance.now()");
         await MoveAwayAsync(page);
         await WaitState(page, "engineering-support", "item");
         Assert.False(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("node => node.hidden"));
         Assert.Contains("25", await TooltipTextAsync(page), StringComparison.Ordinal);
         Assert.Null(await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-tooltip-pinned"));
+        Assert.Equal(pendingTime, await page.EvaluateAsync<double>("() => performance.now()"));
+        await page.Clock.RunForAsync(1100);
+        Assert.False(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("node => node.hidden"));
+        Assert.Contains("25", await TooltipTextAsync(page), StringComparison.Ordinal);
         AssertNoConsoleErrors(session);
     }
 

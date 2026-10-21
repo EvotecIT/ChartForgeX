@@ -10,7 +10,9 @@ Treemaps display their group and leaf captions by default. An explicit `WithData
 
 ## Unified authoring contracts
 
-Numeric and typed transactions share `ChartObservationChangeKind`. Replace `ChartPointChangeKind` in variables, switches and comparisons with that type; `ChartPointChange.Kind` returns it. The operation values remain `Append = 0`, `Replace = 1` and `Remove = 2`, and existing change factories and transaction behavior are unchanged.
+Numeric and typed transactions use the same `ChartObservationChange<T>` payload and `ChartObservationChangeKind`. Replace `ChartPointChange` with `ChartObservationChange<ChartPoint>` in factories, arrays, enumerables and helper signatures. Read its nullable `Value` instead of the former `Point` property. `Append`, `Replace` and `Remove` keep their names; removal has no value. Replace the former `ChartPointChangeKind` with `ChartObservationChangeKind` in switches and comparisons. Its operation values remain `Append = 0`, `Replace = 1` and `Remove = 2`.
+
+`ApplyPointChanges` retains its bounded enumeration, cancellation, atomic validation, rolling source order, identity and presentation rules. It accepts the generic point payload directly; typed families keep their existing `ApplyBubbleChanges`, `ApplyFinancialChanges`, `ApplyRangeChanges` and `ApplyDifferenceChanges` methods. Rebuild compiled consumers after changing the public payload type.
 
 Use the same immutable `VisualTheme` and explicit `VisualThemeMode` for every visual model. Replace `ChartTheme` and `TopologyTheme` with paired presets such as `VisualTheme.Graphite()` or `VisualTheme.Report()`, then select `Dark` through `WithTheme(theme, VisualThemeMode.Dark)` or `ThemeMode`. Replace mutable theme and brand-kit edits with `theme.Configure(builder => ...)`; assign the returned snapshot. Palette colors live in `builder.Light` and `builder.Dark`, typography in `builder.Typography`, and geometry/effects in their named builder properties. Local canvas/story/window controls live in their owning style options.
 
@@ -50,7 +52,40 @@ The [API conventions](api-conventions.md#one-theme-and-an-explicit-mode) contain
 
 For embedded ordinary charts, replace runtime re-execution and manual SVG replacement with `ChartForgeXCharts.mount(section)` and its retained controller. Pass fresh `ToInteractiveHtmlFragmentWithoutAssets` output to `controller.update(...)`; retain the generated section's prepared metadata with its SVG. Explicit series and observation IDs preserve appropriate selection through reordered data, while anonymous point ordinals clear on full replacement. Call `controller.dispose()` when removing a view, and mount it again after reconnecting. `controller.resize()` refreshes browser geometry; native design-size changes require another C# preparation and update. See [updating embedded charts](../interactivity.md#updating-embedded-charts).
 
-Connected hosts can also use `HtmlInteractiveChartRenderer.PrepareSection(chart, viewport, configure)` to capture an asset-free section and its matching detached `PreparedVisual`. Register `controller.connectXViewport(...)` to return freshly prepared section HTML for logical zoom, pan and reset requests. Retain the projection associated with the committed `sceneRevision`; advance that association only after `cfxviewportchange`. `ChartXProjection.ConstrainViewport(...)` owns coordinate conversion, reversal and domain confinement. Reset prepares with a null viewport. See [connected native X windows](../interactivity.md#connected-native-x-windows) for a complete caller example and supported families.
+Connected hosts can also use `HtmlInteractiveChartRenderer.PrepareSection(chart, viewport, configure)` to capture an asset-free section and its matching detached `PreparedVisual`. Register `controller.connectNative(callback, { basis: initialNativeToken, axes: 'x' })`; the callback uses the request's committed basis to prepare the next section and returns `{ html, basis }`. The adapter advances that basis only when it accepts the section. `ChartXProjection.ConstrainViewport(...)` owns coordinate conversion, reversal and domain confinement. Reset prepares with a null viewport. See [connected native X windows](../interactivity.md#connected-native-x-windows) for the host bridge, supported families and advanced channel callbacks.
+
+## Cartesian viewport preparation
+
+Native and HTML preparation accept one nullable `ChartCartesianViewport` input. Wrap an X-only window instead of passing `ChartXViewport` directly:
+
+```csharp
+var viewport = new ChartCartesianViewport(x: new ChartXViewport(2, 8));
+var detail = chart.Prepare(context, viewport);
+var section = renderer.PrepareSection(chart, viewport, configure: Configure);
+var full = chart.Prepare(context, null);
+var resetSection = renderer.PrepareSection(chart, null, Configure);
+```
+
+The one-argument `chart.Prepare(context)` continues to implement `IVisualRenderable` and means the full view. `PrepareSection(chart, configure: Configure)` also prepares the full view. Remove casts such as `(ChartXViewport?)null`: plain null now has one meaning on both surfaces. An omitted axis inside a Cartesian viewport retains its full-data domain; the viewport constructor requires at least one explicit axis window, so use null rather than an empty viewport to reset.
+
+`ChartXViewport` and `ChartYViewport` remain the individual immutable bounds accepted by projections' `ConstrainViewport` methods. Their values fit inside the Cartesian request; primary Y and XY windows require no secondary-axis series. X-only windows retain secondary-axis support and full-data Y domains. See [Cartesian viewports](api-conventions.md#cartesian-viewports) for supported families, scales, clipping and detached projections. Rebuild consumers compiled against the removed X-only preparation overloads.
+
+## Annotation membership
+
+`Chart.Annotations` exposes a stable `IReadOnlyList<ChartAnnotation>` in paint order. Move direct collection mutation to the chart's fluent methods:
+
+| Previous edit | Current edit |
+| --- | --- |
+| `chart.Annotations.Add(annotation)` | `chart.AddAnnotation(annotation)` |
+| `chart.Annotations[index] = replacement` | `chart.ReplaceAnnotation(chart.Annotations[index], replacement)` |
+| Replace an identified drawing | `chart.ReplaceAnnotation(replacement)` using its existing explicit ID |
+| `chart.Annotations.Remove(annotation)` | `chart.RemoveAnnotation(annotation)` |
+| `chart.Annotations.RemoveAt(index)` | `chart.RemoveAnnotation(chart.Annotations[index])` |
+| `chart.Annotations.Clear()` | `chart.ClearAnnotations()` |
+
+Replacement retains paint position and the same explicit or anonymous identity. To change identity, remove the old annotation and add a new one. `RemoveAnnotation` also accepts an explicit `ChartAnnotationId`. Missing targets, duplicate IDs, repeated instances and invalid replacements reject before changing membership or focus-guide tracking. A retained collection view reflects later successful edits. Rebuild compiled callers that expected a mutable list.
+
+Anonymous guides remain supported through existing constructors, statistical/focus helpers and typed `Add*` conveniences. Keep an anonymous annotation's instance when it must be replaced or removed. Geometry and identity remain fixed, while `StrokeStyle` is mutable authoring state read by the next preparation. Already prepared SVG, PNG and semantic output stay detached. Annotation membership can be authored before the required series or axes exist; preparation checks the completed chart's coordinate-system compatibility.
 
 ## Mermaid flowchart shapes
 
@@ -72,11 +107,13 @@ Region and tile series own their immutable `RegionMapDefinition` or `TileMapDefi
 
 Factories and full replacements normalize calendar and region inputs: duplicate dates or canonical regions are summed, the last explicit color wins, and items are sorted by key. Region names and aliases resolve through the series' definition. Counts, observation IDs and point overrides index these normalized items. Dotted maps retain every input item in order, including repeated coordinates.
 
-Use `UpdateMapPoint`, `UpdateCalendarItem` or `UpdateRegionValue` for one complete observation. Updates preserve its index, ID and point styling; changing a date or region to one already owned by another observation is rejected. Use the corresponding `Replace*` operation for a complete sequence. Replacement clears observation metadata only after validation succeeds. Empty retained series export a no-data state and can be refilled; the fluent `Add*` conveniences still require nonempty input. Dotted-map route conveniences capture coordinates at the time the route is added.
+Use `UpdateMapPoint`, `UpdateCalendarItem` or `UpdateRegionValue` for one complete observation. Updates preserve its index, ID and point styling; changing a date or region to one already owned by another observation is rejected. Use the corresponding `Replace*` operation for a complete sequence. Replacement clears observation metadata only after validation succeeds. Empty retained series export a no-data state and can be refilled; the map/calendar `Add*` conveniences accept empty observations with their required geometry. Dotted-map route conveniences capture coordinates at the time the route is added.
 
-`ChartMapConnector.RoutePoints` is a copied read-only list. Replace array `.Length` calls with `.Count`; create a new connector to change its retained route geometry. Map series may own routes through `ReplaceMapConnectors`. Geographic RegionMap and DottedMap datasets can share a declared projection with independent color scales and weighted-point size keys. `ChartMapPoint.ColorValue` is independent of its nonnegative `Value` weight. With a numeric color scale, null means missing color and uses its no-data paint unless explicit point paint overrides it. Maps without a numeric scale retain their existing default paint.
+`ChartMapConnector.RoutePoints` is a copied read-only list. Replace array `.Length` calls with `.Count`; create a new connector to change its retained route geometry. Map series may own routes through `ReplaceMapConnectors`. Geographic RegionMap and DottedMap datasets can share a declared projection with independent color scales and weighted-point size keys.
 
-Native preparation accepts both `ChartXViewport` and `ChartCartesianViewport`. Prefer `PrepareSection(chart, configure: Configure)` for the full/reset view. If an existing call explicitly passes a null X viewport, cast it to `(ChartXViewport?)null` to select that overload. Y/XY windows have an explicit primary-axis policy and reject secondary-axis series; X-only windows keep their earlier secondary-axis support.
+Read `ChartMapPoint.Weight` instead of `Value`, and rename a named constructor argument from `value:` to `weight:`. GeoJSON point imports use `ChartMapGeoJsonOptions.WeightPropertyName` instead of `ValuePropertyName`. Positional weighted construction keeps the same argument order. These are intentional public API changes; rebuild consumers that accessed the former field or property names.
+
+`ChartMapPoint.ColorValue` remains independent of its finite nonnegative `Weight`. Missing weight is unweighted; zero is an observed weight. Color measurements may be signed, and missing color stays distinct from zero. With a numeric color scale, null uses its no-data paint unless explicit point paint overrides it. Maps without a numeric scale retain their existing default paint. Region and tile scalar values remain `ChartRegionMapItem.Value`. Generic exported `data-cfx-value` metadata continues to carry the dotted point's raw weight.
 
 Move the former `AddCalendarHeatmap` arguments `firstDayOfWeek`, `dayNames` and `monthNames`, and `WithCalendarHeatmapCells` settings, to `ConfigureCalendar`. `chart.Options.Calendar` exposes the installed `ChartCalendarOptions`. Weekday names contain seven entries indexed by `DayOfWeek`, Sunday first; month names contain twelve entries, January first. Assign null to restore invariant names or automatic cell sizing. Unassigned callback properties retain their current settings, so explicitly assign null when resetting a former cell setting. Invalid names or a throwing callback leave the installed presentation unchanged.
 

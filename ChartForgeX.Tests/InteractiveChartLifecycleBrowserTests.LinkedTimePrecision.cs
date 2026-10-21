@@ -14,6 +14,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData("state", 0)]
     [InlineData("state", 1_000)]
     [InlineData("state", 9_000)]
+    [Trait("BrowserSuite", "Compatibility")]
     public async Task PreciseHalfOpenTimeIntervalsRoundTripWithoutAliasingAdjacentInstants(string family, int phaseTicks) {
         if (!Enabled) return;
         var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddTicks(phaseTicks);
@@ -47,6 +48,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     }
 
     [BrowserFact]
+    [Trait("BrowserSuite", "Compatibility")]
     public async Task PreciseTimePointMatchesKeepDistinctInstantsAndNormalizeOffsets() {
         if (!Enabled) return;
         var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);

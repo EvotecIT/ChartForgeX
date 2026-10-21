@@ -10,8 +10,8 @@ public enum ChartObservationChangeKind {
     Remove = 2
 }
 
-/// <summary>One immutable keyed operation in a typed observation transaction.</summary>
-/// <typeparam name="T">The authored value type accepted by the series' typed change method.</typeparam>
+/// <summary>One immutable keyed operation in a numeric or typed observation transaction.</summary>
+/// <typeparam name="T">The authored value type accepted by the series' change method, such as <see cref="ChartForgeX.Primitives.ChartPoint"/>.</typeparam>
 /// <remarks>Transactions require an explicit ID for every existing observation. Each batch may name an ID once.
 /// Enumeration, validation, capacity and cancellation failures leave installed values and presentation unchanged.
 /// Rolling limits retain source order. Collection cadence and serialized access remain the host's responsibility.</remarks>

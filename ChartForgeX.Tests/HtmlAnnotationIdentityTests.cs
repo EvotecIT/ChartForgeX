@@ -26,7 +26,7 @@ public sealed class HtmlAnnotationIdentityTests {
             Assert.Equal((string?)group.Attribute("data-cfx-annotation-id"), entry.GetProperty("id").GetString());
             Assert.Equal((string?)group.Attribute("data-cfx-kind"), entry.GetProperty("kind").GetString());
         }
-        chart.Annotations.Clear();
+        chart.ClearAnnotations();
         Assert.Equal(2, section.PreparedVisual.Scene.Annotations.Count);
         using var fresh = PreparedMetadata(new HtmlInteractiveChartRenderer().PrepareSection(Create().AddHorizontalLine(4, "Limit")).Html);
         Assert.False(fresh.RootElement.TryGetProperty("annotations", out _));

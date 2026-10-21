@@ -24,7 +24,7 @@ public sealed class HtmlAlignedViewportTests {
         Assert.True(narrow.XProjection!.FullMinimum < -.8); Assert.True(narrow.XProjection.FullMaximum > 12.8);
         var x = narrow.XProjection;
         var requested = new ChartXViewport(x.FullMinimum, x.FullMinimum + (x.FullMaximum - x.FullMinimum) * .7);
-        var window = renderer.PrepareSection(chart, requested, Configure);
+        var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: requested), Configure);
         Assert.Equal(requested.Minimum, window.PreparedVisual.XProjection!.Minimum);
         Assert.Equal(requested.Minimum, window.NarrowPreparedVisual!.XProjection!.Minimum);
         Assert.Equal(requested.Maximum, window.PreparedVisual.XProjection.Maximum);
@@ -101,7 +101,7 @@ public sealed class HtmlAlignedViewportTests {
         foreach (var series in chart.Series) series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 9; });
         var renderer = new HtmlInteractiveChartRenderer();
         var initial = renderer.PrepareSection(chart, configure: ConfigureMetricDrawing);
-        var window = renderer.PrepareSection(chart, new ChartXViewport(2, 10), ConfigureMetricDrawing);
+        var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(2, 10)), ConfigureMetricDrawing);
         foreach (var pair in new[] { (Full: initial.PreparedVisual, Window: window.PreparedVisual),
             (Full: initial.NarrowPreparedVisual!, Window: window.NarrowPreparedVisual!) }) {
             Assert.Null(pair.Window.YProjection);
@@ -122,7 +122,7 @@ public sealed class HtmlAlignedViewportTests {
         var renderer = new HtmlInteractiveChartRenderer();
         void WithNavigator(HtmlChartInteractionOptions options) { ConfigureMetricDrawing(options); options.XNavigation.Enabled = true; }
         var initial = renderer.PrepareSection(chart, configure: WithNavigator);
-        var window = renderer.PrepareSection(chart, new ChartXViewport(2, 10), WithNavigator);
+        var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(2, 10)), WithNavigator);
         var images = NavigatorImages(window.Html);
         Assert.Equal(2, images.Length);
         Assert.Equal(NavigatorImages(initial.Html), images);
@@ -131,7 +131,7 @@ public sealed class HtmlAlignedViewportTests {
             Assert.Contains("data-cfx-x=\"0\"", native); Assert.Contains("data-cfx-x=\"12\"", native);
             Assert.DoesNotContain("data-cfx-visible=\"false\"", native);
         }
-        var omitted = renderer.PrepareSection(chart, new ChartXViewport(2, 10), options => {
+        var omitted = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(2, 10)), options => {
             WithNavigator(options); options.XNavigation.IncludeNavigator = false;
         });
         Assert.Empty(NavigatorImages(omitted.Html));

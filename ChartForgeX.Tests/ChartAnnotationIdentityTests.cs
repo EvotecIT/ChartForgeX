@@ -29,9 +29,9 @@ public sealed class ChartAnnotationIdentityTests {
         Assert.Throws<InvalidOperationException>(() => chart.AddVerticalLine(default(ChartAnnotationId), 3));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.AddHorizontalBand(new ChartAnnotationId("other"), 4, 4));
         Assert.Same(retained, Assert.Single(chart.Annotations));
-        chart.Annotations.Add(new ChartAnnotation(new ChartAnnotationId("warning"), ChartAnnotationKind.VerticalLine,
-            3, null, "Limit", ChartColor.FromHex("#FF0000"), 1));
-        Assert.Throws<InvalidOperationException>(() => chart.Prepare(new VisualRenderContext()));
+        Assert.Throws<InvalidOperationException>(() => chart.AddAnnotation(new ChartAnnotation(new ChartAnnotationId("warning"), ChartAnnotationKind.VerticalLine,
+            3, null, "Limit", ChartColor.FromHex("#FF0000"), 1)));
+        Assert.Same(retained, Assert.Single(chart.Annotations));
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public sealed class ChartAnnotationIdentityTests {
         var png = prepared.ToPng();
         var retained = chart.Annotations[0];
         retained.StrokeStyle = new ChartStrokeStyle(width: 6);
-        chart.Annotations.Clear();
+        chart.ClearAnnotations();
         chart.AddVerticalLine(new ChartAnnotationId("threshold.critical"), 8, "Localized critical")
             .AddHorizontalLine(new ChartAnnotationId("threshold.warning"), 6, "Localized warning");
         var next = chart.Prepare(new VisualRenderContext());

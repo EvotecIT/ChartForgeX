@@ -137,7 +137,7 @@ public sealed class ExampleRecipeTests {
         Assert.Contains(observed.Points, point => point.X == 8.01);
         Assert.Contains(observed.Points, point => point.BreakBefore);
         var source = ExampleRecipeSource.Emit(recipe, "x-viewport", "Requests", "X 2–8", VisualThemeMode.Light, 800, 440, viewport: true);
-        Assert.Contains("model.Prepare(context, new ChartXViewport(2, 8))", source);
+        Assert.Contains("model.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(2, 8)))", source);
         Assert.DoesNotContain("ViewportExample", source);
     }
 

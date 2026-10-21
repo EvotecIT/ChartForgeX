@@ -21,7 +21,7 @@ public sealed class ChartXViewportTests {
         if (step) chart.AddStepLine("Observed", points, Blue); else chart.AddLine("Observed", points, Blue);
         chart.Series[0].Markers.Enabled = false;
         chart.Options.XAxis.Reversed = reversed; chart.Options.ClipMarksToPlot = false;
-        var prepared = chart.Prepare(Context(), new ChartXViewport(3, 7));
+        var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
         var projection = Assert.IsType<ChartXProjection>(prepared.XProjection);
         Assert.Equal(3, projection.Minimum); Assert.Equal(7, projection.Maximum);
         Assert.Equal(0, projection.FullMinimum); Assert.Equal(10, projection.FullMaximum);
@@ -47,7 +47,7 @@ public sealed class ChartXViewportTests {
         var points = new[] { new ChartPoint(0, 2), new ChartPoint(10, 8, breakBefore: true) };
         if (step) chart.AddStepLine("Disconnected", points, Blue); else chart.AddLine("Disconnected", points, Blue);
         chart.Series[0].Markers.Enabled = false;
-        var prepared = chart.Prepare(Context(), new ChartXViewport(3, 7));
+        var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
         Assert.Equal(2, prepared.Regions.Count(region => region.Role == "point"));
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "line");
         Assert.Equal(2, line.Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));
@@ -62,7 +62,7 @@ public sealed class ChartXViewportTests {
         chart.Series[0].ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 14; });
         var second = new ChartColor(220, 60, 20);
         chart.Series[0].WithPointColor(2, second);
-        var prepared = chart.Prepare(Context(), new ChartXViewport(3, 7));
+        var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
         var projection = Assert.IsType<ChartXProjection>(prepared.XProjection);
         Assert.Equal(3, projection.Minimum); Assert.Equal(7, projection.Maximum);
         Assert.True(projection.FullMinimum < 0); Assert.True(projection.FullMaximum > 10);
@@ -81,7 +81,7 @@ public sealed class ChartXViewportTests {
         chart.Series[1].UseSecondaryYAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
         foreach (var series in chart.Series) series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 9; });
         var full = chart.Prepare(Context());
-        var view = chart.Prepare(Context(), new ChartXViewport(4, 6));
+        var view = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(4, 6)));
         Assert.Equal(AxisLabels(full, "axis-y-label"), AxisLabels(view, "axis-y-label"));
         Assert.Equal(AxisLabels(full, "axis-secondary-y-label"), AxisLabels(view, "axis-secondary-y-label"));
         Assert.NotEqual(AxisLabels(full, "axis-x-label"), AxisLabels(view, "axis-x-label"));
@@ -106,7 +106,7 @@ public sealed class ChartXViewportTests {
             .AddPlotRegion(new(ChartColor.Black, xMinimum: 8, xMaximum: 9, label: "Outside", showLabel: false))
             .AddVerticalLine(9, "Reference");
         chart.Series[0].Markers.Enabled = false; chart.Options.XAxis.Reversed = reversed;
-        var prepared = chart.Prepare(Context(), new ChartXViewport(3, 7));
+        var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
         var projection = prepared.XProjection!;
         var region = prepared.Regions.Single(item => item.Id == "plot-region-0");
         Assert.Equal(projection.PlotBounds.Width / 2, region.Bounds.Width, 9);
@@ -132,10 +132,10 @@ public sealed class ChartXViewportTests {
         chart.Series[0].Markers.Enabled = false;
         var axis = chart.Options.XAxis;
         var full = chart.Prepare(Context()); var originalSvg = full.ToSvg(); var originalPng = full.ToPng();
-        var view = chart.Prepare(Context(), new ChartXViewport(3, 7)); var viewSvg = view.ToSvg(); var viewPng = view.ToPng();
+        var view = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(3, 7))); var viewSvg = view.ToSvg(); var viewPng = view.ToPng();
         var reset = chart.Prepare(Context());
         Assert.Equal(originalSvg, reset.ToSvg()); Assert.Equal(originalPng, reset.ToPng());
-        var fullWindow = chart.Prepare(Context(), new ChartXViewport(full.XProjection!.FullMinimum, full.XProjection.FullMaximum));
+        var fullWindow = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(full.XProjection!.FullMinimum, full.XProjection.FullMaximum)));
         Assert.Equal(originalPng, fullWindow.ToPng());
         Assert.Equal(full.XProjection.PlotBounds, fullWindow.XProjection!.PlotBounds);
         Assert.Same(axis, chart.Options.XAxis);
@@ -162,11 +162,11 @@ public sealed class ChartXViewportTests {
             .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }, Blue);
         chart.Options.XAxis.Reversed = reversed; chart.Series[0].Markers.Enabled = false;
         var window = new ChartXViewport(3, 7);
-        var withoutReference = chart.Prepare(Context(), window).ToPng();
+        var withoutReference = chart.Prepare(Context(), new ChartCartesianViewport(x: window)).ToPng();
         if (end.HasValue) chart.AddVerticalBand(value, end.Value, "Reference");
         else chart.AddVerticalLine(value, "Reference");
         Assert.Contains(chart.Prepare(Context()).Scene.Nodes, node => node.Role == "annotation-label");
-        var prepared = chart.Prepare(Context(), window);
+        var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: window));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role is "annotation-line" or "annotation-band" or "annotation-label" or "annotation-label-backplate");
         Assert.Equal(withoutReference, prepared.ToPng());
         Assert.Single(prepared.Regions, region => region.Role == "annotation");
@@ -186,7 +186,7 @@ public sealed class ChartXViewportTests {
             .AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }, Blue)
             .AddVerticalBand(start, end, "Reference");
         chart.Options.XAxis.Reversed = reversed; chart.Series[0].Markers.Enabled = false;
-        var prepared = chart.Prepare(Context(), new ChartXViewport(3, 7));
+        var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
         var projection = prepared.XProjection!;
         var band = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "annotation-band");
         var first = projection.Project(Math.Max(3, start)); var last = projection.Project(Math.Min(7, end));
@@ -204,7 +204,7 @@ public sealed class ChartXViewportTests {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return "X " + value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         };
-        var prepared = chart.Prepare(Context(), new ChartXViewport(2, 6));
+        var prepared = chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartXViewport(2, 6)));
         Assert.NotEmpty(calls); Assert.All(calls.Values, count => Assert.Equal(1, count));
         // Full-domain layout can probe the callback outside this window, but its
         // measurement facts must not become captions of the final viewport.

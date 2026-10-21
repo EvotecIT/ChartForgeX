@@ -190,7 +190,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             var basis = drawing == "narrow" ? sections[token].NarrowPreparedVisual! : sections[token].PreparedVisual;
             var window = request.GetProperty("kind").GetString() == "reset" ? null
                 : basis.XProjection!.ConstrainViewport(request.GetProperty("left").GetDouble(), request.GetProperty("right").GetDouble());
-            response = renderer.PrepareSection(chart, window, Configure);
+            response = renderer.PrepareSection(chart, window == null ? null : new ChartCartesianViewport(x: window), Configure);
             var nextToken = "candidate-" + sections.Count;
             sections[nextToken] = response;
             drawings.Add(drawing);

@@ -169,15 +169,6 @@ internal static partial class ChartGuards {
             }
         }
 
-        var annotationIds = new HashSet<ChartAnnotationId>();
-        for (var i = 0; i < chart.Annotations.Count; i++) {
-            if (chart.Annotations[i] == null) throw new InvalidOperationException("Chart annotations collection must not contain null entries.");
-            if (chart.Annotations[i].Id is ChartAnnotationId id) {
-                id.Validate();
-                if (!annotationIds.Add(id)) throw new InvalidOperationException("Annotation IDs must be unique within a chart.");
-            }
-        }
-
         ValidateAxisLabels(chart.Options.XAxis, "X-axis");
         ValidateAxisLabels(chart.Options.YAxis, "Y-axis");
         ValidateAxisLabels(chart.Options.SecondaryYAxis, "Secondary y-axis");

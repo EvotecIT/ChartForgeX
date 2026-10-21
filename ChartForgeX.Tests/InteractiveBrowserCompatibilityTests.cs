@@ -107,7 +107,7 @@ public sealed class InteractiveBrowserCompatibilityTests {
             // This smoke sends one zoom from the immutable initial scene, then a reset.
             var viewport = request.GetProperty("kind").GetString() == "reset" ? null
                 : initial.PreparedVisual.XProjection!.ConstrainViewport(request.GetProperty("left").GetDouble(), request.GetProperty("right").GetDouble());
-            return renderer.PrepareSection(chart, viewport, WindowOptions).Html;
+            return renderer.PrepareSection(chart, viewport == null ? null : new ChartCartesianViewport(x: viewport), WindowOptions).Html;
         });
         await page.Locator(Root).EvaluateAsync("""
             root=>{

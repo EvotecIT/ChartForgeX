@@ -75,6 +75,7 @@ try {
         throw 'Required browser proof must discover and execute tests without skips.'
     }
     $requiredContracts = @(
+        'InteractiveSunburstBranchHighlightBrowserTests.PendingPointerExitRestoresTheExistingKeyboardReadoutWithoutWaitingForPointerDelay',
         'V2GalleryBrowserMatrixTests.EveryFamilyKeepsReadableNativeSvgAndHealthyPairedPng',
         'GraphReadabilityBrowserTests.CompactFitUsesScreenSpaceAndResizePreservesTouchedCamera',
         'GraphResizeLifecycleBrowserTests.ImmediateSearchAfterRemountDoesNotTurnInitialResizeNotificationIntoFit',
@@ -87,6 +88,12 @@ try {
         'GraphReadabilityBrowserTests.FitMeasuresUntruncatedPrimaryAndSecondaryCaptionsInPhysicalAndVirtualScenes',
         'GraphReadabilityBrowserTests.NativeStaticFitIncludesTheSameCompletePrimaryAndSecondaryCaptions',
         'InteractiveChartLifecycleBrowserTests.HostAccentSurvivesReplacementAndAdaptiveDrawingsWhileDefaultsFollowTheNewTheme',
+        'InteractiveChartLifecycleBrowserTests.AdaptiveUpdateCommitsItsActiveDrawingBeforeHostNotificationAndKeepsFocusAndExportControlsUntilResize',
+        'InteractiveChartLifecycleBrowserTests.AdaptiveUpdateUsesTheCurrentPositiveHostWidthAndNewBreakpointWhileHiddenHostsKeepTheirActiveDrawing',
+        'InteractiveChartLifecycleBrowserTests.PreciseHalfOpenTimeIntervalsRoundTripWithoutAliasingAdjacentInstants',
+        'InteractiveChartLifecycleBrowserTests.PreciseTimePointMatchesKeepDistinctInstantsAndNormalizeOffsets',
+        'InteractiveChartLifecycleBrowserTests.AdjacentCadenceBucketsRoundTripWithoutSharingBoundaryObservations',
+        'InteractiveChartLifecycleBrowserTests.StateIntervalClosedDateRangeExcludesItsExclusiveEndAcrossTheUnixEpoch',
         'SupportedCombinationBrowserTests.ReplacementRetainsSelectedSourceAndLegendStateAcrossSupportedCompositions',
         'GaugeScalePrecisionBrowserTests.NeedleAtScaleEdgesClearsMeasuredSummaryInRenderedSvg',
         'GaugeScalePrecisionBrowserTests.CloseGaugeBoundsRemainDistinctAndContainedInNativeSvgAndPairedPng',
@@ -123,6 +130,8 @@ try {
         'SourceAnnotationBrowserTests.ConnectedSourceCommandsCommitNativeFactsKeepReaderStateAndExportTheCommittedDrawing',
         'SourceAnnotationBrowserTests.SourceCommandsRejectInvalidRepliesAndShareCancellationWithViewportUpdateAndDisposal',
         'SourceAnnotationBrowserTests.ExplicitSecondarySourceCommandsDoNotRequireAnAmbiguousPrimaryYInverse',
+        'ManagedNativeConnectionBrowserTests.ManagedConnectionCarriesOnlyCommittedBasisAcrossDeferredViewportAndAnnotationCommands',
+        'ManagedNativeConnectionBrowserTests.ManagedConnectionRejectsUncommittedRepliesAndOwnsCrossChannelUpdateReconnectAndDisposal',
         'ChartContextMenuBrowserTests.ExistingActionsKeepTranslationsKeyboardFocusExportsAndOwnedLifetime',
         'HierarchyCompleteCaptionBrowserTests.CompleteCaptionsStayInsideTheirMarksWithTheNativeFont',
         'GeographicMapCompositionBrowserTests.IndependentMapKeysReadoutsAndSelectionSurviveTypedReplacementAndDatasetOrder',

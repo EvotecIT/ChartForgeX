@@ -52,7 +52,7 @@ public sealed partial class SourceAnnotationBrowserTests {
         chart.AddNote(new ChartPoint(updated ? 6 : 3, 40), updated ? "Reviewed" : "Review", id: new ChartAnnotationId("note"))
             .AddLineSegment(new ChartPoint(2, 20), new ChartPoint(8, updated ? 50 : 30), "Plan", id: new ChartAnnotationId("plan"))
             .AddParallelChannel(new ChartPoint(2, 65), new ChartPoint(8, 75), 10, "Target", id: new ChartAnnotationId("channel"));
-        if (updated) { var note = chart.Annotations[0]; chart.Annotations.RemoveAt(0); chart.Annotations.Add(note); }
+        if (updated) { var note = chart.Annotations[0]; chart.RemoveAnnotation(note).AddAnnotation(note); }
         return chart;
     }
     private static void Options(HtmlChartInteractionOptions options) {

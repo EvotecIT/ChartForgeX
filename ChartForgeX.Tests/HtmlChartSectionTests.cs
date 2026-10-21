@@ -20,7 +20,7 @@ public sealed class HtmlChartSectionTests {
         };
         HtmlChartInteractionOptions? retained = null;
         var configureCalls = 0;
-        var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartXViewport(2, 6), options => {
+        var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(2, 6)), options => {
             configureCalls++; retained = options; options.IdScope = "captured-section";
         });
         Assert.Equal(1, configureCalls);
@@ -45,8 +45,8 @@ public sealed class HtmlChartSectionTests {
         var chart = Line(); chart.Options.XAxis.Reversed = reversed;
         var renderer = new HtmlInteractiveChartRenderer();
         var full = renderer.PrepareSection(chart);
-        var narrowed = renderer.PrepareSection(chart, new ChartXViewport(3, 7));
-        var reset = renderer.PrepareSection(chart, viewport: (ChartXViewport?)null);
+        var narrowed = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
+        var reset = renderer.PrepareSection(chart, viewport: null);
         Assert.Equal(AxisLabels(full.PreparedVisual, "axis-y-label"), AxisLabels(narrowed.PreparedVisual, "axis-y-label"));
         Assert.NotEqual(AxisLabels(full.PreparedVisual, "axis-x-label"), AxisLabels(narrowed.PreparedVisual, "axis-x-label"));
         Assert.Equal(full.Html, reset.Html); Assert.Equal(full.PreparedVisual.ToPng(), reset.PreparedVisual.ToPng());
@@ -72,7 +72,7 @@ public sealed class HtmlChartSectionTests {
         chart.Series[0].WithObservationId(0, new ChartObservationId("before-window"))
             .WithObservationId(1, new ChartObservationId("inside-window"))
             .WithObservationId(2, new ChartObservationId("after-window"));
-        var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartXViewport(3, 7));
+        var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
         var points = EmbeddedSvg(section.Html).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
         Assert.Equal(new[] { "before-window", "inside-window", "after-window" }, points.Select(node => (string?)node.Attribute("data-cfx-observation-id")));
         Assert.Equal(new[] { "0", "1", "2" }, points.Select(node => (string?)node.Attribute("data-cfx-source-point")));
@@ -87,7 +87,7 @@ public sealed class HtmlChartSectionTests {
         Assert.Equal("observations", series.GetProperty("key").GetString());
         Assert.Equal(chart.Series[0].SourcePointIndices, series.GetProperty("indices").EnumerateArray().Select(value => value.GetInt32()));
         chart.Series[0].ConfigureMarkers(markers => markers.Enabled = false);
-        var markerFree = EmbeddedSvg(new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartXViewport(3, 7)).Html)
+        var markerFree = EmbeddedSvg(new HtmlInteractiveChartRenderer().PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(3, 7))).Html)
             .Descendants().Single(node => (string?)node.Attribute("data-cfx-observation-id") == "inside-window");
         Assert.Empty(markerFree.Elements());
         Assert.Null(markerFree.Attribute("data-cfx-visible"));
@@ -107,8 +107,8 @@ public sealed class HtmlChartSectionTests {
             Assert.False(metadata.RootElement.TryGetProperty("xProjection", out _));
             Assert.NotNull(EmbeddedSvg(section.Html));
         }
-        Assert.Throws<InvalidOperationException>(() => renderer.PrepareSection(empty, new ChartXViewport(3, 7)));
-        Assert.Throws<NotSupportedException>(() => renderer.PrepareSection(bar, new ChartXViewport(3, 7)));
+        Assert.Throws<InvalidOperationException>(() => renderer.PrepareSection(empty, new ChartCartesianViewport(x: new ChartXViewport(3, 7))));
+        Assert.Throws<NotSupportedException>(() => renderer.PrepareSection(bar, new ChartCartesianViewport(x: new ChartXViewport(3, 7))));
         Assert.Throws<ArgumentNullException>(() => renderer.PrepareSection(null!));
     }
 

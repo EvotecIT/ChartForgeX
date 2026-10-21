@@ -68,7 +68,7 @@ public sealed partial class Chart {
         ChartGuards.UnitInterval(opacity, nameof(opacity));
         var rangeColor = color ?? Options.ResolvedTheme.Palette[0];
         var annotation = new ChartAnnotation(ChartAnnotationKind.VerticalBand, start, end, label, rangeColor, opacity);
-        Annotations.Add(annotation);
+        AddAnnotation(annotation);
         Options.XAxisFocusGuideAnnotations.Add(annotation);
 
         var minimum = Math.Min(start, end);
@@ -98,8 +98,8 @@ public sealed partial class Chart {
     public Chart ClearHighlightedXAxisLabels() {
         Options.XAxisLabelHighlights.Clear();
         if (Options.XAxisFocusGuideAnnotations.Count > 0) {
-            Annotations.RemoveAll(annotation => Options.XAxisFocusGuideAnnotations.Contains(annotation));
-            Options.XAxisFocusGuideAnnotations.Clear();
+            while (Options.XAxisFocusGuideAnnotations.Count > 0)
+                RemoveAnnotation(Options.XAxisFocusGuideAnnotations[0]);
         }
 
         return this;
@@ -107,7 +107,7 @@ public sealed partial class Chart {
 
     private void AddXAxisFocusGuideLine(double value, ChartColor color) {
         var annotation = new ChartAnnotation(ChartAnnotationKind.VerticalLine, value, null, "", color, 1);
-        Annotations.Add(annotation);
+        AddAnnotation(annotation);
         Options.XAxisFocusGuideAnnotations.Add(annotation);
     }
 

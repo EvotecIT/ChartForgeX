@@ -44,7 +44,7 @@ public sealed class V2CartesianSemanticTests {
         }
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.no-data");
         Assert.True(png.Length > 64);
-        chart.Annotations.Clear();
+        chart.ClearAnnotations();
         chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng());

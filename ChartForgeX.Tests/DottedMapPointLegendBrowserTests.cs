@@ -57,7 +57,7 @@ public sealed class DottedMapPointLegendBrowserTests {
 
         await MoveToAsync(page, Key("north"));
         Assert.Equal("North", await page.Locator(".cfx-tooltip__title").InnerTextAsync());
-        Assert.Equal(new[] { "Value", Number(northFacts.Value!.Value) }, await TooltipRowsAsync(page));
+        Assert.Equal(new[] { "Value", Number(northFacts.Weight!.Value) }, await TooltipRowsAsync(page));
         Assert.Equal(1d, await PaintOpacityAsync(page, "north"));
         Assert.InRange(await PaintOpacityAsync(page, "south"), 0, .99);
         await CaptureAsync(page, dark, width, "key-readout");
@@ -68,7 +68,7 @@ public sealed class DottedMapPointLegendBrowserTests {
         var north = page.Locator(Mark("north"));
         Assert.Equal(Number(northFacts.Longitude), await north.GetAttributeAsync("data-cfx-longitude"));
         Assert.Equal(Number(northFacts.Latitude), await north.GetAttributeAsync("data-cfx-latitude"));
-        Assert.Equal(Number(northFacts.Value!.Value), await north.GetAttributeAsync("data-cfx-value"));
+        Assert.Equal(Number(northFacts.Weight!.Value), await north.GetAttributeAsync("data-cfx-value"));
         await MoveToAsync(page, Mark("north") + " [data-cfx-role='dotted-map-point']");
         await CaptureAsync(page, dark, width, "mark-readout");
         Assert.Contains("North", await TooltipTextAsync(page));

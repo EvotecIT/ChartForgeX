@@ -142,7 +142,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
 
     private static string NativeLinkedSection(Chart chart, ChartXViewport? viewport = null,
         ChartSelectionMode mode = ChartSelectionMode.Toggle, bool adaptive = false, string id = "linked-native-source") =>
-        new HtmlInteractiveChartRenderer().PrepareSection(chart, viewport, options => {
+        new HtmlInteractiveChartRenderer().PrepareSection(chart, viewport == null ? null : new ChartCartesianViewport(x: viewport), options => {
             Fit(options); options.Interaction.ChartId = id; options.Interaction.GroupName = "linked-native-contract";
             options.Interaction.SelectionMode = mode;
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Selection

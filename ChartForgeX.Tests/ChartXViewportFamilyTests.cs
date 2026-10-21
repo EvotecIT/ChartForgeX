@@ -31,7 +31,7 @@ public sealed class ChartXViewportFamilyTests {
         chart.Options.XAxis.Reversed = true;
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 380)), VisualTheme.Graphite());
         var full = chart.Prepare(context);
-        var window = chart.Prepare(context, new ChartXViewport(first + 4, first + 6));
+        var window = chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(first + 4, first + 6)));
         var projection = Assert.IsType<ChartXProjection>(window.XProjection);
         Assert.Equal(ChartScaleKind.Time, projection.Scale);
         Assert.True(projection.Reversed);
@@ -63,7 +63,7 @@ public sealed class ChartXViewportFamilyTests {
             .AddScatter("Readings", new[] { new ChartPoint(0, 3), new ChartPoint(10, 7) });
         chart.Series[0].WithSmooth();
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280)), VisualTheme.Graphite());
-        var prepared = chart.Prepare(context, new ChartXViewport(4, 6));
+        var prepared = chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(4, 6)));
         Assert.NotNull(prepared.XProjection);
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "area" && node.Commands.Count > 3);
         Assert.Equal(4, prepared.Regions.Count(region => region.Role == "point"));

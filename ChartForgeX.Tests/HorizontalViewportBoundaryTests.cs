@@ -12,7 +12,7 @@ public sealed class HorizontalViewportBoundaryTests {
     public void HorizontalLinesRejectTheVerticalOnlyXWindow(bool step) {
         var chart = Model(step);
         var context = VisualExportRequest.ForChart(chart).Context;
-        Assert.Throws<NotSupportedException>(() => chart.Prepare(context, new ChartXViewport(15, 35)));
+        Assert.Throws<NotSupportedException>(() => chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(15, 35))));
     }
 
     [Theory]

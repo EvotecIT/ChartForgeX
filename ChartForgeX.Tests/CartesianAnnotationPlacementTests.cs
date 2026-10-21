@@ -211,7 +211,7 @@ public sealed class CartesianAnnotationPlacementTests {
         Assert.Equal("11.5", (string?)group.Attribute("data-cfx-end-value"));
         Assert.Equal(caption, (string?)group.Attribute("data-cfx-label"));
         Assert.Contains(caption, Assert.Single(prepared.Regions, region => region.Role == "annotation").Label);
-        chart.ClearSeries(); chart.Annotations.Clear();
+        chart.ClearSeries(); chart.ClearAnnotations();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
