@@ -32,7 +32,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         await page.SetContentAsync(new HtmlInteractiveTopologyRenderer().RenderPage(chart, options));
         var native = await NativeSnapshotAsync(page, ".cfx-topology-wrapper");
         await page.SetContentAsync(html);
-        Assert.Equal(native, await NativeSnapshotAsync(page, ".cfx-topology-wrapper[data-chart-id=translated-topology]"));
+        AssertNativeSnapshotEqual(native, await NativeSnapshotAsync(page, ".cfx-topology-wrapper[data-chart-id=translated-topology]"));
         await ObserveInputAsync(page);
         var root = page.Locator(".cfx-topology-wrapper[data-chart-id=translated-topology]");
         await page.WaitForFunctionAsync("()=>!!document.querySelector('[data-cfx-runtime-bound=true]')");

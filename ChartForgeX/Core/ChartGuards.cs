@@ -52,7 +52,7 @@ internal static partial class ChartGuards {
         _ = ChartCategoryGroupPlan.TryCreate(chart);
         chart.ValidatePlotRegions();
         if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap && series.Kind != ChartSeriesKind.DottedMap))
-            throw new InvalidOperationException("Map color presentation requires numeric region or tile maps.");
+            throw new InvalidOperationException("Map color presentation requires numeric region, tile or dotted maps.");
         if (chart.Options.HeatmapColorDimension.HasOverrides && chart.Series.Any(series => series.IsCategoricalHeatmapRow
             || (series.Kind != ChartSeriesKind.Heatmap && series.Kind != ChartSeriesKind.HexbinHeatmap && series.Kind != ChartSeriesKind.CalendarHeatmap)))
             throw new InvalidOperationException("Heatmap color presentation requires numeric rectangular, hexagonal or calendar heatmaps.");

@@ -51,17 +51,24 @@ public sealed partial class ExplorerLocalizationBrowserTests {
 
     // Compare only the native scene, not translated chrome. Canvas bitmap hashes catch inherited
     // bidi changes that raw labels or SVG attributes alone cannot observe.
-    private static async Task<string> NativeSnapshotAsync(IPage page, string selector) {
+    private static async Task<JsonElement> NativeSnapshotAsync(IPage page, string selector) {
         await page.EvaluateAsync("()=>document.fonts.ready.then(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))");
         var snapshot = await page.Locator(selector).EvaluateAsync<JsonElement>("""
             root=>{const surfaces=[...root.querySelectorAll('svg[data-cfx-role=graph-scene],canvas,.cfx-topology-viewport>svg')],
                 painted=node=>{for(let owner=node;owner;owner=owner.parentElement){const style=getComputedStyle(owner);if(style.display==='none'||style.visibility!=='visible'||Number(style.opacity)===0)return false}return true},
                 textFacts=node=>({text:node.textContent,direction:getComputedStyle(node).direction});
-                return{surfaces:surfaces.map(node=>({tag:node.localName,role:node.dataset.cfxRole,direction:getComputedStyle(node).direction,
+                return{pixelRatio:devicePixelRatio,surfaces:surfaces.map(node=>({tag:node.localName,role:node.dataset.cfxRole,direction:getComputedStyle(node).direction,
                     bitmap:node.localName==='canvas'?node.toDataURL():null})),
                 nativeText:surfaces.filter(node=>node.localName==='svg').flatMap(svg=>[...svg.querySelectorAll('text')]).map(textFacts),
-                texts:surfaces.filter(node=>node.localName==='svg'&&painted(node)).flatMap(svg=>[...svg.querySelectorAll('text')]).map(node=>({...textFacts(node),
-                    characters:Array.from({length:node.getNumberOfChars()},(_,index)=>{const point=node.getStartPositionOfChar(index);return [point.x,point.y]})}))}}
+                texts:surfaces.filter(node=>node.localName==='svg'&&painted(node)).flatMap(svg=>{
+                    const origin=svg.getBoundingClientRect();return [...svg.querySelectorAll('text')].map(node=>{
+                        const matrix=node.getScreenCTM(),point=value=>[matrix.a*value.x+matrix.c*value.y+matrix.e-origin.left,
+                            matrix.b*value.x+matrix.d*value.y+matrix.f-origin.top];
+                        return {...textFacts(node),linear:[matrix.a,matrix.b,matrix.c,matrix.d],
+                            characters:Array.from({length:node.getNumberOfChars()},(_,index)=>{
+                                const box=node.getExtentOfChar(index);return [point(node.getStartPositionOfChar(index)),point(node.getEndPositionOfChar(index)),
+                                    point({x:box.x,y:box.y}),point({x:box.x+box.width,y:box.y}),
+                                    point({x:box.x,y:box.y+box.height}),point({x:box.x+box.width,y:box.y+box.height})]})}})})}}
             """);
         var json = snapshot.GetRawText();
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json)));
@@ -81,7 +88,37 @@ public sealed partial class ExplorerLocalizationBrowserTests {
             await File.WriteAllTextAsync(Path.Combine(directory, "localization-native-" + hash + ".json"),
                 JsonSerializer.Serialize(new { snapshot, context }));
         }
-        return hash;
+        return snapshot;
+    }
+
+    private static void AssertNativeSnapshotEqual(JsonElement expected, JsonElement actual) {
+        Assert.Equal(expected.GetProperty("surfaces").GetRawText(), actual.GetProperty("surfaces").GetRawText());
+        Assert.Equal(expected.GetProperty("nativeText").GetRawText(), actual.GetProperty("nativeText").GetRawText());
+        Assert.Equal(expected.GetProperty("pixelRatio").GetDouble(), actual.GetProperty("pixelRatio").GetDouble());
+        var expectedTexts = expected.GetProperty("texts").EnumerateArray().ToArray();
+        var actualTexts = actual.GetProperty("texts").EnumerateArray().ToArray();
+        Assert.Equal(expectedTexts.Length, actualTexts.Length);
+        for (var index = 0; index < expectedTexts.Length; index++) {
+            Assert.Equal(expectedTexts[index].GetProperty("text").GetString(), actualTexts[index].GetProperty("text").GetString());
+            Assert.Equal(expectedTexts[index].GetProperty("direction").GetString(), actualTexts[index].GetProperty("direction").GetString());
+            Assert.Equal(expectedTexts[index].GetProperty("linear").GetRawText(), actualTexts[index].GetProperty("linear").GetRawText());
+            var expectedCharacters = expectedTexts[index].GetProperty("characters").EnumerateArray().ToArray();
+            var actualCharacters = actualTexts[index].GetProperty("characters").EnumerateArray().ToArray();
+            Assert.Equal(expectedCharacters.Length, actualCharacters.Length);
+            for (var character = 0; character < expectedCharacters.Length; character++) {
+                // Compare the start, end and all extent corners relative to the SVG surface.
+                // This includes ancestor translations and each glyph's width/height, while
+                // allowing font-cache quantization below half a physical pixel.
+                var expectedPoints = expectedCharacters[character].EnumerateArray().ToArray();
+                var actualPoints = actualCharacters[character].EnumerateArray().ToArray();
+                Assert.Equal(expectedPoints.Length, actualPoints.Length);
+                for (var point = 0; point < expectedPoints.Length; point++) {
+                    var dx = expectedPoints[point][0].GetDouble() - actualPoints[point][0].GetDouble();
+                    var dy = expectedPoints[point][1].GetDouble() - actualPoints[point][1].GetDouble();
+                    Assert.InRange(Math.Sqrt(dx * dx + dy * dy) * expected.GetProperty("pixelRatio").GetDouble(), 0, 0.5);
+                }
+            }
+        }
     }
 
     private static async Task AssertLeadingEnglishNumberOrderAsync(ILocator message) {
