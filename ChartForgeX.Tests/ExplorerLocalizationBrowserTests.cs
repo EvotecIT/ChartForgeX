@@ -51,7 +51,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
 
     // Compare only the native scene, not translated chrome. Canvas bitmap hashes catch inherited
     // bidi changes that raw labels or SVG attributes alone cannot observe.
-    private static async Task<string> NativeSnapshotAsync(IPage page, string selector) {
+    private static async Task<JsonElement> NativeSnapshotAsync(IPage page, string selector) {
         await page.EvaluateAsync("()=>document.fonts.ready.then(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))");
         var snapshot = await page.Locator(selector).EvaluateAsync<JsonElement>("""
             root=>{const surfaces=[...root.querySelectorAll('svg[data-cfx-role=graph-scene],canvas,.cfx-topology-viewport>svg')],
@@ -81,7 +81,28 @@ public sealed partial class ExplorerLocalizationBrowserTests {
             await File.WriteAllTextAsync(Path.Combine(directory, "localization-native-" + hash + ".json"),
                 JsonSerializer.Serialize(new { snapshot, context }));
         }
-        return hash;
+        return snapshot;
+    }
+
+    private static void AssertNativeSnapshotEqual(JsonElement expected, JsonElement actual) {
+        Assert.Equal(expected.GetProperty("surfaces").GetRawText(), actual.GetProperty("surfaces").GetRawText());
+        Assert.Equal(expected.GetProperty("nativeText").GetRawText(), actual.GetProperty("nativeText").GetRawText());
+        var expectedTexts = expected.GetProperty("texts").EnumerateArray().ToArray();
+        var actualTexts = actual.GetProperty("texts").EnumerateArray().ToArray();
+        Assert.Equal(expectedTexts.Length, actualTexts.Length);
+        for (var index = 0; index < expectedTexts.Length; index++) {
+            Assert.Equal(expectedTexts[index].GetProperty("text").GetString(), actualTexts[index].GetProperty("text").GetString());
+            Assert.Equal(expectedTexts[index].GetProperty("direction").GetString(), actualTexts[index].GetProperty("direction").GetString());
+            var expectedCharacters = expectedTexts[index].GetProperty("characters").EnumerateArray().ToArray();
+            var actualCharacters = actualTexts[index].GetProperty("characters").EnumerateArray().ToArray();
+            Assert.Equal(expectedCharacters.Length, actualCharacters.Length);
+            for (var character = 0; character < expectedCharacters.Length; character++) {
+                // Firefox can report subpixel glyph positions differently after a font-cache warmup.
+                // Keep text, bidi direction and canvas pixels exact; allow only this measured layout noise.
+                for (var axis = 0; axis < 2; axis++)
+                    Assert.InRange(Math.Abs(expectedCharacters[character][axis].GetDouble() - actualCharacters[character][axis].GetDouble()), 0, 0.1);
+            }
+        }
     }
 
     private static async Task AssertLeadingEnglishNumberOrderAsync(ILocator message) {

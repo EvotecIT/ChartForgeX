@@ -49,7 +49,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         await CaptureAsync(page, "graph-" + backend + "-default-dark-selected");
         await page.SetContentAsync(html);
         await AssertGraphChromeContrastAsync(page);
-        Assert.Equal(native, await NativeSnapshotAsync(page, ".cfx-graph-explorer"));
+        AssertNativeSnapshotEqual(native, await NativeSnapshotAsync(page, ".cfx-graph-explorer"));
         await ObserveInputAsync(page);
         var root = page.Locator(".cfx-graph-explorer");
         await page.WaitForFunctionAsync("()=>!!document.querySelector('[data-cfx-graph-bound=true]')");
