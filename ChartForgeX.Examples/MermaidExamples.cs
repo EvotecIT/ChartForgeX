@@ -120,10 +120,9 @@ internal static class MermaidExamples {
                 _ => null
             };
             var parsed = new MermaidParser().Parse(item.Value, options?.ParseOptions);
-            // These natural-size notation fixtures measure notes and namespace labels. Keep
-            // their baseline independent of installed fonts without overriding source fonts.
-            var proofTypography = parsed.Document is MermaidClassDocument or MermaidStateDocument
-                && parsed.Document.Configuration.FontFamily == null;
+            // Native text fitting can affect any diagram's natural frame. Keep gallery
+            // defaults independent of installed fonts without overriding source fonts.
+            var proofTypography = parsed.Document != null && parsed.Document.Configuration.FontFamily == null;
             if (proofTypography) {
                 options ??= new MermaidRenderOptions();
                 options.Presentation ??= new MermaidPresentationOptions();

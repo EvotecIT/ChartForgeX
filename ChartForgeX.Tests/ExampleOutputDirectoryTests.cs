@@ -1,4 +1,5 @@
 using Xunit;
+using static ChartForgeX.Tests.ExampleTestOutput;
 
 namespace ChartForgeX.Tests;
 
@@ -104,20 +105,4 @@ public sealed class ExampleOutputDirectoryTests {
         }
     }
 
-    private static string CreateScratchPath(string prefix) {
-        // Temp roots can contain system aliases. Resolve each existing ancestor before
-        // creating the dedicated fixture so positive tests reach their intended guard.
-        var directory = new DirectoryInfo(Path.GetTempPath());
-        var segments = new Stack<string>();
-        while (directory.Parent is { } parent) {
-            segments.Push(directory.Name);
-            directory = parent;
-        }
-        var physical = directory.FullName;
-        while (segments.Count > 0) {
-            var child = new DirectoryInfo(Path.Combine(physical, segments.Pop()));
-            physical = child.ResolveLinkTarget(returnFinalTarget: true)?.FullName ?? child.FullName;
-        }
-        return Path.Combine(physical, prefix + Guid.NewGuid().ToString("N"));
-    }
 }

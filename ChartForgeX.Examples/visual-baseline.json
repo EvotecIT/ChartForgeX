@@ -5165,8 +5165,8 @@
       "name": "mermaid-cynefin-basic",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 960,
       "height": 621,
@@ -5189,8 +5189,8 @@
       "name": "mermaid-er-direction",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 960,
       "height": 669,
@@ -6345,9 +6345,9 @@
         "frameFontFingerprint": ""
       },
       "width": 960,
-      "height": 633,
+      "height": 644,
       "logicalWidth": 960.0,
-      "logicalHeight": 632.756,
+      "logicalHeight": 643.936,
       "svg": {
         "minVisualNodes": 25,
         "maxClippedTextNodes": 0,
@@ -6369,9 +6369,9 @@
         "frameFontFingerprint": ""
       },
       "width": 960,
-      "height": 633,
+      "height": 644,
       "logicalWidth": 960.0,
-      "logicalHeight": 632.756,
+      "logicalHeight": 643.936,
       "svg": {
         "minVisualNodes": 25,
         "maxClippedTextNodes": 0,
@@ -7277,8 +7277,8 @@
       "name": "mermaid-swimlane-basic",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 1032,
       "height": 437,
@@ -7397,8 +7397,8 @@
       "name": "mermaid-usecase-basic",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 984,
       "height": 479,

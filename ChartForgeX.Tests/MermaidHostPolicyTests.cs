@@ -9,12 +9,16 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class MermaidHostPolicyTests {
-    [Fact]
-    public void SharedHostPresentationOverridesSourceAndFamilyOverridesOnlyAuthoredFields() {
-        const string source = "---\nconfig:\n  theme: dark\n  fontFamily: Source Font\n  themeVariables:\n    fontSize: 15\n---\nflowchart LR\nA[Source] --> B[Target]";
+    [Theory]
+    [InlineData("flowchart LR\nA[Source] --> B[Target]")]
+    [InlineData("mindmap\n Root\n   Child")]
+    public void SharedHostPresentationOverridesSourceAndFamilyOverridesOnlyAuthoredFields(string diagram) {
+        var source = "---\nconfig:\n  theme: dark\n  fontFamily: Source Font\n  themeVariables:\n    fontSize: 15\n---\n" + diagram;
         var options = new MermaidRenderOptions {
-            Presentation = new() { ThemeMode = VisualThemeMode.Light, FontFamily = "Host Font", FontSize = 19 },
-            Flowchart = new() { Presentation = new() { FontSize = 23 } }
+            Presentation = new() { ThemeMode = VisualThemeMode.Light, FontFamily = "Host Font", FontSize = 19,
+                TopologySizing = MermaidTopologySizing.FixedViewport },
+            Flowchart = new() { Presentation = new() { FontSize = 23 } },
+            MindMap = new() { Presentation = new() { FontSize = 23 } }
         };
         var result = MermaidRenderer.Render(source, options);
         Assert.False(result.HasErrors);
@@ -22,10 +26,18 @@ public sealed class MermaidHostPolicyTests {
         Assert.Equal(VisualThemeMode.Light, model.ThemeMode);
         Assert.Equal("Host Font", model.Theme.Typography.Family);
         Assert.Equal(23, model.Theme.Typography.DataLabelSize);
+        Assert.True(model.DefaultRenderOptions!.FitContentToViewport);
         Assert.Equal("Source Font", result.Document!.Configuration.FontFamily);
         Assert.Equal(15, result.Document.Configuration.FontSize);
-        Assert.Contains("Host Font", result.Artifact.ToSvg());
-        Assert.True(result.Artifact!.ToPng().Length > 64);
+        var svg = result.Artifact.ToSvg();
+        var png = result.Artifact.ToPng();
+        Assert.Contains("Host Font", svg);
+        Assert.True(png.Length > 64);
+        var fenced = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
+        Assert.False(fenced.HasErrors);
+        var artifact = Assert.Single(fenced.Artifacts);
+        Assert.Equal(svg, artifact.ToSvg());
+        Assert.Equal(png, artifact.ToPng());
         Assert.Equal(19, options.Presentation.FontSize);
     }
 
