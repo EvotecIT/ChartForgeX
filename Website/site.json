@@ -52,6 +52,49 @@
       }
     },
     {
+      "Name": "guides",
+      "Input": "../docs",
+      "Output": "/docs",
+      "DefaultLayout": "docs",
+      "UseToc": false,
+      "Include": [
+        "markup.md",
+        "markup-v1-reference.md",
+        "visual-artifacts.md",
+        "mermaid-support-matrix.md",
+        "visual-blocks.md",
+        "visual-canvas.md",
+        "raster-animation.md",
+        "label-placement.md",
+        "chord.md",
+        "topology-icon-packs.md",
+        "graph-explorer.md",
+        "visual-effects.md"
+      ],
+      "Seo": {
+        "Templates": {
+          "Title": "{title} | {site} documentation"
+        }
+      }
+    },
+    {
+      "Name": "api-guides",
+      "Input": "../docs/v2",
+      "Output": "/docs",
+      "DefaultLayout": "docs",
+      "UseToc": false,
+      "Include": [
+        "api-conventions.md",
+        "chart-combinations.md",
+        "migration.md"
+      ],
+      "Seo": {
+        "Templates": {
+          "Title": "{title} | {site} documentation"
+        }
+      }
+    },
+    {
       "Name": "examples",
       "Input": "content/examples",
       "Output": "/examples",

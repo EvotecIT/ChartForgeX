@@ -75,6 +75,18 @@
   border-radius: 2px;
   background: var(--cfx-accent);
 }
+.cfx-docs__group { margin-block: 8px; }
+.cfx-docs__group > summary {
+  padding-block: 5px;
+  color: var(--cfx-ink);
+  font-weight: 650;
+  cursor: pointer;
+}
+.cfx-docs__group > summary:focus-visible {
+  outline: 2px solid var(--cfx-accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
 /* Article */
 .cfx-docs__article { min-width: 0; }
 .cfx-docs__article :is(.cfx-prose, .cfx-prose > article) > h2:first-child { margin-top: 0; }

@@ -19,7 +19,7 @@ internal static partial class ExpressiveExamples {
         SaveGrid(CreatePointColorCustomizationGrid(), output, "point-color-customization-showcase-grid", pngOutputScale);
         SaveChart(CreateDashboardSegmentedColumnPreview(), output, "dashboard-segmented-column-style", pngOutputScale);
         SaveChart(CreateDashboardSegmentedHorizontalPreview(), output, "dashboard-segmented-horizontal-style", pngOutputScale);
-        SaveChart(CreateDashboardPremiumTrendPreview(), output, "dashboard-premium-trend-style", pngOutputScale);
+        SaveChart(DashboardPremiumTrendRecipe.Create(), output, "dashboard-premium-trend-style", pngOutputScale);
         SaveChart(CreateTextStyleShowcase(), output, "text-style-showcase-editorial", pngOutputScale);
         SaveChart(CreateFontLayoutShowcase(), output, "font-layout-showcase", pngOutputScale);
         SaveChart(CreateFallbackFontShowcase(), output, "fallback-font-showcase", pngOutputScale);
@@ -71,23 +71,7 @@ internal static partial class ExpressiveExamples {
         .AddHorizontalBar("Saved", Points(30, 25, 36, 24))
         .AddHorizontalBar("Outreach", Points(18, 23, 20, 26));
 
-    private static Chart CreateDashboardPremiumTrendPreview() => Chart.Create()
-        .WithHeader(false)
-        .WithTransparentBackground(false)
-        .WithTheme(VisualTheme.SaasDashboard()
-            .WithPalette(new[] { ChartColor.FromHex("#2563EB"), ChartColor.FromHex("#14B8A6") })
-            .Configure(builder => { builder.Light.Grid = builder.Dark.Grid = ChartColor.FromHex("#D7DEE8"); builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#94A3B8"); })
-            .Configure(builder => { builder.MarkerRadius = 3.2; })
-            .Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartColor.FromHex("#64748B"); builder.Light.MutedForeground = builder.Dark.MutedForeground = ChartColor.FromHex("#8792A5"); }))
-        .WithDashboardPanelStyle()
-        .WithLegend(false)
-        .WithPadding(36, 30, 26, 58)
-        .WithSize(920, 360)
-        .WithXLabels("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
-        .WithYAxisBounds(0, 100)
-        .WithHighlightedXAxisLabel(4, paletteIndex: 0)
-        .AddSmoothArea("Saved", Points(24, 36, 48, 58, 46, 68, 76))
-        .AddSmoothLine("Outreach", Points(18, 28, 36, 48, 40, 58, 66));
+
 
     private static ChartGrid CreatePictorialSymbolShowcaseGrid() {
         var shapes = new[] {

@@ -14,7 +14,25 @@
 {{ include "site-header" }}
 {{~ ## The surface table on "Choose a rendering surface" gains the output of each surface beside its row. Rows are
      matched by their "Need" text (data/docs.json); when any row no longer matches, the table renders unchanged. ## ~}}
-{{~ article = content
+{{~ article = content; guide_page = null
+    if page.collection == "guides" || page.collection == "api-guides"
+      for group in data.docs.guideGroups
+        for guide in group.guides
+          if page.output_path == ("/docs/" + guide.slug + "/"); guide_page = guide; end
+        end
+      end
+      heading_start = article | string.index_of "<h1"
+      heading_end = article | string.index_of "</h1>"
+      if heading_start >= 0 && heading_end >= heading_start
+        before_heading = article | string.slice 0 heading_start
+        after_heading = article | string.slice (heading_end + 5)
+        article = before_heading + after_heading
+      end
+      for target in data.docs.guideLinkTargets
+        article = article | string.replace ('<a href="' + target.from + '"') ('<a href="' + target.to + '"')
+      end
+      if guide_page; edit_url = "https://github.com/EvotecIT/ChartForgeX/edit/main/docs/" + guide_page.source; end
+    end
     if article | string.contains "<thead><tr><th>Need</th><th>Start with</th></tr></thead>"
       rows = data.docs.surfaceRows; complete = true
       for r in rows; if !(article | string.contains ("<tr><td>" + r.need + "</td>")); complete = false; end; end
@@ -29,7 +47,8 @@
       end
     end ~}}
 <main id="main" class="cfx-main">
-  {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = "" ~}}
+  {{~ masthead_title = page.title; masthead_lede = page.description; masthead_extra = ""
+      if guide_page; masthead_title = guide_page.title; masthead_lede = guide_page.summary; end ~}}
   {{ include "masthead" }}
   <div class="cfx-docs">
     {{ include "docs-sidebar" }}

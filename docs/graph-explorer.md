@@ -1,3 +1,7 @@
+---
+description: "Build host-neutral graph scenes with hierarchy, patches and performance budgets, then explore them through the optional native HTML adapter."
+---
+
 # Graph Explorer
 
 ChartForgeX separates graph data from browser behavior:

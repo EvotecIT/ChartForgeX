@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 internal static class MapExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale, bool includeExternalCatalogMaps = false) {
         Save(CreateCalendarHeatmap(), output, "developer-consistency-calendar-light", pngOutputScale);
-        Save(CreateDottedMap(), output, "travel-dotted-map-dark", pngOutputScale);
+        Save(TravelDottedMapRecipe.Create(), output, "travel-dotted-map-dark", pngOutputScale);
         Save(CreateSeaRouteMap(), output, "sea-route-suez-cape-map-light", pngOutputScale);
         Save(CreateEuropeRevenueDottedMap(), output, "revenue-europe-country-map-light", pngOutputScale);
         foreach (var example in MapViewportExamples()) {
@@ -46,23 +46,7 @@ internal static class MapExamples {
         yield return new ChartCalendarHeatmapItem(new DateTime(2026, 9, 21), 6);
     }
 
-    private static Chart CreateDottedMap() {
-        return Chart.Create()
-            .WithTitle("Travel Map")
-            .WithSubtitle("Dotted world layer with highlighted longitude and latitude points")
-            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
-            .WithSize(980, 560)
-            .WithLegend(false)
-            .WithDataLabels()
-            .AddDottedMap("Visited", new[] {
-                new ChartMapPoint("Indonesia", 113.9213, -0.7893, ChartColor.FromRgb(34, 197, 94)),
-                new ChartMapPoint("Spain", -3.7038, 40.4168, ChartColor.FromRgb(34, 197, 94)),
-                new ChartMapPoint("United States", -98.5795, 39.8283, ChartColor.FromRgb(34, 197, 94)),
-                new ChartMapPoint("Norway", 8.4689, 60.4720, ChartColor.FromRgb(59, 130, 246))
-            })
-            .AddMapRouteBetweenPoints("United States to Spain", "United States", "Spain", ChartColor.FromRgb(34, 197, 94))
-            .AddMapRouteBetweenPoints("Spain to Indonesia", "Spain", "Indonesia", ChartColor.FromRgb(59, 130, 246));
-    }
+
 
     private static Chart CreateSeaRouteMap() {
         return Chart.Create()

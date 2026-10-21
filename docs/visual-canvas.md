@@ -1,3 +1,7 @@
+---
+description: "Compose fixed-size artwork from text, images and native visuals with explicit placement, reusable themes and deterministic SVG and PNG output."
+---
+
 # Visual Canvas
 
 `VisualCanvas` is a fixed-size layered composition surface for visuals that are not grids: desktop wallpapers, social preview images, report covers, kiosk screens, and product hero graphics.

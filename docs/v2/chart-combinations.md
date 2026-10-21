@@ -1,3 +1,8 @@
+---
+description: "Choose supported chart-family combinations, orientations, shared axes and label configurations, with explicit native rendering boundaries."
+seo_title: "Chart combinations and axes | ChartForgeX"
+---
+
 # Chart combinations, orientation and axes
 
 Combine series when they share a coordinate system. Each series keeps its own stable ID, observations and configuration; one chart owns the axes, frame and theme. The tables below describe the supported layouts. The [family ledger](chart-capabilities.csv) records individual options, and [API conventions](api-conventions.md) covers observations, stacks and missing values.

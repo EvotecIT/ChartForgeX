@@ -1,3 +1,7 @@
+---
+description: "Author native visual fences in Markdown and turn them into typed ChartForgeX artifacts with source locations, diagnostics and static exports."
+---
+
 # ChartForgeX Markup
 
 ChartForgeX markup is a Markdown-friendly authoring layer for deterministic ChartForgeX visuals. It scans ordinary Markdown for known visual fences, keeps line-aware diagnostics, and converts supported blocks into reusable ChartForgeX models instead of browser-only script output.

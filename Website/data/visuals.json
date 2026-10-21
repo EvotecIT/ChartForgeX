@@ -8,7 +8,14 @@
         "h": 707,
         "kb": 63,
         "pngKb": 39,
-        "interactive": false
+        "interactive": false,
+        "code": {
+          "people": "using System;\nusing System.Linq;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\n\nvar mode = args.Contains(\u0022--dark\u0022)\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;\n\nvar members = new[] {\n    new TopologyTeamMember(\u0022marta\u0022, \u0022Marta\u0022, \u0022Head of platform\u0022) {\n        LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard\n    },\n    new TopologyTeamMember(\u0022jonas\u0022, \u0022Jonas\u0022, \u0022Sales lead\u0022) {\n        ParentId = \u0022marta\u0022,\n        LayoutPolicy = TopologyHierarchyLayoutPolicy.Vertical\n    },\n    new TopologyTeamMember(\u0022deniz\u0022, \u0022Deniz\u0022, \u0022Design lead\u0022) {\n        ParentId = \u0022marta\u0022,\n        LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact\n    },\n    Reports(\u0022ana\u0022, \u0022Ana\u0022, \u0022Product designer\u0022, \u0022deniz\u0022),\n    Reports(\u0022pawel\u0022, \u0022Pawel\u0022, \u0022Illustrator\u0022, \u0022deniz\u0022, TopologyHealthStatus.Warning),\n    Reports(\u0022ruben\u0022, \u0022Ruben\u0022, \u0022Brand designer\u0022, \u0022deniz\u0022),\n    Reports(\u0022emre\u0022, \u0022Emre\u0022, \u0022Product designer\u0022, \u0022deniz\u0022),\n    Reports(\u0022vipul\u0022, \u0022Vipul\u0022, \u0022Account manager\u0022, \u0022jonas\u0022),\n    Reports(\u0022karan\u0022, \u0022Karan\u0022, \u0022Account manager\u0022, \u0022jonas\u0022),\n    Reports(\u0022lena\u0022, \u0022Lena\u0022, \u0022Sales engineer\u0022, \u0022jonas\u0022)\n};",
+          "chart": "var chart = TopologyChart.Create()\n    .WithThemeMode(mode)\n    .WithTitle(\u0022Platform team\u0022)\n    .WithSubtitle(\u0022Standard, compact and vertical branches\u0022)\n    .WithViewport(1180, 620, 28)\n    .AddTeam(\u0022platform\u0022, \u0022Platform team\u0022, members,\n        new TopologyTeamOptions { MaxLevel = 3 });",
+          "save": "chart.SaveSvg(\u0022platform-team.svg\u0022);\nchart.SavePng(\u0022platform-team.png\u0022);",
+          "helpers": "static TopologyTeamMember Reports(string id, string name, string role, string manager,\n    TopologyHealthStatus status = TopologyHealthStatus.Unknown) =\u003E\n    new(id, name, role) { ParentId = manager, Status = status };"
+        },
+        "source": "/site/examples/organization-hierarchy.csharp.txt"
       },
       "install": {
         "base": "/site/docs/install",
@@ -23,7 +30,14 @@
         "w": 1180,
         "h": 640,
         "kb": 69.4,
-        "interactive": true
+        "interactive": true,
+        "code": {
+          "estate": "using System.IO;\nusing ChartForgeX.Interactivity;\nusing ChartForgeX.Interactivity.Html;\n\nvar graph = GraphScene.Create(\u0022estate\u0022, \u0022Global estate\u0022)\n    .AddNode(\u0022global\u0022, \u0022Global\u0022, node =\u003E node.BadgeText = \u002242\u0022)\n    .AddNode(\u0022europe\u0022, \u0022Europe\u0022, node =\u003E {\n        node.ParentId = \u0022global\u0022;\n        node.SecondaryLabel = \u00224 sites \u00B7 18 workloads\u0022;\n        node.Status = \u0022warning\u0022;\n    })\n    .AddNode(\u0022americas\u0022, \u0022Americas\u0022, node =\u003E {\n        node.ParentId = \u0022global\u0022;\n        node.SecondaryLabel = \u00223 sites \u00B7 14 workloads\u0022;\n        node.Status = \u0022healthy\u0022;\n    })\n    .AddNode(\u0022apac\u0022, \u0022Asia Pacific\u0022, node =\u003E {\n        node.ParentId = \u0022global\u0022;\n        node.SecondaryLabel = \u00222 sites \u00B7 10 workloads\u0022;\n        node.Status = \u0022healthy\u0022;\n    })\n    .AddEdge(\u0022global-europe\u0022, \u0022global\u0022, \u0022europe\u0022,\n        configure: edge =\u003E edge.Directed = true)\n    .AddEdge(\u0022global-americas\u0022, \u0022global\u0022, \u0022americas\u0022,\n        configure: edge =\u003E edge.Directed = true)\n    .AddEdge(\u0022global-apac\u0022, \u0022global\u0022, \u0022apac\u0022,\n        configure: edge =\u003E edge.Directed = true)\n    .AddEdge(\u0022europe-apac\u0022, \u0022europe\u0022, \u0022apac\u0022, \u0022replication\u0022,\n        edge =\u003E edge.Status = \u0022warning\u0022);",
+          "sites": "foreach (var (id, label, region) in new[] {\n    (\u0022warsaw\u0022, \u0022Warsaw\u0022, \u0022europe\u0022), (\u0022london\u0022, \u0022London\u0022, \u0022europe\u0022),\n    (\u0022frankfurt\u0022, \u0022Frankfurt\u0022, \u0022europe\u0022), (\u0022new-york\u0022, \u0022New York\u0022, \u0022americas\u0022),\n    (\u0022toronto\u0022, \u0022Toronto\u0022, \u0022americas\u0022), (\u0022sydney\u0022, \u0022Sydney\u0022, \u0022apac\u0022),\n    (\u0022singapore\u0022, \u0022Singapore\u0022, \u0022apac\u0022)\n}) {\n    graph.AddNode(id, label, node =\u003E node.ParentId = region)\n        .AddEdge(region \u002B \u0022-\u0022 \u002B id, region, id,\n            configure: edge =\u003E edge.Directed = true);\n}",
+          "layout": "graph.Options.UseSuperTopologyDefaults();\ngraph.Options.Layout.Mode = GraphLayoutMode.Hierarchical;\ngraph.Options.Hierarchy.InitialRootNodeId = \u0022global\u0022;\ngraph.Options.Hierarchy.InitialDepth = 1;",
+          "save": "var html = graph.ToGraphExplorerHtmlPage(options =\u003E {\n    options.RenderBackend = HtmlGraphRenderBackend.Svg;\n    options.Theme = HtmlGraphExplorerTheme.System;\n    options.IncludeThemeToggle = true;\n});\n\nFile.WriteAllText(\u0022estate.html\u0022, html);"
+        },
+        "source": "/site/examples/interactive-topology.csharp.txt"
       },
       "overview": {
         "base": "/site/docs/overview",
@@ -89,7 +103,14 @@
         "w": 1180,
         "h": 640,
         "kb": 69.4,
-        "interactive": true
+        "interactive": true,
+        "code": {
+          "estate": "using System.IO;\nusing ChartForgeX.Interactivity;\nusing ChartForgeX.Interactivity.Html;\n\nvar graph = GraphScene.Create(\u0022estate\u0022, \u0022Global estate\u0022)\n    .AddNode(\u0022global\u0022, \u0022Global\u0022, node =\u003E node.BadgeText = \u002242\u0022)\n    .AddNode(\u0022europe\u0022, \u0022Europe\u0022, node =\u003E {\n        node.ParentId = \u0022global\u0022;\n        node.SecondaryLabel = \u00224 sites \u00B7 18 workloads\u0022;\n        node.Status = \u0022warning\u0022;\n    })\n    .AddNode(\u0022americas\u0022, \u0022Americas\u0022, node =\u003E {\n        node.ParentId = \u0022global\u0022;\n        node.SecondaryLabel = \u00223 sites \u00B7 14 workloads\u0022;\n        node.Status = \u0022healthy\u0022;\n    })\n    .AddNode(\u0022apac\u0022, \u0022Asia Pacific\u0022, node =\u003E {\n        node.ParentId = \u0022global\u0022;\n        node.SecondaryLabel = \u00222 sites \u00B7 10 workloads\u0022;\n        node.Status = \u0022healthy\u0022;\n    })\n    .AddEdge(\u0022global-europe\u0022, \u0022global\u0022, \u0022europe\u0022,\n        configure: edge =\u003E edge.Directed = true)\n    .AddEdge(\u0022global-americas\u0022, \u0022global\u0022, \u0022americas\u0022,\n        configure: edge =\u003E edge.Directed = true)\n    .AddEdge(\u0022global-apac\u0022, \u0022global\u0022, \u0022apac\u0022,\n        configure: edge =\u003E edge.Directed = true)\n    .AddEdge(\u0022europe-apac\u0022, \u0022europe\u0022, \u0022apac\u0022, \u0022replication\u0022,\n        edge =\u003E edge.Status = \u0022warning\u0022);",
+          "sites": "foreach (var (id, label, region) in new[] {\n    (\u0022warsaw\u0022, \u0022Warsaw\u0022, \u0022europe\u0022), (\u0022london\u0022, \u0022London\u0022, \u0022europe\u0022),\n    (\u0022frankfurt\u0022, \u0022Frankfurt\u0022, \u0022europe\u0022), (\u0022new-york\u0022, \u0022New York\u0022, \u0022americas\u0022),\n    (\u0022toronto\u0022, \u0022Toronto\u0022, \u0022americas\u0022), (\u0022sydney\u0022, \u0022Sydney\u0022, \u0022apac\u0022),\n    (\u0022singapore\u0022, \u0022Singapore\u0022, \u0022apac\u0022)\n}) {\n    graph.AddNode(id, label, node =\u003E node.ParentId = region)\n        .AddEdge(region \u002B \u0022-\u0022 \u002B id, region, id,\n            configure: edge =\u003E edge.Directed = true);\n}",
+          "layout": "graph.Options.UseSuperTopologyDefaults();\ngraph.Options.Layout.Mode = GraphLayoutMode.Hierarchical;\ngraph.Options.Hierarchy.InitialRootNodeId = \u0022global\u0022;\ngraph.Options.Hierarchy.InitialDepth = 1;",
+          "save": "var html = graph.ToGraphExplorerHtmlPage(options =\u003E {\n    options.RenderBackend = HtmlGraphRenderBackend.Svg;\n    options.Theme = HtmlGraphExplorerTheme.System;\n    options.IncludeThemeToggle = true;\n});\n\nFile.WriteAllText(\u0022estate.html\u0022, html);"
+        },
+        "source": "/site/examples/interactive-topology.csharp.txt"
       },
       "grid": {
         "base": "/site/examples/report-grid",
@@ -98,7 +119,14 @@
         "h": 1184,
         "kb": 28.3,
         "pngKb": 63,
-        "interactive": false
+        "interactive": false,
+        "code": {
+          "records": "using System;\nusing System.Linq;\nusing ChartForgeX;\nusing ChartForgeX.Core;\nusing ChartForgeX.Data;\nusing ChartForgeX.Themes;\n\nvar mode = args.Contains(\u0022--dark\u0022)\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;\n\nvar samples = ChartDataset\u003CCpuSample\u003E.From(new CpuSample[] {\n    new(\u0022Warsaw\u0022, 1, 35), new(\u0022Warsaw\u0022, 2, 42),\n    new(\u0022Warsaw\u0022, 3, 39), new(\u0022Warsaw\u0022, 4, 51),\n    new(\u0022London\u0022, 1, 48), new(\u0022London\u0022, 2, 61),\n    new(\u0022London\u0022, 3, 57), new(\u0022London\u0022, 4, 66),\n    new(\u0022Berlin\u0022, 1, 22), new(\u0022Berlin\u0022, 2, 28),\n    new(\u0022Berlin\u0022, 3, 31), new(\u0022Berlin\u0022, 4, 36),\n    new(\u0022Madrid\u0022, 1, 51), new(\u0022Madrid\u0022, 2, 47),\n    new(\u0022Madrid\u0022, 3, 44), new(\u0022Madrid\u0022, 4, 39)\n});",
+          "grid": "var report = ChartGrid.FromFacets(\n    samples,\n    sample =\u003E sample.Site,\n    (site, rows) =\u003E Chart.Create()\n        .WithTitle(site)\n        .WithYAxis(\u0022CPU (%)\u0022)\n        .AddLine(\u0022CPU\u0022, rows,\n            sample =\u003E sample.Minute, sample =\u003E sample.Cpu),\n    columns: 2).WithThemeMode(mode);",
+          "save": "report.SavePng(\u0022cpu-by-site.png\u0022);\nreport.SaveSvg(\u0022cpu-by-site.svg\u0022);",
+          "record": "/// \u003Csummary\u003EOne CPU observation from a named site.\u003C/summary\u003E\npublic sealed record CpuSample(string Site, double Minute, double Cpu);"
+        },
+        "source": "/site/examples/report-grid.csharp.txt"
       },
       "markup": {
         "base": "/site/docs/surface-markup",
@@ -123,7 +151,14 @@
       "w": 1180,
       "h": 640,
       "kb": 69.4,
-      "interactive": true
+      "interactive": true,
+      "code": {
+        "estate": "using System.IO;\nusing ChartForgeX.Interactivity;\nusing ChartForgeX.Interactivity.Html;\n\nvar graph = GraphScene.Create(\u0022estate\u0022, \u0022Global estate\u0022)\n    .AddNode(\u0022global\u0022, \u0022Global\u0022, node =\u003E node.BadgeText = \u002242\u0022)\n    .AddNode(\u0022europe\u0022, \u0022Europe\u0022, node =\u003E {\n        node.ParentId = \u0022global\u0022;\n        node.SecondaryLabel = \u00224 sites \u00B7 18 workloads\u0022;\n        node.Status = \u0022warning\u0022;\n    })\n    .AddNode(\u0022americas\u0022, \u0022Americas\u0022, node =\u003E {\n        node.ParentId = \u0022global\u0022;\n        node.SecondaryLabel = \u00223 sites \u00B7 14 workloads\u0022;\n        node.Status = \u0022healthy\u0022;\n    })\n    .AddNode(\u0022apac\u0022, \u0022Asia Pacific\u0022, node =\u003E {\n        node.ParentId = \u0022global\u0022;\n        node.SecondaryLabel = \u00222 sites \u00B7 10 workloads\u0022;\n        node.Status = \u0022healthy\u0022;\n    })\n    .AddEdge(\u0022global-europe\u0022, \u0022global\u0022, \u0022europe\u0022,\n        configure: edge =\u003E edge.Directed = true)\n    .AddEdge(\u0022global-americas\u0022, \u0022global\u0022, \u0022americas\u0022,\n        configure: edge =\u003E edge.Directed = true)\n    .AddEdge(\u0022global-apac\u0022, \u0022global\u0022, \u0022apac\u0022,\n        configure: edge =\u003E edge.Directed = true)\n    .AddEdge(\u0022europe-apac\u0022, \u0022europe\u0022, \u0022apac\u0022, \u0022replication\u0022,\n        edge =\u003E edge.Status = \u0022warning\u0022);",
+        "sites": "foreach (var (id, label, region) in new[] {\n    (\u0022warsaw\u0022, \u0022Warsaw\u0022, \u0022europe\u0022), (\u0022london\u0022, \u0022London\u0022, \u0022europe\u0022),\n    (\u0022frankfurt\u0022, \u0022Frankfurt\u0022, \u0022europe\u0022), (\u0022new-york\u0022, \u0022New York\u0022, \u0022americas\u0022),\n    (\u0022toronto\u0022, \u0022Toronto\u0022, \u0022americas\u0022), (\u0022sydney\u0022, \u0022Sydney\u0022, \u0022apac\u0022),\n    (\u0022singapore\u0022, \u0022Singapore\u0022, \u0022apac\u0022)\n}) {\n    graph.AddNode(id, label, node =\u003E node.ParentId = region)\n        .AddEdge(region \u002B \u0022-\u0022 \u002B id, region, id,\n            configure: edge =\u003E edge.Directed = true);\n}",
+        "layout": "graph.Options.UseSuperTopologyDefaults();\ngraph.Options.Layout.Mode = GraphLayoutMode.Hierarchical;\ngraph.Options.Hierarchy.InitialRootNodeId = \u0022global\u0022;\ngraph.Options.Hierarchy.InitialDepth = 1;",
+        "save": "var html = graph.ToGraphExplorerHtmlPage(options =\u003E {\n    options.RenderBackend = HtmlGraphRenderBackend.Svg;\n    options.Theme = HtmlGraphExplorerTheme.System;\n    options.IncludeThemeToggle = true;\n});\n\nFile.WriteAllText(\u0022estate.html\u0022, html);"
+      },
+      "source": "/site/examples/interactive-topology.csharp.txt"
     },
     "organization-hierarchy": {
       "base": "/site/examples/organization-hierarchy",
@@ -132,7 +167,14 @@
       "h": 707,
       "kb": 63,
       "pngKb": 39,
-      "interactive": false
+      "interactive": false,
+      "code": {
+        "people": "using System;\nusing System.Linq;\nusing ChartForgeX.Themes;\nusing ChartForgeX.Topology;\n\nvar mode = args.Contains(\u0022--dark\u0022)\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;\n\nvar members = new[] {\n    new TopologyTeamMember(\u0022marta\u0022, \u0022Marta\u0022, \u0022Head of platform\u0022) {\n        LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard\n    },\n    new TopologyTeamMember(\u0022jonas\u0022, \u0022Jonas\u0022, \u0022Sales lead\u0022) {\n        ParentId = \u0022marta\u0022,\n        LayoutPolicy = TopologyHierarchyLayoutPolicy.Vertical\n    },\n    new TopologyTeamMember(\u0022deniz\u0022, \u0022Deniz\u0022, \u0022Design lead\u0022) {\n        ParentId = \u0022marta\u0022,\n        LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact\n    },\n    Reports(\u0022ana\u0022, \u0022Ana\u0022, \u0022Product designer\u0022, \u0022deniz\u0022),\n    Reports(\u0022pawel\u0022, \u0022Pawel\u0022, \u0022Illustrator\u0022, \u0022deniz\u0022, TopologyHealthStatus.Warning),\n    Reports(\u0022ruben\u0022, \u0022Ruben\u0022, \u0022Brand designer\u0022, \u0022deniz\u0022),\n    Reports(\u0022emre\u0022, \u0022Emre\u0022, \u0022Product designer\u0022, \u0022deniz\u0022),\n    Reports(\u0022vipul\u0022, \u0022Vipul\u0022, \u0022Account manager\u0022, \u0022jonas\u0022),\n    Reports(\u0022karan\u0022, \u0022Karan\u0022, \u0022Account manager\u0022, \u0022jonas\u0022),\n    Reports(\u0022lena\u0022, \u0022Lena\u0022, \u0022Sales engineer\u0022, \u0022jonas\u0022)\n};",
+        "chart": "var chart = TopologyChart.Create()\n    .WithThemeMode(mode)\n    .WithTitle(\u0022Platform team\u0022)\n    .WithSubtitle(\u0022Standard, compact and vertical branches\u0022)\n    .WithViewport(1180, 620, 28)\n    .AddTeam(\u0022platform\u0022, \u0022Platform team\u0022, members,\n        new TopologyTeamOptions { MaxLevel = 3 });",
+        "save": "chart.SaveSvg(\u0022platform-team.svg\u0022);\nchart.SavePng(\u0022platform-team.png\u0022);",
+        "helpers": "static TopologyTeamMember Reports(string id, string name, string role, string manager,\n    TopologyHealthStatus status = TopologyHealthStatus.Unknown) =\u003E\n    new(id, name, role) { ParentId = manager, Status = status };"
+      },
+      "source": "/site/examples/organization-hierarchy.csharp.txt"
     },
     "report-grid": {
       "base": "/site/examples/report-grid",
@@ -141,7 +183,14 @@
       "h": 1184,
       "kb": 28.3,
       "pngKb": 63,
-      "interactive": false
+      "interactive": false,
+      "code": {
+        "records": "using System;\nusing System.Linq;\nusing ChartForgeX;\nusing ChartForgeX.Core;\nusing ChartForgeX.Data;\nusing ChartForgeX.Themes;\n\nvar mode = args.Contains(\u0022--dark\u0022)\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;\n\nvar samples = ChartDataset\u003CCpuSample\u003E.From(new CpuSample[] {\n    new(\u0022Warsaw\u0022, 1, 35), new(\u0022Warsaw\u0022, 2, 42),\n    new(\u0022Warsaw\u0022, 3, 39), new(\u0022Warsaw\u0022, 4, 51),\n    new(\u0022London\u0022, 1, 48), new(\u0022London\u0022, 2, 61),\n    new(\u0022London\u0022, 3, 57), new(\u0022London\u0022, 4, 66),\n    new(\u0022Berlin\u0022, 1, 22), new(\u0022Berlin\u0022, 2, 28),\n    new(\u0022Berlin\u0022, 3, 31), new(\u0022Berlin\u0022, 4, 36),\n    new(\u0022Madrid\u0022, 1, 51), new(\u0022Madrid\u0022, 2, 47),\n    new(\u0022Madrid\u0022, 3, 44), new(\u0022Madrid\u0022, 4, 39)\n});",
+        "grid": "var report = ChartGrid.FromFacets(\n    samples,\n    sample =\u003E sample.Site,\n    (site, rows) =\u003E Chart.Create()\n        .WithTitle(site)\n        .WithYAxis(\u0022CPU (%)\u0022)\n        .AddLine(\u0022CPU\u0022, rows,\n            sample =\u003E sample.Minute, sample =\u003E sample.Cpu),\n    columns: 2).WithThemeMode(mode);",
+        "save": "report.SavePng(\u0022cpu-by-site.png\u0022);\nreport.SaveSvg(\u0022cpu-by-site.svg\u0022);",
+        "record": "/// \u003Csummary\u003EOne CPU observation from a named site.\u003C/summary\u003E\npublic sealed record CpuSample(string Site, double Minute, double Cpu);"
+      },
+      "source": "/site/examples/report-grid.csharp.txt"
     },
     "static-chart": {
       "base": "/site/examples/static-chart",
@@ -150,7 +199,13 @@
       "h": 640,
       "kb": 17.7,
       "pngKb": 27,
-      "interactive": false
+      "interactive": false,
+      "code": {
+        "chart": "using System;\nusing System.Collections.Generic;\nusing System.Linq;\nusing ChartForgeX;\nusing ChartForgeX.Core;\nusing ChartForgeX.Primitives;\nusing ChartForgeX.Themes;\n\nvar mode = args.Contains(\u0022--dark\u0022)\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;\n\nvar chart = Chart.Create()\n    .WithThemeMode(mode)\n    .WithTitle(\u0022Deployment health\u0022)\n    .WithXAxis(\u0022Run\u0022)\n    .WithYAxis(\u0022Checks\u0022)\n    .WithSize(1180, 640)\n    .WithXLabels(\u0022Mon\u0022, \u0022Tue\u0022, \u0022Wed\u0022, \u0022Thu\u0022, \u0022Fri\u0022)\n    .AddSmoothArea(\u0022Passed\u0022, Points(820, 940, 980, 1040, 1120))\n    .AddSmoothLine(\u0022Failed\u0022, Points(22, 30, 28, 21, 18),\n        ChartColor.FromRgb(248, 113, 113));",
+        "save": "chart.SaveSvg(\u0022deployment-health.svg\u0022);\nchart.SaveHtml(\u0022deployment-health.html\u0022);\nchart.SavePng(\u0022deployment-health.png\u0022);",
+        "points": "static IEnumerable\u003CChartPoint\u003E Points(params double[] values) {\n    for (var index = 0; index \u003C values.Length; index\u002B\u002B) {\n        yield return new ChartPoint(index \u002B 1, values[index]);\n    }\n}"
+      },
+      "source": "/site/examples/static-chart.csharp.txt"
     }
   },
   "gallery": {

@@ -4,34 +4,9 @@ using System.Xml.Linq;
 var output = args.Length == 0 ? Path.Combine(AppContext.BaseDirectory, "recipe-output") : Path.GetFullPath(args[0]);
 Directory.CreateDirectory(output);
 var modes = new[] { VisualThemeMode.Light, VisualThemeMode.Dark };
-var ordinary = new[] { "wide", "compact", "sparse", "options", "compact-options" };
 var results = new List<RecipeResult>();
 var visited = new HashSet<string>(StringComparer.Ordinal);
-foreach (var entry in ExampleRecipes.ChartFamilies)
-    foreach (var variant in ordinary) RunFamily(entry.Key, variant);
-foreach (var entry in ExampleRecipes.OptionVariants) {
-    RunFamily(entry.Key.Kind, entry.Key.Variant);
-    RunFamily(entry.Key.Kind, "compact-" + entry.Key.Variant);
-}
-var additional = new (ChartSeriesKind Kind, string[] Variants)[] {
-    (ChartSeriesKind.DifferenceArea, new[] { "dated-gaps", "compact-dated-gaps", "step-start", "step-middle", "step-end", "compact-step-middle" }),
-    (ChartSeriesKind.Radar, new[] { "angular-reversal", "compact-angular-reversal" }),
-    (ChartSeriesKind.Polar, new[] { "angular-reversal", "compact-angular-reversal" }),
-    (ChartSeriesKind.PolarArea, new[] { "angular-reversal", "compact-angular-reversal" }),
-    (ChartSeriesKind.Candlestick, new[] { "dashed", "compact-dashed" }),
-    (ChartSeriesKind.Ohlc, new[] { "dashed", "compact-dashed" }),
-    (ChartSeriesKind.RadialBar, new[] { "axis-labels", "compact-axis-labels", "all-labels", "compact-all-labels" }),
-    (ChartSeriesKind.RadialColumn, new[] { "axis-labels", "compact-axis-labels", "all-labels", "compact-all-labels" }),
-    (ChartSeriesKind.Funnel, new[] { "cone-vertical", "stage-bars-horizontal" }),
-    (ChartSeriesKind.Waterfall, new[] { "horizontal", "compact-horizontal" }),
-    (ChartSeriesKind.RangeBar, new[] { "horizontal", "compact-horizontal", "endpoint-labels", "compact-endpoint-labels", "horizontal-endpoint-labels", "compact-horizontal-endpoint-labels" }),
-    (ChartSeriesKind.BoxPlot, new[] { "horizontal", "compact-horizontal" }),
-    (ChartSeriesKind.Sunburst, new[] { "authored-total", "compact-authored-total" }),
-    (ChartSeriesKind.TrendLine, new[] { "precision", "compact-precision" }),
-    (ChartSeriesKind.Gauge, new[] { "precision", "compact-precision" })
-};
-foreach (var entry in additional)
-    foreach (var variant in entry.Variants) RunFamily(entry.Kind, variant);
+foreach (var selection in ExampleRecipes.StandaloneFamilySelections()) RunFamily(selection.Kind, selection.Variant);
 foreach (var entry in ExampleRecipes.OtherRecipes) RunNamed(entry.Key, "wide");
 RunNamed("histogram", "compact", "density", "compact-density", "sum", "compact-sum", "mean", "compact-mean");
 RunNamed("chart-grid", "compact");
@@ -48,6 +23,9 @@ RunNamed("line-viewport", "x-viewport", "compact-x-viewport");
 RunNamed("step-line-viewport", "x-viewport", "compact-x-viewport");
 foreach (var name in new[] { "comparison", "findings" })
     RunNamed(name, "compact", "long-title", "wrapped-legend", "surface", "empty", "zero", "missing", "dense", "explicit-status", "explicit-series");
+foreach (var selection in ExampleRecipes.LegacyCharts)
+    File.WriteAllText(Path.Combine(output, selection.Name + ".csharp.txt"),
+        ExampleRecipeSource.EmitChart(selection.Recipe, selection.Name, selection.Variant, selection.Mode));
 var failures = results.Where(result => !result.Passed).ToArray();
 File.WriteAllText(Path.Combine(output, "recipe-results.json"), JsonSerializer.Serialize(new {
     attempted = results.Count, passed = results.Count - failures.Length, failed = failures.Length, results

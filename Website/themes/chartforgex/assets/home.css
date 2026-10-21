@@ -460,8 +460,9 @@
 .cfx-panel > img,
 .cfx-panel--svg > svg { display: block; width: 100%; height: 100%; object-fit: contain; }
 
+.cfx-panel--code > .cfx-codeblock { height: 100%; border: 0; border-radius: 0; }
 .cfx-panel--code .cfx-code {
-  height: 100%;
+  height: auto;
   border-radius: 0;
   font-size: clamp(.6875rem, .55rem + .32vw, .8125rem);
 }
