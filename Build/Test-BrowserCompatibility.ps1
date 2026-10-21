@@ -53,8 +53,11 @@ try {
     foreach ($name in $settings.Keys) {
         [Environment]::SetEnvironmentVariable($name, $settings[$name])
     }
+    # Each contract owns a real browser. Keep macOS GPU sessions sequential;
+    # concurrent WebKit workers can exhaust the hosted runner's WebGL resources.
+    $runSettings = if ($IsMacOS) { 'browser-macos.runsettings' } else { 'browser.runsettings' }
     dotnet test $project -c Release --no-build --no-restore --filter 'Category=Browser&BrowserSuite=Compatibility' `
-        --settings (Join-Path $PSScriptRoot 'browser.runsettings') --logger 'trx;LogFileName=compatibility.trx' --results-directory $results
+        --settings (Join-Path $PSScriptRoot $runSettings) --logger 'trx;LogFileName=compatibility.trx' --results-directory $results
     if ($LASTEXITCODE) {
         throw "Required $Browser compatibility contracts failed. See $output."
     }

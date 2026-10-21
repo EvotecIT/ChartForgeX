@@ -57,11 +57,12 @@ public sealed partial class ExplorerLocalizationBrowserTests {
             root=>{const surfaces=[...root.querySelectorAll('svg[data-cfx-role=graph-scene],canvas,.cfx-topology-viewport>svg')],
                 painted=node=>{for(let owner=node;owner;owner=owner.parentElement){const style=getComputedStyle(owner);if(style.display==='none'||style.visibility!=='visible'||Number(style.opacity)===0)return false}return true},
                 textFacts=node=>({text:node.textContent,direction:getComputedStyle(node).direction});
-                return{surfaces:surfaces.map(node=>({tag:node.localName,role:node.dataset.cfxRole,direction:getComputedStyle(node).direction,
+                return{pixelRatio:devicePixelRatio,surfaces:surfaces.map(node=>({tag:node.localName,role:node.dataset.cfxRole,direction:getComputedStyle(node).direction,
                     bitmap:node.localName==='canvas'?node.toDataURL():null})),
                 nativeText:surfaces.filter(node=>node.localName==='svg').flatMap(svg=>[...svg.querySelectorAll('text')]).map(textFacts),
-                texts:surfaces.filter(node=>node.localName==='svg'&&painted(node)).flatMap(svg=>[...svg.querySelectorAll('text')]).map(node=>({...textFacts(node),
-                    characters:Array.from({length:node.getNumberOfChars()},(_,index)=>{const point=node.getStartPositionOfChar(index);return [point.x,point.y]})}))}}
+                texts:surfaces.filter(node=>node.localName==='svg'&&painted(node)).flatMap(svg=>[...svg.querySelectorAll('text')]).map(node=>{
+                    const matrix=node.getScreenCTM();return {...textFacts(node),linear:[matrix.a,matrix.b,matrix.c,matrix.d],
+                    characters:Array.from({length:node.getNumberOfChars()},(_,index)=>{const point=node.getStartPositionOfChar(index);return [point.x,point.y]})}})}}
             """);
         var json = snapshot.GetRawText();
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json)));
@@ -87,20 +88,28 @@ public sealed partial class ExplorerLocalizationBrowserTests {
     private static void AssertNativeSnapshotEqual(JsonElement expected, JsonElement actual) {
         Assert.Equal(expected.GetProperty("surfaces").GetRawText(), actual.GetProperty("surfaces").GetRawText());
         Assert.Equal(expected.GetProperty("nativeText").GetRawText(), actual.GetProperty("nativeText").GetRawText());
+        Assert.Equal(expected.GetProperty("pixelRatio").GetDouble(), actual.GetProperty("pixelRatio").GetDouble());
         var expectedTexts = expected.GetProperty("texts").EnumerateArray().ToArray();
         var actualTexts = actual.GetProperty("texts").EnumerateArray().ToArray();
         Assert.Equal(expectedTexts.Length, actualTexts.Length);
         for (var index = 0; index < expectedTexts.Length; index++) {
             Assert.Equal(expectedTexts[index].GetProperty("text").GetString(), actualTexts[index].GetProperty("text").GetString());
             Assert.Equal(expectedTexts[index].GetProperty("direction").GetString(), actualTexts[index].GetProperty("direction").GetString());
+            var linear = expectedTexts[index].GetProperty("linear").EnumerateArray().Select(value => value.GetDouble()).ToArray();
+            Assert.Equal(expectedTexts[index].GetProperty("linear").GetRawText(), actualTexts[index].GetProperty("linear").GetRawText());
             var expectedCharacters = expectedTexts[index].GetProperty("characters").EnumerateArray().ToArray();
             var actualCharacters = actualTexts[index].GetProperty("characters").EnumerateArray().ToArray();
             Assert.Equal(expectedCharacters.Length, actualCharacters.Length);
             for (var character = 0; character < expectedCharacters.Length; character++) {
-                // Firefox can report subpixel glyph positions differently after a font-cache warmup.
-                // Keep text, bidi direction and canvas pixels exact; allow only this measured layout noise.
-                for (var axis = 0; axis < 2; axis++)
-                    Assert.InRange(Math.Abs(expectedCharacters[character][axis].GetDouble() - actualCharacters[character][axis].GetDouble()), 0, 0.1);
+                // SVG user units depend on the viewBox and zoom. Firefox's glyph metrics
+                // can vary by less than half a rendered pixel after font-cache warmup.
+                // Keep text, bidi, transforms and canvas pixels exact, and compare geometry
+                // in physical pixels rather than applying a scale-dependent user-unit limit.
+                var dx = expectedCharacters[character][0].GetDouble() - actualCharacters[character][0].GetDouble();
+                var dy = expectedCharacters[character][1].GetDouble() - actualCharacters[character][1].GetDouble();
+                var screenX = linear[0] * dx + linear[2] * dy;
+                var screenY = linear[1] * dx + linear[3] * dy;
+                Assert.InRange(Math.Sqrt(screenX * screenX + screenY * screenY) * expected.GetProperty("pixelRatio").GetDouble(), 0, 0.5);
             }
         }
     }
