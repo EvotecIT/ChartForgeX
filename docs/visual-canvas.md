@@ -245,6 +245,29 @@ var card = ImageComposition.Create(1200, 630, ChartColor.FromHex("#0A0D12"))
     .DrawArc(965, 270, 120, startAngle: -90, sweepAngle: 90, ChartColors.White, thickness: 2, ImageLineCap.Butt);
 ```
 
+Use `CreatePanel` for a rounded fill and an outline kept inside the requested image bounds.
+`DrawTextHeader` reserves the right note before trimming the left title and returns the occupied height.
+The note inherits the title's typography without its casing transform unless a separate note style is supplied:
+
+```csharp
+var panel = ImageComposition.CreatePanel(480, 200,
+    ChartColor.FromHex("#132239E8"), ChartColor.FromHex("#38BDF878"), cornerRadius: 16);
+var headerStyle = TextStyle.Create(20, ChartColor.White);
+var headerHeight = panel.DrawTextHeader(20, 20, 440, "Service overview", "Updated 10:42", headerStyle);
+panel.DrawText(20, 40 + headerHeight, 440, "Available capacity: 72%", 18, ChartColor.White);
+panel.Save("service-panel.png");
+```
+
+`FillGridPattern(color, spacing)` and `FillDotPattern(color, spacing, radius)` overlay the existing composition.
+Spacing is a positive whole pixel count. Grid lines start at half the spacing rounded down; dot centers start at half the spacing.
+An explicit offset changes that phase. Translucent grid intersections receive both line layers.
+
+When text was already measured with `TextLayoutEngine.Layout`, call `DrawTextLayout(x, y, width, layout, style)`
+to paint those lines without wrapping or applying casing a second time. Keep the measured font and size;
+color and alignment may change. An oversized line starts at the region's left edge instead of shifting before it.
+These composition operations render native pixels; their `RgbaImage` output can also be embedded in a `VisualCanvas`
+for SVG or HTML delivery.
+
 Angles are in degrees, clockwise on screen from three o'clock, so `-90` starts at twelve o'clock. `DrawArc` takes `ImageLineCap.Butt`, `Round` (the default), or `Square`. `DrawProgressRing` paints a full track and a round-capped arc for `fraction` of it; a fraction of one or more fills the ring. Linear gradient angles follow the same convention: `0` runs left to right and `90` top to bottom. A radial gradient's center is in composition coordinates and may sit outside the rectangle, which is how a corner glow is drawn; fade to the same color with zero alpha to avoid a gray fringe.
 
 When the backdrop is easier to describe as SVG, rasterize it straight to pixels and keep composing. `SvgRasterizer.ToImage(svg)` returns the `RgbaImage` that `SvgRasterizer.ToPng(svg)` would encode, so nothing is encoded and decoded on the way:

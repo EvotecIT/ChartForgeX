@@ -11,6 +11,11 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--composition-only")) {
+            CompositionShapeExamples.Write(output);
+            Console.WriteLine("Generated image composition examples in: " + output);
+            return true;
+        }
         if (HasArg(args, "--numeric-axis-only")) {
             NumericAxisExamples.Write(output, pngOutputScale);
             return true;
