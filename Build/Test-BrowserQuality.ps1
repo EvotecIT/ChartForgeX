@@ -75,6 +75,7 @@ try {
         throw 'Required browser proof must discover and execute tests without skips.'
     }
     $requiredContracts = @(
+        'InteractiveSunburstBranchHighlightBrowserTests.PendingPointerExitRestoresTheExistingKeyboardReadoutWithoutWaitingForPointerDelay',
         'V2GalleryBrowserMatrixTests.EveryFamilyKeepsReadableNativeSvgAndHealthyPairedPng',
         'GraphReadabilityBrowserTests.CompactFitUsesScreenSpaceAndResizePreservesTouchedCamera',
         'GraphResizeLifecycleBrowserTests.ImmediateSearchAfterRemountDoesNotTurnInitialResizeNotificationIntoFit',
