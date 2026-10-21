@@ -9,6 +9,27 @@ namespace ChartForgeX.Tests;
 
 public sealed class StackedBarCornersTests {
     [Theory]
+    [InlineData(false, 1)]
+    [InlineData(false, -1)]
+    [InlineData(true, 1)]
+    [InlineData(true, -1)]
+    public void TinyTerminalCapsuleRetainsItsMinimumPaintedExtent(bool horizontal, int sign) {
+        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels(false)
+            .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackedBars().WithMaximumBarWidth(50);
+        var first = new[] { new ChartPoint(1, sign * 1000000) }; var last = new[] { new ChartPoint(1, sign * .001) };
+        if (horizontal) chart.AddHorizontalBar("First", first).AddHorizontalBar("Terminal", last);
+        else chart.AddBar("First", first).AddBar("Terminal", last);
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        var terminal = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Last(node => node.Role == (horizontal ? "horizontal-bar" : "bar"));
+        var clip = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Last(node => node.PathClip != null).PathClip!;
+        var envelope = new ChartPath(clip.Commands).Bounds();
+        Assert.InRange(horizontal ? terminal.Bounds.Width : terminal.Bounds.Height, 1, 1.001);
+        Assert.True(envelope.Left <= terminal.Bounds.Left && envelope.Right >= terminal.Bounds.Right
+            && envelope.Top <= terminal.Bounds.Top && envelope.Bottom >= terminal.Bounds.Bottom,
+            "The outer stack clip contains the complete one-pixel terminal segment for either sign and orientation.");
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]

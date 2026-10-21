@@ -10,6 +10,30 @@ namespace ChartForgeX.Tests;
 
 public sealed class ResponsiveChartGeometryTests {
     [BrowserFact]
+    public async Task RemovingCompressedHostBeforeDecodeCompletesDoesNotCreateAnObserver() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = Chart.Create().WithSize(760, 280).WithHeader(false).WithLegend(false).WithDataLabels(false)
+            .AddBar("Count", new[] { new ChartPoint(1, 1) });
+        var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 800, compressLayouts: true);
+        await using var session = await InteractiveChartBrowser.OpenAsync("<html><body><script>" + HtmlResponsiveChartRenderer.InitializationScript + "</script></body></html>");
+        await session.Page.EvaluateAsync("""
+            fragment=>{
+              const text=Response.prototype.text, Observer=ResizeObserver;
+              Response.prototype.text=async function(){const result=await text.call(this);await new Promise(resolve=>window.releaseDecode=resolve);return result;};
+              window.observedCharts=0;
+              window.ResizeObserver=class extends Observer {observe(host,...args){if(host.matches('[data-cfx-responsive-chart]'))window.observedCharts++;super.observe(host,...args);}};
+              const template=document.createElement('template');template.innerHTML=fragment;document.body.append(template.content);
+              window.removedChart=document.querySelector('[data-cfx-responsive-chart]');
+            }
+            """, fragment);
+        await session.Page.WaitForFunctionAsync("()=>typeof releaseDecode==='function'");
+        await session.Page.EvaluateAsync("async()=>{const ready=removedChart.cfxResponsiveReady;removedChart.remove();releaseDecode();await ready;}");
+        Assert.Equal(0, await session.Page.EvaluateAsync<int>("()=>observedCharts"));
+        Assert.True(await session.Page.EvaluateAsync<bool>("()=>!removedChart.cfxResponsive && !removedChart.cfxResponsiveReady"));
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
     public async Task InertFragmentsMountAndSparseBarsRespectTheirCapAcrossTheNativeClampTransition() {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Chart.Create().WithSize(760, 280).WithPadding(0, 0, 0, 0).WithHeader(false).WithLegend(false)

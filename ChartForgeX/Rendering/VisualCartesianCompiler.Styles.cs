@@ -33,7 +33,13 @@ internal static partial class VisualCartesianCompiler {
         var resolvedRole = sourceRole ?? VisualChartPaint.SeriesRole(series, pointIndex);
         var sourcePaint = SvgPaint.Of(color, resolvedRole);
         var radius = Math.Min(chart.Options.HasPreparedBarCornerRadius ? style.CornerRadius : context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) / 2);
-        if (stackBounds.HasValue) stackBounds = VisibleSegmentBounds(chart, stackBounds.Value, direction, horizontal);
+        if (stackBounds.HasValue) {
+            var envelope = VisibleSegmentBounds(chart, stackBounds.Value, direction, horizontal);
+            // A terminal nonzero capsule may paint beyond its mapped total to retain
+            // one pixel of ink. Its outer clip must include that painted extent.
+            var left = Math.Min(envelope.Left, bounds.Left); var top = Math.Min(envelope.Top, bounds.Top);
+            stackBounds = new ChartRect(left, top, Math.Max(envelope.Right, bounds.Right) - left, Math.Max(envelope.Bottom, bounds.Bottom) - top);
+        }
         // Every signed stack has one rounded envelope. Segment bodies stay square at shared boundaries.
         using var stackClip = stackBounds.HasValue ? builder.PushClip(RoundedRectanglePath(stackBounds.Value,
             Math.Min(chart.Options.HasPreparedBarCornerRadius ? style.CornerRadius : context.Theme.BarRadius,

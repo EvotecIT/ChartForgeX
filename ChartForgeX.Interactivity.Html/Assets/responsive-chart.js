@@ -10,6 +10,7 @@
     const bytes = Uint8Array.from(atob(compressed.textContent), character => character.charCodeAt(0));
     payload = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
   }
+  if (!host.isConnected) { delete host.cfxResponsiveReady; return; }
   const frames = JSON.parse(payload);
   const number = /[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g;
   let active, svg, nodes, pending = false, width = 0;

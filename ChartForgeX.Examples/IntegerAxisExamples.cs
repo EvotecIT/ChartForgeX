@@ -4,6 +4,13 @@ using ChartForgeX.Themes;
 
 /// <summary>Count charts with whole-number tick positions in vertical and horizontal layouts.</summary>
 public static class IntegerAxisExamples {
+    /// <summary>Creates monthly counts whose complete short labels thin to the available width.</summary>
+    public static Chart CreateMonthlyCounts(int width, VisualThemeMode mode) => Chart.Create().WithSize(width, 280)
+        .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Monthly observations").WithLegend(false).WithDataLabels(false)
+        .WithXLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        .WithYAxisIntegerTicks().WithMaximumBarWidth(48)
+        .AddBar("Count", Enumerable.Range(1, 12).Select(index => new ChartPoint(index, index % 4 + 1)).ToArray());
+
     /// <summary>Creates signed stacks with rounded exterior corners and square internal joins.</summary>
     public static Chart CreateSignedStack(bool horizontal, int width, VisualThemeMode mode) {
         var chart = Chart.Create().WithSize(width, 320).WithTheme(VisualTheme.Graphite(), mode)
