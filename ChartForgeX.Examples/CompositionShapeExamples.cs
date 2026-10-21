@@ -4,6 +4,7 @@ using ChartForgeX.Primitives;
 /// <summary>Shows the composition shape APIs at a social-preview size.</summary>
 internal static class CompositionShapeExamples {
     internal static void Write(string output) {
+        CompositionPanelExamples.Write(output);
         var blue = ChartColor.FromHex("#38bdf8");
         var slate = ChartColor.FromHex("#334155");
         var white = ChartColor.FromHex("#f8fafc");

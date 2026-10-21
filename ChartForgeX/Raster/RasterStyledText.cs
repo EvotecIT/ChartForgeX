@@ -13,6 +13,13 @@ internal static class RasterStyledText {
         if (style == null) throw new ArgumentNullException(nameof(style));
         if (text.Length == 0 || style.Color.A == 0) return;
         var layout = TextLayoutEngine.Layout(text, width, style, wrapMode, maximumLines, trimming);
+        canvas.DrawStyledTextLayout(x, y, width, layout, style);
+    }
+
+    /// <summary>Paints lines already measured and cased by the canonical layout owner.</summary>
+    internal static void DrawStyledTextLayout(this RgbaCanvas canvas, double x, double y, double width,
+        TextLayout layout, TextStyle style, bool containAlignment = false) {
+        if (style.Color.A == 0) return;
         var face = TypographyFontResolver.WithLanguage(TypographyFontResolver.ResolveFace(style.Font), style.OpenTypeLanguageTag);
         var fontSize = style.EffectiveFontSize;
         var hinting = canvas.TextHinting;
@@ -22,6 +29,7 @@ internal static class RasterStyledText {
                 var line = layout.Lines[index];
                 var drawX = style.Alignment == TextAlignment.Center ? x + (width - line.Width) / 2
                     : style.Alignment == TextAlignment.Right ? x + width - line.Width : x;
+                if (containAlignment) drawX = Math.Max(x, drawX);
                 var baseline = style.Baseline == TextBaseline.Superscript ? -fontSize * 0.35
                     : style.Baseline == TextBaseline.Subscript ? fontSize * 0.22 : 0;
                 var drawY = y + index * layout.Metrics.LineHeight + baseline;
