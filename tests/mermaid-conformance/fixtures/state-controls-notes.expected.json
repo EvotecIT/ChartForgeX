@@ -1,0 +1,97 @@
+{
+  "stateFacts": {
+    "states": [
+      [
+        "F",
+        "fork",
+        null
+      ],
+      [
+        "J",
+        "join",
+        null
+      ],
+      [
+        "C",
+        "choice",
+        null
+      ],
+      [
+        "Ready",
+        "state",
+        null
+      ],
+      [
+        "Waiting",
+        "state",
+        null
+      ],
+      [
+        "Complete",
+        "state",
+        null
+      ]
+    ],
+    "edges": [
+      [
+        "[*]",
+        "F",
+        ""
+      ],
+      [
+        "F",
+        "Ready",
+        ""
+      ],
+      [
+        "F",
+        "Waiting",
+        ""
+      ],
+      [
+        "Ready",
+        "J",
+        ""
+      ],
+      [
+        "Waiting",
+        "J",
+        ""
+      ],
+      [
+        "J",
+        "C",
+        ""
+      ],
+      [
+        "C",
+        "Complete",
+        "approved"
+      ]
+    ],
+    "notes": [
+      [
+        "Ready",
+        "Right",
+        "Independent paths\nMeet at join"
+      ]
+    ],
+    "directions": {}
+  },
+  "peerExplicitIds": [
+    "F",
+    "J",
+    "C",
+    "Ready",
+    "Waiting",
+    "Complete"
+  ],
+  "peerVisibleText": [
+    "Ready",
+    "Waiting",
+    "Complete",
+    "approved",
+    "Independent paths",
+    "Meet at join"
+  ]
+}

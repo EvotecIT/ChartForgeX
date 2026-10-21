@@ -4,6 +4,12 @@ namespace ChartForgeX.Mermaid;
 /// Provides per-diagram Mermaid rendering defaults for source rendering and markup adapters.
 /// </summary>
 public sealed class MermaidRenderOptions {
+    /// <summary>Gets or sets shared host presentation; explicit family fields take precedence.</summary>
+    public MermaidPresentationOptions? Presentation { get; set; }
+
+    /// <summary>Gets or sets whether source warnings prevent native artifact creation.</summary>
+    public MermaidWarningPolicy WarningPolicy { get; set; }
+
     /// <summary>Gets or sets the source-resolution context used by source rendering and markup adapters.</summary>
     public MermaidParseOptions? ParseOptions { get; set; }
 
@@ -148,4 +154,42 @@ public sealed class MermaidRenderOptions {
     /// Gets or sets default rendering options for Mermaid kanban artifacts.
     /// </summary>
     public MermaidTopologyRenderOptions? Kanban { get; set; }
+    /// <summary>Captures an independent configuration for a host or long-lived markup parser.</summary>
+    public MermaidRenderOptions Clone() => new() {
+        Presentation = MermaidPresentationOptions.Merge(null, Presentation), WarningPolicy = WarningPolicy,
+        ParseOptions = ParseOptions?.Clone(),
+            Swimlane = Swimlane?.Snapshot<MermaidFlowchartRenderOptions>(null),
+            UseCase = UseCase?.Snapshot<MermaidFlowchartRenderOptions>(null),
+            Cynefin = Cynefin?.Snapshot<MermaidTopologyRenderOptions>(null),
+            Flowchart = Flowchart?.Snapshot<MermaidFlowchartRenderOptions>(null),
+            Sequence = Sequence?.Snapshot<MermaidSequenceRenderOptions>(null),
+            Pie = Pie?.Snapshot<MermaidPieRenderOptions>(null),
+            Journey = Journey?.Snapshot<MermaidJourneyRenderOptions>(null),
+            GitGraph = GitGraph?.Snapshot<MermaidGitGraphRenderOptions>(null),
+            Timeline = Timeline?.Snapshot<MermaidTimelineRenderOptions>(null),
+            Quadrant = Quadrant?.Snapshot<MermaidQuadrantRenderOptions>(null),
+            XYChart = XYChart?.Snapshot<MermaidXYChartRenderOptions>(null),
+            Sankey = Sankey?.Snapshot<MermaidSankeyRenderOptions>(null),
+            Radar = Radar?.Snapshot<MermaidRadarRenderOptions>(null),
+            Treemap = Treemap?.Snapshot<MermaidTreemapRenderOptions>(null),
+            Gantt = Gantt?.Snapshot<MermaidGanttRenderOptions>(null),
+            Packet = Packet?.Snapshot<MermaidPacketRenderOptions>(null),
+            Block = Block?.Snapshot<MermaidBlockRenderOptions>(null),
+            Venn = Venn?.Snapshot<MermaidVennRenderOptions>(null),
+            Ishikawa = Ishikawa?.Snapshot<MermaidIshikawaRenderOptions>(null),
+            Wardley = Wardley?.Snapshot<MermaidWardleyRenderOptions>(null),
+            Class = Class?.Snapshot<MermaidTopologyRenderOptions>(null),
+            State = State?.Snapshot<MermaidTopologyRenderOptions>(null),
+            EntityRelationship = EntityRelationship?.Snapshot<MermaidTopologyRenderOptions>(null),
+            Requirement = Requirement?.Snapshot<MermaidTopologyRenderOptions>(null),
+            Architecture = Architecture?.Snapshot<MermaidTopologyRenderOptions>(null),
+            C4 = C4?.Snapshot<MermaidTopologyRenderOptions>(null),
+            MindMap = MindMap?.Snapshot<MermaidTopologyRenderOptions>(null),
+            TreeView = TreeView?.Snapshot<MermaidTopologyRenderOptions>(null),
+            EventModeling = EventModeling?.Snapshot<MermaidTopologyRenderOptions>(null),
+            Kanban = Kanban?.Snapshot<MermaidTopologyRenderOptions>(null),
+    };
+
+    internal T Resolve<T>(T? family) where T : MermaidDiagramRenderOptions, new() =>
+        (family ?? new T()).Snapshot<T>(Presentation);
 }

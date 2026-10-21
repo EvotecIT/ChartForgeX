@@ -25,7 +25,7 @@ public static class MermaidGitGraphRendering {
 
         foreach (var branch in document.Branches) block.AddBranch(branch.Name, branch.Order);
         foreach (var commit in document.Commits) block.AddCommit(commit.Id, commit.BranchName, commit.ParentIds, commit.Type, commit.Label, commit.Tag, commit.SourceCommitId);
-        return MermaidPresentation.Apply(block, document);
+        return MermaidPresentation.Apply(block, document, options.Presentation);
     }
 
     /// <summary>
@@ -56,26 +56,17 @@ public static class MermaidGitGraphRendering {
 
     /// <summary>Renders a Mermaid git graph document to static SVG.</summary>
     public static string ToSvg(this MermaidGitGraphDocument document, MermaidGitGraphRenderOptions? options = null) =>
-        document.ToGitGraphBlock(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid git graph document to static PNG.</summary>
     public static byte[] ToPng(this MermaidGitGraphDocument document, MermaidGitGraphRenderOptions? options = null) =>
-        document.ToGitGraphBlock(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 }
 
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid git graph diagrams.
 /// </summary>
-public sealed class MermaidGitGraphRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidGitGraphRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 980;
 

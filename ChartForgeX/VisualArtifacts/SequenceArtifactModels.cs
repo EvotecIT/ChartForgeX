@@ -258,6 +258,12 @@ public sealed class SequenceArtifactParticipant {
     /// <summary>Gets or sets the participant kind.</summary>
     public SequenceArtifactParticipantKind Kind { get; set; }
 
+    /// <summary>Gets or sets the message index at which this participant is created; null starts at the diagram header.</summary>
+    public int? CreatedAtMessageIndex { get; set; }
+
+    /// <summary>Gets or sets the last message index in this participant's lifetime; null extends the lifeline to the diagram end.</summary>
+    public int? DestroyedAtMessageIndex { get; set; }
+
     /// <summary>Gets or sets whether the participant was inferred from sequence content.</summary>
     public bool IsImplicit { get; set; }
 

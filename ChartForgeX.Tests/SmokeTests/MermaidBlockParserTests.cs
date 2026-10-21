@@ -129,7 +129,10 @@ B((""Done"")):2";
         var items = new StringBuilder("block-beta\n");
         for (var index = 0; index <= 10000; index++) items.Append('n').Append(index).Append(' ');
 
-        var itemResult = new MermaidParser().ParseBlock(items.ToString());
+        var limits = MermaidInnerBoundaryTestPolicy.ParseOptions();
+        limits.ResourceLimits.MaximumElements = 20_000;
+        limits.ResourceLimits.MaximumEdges = 30_000;
+        var itemResult = new MermaidParser().Parse(items.ToString(), limits);
 
         Assert(itemResult.HasErrors, "Mermaid block parser should reject item counts beyond the renderer limit.");
         Assert(itemResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("10000", StringComparison.Ordinal) && diagnostic.Message.Contains("items", StringComparison.Ordinal)), "Oversized block item diagnostics should name the renderable item cap.");
@@ -137,7 +140,7 @@ B((""Done"")):2";
         var edges = new StringBuilder("block-beta\nA B\n");
         for (var index = 0; index <= 20000; index++) edges.Append("A --> B\n");
 
-        var edgeResult = new MermaidParser().ParseBlock(edges.ToString());
+        var edgeResult = new MermaidParser().Parse(edges.ToString(), limits);
 
         Assert(edgeResult.HasErrors, "Mermaid block parser should reject edge counts beyond the renderer limit.");
         Assert(edgeResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("20000", StringComparison.Ordinal) && diagnostic.Message.Contains("edges", StringComparison.Ordinal)), "Oversized block edge diagnostics should name the renderable edge cap.");

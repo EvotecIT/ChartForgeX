@@ -16,13 +16,14 @@ using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
 
-internal static class Program {
+internal static partial class Program {
     private static void Main() {
         PackageAssertions.CoreFixtures();
         NativeViewportSection();
         NativeCartesianAndDrawingSection();
         RadarSourcePaint();
         MermaidSourceDiagnostics();
+        MermaidSequencePolicyContracts();
         var values = ChartSeries.CreateLine(new ChartSeriesId("package-values"), "Values",
             new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
         var bubble = ChartSeries.CreateBubble(new ChartSeriesId("0"), "Values", new[] { new ChartBubble(1.5, 2.5, 7) })

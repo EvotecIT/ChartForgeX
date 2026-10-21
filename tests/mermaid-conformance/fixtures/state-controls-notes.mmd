@@ -1,0 +1,15 @@
+stateDiagram-v2
+state F <<fork>>
+state J <<join>>
+state C <<choice>>
+[*] --> F
+F --> Ready
+F --> Waiting
+Ready --> J
+Waiting --> J
+J --> C
+C --> Complete : approved
+note right of Ready
+  Independent paths
+  Meet at join
+end note

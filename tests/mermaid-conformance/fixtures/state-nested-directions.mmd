@@ -1,0 +1,10 @@
+stateDiagram-v2
+direction LR
+Outside --> Outer
+state Outer {
+  direction TB
+  state Inner {
+    A --> B
+  }
+}
+note right of Outer : Composite note

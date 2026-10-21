@@ -49,6 +49,7 @@ internal static class MermaidFlowchartStatements {
     // remains an error on its own line rather than consuming later independent statements.
     private static IEnumerable<MermaidRawStatement> LogicalLines(string[] lines, int firstLine, int firstOffset) {
         for (var line = firstLine - 1; line < lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var origin = line;
             var offset = line == firstLine - 1 ? firstOffset : 0;
             var buffer = new System.Text.StringBuilder();

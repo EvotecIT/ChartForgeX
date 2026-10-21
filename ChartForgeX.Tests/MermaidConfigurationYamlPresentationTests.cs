@@ -10,7 +10,7 @@ public sealed class MermaidConfigurationYamlPresentationTests {
     [InlineData("config:\n  other:\n  - note: |2+\n      #", "")]
     [InlineData("config: |\n  ", "")]
     public void OpaqueScalarContentCountsEvenWhenItLooksLikeCommentsOrBlankLines(string prefix, string suffix) {
-        var rendered = MermaidRenderer.Render("---\n" + prefix + new string(' ', 70000) + suffix + "\n---\nflowchart LR\nA --> B");
+        var rendered = MermaidInnerBoundaryTestPolicy.Render("---\n" + prefix + new string(' ', 70000) + suffix + "\n---\nflowchart LR\nA --> B");
         Assert.True(rendered.HasErrors); Assert.Null(rendered.Artifact);
         Assert.Contains(rendered.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.InvalidConfiguration && diagnostic.Message.Contains("65536"));
     }
@@ -20,7 +20,7 @@ public sealed class MermaidConfigurationYamlPresentationTests {
     [InlineData("")]
     public void QuotedFlowScalarBodiesShareThePhysicalConfigurationBudget(string prefix) {
         var source = "---\nconfig: {\"other\":'before\n  " + prefix + new string(' ', 70000) + "\n  after'}\n---\nflowchart LR\nA --> B";
-        var rendered = MermaidRenderer.Render(source);
+        var rendered = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.True(rendered.HasErrors); Assert.Null(rendered.Artifact);
         Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
     }
@@ -37,7 +37,7 @@ public sealed class MermaidConfigurationYamlPresentationTests {
     [InlineData("config: [&defaults \"before\n  ", "\n  after\"]")]
     [InlineData("config:\n  other: {note: !<tag:example.com,2000:app> 'before\n    #", "\n    after'}")]
     public void OpaqueYamlNodeKindsCannotBypassPhysicalScalarAccounting(string prefix, string suffix) {
-        var result = MermaidRenderer.Render("---\n" + prefix + new string(' ', 70000) + suffix + "\n---\nflowchart LR\nA --> B");
+        var result = MermaidInnerBoundaryTestPolicy.Render("---\n" + prefix + new string(' ', 70000) + suffix + "\n---\nflowchart LR\nA --> B");
         Assert.True(result.HasErrors); Assert.Null(result.Artifact);
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
     }
@@ -56,7 +56,7 @@ public sealed class MermaidConfigurationYamlPresentationTests {
     [InlineData("config: [https://example.test/O'Reilly]\n")]
     public void QuotesInsideOpaquePlainScalarsDoNotConsumeFollowingMetadata(string configuration) {
         var source = "---\n" + configuration + "description: " + new string('x', 70000) + "\n---\nflowchart LR\nA --> B";
-        var result = MermaidRenderer.Render(source);
+        var result = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.False(result.HasErrors); Assert.NotNull(result.Artifact);
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
     }
@@ -76,8 +76,9 @@ public sealed class MermaidConfigurationYamlPresentationTests {
     [InlineData("\"config\"")]
     [InlineData("'config'")]
     public void QuotedRootKeysShareTheConfigurationBudget(string root) {
-        var rendered = MermaidRenderer.Render("---\n" + root + ":\n  other: " + new string('x', 70000) + "\n---\nflowchart LR\nA --> B");
+        var rendered = MermaidInnerBoundaryTestPolicy.Render("---\n" + root + ":\n  other: " + new string('x', 70000) + "\n---\nflowchart LR\nA --> B");
         Assert.True(rendered.HasErrors); Assert.Null(rendered.Artifact);
+        Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration);
     }
 
     [Theory]

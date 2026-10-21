@@ -23,7 +23,7 @@ public static class MermaidSankeyRendering {
                 options.Height ?? document.Configuration.Sankey?.Height ?? 560)
             .AddSankey(string.IsNullOrWhiteSpace(options.SeriesName) ? "Flow" : options.SeriesName!, ToNodes(document), ToLinks(document));
         document.Configuration.Sankey?.Apply(chart);
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -46,13 +46,13 @@ public static class MermaidSankeyRendering {
     /// Renders a Mermaid Sankey document to static SVG through ChartForgeX chart rendering.
     /// </summary>
     public static string ToSvg(this MermaidSankeyDocument document, MermaidSankeyRenderOptions? options = null) =>
-        document.ToChart(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>
     /// Renders a Mermaid Sankey document to static PNG through ChartForgeX chart rendering.
     /// </summary>
     public static byte[] ToPng(this MermaidSankeyDocument document, MermaidSankeyRenderOptions? options = null) =>
-        document.ToChart(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
     // Sankey CSV uses endpoint text as identity. Make that language mapping explicit at this boundary.
     private static IReadOnlyList<ChartNode> ToNodes(MermaidSankeyDocument document) {
         var nodes = new List<ChartNode>();
@@ -74,16 +74,7 @@ public static class MermaidSankeyRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid Sankey diagrams.
 /// </summary>
-public sealed class MermaidSankeyRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidSankeyRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the chart series name.</summary>
     public string? SeriesName { get; set; }
 

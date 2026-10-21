@@ -48,7 +48,7 @@ public static class MermaidGanttRendering {
             }
         }
 
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -85,13 +85,13 @@ public static class MermaidGanttRendering {
     /// Renders a Mermaid Gantt document to static SVG through ChartForgeX chart rendering.
     /// </summary>
     public static string ToSvg(this MermaidGanttDocument document, MermaidGanttRenderOptions? options = null) =>
-        document.ToChart(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>
     /// Renders a Mermaid Gantt document to static PNG through ChartForgeX chart rendering.
     /// </summary>
     public static byte[] ToPng(this MermaidGanttDocument document, MermaidGanttRenderOptions? options = null) =>
-        document.ToChart(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidGanttDocument document, MermaidGanttRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid Gantt");
@@ -138,16 +138,7 @@ public static class MermaidGanttRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid Gantt diagrams.
 /// </summary>
-public sealed class MermaidGanttRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidGanttRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 960;
 

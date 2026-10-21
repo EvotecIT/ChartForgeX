@@ -382,7 +382,7 @@ internal static partial class TopologyEdgeRouter {
 
     private static IEnumerable<RouteBox> EstimatedLabelBoxes(TopologyChart chart, TopologyEdge routedEdge) {
         if (chart.RenderOptions?.IncludeEdgeLabels == false) yield break;
-        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var nodes = TopologyGroupEndpoints.Resolve(chart);
         foreach (var edge in chart.Edges) {
             if (ReferenceEquals(edge, routedEdge)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
@@ -404,7 +404,7 @@ internal static partial class TopologyEdgeRouter {
     }
 
     private static List<RouteSegment> RouteSegments(TopologyChart chart, TopologyEdge routedEdge) {
-        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var nodes = TopologyGroupEndpoints.Resolve(chart);
         var segments = new List<RouteSegment>();
         var plan = TopologyDenseRoutePlanner.Plan(chart);
         foreach (var edge in chart.Edges) {

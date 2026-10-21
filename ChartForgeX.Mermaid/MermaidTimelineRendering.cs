@@ -38,7 +38,7 @@ public static class MermaidTimelineRendering {
             }
         }
 
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -64,13 +64,13 @@ public static class MermaidTimelineRendering {
     /// Renders a Mermaid timeline document to static SVG through ChartForgeX chart rendering.
     /// </summary>
     public static string ToSvg(this MermaidTimelineDocument document, MermaidTimelineRenderOptions? options = null) =>
-        document.ToChart(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>
     /// Renders a Mermaid timeline document to static PNG through ChartForgeX chart rendering.
     /// </summary>
     public static byte[] ToPng(this MermaidTimelineDocument document, MermaidTimelineRenderOptions? options = null) =>
-        document.ToChart(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidTimelineDocument document, MermaidTimelineRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid timeline");
@@ -92,16 +92,7 @@ public static class MermaidTimelineRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid timeline diagrams.
 /// </summary>
-public sealed class MermaidTimelineRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidTimelineRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 960;
 

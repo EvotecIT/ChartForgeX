@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace ChartForgeX.Mermaid;
 
 internal static class MermaidStateParser {
+    private static readonly Regex Note = new(@"^note\s+(?<side>left|right)\s+of\s+(?<id>[^\s:]+)\s*(?::\s*(?<text>.*))?$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     public static void ParseStatements(MermaidStateDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var states = new Dictionary<string, MermaidStateNode>(StringComparer.Ordinal);
         var composites = new Stack<(string Id, MermaidSourceSpan Span)>();
         var specialIndex = 0;
         var originalLineStarts = MermaidParserUtilities.OriginalLineStarts(document.SourceText);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -22,18 +25,19 @@ internal static class MermaidStateParser {
 
             if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction, ignoreCase: true)) {
                 if (composites.Count == 0) document.Direction = direction;
-                else {
-                    document.Statements.Add(new MermaidStateStatement(trimmed, span));
-                    MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "composite state direction");
-                }
+                else states[composites.Peek().Id].Direction = direction;
                 continue;
             }
 
             if (MermaidParserUtilities.StartsStatement(trimmed, "note", ignoreCase: true)) {
                 if (MermaidParserUtilities.IsMultilineStateNote(trimmed)) line = ReadNote(document, lines, line, span, originalLineStarts, result);
                 else {
-                    document.Statements.Add(new MermaidStateStatement(trimmed, span));
-                    MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "state note");
+                    var note = Note.Match(trimmed);
+                    if (note.Success && note.Groups["text"].Success) AddNote(document, note, note.Groups["text"].Value, span);
+                    else {
+                        document.Statements.Add(new MermaidStateStatement(trimmed, span));
+                        MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "state note syntax");
+                    }
                 }
                 continue;
             }
@@ -58,7 +62,7 @@ internal static class MermaidStateParser {
             }
 
             if (trimmed.StartsWith("state ", StringComparison.Ordinal)) {
-                ParseStateDeclaration(document, states, trimmed, span, composites);
+                ParseStateDeclaration(document, states, trimmed, span, composites, result);
                 continue;
             }
 
@@ -75,6 +79,8 @@ internal static class MermaidStateParser {
 
         foreach (var composite in composites) MermaidParserUtilities.Add(result, composite.Span, MermaidDiagnosticSeverity.Error,
             "Composite state definitions must close with '}'.", MermaidDiagnosticCodes.InvalidStatement);
+        foreach (var note in document.Notes) if (note.NodeId != null && !states.ContainsKey(note.NodeId))
+            MermaidParserUtilities.Add(result, note.Span, MermaidDiagnosticSeverity.Error, "State notes must reference a declared state or transition endpoint.", MermaidDiagnosticCodes.InvalidStatement);
         if (document.States.Count == 0 && document.Transitions.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid state diagrams require at least one state or transition.");
     }
 
@@ -83,6 +89,7 @@ internal static class MermaidStateParser {
         var lastLine = line;
         var closed = false;
         while (lastLine < lines.Length) {
+            MermaidResourceGuard.Checkpoint();
             lastLine++;
             var raw = lines[lastLine - 1];
             if (MermaidParserUtilities.IsStateNoteTerminator(MermaidParserUtilities.StripInlineComment(raw.Trim()))) { closed = true; break; }
@@ -91,16 +98,30 @@ internal static class MermaidStateParser {
             originalLineStarts[lastLine - 1] + lines[lastLine - 1].Length - originalLineStarts[line - 1] - firstSpan.Column + 1);
         var retained = document.SourceText.Substring(originalLineStarts[line - 1] + firstSpan.Column - 1, span.Length)
             .Replace("\r\n", "\n").Replace('\r', '\n');
-        document.Statements.Add(new MermaidStateStatement(retained, span));
-        if (closed) MermaidParserUtilities.RetainUnsupported(document, retained, span, result, "state note");
+        if (closed) {
+            var note = Note.Match(lines[line - 1].Trim());
+            if (note.Success) {
+                var body = new List<string>();
+                for (var current = line + 1; current < lastLine; current++) body.Add(lines[current - 1].Trim());
+                AddNote(document, note, string.Join("\n", body), span);
+            } else {
+                document.Statements.Add(new MermaidStateStatement(retained, span));
+                MermaidParserUtilities.RetainUnsupported(document, retained, span, result, "state note syntax");
+            }
+        }
         else {
+            document.Statements.Add(new MermaidStateStatement(retained, span));
             document.RawStatements.Add(new MermaidRawStatement(retained, span));
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Multiline state notes must close with 'end note'.", MermaidDiagnosticCodes.InvalidStatement);
         }
         return lastLine;
     }
 
-    private static void ParseStateDeclaration(MermaidStateDocument document, Dictionary<string, MermaidStateNode> states, string text, MermaidSourceSpan span, Stack<(string Id, MermaidSourceSpan Span)> composites) {
+    private static void AddNote(MermaidStateDocument document, Match note, string text, MermaidSourceSpan span) =>
+        document.Notes.Add(new MermaidDiagramNote(MermaidNotationText.Note(text), MermaidParserUtilities.Unquote(note.Groups["id"].Value),
+            string.Equals(note.Groups["side"].Value, "left", StringComparison.OrdinalIgnoreCase), span));
+
+    private static void ParseStateDeclaration(MermaidStateDocument document, Dictionary<string, MermaidStateNode> states, string text, MermaidSourceSpan span, Stack<(string Id, MermaidSourceSpan Span)> composites, MermaidParseResult<MermaidDocument> result) {
         var body = text.Substring(6).Trim();
         var opensComposite = body.EndsWith("{", StringComparison.Ordinal);
         if (opensComposite) body = body.Substring(0, body.Length - 1).Trim();
@@ -110,6 +131,9 @@ internal static class MermaidStateParser {
         var marker = body.IndexOf("<<", StringComparison.Ordinal);
         if (marker >= 0 && body.EndsWith(">>", StringComparison.Ordinal)) {
             kind = body.Substring(marker + 2, body.Length - marker - 4).Trim();
+            if (!string.Equals(kind, "choice", StringComparison.OrdinalIgnoreCase) && !string.Equals(kind, "fork", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(kind, "join", StringComparison.OrdinalIgnoreCase))
+                MermaidParserUtilities.RetainUnsupported(document, text, span, result, "state stereotype");
             body = body.Substring(0, marker).Trim();
         }
 
@@ -131,7 +155,11 @@ internal static class MermaidStateParser {
         var state = EnsureState(document, states, id, span, composites.Count == 0 ? null : composites.Peek().Id);
         if (!string.IsNullOrWhiteSpace(label)) state.Label = label;
         if (!string.IsNullOrWhiteSpace(kind)) state.Kind = kind;
-        if (opensComposite) composites.Push((state.Id, span));
+        if (opensComposite) {
+            MermaidResourceGuard.CheckDepth(composites.Count + 1, span);
+            state.IsComposite = true;
+            composites.Push((state.Id, span));
+        }
     }
 
     private static bool TryParseTransition(string text, MermaidSourceSpan span, ref int specialIndex, out MermaidStateTransition transition) {

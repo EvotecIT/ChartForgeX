@@ -28,6 +28,7 @@ internal static partial class TopologyLayoutEngine {
         foreach (var group in chart.Groups) copy.Groups.Add(Clone(group));
         foreach (var node in chart.Nodes) copy.Nodes.Add(Clone(node));
         foreach (var edge in chart.Edges) copy.Edges.Add(Clone(edge));
+        foreach (var note in chart.Annotations) copy.Annotations.Add(new TopologyAnnotation(note.Id, note.Text, note.TargetId, note.Side));
         foreach (var scenario in chart.Scenarios) copy.Scenarios.Add(TopologyScenarioCloner.Clone(scenario));
         return copy;
     }
@@ -37,6 +38,8 @@ internal static partial class TopologyLayoutEngine {
             Id = group.Id,
             Label = group.Label,
             Subtitle = group.Subtitle,
+            ParentGroupId = group.ParentGroupId,
+            LayoutDirection = group.LayoutDirection,
             Status = group.Status,
             X = group.X,
             Y = group.Y,
@@ -86,6 +89,7 @@ internal static partial class TopologyLayoutEngine {
             PaletteIndex = node.PaletteIndex,
             BackgroundColor = node.BackgroundColor,
             ShowStatusBadge = node.ShowStatusBadge,
+            ShowLabel = node.ShowLabel,
             PreserveDisplayModeSize = node.PreserveDisplayModeSize,
             FitLabelToContent = node.FitLabelToContent,
             MaximumLabelCharacters = node.MaximumLabelCharacters,

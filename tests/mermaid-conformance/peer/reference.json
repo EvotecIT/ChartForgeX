@@ -1,0 +1,18 @@
+{
+  "package": "Mermaider",
+  "version": "0.15.1",
+  "license": "MIT",
+  "sourceCommit": "71b64845570d633a94d29e85579c0a02786fece8",
+  "framework": "net10.0",
+  "role": "Optional independent peer observations. Acceptance and SVG text overlap are evidence; the peer is not a syntax or layout oracle.",
+  "fixtures": [
+    "flowchart-nested-directions",
+    "sequence-lifetimes-boxes",
+    "class-native-notes-generics",
+    "class-two-way",
+    "class-lollipop-retained",
+    "state-controls-notes",
+    "state-nested-directions",
+    "er-alias-attributes"
+  ]
+}

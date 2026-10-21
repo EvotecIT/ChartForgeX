@@ -52,12 +52,17 @@ public sealed class MermaidFlowchartClosingEndpointTests {
         // A real untrusted-input path: incomplete captions must not repeatedly scan
         // every remaining suffix. Timings are retained for diagnosis, not CI thresholds.
         var sizes = new[] { 6000, 12000, 50000 };
+        var options = MermaidInnerBoundaryTestPolicy.ParseOptions();
+        // The malformed text can still form repeated edge tokens before its incomplete
+        // suffix is diagnosed. This fixture targets scan recovery beyond the outer caps.
+        options.ResourceLimits.MaximumEdges = 60_000;
+        options.ResourceLimits.MaximumElements = 60_000;
         foreach (var count in sizes) {
             var text = "flowchart LR\nA " + (fragment == "." ? "-. a" : "") + string.Concat(Enumerable.Repeat(fragment, count)) + "\nZ[End]";
             var timer = Stopwatch.StartNew();
-            var result = new MermaidParser().ParseFlowchart(text);
+            var result = new MermaidParser().Parse(text, options);
             timer.Stop();
-            Assert.Contains(result.Document!.Nodes, node => node.Id == "Z" && node.Text == "End");
+            Assert.Contains(Assert.IsType<MermaidFlowchartDocument>(result.Document).Nodes, node => node.Id == "Z" && node.Text == "End");
             Console.WriteLine("Incomplete " + fragment + " " + count + ": " + timer.Elapsed.TotalMilliseconds + "ms");
         }
     }

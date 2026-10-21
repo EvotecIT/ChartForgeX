@@ -1,0 +1,69 @@
+{
+  "stateFacts": {
+    "states": [
+      [
+        "Outside",
+        "state",
+        null
+      ],
+      [
+        "Outer",
+        "state",
+        null
+      ],
+      [
+        "Inner",
+        "state",
+        "Outer"
+      ],
+      [
+        "A",
+        "state",
+        "Inner"
+      ],
+      [
+        "B",
+        "state",
+        "Inner"
+      ]
+    ],
+    "edges": [
+      [
+        "Outside",
+        "Outer",
+        ""
+      ],
+      [
+        "A",
+        "B",
+        ""
+      ]
+    ],
+    "notes": [
+      [
+        "Outer",
+        "Right",
+        "Composite note"
+      ]
+    ],
+    "directions": {
+      "root": "LR",
+      "Outer": "TB"
+    }
+  },
+  "peerExplicitIds": [
+    "Outside",
+    "Outer",
+    "Inner",
+    "A",
+    "B"
+  ],
+  "peerVisibleText": [
+    "Outside",
+    "Outer",
+    "Inner",
+    "A",
+    "B",
+    "Composite note"
+  ]
+}

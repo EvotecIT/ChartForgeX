@@ -14,6 +14,7 @@ internal static partial class MermaidGanttParser {
         var taskStatements = new List<(MermaidRawStatement Statement, string? Section)>();
         var taskIds = new Dictionary<string, TaskDefinition>(StringComparer.Ordinal);
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[index];
             var trimmed = raw.Trim();
             if (trimmed.Length == 0 || trimmed.StartsWith("%%", StringComparison.Ordinal)) continue;

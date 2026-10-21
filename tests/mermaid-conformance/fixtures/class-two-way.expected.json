@@ -1,0 +1,40 @@
+{
+  "classes": [
+    "Animal",
+    "Zebra"
+  ],
+  "classFacts": {
+    "nodes": [
+      [
+        "Animal",
+        "Animal",
+        [],
+        []
+      ],
+      [
+        "Zebra",
+        "Zebra",
+        [],
+        []
+      ]
+    ],
+    "relationships": [
+      [
+        "Animal",
+        "Zebra",
+        "OpenTriangle",
+        "OpenTriangle",
+        "Solid",
+        "relates",
+        "1",
+        "many"
+      ]
+    ],
+    "notes": []
+  },
+  "peerVisibleText": [
+    "Animal",
+    "Zebra",
+    "relates"
+  ]
+}

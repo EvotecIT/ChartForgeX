@@ -9,6 +9,7 @@ public sealed partial class MermaidParser {
         var presentation = new MermaidDocument();
         var insideStateNote = false;
         for (var i = firstBodyLine - 1; i < lines.Length; i++) {
+            MermaidResourceGuard.Checkpoint();
             var text = lines[i].Trim();
             var statement = MermaidParserUtilities.StripInlineComment(text);
             if (insideStateNote) {

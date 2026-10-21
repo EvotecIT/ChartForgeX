@@ -10,6 +10,7 @@ public sealed partial class MermaidParser {
         var lines = frontMatter!.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var rootIndent = ConfigurationYamlRootIndent(lines);
         for (var index = 0; index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[index];
             if (ConfigurationYamlIndent(raw) != rootIndent || raw.Substring(0, rootIndent).IndexOf('\t') >= 0) continue;
             var mapping = ConfigurationYamlMapping(TrimConfigurationYaml(raw));

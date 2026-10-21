@@ -63,7 +63,7 @@ public static class StoryArtifactExtensions {
     }
 }
 
-internal sealed class StoryStaticSource : IStaticVisualSource {
+internal sealed class StoryStaticSource : IMeasuredStaticVisualSource {
     private readonly string _svg;
     private readonly string? _rootId;
     private readonly RgbaImage _raster;
@@ -82,4 +82,5 @@ internal sealed class StoryStaticSource : IStaticVisualSource {
         return result;
     }
     public RgbaImage RenderRgba() => new(_raster.Width, _raster.Height, (byte[])_raster.Pixels.Clone());
+    public VisualSize MeasureRasterSize() => new(_raster.Width, _raster.Height);
 }

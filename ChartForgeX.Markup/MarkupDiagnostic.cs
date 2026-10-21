@@ -10,6 +10,9 @@ public sealed class MarkupDiagnostic {
     /// <summary>Gets or sets the one-based source line.</summary>
     public int Line { get; set; }
 
+    /// <summary>Gets or sets the one-based source column when the originating parser supplies it.</summary>
+    public int Column { get; set; } = 1;
+
     /// <summary>Gets or sets the diagnostic severity.</summary>
     public MarkupDiagnosticSeverity Severity { get; set; }
 

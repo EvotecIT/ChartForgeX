@@ -45,7 +45,7 @@ public sealed class MermaidConfigurationOwnerClosureTests {
 
     [Fact]
     public void MultilineRootFlowIndentedContentCountsTowardTheConfigurationBudget() {
-        var rendered = MermaidRenderer.Render("---\nconfig: {\n" + new string(' ', 65536) + "\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B");
+        var rendered = MermaidInnerBoundaryTestPolicy.Render("---\nconfig: {\n" + new string(' ', 65536) + "\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B");
         Assert.True(rendered.HasErrors);
         Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
     }
@@ -54,14 +54,14 @@ public sealed class MermaidConfigurationOwnerClosureTests {
     [InlineData("}")]
     [InlineData("\"")]
     public void OpeningLineCommentsCannotHideFlowContinuationFromTheBudget(string comment) {
-        var rendered = MermaidRenderer.Render("---\nconfig: { # " + comment + "\n" + new string(' ', 65536) + "\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B");
+        var rendered = MermaidInnerBoundaryTestPolicy.Render("---\nconfig: { # " + comment + "\n" + new string(' ', 65536) + "\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B");
         Assert.True(rendered.HasErrors);
         Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Message.Contains("65536"));
     }
 
     [Fact]
     public void ClosingLineCommentsCannotChargeUnrelatedFrontmatterToConfiguration() {
-        var rendered = MermaidRenderer.Render("---\nconfig: {\"theme\":\"dark\"} # {\ndescription: " + new string('x', 70000) + "\n---\nflowchart LR\nA --> B");
+        var rendered = MermaidInnerBoundaryTestPolicy.Render("---\nconfig: {\"theme\":\"dark\"} # {\ndescription: " + new string('x', 70000) + "\n---\nflowchart LR\nA --> B");
         Assert.False(rendered.HasErrors);
         Assert.Equal("dark", rendered.Document!.Configuration.Theme);
     }

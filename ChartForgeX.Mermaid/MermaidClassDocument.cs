@@ -18,6 +18,9 @@ public sealed class MermaidClassDocument : MermaidDocument {
 
     /// <summary>Gets class definition statements retained from source.</summary>
     public List<MermaidClassStyleStatement> StyleStatements { get; } = new();
+
+    /// <summary>Gets visible floating or class-attached notes in source order.</summary>
+    public List<MermaidDiagramNote> Notes { get; } = new();
 }
 
 /// <summary>

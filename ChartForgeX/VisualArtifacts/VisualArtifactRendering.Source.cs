@@ -13,6 +13,13 @@ public static partial class VisualArtifactRendering {
     /// <returns>A detached RGBA image at the producer's configured output density.</returns>
     public static RgbaImage ToRgbaImage(this VisualArtifact artifact, VisualArtifactRenderOptions? options = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
+        artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Png, options);
+        var image = RenderRgbaImage(artifact, options);
+        artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Png, null);
+        return image;
+    }
+
+    private static RgbaImage RenderRgbaImage(VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         var source = artifact.RenderSource ?? artifact.Model as IStaticVisualSource;
         if (source != null) return source.RenderRgba();
         return artifact.Model switch {
@@ -36,7 +43,6 @@ public static partial class VisualArtifactRendering {
     internal static IStaticVisualSource GetRenderSource(VisualArtifact artifact, VisualArtifactRenderOptions? options = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (artifact.RenderSource != null) return artifact.RenderSource;
-        if (artifact.Model is IStaticVisualSource source) return source;
         if (artifact.Model == null) throw new InvalidOperationException("Artifact '" + artifact.Id + "' has no static render model.");
         var snapshot = artifact.Clone();
         var capturedOptions = options == null ? null : new VisualArtifactRenderOptions {
@@ -49,11 +55,15 @@ public static partial class VisualArtifactRendering {
         return new ArtifactStaticSource(snapshot, capturedOptions);
     }
 
-    private sealed class ArtifactStaticSource : IStaticVisualSource {
+    private sealed class ArtifactStaticSource : IMeasuredStaticVisualSource {
         private readonly VisualArtifact _artifact;
         private readonly VisualArtifactRenderOptions? _options;
         internal ArtifactStaticSource(VisualArtifact artifact, VisualArtifactRenderOptions? options) { _artifact = artifact; _options = options; }
         public string RenderSvg(string idScope) => VisualArtifactRendering.RenderSvg(_artifact, _options, idScope ?? throw new ArgumentNullException(nameof(idScope)));
         public RgbaImage RenderRgba() => _artifact.ToRgbaImage(_options);
+        public VisualSize MeasureRasterSize() {
+            var size = _artifact.MeasureRasterSize(_options);
+            return new VisualSize(size.Width, size.Height);
+        }
     }
 }

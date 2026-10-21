@@ -1046,6 +1046,14 @@
       },
       "provenance": "https://mermaid.js.org/syntax/flowchart.html; bounded ChartForgeX regression for flowchart-link-style-replacement"
     },
+    "fixtures/flowchart-nested-directions.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "https://mermaid.js.org/syntax/flowchart.html#direction-in-subgraphs; authored regression combining nested local directions, forward subgraph references and labelled links to subgraph shells."
+    },
     "fixtures/flowchart-compound-long-edge.mmd": {
       "syntax": {
         "10": "accepted",
@@ -1090,6 +1098,68 @@
         "12": "rejected"
       },
       "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.2.0 rejection probe; missing block closure or noncontiguous packet range"
+    },
+    "fixtures/class-native-notes-generics.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/classDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+    },
+    "fixtures/class-two-way.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/classDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+    },
+    "fixtures/class-lollipop-retained.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/classDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases.",
+      "expectedByReference": {
+        "10": "class-lollipop-retained.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10 exposes the interface label as a class. Mermaid 11/12 use an internal interface endpoint instead. Native rendering retains this statement with CFXM007; approximation must be explicit."
+      }
+    },
+    "fixtures/state-controls-notes.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/stateDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+    },
+    "fixtures/state-nested-directions.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/stateDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+    },
+    "fixtures/er-alias-attributes.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/entityRelationshipDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+    },
+    "fixtures/sequence-lifetimes-boxes.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored participant boxes and creation/destruction lifecycle from https://mermaid.js.org/syntax/sequenceDiagram.html#actor-creation-and-destruction-v10-3-0; message-index and box membership facts qualified against pinned official 10.9.8, 11.17.2 and 12.2.0 engines."
     }
   }
 }

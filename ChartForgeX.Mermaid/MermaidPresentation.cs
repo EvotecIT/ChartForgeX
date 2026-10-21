@@ -10,7 +10,8 @@ namespace ChartForgeX.Mermaid;
 
 /// <summary>Applies source presentation to the reusable model before either SVG or PNG rendering.</summary>
 internal static class MermaidPresentation {
-    internal static T Apply<T>(T model, MermaidDocument document) where T : class {
+    internal static T Apply<T>(T model, MermaidDocument document, MermaidPresentationOptions? host = null) where T : class {
+        host?.Validate();
         if (model is VisualArtifact artifact) {
             artifact.Accessibility.Name = document.Accessibility.Name;
             artifact.Accessibility.Description = document.Accessibility.Description;
@@ -19,36 +20,48 @@ internal static class MermaidPresentation {
             if (document.Configuration.Look != null) artifact.Metadata["mermaid.config.look"] = document.Configuration.Look;
             if (document.Configuration.FontFamily != null) artifact.Metadata["mermaid.config.fontFamily"] = document.Configuration.FontFamily;
             if (document.Configuration.FontSize.HasValue) artifact.Metadata["mermaid.config.fontSize"] = document.Configuration.FontSize.Value.ToString(CultureInfo.InvariantCulture);
-            if (artifact.Model != null) Apply(artifact.Model, document);
+            if (artifact.Model is TopologyChart topologyModel && topologyModel.DefaultRenderOptions?.FitContentToViewport == false)
+                artifact.HtmlSizing = VisualArtifactHtmlSizing.PreserveSize;
+            MermaidArtifactPolicy.Attach(artifact, document);
+
         } else if (model is SequenceArtifact sequence) {
             sequence.Accessibility.Name = document.Accessibility.Name;
             sequence.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) sequence.ThemeMode = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? VisualThemeMode.Dark : VisualThemeMode.Light;
-            sequence.Theme = sequence.Theme.WithTypography(Typography(sequence.Theme.Typography, document.Configuration));
+            if (host?.ThemeMode != null) sequence.ThemeMode = host.ThemeMode.Value;
+            sequence.Theme = (host?.Theme ?? sequence.Theme).WithTypography(Typography((host?.Theme ?? sequence.Theme).Typography, document.Configuration, host));
         } else if (model is TopologyChart topology) {
             topology.Accessibility.Name = document.Accessibility.Name;
             topology.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) topology.ThemeMode = Mode(document.Theme);
-            topology.Theme = topology.Theme.WithTypography(Typography(topology.Theme.Typography, document.Configuration));
+            if (host?.ThemeMode != null) topology.ThemeMode = host.ThemeMode.Value;
+            var sizing = host?.TopologySizing ?? MermaidTopologySizing.Natural;
+            topology.DefaultRenderOptions ??= new TopologyRenderOptions();
+            topology.DefaultRenderOptions.FitContentToViewport = sizing == MermaidTopologySizing.FixedViewport;
+            topology.Theme = (host?.Theme ?? topology.Theme).WithTypography(Typography((host?.Theme ?? topology.Theme).Typography, document.Configuration, host));
         } else if (model is Chart chart) {
             chart.Accessibility.Name = document.Accessibility.Name;
             chart.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) chart.WithThemeMode(Mode(document.Theme));
-            chart.WithTheme(chart.Options.Theme.WithTypography(Typography(chart.Options.Theme.Typography, document.Configuration)));
+            chart.WithTheme((host?.Theme ?? chart.Options.Theme).WithTypography(Typography((host?.Theme ?? chart.Options.Theme).Typography, document.Configuration, host)));
             document.Configuration.ChartColors?.Apply(chart);
             document.Configuration.RadarTheme?.Apply(chart);
+            if (host?.Theme != null) chart.WithTheme(host.Theme.WithTypography(Typography(host.Theme.Typography, document.Configuration, host)));
+            if (host?.ThemeMode != null) chart.WithThemeMode(host.ThemeMode.Value);
         } else if (model is IVisualBlock block) {
             block.Options.Accessibility.Name = document.Accessibility.Name;
             block.Options.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) block.Options.ThemeMode = Mode(document.Theme);
-            block.Options.Theme = block.Options.Theme.WithTypography(Typography(block.Options.Theme.Typography, document.Configuration));
+            if (host?.ThemeMode != null) block.Options.ThemeMode = host.ThemeMode.Value;
+            block.Options.Theme = (host?.Theme ?? block.Options.Theme).WithTypography(Typography((host?.Theme ?? block.Options.Theme).Typography, document.Configuration, host));
         }
         return model;
     }
 
-    private static VisualTypography Typography(VisualTypography source, MermaidSourceConfiguration configuration) {
-        var scale = configuration.FontSize.HasValue ? configuration.FontSize.Value / source.DataLabelSize : 1;
-        return new VisualTypography(configuration.FontFamily ?? source.Family, source.TitleSize * scale,
+    private static VisualTypography Typography(VisualTypography source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host) {
+        var fontSize = host?.FontSize ?? configuration.FontSize;
+        var scale = fontSize.HasValue ? fontSize.Value / source.DataLabelSize : 1;
+        return new VisualTypography(host?.FontFamily ?? configuration.FontFamily ?? source.Family, source.TitleSize * scale,
             source.SubtitleSize * scale, source.AxisSize * scale, source.LegendSize * scale,
             source.DataLabelSize * scale, source.ScalarValueSize * scale, source.CenterValueSize * scale,
             source.AxisTitleSize * scale, source.MonospaceFamily);

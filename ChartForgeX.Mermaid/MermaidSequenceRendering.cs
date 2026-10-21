@@ -8,7 +8,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>
 /// Provides ChartForgeX rendering adapters for parsed Mermaid sequence diagrams.
 /// </summary>
-public static class MermaidSequenceRendering {
+public static partial class MermaidSequenceRendering {
     /// <summary>
     /// Converts a Mermaid sequence document into a product-neutral sequence artifact.
     /// </summary>
@@ -47,6 +47,8 @@ public static class MermaidSequenceRendering {
             if (participant.Configuration != null) target.Metadata["mermaid.configuration"] = participant.Configuration;
         }
 
+        AddParticipantLifetimesAndBoxes(document, sequence);
+
         foreach (var link in document.Links) {
             var participant = FindParticipant(sequence, link.ParticipantId);
             if (participant == null) continue;
@@ -82,7 +84,7 @@ public static class MermaidSequenceRendering {
         }
 
         AddBlocks(document, sequence);
-        return MermaidPresentation.Apply(sequence, document);
+        return MermaidPresentation.Apply(sequence, document, options.Presentation);
     }
 
     /// <summary>
@@ -111,13 +113,13 @@ public static class MermaidSequenceRendering {
     /// Renders a Mermaid sequence document to static SVG through ChartForgeX sequence rendering.
     /// </summary>
     public static string ToSvg(this MermaidSequenceDocument document, MermaidSequenceRenderOptions? options = null) =>
-        document.ToSequenceArtifact(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>
     /// Renders a Mermaid sequence document to static PNG through ChartForgeX sequence rendering.
     /// </summary>
     public static byte[] ToPng(this MermaidSequenceDocument document, MermaidSequenceRenderOptions? options = null) =>
-        document.ToSequenceArtifact(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static void AddBlocks(MermaidSequenceDocument document, SequenceArtifact sequence) {
         var stack = new Stack<BlockStart>();
@@ -165,7 +167,7 @@ public static class MermaidSequenceRendering {
     }
 
     private static string ResolveTitle(MermaidSequenceDocument document, MermaidSequenceRenderOptions options) =>
-        MermaidHeading.Title(document, options.Title, null, "Mermaid sequence");
+        MermaidHeading.Title(document, options.Title, document.Title, "Mermaid sequence");
 
     private static SequenceArtifactMessageLineStyle ToLineStyle(string messageOperator) =>
         messageOperator.StartsWith("--", StringComparison.Ordinal) ? SequenceArtifactMessageLineStyle.Dashed : SequenceArtifactMessageLineStyle.Solid;
@@ -257,16 +259,7 @@ public static class MermaidSequenceRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid sequence diagrams.
 /// </summary>
-public sealed class MermaidSequenceRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidSequenceRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public double Width { get; set; } = 960;
 

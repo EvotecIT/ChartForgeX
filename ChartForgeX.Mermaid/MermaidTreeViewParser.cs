@@ -7,6 +7,7 @@ internal static class MermaidTreeViewParser {
     public static void ParseStatements(MermaidTreeViewDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var stack = new List<MermaidTreeViewNode>();
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -20,6 +21,7 @@ internal static class MermaidTreeViewParser {
 
             while (stack.Count > 0 && stack[stack.Count - 1].Indent >= indent) stack.RemoveAt(stack.Count - 1);
             var parent = stack.Count == 0 ? null : stack[stack.Count - 1];
+            MermaidResourceGuard.CheckDepth(stack.Count + 1, span);
             var node = new MermaidTreeViewNode(MermaidParserUtilities.StableId("treeview-node", document.Nodes.Count), label, indent, stack.Count, parent, span);
             if (parent == null) document.Roots.Add(node);
             else parent.Children.Add(node);

@@ -22,7 +22,9 @@ public enum VisualArtifactInterchangeGroupRole {
     /// <summary>A topology group or container.</summary>
     TopologyGroup,
     /// <summary>A flow lane.</summary>
-    FlowLane
+    FlowLane,
+    /// <summary>A vertical group of sequence participants.</summary>
+    SequenceParticipantGroup
 }
 
 /// <summary>Identifies the stable role of an interchange node without closing the free-form kind token.</summary>
@@ -173,6 +175,10 @@ public sealed class VisualArtifactInterchangeLegendItem {
 
 /// <summary>Represents topology-specific group semantics.</summary>
 public sealed class VisualArtifactInterchangeTopologyGroup {
+    /// <summary>Gets or sets the containing group id, or null for a root region.</summary>
+    public string? ParentGroupId { get; set; }
+    /// <summary>Gets or sets a local direction; null inherits the parent region.</summary>
+    public TopologyLayoutDirection? LayoutDirection { get; set; }
     /// <summary>Gets or sets the semantic status.</summary>
     public TopologyHealthStatus Status { get; set; }
     /// <summary>Gets or sets the configured child layout policy.</summary>
@@ -209,6 +215,8 @@ public sealed class VisualArtifactInterchangeTopologyNode {
     public double? Latitude { get; set; }
     /// <summary>Gets or sets whether the status badge is shown.</summary>
     public bool ShowStatusBadge { get; set; } = true;
+    /// <summary>Gets or sets whether the semantic label is painted as a visible caption.</summary>
+    public bool ShowLabel { get; set; } = true;
     /// <summary>Gets or sets the optional maximum label length.</summary>
     public int? MaximumLabelCharacters { get; set; }
     /// <summary>Gets or sets safe portable icon artwork.</summary>
@@ -327,6 +335,10 @@ public sealed class VisualArtifactInterchangeSequenceNode {
     public int Order { get; set; }
     /// <summary>Gets or sets whether the participant was inferred by the parser.</summary>
     public bool IsImplicit { get; set; }
+    /// <summary>Gets or sets the index of the message creating the participant; null denotes an initial participant.</summary>
+    public int? CreatedAtMessageIndex { get; set; }
+    /// <summary>Gets or sets the index of the message destroying the participant; null denotes an open lifetime.</summary>
+    public int? DestroyedAtMessageIndex { get; set; }
 }
 
 /// <summary>Represents sequence-message semantics.</summary>

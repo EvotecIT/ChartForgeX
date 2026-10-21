@@ -15,6 +15,7 @@ public sealed partial class MermaidParser {
         var lines = text.Split('\n');
         var rootIndent = ConfigurationYamlRootIndent(lines);
         for (var index = 0; index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[index];
             var trimmed = TrimConfigurationYaml(raw);
             if (trimmed.Length == 0 || trimmed.StartsWith("#", StringComparison.Ordinal)) continue;

@@ -15,6 +15,7 @@ internal static class MermaidWardleyParser {
     public static void ParseStatements(MermaidWardleyDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var nodeIds = new HashSet<string>(StringComparer.Ordinal);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -207,6 +208,7 @@ internal static class MermaidWardleyParser {
 
         var pipeline = new MermaidWardleyPipeline(parent, span);
         for (var line = currentLine + 1; line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;

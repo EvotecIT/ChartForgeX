@@ -8,6 +8,7 @@ internal static class MermaidTreemapParser {
     public static void ParseStatements(MermaidTreemapDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var stack = new List<MermaidTreemapNode>();
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[index];
             var trimmed = raw.Trim();
             if (trimmed.Length == 0 || trimmed.StartsWith("%%", StringComparison.Ordinal)) continue;
@@ -20,6 +21,7 @@ internal static class MermaidTreemapParser {
 
             while (stack.Count > 0 && stack[stack.Count - 1].Indent >= indent) stack.RemoveAt(stack.Count - 1);
             var parent = stack.Count == 0 ? null : stack[stack.Count - 1];
+            MermaidResourceGuard.CheckDepth(stack.Count + 1, span);
             var node = new MermaidTreemapNode(parsed.Value.Label, parsed.Value.Value, indent, parent, parsed.Value.ClassName, span);
             if (parent == null) document.Roots.Add(node);
             else parent.Children.Add(node);

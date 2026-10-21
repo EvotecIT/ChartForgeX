@@ -1,0 +1,9 @@
+erDiagram
+C["Customer account"] {
+  string id PK, FK "External key"
+  string display_name
+}
+O[Orders] {
+  int id PK
+}
+C ||--o{ O : places

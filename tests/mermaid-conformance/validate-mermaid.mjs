@@ -1,11 +1,12 @@
 import { readdir, readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
-import { join } from 'node:path';
+import { isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { isReferenceRejection } from './reference-errors.mjs';
 import { gitGraphFacts, flowchartStyleFacts } from './reference-facts.mjs';
 import { useReferenceClock } from './reference-clock.mjs';
+import { classFacts, stateFacts, erFacts, sequenceLifetimeFacts } from './reference-notation.mjs';
 import { timeFormat } from 'd3-time-format';
 import * as calendar from 'd3-time';
 
@@ -16,14 +17,22 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 const manifest = JSON.parse(await readFile(join(root, 'compatibility.json'), 'utf8'));
 assert.equal(manifest.schemaVersion, 1, 'Unsupported compatibility manifest schema.');
 const args = process.argv.slice(2);
+const peerIndex = args.indexOf('--peer');
+const includePeer = peerIndex >= 0;
+if (includePeer) args.splice(peerIndex, 1);
+const outputIndex = args.indexOf('--output');
+const output = outputIndex < 0 ? null : args.splice(outputIndex, 2)[1];
+assert.ok(!includePeer || output && isAbsolute(output), 'Optional peer output requires --peer --output <absolute task directory>.');
+assert.ok(includePeer || outputIndex < 0, '--output applies only to the optional peer lane.');
 const referenceIndex = args.indexOf('--reference');
 const referenceId = referenceIndex < 0 ? null : args.splice(referenceIndex, 2)[1];
 const corpusFolders = ['fixtures', 'recognition', 'invalid'];
-assert.ok(args.length <= 1 && (!args[0] || corpusFolders.includes(args[0])), 'Usage: node validate-mermaid.mjs [fixtures|recognition|invalid] [--reference 10|11|12]');
+assert.ok(args.length <= 1 && (!args[0] || corpusFolders.includes(args[0])), 'Usage: node validate-mermaid.mjs [fixtures|recognition|invalid] [--reference 10|11|12] [--peer --output <absolute task directory>]');
 const folders = args[0] ? [args[0]] : corpusFolders;
 const references = Object.keys(manifest.references);
 assert.deepEqual(references.sort(), ['10', '11', '12'], 'Declare the three qualified reference lanes.');
 assert.ok(referenceIndex < 0 || references.includes(referenceId), 'Select a declared reference after --reference.');
+assert.ok(!includePeer || !referenceId, 'The peer lane runs once after all official references.');
 const inventory = [];
 for (const folder of corpusFolders) {
   inventory.push(...(await readdir(join(root, folder))).filter(file => file.endsWith('.mmd')).map(file => `${folder}/${file}`));
@@ -53,6 +62,14 @@ if (!referenceId) {
     const summary = child.stdout.split('\n').findLast(line => line.startsWith('Mermaid.js '));
     assert.ok(summary, `Reference ${id} did not report qualification.`);
     console.log(summary);
+  }
+  if (includePeer) {
+    const peer = spawnSync('dotnet', ['run', '--project', join(root, 'peer', 'MermaiderPeer.csproj'), '-c', 'Release',
+      '--artifacts-path', join(output, 'peer-build'), '-p:RestoreLockedMode=true', '--', root, join(output, 'peer')],
+      { encoding: 'utf8', timeout: 180000, maxBuffer: 8 * 1024 * 1024 });
+    if (peer.error) throw peer.error;
+    if (peer.status !== 0) throw new Error(peer.stderr || peer.stdout || `Optional peer runner exited ${peer.status}.`);
+    console.log(peer.stdout.trim());
   }
   process.exit(0);
 }
@@ -140,6 +157,10 @@ for (const { folder, file, hasExpected } of files) {
       if (expected.classes) assert.deepEqual(keys(diagram.db.getClasses()), expected.classes);
       if (expected.entities) assert.deepEqual(keys(diagram.db.getEntities()), expected.entities);
       if (expected.states) assert.deepEqual(keys(diagram.db.getStates()), expected.states);
+      if (expected.classFacts) assert.deepEqual(classFacts(diagram.db), expected.classFacts);
+      if (expected.stateFacts) assert.deepEqual(stateFacts(diagram.db), expected.stateFacts);
+      if (expected.erFacts) assert.deepEqual(erFacts(diagram.db), expected.erFacts);
+      if (expected.sequenceLifetimes) assert.deepEqual(sequenceLifetimeFacts(diagram.db), expected.sequenceLifetimes);
       if (expected.participants) {
         assert.deepEqual(keys(diagram.db.getActors()), expected.participants);
         assert.deepEqual(diagram.db.getMessages().filter(message => message.from && message.to && message.placement === undefined)

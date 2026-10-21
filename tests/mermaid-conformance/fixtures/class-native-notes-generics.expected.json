@@ -1,0 +1,58 @@
+{
+  "classes": [
+    "Repository",
+    "Store"
+  ],
+  "classFacts": {
+    "nodes": [
+      [
+        "Repository",
+        "Repository<Item>",
+        [
+          "+List<Item> items"
+        ],
+        [
+          "+find() Item"
+        ]
+      ],
+      [
+        "Store",
+        "Store",
+        [],
+        []
+      ]
+    ],
+    "relationships": [
+      [
+        "Repository",
+        "Store",
+        "None",
+        "Arrow",
+        "Solid",
+        "writes",
+        "",
+        ""
+      ]
+    ],
+    "notes": [
+      [
+        "Repository",
+        "Stable identity\nTyped members"
+      ],
+      [
+        null,
+        "Floating note"
+      ]
+    ]
+  },
+  "peerVisibleText": [
+    "Repository",
+    "items",
+    "find",
+    "Store",
+    "writes",
+    "Stable identity",
+    "Typed members",
+    "Floating note"
+  ]
+}

@@ -13,6 +13,7 @@ internal static class MermaidIshikawaParser {
         int? baseIndent = null;
         var nodeCount = 0;
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -30,6 +31,7 @@ internal static class MermaidIshikawaParser {
             if (!baseIndent.HasValue) baseIndent = indent;
             while (stack.Count > 1 && stack[stack.Count - 1].Indent >= indent) stack.RemoveAt(stack.Count - 1);
             var level = stack.Count;
+            MermaidResourceGuard.CheckDepth(level + 1, span);
             if (level > MaximumFishboneDepth) {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Ishikawa cause depth must not exceed " + MaximumFishboneDepth.ToString(CultureInfo.InvariantCulture) + ".");
                 continue;

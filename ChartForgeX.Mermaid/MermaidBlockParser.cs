@@ -14,6 +14,7 @@ internal static class MermaidBlockParser {
         var implicitIds = new HashSet<string>(StringComparer.Ordinal);
         var spaceIndex = 0;
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;

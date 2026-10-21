@@ -12,12 +12,14 @@ internal static partial class MermaidFlowchartParser {
         var nodes = new Dictionary<string, MermaidFlowchartNode>(StringComparer.Ordinal);
         var subgraphs = new Stack<MermaidFlowchartSubgraph>();
         foreach (var statement in MermaidFlowchartStatements.Read(lines, firstBodyLine, firstOffset)) {
+            MermaidResourceGuard.Checkpoint();
             var trimmed = statement.Text;
             if (trimmed.Length == 0 || IsComment(trimmed)) continue;
             var span = statement.Span;
             document.Statements.Add(statement);
             if (TryParseSubgraphStart(document, trimmed, span, subgraphs)) continue;
             if (IsSubgraphEnd(trimmed, subgraphs, span, result)) continue;
+            if (TryParseSubgraphDirection(document, trimmed, span, subgraphs, result)) continue;
             if (TryParseClassDefinition(document, trimmed, span, result)) continue;
             if (TryParseClassAssignment(document, nodes, trimmed, span)) continue;
             if (TryParseStyleAssignment(document, nodes, trimmed, span, result)) continue;
@@ -27,6 +29,8 @@ internal static partial class MermaidFlowchartParser {
         }
 
         foreach (var subgraph in subgraphs) MermaidParserUtilities.Add(result, subgraph.Span, MermaidDiagnosticSeverity.Error, "Flowchart subgraph '" + subgraph.Id + "' must close with 'end'.");
+        ValidateSubgraphs(document, result);
+        RemoveSubgraphEndpointNodes(document);
         ApplyClassDefinitions(document);
         ApplyLinkStyles(document);
         AddLabelDiagnostics(document, result);
@@ -45,6 +49,7 @@ internal static partial class MermaidFlowchartParser {
                 return;
             }
 
+            MermaidResourceGuard.ReserveEdges((long)current.Count * target.Count, span);
             foreach (var sourceNode in current) foreach (var targetNode in target)
                 document.Edges.Add(new MermaidFlowchartEdge(sourceNode.Id, targetNode.Id, edgeOperator, span) { Label = label });
             current = target;
@@ -99,6 +104,7 @@ internal static partial class MermaidFlowchartParser {
         if (!text.StartsWith("subgraph ", StringComparison.OrdinalIgnoreCase)) return false;
         var value = text.Substring("subgraph ".Length).Trim();
         if (value.Length == 0) return false;
+        MermaidResourceGuard.CheckDepth(subgraphs.Count + 1, span);
 
         var id = value;
         var title = value;
@@ -114,7 +120,9 @@ internal static partial class MermaidFlowchartParser {
 
         if (id.Length == 0) id = "subgraph-" + (document.Subgraphs.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
         if (title.Length == 0) title = id;
-        var subgraph = new MermaidFlowchartSubgraph(id, title, span);
+        var subgraph = new MermaidFlowchartSubgraph(id, title, span) {
+            ParentSubgraphId = subgraphs.Count == 0 ? null : subgraphs.Peek().Id
+        };
         document.Subgraphs.Add(subgraph);
         subgraphs.Push(subgraph);
         return true;

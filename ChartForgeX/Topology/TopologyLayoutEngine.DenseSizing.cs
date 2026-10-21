@@ -36,9 +36,8 @@ internal static partial class TopologyLayoutEngine {
             sized.Add((group, nodes));
         }
 
-        var surfaceInset = TopologyRenderPrimitives.CanvasSurfaceInset(chart, chart.RenderOptions!);
-        var rowWidth = Math.Max(chart.Viewport.Width - (pad + surfaceInset) * 2, sized.Max(item => item.Group.Width));
-        var rowStartX = pad + surfaceInset;
+        var rowWidth = Math.Max(chart.Viewport.Width - pad * 2, sized.Max(item => item.Group.Width));
+        var rowStartX = pad;
         var x = rowStartX;
         var y = pad + titleOffset;
         var rowHeight = 0.0;
@@ -135,7 +134,7 @@ internal static partial class TopologyLayoutEngine {
             return Math.Max(190, 36 + 2 * Math.Max(70, pairMaxNodeWidth + DenseColumnGap(chart, nodes, 2)));
         }
 
-        if (policy == TopologyGroupLayoutPolicy.Grid && UsesReadableDenseLayout(chart)) {
+        if (policy == TopologyGroupLayoutPolicy.Grid) {
             var gridMaxNodeWidth = nodes.Select(node => TopologyNodeFootprint.Width(chart, node)).DefaultIfEmpty(90).Max();
             var columns = DenseGridColumns(nodes.Count);
             return Math.Max(190, 36 + columns * Math.Max(70, gridMaxNodeWidth + DenseColumnGap(chart, nodes, columns)));

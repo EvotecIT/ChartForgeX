@@ -1,7 +1,7 @@
 {
   "summary": "ChartForgeX.Mermaid parses Mermaid source and renders it through the native ChartForgeX engine, with no browser, no Node.js and no mermaid-cli.",
   "note": "Syntax support does not mean the same layout or pixels as Mermaid's browser renderer. Each diagram is drawn by ChartForgeX with your theme, and diagnostics tell you when source is kept without an exact visual interpretation.",
-  "reference": "Semantics follow Mermaid.js 12.1.0, with conformance tests pinned against Mermaid 10.9.8 and 11.17.2.",
+  "reference": "Semantic fixtures use Mermaid.js 12.2.0, with additional reference lanes pinned to 10.9.8 and 11.17.2. These examples do not establish complete compatibility with every release or syntax form.",
   "hero": "sequence",
   "samples": [
     {

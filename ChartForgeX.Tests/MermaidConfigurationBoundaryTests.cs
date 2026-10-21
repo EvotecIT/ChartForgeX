@@ -12,7 +12,7 @@ public sealed class MermaidConfigurationBoundaryTests {
     [InlineData("  ")]
     public void WholeYamlCommentLinesDoNotConsumeBudgetOrEndTheActiveMapping(string indentation) {
         var comment = indentation + "# " + new string('x', 70000);
-        var rendered = MermaidRenderer.Render("---\nconfig:\n  theme: dark\n" + comment + "\n  fontFamily: Arial, sans-serif\n---\nflowchart LR\nA --> B");
+        var rendered = MermaidInnerBoundaryTestPolicy.Render("---\nconfig:\n  theme: dark\n" + comment + "\n  fontFamily: Arial, sans-serif\n---\nflowchart LR\nA --> B");
         Assert.Empty(rendered.Diagnostics);
         Assert.NotNull(rendered.Artifact);
         Assert.Equal("dark", rendered.Document!.Configuration.Theme);
@@ -26,7 +26,7 @@ public sealed class MermaidConfigurationBoundaryTests {
     public void CommentsAndBlankLinesPreserveTheExactYamlDeclarationBudget(int length, bool hasErrors) {
         const string prefix = "config:\n  other: ";
         var source = "---\nconfig:\n# root comment\n\n  other: " + new string('x', length - prefix.Length) + "\n# trailing comment\n\n---\nflowchart LR\nA --> B";
-        var rendered = MermaidRenderer.Render(source);
+        var rendered = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.Equal(hasErrors, rendered.HasErrors);
         Assert.Equal(hasErrors, rendered.Artifact == null);
         Assert.Equal(hasErrors ? 0 : 1, rendered.Document!.Configuration.Settings.Count);
@@ -37,7 +37,7 @@ public sealed class MermaidConfigurationBoundaryTests {
     [InlineData(65537, true)]
     public void YamlConfigurationBudgetHasTheDocumentedBoundary(int length, bool hasErrors) {
         const string prefix = "config:\n  other: ";
-        var rendered = MermaidRenderer.Render("---\n" + prefix + new string('x', length - prefix.Length) + "\n---\nflowchart LR\nA --> B");
+        var rendered = MermaidInnerBoundaryTestPolicy.Render("---\n" + prefix + new string('x', length - prefix.Length) + "\n---\nflowchart LR\nA --> B");
         Assert.Equal(hasErrors, rendered.HasErrors);
         Assert.Equal(hasErrors, rendered.Artifact == null);
         Assert.Equal(hasErrors ? 0 : 1, rendered.Document!.Configuration.Settings.Count);
@@ -49,7 +49,7 @@ public sealed class MermaidConfigurationBoundaryTests {
     public void UnrelatedFrontmatterDoesNotConsumeTheConfigurationBudget(bool withConfig) {
         var metadata = "description: " + new string('x', 70000);
         var source = "---\n" + metadata + (withConfig ? "\nconfig:\n  theme: dark" : "") + "\n---\nflowchart LR\nA --> B";
-        var rendered = MermaidRenderer.Render(source);
+        var rendered = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.Empty(rendered.Diagnostics);
         Assert.NotNull(rendered.Artifact);
         Assert.Contains(metadata, rendered.Document!.FrontMatter);
@@ -60,7 +60,7 @@ public sealed class MermaidConfigurationBoundaryTests {
     public void OverBudgetDirectivesDoNotRemainInTheBoundedDeclarationCollection() {
         var valid = "%%{init: {'theme':'dark'}}%%";
         var over = "%%{init: {'other':'" + new string('x', 65536) + "'}}%%";
-        var rendered = MermaidRenderer.Render(valid + "\n" + over + "\n" + valid + "\nflowchart LR\nA --> B");
+        var rendered = MermaidInnerBoundaryTestPolicy.Render(valid + "\n" + over + "\n" + valid + "\nflowchart LR\nA --> B");
         Assert.True(rendered.HasErrors);
         Assert.Null(rendered.Artifact);
         Assert.Equal(valid, Assert.Single(rendered.Document!.Directives).Text);
