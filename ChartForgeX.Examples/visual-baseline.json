@@ -5072,9 +5072,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 1268,
+      "width": 1249,
       "height": 560,
-      "logicalWidth": 1268.0,
+      "logicalWidth": 1249.0,
       "logicalHeight": 560.0,
       "svg": {
         "minVisualNodes": 11,
@@ -5096,9 +5096,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 1273,
+      "width": 1261,
       "height": 560,
-      "logicalWidth": 1273.0,
+      "logicalWidth": 1261.0,
       "logicalHeight": 560.0,
       "svg": {
         "minVisualNodes": 12,
@@ -5120,9 +5120,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 1273,
+      "width": 1261,
       "height": 560,
-      "logicalWidth": 1273.0,
+      "logicalWidth": 1261.0,
       "logicalHeight": 560.0,
       "svg": {
         "minVisualNodes": 12,
@@ -7205,8 +7205,8 @@
       "name": "mermaid-state-direction",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 960,
       "height": 669,
@@ -7232,9 +7232,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 986,
+      "width": 977,
       "height": 831,
-      "logicalWidth": 986.0,
+      "logicalWidth": 977.0,
       "logicalHeight": 831.0,
       "svg": {
         "minVisualNodes": 26,
@@ -7256,9 +7256,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 986,
+      "width": 977,
       "height": 831,
-      "logicalWidth": 986.0,
+      "logicalWidth": 977.0,
       "logicalHeight": 831.0,
       "svg": {
         "minVisualNodes": 26,

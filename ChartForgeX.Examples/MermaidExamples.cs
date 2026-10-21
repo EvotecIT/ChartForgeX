@@ -4,6 +4,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static class MermaidExamples {
     internal static void Write(string output) {
+        ExampleTypography.Register();
         const string mindMap = "mindmap\n    root((Roadmap))\n          plan[Planning]\n            tasks[Tasks]\n                review[Review]\n          delivery[Delivery]\n              releases[Releases]\n                support[Support]\n";
         var examples = new Dictionary<string, string> {
             ["mermaid-sequence-lifetimes-light"] = MermaidSequenceExamples.Lifecycle,
@@ -118,7 +119,17 @@ internal static class MermaidExamples {
                 "mermaid-gantt-date-anchor" => new MermaidRenderOptions { ParseOptions = new MermaidParseOptions { GanttDateAnchor = new DateTime(2028, 1, 1) } },
                 _ => null
             };
-            var result = MermaidRenderer.Render(item.Value, options);
+            var parsed = new MermaidParser().Parse(item.Value, options?.ParseOptions);
+            // These natural-size notation fixtures measure notes and namespace labels. Keep
+            // their baseline independent of installed fonts without overriding source fonts.
+            var proofTypography = parsed.Document is MermaidClassDocument or MermaidStateDocument
+                && parsed.Document.Configuration.FontFamily == null;
+            if (proofTypography) {
+                options ??= new MermaidRenderOptions();
+                options.Presentation ??= new MermaidPresentationOptions();
+                options.Presentation.FontFamily = ExampleTypography.FontFamily;
+            }
+            var result = MermaidRenderer.RenderParsed(parsed, options);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
             if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
                 block.Options.ShowCard = false;
@@ -169,7 +180,10 @@ internal static class MermaidExamples {
             if (item.Key == "mermaid-radar-hidden-fractional-guides" && result.Artifact.Model is Chart chart) chart.Options.ShowGrid = false;
             result.Artifact.SaveSvg(Path.Combine(output, item.Key + ".svg"));
             result.Artifact.SavePng(Path.Combine(output, item.Key + ".png"));
-            result.Artifact.SaveHtml(Path.Combine(output, item.Key + ".html"));
+            var htmlPath = Path.Combine(output, item.Key + ".html");
+            if (proofTypography)
+                File.WriteAllText(htmlPath, result.Artifact.ToHtmlPage().Replace("</head>", ExampleTypography.EmbeddedStyle + "</head>", StringComparison.Ordinal), System.Text.Encoding.UTF8);
+            else result.Artifact.SaveHtml(htmlPath);
         }
     }
 }
