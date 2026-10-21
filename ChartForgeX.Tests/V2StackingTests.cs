@@ -21,7 +21,7 @@ public sealed class V2StackingTests {
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 400), 0)));
         Assert.Equal(2, prepared.Regions.Count(region => region.Role == "point"));
         var first = Bounds(prepared, 0, 0); var second = Bounds(prepared, 1, 0);
-        Assert.Equal(30, first.Height, 8); Assert.Equal(first.Top, second.Top, 8); Assert.Equal(first.Right, second.Left, 8);
+        Assert.Equal(64, first.Height, 8); Assert.Equal(first.Top, second.Top, 8); Assert.Equal(first.Right, second.Left, 8);
         Assert.True(first.Top >= 0 && first.Bottom <= 400);
         Assert.Equal("2", Point(prepared, 1, 0).Metadata["data-cfx-base"]);
         Assert.Equal(category, double.Parse(Point(prepared, 0, 0).Metadata["data-cfx-x"], CultureInfo.InvariantCulture));

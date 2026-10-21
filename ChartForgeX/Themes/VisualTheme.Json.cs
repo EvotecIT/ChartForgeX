@@ -52,7 +52,8 @@ public sealed partial class VisualTheme {
             effects.TryGetValue("cardShadowOpacity", out var opacity) ? opacity.AsNumber("effects.cardShadowOpacity") : 0,
             effects.TryGetValue("cardShadowColor", out var shadow) ? Hex(shadow.AsString("effects.cardShadowColor"), "cardShadowColor") : null,
             OptionalNumber(geometry, "gaugeStrokeWidth", "geometry", 14), OptionalNumber(geometry, "gaugeBandWidth", "geometry", 4),
-            OptionalNumber(geometry, "plotRadius", "geometry", Number(geometry, "barRadius", "geometry")));
+            OptionalNumber(geometry, "plotRadius", "geometry", Number(geometry, "barRadius", "geometry")),
+            OptionalNumber(geometry, "maximumBarWidth", "geometry", 64));
     }
 
     /// <summary>Exports the complete paired color, typography and geometry theme using schemaVersion 1.</summary>
@@ -77,6 +78,7 @@ public sealed partial class VisualTheme {
         writer.Property("geometry"); writer.StartObject();
         WriteNumber(writer, "spacing", Spacing); WriteNumber(writer, "seriesStrokeWidth", SeriesStrokeWidth); WriteNumber(writer, "markerRadius", MarkerRadius);
         WriteNumber(writer, "areaOpacity", AreaOpacity); WriteNumber(writer, "barRadius", BarRadius);
+        WriteNumber(writer, "maximumBarWidth", MaximumBarWidth);
         WriteNumber(writer, "gridStrokeWidth", GridStrokeWidth); WriteNumber(writer, "axisStrokeWidth", AxisStrokeWidth);
         WriteNumber(writer, "cardRadius", CardRadius); WriteNumber(writer, "plotRadius", PlotRadius);
         WriteNumber(writer, "gaugeStrokeWidth", GaugeStrokeWidth); WriteNumber(writer, "gaugeBandWidth", GaugeBandWidth);

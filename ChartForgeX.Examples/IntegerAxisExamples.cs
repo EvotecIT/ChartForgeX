@@ -18,6 +18,14 @@ public static class IntegerAxisExamples {
 
     /// <summary>Writes paired SVG, HTML and native PNG examples for small and large count domains.</summary>
     public static void Write(string output, ChartPngOutputScale scale) {
+        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            var sparse = Chart.Create().WithSize(1120, 280).WithTheme(VisualTheme.Graphite(), mode)
+                .WithTitle("Sparse category counts").WithXLabels("January", "February")
+                .WithStackedBars().WithYAxisIntegerTicks().WithMaximumBarWidth(48)
+                .AddBar("Passed", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) })
+                .AddBar("Pending", new[] { new ChartPoint(1, 1), new ChartPoint(2, 0) });
+            ExampleArtifactWriter.SaveChart(sparse, output, "category-counts-" + mode.ToString().ToLowerInvariant(), scale);
+        }
         foreach (var maximum in new[] { 1, 2, 3, 4, 1000000 })
             foreach (var horizontal in new[] { false, true })
                 foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {

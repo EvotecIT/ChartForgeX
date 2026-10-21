@@ -43,3 +43,25 @@ both themes. Run the focused example set with:
 ```powershell
 dotnet run --project ChartForgeX.Examples -c Release -- --integer-axis-only --output ./integer-axis-examples
 ```
+
+## Sparse category bars
+
+Regular bars use the theme's `MaximumBarWidth` token (64 drawing pixels by
+default). One or two categories therefore keep readable bars instead of filling
+the plot. Series groups stay centred on the category, with the theme's normal
+series gaps. Stacked series share one centred slot. Horizontal bars apply the
+same token to their thickness; histograms retain their bin widths and sparklines
+retain their compact sampling policy.
+
+```csharp
+var sparse = Chart.Create().WithSize(1120, 280)
+    .WithXLabels("January", "February")
+    .WithYAxisIntegerTicks()
+    .WithMaximumBarWidth(48)
+    .AddBar("Items", ChartPoints.FromValues(1, 3));
+var theme = VisualTheme.Graphite().Configure(tokens => tokens.MaximumBarWidth = 56);
+```
+
+`WithMaximumBarWidth(null)` restores the theme token. Widths must be positive
+and finite. The token survives theme configuration, typography changes and JSON
+round trips (`geometry.maximumBarWidth`); older theme JSON uses the default.

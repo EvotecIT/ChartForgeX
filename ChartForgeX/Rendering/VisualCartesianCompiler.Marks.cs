@@ -139,7 +139,9 @@ internal static partial class VisualCartesianCompiler {
         var slot = stacks.Slot(barIndices, index);
         var sampleSlots = chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0;
         var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].RenderPoints.Select((point, pointIndex) => map.X(coordinates.Resolve(i, pointIndex).Value))),
-            plot.Width, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false, minimumThickness: sampleSlots > 0 ? 0 : .1, sampleSlots: sampleSlots);
+            plot.Width, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false,
+            maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth,
+            minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth), sampleSlots: sampleSlots);
         return (layout.Thickness, layout.Offset);
     }
 
