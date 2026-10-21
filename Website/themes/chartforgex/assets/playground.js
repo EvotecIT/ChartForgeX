@@ -479,6 +479,7 @@ function start(root) {
       copy.removeAttribute('style');
       copy.setAttribute('width', String(size.width));
       copy.setAttribute('height', String(size.height));
+      embedExportFonts(copy);
       return { text: serializer.serializeToString(copy), width: size.width, height: size.height };
     }
     // Several fences: stack them in one valid SVG document.
@@ -491,6 +492,7 @@ function start(root) {
     outer.setAttribute('width', String(width));
     outer.setAttribute('height', String(height));
     outer.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    embedExportFonts(outer);
     let y = 0;
     svgs.forEach((svg, index) => {
       const copy = svg.cloneNode(true);
@@ -503,6 +505,12 @@ function start(root) {
       y += sizes[index].height + gap;
     });
     return { text: serializer.serializeToString(outer), width, height };
+  }
+
+  function embedExportFonts(svg) {
+    const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    style.textContent = engine.fontCss;
+    svg.prepend(style);
   }
 
   async function share() {
