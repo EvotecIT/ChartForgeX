@@ -284,7 +284,7 @@ Supported state parsing includes:
 - Composite state blocks in `state id { ... }` form.
 - Transitions using `-->` with optional labels after `:`.
 - Start and end markers using `[*]`.
-- Attached and floating (`note "text" as ID`) notes use typed `Notes` and visible native surfaces. Multiline bodies preserve literal content through `end note`, including arrows, colons and accessibility keywords.
+- Attached notes use typed `Notes` and visible native surfaces. Multiline bodies preserve literal content through `end note`, including arrows, colons and accessibility keywords. Floating (`note "text" as ID`) state notes remain raw statements with `CFXM007` and are not painted.
 - Composite groups preserve nesting and local directions; transitions can target their boundaries. Choice nodes omit captions, and fork/join nodes use native synchronization bars.
 - Classes, styles and concurrent-region separators remain retained with `CFXM007`.
 
@@ -308,7 +308,7 @@ var document = result.Document;
 var svg = document!.ToSvg();
 ```
 
-The conversion target for state diagrams is `TopologyChart`. Composite states become topology groups, states become topology nodes, and transitions become directed topology edges. Notes and concurrent-region separators are retained without dedicated geometry. Composite-local direction is retained with `CFXM007` and does not replace the global direction. Unclosed notes or composites and stray terminators report `CFXM008` and prevent shared rendering.
+The conversion target for state diagrams is `TopologyChart`. Composite states become topology groups, states become topology nodes, and transitions become directed topology edges. Attached notes occupy measured gutters with leaders, and composite-local direction controls its nested layout. Concurrent-region separators remain raw statements with `CFXM007`. Unclosed notes or composites and stray terminators report `CFXM008` and prevent shared rendering.
 
 ## Entity Relationship Diagrams
 

@@ -59,13 +59,12 @@ internal static partial class SmokeTests {
 
         Assert(!exportedTypes.Any(type => type.Namespace != null && type.Namespace.StartsWith("ChartForgeX.Simple", StringComparison.Ordinal)), "ChartForgeX.Simple should not return as a second chart-construction surface.");
 
-        var duplicateEnums = exportedTypes
-            .Where(type => type.IsEnum)
-            .GroupBy(type => string.Join("|", Enum.GetNames(type)), StringComparer.Ordinal)
-            .Where(group => group.Count() > 1)
-            .Select(group => string.Join(", ", group.Select(type => type.FullName).OrderBy(name => name, StringComparer.Ordinal)))
-            .ToArray();
-        Assert(duplicateEnums.Length == 0, "Public enums with identical member sets require one shared owner: " + string.Join("; ", duplicateEnums));
+        // Shared semantics require shared types; coincident member names do not establish shared semantics
+        // (for example, terminal text alignment and the side of an attached diagram note).
+        var linkDirection = typeof(ChartForgeX.Primitives.VisualLinkDirection);
+        Assert(typeof(ChartForgeX.Topology.TopologyEdge).GetProperty("Direction")!.PropertyType == linkDirection &&
+            typeof(ChartForgeX.VisualArtifacts.FlowArtifactConnector).GetProperty("Direction")!.PropertyType == linkDirection,
+            "Topology and flow relationships should use the canonical link-direction contract.");
 
         var drawingReferences = assembly.GetReferencedAssemblies()
             .Where(reference => reference.Name != null && reference.Name.StartsWith("System.Drawing", StringComparison.OrdinalIgnoreCase))

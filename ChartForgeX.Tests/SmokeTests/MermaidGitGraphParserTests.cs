@@ -113,7 +113,9 @@ internal static partial class SmokeTests {
         var commits = new StringBuilder("gitGraph\n");
         for (var index = 0; index <= 10000; index++) commits.Append("  commit id: \"c").Append(index).Append("\"\n");
 
-        var commitResult = new MermaidParser().ParseGitGraph(commits.ToString());
+        var limits = MermaidInnerBoundaryTestPolicy.ParseOptions();
+        limits.ResourceLimits.MaximumElements = 20_000;
+        var commitResult = new MermaidParser().Parse(commits.ToString(), limits);
 
         Assert(commitResult.HasErrors, "Mermaid gitGraph parser should reject commit counts beyond the renderer limit.");
         Assert(commitResult.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("10000", StringComparison.Ordinal) && diagnostic.Message.Contains("commits", StringComparison.Ordinal)), "Oversized gitGraph commit diagnostics should name the renderable commit cap.");

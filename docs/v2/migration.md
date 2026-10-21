@@ -457,6 +457,8 @@ Factual completion checks, activity completion, progress handles, selected-perio
 
 The core artifact renderer accepts `IStaticVisualSource` through `RenderSource` or a producer model. Optional packages own their concrete drawing; hosts can retain semantic table/diagram data in `Model` while choosing a different static presentation. This export contract does not convert legacy blocks into native prepared scenes.
 
+Custom static producers used with raster preallocation policies implement the optional `IMeasuredStaticVisualSource` contract. Return exact destination pixel dimensions, including output scale, without allocating a raster canvas. Existing `IStaticVisualSource` producers remain usable without such a policy. Watermark decoration preserves captured policies and native options, including through nested layers; an unmeasured custom source is rejected only when a policy needs its dimensions. See [static producer measurement](../visual-artifacts.md#static-producers-and-raster-limits).
+
 For a still artifact, apply the decoration before choosing its output format:
 
 ```csharp

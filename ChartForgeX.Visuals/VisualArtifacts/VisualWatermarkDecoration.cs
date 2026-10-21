@@ -109,7 +109,7 @@ public static class VisualWatermarkDecoration {
         return snapshots;
     }
 
-    private sealed class WatermarkedStaticSource : IStaticVisualSource {
+    private sealed class WatermarkedStaticSource : IMeasuredStaticVisualSource {
         private readonly IStaticVisualSource _source;
         private readonly VisualArtifact _frame;
         private readonly VisualWatermark[] _watermarks;
@@ -124,6 +124,12 @@ public static class VisualWatermarkDecoration {
 
         public string RenderSvg(string idScope) =>
             VisualWatermarkRendering.ApplyToSvg(_source.RenderSvg(idScope), _frame, _watermarks);
+
+        public VisualSize MeasureRasterSize() {
+            if (_source is not IMeasuredStaticVisualSource measured)
+                throw new InvalidOperationException("Watermark raster-size policy requires an underlying IMeasuredStaticVisualSource.");
+            return measured.MeasureRasterSize();
+        }
 
         public RgbaImage RenderRgba() {
             var image = _source.RenderRgba();

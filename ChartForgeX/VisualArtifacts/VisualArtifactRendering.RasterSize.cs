@@ -9,10 +9,13 @@ namespace ChartForgeX.VisualArtifacts;
 public static partial class VisualArtifactRendering {
     /// <summary>Measures the exact destination pixel dimensions of a core native artifact without allocating its raster canvas.</summary>
     /// <remarks>Uses the same native preparation and output scale as raster export, including natural topology and
-    /// sequence growth. Arbitrary producer-owned render sources have no core measurement contract and are rejected.</remarks>
+    /// sequence growth. Optional static producers and decorators supply their own exact pixel measurement through
+    /// <see cref="IMeasuredStaticVisualSource"/>. Unmeasured producer-owned sources remain unsupported.</remarks>
     public static VisualArtifactSize MeasureRasterSize(this VisualArtifact artifact, VisualArtifactRenderOptions? options = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
-        if (artifact.RenderSource != null) throw new InvalidOperationException("A producer-owned render source must supply its own raster-size policy.");
+        if (artifact.RenderSource is IMeasuredStaticVisualSource measuredSource) return MeasuredSourceSize(measuredSource);
+        if (artifact.RenderSource != null) throw new InvalidOperationException("A producer-owned render source must implement IMeasuredStaticVisualSource before raster-size policy checks.");
+        if (artifact.Model is IMeasuredStaticVisualSource measuredModel) return MeasuredSourceSize(measuredModel);
         double width, height;
         var scale = 1;
         switch (artifact.Model) {
@@ -48,5 +51,13 @@ public static partial class VisualArtifactRendering {
                 throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a core native raster-size contract.");
         }
         return new VisualArtifactSize(Math.Ceiling(width * scale), Math.Ceiling(height * scale));
+    }
+
+    private static VisualArtifactSize MeasuredSourceSize(IMeasuredStaticVisualSource source) {
+        var size = source.MeasureRasterSize();
+        var result = new VisualArtifactSize(size.Width, size.Height);
+        if (size.Width != Math.Ceiling(size.Width) || size.Height != Math.Ceiling(size.Height))
+            throw new InvalidOperationException("A static source raster measurement must contain whole destination pixel dimensions.");
+        return result;
     }
 }

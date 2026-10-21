@@ -30,7 +30,9 @@ title ""People""
 | Ada | Enabled |
 ```";
 
-        var result = new MermaidVisualMarkupParser().Parse(source);
+        var result = new MermaidVisualMarkupParser(new MermaidRenderOptions {
+            Presentation = new MermaidPresentationOptions { TopologySizing = MermaidTopologySizing.FixedViewport }
+        }).Parse(source);
 
         Assert(!result.HasErrors, "Mermaid visual markup parser should parse mixed visual fences without errors: " + Diagnostics(result));
         Assert(result.Artifacts.Count == 2, "Mermaid visual markup parser should emit artifacts for Mermaid and built-in ChartForgeX fences.");

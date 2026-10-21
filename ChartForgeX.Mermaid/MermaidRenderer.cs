@@ -54,7 +54,7 @@ public static class MermaidRenderer {
     }
 
     /// <summary>Converts a parsed document through its native family using shared host defaults.</summary>
-    /// <summary>Converts an already parsed document into its typed artifact; unsupported families throw a located render error through Render.</summary>
+    /// <remarks>Use <see cref="RenderParsed"/> for a diagnostic result when conversion is unsupported.</remarks>
     public static VisualArtifact ToVisualArtifact(this MermaidDocument document, MermaidRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidRenderOptions();

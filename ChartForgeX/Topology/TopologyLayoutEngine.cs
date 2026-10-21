@@ -146,9 +146,15 @@ internal static partial class TopologyLayoutEngine {
         var baseNodes = chart.Nodes
             .Where(node => IsNodeEligible(node, selectedGroupIds, hasGroupFilter, selectedNodeIds, hasNodeFilter, view, false))
             .ToList();
+        // References resolve to an authored node before a same-id group. Filtering a
+        // node out must not silently retarget its edges to that group's shell.
+        var sourceNodeIds = new HashSet<string>(chart.Nodes.Select(node => node.Id), StringComparer.Ordinal);
+        var baseGroupIds = new HashSet<string>(chart.Groups
+            .Where(group => (!hasGroupFilter || selectedGroupIds.Contains(group.Id)) && !sourceNodeIds.Contains(group.Id))
+            .Select(group => group.Id), StringComparer.Ordinal);
         var baseNodeIds = new HashSet<string>(baseNodes.Select(node => node.Id), StringComparer.Ordinal);
         var baseEndpointIds = new HashSet<string>(baseNodeIds, StringComparer.Ordinal);
-        if (hasGroupFilter) baseEndpointIds.UnionWith(selectedGroupIds);
+        baseEndpointIds.UnionWith(baseGroupIds);
         var eligibleEdges = chart.Edges
             .Where(edge => IsEdgeEligible(edge, selectedEdgeIds, hasEdgeFilter, view))
             .Where(edge => baseEndpointIds.Contains(edge.SourceNodeId) && baseEndpointIds.Contains(edge.TargetNodeId))
@@ -157,12 +163,12 @@ internal static partial class TopologyLayoutEngine {
         List<TopologyNode> visibleNodes;
         List<TopologyEdge> visibleEdges;
         if (hasFocusFilter) {
-            var focused = ExpandFocusNodes(focusNodeIds, baseNodeIds, eligibleEdges, Math.Max(0, view.NeighborDepth), view.IncludeIncomingEdges, view.IncludeOutgoingEdges);
+            var focused = ExpandFocusEndpoints(focusNodeIds, baseNodeIds, baseEndpointIds, eligibleEdges, Math.Max(0, view.NeighborDepth), view.IncludeIncomingEdges, view.IncludeOutgoingEdges);
             visibleNodes = baseNodes.Where(node => focused.Contains(node.Id)).ToList();
             visibleEdges = eligibleEdges.Where(edge => focused.Contains(edge.SourceNodeId) && focused.Contains(edge.TargetNodeId)).ToList();
         } else {
             var visibleNodeIds = new HashSet<string>(baseNodes.Where(node => !hasStatusFilter || view.HealthStatuses.Contains(node.Status)).Select(node => node.Id), StringComparer.Ordinal);
-            if (hasGroupFilter) visibleNodeIds.UnionWith(selectedGroupIds);
+            visibleNodeIds.UnionWith(baseGroupIds);
             if (hasEdgeFilter || hasEdgeKindFilter || hasStatusFilter) {
                 foreach (var edge in eligibleEdges) {
                     visibleNodeIds.Add(edge.SourceNodeId);
@@ -188,8 +194,8 @@ internal static partial class TopologyLayoutEngine {
         var allGroups = chart.Groups.Select(Clone).ToList();
         var sourceGroupIds = new HashSet<string>(allGroups.Select(group => group.Id), StringComparer.Ordinal);
         foreach (var edge in visibleEdges) {
-            if (sourceGroupIds.Contains(edge.SourceNodeId)) visibleGroupIds.Add(edge.SourceNodeId);
-            if (sourceGroupIds.Contains(edge.TargetNodeId)) visibleGroupIds.Add(edge.TargetNodeId);
+            if (baseGroupIds.Contains(edge.SourceNodeId)) visibleGroupIds.Add(edge.SourceNodeId);
+            if (baseGroupIds.Contains(edge.TargetNodeId)) visibleGroupIds.Add(edge.TargetNodeId);
         }
         chart.Groups.Clear();
         foreach (var group in allGroups.Where(group => visibleGroupIds.Contains(group.Id))) {
@@ -220,14 +226,14 @@ internal static partial class TopologyLayoutEngine {
         return true;
     }
 
-    private static HashSet<string> ExpandFocusNodes(HashSet<string> focusNodeIds, HashSet<string> eligibleNodeIds, List<TopologyEdge> eligibleEdges, int depth, bool includeIncoming, bool includeOutgoing) {
+    private static HashSet<string> ExpandFocusEndpoints(HashSet<string> focusNodeIds, HashSet<string> eligibleNodeIds, HashSet<string> eligibleEndpointIds, List<TopologyEdge> eligibleEdges, int depth, bool includeIncoming, bool includeOutgoing) {
         var visible = new HashSet<string>(focusNodeIds.Where(eligibleNodeIds.Contains), StringComparer.Ordinal);
         var frontier = new HashSet<string>(visible, StringComparer.Ordinal);
         for (var hop = 0; hop < depth && frontier.Count > 0; hop++) {
             var next = new HashSet<string>(StringComparer.Ordinal);
             foreach (var edge in eligibleEdges) {
-                if (includeOutgoing && frontier.Contains(edge.SourceNodeId) && eligibleNodeIds.Contains(edge.TargetNodeId)) next.Add(edge.TargetNodeId);
-                if (includeIncoming && frontier.Contains(edge.TargetNodeId) && eligibleNodeIds.Contains(edge.SourceNodeId)) next.Add(edge.SourceNodeId);
+                if (includeOutgoing && frontier.Contains(edge.SourceNodeId) && eligibleEndpointIds.Contains(edge.TargetNodeId)) next.Add(edge.TargetNodeId);
+                if (includeIncoming && frontier.Contains(edge.TargetNodeId) && eligibleEndpointIds.Contains(edge.SourceNodeId)) next.Add(edge.SourceNodeId);
             }
 
             next.ExceptWith(visible);

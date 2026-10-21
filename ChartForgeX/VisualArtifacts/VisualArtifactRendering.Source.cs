@@ -43,7 +43,6 @@ public static partial class VisualArtifactRendering {
     internal static IStaticVisualSource GetRenderSource(VisualArtifact artifact, VisualArtifactRenderOptions? options = null) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (artifact.RenderSource != null) return artifact.RenderSource;
-        if (artifact.Model is IStaticVisualSource source) return source;
         if (artifact.Model == null) throw new InvalidOperationException("Artifact '" + artifact.Id + "' has no static render model.");
         var snapshot = artifact.Clone();
         var capturedOptions = options == null ? null : new VisualArtifactRenderOptions {
@@ -56,11 +55,15 @@ public static partial class VisualArtifactRendering {
         return new ArtifactStaticSource(snapshot, capturedOptions);
     }
 
-    private sealed class ArtifactStaticSource : IStaticVisualSource {
+    private sealed class ArtifactStaticSource : IMeasuredStaticVisualSource {
         private readonly VisualArtifact _artifact;
         private readonly VisualArtifactRenderOptions? _options;
         internal ArtifactStaticSource(VisualArtifact artifact, VisualArtifactRenderOptions? options) { _artifact = artifact; _options = options; }
         public string RenderSvg(string idScope) => VisualArtifactRendering.RenderSvg(_artifact, _options, idScope ?? throw new ArgumentNullException(nameof(idScope)));
         public RgbaImage RenderRgba() => _artifact.ToRgbaImage(_options);
+        public VisualSize MeasureRasterSize() {
+            var size = _artifact.MeasureRasterSize(_options);
+            return new VisualSize(size.Width, size.Height);
+        }
     }
 }

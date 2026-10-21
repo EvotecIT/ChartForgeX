@@ -26,9 +26,14 @@ internal sealed partial class VisualTopologyCompiler {
     private void ResolveNaturalSize(IReadOnlyList<VisualLegendEntry> entries) {
         if (!_naturalSize || _options.FitContentToViewport || _resolvedLayout) return;
         var padding = _chart.Viewport.Padding;
+        var viewportWidth = Math.Max(1, _chart.Viewport.Width - padding * 2);
         var content = IncludeAnnotationBounds(MeasureRenderedContent(padding, padding,
-            Math.Max(1, _chart.Viewport.Width - padding * 2), Math.Max(1, _chart.Viewport.Height - padding * 2), includeViewport: true));
-        var requiredWidth = content.Width;
+            viewportWidth, Math.Max(1, _chart.Viewport.Height - padding * 2), includeViewport: true));
+        // Route ink may use the horizontal outer padding without changing the resolved
+        // layout domain. Only ink beyond the entire canvas requires more output width.
+        var requiredWidth = viewportWidth
+            + Math.Max(0, padding - content.X - _plot.X)
+            + Math.Max(0, content.Right - padding - viewportWidth - (_context.Layout.Size.Width - _plot.Right));
         var requiredHeight = content.Height;
         var grew = false;
         var previousWidth = _context.Layout.Size.Width;
@@ -72,7 +77,7 @@ internal sealed partial class VisualTopologyCompiler {
         _builder.AddDiagnostic(new VisualDiagnostic("topology.natural-size", "The convenience export canvas includes the complete resolved topology and shared frame at natural size."));
 
         void Resize(double width, double height) {
-            _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), _context.Layout.PaddingEdges),
+            _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(Math.Ceiling(width), Math.Ceiling(height)), _context.Layout.PaddingEdges),
                 _context.Theme, _context.ThemeMode, _context.Frame, _context.Font);
             _builder = new VisualSceneBuilder(_context.Layout.Size, _context.Font);
             _plot = VisualFrameLayout.Build(_builder, _context, entries, FramePaints());
@@ -93,6 +98,15 @@ internal sealed partial class VisualTopologyCompiler {
         var naturalContent = _naturalSize && !_resolvedLayout && !_options.FitContentToViewport;
         var content = IncludeAnnotationBounds(fitResolvedLayout || naturalContent
             ? MeasureRenderedContent(padding, padding, width, height, includeViewport: naturalContent) : new ChartRect(padding, padding, width, height));
+        _contentClip = _plot;
+        if (naturalContent) {
+            _offsetX = _plot.X - padding + Math.Max(0, padding - content.X - _plot.X);
+            _offsetY = _plot.Y - content.Y;
+            var left = Math.Min(_plot.X, _offsetX + content.X);
+            var right = Math.Max(_plot.Right, _offsetX + content.Right);
+            _contentClip = new ChartRect(left, _plot.Y, right - left, _plot.Height);
+            if (left >= 0 && right <= _context.Layout.Size.Width + .001 && content.Height <= _plot.Height + .001) return;
+        }
         _offsetX = _plot.X - content.X; _offsetY = _plot.Y - content.Y;
         if (!fitResolvedLayout
             && content.Width <= _plot.Width + .001 && content.Height <= _plot.Height + .001) return;
@@ -170,7 +184,7 @@ internal sealed partial class VisualTopologyCompiler {
             if (route.Value.Count == 0) continue;
             var halfStroke = FittedRouteStrokeWidth(route.Key) / 2;
             foreach (var point in route.Value) Include(point.X - halfStroke, point.Y - halfStroke, point.X + halfStroke, point.Y + halfStroke);
-            var markerExtent = 12 + _context.Theme.AxisStrokeWidth / 2;
+            var markerExtent = 15 + _context.Theme.AxisStrokeWidth / 2;
             if (RenderedSourceMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
                 IncludeMarker(route.Value[0], markerExtent);
             if (_trunks.TryGetValue(route.Key, out var trunk)) {

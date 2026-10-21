@@ -116,11 +116,17 @@ public sealed class MermaidFlowchartCompoundTests {
         var clip = svg.Descendants().Single(element => element.Name.LocalName == "clipPath" && (string?)element.Attribute("id") == clipId).Elements().Single();
         var left = Number(clip, "x"); var top = Number(clip, "y");
         var right = left + Number(clip, "width"); var bottom = top + Number(clip, "height");
-        var paths = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") is "topology-edge-line" or "topology-marker").ToArray();
+        var paths = svg.Descendants().Where(element => ((string?)element.Attribute("data-cfx-role"))?.StartsWith("topology-edge-line", StringComparison.Ordinal) == true
+            || (string?)element.Attribute("data-cfx-role") == "topology-marker").ToArray();
         Assert.NotEmpty(paths);
-        Assert.All(paths.SelectMany(Points), point => {
-            Assert.InRange(point.X, left, right);
-            Assert.InRange(point.Y, top, bottom);
+        Assert.All(paths, path => {
+            var halfStroke = double.TryParse((string?)path.Attribute("stroke-width"), NumberStyles.Float, CultureInfo.InvariantCulture, out var stroke) ? stroke / 2 : 0;
+            Assert.All(Points(path), point => {
+                Assert.InRange(point.X - halfStroke, left, right);
+                Assert.InRange(point.X + halfStroke, left, right);
+                Assert.InRange(point.Y - halfStroke, top, bottom);
+                Assert.InRange(point.Y + halfStroke, top, bottom);
+            });
         });
         var route = Points(entry.Elements().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line"));
         var leg = route.Zip(route.Skip(1), (start, end) => (start, end)).Single(segment => segment.start.X == segment.end.X && Math.Abs(segment.start.Y - segment.end.Y) > 20);
