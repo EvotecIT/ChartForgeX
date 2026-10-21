@@ -133,13 +133,13 @@ async function loadPreviewFonts() {
     const response = await fetch('/examples/generated/fonts/' + file);
     if (!response.ok) throw new Error('The preview font could not be loaded: ' + file);
     const bytes = new Uint8Array(await response.arrayBuffer());
-    const face = new FontFace('Carlito', bytes, { weight, style: 'normal' });
-    document.fonts.add(await face.load());
     let binary = '';
     for (const byte of bytes) binary += String.fromCharCode(byte);
-    // SVG images have their own font set, so downloads carry the exact measured font bytes.
-    return '@font-face{font-family:Carlito;font-style:normal;font-weight:' + weight +
-      ';src:url(data:font/ttf;base64,' + btoa(binary) + ') format("truetype")}';
+    const source = 'url(data:font/ttf;base64,' + btoa(binary) + ') format("truetype")';
+    // Load the same font resources that isolated SVG images will request on their first paint.
+    const face = new FontFace('Carlito', source, { weight, style: 'normal' });
+    document.fonts.add(await face.load());
+    return '@font-face{font-family:Carlito;font-style:normal;font-weight:' + weight + ';src:' + source + '}';
   }));
   await document.fonts.ready;
   return rules.join('\n');
