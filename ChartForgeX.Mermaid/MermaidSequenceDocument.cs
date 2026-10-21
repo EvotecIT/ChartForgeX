@@ -35,6 +35,9 @@ public enum MermaidSequenceBlockKind {
 /// Describes a Mermaid sequence diagram document.
 /// </summary>
 public sealed class MermaidSequenceDocument : MermaidDocument {
+    /// <summary>Gets or sets the sequence's explicit title statement.</summary>
+    public string? Title { get; set; }
+
     /// <summary>Gets raw sequence statements retained with source spans.</summary>
     public List<MermaidRawStatement> Statements { get; } = new();
 
@@ -58,6 +61,12 @@ public sealed class MermaidSequenceDocument : MermaidDocument {
 
     /// <summary>Gets parsed autonumber configuration, when present.</summary>
     public MermaidSequenceAutonumber? Autonumber { get; set; }
+
+    /// <summary>Gets participant creation and destruction directives with their associated message indices.</summary>
+    public List<MermaidSequenceLifetime> Lifetimes { get; } = new();
+
+    /// <summary>Gets vertical boxes around contiguous participant declarations.</summary>
+    public List<MermaidSequenceParticipantBox> ParticipantBoxes { get; } = new();
 }
 
 /// <summary>

@@ -53,16 +53,17 @@ internal sealed partial class VisualTopologyCompiler {
                     }
                 }
                 else if (node.Shape.HasValue) {
-                    foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) _builder.Path(Transform(part.Path), part.Fill ? fill : null, accent, strokeWidth, role: "topology-node-surface", close: part.Close, paint: surfacePaint);
+                    foreach (var part in TopologyNodeShapeGeometry.SceneParts(node)) _builder.Path(Transform(part.Path), part.Fill ? node.Shape == TopologyNodeShape.SynchronizationBar ? accent : fill : null, accent, strokeWidth, role: "topology-node-surface", close: part.Close,
+                        paint: node.Shape == TopologyNodeShape.SynchronizationBar ? new VisualScenePaintBinding(accentPaint, accentPaint) : surfacePaint);
                 } else _builder.Rect(bounds, fill, accent, strokeWidth, mode == TopologyNodeDisplayMode.Pill ? bounds.Height / 2 : _context.Theme.BarRadius * _scale, role: "topology-node-surface", paint: surfacePaint);
                 if (!shapeContent && UseNodeAccentBand(mode, _options)) _builder.Rect(new ChartRect(bounds.X + strokeWidth / 2, bounds.Y + strokeWidth / 2, 4 * _scale, Math.Max(0, bounds.Height - strokeWidth)), accent, role: "topology-node-accent", paint: new VisualScenePaintBinding(accentPaint));
                 var hasGlyph = HasInlineNodeGlyph(node, mode, _options);
-                if (shapeContent) BuildShapeContent(node, accent, active, accentRole);
+                if (shapeContent && node.ShowLabel) BuildShapeContent(node, accent, active, accentRole);
                 if (!shapeContent && hasGlyph && mode != TopologyNodeDisplayMode.Dot) {
                     var center = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Icon or TopologyNodeDisplayMode.Artwork;
                     BuildGlyph(node, center ? node.X + node.Width / 2 : node.X + 22, node.Y + (mode == TopologyNodeDisplayMode.Card && _options.IncludeNodeLabels && node.Details.Count > 0 ? 28 : node.Height / 2), accent, glyphRole: accentRole);
                 }
-                if (!shapeContent && _options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)) {
+                if (!shapeContent && node.ShowLabel && _options.IncludeNodeLabels && (mode != TopologyNodeDisplayMode.Icon || _options.IncludeIconLabels)) {
                     var caption = mode is TopologyNodeDisplayMode.Tile or TopologyNodeDisplayMode.Artwork or TopologyNodeDisplayMode.Icon;
                     var left = hasGlyph && !caption ? mode == TopologyNodeDisplayMode.Pill ? 34 : 44 : 10;
                     // A label-only card's heading sits above its glyph, so it can use the full heading row.

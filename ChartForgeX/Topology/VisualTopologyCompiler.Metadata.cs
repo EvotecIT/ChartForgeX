@@ -51,6 +51,8 @@ internal sealed partial class VisualTopologyCompiler {
         var data = CommonMetadata(group.Id, "group", group.Status, null, group.Metadata, null);
         data["class"] = CssPrefix + "__group" + CustomCssClasses(group.CssClass) + _highlight.CssClass(CssPrefix, _highlight.IsGroupHighlighted(group));
         data["data-group-label"] = group.Label; data["data-group-color"] = group.Color ?? string.Empty;
+        data["data-parent-group-id"] = group.ParentGroupId ?? string.Empty;
+        data["data-group-layout-direction"] = group.LayoutDirection?.ToString() ?? string.Empty;
         data["data-group-layout-policy"] = group.LayoutPolicy.ToString(); data["data-group-symbol"] = group.Symbol ?? string.Empty;
         data["data-cfx-selected"] = _options.SelectedGroupIds.Contains(group.Id) ? "true" : "false";
         Coordinates(data, "group", group.Longitude, group.Latitude); Icon(data, "group", group.IconId, ResolveGroupIcon(group, _options));

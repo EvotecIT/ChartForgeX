@@ -33,7 +33,7 @@ public sealed class MermaidConfigurationNullAndScalarTests {
     [InlineData("  ")]
     public void RootFlowMappingCommentsDoNotConsumeTheConfigurationBudget(string indentation) {
         var comment = indentation + "# " + new string('x', 70000);
-        var rendered = MermaidRenderer.Render("---\nconfig: {\n" + comment + "\n  \"theme\": \"dark\",\n" + comment + "\n  \"fontFamily\": \"Arial\"\n}\n---\nflowchart LR\nA --> B");
+        var rendered = MermaidInnerBoundaryTestPolicy.Render("---\nconfig: {\n" + comment + "\n  \"theme\": \"dark\",\n" + comment + "\n  \"fontFamily\": \"Arial\"\n}\n---\nflowchart LR\nA --> B");
         Assert.Empty(rendered.Diagnostics);
         Assert.NotNull(rendered.Artifact);
         Assert.Equal("Arial", rendered.Document!.Configuration.FontFamily);
@@ -79,7 +79,7 @@ public sealed class MermaidConfigurationNullAndScalarTests {
     public void ManyFlowCommentsCannotTruncateAnOtherwiseValidConfigurationNearTheBudget() {
         var source = "---\nconfig: {\n\"other\":\"" + new string('x', 65500) + "\"\n" +
             string.Concat(Enumerable.Repeat("# comment\n", 26)) + "}\n---\nflowchart LR\nA --> B";
-        var rendered = MermaidRenderer.Render(source);
+        var rendered = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.False(rendered.HasErrors);
         Assert.NotNull(rendered.Artifact);
         Assert.Equal(new string('x', 65500), Assert.Single(rendered.Document!.Configuration.Settings).Value);

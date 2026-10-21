@@ -65,7 +65,7 @@ public static class MermaidArchitectureRendering {
             ApplyEndpointMetadata(edge.Metadata, "target", target);
         }
 
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -88,10 +88,10 @@ public static class MermaidArchitectureRendering {
     }
 
     /// <summary>Renders a Mermaid architecture document to static SVG.</summary>
-    public static string ToSvg(this MermaidArchitectureDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToSvg();
+    public static string ToSvg(this MermaidArchitectureDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid architecture document to static PNG.</summary>
-    public static byte[] ToPng(this MermaidArchitectureDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();
+    public static byte[] ToPng(this MermaidArchitectureDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
 
     private static MermaidArchitectureEndpoint ResolveSource(MermaidArchitectureEdge edge) => edge.Operator.StartsWith("<", StringComparison.Ordinal) && !edge.Operator.EndsWith(">", StringComparison.Ordinal) ? edge.Right : edge.Left;
 

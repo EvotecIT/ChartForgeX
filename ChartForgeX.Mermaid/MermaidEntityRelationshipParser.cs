@@ -17,6 +17,7 @@ internal static class MermaidEntityRelationshipParser {
         var activeEntityOpening = default(MermaidSourceSpan);
         var subgraphs = new Stack<MermaidSourceSpan>();
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -59,18 +60,22 @@ internal static class MermaidEntityRelationshipParser {
             }
 
             if (trimmed.EndsWith("{", StringComparison.Ordinal)) {
-                var id = MermaidParserUtilities.Unquote(trimmed.Substring(0, trimmed.Length - 1).Trim());
-                activeEntity = EnsureEntity(document, entities, id, span);
+                activeEntity = EnsureEntity(document, entities, trimmed.Substring(0, trimmed.Length - 1).Trim(), span, result);
                 activeEntityOpening = span;
                 continue;
             }
 
             if (TryParseRelationship(trimmed, span, out var relationship)) {
                 document.Relationships.Add(relationship);
-                EnsureEntity(document, entities, relationship.SourceId, span);
-                EnsureEntity(document, entities, relationship.TargetId, span);
+                var connectorIndex = trimmed.IndexOf(relationship.Connector, StringComparison.Ordinal);
+                if (trimmed.Substring(0, connectorIndex).IndexOf('[') >= 0 || trimmed.Substring(connectorIndex + relationship.Connector.Length).Split(':')[0].IndexOf('[') >= 0)
+                    MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "ER aliases belong on entity declarations, not relationship endpoints.", MermaidDiagnosticCodes.InvalidStatement);
+                EnsureEntity(document, entities, trimmed.Substring(0, connectorIndex).Trim(), span, result);
+                var targetText = trimmed.Substring(connectorIndex + relationship.Connector.Length).Trim();
+                var colon = RelationshipLabelSeparator(targetText);
+                EnsureEntity(document, entities, colon < 0 ? targetText : targetText.Substring(0, colon).Trim(), span, result);
             } else {
-                EnsureEntity(document, entities, MermaidParserUtilities.Unquote(trimmed), span);
+                EnsureEntity(document, entities, MermaidParserUtilities.Unquote(trimmed), span, result);
             }
         }
 
@@ -87,16 +92,16 @@ internal static class MermaidEntityRelationshipParser {
         foreach (var connector in RelationshipConnectors) {
             var index = text.IndexOf(connector, StringComparison.Ordinal);
             if (index <= 0) continue;
-            var left = MermaidParserUtilities.Unquote(text.Substring(0, index).Trim());
+            var left = EndpointId(text.Substring(0, index).Trim());
             var rightWithLabel = text.Substring(index + connector.Length).Trim();
-            var colon = rightWithLabel.IndexOf(':');
+            var colon = RelationshipLabelSeparator(rightWithLabel);
             var label = string.Empty;
             if (colon >= 0) {
-                label = rightWithLabel.Substring(colon + 1).Trim();
+                label = MermaidParserUtilities.Unquote(rightWithLabel.Substring(colon + 1).Trim());
                 rightWithLabel = rightWithLabel.Substring(0, colon).Trim();
             }
 
-            var right = MermaidParserUtilities.Unquote(rightWithLabel);
+            var right = EndpointId(rightWithLabel);
             relationship = new MermaidEntityRelationship(left, right, connector, label, span);
             return true;
         }
@@ -120,11 +125,39 @@ internal static class MermaidEntityRelationshipParser {
         entity.Attributes.Add(new MermaidEntityAttribute(type, name, key, comment, span));
     }
 
-    private static MermaidEntityNode EnsureEntity(MermaidEntityRelationshipDocument document, Dictionary<string, MermaidEntityNode> entities, string id, MermaidSourceSpan span) {
-        if (entities.TryGetValue(id, out var existing)) return existing;
+    private static MermaidEntityNode EnsureEntity(MermaidEntityRelationshipDocument document, Dictionary<string, MermaidEntityNode> entities, string id, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        string? label = null;
+        if (MermaidParserUtilities.TryBracketed(id, out var bracketId, out var alias, out _)) {
+            if (alias.IndexOfAny(new[] { ' ', '\t' }) >= 0 && !(alias.StartsWith("\"", StringComparison.Ordinal) && alias.EndsWith("\"", StringComparison.Ordinal)))
+                MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "ER display aliases containing spaces must be double-quoted.", MermaidDiagnosticCodes.InvalidStatement);
+            id = bracketId;
+            label = MermaidParserUtilities.Unquote(alias);
+        }
+        id = MermaidParserUtilities.Unquote(id);
+        if (entities.TryGetValue(id, out var existing)) {
+            if (label != null) existing.Label = label;
+            return existing;
+        }
         var entity = new MermaidEntityNode(id, span);
+        entity.Label = label;
         entities.Add(id, entity);
         document.Entities.Add(entity);
         return entity;
+    }
+
+    private static string EndpointId(string text) => MermaidParserUtilities.TryBracketed(text, out var id, out _, out _)
+        ? MermaidParserUtilities.Unquote(id) : MermaidParserUtilities.Unquote(text);
+
+    private static int RelationshipLabelSeparator(string text) {
+        var quoted = false;
+        var brackets = 0;
+        for (var index = 0; index < text.Length; index++) {
+            if (text[index] == '"') quoted = !quoted;
+            if (quoted) continue;
+            if (text[index] == '[') brackets++;
+            else if (text[index] == ']') brackets--;
+            else if (text[index] == ':' && brackets == 0) return index;
+        }
+        return -1;
     }
 }

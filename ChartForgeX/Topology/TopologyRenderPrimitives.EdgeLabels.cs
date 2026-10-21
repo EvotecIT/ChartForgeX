@@ -13,7 +13,7 @@ internal static partial class TopologyRenderPrimitives {
                 EstimateTextWidth(tertiary ?? string.Empty, 10 * scale, false, measurement))) + 18 * scale);
 
     public static List<TopologyEdgeLabelLayout> EdgeLabelLayouts(TopologyChart chart, TopologyRenderOptions options) {
-        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var nodes = TopologyGroupEndpoints.Resolve(chart);
         var nodeBoxes = chart.Nodes
             .Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
             .Select(node => EdgeLabelNodeObstacle(node, options, 8))

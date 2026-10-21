@@ -52,7 +52,6 @@ public sealed class MermaidNotationBoundaryTests {
 
     [Theory]
     [InlineData("classDiagram\nA --> B", "click A href \"https://example.invalid\" \"Open\"")]
-    [InlineData("classDiagram\nA --> B", "note for A \"Keep: A --> Phantom\"")]
     [InlineData("classDiagram\nA --> B", "callback A \"callbackName\"")]
     [InlineData("erDiagram\nA ||--o{ B : contains", "style A fill:#ffeeaa")]
     [InlineData("erDiagram\nA ||--o{ B : contains", "class A marked")]
@@ -81,11 +80,12 @@ public sealed class MermaidNotationBoundaryTests {
         var document = Assert.IsType<MermaidStateDocument>(rendered.Document);
         Assert.Equal(new[] { "A", "B", "C" }, document.States.Select(state => state.Id));
         Assert.Equal(2, document.Transitions.Count);
-        var statement = Assert.Single(document.RawStatements);
-        Assert.Equal(declaration.Replace("\r\n", "\n"), statement.Text);
+        var statement = Assert.Single(document.Notes);
+        Assert.Equal("This note: A --> Phantom", statement.Text);
         Assert.Equal(declaration, document.SourceText.Substring(source.IndexOf("note right", StringComparison.Ordinal), statement.Span.Length));
         Assert.Equal(6, document.States.Single(state => state.Id == "C").Span.Line);
-        Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedStatement && item.Span.Line == 3);
+        Assert.Empty(rendered.Diagnostics);
+        Assert.Contains("This note: A --&gt; Phantom", rendered.Artifact!.ToSvg());
     }
 
     [Fact]
@@ -120,12 +120,13 @@ public sealed class MermaidNotationBoundaryTests {
     }
 
     [Fact]
-    public void ScopedStateDirectionsRetainTheirLimitWithoutChangingTheGlobalDirection() {
+    public void ScopedStateDirectionsReachTheCompositeWithoutChangingTheGlobalDirection() {
         var rendered = MermaidRenderer.Render("stateDiagram-v2\ndirection LR\nstate Outer {\ndirection TB\nA --> B\n}");
         Assert.False(rendered.HasErrors);
         Assert.Equal("LR", Assert.IsType<MermaidStateDocument>(rendered.Document).Direction);
         Assert.Equal(TopologyLayoutDirection.LeftToRight, Assert.IsType<TopologyChart>(rendered.Artifact!.Model).LayoutDirection);
-        Assert.Contains(rendered.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedStatement && item.Span.Line == 4);
+        Assert.Empty(rendered.Diagnostics);
+        Assert.Equal(TopologyLayoutDirection.TopToBottom, Assert.Single(Assert.IsType<TopologyChart>(rendered.Artifact!.Model).Groups).LayoutDirection);
     }
 
     [Fact]
@@ -144,6 +145,8 @@ public sealed class MermaidNotationBoundaryTests {
         Assert.Null(parsed.Document.Accessibility.Description);
         Assert.Equal(new[] { "A", "B" }, parsed.Document.States.Select(state => state.Id));
         Assert.Single(parsed.Document.Transitions);
-        Assert.Equal(declaration, Assert.Single(parsed.Document.RawStatements).Text);
+        var note = Assert.Single(parsed.Document.Notes);
+        Assert.Equal("accTitle: Literal title\naccDescr { Literal description }\nA --> Phantom", note.Text);
+        Assert.Equal(declaration, parsed.Document.SourceText.Substring(parsed.Document.SourceText.IndexOf("note right", StringComparison.Ordinal), note.Span.Length));
     }
 }

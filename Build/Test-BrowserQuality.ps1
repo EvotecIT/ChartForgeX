@@ -75,6 +75,9 @@ try {
         throw 'Required browser proof must discover and execute tests without skips.'
     }
     $requiredContracts = @(
+        'MermaidFlowchartCompoundTests.NestedCompoundCaptionsShareNativeAndBrowserEvidence',
+        'MermaidSequenceLifecycleTests.LifetimeHeadersGroupRangesAndMessagesRemainVisibleInScrollableHosts',
+        'MermaidCommonNotationFidelityTests.NativeNotationRemainsVisibleInCompactAndWideScrollableHosts',
         'InteractiveSunburstBranchHighlightBrowserTests.PendingPointerExitRestoresTheExistingKeyboardReadoutWithoutWaitingForPointerDelay',
         'V2GalleryBrowserMatrixTests.EveryFamilyKeepsReadableNativeSvgAndHealthyPairedPng',
         'GraphReadabilityBrowserTests.CompactFitUsesScreenSpaceAndResizePreservesTouchedCamera',

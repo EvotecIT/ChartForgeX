@@ -35,5 +35,7 @@ public enum TopologyNodeShape {
     /// <summary>An ellipse.</summary>
     Ellipse,
     /// <summary>A stick actor with a caption below it.</summary>
-    Actor
+    Actor,
+    /// <summary>A filled rectangular synchronization bar, using the node accent for its entire surface.</summary>
+    SynchronizationBar
 }

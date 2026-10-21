@@ -16,6 +16,7 @@ public sealed partial class MermaidParser {
         var relations = new Dictionary<int, string>();
         var boundaryDepth = 0;
         for (var i = header.Line; i < body.Length; i++) {
+            MermaidResourceGuard.Checkpoint();
             var text = body[i].Trim();
             if (text == "end") boundaryDepth--;
             if (text.StartsWith("direction ", StringComparison.Ordinal)) {
@@ -75,6 +76,7 @@ public sealed partial class MermaidParser {
         var domains = new HashSet<string>(StringComparer.Ordinal) { "complex", "complicated", "chaotic", "clear", "confusion" };
         string? current = null;
         for (var i = header.Line; i < lines.Length; i++) {
+            MermaidResourceGuard.Checkpoint();
             var text = lines[i].Trim();
             if (MermaidParserUtilities.IsSkippable(text)) continue;
             var span = new MermaidSourceSpan(i + 1, MermaidParserUtilities.LeadingWhitespace(lines[i]) + 1, text.Length);

@@ -12,7 +12,7 @@ internal sealed class ResolvedTopologyGeometry {
     internal static ResolvedTopologyGeometry Create(TopologyChart chart, TopologyRenderOptions options,
         VisualRenderContext context, ChartRect clip, double scale, double offsetX, double offsetY, ChartColor background) {
         ChartPoint Transform(ChartPoint point) => new(offsetX + point.X * scale, offsetY + point.Y * scale);
-        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var nodes = TopologyGroupEndpoints.Resolve(chart);
         var routes = chart.Edges.ToDictionary(edge => edge, edge => (IReadOnlyList<ChartPoint>)Array.AsReadOnly(
             TopologyResolvedRouteSamples.Sample(chart, options, edge, nodes,
                 TopologyRenderPrimitives.EdgePoints(chart, edge, nodes)).Select(Transform).ToArray()));

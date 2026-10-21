@@ -32,7 +32,7 @@ public static class MermaidRadarRendering {
             chart.AddRadar(curve.Label, Points(document, curve));
             chart.Series[chart.Series.Count - 1].Radar.CurveTension = tension;
         }
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -60,13 +60,13 @@ public static class MermaidRadarRendering {
     /// Renders a Mermaid radar document to static SVG through ChartForgeX chart rendering.
     /// </summary>
     public static string ToSvg(this MermaidRadarDocument document, MermaidRadarRenderOptions? options = null) =>
-        document.ToChart(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>
     /// Renders a Mermaid radar document to static PNG through ChartForgeX chart rendering.
     /// </summary>
     public static byte[] ToPng(this MermaidRadarDocument document, MermaidRadarRenderOptions? options = null) =>
-        document.ToChart(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidRadarDocument document, MermaidRadarRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid radar");
@@ -111,7 +111,7 @@ public static class MermaidRadarRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid radar diagrams.
 /// </summary>
-public sealed class MermaidRadarRenderOptions {
+public sealed class MermaidRadarRenderOptions : MermaidDiagramRenderOptions {
     private double? _curveTension;
     private double? _axisScaleFactor;
     private double? _axisLabelFactor;
@@ -144,15 +144,6 @@ public sealed class MermaidRadarRenderOptions {
             _curveTension = value;
         }
     }
-
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
 
     /// <summary>Gets or sets the host preview width. Null uses authored source width, then 760 pixels.</summary>
     public int? Width { get; set; }

@@ -139,8 +139,11 @@ public sealed class MermaidWebsiteSampleTests {
         Assert.DoesNotContain(start.Descendants(), element => element.Name.LocalName == "text");
         Assert.Equal("Diamond", (string?)nodes["check"].Attribute("data-node-shape"));
 
+        Assert.False(chart.Nodes.Single(node => node.Id == "check").ShowLabel);
+        Assert.Equal("check", chart.Nodes.Single(node => node.Id == "check").Label);
+        Assert.DoesNotContain(nodes["check"].Descendants(), element => element.Name.LocalName == "text");
         var bounds = NodeBounds(svg);
-        foreach (var id in new[] { "Idle", "Done", "check" }) {
+        foreach (var id in new[] { "Idle", "Done" }) {
             var text = nodes[id].Descendants().Single(element => element.Name.LocalName == "text");
             var size = Number(text, "font-size");
             var box = bounds[id];

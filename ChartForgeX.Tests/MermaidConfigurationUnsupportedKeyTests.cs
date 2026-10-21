@@ -29,7 +29,7 @@ public sealed class MermaidConfigurationUnsupportedKeyTests {
     [InlineData("[!<tag:example.com,2026:test> \"foo]: bar\"]", "#")]
     [InlineData("foo[bar]", "#")]
     public void UnsupportedComplexKeyBlockScalarBodiesStillCountTowardThePhysicalBudget(string key, string prefix) {
-        var result = MermaidRenderer.Render("---\nconfig:\n  " + key + ": |\n    " + prefix + new string(' ', 70000) +
+        var result = MermaidInnerBoundaryTestPolicy.Render("---\nconfig:\n  " + key + ": |\n    " + prefix + new string(' ', 70000) +
             "\n  theme: dark\n---\nflowchart LR\nA --> B");
         Assert.True(result.HasErrors);
         Assert.Null(result.Artifact);

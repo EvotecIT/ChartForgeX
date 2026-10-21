@@ -1,0 +1,45 @@
+{
+  "classes": [
+    "Service",
+    "Interface"
+  ],
+  "classFacts": {
+    "nodes": [
+      [
+        "Service",
+        "Service",
+        [],
+        []
+      ],
+      [
+        "Interface",
+        "Interface",
+        [],
+        []
+      ]
+    ],
+    "relationships": [
+      [
+        "Service",
+        "@interface",
+        "None",
+        "Lollipop",
+        "Solid",
+        "",
+        "",
+        ""
+      ]
+    ],
+    "notes": []
+  },
+  "nativeRetainedStatements": [
+    "Service --() Interface"
+  ],
+  "nativeClasses": [
+    "Service"
+  ],
+  "peerVisibleText": [
+    "Service",
+    "Interface"
+  ]
+}

@@ -130,7 +130,7 @@ public sealed class MermaidSourceConfigurationTests {
         var payload = limit == "length" ? "{'unknown':'" + new string('x', 65536) + "'}"
             : limit == "keys" ? "{" + string.Join(",", Enumerable.Range(0, 257).Select(index => "'k" + index + "': 1")) + "}"
             : string.Concat(Enumerable.Repeat("{'nested':", 9)) + "1" + new string('}', 9);
-        var result = MermaidRenderer.Render("%%{init: " + payload + "}%%\nflowchart LR\nA --> B");
+        var result = MermaidInnerBoundaryTestPolicy.Render("%%{init: " + payload + "}%%\nflowchart LR\nA --> B");
         Assert.True(result.HasErrors);
         Assert.Null(result.Artifact);
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.InvalidConfiguration && item.Span.Line == 1);

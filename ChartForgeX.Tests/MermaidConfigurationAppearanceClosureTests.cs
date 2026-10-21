@@ -69,7 +69,7 @@ public sealed class MermaidConfigurationAppearanceClosureTests {
     public void BlankFlowMappingLinesDoNotConsumeTheConfigurationBudget(string indentation) {
         var blankLines = string.Concat(Enumerable.Repeat(indentation + "\n", 65536));
         var source = "---\nconfig: {\n" + blankLines + "\"theme\":\"dark\"\n}\n---\nflowchart LR\nA --> B";
-        var result = MermaidRenderer.Render(source);
+        var result = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.Empty(result.Diagnostics);
         Assert.Equal("dark", result.Document!.Configuration.Theme);
         Assert.Contains(blankLines, result.Document.FrontMatter);

@@ -4,6 +4,18 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.VisualArtifacts;
 
 public static partial class VisualArtifactInterchangeMapping {
+    private static void MapSequenceParticipantGroups(VisualArtifactInterchangeEnvelope envelope, SequenceArtifact sequence, InterchangeIdScope ids) {
+        foreach (var source in sequence.ParticipantGroups) {
+            var group = new VisualArtifactInterchangeGroup {
+                Id = ids.AddGroup(source.Id), Role = VisualArtifactInterchangeGroupRole.SequenceParticipantGroup,
+                Kind = "SequenceParticipantGroup", Label = source.Label, Color = source.Fill?.ToCss()
+            };
+            Copy(source.Metadata, group.Extensions);
+            envelope.Groups.Add(group);
+            for (var index = source.FirstParticipantIndex; index <= source.LastParticipantIndex; index++) envelope.Nodes[index].GroupId = group.Id;
+        }
+    }
+
     /// <summary>Projects authored sequence semantics without invoking the legacy preview layout.</summary>
     internal static VisualArtifactInterchangeEnvelope FromPreparedSequence(SequenceArtifact sequence, VisualRenderContext context) {
         var artifact = VisualArtifact.Create(sequence.Id, VisualArtifactKind.Sequence, sequence);

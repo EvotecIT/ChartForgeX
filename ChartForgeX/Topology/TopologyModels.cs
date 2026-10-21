@@ -126,7 +126,7 @@ public sealed class TopologyViewport {
 /// <summary>
 /// Represents a logical topology region or cluster.
 /// </summary>
-public sealed class TopologyGroup {
+public sealed partial class TopologyGroup {
     private string _id = string.Empty;
     private string _label = string.Empty;
     private TopologyHealthStatus _status = TopologyHealthStatus.Unknown;
@@ -460,10 +460,10 @@ public sealed partial class TopologyEdge {
     /// <summary>Gets or sets the stable edge identifier.</summary>
     public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets or sets the source node id.</summary>
+    /// <summary>Gets or sets the source node or group id. A node takes precedence when both share an id.</summary>
     public string SourceNodeId { get => _sourceNodeId; set => _sourceNodeId = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets or sets the target node id.</summary>
+    /// <summary>Gets or sets the target node or group id. A node takes precedence when both share an id.</summary>
     public string TargetNodeId { get => _targetNodeId; set => _targetNodeId = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the edge kind.</summary>

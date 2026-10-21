@@ -13,6 +13,7 @@ internal static class MermaidEventModelingParser {
         var framesByNumber = new Dictionary<string, MermaidEventModelingFrame>(StringComparer.Ordinal);
         var previousForInference = default(MermaidEventModelingFrame);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -133,6 +134,7 @@ internal static class MermaidEventModelingParser {
 
         if (builder.Length > 0) builder.AppendLine();
         for (var line = currentLine + 1; line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             if (AppendDataBlockContent(builder, raw, ref depth)) {
                 document.DataBlocks.Add(new MermaidEventModelingDataBlock(tokens[0], dataType, builder.ToString().TrimEnd(), span));

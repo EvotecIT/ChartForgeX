@@ -9,6 +9,7 @@ namespace ChartForgeX.Mermaid;
 internal static class MermaidRadarParser {
     public static void ParseStatements(MermaidRadarDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[index];
             var trimmed = raw.Trim();
             if (trimmed.Length == 0 || trimmed.StartsWith("%%", StringComparison.Ordinal)) continue;

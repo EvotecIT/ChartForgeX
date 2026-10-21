@@ -31,7 +31,7 @@ public static class MermaidPacketRendering {
             .WithRowGap(options.RowGap ?? document.Configuration.Packet?.PaddingY);
 
         foreach (var field in document.Fields) block.AddField(field.StartBit, field.EndBit, field.Label);
-        return MermaidPresentation.Apply(block, document);
+        return MermaidPresentation.Apply(block, document, options.Presentation);
     }
 
     /// <summary>
@@ -58,11 +58,11 @@ public static class MermaidPacketRendering {
 
     /// <summary>Renders a Mermaid packet document to static SVG.</summary>
     public static string ToSvg(this MermaidPacketDocument document, MermaidPacketRenderOptions? options = null) =>
-        document.ToPacketLayoutBlock(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid packet document to static PNG.</summary>
     public static byte[] ToPng(this MermaidPacketDocument document, MermaidPacketRenderOptions? options = null) =>
-        document.ToPacketLayoutBlock(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidPacketDocument document, MermaidPacketRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid packet");
@@ -75,16 +75,7 @@ public static class MermaidPacketRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid packet diagrams.
 /// </summary>
-public sealed class MermaidPacketRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidPacketRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 900;
 

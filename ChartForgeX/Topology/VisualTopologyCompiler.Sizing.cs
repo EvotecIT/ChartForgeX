@@ -26,8 +26,10 @@ internal sealed partial class VisualTopologyCompiler {
     private void ResolveNaturalSize(IReadOnlyList<VisualLegendEntry> entries) {
         if (!_naturalSize || _options.FitContentToViewport || _resolvedLayout) return;
         var padding = _chart.Viewport.Padding;
-        var requiredWidth = Math.Max(1, _chart.Viewport.Width - padding * 2);
-        var requiredHeight = Math.Max(1, _chart.Viewport.Height - padding * 2);
+        var content = IncludeAnnotationBounds(MeasureRenderedContent(padding, padding,
+            Math.Max(1, _chart.Viewport.Width - padding * 2), Math.Max(1, _chart.Viewport.Height - padding * 2), includeViewport: true));
+        var requiredWidth = content.Width;
+        var requiredHeight = content.Height;
         var grew = false;
         var previousWidth = _context.Layout.Size.Width;
         var previousHeight = _context.Layout.Size.Height;
@@ -88,7 +90,10 @@ internal sealed partial class VisualTopologyCompiler {
             && string.IsNullOrWhiteSpace(node.IconId) && string.IsNullOrWhiteSpace(node.Symbol));
         var fitResolvedLayout = _options.FitContentToViewport
             && (_chart.LayoutMode != TopologyLayoutMode.Manual || canFitManualCards);
-        var content = fitResolvedLayout ? MeasureFittedContent(padding, padding, width, height) : new ChartRect(padding, padding, width, height);
+        var naturalContent = _naturalSize && !_resolvedLayout && !_options.FitContentToViewport;
+        var content = IncludeAnnotationBounds(fitResolvedLayout || naturalContent
+            ? MeasureRenderedContent(padding, padding, width, height, includeViewport: naturalContent) : new ChartRect(padding, padding, width, height));
+        _offsetX = _plot.X - content.X; _offsetY = _plot.Y - content.Y;
         if (!fitResolvedLayout
             && content.Width <= _plot.Width + .001 && content.Height <= _plot.Height + .001) return;
         if (!_resolvedLayout && !_options.FitContentToViewport)
@@ -98,13 +103,21 @@ internal sealed partial class VisualTopologyCompiler {
         _offsetY = _plot.Y + (_plot.Height - content.Height * _scale) / 2 - content.Y * _scale;
         _builder.AddDiagnostic(new VisualDiagnostic("topology.content-fitted", "The complete topology, including text and native semantic geometry, was uniformly fitted into the common content viewport."));
 
-        ChartRect MeasureFittedContent(double fallbackX, double fallbackY, double fallbackWidth, double fallbackHeight) {
-            var left = double.PositiveInfinity; var top = double.PositiveInfinity;
-            var right = double.NegativeInfinity; var bottom = double.NegativeInfinity;
-            void Include(double x1, double y1, double x2, double y2) {
-                left = Math.Min(left, x1); top = Math.Min(top, y1);
-                right = Math.Max(right, x2); bottom = Math.Max(bottom, y2);
-            }
+    }
+
+    private ChartRect MeasureRenderedContent(double fallbackX, double fallbackY, double fallbackWidth, double fallbackHeight, bool includeViewport = false) {
+        var left = includeViewport ? fallbackX : double.PositiveInfinity;
+        var top = includeViewport ? fallbackY : double.PositiveInfinity;
+        var right = includeViewport ? fallbackX + fallbackWidth : double.NegativeInfinity;
+        var bottom = includeViewport ? fallbackY + fallbackHeight : double.NegativeInfinity;
+        void Include(double x1, double y1, double x2, double y2) {
+            left = Math.Min(left, x1); top = Math.Min(top, y1);
+            right = Math.Max(right, x2); bottom = Math.Max(bottom, y2);
+        }
+        // Native normalization already reserves node/group footprints in its viewport.
+        // Natural exports keep that authored domain and add materialized route extents;
+        // explicit fitting measures every primitive independently of the original canvas.
+        if (!includeViewport) {
             if (_options.IncludeGroups)
                 foreach (var group in _chart.Groups) {
                     var stroke = _options.SelectedGroupIds.Contains(group.Id) ? 2.4 : _context.Theme.AxisStrokeWidth;
@@ -125,7 +138,7 @@ internal sealed partial class VisualTopologyCompiler {
                     var badge = NodeBadgeBounds(node, mode, _options);
                     Include(badge.X, badge.Y, badge.Right, badge.Bottom);
                 }
-                if (!_options.IncludeNodeLabels) continue;
+                if (!_options.IncludeNodeLabels || !node.ShowLabel) continue;
                 if (mode == TopologyNodeDisplayMode.Tile) {
                     var caption = TopologyNodeFootprint.RenderedCaption(node, _options, _chart.TextMeasurement);
                     var center = CenterX(node);
@@ -152,62 +165,62 @@ internal sealed partial class VisualTopologyCompiler {
                     Include(textBounds.X, textBounds.Y, textBounds.Right, textBounds.Bottom);
                 }
             }
-            foreach (var route in _routes) {
-                if (route.Value.Count == 0) continue;
-                var halfStroke = FittedRouteStrokeWidth(route.Key) / 2;
-                foreach (var point in route.Value) Include(point.X - halfStroke, point.Y - halfStroke, point.X + halfStroke, point.Y + halfStroke);
-                var markerExtent = 12 + _context.Theme.AxisStrokeWidth / 2;
-                if (RenderedSourceMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
-                    IncludeMarker(route.Value[0], markerExtent);
-                if (_trunks.TryGetValue(route.Key, out var trunk)) {
-                    if (ReferenceEquals(trunk.Owner, route.Key) && trunk.Tail.Count > 0
-                        && RenderedTargetMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
-                        IncludeMarker(trunk.Tail[trunk.Tail.Count - 1], markerExtent);
-                } else if (RenderedTargetMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None) {
-                    IncludeMarker(route.Value[route.Value.Count - 1], markerExtent);
-                }
+        }
+        foreach (var route in _routes) {
+            if (route.Value.Count == 0) continue;
+            var halfStroke = FittedRouteStrokeWidth(route.Key) / 2;
+            foreach (var point in route.Value) Include(point.X - halfStroke, point.Y - halfStroke, point.X + halfStroke, point.Y + halfStroke);
+            var markerExtent = 12 + _context.Theme.AxisStrokeWidth / 2;
+            if (RenderedSourceMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
+                IncludeMarker(route.Value[0], markerExtent);
+            if (_trunks.TryGetValue(route.Key, out var trunk)) {
+                if (ReferenceEquals(trunk.Owner, route.Key) && trunk.Tail.Count > 0
+                    && RenderedTargetMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
+                    IncludeMarker(trunk.Tail[trunk.Tail.Count - 1], markerExtent);
+            } else if (RenderedTargetMarker(route.Key, _options.IncludeDirectionMarkers) != TopologyMarkerKind.None) {
+                IncludeMarker(route.Value[route.Value.Count - 1], markerExtent);
             }
-            foreach (var label in _edgeLabels) Include(label.CenterX - label.Width / 2, label.CenterY - label.Height / 2,
-                label.CenterX + label.Width / 2, label.CenterY + label.Height / 2);
-            if (_options.IncludeEndpointLabels) {
-                foreach (var edge in _chart.Edges) {
-                    if (!_routes.TryGetValue(edge, out var route) || route.Count < 2) continue;
-                    IncludeEndpoint(edge.SourceLabel, route[0], route[1]);
-                    IncludeEndpoint(edge.TargetLabel, route[route.Count - 1], route[route.Count - 2]);
-                }
+        }
+        foreach (var label in _edgeLabels) Include(label.CenterX - label.Width / 2, label.CenterY - label.Height / 2,
+            label.CenterX + label.Width / 2, label.CenterY + label.Height / 2);
+        if (_options.IncludeEndpointLabels) {
+            foreach (var edge in _chart.Edges) {
+                if (!_routes.TryGetValue(edge, out var route) || route.Count < 2) continue;
+                IncludeEndpoint(edge.SourceLabel, route[0], route[1]);
+                IncludeEndpoint(edge.TargetLabel, route[route.Count - 1], route[route.Count - 2]);
             }
-            return double.IsPositiveInfinity(left) ? new ChartRect(fallbackX, fallbackY, fallbackWidth, fallbackHeight)
-                : new ChartRect(left, top, Math.Max(1, right - left), Math.Max(1, bottom - top));
+        }
+        return double.IsPositiveInfinity(left) ? new ChartRect(fallbackX, fallbackY, fallbackWidth, fallbackHeight)
+            : new ChartRect(left, top, Math.Max(1, right - left), Math.Max(1, bottom - top));
 
-            void IncludeEndpoint(string? text, ChartPoint endpoint, ChartPoint adjacent) {
-                if (string.IsNullOrWhiteSpace(text)) return;
-                var label = EdgeEndpointLabelLayout(_chart, _options, endpoint, adjacent, text!);
-                Include(label.Bounds.Left, label.Bounds.Top, label.Bounds.Right, label.Bounds.Bottom);
-            }
+        void IncludeEndpoint(string? text, ChartPoint endpoint, ChartPoint adjacent) {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            var label = EdgeEndpointLabelLayout(_chart, _options, endpoint, adjacent, text!);
+            Include(label.Bounds.Left, label.Bounds.Top, label.Bounds.Right, label.Bounds.Bottom);
+        }
 
-            void IncludeStroked(double x1, double y1, double x2, double y2, double strokeWidth) {
-                var halfStroke = Math.Max(0, strokeWidth) / 2;
-                Include(x1 - halfStroke, y1 - halfStroke, x2 + halfStroke, y2 + halfStroke);
-            }
+        void IncludeStroked(double x1, double y1, double x2, double y2, double strokeWidth) {
+            var halfStroke = Math.Max(0, strokeWidth) / 2;
+            Include(x1 - halfStroke, y1 - halfStroke, x2 + halfStroke, y2 + halfStroke);
+        }
 
-            void IncludeMarker(ChartPoint point, double extent) =>
-                Include(point.X - extent, point.Y - extent, point.X + extent, point.Y + extent);
+        void IncludeMarker(ChartPoint point, double extent) =>
+            Include(point.X - extent, point.Y - extent, point.X + extent, point.Y + extent);
 
-            double FittedRouteStrokeWidth(TopologyEdge edge) {
-                var selected = _options.SelectedEdgeIds.Contains(edge.Id);
-                var width = edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth;
-                if (edge.Emphasis == TopologyEdgeEmphasis.Strong) width *= 1.6;
-                if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !_options.UseForceGraphPresentation && !IsMonitoringDashboardStyle(_options)) width *= .7;
-                if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options)) width = EdgeStrokeWidth(edge, selected, _options);
-                else if (selected) width *= 1.5;
-                var layers = ChartLineVisualLayers.Build(_colors.Foreground, width, EdgeVisualStyle(edge, selected, _options));
-                var maximum = layers.Where(layer => layer.IsVisible).Select(layer => layer.StrokeWidth).DefaultIfEmpty(width).Max();
-                if (ShouldRenderMonitoringRouteHalo(_chart, edge, _nodesById, _options)) {
-                    var geographic = ShouldRenderGeographicRouteHalo(_chart, edge, _nodesById, _options);
-                    maximum = Math.Max(maximum, width + RouteHaloStrokeExtra(geographic));
-                }
-                return maximum;
+        double FittedRouteStrokeWidth(TopologyEdge edge) {
+            var selected = _options.SelectedEdgeIds.Contains(edge.Id);
+            var width = edge.StrokeWidth ?? _context.Theme.SeriesStrokeWidth;
+            if (edge.Emphasis == TopologyEdgeEmphasis.Strong) width *= 1.6;
+            if (edge.Emphasis == TopologyEdgeEmphasis.Subtle && !_options.UseForceGraphPresentation && !IsMonitoringDashboardStyle(_options)) width *= .7;
+            if (_options.UseForceGraphPresentation || IsMonitoringDashboardStyle(_options)) width = EdgeStrokeWidth(edge, selected, _options);
+            else if (selected) width *= 1.5;
+            var layers = ChartLineVisualLayers.Build(_colors.Foreground, width, EdgeVisualStyle(edge, selected, _options));
+            var maximum = layers.Where(layer => layer.IsVisible).Select(layer => layer.StrokeWidth).DefaultIfEmpty(width).Max();
+            if (ShouldRenderMonitoringRouteHalo(_chart, edge, _nodesById, _options)) {
+                var geographic = ShouldRenderGeographicRouteHalo(_chart, edge, _nodesById, _options);
+                maximum = Math.Max(maximum, width + RouteHaloStrokeExtra(geographic));
             }
+            return maximum;
         }
     }
 }

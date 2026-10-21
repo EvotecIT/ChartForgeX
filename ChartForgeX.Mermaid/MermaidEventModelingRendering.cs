@@ -51,7 +51,7 @@ public static class MermaidEventModelingRendering {
             chart.Edges[chart.Edges.Count - 1].Metadata["mermaid.inferred"] = relation.IsInferred ? "true" : "false";
         }
 
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -73,10 +73,10 @@ public static class MermaidEventModelingRendering {
     }
 
     /// <summary>Renders an Event Modeling document to static SVG.</summary>
-    public static string ToSvg(this MermaidEventModelingDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToSvg();
+    public static string ToSvg(this MermaidEventModelingDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders an Event Modeling document to static PNG.</summary>
-    public static byte[] ToPng(this MermaidEventModelingDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();
+    public static byte[] ToPng(this MermaidEventModelingDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
 
     private static string LaneTitle(MermaidEventModelingFrame frame) {
         var lane = BaseLane(frame.EntityKind);

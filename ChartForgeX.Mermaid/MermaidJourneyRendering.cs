@@ -37,7 +37,7 @@ public static class MermaidJourneyRendering {
             series.WithPointLabel(i, document.Tasks[i].Text + actors);
         }
 
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -62,13 +62,13 @@ public static class MermaidJourneyRendering {
     /// Renders a Mermaid journey document to static SVG through ChartForgeX chart rendering.
     /// </summary>
     public static string ToSvg(this MermaidJourneyDocument document, MermaidJourneyRenderOptions? options = null) =>
-        document.ToChart(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>
     /// Renders a Mermaid journey document to static PNG through ChartForgeX chart rendering.
     /// </summary>
     public static byte[] ToPng(this MermaidJourneyDocument document, MermaidJourneyRenderOptions? options = null) =>
-        document.ToChart(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidJourneyDocument document, MermaidJourneyRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid journey");
@@ -81,16 +81,7 @@ public static class MermaidJourneyRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid journey diagrams.
 /// </summary>
-public sealed class MermaidJourneyRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidJourneyRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the ChartForgeX series name.</summary>
     public string SeriesName { get; set; } = "Journey score";
 

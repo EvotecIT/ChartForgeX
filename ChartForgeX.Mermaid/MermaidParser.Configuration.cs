@@ -22,6 +22,7 @@ public sealed partial class MermaidParser {
         } else if (frontMatter != null) ReadConfigurationYaml(frontMatter, configuration, result, originalLineStarts);
 
         for (var index = frontMatterEndLine; index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var bodyLine = lines[index].Trim();
             if (IsMultilineAccessibilityDescription(bodyLine)) {
                 var part = bodyLine.Substring(bodyLine.IndexOf('{') + 1);

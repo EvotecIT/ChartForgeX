@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using ChartForgeX.Core;
 
 namespace ChartForgeX.Mermaid;
@@ -20,9 +21,30 @@ public sealed partial class MermaidParser {
     /// <param name="source">The Mermaid source text.</param>
     /// <param name="options">Optional source-resolution context.</param>
     /// <returns>The source-preserving document and located diagnostics.</returns>
-    public MermaidParseResult<MermaidDocument> Parse(string source, MermaidParseOptions? options) {
+    public MermaidParseResult<MermaidDocument> Parse(string source, MermaidParseOptions? options) => Parse(source, options, CancellationToken.None);
+
+    /// <summary>Parses source with captured resource bounds and cooperative cancellation.</summary>
+    /// <param name="source">The Mermaid source text.</param>
+    /// <param name="options">Calendar context and resource policy; null uses defaults.</param>
+    /// <param name="cancellationToken">Cancellation checked during source scanning and semantic parser loops.</param>
+    /// <returns>The parsed document, or a located resource diagnostic when a captured bound is exceeded.</returns>
+    public MermaidParseResult<MermaidDocument> Parse(string source, MermaidParseOptions? options, CancellationToken cancellationToken) {
         if (source == null) throw new ArgumentNullException(nameof(source));
+        var captured = (options ?? new MermaidParseOptions()).Clone();
+        using var scope = MermaidResourceGuard.Begin(captured.ResourceLimits, cancellationToken);
         var result = new MermaidParseResult<MermaidDocument>();
+        try {
+            MermaidResourceGuard.ValidateSource(source);
+            return ParseCore(source, captured, result);
+        } catch (MermaidResourceLimitException exception) {
+            result.Document = null;
+            result.Diagnostics.Add(new MermaidDiagnostic { Code = MermaidDiagnosticCodes.ResourceLimitExceeded,
+                Severity = MermaidDiagnosticSeverity.Error, Span = exception.Span, Message = exception.Message });
+            return result;
+        }
+    }
+
+    private static MermaidParseResult<MermaidDocument> ParseCore(string source, MermaidParseOptions options, MermaidParseResult<MermaidDocument> result) {
         var lines = source.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var frontMatter = ReadFrontMatter(lines, result);
         var configuration = ReadConfiguration(source, lines, frontMatter.EndLine, frontMatter.Text, result, out var declarations);
@@ -66,7 +88,7 @@ public sealed partial class MermaidParser {
         } else if (descriptor.Kind == MermaidDiagramKind.GitGraph) {
             document = ParseGitGraph(source, lines, frontMatter, header.Value, descriptor, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Gantt) {
-            document = ParseGantt(source, lines, frontMatter, header.Value, result, options?.GanttDateAnchor);
+            document = ParseGantt(source, lines, frontMatter, header.Value, result, options.GanttDateAnchor);
         } else if (descriptor.Kind == MermaidDiagramKind.MindMap) {
             document = ParseMindMap(source, lines, frontMatter, header.Value, result);
         } else if (descriptor.Kind == MermaidDiagramKind.Timeline) {
@@ -124,6 +146,8 @@ public sealed partial class MermaidParser {
         if (document is MermaidMindMapDocument mindMap && configuration.MindMap != null) mindMap.ColorBy = configuration.MindMap.ColorBy;
         ReportRadarCurvePolicy(document, result);
         ReportApproximateMapping(document, result);
+        MermaidResourceGuard.ValidateDocument(document);
+        document.CapturedResourceLimits = options.ResourceLimits.Clone();
         result.Document = document;
         return result;
     }
@@ -373,6 +397,7 @@ public sealed partial class MermaidParser {
         if (lines.Length == 0 || lines[0].Trim() != "---") return new FrontMatterResult(null, 0);
         var content = new List<string>();
         for (var index = 1; index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             if (lines[index].Trim() == "---") return new FrontMatterResult(string.Join("\n", content), index + 1);
             content.Add(lines[index]);
         }
@@ -383,6 +408,7 @@ public sealed partial class MermaidParser {
 
     private static HeaderLine? FindHeader(string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[index];
             var trimmed = raw.Trim();
             if (trimmed.Length == 0) continue;
@@ -395,6 +421,7 @@ public sealed partial class MermaidParser {
 
     private static void AddDirectives(MermaidDocument document, string[] lines, int startLine, int endLine) {
         for (var line = startLine; line <= endLine && line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = raw.Trim();
             if (!IsDirective(trimmed) || ConfigurationPrefix(trimmed).Success) continue;
@@ -404,6 +431,7 @@ public sealed partial class MermaidParser {
 
     private static void ReadRawBodyStatements(MermaidDocument document, string[] lines, int startLine) {
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = raw.Trim();
             if (trimmed.Length == 0 || IsComment(trimmed)) continue;

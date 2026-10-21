@@ -6,6 +6,16 @@ internal static class MermaidExamples {
     internal static void Write(string output) {
         const string mindMap = "mindmap\n    root((Roadmap))\n          plan[Planning]\n            tasks[Tasks]\n                review[Review]\n          delivery[Delivery]\n              releases[Releases]\n                support[Support]\n";
         var examples = new Dictionary<string, string> {
+            ["mermaid-sequence-lifetimes-light"] = MermaidSequenceExamples.Lifecycle,
+            ["mermaid-sequence-lifetimes-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidSequenceExamples.Lifecycle,
+            ["mermaid-flowchart-nested-directions-light"] = MermaidCompoundExamples.Flowchart,
+            ["mermaid-flowchart-nested-directions-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidCompoundExamples.Flowchart,
+            ["mermaid-class-native-notes-light"] = MermaidNotationExamples.Class,
+            ["mermaid-class-native-notes-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidNotationExamples.Class,
+            ["mermaid-state-synchronization-light"] = MermaidNotationExamples.State,
+            ["mermaid-state-synchronization-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidNotationExamples.State,
+            ["mermaid-er-typed-attributes-light"] = MermaidNotationExamples.EntityRelationship,
+            ["mermaid-er-typed-attributes-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidNotationExamples.EntityRelationship,
             ["mermaid-theme-timeline-dark"] = "%%{init: {'theme':'dark'}}%%\ntimeline\ntitle Rendering history\n2024 : Fluent chart API : SVG and PNG output\n2025 : Topology diagrams\n",
             ["mermaid-theme-packet-dark"] = "---\ntitle: Packet fields\nconfig:\n  theme: dark\n---\npacket-beta\n0-7: \"Header\"\n8-15: \"Payload\"\n",
             ["mermaid-radar-theme"] = "---\nconfig:\n  themeVariables:\n    titleColor: '#7C3AED'\n    cScale0: '#2563EB'\n    cScale1: '#EA580C'\n    radar:\n      axisColor: '#16A34A'\n      axisStrokeWidth: 3\n      axisLabelFontSize: 15\n      graticuleColor: '#64748B'\n      graticuleOpacity: 0.12\n      graticuleStrokeWidth: 1.5\n      curveOpacity: 0.25\n      curveStrokeWidth: 4\n      legendFontSize: 16\n---\nradar-beta\ntitle Authored radar paint\naxis a[\"Coverage\"], b[\"Policy\"], c[\"Response\"], d[\"Recovery\"]\ncurve current[\"Current\"]{90,45,80,60}\ncurve target[\"Target\"]{95,85,90,80}\nmin 0\nmax 100\ngraticule circle\n",

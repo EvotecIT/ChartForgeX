@@ -36,7 +36,7 @@ Flowchart, sequence, class, state, entity relationship, requirement, architectur
 
 ZenUML (`zenuml`), Agentflow (`agentflow-beta`) and Railroad (`railroad-beta`, `railroad-ebnf-beta`, `railroad-abnf-beta`, `railroad-peg-beta`) produce an inspectable `MermaidDocument` with retained raw body statements and `IsDiagnosticOnly` set to `true`. They return warning `CFXM002` and no visual artifact while their semantic parser and native renderer are unavailable. Recognition does not validate the retained body grammar.
 
-Library-produced diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for an authored layout that uses the native static fallback, `CFXM004` for native conversion failure, `CFXM005` for configuration retained without native application, `CFXM006` for invalid or over-limit configuration, `CFXM007` for a retained statement or styling without native application, `CFXM008` for malformed or invalid notation, and `CFXM009` for a deliberately approximate native mapping. The Markdown bridge preserves the codes and maps source lines into the host document. Use codes and severity for host policy; messages explain the specific source statement or rendering limit.
+Library-produced diagnostics expose stable `Code` values: `CFXM001` for an unknown family, `CFXM002` for a recognized family without native rendering, `CFXM003` for an authored layout that uses the native static fallback, `CFXM004` for native conversion failure, `CFXM005` for configuration retained without native application, `CFXM006` for invalid or over-limit configuration, `CFXM007` for a retained statement or styling without native application, `CFXM008` for malformed or invalid notation, `CFXM009` for a deliberately approximate native mapping, `CFXM010` for a resource limit, and `CFXM011` when host policy rejects warnings. The Markdown bridge preserves the codes and maps source lines and columns into the host document. Use codes and severity for host policy; messages explain the specific source statement or rendering limit.
 
 Journey scores render as bars, timeline periods as ordinal event ranges, Venn regions without value-proportional areas, and C4 through generic topology. These families produce `CFXM009` while retaining their source models and renderable artifacts. They do not provide Mermaid's reference layout or browser runtime. This warning describes a semantic projection, independently of source theme or unsupported statements. An artifact means that native output is available; inspect warnings before accepting it for a workflow that requires exact notation. Errors prevent the shared renderer and Markdown bridge from producing an artifact.
 
@@ -66,6 +66,44 @@ The artifact title comes from the family render option `Title`, then the diagram
 `MermaidRenderOptions` lives in `ChartForgeX.Mermaid` and supplies family defaults to both the source renderer and `MermaidVisualMarkupParser`. Replace the former `ChartForgeX.Markup.Mermaid.MermaidVisualMarkupRenderOptions` type with this shared type when migrating source code.
 
 Topology diagram dimensions set the minimum canvas. The renderer expands the canvas when node content or relationship notation needs more space; the artifact's natural size reports those rendered dimensions.
+
+## Shared host presentation and resource policy
+
+`MermaidRenderOptions.Presentation` supplies host defaults for every family. Each family option inherits `MermaidDiagramRenderOptions` and can override individual presentation fields. Native defaults apply first, then source configuration, shared host presentation, and explicit family presentation. Null fields inherit; rendering does not rewrite the source document.
+
+```csharp
+var options = new MermaidRenderOptions {
+    Presentation = new MermaidPresentationOptions {
+        FontFamily = "Carlito",
+        FontSize = 16,
+        ThemeMode = VisualThemeMode.Dark,
+        TopologySizing = MermaidTopologySizing.Natural
+    },
+    Sequence = new MermaidSequenceRenderOptions {
+        Presentation = new MermaidPresentationOptions { FontSize = 18 }
+    },
+    WarningPolicy = MermaidWarningPolicy.Reject,
+    ParseOptions = new MermaidParseOptions {
+        ResourceLimits = new MermaidResourceLimits {
+            MaximumSourceCharacters = 524288,
+            MaximumElements = 5000,
+            MaximumEdges = 20000,
+            MaximumNestingDepth = 64,
+            MaximumOutputBytes = 8388608,
+            MaximumRasterPixels = 16777216
+        }
+    }
+};
+var rendered = MermaidRenderer.Render(source, options, cancellationToken);
+```
+
+`Natural` is the default and keeps measured topology text sizes and expands the output canvas. Its standalone HTML uses a keyboard-accessible scroll region. `FixedViewport` scales completed topology geometry into the family width and height; it can make dense labels small. Other native families retain their own layout contracts. An explicit `VisualArtifactRenderOptions.HtmlSizing` overrides the producer's HTML sizing without changing SVG or PNG geometry. Font requests use native resolution and do not download fonts.
+
+`Allow` returns warnings with the supported output. `Reject` prevents artifact creation when parsing reports any warning, including retained statements and approximate native mappings. It is a source-loss policy, not a guarantee of reference pixels. `MermaidRenderer.RenderParsed` converts an existing generic parse result without parsing again; the Markdown bridge uses the same result and policy boundary.
+
+Limits are copied for each request. Raw UTF-16 source, line lengths, expanded edges, model counts and nesting are bounded; SVG UTF-8 bytes and completed PNG/HTML bytes are checked at export, and the exact native destination dimensions, including output scale, are checked before raster allocation. Invalid source and parse-budget failures return located diagnostics. Deferred export can throw `MermaidResourceLimitException`, so hosts should handle that alongside export I/O errors. The default output pixel limit counts destination pixels; native raster working-buffer guards remain in force. Low-level native models returned by `ToChart`, `ToTopologyChart` or `ToSequenceArtifact` retain their native mutable contracts; use Mermaid artifact/export methods to retain the source request's output policy.
+
+Cancellation throws `OperationCanceledException`, rather than misreporting malformed Mermaid. Parsing checks it cooperatively and artifact exports check it before and after native work. It cannot interrupt a native layout operation already executing and is not a hard wall-clock deadline. A captured artifact retains its request token for later exports. No source callback, remote asset fetch or browser renderer is introduced.
 
 ## Source configuration
 
@@ -193,7 +231,7 @@ A["`**Review** the
 
 Repeated `linkStyle` declarations replace the earlier declaration for the same selector. Explicit edge selectors override the default declaration. This matches the pinned upstream engines; it does not use CSS property merging across separate linkStyle statements.
 
-Automatic group compaction replans generated rank-skipping routes against final member positions. Bypass edges retain orthogonal endpoint legs and separate attachment points from adjacent direct edges in all four global directions. Authored ports and waypoints remain authoritative. Nested shells, group endpoints and local subgraph directions still need dedicated native geometry.
+Automatic group compaction replans generated rank-skipping routes against final member positions. Bypass edges retain orthogonal endpoint legs and separate attachment points from adjacent direct edges in all four global directions. Authored ports and waypoints remain authoritative. Nested subgraph shells and shell endpoints use native compound geometry. Local directions are retained and applied; as in the documented source rule, a member connected outside its subgraph inherits the parent direction. The measured natural canvas preserves label size in compact scrollable hosts. Dense and manually positioned compound layouts still need their own qualification.
 
 ## Class Diagrams
 
@@ -209,7 +247,8 @@ Supported class parsing includes:
 - Class members added through blocks or `Class : member` statements.
 - Annotations such as `<<interface>> ClassName`.
 - Common relationship connectors such as inheritance, dependency, aggregation, composition, solid links, dotted links, and labels after `:`.
-- Style assignments, notes, links and callback declarations retained in `StyleStatements` and `RawStatements`, with `CFXM007`. They do not add classes or relationships, apply source styling, or execute callbacks.
+- Attached and floating class notes use typed `Notes` with source spans and visible native note surfaces. Generics keep a base stable identity and a display label such as `Store<Item>`; nested namespaces form real group shells. Two-way relationships preserve both endpoint markers.
+- Style assignments, links, lollipop notation and callback declarations remain retained with `CFXM007`; callbacks are never executed.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -245,7 +284,9 @@ Supported state parsing includes:
 - Composite state blocks in `state id { ... }` form.
 - Transitions using `-->` with optional labels after `:`.
 - Start and end markers using `[*]`.
-- Inline, floating (`note "text" as ID`) and multiline notes, classes, styles and concurrency separators retained as source statements with `CFXM007`. Floating notes retain one line. Multiline note text is preserved through `end note`; arrows, colons and accessibility keywords inside the note stay literal text.
+- Attached and floating (`note "text" as ID`) notes use typed `Notes` and visible native surfaces. Multiline bodies preserve literal content through `end note`, including arrows, colons and accessibility keywords.
+- Composite groups preserve nesting and local directions; transitions can target their boundaries. Choice nodes omit captions, and fork/join nodes use native synchronization bars.
+- Classes, styles and concurrent-region separators remain retained with `CFXM007`.
 
 ```csharp
 using ChartForgeX.Mermaid;
@@ -660,7 +701,8 @@ Sequence diagrams are parsed into `MermaidSequenceDocument` and can be converted
 
 Supported sequence parsing includes:
 
-- `sequenceDiagram` headers.
+- `sequenceDiagram` headers and source `title` statements.
+- Participant `box` groups and explicit `create`/`destroy` lifetimes with delayed headers and bounded lifelines.
 - Explicit `participant` and `actor` declarations.
 - Participant aliases with `as`.
 - Participant configuration objects with simple `type` and `alias` values.
@@ -668,10 +710,10 @@ Supported sequence parsing includes:
 - Message operators such as `->>`, `-->>`, `->`, `-->`, `-x`, `--x`, `-)`, and `--)`.
 - Message text after `:`.
 - Activation and deactivation shortcuts with `+` and `-` suffixes.
-- `activate` and `deactivate` statements.
+- `activate` and `deactivate` statements. A deactivation without an active participant is a located error; an activation can remain open at the end of the source.
 - `Note right of`, `Note left of`, and `Note over` statements.
 - `loop`, `alt`, `else`, `opt`, `par`, `and`, `critical`, `option`, `rect`, and `end` block statements.
-- `autonumber`, including optional start and increment values.
+- `autonumber`, with validated finite decimal start/increment values, complete token consumption and message-range overflow checks.
 - Simple `link` actor menu entries and raw `links` JSON entries.
 
 ```csharp
@@ -1510,7 +1552,7 @@ Fence attributes such as `id`, `title`, `subtitle`, `width`, `height`, and famil
 
 ## Mermaid.js Conformance Fixtures
 
-The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. The corpus contains 105 native fixture sources, five recognition-only sources and 16 invalid sources, with 65 shared semantic expectation files. Shared facts include flowchart classes and resolved node/link paints, GitGraph relationships and cherry-pick parent selection, and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. A separate opt-in browser lane renders selected upstream fixtures through HtmlTinkerX and records native SVG/PNG beside them.
+The repository includes a test-time Mermaid.js fixture harness under `tests/mermaid-conformance`. It runs pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 references in separate processes while keeping ChartForgeX packages dependency-free at runtime. `compatibility.json` records syntax acceptance or rejection for every source and version-specific semantic expectations where upstream behavior differs. The corpus contains 113 native fixture sources, five recognition-only sources and 16 invalid sources, with 72 shared semantic expectation files. Shared facts include flowchart classes and resolved node/link paints, GitGraph relationships and cherry-pick parent selection, and Gantt scheduling and visible-end dates. Reference calendar fixtures run in UTC so local date parsing and epoch arithmetic are deterministic across hosts. A separate opt-in browser lane renders selected upstream fixtures through HtmlTinkerX and records native SVG/PNG beside them.
 
 ```powershell
 Set-Location .\tests\mermaid-conformance
@@ -1520,7 +1562,7 @@ npm run validate
 
 `Build.ps1` runs the same three-reference validation before the solution build and .NET test suite. The default command validates `fixtures/`, `recognition/` and `invalid/`; use `node validate-mermaid.mjs fixtures --reference 10` for a focused folder/version run. New fixtures require version metadata. Documented syntax and semantic rejections are checked independently of accepted-source facts, so a failed semantic comparison cannot be counted as an expected source rejection.
 
-The 12.2.0 reference accepts all 110 positive sources and rejects all 16 invalid sources. These lanes qualify the checked examples rather than every syntax form in those major versions. Older sequence autonumber and requirement sources have dedicated fixtures; newer families and spellings are marked unavailable on references that reject them. Mermaid 10 also handles an excluded Gantt endpoint differently: an interval ending January 5 with January 5 excluded schedules its successor on January 5, while Mermaid 11/12 schedules it on January 6. ChartForgeX uses the current result and keeps the older expectation visible in the corpus instead of introducing a version-dependent renderer.
+The 12.2.0 reference accepts all 118 positive sources and rejects all 16 invalid sources. These lanes qualify the checked examples rather than every syntax form in those major versions. Older sequence autonumber and requirement sources have dedicated fixtures; newer families and spellings are marked unavailable on references that reject them. Mermaid 10 also handles an excluded Gantt endpoint differently: an interval ending January 5 with January 5 excluded schedules its successor on January 5, while Mermaid 11/12 schedules it on January 6. ChartForgeX uses the current result and keeps the older expectation visible in the corpus instead of introducing a version-dependent renderer.
 
 Run the observed reference-render lane with an absolute task output directory (`$outputDirectory` below):
 
@@ -1528,7 +1570,7 @@ Run the observed reference-render lane with an absolute task output directory (`
 ./Build/Test-MermaidReferenceRendering.ps1 -OutputRoot $outputDirectory
 ```
 
-This uses the same pinned npm packages and the existing HtmlTinkerX browser cache. It loads Mermaid only inside the test browser, with explicit classic look and Dagre layout to keep appearance defaults controlled across versions. The lane checks label content, relationship counts, native caption containment and script-free native output for multiline/Markdown labels, repeated linkStyle replacement and a compound bypass route. Captures show upstream SVG, native SVG and native PNG in compact/light and wide/dark examples; layout, palette, Markdown emphasis and exact dimensions deliberately differ. These observations qualify those fixtures, not every Flowchart form or pixel fidelity. Hosted execution of this optional lane remains separate from the normal quality workflow.
+This uses the same pinned npm packages and the existing HtmlTinkerX browser cache. It loads Mermaid only inside the test browser, with explicit classic look and Dagre layout to keep appearance defaults controlled across versions. The lane checks label content, relationship counts, native caption containment and script-free native output for multiline/Markdown labels, repeated linkStyle replacement, compound routes, class notes/generics/two-way markers, state notes/control nodes/composites, ER aliases/attributes and sequence boxes/lifetimes. Captures show upstream SVG, native SVG and native PNG in compact/light and wide/dark examples; layout, palette, Markdown emphasis and exact dimensions deliberately differ. These observations qualify those fixtures, not every grammar form or pixel fidelity. Hosted execution of this optional lane remains separate from the normal quality workflow.
 
 ````markdown
 ```mermaid {#incident-flow title="Incident Flow" subtitle="Static preview" width=1180 height=720}
@@ -1638,3 +1680,5 @@ The [Mermaid roadmap](../TODO.md#mermaid) tracks language depth, version coverag
 For IX and other consuming hosts, the preferred integration is to accept Mermaid where users already know Mermaid, accept `chartforgex` fences where ChartForgeX adds richer native artifacts, and keep host-specific behavior outside the parser packages.
 
 Oversized source typography fits Sankey captions and rectangular hierarchy labels within their native mark and column bounds. Ordinary legend text still follows the configured row and height budget; oversized legend text can shrink to fit. CSS font-size functions containing whitespace or line breaks are retained with a warning because native rendering does not evaluate CSS sizing expressions.
+
+The optional peer reference lane runs `node validate-mermaid.mjs --peer --output $outputDirectory`. It uses an isolated, locked, test-only .NET 10 project and the pinned MIT Mermaider 0.15.1 package; it is outside the normal solution and shipped package graph. Its report distinguishes rendered output, unsupported semantics and engine failures. The official Mermaid references remain the language authority. Neither reference lane requires equal geometry or pixels.

@@ -15,7 +15,7 @@ public sealed partial class VisualArtifact {
         var copy = new VisualArtifact {
             Id = Id, Kind = Kind, SourceLanguage = SourceLanguage,
             Title = Title, Subtitle = Subtitle, Model = Model, RenderSource = RenderSource,
-            ExportFormats = ExportFormats, NaturalSize = NaturalSize, PreserveNaturalSize = PreserveNaturalSize,
+            ExportPolicy = ExportPolicy, HtmlSizing = HtmlSizing, ExportFormats = ExportFormats, NaturalSize = NaturalSize, PreserveNaturalSize = PreserveNaturalSize,
             HasModelAccessibilitySnapshot = HasModelAccessibilitySnapshot,
             TopologyNaturalSizeSnapshot = TopologyNaturalSizeSnapshot,
             PreparedInterchangeSnapshot = PreparedInterchangeSnapshot

@@ -13,6 +13,7 @@ internal static class MermaidVennParser {
         var ids = new HashSet<string>(StringComparer.Ordinal);
         IReadOnlyList<string>? currentRegion = null;
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;

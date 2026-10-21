@@ -29,9 +29,12 @@ try {
     if ($LASTEXITCODE) { throw 'Observed Mermaid reference/native rendering failed.' }
     [xml] $results = Get-Content -LiteralPath (Join-Path $OutputRoot 'mermaid-reference.trx') -Raw
     $counters = $results.TestRun.ResultSummary.Counters
-    if ([int]$counters.total -lt 4 -or [int]$counters.executed -ne [int]$counters.total -or [int]$counters.failed -ne 0 -or [int]$counters.notExecuted -ne 0) {
+    if ([int]$counters.total -lt 8 -or [int]$counters.executed -ne [int]$counters.total -or [int]$counters.failed -ne 0 -or [int]$counters.notExecuted -ne 0) {
         throw 'Observed Mermaid proof must execute the three pinned versions and dark-theme row without skips.'
     }
+    if (-not ($results.TestRun.Results.UnitTestResult | Where-Object {
+        $_.testName -like 'ChartForgeX.Tests.MermaidNotationReferenceRenderingTests.PinnedNotationAndNativeOutputPreserveSharedVisibleContracts*' -and $_.outcome -eq 'Passed'
+    })) { throw 'The common-notation reference rendering contracts did not execute.' }
 } finally {
     foreach ($name in $variables) { [Environment]::SetEnvironmentVariable($name, $saved[$name]) }
 }

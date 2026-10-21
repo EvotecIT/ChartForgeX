@@ -302,6 +302,8 @@ internal static class VisualArtifactInterchangeSnapshot {
     private static VisualArtifactInterchangeTopologyGroup? Copy(VisualArtifactInterchangeTopologyGroup? source) {
         if (source == null) return null;
         var copy = new VisualArtifactInterchangeTopologyGroup {
+            ParentGroupId = source.ParentGroupId,
+            LayoutDirection = source.LayoutDirection,
             Status = source.Status,
             LayoutPolicy = source.LayoutPolicy,
             AppliedLayoutPolicy = source.AppliedLayoutPolicy,
@@ -325,6 +327,7 @@ internal static class VisualArtifactInterchangeSnapshot {
             Longitude = source.Longitude,
             Latitude = source.Latitude,
             ShowStatusBadge = source.ShowStatusBadge,
+            ShowLabel = source.ShowLabel,
             MaximumLabelCharacters = source.MaximumLabelCharacters,
             Artwork = Copy(source.Artwork),
         };
@@ -410,6 +413,8 @@ internal static class VisualArtifactInterchangeSnapshot {
             Kind = source.Kind,
             Order = source.Order,
             IsImplicit = source.IsImplicit,
+            CreatedAtMessageIndex = source.CreatedAtMessageIndex,
+            DestroyedAtMessageIndex = source.DestroyedAtMessageIndex,
         };
         return copy;
     }

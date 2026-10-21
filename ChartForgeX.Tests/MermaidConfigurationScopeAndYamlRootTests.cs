@@ -73,7 +73,7 @@ public sealed class MermaidConfigurationScopeAndYamlRootTests {
     [InlineData("config: &defaults\n-")]
     public void IndentlessSequenceContentCountsTowardTheConfigurationBudget(string declaration) {
         var source = "---\n" + declaration + " " + new string('x', 70000) + "\n---\nflowchart LR\nA --> B\n";
-        var rendered = MermaidRenderer.Render(source);
+        var rendered = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.True(rendered.HasErrors);
         Assert.Null(rendered.Artifact);
         Assert.Contains(rendered.Diagnostics, diagnostic => diagnostic.Code == MermaidDiagnosticCodes.InvalidConfiguration && diagnostic.Message.Contains("65536"));
@@ -84,7 +84,7 @@ public sealed class MermaidConfigurationScopeAndYamlRootTests {
     [InlineData("\"quoted metadata\"")]
     public void UnrelatedRootMetadataDoesNotExtendAnOpaqueSequenceBudget(string key) {
         var source = "---\nconfig:\n- theme: forest\n" + key + ": " + new string('x', 70000) + "\n---\n%%{init: {\"theme\":\"dark\"}}%%\nflowchart LR\nA --> B\n";
-        var rendered = MermaidRenderer.Render(source);
+        var rendered = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.False(rendered.HasErrors);
         Assert.NotNull(rendered.Artifact);
         Assert.Equal("dark", rendered.Document!.Configuration.Theme);

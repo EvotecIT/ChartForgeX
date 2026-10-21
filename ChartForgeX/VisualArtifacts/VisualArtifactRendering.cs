@@ -23,14 +23,20 @@ public static partial class VisualArtifactRendering {
     /// <summary>Renders a supported visual artifact model to SVG with artifact-wide options.</summary>
     public static string ToSvg(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
-        return RenderSvg(artifact, options);
+        artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Svg, options);
+        var svg = RenderSvg(artifact, options);
+        artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Svg, Encoding.UTF8.GetByteCount(svg));
+        return svg;
     }
 
     /// <summary>Renders SVG with a caller-owned namespace for embedding several artifacts in one document.</summary>
     public static string ToSvg(this VisualArtifact artifact, VisualArtifactRenderOptions? options, string idScope) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         if (string.IsNullOrWhiteSpace(idScope)) throw new ArgumentException("An embedding namespace is required.", nameof(idScope));
-        return RenderSvg(artifact, options, idScope);
+        artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Svg, options);
+        var svg = RenderSvg(artifact, options, idScope);
+        artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Svg, Encoding.UTF8.GetByteCount(svg));
+        return svg;
     }
 
     /// <summary>
@@ -43,9 +49,16 @@ public static partial class VisualArtifactRendering {
     /// <summary>Renders a supported visual artifact model to a standalone HTML page with artifact-wide options.</summary>
     public static string ToHtmlPage(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
+        artifact.ExportPolicy?.BeforeExport(artifact, VisualArtifactExportFormat.Html, options);
+        var html = RenderHtmlPage(artifact, options);
+        artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Html, Encoding.UTF8.GetByteCount(html));
+        return html;
+    }
+
+    private static string RenderHtmlPage(VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact.Model is TopologyChart) TopologyHtmlRenderer.EnsureStatic(TopologyOptions(artifact, options));
         if (artifact.RenderSource == null && artifact.Model is PreparedVisual prepared) return RenderPreparedHtml(artifact, prepared, options);
-        if (artifact.RenderSource != null || artifact.Model is IStaticVisualSource || options?.HtmlSizing is VisualArtifactHtmlSizing.FitToWidth or VisualArtifactHtmlSizing.PreserveSize)
+        if (artifact.RenderSource != null || artifact.Model is IStaticVisualSource || artifact.HtmlSizing != VisualArtifactHtmlSizing.Automatic || options?.HtmlSizing is VisualArtifactHtmlSizing.FitToWidth or VisualArtifactHtmlSizing.PreserveSize)
             return WrapSvgPage(artifact.Title.Length == 0 ? artifact.Id : artifact.Title, artifact.ToSvg(options), artifact.Accessibility.Language,
                 clipSvgViewport: artifact.RenderSource != null || artifact.Model is IStaticVisualSource, sizing: HtmlSizing(artifact, options));
         var html = artifact.Model switch {
@@ -70,7 +83,9 @@ public static partial class VisualArtifactRendering {
     /// <summary>Renders a supported visual artifact model to PNG with artifact-wide options.</summary>
     public static byte[] ToPng(this VisualArtifact artifact, VisualArtifactRenderOptions? options) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
-        return RasterImageEncoder.Encode(artifact.ToRgbaImage(options), RasterImageFormat.Png, options?.Raster);
+        var bytes = RasterImageEncoder.Encode(artifact.ToRgbaImage(options), RasterImageFormat.Png, options?.Raster);
+        artifact.ExportPolicy?.ValidateOutput(VisualArtifactExportFormat.Png, bytes.LongLength);
+        return bytes;
     }
 
     /// <summary>

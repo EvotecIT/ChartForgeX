@@ -12,7 +12,7 @@ public sealed class MermaidConfigurationStreamBoundaryTests {
         var source = "%%{init: {\n\"fontFamily\":\"" + new string('x', 65536) + "\"\n}}%%\n"
             + "%%{init: {\"theme\":\"dark\"}}%%\nflowchart LR\nA --> B";
         source = source.Replace("\n", newline);
-        var result = MermaidRenderer.Render(source);
+        var result = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.True(result.HasErrors); Assert.Null(result.Artifact);
         var document = Assert.IsType<MermaidFlowchartDocument>(result.Document);
         Assert.Equal(source, document.SourceText);
@@ -21,7 +21,7 @@ public sealed class MermaidConfigurationStreamBoundaryTests {
         Assert.Equal(MermaidDiagnosticCodes.InvalidConfiguration, error.Code);
         Assert.Equal(1, error.Span.Line);
         Assert.Equal(source.IndexOf(newline + "%%{init:", StringComparison.Ordinal), error.Span.Length);
-        var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
+        var fenced = new MermaidVisualMarkupParser(MermaidInnerBoundaryTestPolicy.RenderOptions()).Parse("```mermaid\n" + source + "\n```");
         Assert.True(fenced.HasErrors); Assert.Empty(fenced.Artifacts);
         Assert.DoesNotContain(fenced.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnknownDiagram);
     }
@@ -34,7 +34,7 @@ public sealed class MermaidConfigurationStreamBoundaryTests {
             ? "---\nconfig:\n  other: " + new string('x', 65536) + "\n---\n"
             : "%%{init: {'other':'" + new string('x', 65500) + "'}}%%\n";
         var source = prefix + "%%{init: {\n\"theme\":\"dark\"\n}}%%\nflowchart LR\nA --> B";
-        var result = MermaidRenderer.Render(source);
+        var result = MermaidInnerBoundaryTestPolicy.Render(source);
         Assert.True(result.HasErrors); Assert.Null(result.Artifact);
         var document = Assert.IsType<MermaidFlowchartDocument>(result.Document);
         Assert.Equal(source, document.SourceText);

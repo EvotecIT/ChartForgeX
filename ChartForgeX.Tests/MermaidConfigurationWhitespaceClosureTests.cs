@@ -66,7 +66,7 @@ public sealed class MermaidConfigurationWhitespaceClosureTests {
     [Fact]
     public void LargePhysicalRootFlowPayloadRetainsBudgetFailureAndRealDiagramSource() {
         var source = "---\nconfig: {\"other\":\"" + new string('x', 1_000_000) + "\"}\n---\nflowchart LR\nA --> B";
-        var result = new MermaidParser().ParseFlowchart(source);
+        var result = MermaidInnerBoundaryTestPolicy.Parse(source);
         var error = Assert.Single(result.Diagnostics);
         Assert.Equal(MermaidDiagnosticCodes.InvalidConfiguration, error.Code);
         Assert.Contains("65536", error.Message);

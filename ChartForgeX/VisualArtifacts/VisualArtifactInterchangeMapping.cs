@@ -113,7 +113,11 @@ public static partial class VisualArtifactInterchangeMapping {
             };
         }
 
-        foreach (var group in prepared.Groups) envelope.Groups.Add(MapGroup(group, ids.Group(group.Id), "TopologyGroup"));
+        foreach (var group in prepared.Groups) {
+            var mapped = MapGroup(group, ids.Group(group.Id), "TopologyGroup");
+            mapped.Topology!.ParentGroupId = ids.OptionalGroup(group.ParentGroupId);
+            envelope.Groups.Add(mapped);
+        }
         var projectedSourceIds = new List<ProjectedSourceId>();
         foreach (var node in prepared.Nodes) {
             TopologyNodeDisplayMode displayMode = EffectiveNodeDisplayMode(node, options);
@@ -130,8 +134,8 @@ public static partial class VisualArtifactInterchangeMapping {
             var mappedEdge = MapEdge(
                 edge,
                 edgeIds[index],
-                ids.Node(edge.SourceNodeId),
-                ids.Node(edge.TargetNodeId),
+                ids.Endpoint(edge.SourceNodeId),
+                ids.Endpoint(edge.TargetNodeId),
                 ids.OptionalPort(edge.SourceNodeId, edge.SourcePortId),
                 ids.OptionalPort(edge.TargetNodeId, edge.TargetPortId),
                 index,
@@ -143,6 +147,13 @@ public static partial class VisualArtifactInterchangeMapping {
         foreach (var scenario in prepared.Scenarios) {
             VisualArtifactInterchangeScenario? mappedScenario = MapScenario(scenario, ids);
             if (mappedScenario != null) envelope.Scenarios.Add(mappedScenario);
+        }
+        foreach (var note in prepared.Annotations) {
+            var annotation = new VisualArtifactInterchangeAnnotation {
+                Id = ids.AddAnnotation(note.Id), Kind = "TopologyNote", Text = note.Text, Placement = note.Side.ToString()
+            };
+            if (note.TargetId != null && (prepared.Nodes.Exists(item => item.Id == note.TargetId) || prepared.Groups.Exists(item => item.Id == note.TargetId))) annotation.TargetIds.Add(ids.Endpoint(note.TargetId));
+            envelope.Annotations.Add(annotation);
         }
         if (projectedSourceIds.Count > 0) AddProjectedSourceIds(envelope, projectedSourceIds);
     }
@@ -175,12 +186,16 @@ public static partial class VisualArtifactInterchangeMapping {
                 Sequence = new VisualArtifactInterchangeSequenceNode {
                     Kind = participant.Kind,
                     Order = index,
-                    IsImplicit = participant.IsImplicit
+                    IsImplicit = participant.IsImplicit,
+                    CreatedAtMessageIndex = participant.CreatedAtMessageIndex,
+                    DestroyedAtMessageIndex = participant.DestroyedAtMessageIndex
                 }
             };
             Copy(participant.Metadata, node.Extensions);
             envelope.Nodes.Add(node);
         }
+
+        MapSequenceParticipantGroups(envelope, sequence, ids);
 
         for (var index = 0; index < sequence.Messages.Count; index++) {
             var message = sequence.Messages[index];
@@ -568,6 +583,7 @@ public static partial class VisualArtifactInterchangeMapping {
         }
         public string Group(string sourceId) => _groups[sourceId];
         public string Node(string sourceId) => _nodes[sourceId];
+        public string Endpoint(string sourceId) => _nodes.TryGetValue(sourceId, out var nodeId) ? nodeId : _groups[sourceId];
         public string Edge(string sourceId) => _edges[sourceId];
         public string Port(string nodeSourceId, string sourceId) => _ports[nodeSourceId][sourceId];
         public bool TryNode(string sourceId, out string mappedId) => _nodes.TryGetValue(sourceId, out mappedId!);

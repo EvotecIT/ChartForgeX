@@ -12,6 +12,7 @@ internal sealed partial class VisualTopologyCompiler {
         var size = _context.Theme.Typography.DataLabelSize;
         var lineHeight = _builder.MeasureText("Ag", size, 600).LineHeight;
         foreach (var node in chart.Nodes) {
+            if (!node.ShowLabel) continue;
             if (node.FitLabelToContent && EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.Card
                 && UseEnclosedShapeContent(node, TopologyNodeDisplayMode.Card, _options)) {
                 GrowShapeContent(node);

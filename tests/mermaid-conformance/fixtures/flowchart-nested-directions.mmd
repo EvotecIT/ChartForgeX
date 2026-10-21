@@ -1,0 +1,15 @@
+flowchart TB
+start[Receive request] -->|Begin|delivery
+subgraph delivery[Delivery]
+  direction LR
+  subgraph intake[Intake]
+    direction TB
+    A[Validate request] -->|Valid|B[Record receipt]
+  end
+  subgraph review[Review]
+    direction RL
+    C[Approve request] -->|Approved|D[Publish result]
+  end
+  intake -->|Hand off|review
+end
+delivery -->|Published|finish((Done))

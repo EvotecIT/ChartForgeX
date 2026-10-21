@@ -111,10 +111,10 @@ internal sealed partial class VisualTopologyCompiler {
         // The common frame has already reserved the legend. Legacy geometry helpers must not
         // reserve a second legend inside the detached content viewport.
         _chart.Title = null; _chart.Subtitle = null; _chart.Legend = null;
-        ResolveNaturalSize(entries);
+        PrepareAnnotations();
         DiagnoseExportOptions();
         _highlight = TopologyHighlightState.From(_chart, _options);
-        var nodes = _nodesById = _chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var nodes = _nodesById = TopologyGroupEndpoints.Resolve(_chart);
         _edgeRenderOrders = EdgeRenderOrderMap(_chart, _options);
         foreach (var edge in _chart.Edges) {
             var route = EdgePoints(_chart, edge, nodes);
@@ -139,6 +139,7 @@ internal sealed partial class VisualTopologyCompiler {
             }
         }
         _edgeLabels = _options.IncludeEdgeLabels ? EdgeLabelLayouts(_chart, _options) : Array.Empty<TopologyEdgeLabelLayout>();
+        ResolveNaturalSize(entries);
         ResolveFit();
         using (_builder.PushGroup(_source.Id, "topology", RootMetadata()))
         using (_builder.PushClip(_plot)) {
@@ -147,6 +148,7 @@ internal sealed partial class VisualTopologyCompiler {
             foreach (var edge in OrderedEdgesForRendering(_chart, _options)) BuildEdge(edge.Edge);
             BuildEdgeLabels();
             foreach (var node in _chart.Nodes) BuildNode(node);
+            BuildAnnotations();
             if (_options.IncludeLayoutDiagnosticOverlay) BuildDiagnostics();
         }
         var accessibility = _source.Accessibility.Clone();

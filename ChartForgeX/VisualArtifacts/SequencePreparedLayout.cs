@@ -17,7 +17,7 @@ internal sealed partial class SequencePreparedLayout {
         internal int Index;
         internal double X1, X2, Y;
     }
-    internal readonly List<Item> Participants = new(), Messages = new(), Notes = new(), Blocks = new(), Branches = new(), Activations = new();
+    internal readonly List<Item> Participants = new(), Messages = new(), Notes = new(), Blocks = new(), Branches = new(), Activations = new(), ParticipantGroups = new();
     internal readonly Dictionary<string, double> Lanes = new(StringComparer.Ordinal);
     internal double[] Steps = Array.Empty<double>(), Ends = Array.Empty<double>();
     internal double LifelineTop, Bottom;
@@ -37,6 +37,8 @@ internal sealed partial class SequencePreparedLayout {
         double laneWidth = (right - left) / model.Participants.Count;
         if (laneWidth < 64) throw new NotSupportedException("Prepared sequence participant lanes require a wider common viewport.");
         double boxWidth = Math.Min(Math.Max(160, minimumLabelWidth + 16), laneWidth - 12), top = plot.Y + gap + stroke, participantHeight = 0;
+        double groupsTop = top;
+        top += layout.MeasureParticipantGroups(model, semantics, builder, laneWidth, left, top, size);
         for (int i = 0; i < model.Participants.Count; i++) {
             var participant = model.Participants[i];
             string text = Wrap(participant.Label, boxWidth - 16, builder, size);
@@ -49,6 +51,8 @@ internal sealed partial class SequencePreparedLayout {
         }
         layout.LifelineTop = top + participantHeight;
         foreach (var participant in layout.Participants) participant.Bounds = new ChartRect(participant.Bounds.X, top, boxWidth, participantHeight);
+        var births = layout.Participants.Where(item => model.Participants[item.Index].CreatedAtMessageIndex.HasValue)
+            .ToLookup(item => model.Participants[item.Index].CreatedAtMessageIndex!.Value);
         int count = model.Messages.Count;
         foreach (var note in model.Notes) count = Math.Max(count, Step(note.StepIndex) + 1);
         foreach (var activation in model.Activations) count = Math.Max(count, Step(activation.StepIndex) + 1);
@@ -89,6 +93,9 @@ internal sealed partial class SequencePreparedLayout {
             }
             layout.Steps[step] = y;
             if (step < model.Messages.Count) {
+                foreach (var participant in births[step])
+                    participant.Bounds = new ChartRect(participant.Bounds.X, y, participant.Bounds.Width, participant.Bounds.Height);
+                if (births[step].Any()) y += participantHeight + gap;
                 var message = model.Messages[step];
                 double x1 = layout.Lanes[message.SourceId], x2 = layout.Lanes[message.TargetId];
                 double width = x1 == x2 ? Math.Min(laneWidth - 8, Math.Max(160, minimumLabelWidth)) : Math.Abs(x2 - x1) - 16;
@@ -108,6 +115,7 @@ internal sealed partial class SequencePreparedLayout {
             y += ending * 8;
         }
         layout.Bottom = y + gap;
+        foreach (var item in layout.ParticipantGroups) item.Bounds = new ChartRect(item.Bounds.X, groupsTop, item.Bounds.Width, layout.Bottom - groupsTop);
         foreach (var item in layout.Blocks) {
             var block = model.Blocks[item.Index];
             double bottom = block.IsEmpty ? item.Bounds.Y + item.Y + gap : layout.Ends[End(block.StartStepIndex, block.EndStepIndex)] + 4;
@@ -120,7 +128,7 @@ internal sealed partial class SequencePreparedLayout {
         }
         if (layout.Bottom > plot.Bottom - stroke && !allowHeightOverflow) throw new NotSupportedException("Prepared sequence requires at least " + (layout.Bottom - plot.Y + gap).ToString("0.##", CultureInfo.InvariantCulture) + " logical content pixels of height; enlarge the common viewport.");
         if (allowHeightOverflow) plot = new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(plot.Height, layout.Bottom - plot.Y + stroke));
-        foreach (var item in layout.Participants.Concat(layout.Messages).Concat(layout.Notes).Concat(layout.Blocks).Concat(layout.Branches))
+        foreach (var item in layout.Participants.Concat(layout.Messages).Concat(layout.Notes).Concat(layout.Blocks).Concat(layout.Branches).Concat(layout.ParticipantGroups))
             VisualDiagramPrimitives.RequireInside(item.Bounds, plot, item.Id);
         layout.LayoutActivations(model, semantics);
         foreach (var item in layout.Messages) {
@@ -167,6 +175,8 @@ internal sealed partial class SequencePreparedLayout {
 
     private void LayoutActivations(SequenceArtifact model, VisualArtifactInterchangeEnvelope envelope) {
         var open = new Dictionary<string, Stack<Item>>(StringComparer.Ordinal);
+        var deaths = model.Participants.Where(participant => participant.DestroyedAtMessageIndex.HasValue)
+            .ToLookup(participant => participant.DestroyedAtMessageIndex!.Value);
         foreach (var id in Lanes.Keys) open.Add(id, new Stack<Item>());
         for (int step = 0; step < Steps.Length; step++) {
             foreach (var activation in model.Activations.Select((value, index) => new { value, index }).Where(a => Step(a.value.StepIndex) == step))
@@ -184,6 +194,10 @@ internal sealed partial class SequencePreparedLayout {
                 double right = Math.Max(item.Bounds.Right, self ? Math.Max(item.X1, item.X2) + 56 : Math.Max(item.X1, item.X2));
                 item.Bounds = new ChartRect(left, item.Bounds.Y, right - left, item.Bounds.Height);
                 if (message.Deactivates) Change(message.SourceId, false, item.Y, item.Id + "-deactivation", -1);
+                foreach (var participant in deaths[step]) {
+                    var stack = open[participant.Id];
+                    while (stack.Count > 0) Finish(stack.Pop(), item.Y + (self ? 24 : 0));
+                }
             }
         }
         foreach (var stack in open.Values) while (stack.Count > 0) Finish(stack.Pop(), Bottom);

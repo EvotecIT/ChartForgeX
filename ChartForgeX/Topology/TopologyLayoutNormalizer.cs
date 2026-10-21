@@ -190,7 +190,7 @@ internal static class TopologyLayoutNormalizer {
             }
         }
         if (options.IncludeEndpointLabels && chart.Edges.Any(edge => !string.IsNullOrWhiteSpace(edge.SourceLabel) || !string.IsNullOrWhiteSpace(edge.TargetLabel)) && CanMeasureEdgeLabels(chart)) {
-            var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+            var nodes = TopologyGroupEndpoints.Resolve(chart);
             foreach (var edge in chart.Edges.Where(edge => !string.IsNullOrWhiteSpace(edge.SourceLabel) || !string.IsNullOrWhiteSpace(edge.TargetLabel))) {
                 var route = TopologyResolvedRouteSamples.Sample(chart, options, edge, nodes, EdgePoints(chart, edge, nodes));
                 IncludeEndpoint(edge.SourceLabel, route[0], route[1]);
@@ -211,6 +211,7 @@ internal static class TopologyLayoutNormalizer {
         foreach (var node in chart.Nodes) {
             if (string.IsNullOrWhiteSpace(node.Id) || !nodeIds.Add(node.Id)) return false;
         }
+        foreach (var group in chart.Groups) nodeIds.Add(group.Id);
 
         return chart.Edges.All(edge => nodeIds.Contains(edge.SourceNodeId) && nodeIds.Contains(edge.TargetNodeId));
     }

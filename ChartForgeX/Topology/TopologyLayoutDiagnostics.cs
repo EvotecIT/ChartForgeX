@@ -23,7 +23,7 @@ public static partial class TopologyLayoutDiagnostics {
 
     internal static TopologyLayoutDiagnosticReport AnalyzePrepared(TopologyChart chart, TopologyRenderOptions options) {
         var report = new TopologyLayoutDiagnosticReport(chart.Viewport.Width, chart.Viewport.Height, chart.LayoutMode, chart.LayoutDirection);
-        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var nodes = TopologyGroupEndpoints.Resolve(chart);
         var headers = TopologyGroupHeader.IsDrawn(options);
         var headerParts = chart.Groups.ToDictionary(group => group.Id,
             group => TopologyGroupHeader.PaintedParts(chart, group, options), StringComparer.Ordinal);

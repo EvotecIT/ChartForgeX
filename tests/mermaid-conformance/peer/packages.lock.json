@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Mermaider": {
+        "type": "Direct",
+        "requested": "[0.15.1, )",
+        "resolved": "0.15.1",
+        "contentHash": "MN2IzFVOdAudzsmWweeHs+j8TDbyHaacbfvniSWtFEa19eIB7to2nlY1srfUVyxvu2Ge7wBDbr7jrhryP4MGig==",
+        "dependencies": {
+          "Microsoft.Extensions.ObjectPool": "10.0.3",
+          "Sugiyama": "0.15.1"
+        }
+      },
+      "Microsoft.Extensions.ObjectPool": {
+        "type": "Transitive",
+        "resolved": "10.0.3",
+        "contentHash": "dQKlVXzqflsv5X8iDlAN5YmTL1GcLCrOLKo1s9PNdfjqxeu0S/jmWTfiLGno+8+o1qFL3+VFAH5/ftmypN+sPw=="
+      },
+      "Sugiyama": {
+        "type": "Transitive",
+        "resolved": "0.15.1",
+        "contentHash": "qli1R/Nl8SaNX4MzvHvxNw7d7t1WSFEktbvnZJGdKGi/lNXtMfOMt6/41ryoPMs4C6dTc/rtfpCKpery0UpzmA=="
+      }
+    }
+  }
+}

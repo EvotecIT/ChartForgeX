@@ -26,6 +26,7 @@ internal static partial class TopologyLayoutEngine {
 
         if (view != null) ApplyView(copy, view);
         if (options != null) copy.Legend = options.IncludeLegend ? TopologyLegend.Resolve(copy, options.LegendMode) : null;
+        var compoundLayout = false;
         switch (copy.LayoutMode) {
             case TopologyLayoutMode.GroupGrid:
                 ApplyGroupGrid(copy);
@@ -37,7 +38,8 @@ internal static partial class TopologyLayoutEngine {
                 ApplySwimlane(copy, options);
                 break;
             case TopologyLayoutMode.Layered:
-                ApplyLayered(copy, options);
+                compoundLayout = TryApplyCompoundLayered(copy, options);
+                if (!compoundLayout) ApplyLayered(copy, options);
                 break;
             case TopologyLayoutMode.Matrix:
                 ApplyMatrix(copy, options);
@@ -59,7 +61,7 @@ internal static partial class TopologyLayoutEngine {
                 break;
         }
 
-        if (copy.LayoutMode == TopologyLayoutMode.Layered) PlaceAutomaticLayeredGroups(copy, chart, options, authoredEdges);
+        if (copy.LayoutMode == TopologyLayoutMode.Layered && !compoundLayout) PlaceAutomaticLayeredGroups(copy, chart, options, authoredEdges);
         TopologyLayoutNormalizer.Normalize(copy, options);
         SyncHierarchyRouteDiagnostics(copy);
         return copy;
@@ -139,14 +141,17 @@ internal static partial class TopologyLayoutEngine {
         var hasEdgeKindFilter = view.EdgeKinds.Count > 0;
         var hasStatusFilter = view.HealthStatuses.Count > 0;
         if (!hasGroupFilter && !hasNodeFilter && !hasEdgeFilter && !hasFocusFilter && !hasNodeKindFilter && !hasEdgeKindFilter && !hasStatusFilter) return;
+        if (hasGroupFilter) IncludeSelectedGroupDescendants(chart, selectedGroupIds);
 
         var baseNodes = chart.Nodes
             .Where(node => IsNodeEligible(node, selectedGroupIds, hasGroupFilter, selectedNodeIds, hasNodeFilter, view, false))
             .ToList();
         var baseNodeIds = new HashSet<string>(baseNodes.Select(node => node.Id), StringComparer.Ordinal);
+        var baseEndpointIds = new HashSet<string>(baseNodeIds, StringComparer.Ordinal);
+        if (hasGroupFilter) baseEndpointIds.UnionWith(selectedGroupIds);
         var eligibleEdges = chart.Edges
             .Where(edge => IsEdgeEligible(edge, selectedEdgeIds, hasEdgeFilter, view))
-            .Where(edge => baseNodeIds.Contains(edge.SourceNodeId) && baseNodeIds.Contains(edge.TargetNodeId))
+            .Where(edge => baseEndpointIds.Contains(edge.SourceNodeId) && baseEndpointIds.Contains(edge.TargetNodeId))
             .ToList();
 
         List<TopologyNode> visibleNodes;
@@ -157,6 +162,7 @@ internal static partial class TopologyLayoutEngine {
             visibleEdges = eligibleEdges.Where(edge => focused.Contains(edge.SourceNodeId) && focused.Contains(edge.TargetNodeId)).ToList();
         } else {
             var visibleNodeIds = new HashSet<string>(baseNodes.Where(node => !hasStatusFilter || view.HealthStatuses.Contains(node.Status)).Select(node => node.Id), StringComparer.Ordinal);
+            if (hasGroupFilter) visibleNodeIds.UnionWith(selectedGroupIds);
             if (hasEdgeFilter || hasEdgeKindFilter || hasStatusFilter) {
                 foreach (var edge in eligibleEdges) {
                     visibleNodeIds.Add(edge.SourceNodeId);
@@ -180,8 +186,19 @@ internal static partial class TopologyLayoutEngine {
         }
 
         var allGroups = chart.Groups.Select(Clone).ToList();
+        var sourceGroupIds = new HashSet<string>(allGroups.Select(group => group.Id), StringComparer.Ordinal);
+        foreach (var edge in visibleEdges) {
+            if (sourceGroupIds.Contains(edge.SourceNodeId)) visibleGroupIds.Add(edge.SourceNodeId);
+            if (sourceGroupIds.Contains(edge.TargetNodeId)) visibleGroupIds.Add(edge.TargetNodeId);
+        }
         chart.Groups.Clear();
-        foreach (var group in allGroups.Where(group => visibleGroupIds.Contains(group.Id))) chart.Groups.Add(group);
+        foreach (var group in allGroups.Where(group => visibleGroupIds.Contains(group.Id))) {
+            if (group.ParentGroupId != null && sourceGroupIds.Contains(group.ParentGroupId) && !visibleGroupIds.Contains(group.ParentGroupId)) group.ParentGroupId = null;
+            chart.Groups.Add(group);
+        }
+        foreach (var node in visibleNodes) {
+            if (node.GroupId != null && sourceGroupIds.Contains(node.GroupId) && !visibleGroupIds.Contains(node.GroupId)) node.GroupId = null;
+        }
         chart.Nodes.Clear();
         chart.Nodes.AddRange(visibleNodes);
         chart.Edges.Clear();

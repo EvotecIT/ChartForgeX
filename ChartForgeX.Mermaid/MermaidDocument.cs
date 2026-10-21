@@ -82,6 +82,8 @@ public enum MermaidDiagramKind {
 /// Describes a parsed Mermaid document.
 /// </summary>
 public class MermaidDocument {
+    /// <summary>Retains the captured parse policy for render bridges that receive a parsed document later.</summary>
+    internal MermaidResourceLimits? CapturedResourceLimits { get; set; }
     private string _sourceText = string.Empty;
     private string _header = string.Empty;
 
