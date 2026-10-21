@@ -44,6 +44,9 @@ public static class IntegerAxisExamples {
                 .AddBar("Passed", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) })
                 .AddBar("Pending", new[] { new ChartPoint(1, 1), new ChartPoint(2, 0) });
             ExampleArtifactWriter.SaveChart(sparse, output, "category-counts-" + mode.ToString().ToLowerInvariant(), scale);
+            foreach (var width in new[] { 320, 1120 })
+                ExampleArtifactWriter.SaveChart(CreateMonthlyCounts(width, mode), output,
+                    "monthly-counts-" + width + "-" + mode.ToString().ToLowerInvariant(), scale);
             foreach (var horizontal in new[] { false, true }) foreach (var width in new[] { 320, 1120 })
                 ExampleArtifactWriter.SaveChart(CreateSignedStack(horizontal, width, mode), output,
                     "stacked-corners-" + (horizontal ? "horizontal-" : "vertical-") + width + "-" + mode.ToString().ToLowerInvariant(), scale);
