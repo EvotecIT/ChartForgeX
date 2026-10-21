@@ -57,6 +57,8 @@ chart.SaveHtml("orders.html");
 
 `ChartPoints.FromValues` places observations at X = 1 through N, matching `WithXLabels`. For numeric or time coordinates, use typed observations or map your own records with selectors.
 
+For count charts, use `WithYAxisIntegerTicks()` or `WithXAxisIntegerTicks()` for horizontal bars to keep generated linear tick positions whole. See [whole-number axis ticks](docs/integer-axis-ticks.md) for bounds, secondary axes and typed examples.
+
 ## Visual Tour
 
 Charts and diagrams share the same theme, typography and chart area. These 400 × 280 previews are generated from the current examples. Open an example to switch between light and dark, compare SVG with native PNG, or copy its C# source.
