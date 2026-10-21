@@ -29,9 +29,9 @@ internal sealed partial class VisualTopologyCompiler {
         var viewportWidth = Math.Max(1, _chart.Viewport.Width - padding * 2);
         var content = IncludeAnnotationBounds(MeasureRenderedContent(padding, padding,
             viewportWidth, Math.Max(1, _chart.Viewport.Height - padding * 2), includeViewport: true));
-        // Route ink may use the horizontal outer padding without changing the resolved
-        // layout domain. Only ink beyond the entire canvas requires more output width.
-        var requiredWidth = viewportWidth
+        // Route ink may use horizontal outer padding without changing the resolved graph
+        // domain. Independent annotation panels are content and retain the frame padding.
+        var requiredWidth = _annotations.Count > 0 ? content.Width : viewportWidth
             + Math.Max(0, padding - content.X - _plot.X)
             + Math.Max(0, content.Right - padding - viewportWidth - (_context.Layout.Size.Width - _plot.Right));
         var requiredHeight = content.Height;
@@ -100,7 +100,8 @@ internal sealed partial class VisualTopologyCompiler {
             ? MeasureRenderedContent(padding, padding, width, height, includeViewport: naturalContent) : new ChartRect(padding, padding, width, height));
         _contentClip = _plot;
         if (naturalContent) {
-            _offsetX = _plot.X - padding + Math.Max(0, padding - content.X - _plot.X);
+            _offsetX = _annotations.Count > 0 ? _plot.X - content.X
+                : _plot.X - padding + Math.Max(0, padding - content.X - _plot.X);
             _offsetY = _plot.Y - content.Y;
             var left = Math.Min(_plot.X, _offsetX + content.X);
             var right = Math.Max(_plot.Right, _offsetX + content.Right);
