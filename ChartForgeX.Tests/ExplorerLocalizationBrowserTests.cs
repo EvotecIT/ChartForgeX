@@ -60,9 +60,15 @@ public sealed partial class ExplorerLocalizationBrowserTests {
                 return{pixelRatio:devicePixelRatio,surfaces:surfaces.map(node=>({tag:node.localName,role:node.dataset.cfxRole,direction:getComputedStyle(node).direction,
                     bitmap:node.localName==='canvas'?node.toDataURL():null})),
                 nativeText:surfaces.filter(node=>node.localName==='svg').flatMap(svg=>[...svg.querySelectorAll('text')]).map(textFacts),
-                texts:surfaces.filter(node=>node.localName==='svg'&&painted(node)).flatMap(svg=>[...svg.querySelectorAll('text')]).map(node=>{
-                    const matrix=node.getScreenCTM();return {...textFacts(node),linear:[matrix.a,matrix.b,matrix.c,matrix.d],
-                    characters:Array.from({length:node.getNumberOfChars()},(_,index)=>{const point=node.getStartPositionOfChar(index);return [point.x,point.y]})}})}}
+                texts:surfaces.filter(node=>node.localName==='svg'&&painted(node)).flatMap(svg=>{
+                    const origin=svg.getBoundingClientRect();return [...svg.querySelectorAll('text')].map(node=>{
+                        const matrix=node.getScreenCTM(),point=value=>[matrix.a*value.x+matrix.c*value.y+matrix.e-origin.left,
+                            matrix.b*value.x+matrix.d*value.y+matrix.f-origin.top];
+                        return {...textFacts(node),linear:[matrix.a,matrix.b,matrix.c,matrix.d],
+                            characters:Array.from({length:node.getNumberOfChars()},(_,index)=>{
+                                const box=node.getExtentOfChar(index);return [point(node.getStartPositionOfChar(index)),point(node.getEndPositionOfChar(index)),
+                                    point({x:box.x,y:box.y}),point({x:box.x+box.width,y:box.y}),
+                                    point({x:box.x,y:box.y+box.height}),point({x:box.x+box.width,y:box.y+box.height})]})}})})}}
             """);
         var json = snapshot.GetRawText();
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json)));
@@ -95,21 +101,22 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         for (var index = 0; index < expectedTexts.Length; index++) {
             Assert.Equal(expectedTexts[index].GetProperty("text").GetString(), actualTexts[index].GetProperty("text").GetString());
             Assert.Equal(expectedTexts[index].GetProperty("direction").GetString(), actualTexts[index].GetProperty("direction").GetString());
-            var linear = expectedTexts[index].GetProperty("linear").EnumerateArray().Select(value => value.GetDouble()).ToArray();
             Assert.Equal(expectedTexts[index].GetProperty("linear").GetRawText(), actualTexts[index].GetProperty("linear").GetRawText());
             var expectedCharacters = expectedTexts[index].GetProperty("characters").EnumerateArray().ToArray();
             var actualCharacters = actualTexts[index].GetProperty("characters").EnumerateArray().ToArray();
             Assert.Equal(expectedCharacters.Length, actualCharacters.Length);
             for (var character = 0; character < expectedCharacters.Length; character++) {
-                // SVG user units depend on the viewBox and zoom. Firefox's glyph metrics
-                // can vary by less than half a rendered pixel after font-cache warmup.
-                // Keep text, bidi, transforms and canvas pixels exact, and compare geometry
-                // in physical pixels rather than applying a scale-dependent user-unit limit.
-                var dx = expectedCharacters[character][0].GetDouble() - actualCharacters[character][0].GetDouble();
-                var dy = expectedCharacters[character][1].GetDouble() - actualCharacters[character][1].GetDouble();
-                var screenX = linear[0] * dx + linear[2] * dy;
-                var screenY = linear[1] * dx + linear[3] * dy;
-                Assert.InRange(Math.Sqrt(screenX * screenX + screenY * screenY) * expected.GetProperty("pixelRatio").GetDouble(), 0, 0.5);
+                // Compare the start, end and all extent corners relative to the SVG surface.
+                // This includes ancestor translations and each glyph's width/height, while
+                // allowing font-cache quantization below half a physical pixel.
+                var expectedPoints = expectedCharacters[character].EnumerateArray().ToArray();
+                var actualPoints = actualCharacters[character].EnumerateArray().ToArray();
+                Assert.Equal(expectedPoints.Length, actualPoints.Length);
+                for (var point = 0; point < expectedPoints.Length; point++) {
+                    var dx = expectedPoints[point][0].GetDouble() - actualPoints[point][0].GetDouble();
+                    var dy = expectedPoints[point][1].GetDouble() - actualPoints[point][1].GetDouble();
+                    Assert.InRange(Math.Sqrt(dx * dx + dy * dy) * expected.GetProperty("pixelRatio").GetDouble(), 0, 0.5);
+                }
             }
         }
     }
