@@ -327,7 +327,8 @@ internal static partial class TopologyLayoutEngine {
         }
 
         var explicitGroupPositions = ExplicitGroupPositions(chart.Groups);
-        var pad = Math.Max(24, chart.Viewport.Padding);
+        var surfaceInset = chart.RenderOptions == null ? 0 : CanvasSurfaceInset(chart, chart.RenderOptions);
+        var pad = Math.Max(24, chart.Viewport.Padding) + surfaceInset;
         var titleOffset = string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72;
         var legendOffset = LegendReservedHeight(chart.Legend, chart.Viewport);
         if (UsesWrappedDenseRows(chart)) {
@@ -337,8 +338,13 @@ internal static partial class TopologyLayoutEngine {
         }
 
         ApplyDenseGroupEdgeDefaults(chart);
+        // Grow the automatic mirror frame before pinned groups are restored, avoiding a later global translation.
+        var automaticGroups = chart.Groups.Where(group => !explicitGroupPositions.ContainsKey(group.Id));
         if (chart.LayoutDirection == TopologyLayoutDirection.RightToLeft) {
-            MirrorLayoutHorizontally(chart, pad, chart.Viewport.Width - pad);
+            var right = chart.Viewport.Width - pad;
+            var automaticRight = automaticGroups.Select(group => group.X + group.Width).DefaultIfEmpty(0).Max();
+            if (automaticRight > right) right = Math.Ceiling(automaticRight);
+            MirrorLayoutHorizontally(chart, pad, right);
             var restoredGroups = RestoreExplicitDenseGroupPositions(chart, explicitGroupPositions);
             ShiftManualWaypointsForRestoredGroups(chart, restoredGroups);
             ResetDenseInferenceForRestoredGroups(chart, restoredGroups);
@@ -349,6 +355,10 @@ internal static partial class TopologyLayoutEngine {
             // Readable panels take the height of their content, so they are flipped within the content instead of the
             // viewport, which would leave the unused height as a gap under the title.
             var bottom = UsesReadableDenseLayout(chart) ? chart.Groups.Max(group => group.Y + group.Height) : chart.Viewport.Height - pad - legendOffset;
+            if (!UsesReadableDenseLayout(chart)) {
+                var automaticBottom = automaticGroups.Select(group => group.Y + group.Height).DefaultIfEmpty(0).Max();
+                if (automaticBottom > bottom) bottom = Math.Ceiling(automaticBottom);
+            }
             MirrorLayoutVertically(chart, pad + titleOffset, bottom);
             var restoredGroups = RestoreExplicitDenseGroupPositions(chart, explicitGroupPositions);
             ShiftManualWaypointsForRestoredGroups(chart, restoredGroups);
@@ -425,8 +435,12 @@ internal static partial class TopologyLayoutEngine {
                 group.Width = Math.Max(group.Width, Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy)));
                 group.Height = Math.Max(group.Height, Math.Max(170, DenseGroupHeight(chart, nodes, policy)));
             } else {
+                // Reserve an automatic grid before packing neighbors, including declared small panel sizes.
+                var automaticGrid = policy == TopologyGroupLayoutPolicy.Grid && !explicitGroupPositions.ContainsKey(group.Id);
                 if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy));
+                else if (automaticGrid) group.Width = Math.Max(group.Width, DenseGroupWidth(chart, nodes, policy));
                 if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy));
+                else if (automaticGrid) group.Height = Math.Max(group.Height, DenseGroupHeight(chart, nodes, policy));
             }
             columnWidths[col] = Math.Max(columnWidths[col], group.Width);
             rowHeights[row] = Math.Max(rowHeights[row], group.Height);
