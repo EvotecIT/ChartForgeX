@@ -1,0 +1,104 @@
+{
+  "participants": [
+    "U",
+    "API",
+    "DB",
+    "W"
+  ],
+  "messages": [
+    [
+      "U",
+      "API",
+      "Submit request"
+    ],
+    [
+      "API",
+      "DB",
+      "Read policy"
+    ],
+    [
+      "API",
+      "W",
+      "Start work"
+    ],
+    [
+      "W",
+      "API",
+      "Result"
+    ],
+    [
+      "API",
+      "W",
+      "Stop worker"
+    ],
+    [
+      "API",
+      "U",
+      "Delivered"
+    ]
+  ],
+  "sequenceLifetimes": {
+    "participants": [
+      [
+        "U",
+        "User",
+        "actor"
+      ],
+      [
+        "API",
+        "Service",
+        "participant"
+      ],
+      [
+        "DB",
+        "Store",
+        "participant"
+      ],
+      [
+        "W",
+        "Worker",
+        "participant"
+      ]
+    ],
+    "boxes": [
+      [
+        "Client",
+        "transparent",
+        [
+          "U"
+        ]
+      ],
+      [
+        "Services",
+        "rgba(210,230,255,0.4)",
+        [
+          "API",
+          "DB"
+        ]
+      ]
+    ],
+    "created": [
+      [
+        "W",
+        2
+      ]
+    ],
+    "destroyed": [
+      [
+        "W",
+        4
+      ]
+    ]
+  },
+  "peerVisibleText": [
+    "User",
+    "Service",
+    "Store",
+    "Worker",
+    "Submit request",
+    "Start work",
+    "Stop worker",
+    "Client",
+    "Services"
+  ]
+}

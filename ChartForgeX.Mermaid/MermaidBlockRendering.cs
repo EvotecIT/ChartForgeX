@@ -30,7 +30,7 @@ public static class MermaidBlockRendering {
         }
 
         foreach (var edge in document.Edges) block.AddEdge(edge.SourceId, edge.TargetId, edge.Label, edge.Directed);
-        return MermaidPresentation.Apply(block, document);
+        return MermaidPresentation.Apply(block, document, options.Presentation);
     }
 
     /// <summary>
@@ -58,11 +58,11 @@ public static class MermaidBlockRendering {
 
     /// <summary>Renders a Mermaid block document to static SVG.</summary>
     public static string ToSvg(this MermaidBlockDocument document, MermaidBlockRenderOptions? options = null) =>
-        document.ToBlockLayoutBlock(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid block document to static PNG.</summary>
     public static byte[] ToPng(this MermaidBlockDocument document, MermaidBlockRenderOptions? options = null) =>
-        document.ToBlockLayoutBlock(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidBlockDocument document, MermaidBlockRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid block");
@@ -78,16 +78,7 @@ public static class MermaidBlockRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid block diagrams.
 /// </summary>
-public sealed class MermaidBlockRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidBlockRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 900;
 

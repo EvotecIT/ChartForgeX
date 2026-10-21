@@ -8,6 +8,7 @@ internal static class MermaidMindMapParser {
         var stack = new List<MermaidMindMapNode>();
         var indents = new List<int>();
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -19,6 +20,7 @@ internal static class MermaidMindMapParser {
                 stack.RemoveAt(stack.Count - 1);
             }
 
+            MermaidResourceGuard.CheckDepth(stack.Count + 1, span);
             var node = ParseNode(trimmed, document.Nodes.Count, stack.Count, span);
             node.ParentId = stack.Count == 0 ? null : stack[stack.Count - 1].Id;
             document.Nodes.Add(node);

@@ -36,7 +36,7 @@ public static partial class MermaidTopologyRendering {
             }
         }
 
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     private static Dictionary<string, (int Depth, int Section)> MindMapSections(MermaidMindMapDocument document) {

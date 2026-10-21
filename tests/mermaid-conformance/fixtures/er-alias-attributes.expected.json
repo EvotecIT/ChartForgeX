@@ -1,0 +1,62 @@
+{
+  "entities": [
+    "C",
+    "O"
+  ],
+  "erFacts": {
+    "entities": [
+      [
+        "C",
+        "Customer account",
+        [
+          [
+            "string",
+            "id",
+            [
+              "PK",
+              "FK"
+            ],
+            "External key"
+          ],
+          [
+            "string",
+            "display_name",
+            [],
+            ""
+          ]
+        ]
+      ],
+      [
+        "O",
+        "Orders",
+        [
+          [
+            "int",
+            "id",
+            [
+              "PK"
+            ],
+            ""
+          ]
+        ]
+      ]
+    ],
+    "relationships": [
+      [
+        "C",
+        "O",
+        "ExactlyOne",
+        "ZeroOrMany",
+        "Solid",
+        "places"
+      ]
+    ]
+  },
+  "peerVisibleText": [
+    "Customer account",
+    "Orders",
+    "External key",
+    "display_name",
+    "places"
+  ]
+}

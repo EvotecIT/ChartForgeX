@@ -25,7 +25,7 @@ public static class MermaidPieRendering {
         if (document.ShowData) chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndValue);
         else chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
         chart.AddPie(string.IsNullOrWhiteSpace(options.SeriesName) ? "Slices" : options.SeriesName!, GetPoints(document));
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -49,13 +49,13 @@ public static class MermaidPieRendering {
     /// Renders a Mermaid pie document to static SVG through ChartForgeX chart rendering.
     /// </summary>
     public static string ToSvg(this MermaidPieDocument document, MermaidPieRenderOptions? options = null) =>
-        document.ToChart(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>
     /// Renders a Mermaid pie document to static PNG through ChartForgeX chart rendering.
     /// </summary>
     public static byte[] ToPng(this MermaidPieDocument document, MermaidPieRenderOptions? options = null) =>
-        document.ToChart(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidPieDocument document, MermaidPieRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid pie");
@@ -77,16 +77,7 @@ public static class MermaidPieRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid pie charts.
 /// </summary>
-public sealed class MermaidPieRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidPieRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the chart series name.</summary>
     public string? SeriesName { get; set; }
 

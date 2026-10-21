@@ -100,6 +100,7 @@ internal static partial class SequencePreparedCompiler {
         semantics.Extensions["chartforgex.source.height"] = model.Height.ToString("R", CultureInfo.InvariantCulture);
         var colors = context.Theme.Resolve(context.ThemeMode);
         double size = layout.FontSize, stroke = context.Theme.AxisStrokeWidth;
+        ParticipantGroups(builder, model, layout, semantics, context);
         foreach (var item in layout.Blocks.OrderBy(i => model.Blocks[i.Index].Depth)) {
             using (Group(builder, item, "sequence-block", model.Blocks[item.Index].Text)) {
                 builder.Rect(item.Bounds, null, colors.Border, stroke, role: "sequence-fragment-frame");
@@ -118,7 +119,14 @@ internal static partial class SequencePreparedCompiler {
         }
         foreach (var item in layout.Participants) {
             var participant = model.Participants[item.Index]; double x = layout.Lanes[participant.Id];
-            builder.Line(x, layout.LifelineTop, x, layout.Bottom, colors.Border, stroke, "sequence-lifeline", dash: new[] { 6d, 5d });
+            double bottom = participant.DestroyedAtMessageIndex.HasValue ? LifetimeEnd(model, layout, participant.DestroyedAtMessageIndex.Value) : layout.Bottom;
+            builder.Line(x, item.Bounds.Bottom, x, bottom, colors.Border, stroke, "sequence-lifeline", dash: new[] { 6d, 5d });
+            if (participant.DestroyedAtMessageIndex.HasValue) {
+                using (builder.PushGroup(item.Id + "-destruction", "sequence-destruction")) {
+                    builder.Line(x - 7, bottom - 7, x + 7, bottom + 7, colors.Accent, Math.Max(2, stroke), "sequence-destruction-cross");
+                    builder.Line(x + 7, bottom - 7, x - 7, bottom + 7, colors.Accent, Math.Max(2, stroke), "sequence-destruction-cross");
+                }
+            }
         }
         foreach (var item in layout.Activations) {
             using (Group(builder, item, "sequence-activation", item.Text))
@@ -148,6 +156,8 @@ internal static partial class SequencePreparedCompiler {
                 builder.Path(new ChartPath(points.Select((p, i) => i == 0 ? ChartPathCommand.MoveTo(p.X, p.Y) : ChartPathCommand.LineTo(p.X, p.Y)).ToArray()),
                     stroke: colors.Accent, strokeWidth: context.Theme.SeriesStrokeWidth, role: "sequence-message-line", dash: message.LineStyle == SequenceArtifactMessageLineStyle.Dashed ? new[] { 6d, 5d } : null);
                 MessageArrows(builder, message, points, colors, context.Theme.SeriesStrokeWidth);
+                if (model.ParticipantGroups.Count > 0 && item.Text.Length > 0)
+                    builder.Rect(new ChartRect(item.LabelBounds.X - 3, item.LabelBounds.Y - 1, item.LabelBounds.Width + 6, item.LabelBounds.Height + 2), colors.Surface);
                 Text(builder, item.Text, item.LabelBounds, size, colors.Foreground, center: !self);
             }
             Region(builder, item, "sequence-message", message.Text);
@@ -197,6 +207,7 @@ internal static partial class SequencePreparedCompiler {
             if (!ids.Add(participant.Id)) throw new InvalidOperationException("Duplicate sequence participant: " + participant.Id);
             if (!Enum.IsDefined(typeof(SequenceArtifactParticipantKind), participant.Kind)) throw new ArgumentOutOfRangeException(nameof(model), "Unknown sequence participant kind.");
         }
+        ValidateParticipantLifetimesAndGroups(model);
         foreach (var message in model.Messages) {
             RequireId(message.SourceId); RequireId(message.TargetId);
             if (!Enum.IsDefined(typeof(SequenceArtifactMessageKind), message.Kind) || !Enum.IsDefined(typeof(SequenceArtifactMessageLineStyle), message.LineStyle)) throw new ArgumentOutOfRangeException(nameof(model), "Unknown sequence message notation.");

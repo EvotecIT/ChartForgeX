@@ -36,7 +36,7 @@ internal static partial class TopologyRenderPrimitives {
         if (options.IncludeGroups && options.IncludeGroupLabels)
             obstacles.AddRange(chart.Groups.SelectMany(group => TopologyGroupHeader.PaintedParts(chart, group, options))
                 .Select(header => LabelBox.FromBounds(header.Left - 4, header.Top - 4, header.Right + 4, header.Bottom + 4)));
-        var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var nodes = TopologyGroupEndpoints.Resolve(chart);
         var segments = new List<(ChartPoint Start, ChartPoint End)>();
         foreach (var edge in chart.Edges) {
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;

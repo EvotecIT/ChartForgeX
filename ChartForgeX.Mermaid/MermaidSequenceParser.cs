@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidSequenceParser {
+internal static partial class MermaidSequenceParser {
     private static readonly string[] MessageOperators = {
         "<<-->>", "<<->>", "-->>", "->>", "--)", "-)", "--x", "-x", "-->", "->", "--"
     };
@@ -15,7 +16,9 @@ internal static class MermaidSequenceParser {
 
         var participants = new Dictionary<string, MermaidSequenceParticipant>(StringComparer.Ordinal);
         var blockStack = new Stack<MermaidSequenceBlock>();
+        MermaidSequenceParticipantBox? participantBox = null;
         for (var index = firstBodyLine - 1; index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[index];
             var fragments = SplitStatements(raw);
             foreach (var fragment in fragments) {
@@ -25,8 +28,19 @@ internal static class MermaidSequenceParser {
                 var span = new MermaidSourceSpan(index + 1, LeadingWhitespace(fragment.Text) + fragment.Column, trimmed.Length);
                 document.Statements.Add(new MermaidRawStatement(trimmed, span));
 
-                if (TryParseAutonumber(document, trimmed, span)) continue;
-                if (TryParseParticipant(document, participants, trimmed, span)) continue;
+                if (TryParseTitle(document, trimmed, span, result)) continue;
+                if (TryParseAutonumber(document, trimmed, span, result)) continue;
+                if (TryParseParticipantBox(document, ref participantBox, blockStack, trimmed, span, result)) continue;
+                if (TryParseParticipant(document, participants, trimmed, span)) {
+                    if (participantBox != null) {
+                        var command = FirstToken(trimmed);
+                        var id = ReadIdentifier(trimmed.Substring(command.Length).TrimStart(), out _);
+                        if (!participantBox.ParticipantIds.Contains(id)) participantBox.ParticipantIds.Add(id);
+                    }
+                    continue;
+                }
+                if (participantBox != null) Invalid(result, span, "Sequence participant boxes may contain only participant declarations.");
+                if (TryParseLifetime(document, participants, trimmed, span, result)) continue;
                 if (TryParseActivation(document, participants, trimmed, span)) continue;
                 if (TryParseNote(document, participants, trimmed, span)) continue;
                 if (TryParseLink(document, participants, trimmed, span)) continue;
@@ -40,12 +54,22 @@ internal static class MermaidSequenceParser {
             MermaidParserUtilities.Add(result, block.Span, MermaidDiagnosticSeverity.Error,
                 "Sequence " + block.Kind.ToString().ToLowerInvariant() + " block must close with 'end'.", MermaidDiagnosticCodes.InvalidStatement);
         }
+        if (participantBox != null) Invalid(result, participantBox.Span, "Sequence participant box must close with 'end'.");
+        ValidateLifetimes(document, result);
+        ValidateActivations(document, result);
+        ValidateAutonumber(document, result);
+        ValidateParticipantBoxes(document, result);
     }
 
-    private static bool TryParseAutonumber(MermaidSequenceDocument document, string text, MermaidSourceSpan span) {
+    private static bool TryParseAutonumber(MermaidSequenceDocument document, string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         if (!StartsCommand(text, "autonumber")) return false;
         var tail = text.Length == "autonumber".Length ? string.Empty : text.Substring("autonumber".Length).Trim();
         var tokens = SplitWhitespace(tail);
+        if (tokens.Count > 2 || tokens.Count > 0 && !decimal.TryParse(tokens[0], NumberStyles.Float, CultureInfo.InvariantCulture, out _)
+            || tokens.Count > 1 && !decimal.TryParse(tokens[1], NumberStyles.Float, CultureInfo.InvariantCulture, out _)) {
+            Invalid(result, span, "Sequence autonumber accepts at most a finite decimal start and increment.");
+            return true;
+        }
         document.Autonumber = new MermaidSequenceAutonumber(span) {
             Start = tokens.Count > 0 ? tokens[0] : null,
             Increment = tokens.Count > 1 ? tokens[1] : null
@@ -195,7 +219,10 @@ internal static class MermaidSequenceParser {
         };
 
         document.Blocks.Add(block);
-        if (!branch) blockStack.Push(block);
+        if (!branch) {
+            MermaidResourceGuard.CheckDepth(blockStack.Count + 1, span);
+            blockStack.Push(block);
+        }
         return true;
     }
 

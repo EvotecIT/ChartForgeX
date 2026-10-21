@@ -36,7 +36,8 @@ internal static partial class TopologyLayoutEngine {
         var automatic = new HashSet<string>(authored.Groups.Where(g => g.Width <= 0 && g.Height <= 0 && g.X == 0 && g.Y == 0).Select(g => g.Id), StringComparer.Ordinal);
         if (automatic.Count == 0) return;
         automatic.RemoveWhere(id => authored.Nodes.Any(n => n.GroupId == id && (!IsUnset(n.X) || !IsUnset(n.Y))));
-        if (automatic.Count == 0 || automatic.Count < 2 && authored.Groups.All(g => automatic.Contains(g.Id))) return;
+        if (automatic.Count == 0 || automatic.Count < 2 && authored.Groups.All(g => automatic.Contains(g.Id))
+            && authored.Nodes.All(node => node.GroupId != null)) return;
         var authoredNodes = authored.Nodes.ToDictionary(n => n.Id, StringComparer.Ordinal);
         automatic.RemoveWhere(id => authored.Edges.Any(e => e.Waypoints.Count > 0 &&
             ((authoredNodes.TryGetValue(e.SourceNodeId, out var source) && source.GroupId == id)
@@ -129,6 +130,7 @@ internal static partial class TopologyLayoutEngine {
                     .Select(other => horizontal ? other.Y + other.Height + 24 : other.X + other.Width + 24).DefaultIfEmpty(0).Max();
                 if (horizontal) group.Y = Math.Max(group.Y, before); else group.X = Math.Max(group.X, before);
             }
+            SeparateLayeredShellFromUngroupedNodes(chart, group, placed, horizontal);
             var delta = new PlacementDelta(group.X - x, group.Y - y);
             if (Math.Abs(delta.Dx) > .001 || Math.Abs(delta.Dy) > .001) shiftedGroupIds.Add(group.Id);
             foreach (var node in members[group.Id]) { node.X += delta.Dx; node.Y += delta.Dy; }

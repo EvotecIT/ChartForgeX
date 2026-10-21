@@ -98,6 +98,8 @@ internal static partial class VisualArtifactInterchangeJson {
         if (topology == null) return;
         writer.Property("topology");
         writer.StartObject();
+        OptionalString(writer, "parentGroupId", topology.ParentGroupId);
+        OptionalString(writer, "layoutDirection", topology.LayoutDirection?.ToString());
         String(writer, "status", topology.Status.ToString());
         String(writer, "layoutPolicy", topology.LayoutPolicy.ToString());
         String(writer, "appliedLayoutPolicy", topology.AppliedLayoutPolicy.ToString());
@@ -121,6 +123,7 @@ internal static partial class VisualArtifactInterchangeJson {
         OptionalNumber(writer, "longitude", topology.Longitude);
         OptionalNumber(writer, "latitude", topology.Latitude);
         Boolean(writer, "showStatusBadge", topology.ShowStatusBadge);
+        if (!topology.ShowLabel) Boolean(writer, "showLabel", false);
         OptionalNumber(writer, "maximumLabelCharacters", topology.MaximumLabelCharacters);
         Artwork(writer, topology.Artwork);
         writer.EndObject();
@@ -213,6 +216,8 @@ internal static partial class VisualArtifactInterchangeJson {
         String(writer, "kind", sequence.Kind.ToString());
         Number(writer, "order", sequence.Order);
         Boolean(writer, "implicit", sequence.IsImplicit);
+        OptionalNumber(writer, "createdAtMessageIndex", sequence.CreatedAtMessageIndex);
+        OptionalNumber(writer, "destroyedAtMessageIndex", sequence.DestroyedAtMessageIndex);
         writer.EndObject();
     }
 
@@ -318,6 +323,8 @@ internal static partial class VisualArtifactInterchangeJson {
         Dictionary<string, GeoJsonValue>? item = OptionalObject(root, "topology");
         if (item == null) return null;
         return new VisualArtifactInterchangeTopologyGroup {
+            ParentGroupId = OptionalString(item, "parentGroupId"),
+            LayoutDirection = OptionalEnum<ChartForgeX.Topology.TopologyLayoutDirection>(item, "layoutDirection"),
             Status = RequiredEnum<ChartForgeX.Topology.TopologyHealthStatus>(item, "status"),
             LayoutPolicy = RequiredEnum<ChartForgeX.Topology.TopologyGroupLayoutPolicy>(item, "layoutPolicy"),
             AppliedLayoutPolicy = RequiredEnum<ChartForgeX.Topology.TopologyGroupLayoutPolicy>(item, "appliedLayoutPolicy"),
@@ -338,6 +345,7 @@ internal static partial class VisualArtifactInterchangeJson {
             FitLabelToContent = OptionalBool(item, "fitLabelToContent") ?? false,
             Longitude = OptionalNumber(item, "longitude"), Latitude = OptionalNumber(item, "latitude"),
             ShowStatusBadge = OptionalBool(item, "showStatusBadge") ?? true,
+            ShowLabel = OptionalBool(item, "showLabel") ?? true,
             MaximumLabelCharacters = OptionalInt(item, "maximumLabelCharacters"), Artwork = ReadArtwork(item)
         };
     }
@@ -407,7 +415,9 @@ internal static partial class VisualArtifactInterchangeJson {
         return item == null ? null : new VisualArtifactInterchangeSequenceNode {
             Kind = RequiredEnum<SequenceArtifactParticipantKind>(item, "kind"),
             Order = OptionalInt(item, "order") ?? 0,
-            IsImplicit = OptionalBool(item, "implicit") ?? false
+            IsImplicit = OptionalBool(item, "implicit") ?? false,
+            CreatedAtMessageIndex = OptionalInt(item, "createdAtMessageIndex"),
+            DestroyedAtMessageIndex = OptionalInt(item, "destroyedAtMessageIndex")
         };
     }
 

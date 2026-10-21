@@ -181,6 +181,12 @@ public sealed class MermaidFlowchartSubgraph : MermaidAstNode {
     /// <summary>Gets or sets the Mermaid subgraph title.</summary>
     public string Title { get => _title; set => _title = value ?? throw new System.ArgumentNullException(nameof(value)); }
 
+    /// <summary>Gets or sets the containing subgraph id, or null for a root subgraph.</summary>
+    public string? ParentSubgraphId { get; set; }
+
+    /// <summary>Gets or sets the locally declared direction; None inherits its parent.</summary>
+    public MermaidFlowchartDirection Direction { get; set; }
+
     /// <summary>Gets node ids declared inside the subgraph.</summary>
     public List<string> NodeIds { get; } = new();
 }

@@ -85,7 +85,7 @@ internal static partial class TopologyNodeShapeGeometry {
                 }), true, true));
                 break;
             default:
-                var r = node.Shape == TopologyNodeShape.Stadium ? Math.Min(w, h) / 2 : node.Shape == TopologyNodeShape.Rectangle ? 0 : Math.Min(10, Math.Min(w, h) / 2);
+                var r = node.Shape == TopologyNodeShape.Stadium ? Math.Min(w, h) / 2 : node.Shape is TopologyNodeShape.Rectangle or TopologyNodeShape.SynchronizationBar ? 0 : Math.Min(10, Math.Min(w, h) / 2);
                 if (r == 0) { Polygon(x, y, x + w, y, x + w, y + h, x, y + h); break; }
                 // Quadratic rounded corners expressed exactly as cubic segments.
                 const double q = 2d / 3;

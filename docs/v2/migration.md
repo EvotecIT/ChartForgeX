@@ -457,6 +457,8 @@ Factual completion checks, activity completion, progress handles, selected-perio
 
 The core artifact renderer accepts `IStaticVisualSource` through `RenderSource` or a producer model. Optional packages own their concrete drawing; hosts can retain semantic table/diagram data in `Model` while choosing a different static presentation. This export contract does not convert legacy blocks into native prepared scenes.
 
+Custom static producers used with raster preallocation policies implement the optional `IMeasuredStaticVisualSource` contract. Return exact destination pixel dimensions, including output scale, without allocating a raster canvas. Existing `IStaticVisualSource` producers remain usable without such a policy. Watermark decoration preserves captured policies and native options, including through nested layers; an unmeasured custom source is rejected only when a policy needs its dimensions. See [static producer measurement](../visual-artifacts.md#static-producers-and-raster-limits).
+
 For a still artifact, apply the decoration before choosing its output format:
 
 ```csharp
@@ -718,3 +720,13 @@ Existing `AddCandlestick` and `AddOhlc` callers retain their default colors, bod
 Observation regions cover the painted union, including the minimum-height doji body and stroke extents. Consumers using `PreparedVisual.Regions` for hit testing or label obstacles should use these bounds; source financial observations and axis domains are unchanged. HTML interaction continues to own pointer targets and controls. Trading sessions and datum style callbacks remain outside these options.
 
 The HTML adapter shows Open, High, Low and Close rows for financial targets in ordinary and pinned tooltips, including zero prices. Shared-X mode retains the single-target fallback for financial observations. Hosts consuming raw `data-cfx-y` still receive the opening tuple member; rendered readouts use the explicit financial facts rather than duplicating that value as a generic Y row.
+
+## Mermaid notation and host policy
+
+Family render options share `MermaidDiagramRenderOptions` for identity, title, subtitle and optional `Presentation`. Existing object initializers for those properties still work. Mermaid topology output now defaults to natural measured size in a scrollable HTML region; explicit family dimensions set the minimum canvas. Set `Presentation.TopologySizing = MermaidTopologySizing.FixedViewport` to restore scaling into a fixed family frame. Set shared `MermaidRenderOptions.Presentation` once; use a family presentation only for exceptions. Native/source appearance remains the default when no host override is supplied. `MermaidRenderOptions.Clone()` captures configuration for long-lived hosts; the Markdown bridge takes that snapshot automatically.
+
+Supported class and state notes are typed `Notes` with source spans, rather than retained raw statements. Generic class identities use the base ID (`Store`) while the display label retains `Store<Item>`. ER aliases are labels, not entity IDs. State composites map to native groups, so inspect `TopologyChart.Groups` for their geometry instead of expecting duplicate state cards. Group endpoints preserve authored identities in native interchange.
+
+Sequence participant lifetimes and boxes are native semantic facts, not metadata-only decoration. Invalid sequence numbering and requirement enum values now fail parsing. Relative Kanban indentation preserves the column/task hierarchy. Retained requirement styling produces a warning; hosts requiring complete source application can select `MermaidWarningPolicy.Reject`.
+
+New default source/model/export limits reject excessive requests deterministically. Configure `MermaidParseOptions.ResourceLimits` deliberately for larger trusted diagrams, and handle deferred `MermaidResourceLimitException` from artifact export. A cancellation token is cooperative, not a hard layout timeout. See [Mermaid host policy](../mermaid.md#shared-host-presentation-and-resource-policy) for precedence and limits.

@@ -18,9 +18,12 @@ public static partial class TopologyLayoutDiagnostics {
 
     private static void AnalyzeRoutes(TopologyLayoutDiagnosticReport report, TopologyChart chart, TopologyRenderOptions options,
         IReadOnlyDictionary<string, IReadOnlyList<ChartRect>> headerParts) {
-        var nodeBounds = new Dictionary<string, TopologyLayoutNodeDiagnostic>(StringComparer.Ordinal);
+        var nodeBounds = new Dictionary<string, TopologyLayoutBoundsDiagnostic>(StringComparer.Ordinal);
         foreach (var node in report.Nodes) {
             if (!nodeBounds.ContainsKey(node.Id)) nodeBounds.Add(node.Id, node);
+        }
+        foreach (var group in report.Groups) {
+            if (!nodeBounds.ContainsKey(group.Id)) nodeBounds.Add(group.Id, group);
         }
 
         // Hidden nodes draw nothing, and artwork nodes are backdrops that routes are allowed to pass over.

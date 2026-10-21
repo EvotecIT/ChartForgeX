@@ -39,7 +39,7 @@ public static class MermaidCynefinRendering {
             var transition = document.Transitions[i];
             chart.AddEdge("transition-" + i, transition.SourceId, transition.TargetId, transition.Label, direction: VisualLinkDirection.Forward);
         }
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>Produces a static domain-map artifact.</summary>

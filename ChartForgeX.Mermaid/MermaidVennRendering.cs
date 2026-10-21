@@ -42,7 +42,7 @@ public static class MermaidVennRendering {
             var target = (VennTextNode)block.TextNodes[block.TextNodes.Count - 1];
             target.TextColor = textNode.TextColor;
         }
-        return MermaidPresentation.Apply(block, document);
+        return MermaidPresentation.Apply(block, document, options.Presentation);
     }
 
     /// <summary>
@@ -71,11 +71,11 @@ public static class MermaidVennRendering {
 
     /// <summary>Renders a Mermaid Venn document to static SVG.</summary>
     public static string ToSvg(this MermaidVennDocument document, MermaidVennRenderOptions? options = null) =>
-        document.ToVennDiagramBlock(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid Venn document to static PNG.</summary>
     public static byte[] ToPng(this MermaidVennDocument document, MermaidVennRenderOptions? options = null) =>
-        document.ToVennDiagramBlock(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidVennDocument document, MermaidVennRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid Venn");
@@ -85,16 +85,7 @@ public static class MermaidVennRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid Venn diagrams.
 /// </summary>
-public sealed class MermaidVennRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidVennRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 780;
 

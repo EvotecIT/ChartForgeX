@@ -2,6 +2,9 @@ namespace ChartForgeX.Mermaid;
 
 /// <summary>Stable identifiers for diagram selection, source validation and native rendering limits.</summary>
 public static class MermaidDiagnosticCodes {
+    /// <summary>The host policy rejects source warnings instead of producing partial native output.</summary>
+    public const string RejectedWarning = "CFXM011";
+
     /// <summary>The source declares an unknown diagram family.</summary>
     public const string UnknownDiagram = "CFXM001";
 
@@ -28,4 +31,7 @@ public static class MermaidDiagnosticCodes {
 
     /// <summary>The source uses a deliberately approximate native mapping whose geometry or notation differs semantically.</summary>
     public const string ApproximateMapping = "CFXM009";
+
+    /// <summary>A source, semantic model, raster allocation or encoded output exceeds its captured resource policy.</summary>
+    public const string ResourceLimitExceeded = "CFXM010";
 }

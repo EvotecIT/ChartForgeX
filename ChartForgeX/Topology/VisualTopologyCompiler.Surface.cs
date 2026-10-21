@@ -46,7 +46,7 @@ internal sealed partial class VisualTopologyCompiler {
         || _builder.MeasureText("Ag", size * _scale, weight).LineHeight > height * _scale;
 
     private void BuildGroups() {
-        if (_options.IncludeGroups) foreach (var group in _chart.Groups) {
+        if (_options.IncludeGroups) foreach (var group in TopologyGroupEndpoints.InPaintOrder(_chart)) {
             var headerParts = new List<ChartRect>();
             _groupHeaderParts.Add(group.Id, headerParts);
             var active = _highlight.IsGroupHighlighted(group);

@@ -47,7 +47,7 @@ public static class MermaidXYChartRendering {
             else chart.AddBar(series.Name, points);
         }
 
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -74,13 +74,13 @@ public static class MermaidXYChartRendering {
     /// Renders a Mermaid XY chart document to static SVG through ChartForgeX chart rendering.
     /// </summary>
     public static string ToSvg(this MermaidXYChartDocument document, MermaidXYChartRenderOptions? options = null) =>
-        document.ToChart(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>
     /// Renders a Mermaid XY chart document to static PNG through ChartForgeX chart rendering.
     /// </summary>
     public static byte[] ToPng(this MermaidXYChartDocument document, MermaidXYChartRenderOptions? options = null) =>
-        document.ToChart(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidXYChartDocument document, MermaidXYChartRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid XY chart");
@@ -110,16 +110,7 @@ public static class MermaidXYChartRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid XY charts.
 /// </summary>
-public sealed class MermaidXYChartRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidXYChartRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 900;
 

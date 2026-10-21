@@ -13,10 +13,12 @@ public sealed partial class MermaidParser {
         };
         var body = (string[])lines.Clone();
         var actors = new HashSet<string>(StringComparer.Ordinal);
-        var relations = new Dictionary<int, string>();
+        var relations = new Dictionary<int, (string Kind, MermaidSourceSpan Span)>();
         var boundaryDepth = 0;
         for (var i = header.Line; i < body.Length; i++) {
+            MermaidResourceGuard.Checkpoint();
             var text = body[i].Trim();
+            var sourceSpan = new MermaidSourceSpan(i + 1, MermaidParserUtilities.LeadingWhitespace(body[i]) + 1, text.Length);
             if (text == "end") boundaryDepth--;
             if (text.StartsWith("direction ", StringComparison.Ordinal)) {
                 document.Direction = ParseFlowchartDirection(text.Substring(10).Trim());
@@ -39,10 +41,10 @@ public sealed partial class MermaidParser {
             } else {
                 var relation = Regex.Match(text, @"^(\w+)\s+\.\.>\s*:\s*(include|extend)\s+(\w+)\s*$", RegexOptions.CultureInvariant);
                 if (relation.Success) {
-                    relations[i + 1] = relation.Groups[2].Value;
+                    relations[i + 1] = (relation.Groups[2].Value, sourceSpan);
                     body[i] = relation.Groups[1].Value + " -.->|<<" + relation.Groups[2].Value + ">>| " + relation.Groups[3].Value;
                 } else if (text.Contains("--|>")) {
-                    relations[i + 1] = "generalization";
+                    relations[i + 1] = ("generalization", sourceSpan);
                     body[i] = body[i].Replace("--|>", "-->");
                 }
             }
@@ -52,16 +54,17 @@ public sealed partial class MermaidParser {
             if (actors.Contains(node.Id)) node.Shape = MermaidFlowchartNodeShape.Actor;
             else if (node.Shape is MermaidFlowchartNodeShape.Rounded or MermaidFlowchartNodeShape.Default) node.Shape = MermaidFlowchartNodeShape.Ellipse;
         }
-        foreach (var edge in document.Edges) if (relations.TryGetValue(edge.Span.Line, out var kind)) {
-            if (kind == "generalization") {
+        foreach (var edge in document.Edges) if (relations.TryGetValue(edge.Span.Line, out var relation)) {
+            var from = document.Nodes.Find(node => node.Id == edge.SourceId);
+            var to = document.Nodes.Find(node => node.Id == edge.TargetId);
+            if (relation.Kind == "generalization") {
                 edge.Operator = "--|>";
-                if (actors.Contains(edge.SourceId) != actors.Contains(edge.TargetId)) MermaidParserUtilities.Add(result, edge.Span, MermaidDiagnosticSeverity.Error, "Use case generalization endpoints must both be actors or both be use cases.");
+                if (from == null || to == null || (from.Shape == MermaidFlowchartNodeShape.Actor) != (to.Shape == MermaidFlowchartNodeShape.Actor))
+                    MermaidParserUtilities.Add(result, relation.Span, MermaidDiagnosticSeverity.Error, "Use case generalization endpoints must both be actors or both be use cases.");
             }
             else {
-                var from = document.Nodes.Find(node => node.Id == edge.SourceId)!;
-                var to = document.Nodes.Find(node => node.Id == edge.TargetId)!;
-                if (from.Shape == MermaidFlowchartNodeShape.Actor || to.Shape == MermaidFlowchartNodeShape.Actor)
-                    MermaidParserUtilities.Add(result, edge.Span, MermaidDiagnosticSeverity.Error, "Use case include and extend relationships require use case endpoints.");
+                if (from == null || to == null || from.Shape == MermaidFlowchartNodeShape.Actor || to.Shape == MermaidFlowchartNodeShape.Actor)
+                    MermaidParserUtilities.Add(result, relation.Span, MermaidDiagnosticSeverity.Error, "Use case include and extend relationships require use case endpoints.");
             }
         }
         return document;
@@ -75,6 +78,7 @@ public sealed partial class MermaidParser {
         var domains = new HashSet<string>(StringComparer.Ordinal) { "complex", "complicated", "chaotic", "clear", "confusion" };
         string? current = null;
         for (var i = header.Line; i < lines.Length; i++) {
+            MermaidResourceGuard.Checkpoint();
             var text = lines[i].Trim();
             if (MermaidParserUtilities.IsSkippable(text)) continue;
             var span = new MermaidSourceSpan(i + 1, MermaidParserUtilities.LeadingWhitespace(lines[i]) + 1, text.Length);

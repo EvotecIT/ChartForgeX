@@ -40,7 +40,7 @@ public static class MermaidWardleyRendering {
             foreach (var component in pipeline.Components) mapped.AddComponent(component.Label, component.Evolution);
         }
 
-        return MermaidPresentation.Apply(block, document);
+        return MermaidPresentation.Apply(block, document, options.Presentation);
     }
 
     /// <summary>
@@ -70,11 +70,11 @@ public static class MermaidWardleyRendering {
 
     /// <summary>Renders a Mermaid Wardley document to static SVG.</summary>
     public static string ToSvg(this MermaidWardleyDocument document, MermaidWardleyRenderOptions? options = null) =>
-        document.ToWardleyMapBlock(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid Wardley document to static PNG.</summary>
     public static byte[] ToPng(this MermaidWardleyDocument document, MermaidWardleyRenderOptions? options = null) =>
-        document.ToWardleyMapBlock(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidWardleyDocument document, MermaidWardleyRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid Wardley");
@@ -88,16 +88,7 @@ public static class MermaidWardleyRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid Wardley maps.
 /// </summary>
-public sealed class MermaidWardleyRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidWardleyRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width. Zero uses the Mermaid size statement or renderer default.</summary>
     public int Width { get; set; }
 

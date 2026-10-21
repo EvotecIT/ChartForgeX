@@ -1,0 +1,22 @@
+/// <summary>Shows participant groups and the creating and destroying messages in a sequence.</summary>
+internal static class MermaidSequenceExamples {
+    internal const string Lifecycle = """
+        sequenceDiagram
+        title Delivery lifecycle
+        box transparent Client
+        actor U as User
+        end
+        box rgba(210,230,255,0.4) Services
+        participant API as Service
+        participant DB as Store
+        end
+        U->>API: Submit request
+        API->>DB: Read policy
+        create participant W as Worker
+        API->>W: Start work
+        W-->>API: Result
+        destroy W
+        API-xW: Stop worker
+        API-->>U: Delivered
+        """;
+}

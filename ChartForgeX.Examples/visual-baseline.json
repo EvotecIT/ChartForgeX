@@ -11,7 +11,7 @@
       "width": 920,
       "height": 585,
       "logicalWidth": 920.0,
-      "logicalHeight": 584.65,
+      "logicalHeight": 585.0,
       "svg": {
         "minVisualNodes": 24,
         "maxClippedTextNodes": 0,
@@ -4187,7 +4187,7 @@
       "width": 1600,
       "height": 824,
       "logicalWidth": 1600.0,
-      "logicalHeight": 823.65,
+      "logicalHeight": 824.0,
       "svg": {
         "minVisualNodes": 92,
         "maxClippedTextNodes": 0,
@@ -5072,9 +5072,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 1059,
+      "width": 1249,
       "height": 560,
-      "logicalWidth": 1059.0,
+      "logicalWidth": 1249.0,
       "logicalHeight": 560.0,
       "svg": {
         "minVisualNodes": 11,
@@ -5090,15 +5090,63 @@
       }
     },
     {
+      "name": "mermaid-class-native-notes-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1261,
+      "height": 560,
+      "logicalWidth": 1261.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 12,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 356440,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 449,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-class-native-notes-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1261,
+      "height": 560,
+      "logicalWidth": 1261.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 12,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 356440,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 366,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-class-notation",
       "layout": {
         "heightMode": "fixed",
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 960,
+      "width": 1099,
       "height": 560,
-      "logicalWidth": 960.0,
+      "logicalWidth": 1099.0,
       "logicalHeight": 560.0,
       "svg": {
         "minVisualNodes": 20,
@@ -5117,13 +5165,13 @@
       "name": "mermaid-cynefin-basic",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 960,
-      "height": 620,
+      "height": 621,
       "logicalWidth": 960.0,
-      "logicalHeight": 620.1,
+      "logicalHeight": 621.0,
       "svg": {
         "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
@@ -5141,13 +5189,13 @@
       "name": "mermaid-er-direction",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 960,
-      "height": 668,
+      "height": 669,
       "logicalWidth": 960.0,
-      "logicalHeight": 668.1,
+      "logicalHeight": 669.0,
       "svg": {
         "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
@@ -5182,6 +5230,54 @@
         "minVisiblePixels": 296520,
         "minTransparentPixels": 0,
         "minDistinctColors": 370,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-er-typed-attributes-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1059,
+      "height": 560,
+      "logicalWidth": 1059.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 296520,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 396,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-er-typed-attributes-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 1059,
+      "height": 560,
+      "logicalWidth": 1059.0,
+      "logicalHeight": 560.0,
+      "svg": {
+        "minVisualNodes": 11,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 296520,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 325,
         "maxEdgeInkPixels": 0
       }
     },
@@ -5241,9 +5337,9 @@
         "frameFontFingerprint": ""
       },
       "width": 705,
-      "height": 466,
+      "height": 467,
       "logicalWidth": 705.0,
-      "logicalHeight": 466.1,
+      "logicalHeight": 467.0,
       "svg": {
         "minVisualNodes": 16,
         "maxClippedTextNodes": 0,
@@ -5350,6 +5446,54 @@
         "minVisiblePixels": 102400,
         "minTransparentPixels": 0,
         "minDistinctColors": 303,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-flowchart-nested-directions-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 844,
+      "height": 731,
+      "logicalWidth": 844.0,
+      "logicalHeight": 731.0,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 308482,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 585,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-flowchart-nested-directions-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 844,
+      "height": 731,
+      "logicalWidth": 844.0,
+      "logicalHeight": 731.0,
+      "svg": {
+        "minVisualNodes": 28,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 308482,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 476,
         "maxEdgeInkPixels": 0
       }
     },
@@ -6194,6 +6338,54 @@
       }
     },
     {
+      "name": "mermaid-sequence-lifetimes-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 644,
+      "logicalWidth": 960.0,
+      "logicalHeight": 643.936,
+      "svg": {
+        "minVisualNodes": 25,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 303840,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 535,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-sequence-lifetimes-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 960,
+      "height": 644,
+      "logicalWidth": 960.0,
+      "logicalHeight": 643.936,
+      "svg": {
+        "minVisualNodes": 25,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 303840,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 456,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-sequence-presentation",
       "layout": {
         "heightMode": "fixed",
@@ -7013,13 +7205,13 @@
       "name": "mermaid-state-direction",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 960,
-      "height": 668,
+      "height": 669,
       "logicalWidth": 960.0,
-      "logicalHeight": 668.1,
+      "logicalHeight": 669.0,
       "svg": {
         "minVisualNodes": 12,
         "maxClippedTextNodes": 0,
@@ -7034,16 +7226,64 @@
       }
     },
     {
+      "name": "mermaid-state-synchronization-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 977,
+      "height": 831,
+      "logicalWidth": 977.0,
+      "logicalHeight": 831.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 409683,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 448,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "mermaid-state-synchronization-light",
+      "layout": {
+        "heightMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 977,
+      "height": 831,
+      "logicalWidth": 977.0,
+      "logicalHeight": 831.0,
+      "svg": {
+        "minVisualNodes": 26,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 1,
+        "minVisiblePixels": 409683,
+        "minTransparentPixels": 0,
+        "minDistinctColors": 383,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "mermaid-swimlane-basic",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 1032,
-      "height": 436,
+      "height": 437,
       "logicalWidth": 1032.0,
-      "logicalHeight": 436.1,
+      "logicalHeight": 437.0,
       "svg": {
         "minVisualNodes": 15,
         "maxClippedTextNodes": 0,
@@ -7157,13 +7397,13 @@
       "name": "mermaid-usecase-basic",
       "layout": {
         "heightMode": "natural",
-        "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
-        "frameFontFingerprint": "3DC90E88A1CF5785C9A088E493F68B45A524EDDA9DB14451A2A3326532C160FD"
+        "frameFontRequest": "CFX Proof Carlito|700|normal|17|",
+        "frameFontFingerprint": "B52E648F73A0BF5D4524E3F9693FB1E551369EFADEC7A6075D7EF38A2240A390"
       },
       "width": 984,
-      "height": 478,
+      "height": 479,
       "logicalWidth": 984.0,
-      "logicalHeight": 478.1,
+      "logicalHeight": 479.0,
       "svg": {
         "minVisualNodes": 17,
         "maxClippedTextNodes": 0,
@@ -8697,9 +8937,9 @@
         "frameFontFingerprint": "515364E384211E2E32C2DE6EB37B7F667196FEAE2328948FE314CE46A36C14A4"
       },
       "width": 1200,
-      "height": 716,
+      "height": 717,
       "logicalWidth": 1200.0,
-      "logicalHeight": 716.425,
+      "logicalHeight": 717.0,
       "svg": {
         "minVisualNodes": 69,
         "maxClippedTextNodes": 0,
@@ -8721,9 +8961,9 @@
         "frameFontFingerprint": "515364E384211E2E32C2DE6EB37B7F667196FEAE2328948FE314CE46A36C14A4"
       },
       "width": 1200,
-      "height": 716,
+      "height": 717,
       "logicalWidth": 1200.0,
-      "logicalHeight": 716.425,
+      "logicalHeight": 717.0,
       "svg": {
         "minVisualNodes": 53,
         "maxClippedTextNodes": 0,
@@ -8745,9 +8985,9 @@
         "frameFontFingerprint": "515364E384211E2E32C2DE6EB37B7F667196FEAE2328948FE314CE46A36C14A4"
       },
       "width": 1200,
-      "height": 704,
+      "height": 705,
       "logicalWidth": 1200.0,
-      "logicalHeight": 704.425,
+      "logicalHeight": 705.0,
       "svg": {
         "minVisualNodes": 69,
         "maxClippedTextNodes": 0,
@@ -8987,7 +9227,7 @@
       "width": 1200,
       "height": 705,
       "logicalWidth": 1200.0,
-      "logicalHeight": 704.925,
+      "logicalHeight": 705.0,
       "svg": {
         "minVisualNodes": 71,
         "maxClippedTextNodes": 0,
@@ -9083,7 +9323,7 @@
       "width": 1200,
       "height": 715,
       "logicalWidth": 1200.0,
-      "logicalHeight": 714.925,
+      "logicalHeight": 715.0,
       "svg": {
         "minVisualNodes": 56,
         "maxClippedTextNodes": 0,
@@ -9467,7 +9707,7 @@
       "width": 1080,
       "height": 569,
       "logicalWidth": 1080.0,
-      "logicalHeight": 568.925,
+      "logicalHeight": 569.0,
       "svg": {
         "minVisualNodes": 50,
         "maxClippedTextNodes": 0,
@@ -9489,9 +9729,9 @@
         "frameFontFingerprint": "515364E384211E2E32C2DE6EB37B7F667196FEAE2328948FE314CE46A36C14A4"
       },
       "width": 1180,
-      "height": 634,
+      "height": 635,
       "logicalWidth": 1180.0,
-      "logicalHeight": 634.425,
+      "logicalHeight": 635.0,
       "svg": {
         "minVisualNodes": 74,
         "maxClippedTextNodes": 0,
@@ -9513,9 +9753,9 @@
         "frameFontFingerprint": "515364E384211E2E32C2DE6EB37B7F667196FEAE2328948FE314CE46A36C14A4"
       },
       "width": 1180,
-      "height": 720,
+      "height": 721,
       "logicalWidth": 1180.0,
-      "logicalHeight": 720.425,
+      "logicalHeight": 721.0,
       "svg": {
         "minVisualNodes": 142,
         "maxClippedTextNodes": 0,
@@ -9539,7 +9779,7 @@
       "width": 980,
       "height": 587,
       "logicalWidth": 980.0,
-      "logicalHeight": 586.925,
+      "logicalHeight": 587.0,
       "svg": {
         "minVisualNodes": 73,
         "maxClippedTextNodes": 0,
@@ -9563,7 +9803,7 @@
       "width": 1800,
       "height": 1181,
       "logicalWidth": 1800.0,
-      "logicalHeight": 1180.65,
+      "logicalHeight": 1181.0,
       "svg": {
         "minVisualNodes": 352,
         "maxClippedTextNodes": 0,
@@ -9587,7 +9827,7 @@
       "width": 1280,
       "height": 781,
       "logicalWidth": 1280.0,
-      "logicalHeight": 780.65,
+      "logicalHeight": 781.0,
       "svg": {
         "minVisualNodes": 86,
         "maxClippedTextNodes": 0,
@@ -9683,7 +9923,7 @@
       "width": 1120,
       "height": 715,
       "logicalWidth": 1120.0,
-      "logicalHeight": 714.925,
+      "logicalHeight": 715.0,
       "svg": {
         "minVisualNodes": 113,
         "maxClippedTextNodes": 0,
@@ -9705,9 +9945,9 @@
         "frameFontFingerprint": "8AEFA0EB0877913F1CD385111DDF88941F0CFBD35951D131FF5F0363BD96F442"
       },
       "width": 920,
-      "height": 437,
+      "height": 438,
       "logicalWidth": 920.0,
-      "logicalHeight": 437.15,
+      "logicalHeight": 438.0,
       "svg": {
         "minVisualNodes": 70,
         "maxClippedTextNodes": 0,
@@ -9827,7 +10067,7 @@
       "width": 1120,
       "height": 661,
       "logicalWidth": 1120.0,
-      "logicalHeight": 660.925,
+      "logicalHeight": 661.0,
       "svg": {
         "minVisualNodes": 115,
         "maxClippedTextNodes": 0,
@@ -9851,7 +10091,7 @@
       "width": 1400,
       "height": 969,
       "logicalWidth": 1400.0,
-      "logicalHeight": 968.925,
+      "logicalHeight": 969.0,
       "svg": {
         "minVisualNodes": 220,
         "maxClippedTextNodes": 0,
@@ -9875,7 +10115,7 @@
       "width": 1680,
       "height": 1114,
       "logicalWidth": 1680.0,
-      "logicalHeight": 1113.65,
+      "logicalHeight": 1114.0,
       "svg": {
         "minVisualNodes": 561,
         "maxClippedTextNodes": 0,
@@ -9899,7 +10139,7 @@
       "width": 1320,
       "height": 844,
       "logicalWidth": 1320.0,
-      "logicalHeight": 843.65,
+      "logicalHeight": 844.0,
       "svg": {
         "minVisualNodes": 29,
         "maxClippedTextNodes": 0,
@@ -9923,7 +10163,7 @@
       "width": 1240,
       "height": 742,
       "logicalWidth": 1240.0,
-      "logicalHeight": 741.925,
+      "logicalHeight": 742.0,
       "svg": {
         "minVisualNodes": 128,
         "maxClippedTextNodes": 0,
@@ -9947,7 +10187,7 @@
       "width": 1280,
       "height": 723,
       "logicalWidth": 1280.0,
-      "logicalHeight": 722.925,
+      "logicalHeight": 723.0,
       "svg": {
         "minVisualNodes": 133,
         "maxClippedTextNodes": 0,
@@ -9971,7 +10211,7 @@
       "width": 1280,
       "height": 723,
       "logicalWidth": 1280.0,
-      "logicalHeight": 722.925,
+      "logicalHeight": 723.0,
       "svg": {
         "minVisualNodes": 138,
         "maxClippedTextNodes": 0,
@@ -9992,10 +10232,10 @@
         "frameFontRequest": "Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|400|normal|13.5|\nCalibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|400|normal|13|\nCalibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|600|normal|13|\nCalibri, Carlito, Segoe UI, Arial, system-ui, sans-serif|700|normal|17|",
         "frameFontFingerprint": "515364E384211E2E32C2DE6EB37B7F667196FEAE2328948FE314CE46A36C14A4"
       },
-      "width": 1316,
-      "height": 657,
-      "logicalWidth": 1316.0,
-      "logicalHeight": 656.925,
+      "width": 1280,
+      "height": 620,
+      "logicalWidth": 1280.0,
+      "logicalHeight": 620.0,
       "svg": {
         "minVisualNodes": 83,
         "maxClippedTextNodes": 0,
@@ -10091,7 +10331,7 @@
       "width": 1280,
       "height": 795,
       "logicalWidth": 1280.0,
-      "logicalHeight": 794.925,
+      "logicalHeight": 795.0,
       "svg": {
         "minVisualNodes": 89,
         "maxClippedTextNodes": 0,
@@ -10115,7 +10355,7 @@
       "width": 1180,
       "height": 855,
       "logicalWidth": 1180.0,
-      "logicalHeight": 854.925,
+      "logicalHeight": 855.0,
       "svg": {
         "minVisualNodes": 87,
         "maxClippedTextNodes": 0,
@@ -10139,7 +10379,7 @@
       "width": 1280,
       "height": 767,
       "logicalWidth": 1280.0,
-      "logicalHeight": 766.925,
+      "logicalHeight": 767.0,
       "svg": {
         "minVisualNodes": 130,
         "maxClippedTextNodes": 0,
@@ -10187,7 +10427,7 @@
       "width": 1000,
       "height": 536,
       "logicalWidth": 1000.0,
-      "logicalHeight": 535.65,
+      "logicalHeight": 536.0,
       "svg": {
         "minVisualNodes": 12,
         "maxClippedTextNodes": 0,

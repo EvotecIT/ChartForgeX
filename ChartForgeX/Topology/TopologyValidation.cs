@@ -95,6 +95,7 @@ public sealed class TopologyChartValidator {
     }
 
     private static void ValidateGroups(TopologyChart chart, TopologyValidationResult result) {
+        result.Errors.AddRange(TopologyGroupHierarchy.Validate(chart.Groups.Select(group => (group.Id, group.ParentGroupId))).Errors);
         foreach (var group in chart.Groups) {
             if (string.IsNullOrWhiteSpace(group.Id)) Add(result, "group-id-empty", "Group id is required.", null);
             if (string.IsNullOrWhiteSpace(group.Label)) Add(result, "group-label-empty", "Group label is required.", group.Id);
@@ -102,6 +103,8 @@ public sealed class TopologyChartValidator {
             if (!IsPositive(group.Height)) Add(result, "group-height", "Group '" + group.Id + "' height must be positive.", group.Id);
             if (!IsFinite(group.X) || !IsFinite(group.Y)) Add(result, "group-coordinate", "Group '" + group.Id + "' coordinates must be finite.", group.Id);
             ValidateCoordinatePair(result, "group", group.Id, group.Longitude, group.Latitude);
+            if (group.LayoutDirection.HasValue && !Enum.IsDefined(typeof(TopologyLayoutDirection), group.LayoutDirection.Value))
+                Add(result, "group-layout-direction", "Group '" + group.Id + "' has an undefined layout direction.", group.Id);
         }
         foreach (var duplicate in chart.Groups.Where(group => !string.IsNullOrWhiteSpace(group.Id)).GroupBy(group => group.Id, StringComparer.Ordinal).Where(group => group.Count() > 1)) {
             Add(result, "duplicate-group-id", "Duplicate group id '" + duplicate.Key + "'.", duplicate.Key);
@@ -143,15 +146,16 @@ public sealed class TopologyChartValidator {
 
     private static void ValidateEdges(TopologyChart chart, TopologyValidationResult result) {
         var nodeIds = new HashSet<string>(chart.Nodes.Select(node => node.Id), StringComparer.Ordinal);
+        var groupIds = new HashSet<string>(chart.Groups.Select(group => group.Id), StringComparer.Ordinal);
         foreach (var edge in chart.Edges) {
             if (string.IsNullOrWhiteSpace(edge.Id)) Add(result, "edge-id-empty", "Edge id is required.", null);
             if (string.IsNullOrWhiteSpace(edge.SourceNodeId)) Add(result, "edge-source-empty", "Edge '" + edge.Id + "' source node id is required.", edge.Id);
             if (string.IsNullOrWhiteSpace(edge.TargetNodeId)) Add(result, "edge-target-empty", "Edge '" + edge.Id + "' target node id is required.", edge.Id);
-            if (!string.IsNullOrWhiteSpace(edge.SourceNodeId) && !nodeIds.Contains(edge.SourceNodeId)) {
+            if (!string.IsNullOrWhiteSpace(edge.SourceNodeId) && !nodeIds.Contains(edge.SourceNodeId) && !groupIds.Contains(edge.SourceNodeId)) {
                 Add(result, "missing-edge-source", "Edge '" + edge.Id + "' references missing source node '" + edge.SourceNodeId + "'.", edge.Id);
             }
 
-            if (!string.IsNullOrWhiteSpace(edge.TargetNodeId) && !nodeIds.Contains(edge.TargetNodeId)) {
+            if (!string.IsNullOrWhiteSpace(edge.TargetNodeId) && !nodeIds.Contains(edge.TargetNodeId) && !groupIds.Contains(edge.TargetNodeId)) {
                 Add(result, "missing-edge-target", "Edge '" + edge.Id + "' references missing target node '" + edge.TargetNodeId + "'.", edge.Id);
             }
             if (edge.DashPattern.Count > 0) {

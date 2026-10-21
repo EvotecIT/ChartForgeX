@@ -6,7 +6,9 @@ namespace ChartForgeX.Mermaid;
 internal static class MermaidKanbanParser {
     public static void ParseStatements(MermaidKanbanDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         MermaidKanbanColumn? activeColumn = null;
+        int? columnIndent = null;
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -17,7 +19,8 @@ internal static class MermaidKanbanParser {
                 continue;
             }
 
-            if (indent == 0 || activeColumn == null) {
+            if (!columnIndent.HasValue || indent <= columnIndent.Value) {
+                columnIndent = indent;
                 activeColumn = new MermaidKanbanColumn(id, title, span);
                 document.Columns.Add(activeColumn);
                 continue;
@@ -25,7 +28,7 @@ internal static class MermaidKanbanParser {
 
             var task = new MermaidKanbanTask(id, title, span);
             ParseMetadata(suffix, task.Metadata);
-            activeColumn.Tasks.Add(task);
+            activeColumn!.Tasks.Add(task);
         }
 
         if (document.Columns.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid kanban diagrams require at least one column.");

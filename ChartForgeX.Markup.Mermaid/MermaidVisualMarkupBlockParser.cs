@@ -12,6 +12,7 @@ namespace ChartForgeX.Markup.Mermaid;
 /// Parses Mermaid Markdown fences into ChartForgeX visual artifacts.
 /// </summary>
 public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockParser {
+    private readonly MermaidRenderOptions _defaults;
     private readonly MermaidParseOptions? _parseOptions;
     private readonly MermaidFlowchartRenderOptions _renderOptions;
     private readonly MermaidFlowchartRenderOptions _swimlaneRenderOptions;
@@ -57,7 +58,8 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     public MermaidVisualMarkupBlockParser(MermaidRenderOptions renderOptions) {
         if (renderOptions == null) throw new ArgumentNullException(nameof(renderOptions));
 
-        _parseOptions = renderOptions.ParseOptions == null ? null : new MermaidParseOptions { GanttDateAnchor = renderOptions.ParseOptions.GanttDateAnchor };
+        _defaults = renderOptions.Clone();
+        _parseOptions = _defaults.ParseOptions;
 
         _renderOptions = renderOptions.Flowchart == null ? new MermaidFlowchartRenderOptions() : Clone(renderOptions.Flowchart);
         _swimlaneRenderOptions = Clone(renderOptions.Swimlane ?? renderOptions.Flowchart ?? new MermaidFlowchartRenderOptions());
@@ -99,33 +101,34 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
         if (block == null) throw new ArgumentNullException(nameof(block));
         if (result == null) throw new ArgumentNullException(nameof(result));
 
-        var mermaidResult = new MermaidParser().Parse(block.Payload, _parseOptions);
-        foreach (var diagnostic in mermaidResult.Diagnostics) {
-            result.Diagnostics.Add(new MarkupDiagnostic {
-                Line = diagnostic.Span.Line <= 0 ? block.FenceLine : block.StartLine + diagnostic.Span.Line - 1,
-                Severity = diagnostic.Severity,
-                Message = diagnostic.Message,
-                Code = diagnostic.Code
-            });
-        }
-
-        if (mermaidResult.HasErrors || mermaidResult.Document == null || mermaidResult.Document.IsDiagnosticOnly) return;
+        var parsed = new MermaidParser().Parse(block.Payload, _parseOptions);
+        MermaidRenderResult rendered;
         try {
-            var options = BuildRenderOptions(block, mermaidResult.Document.Kind);
-            var artifact = mermaidResult.Document.ToVisualArtifact(options);
-            artifact.Metadata["fence"] = block.FenceName;
-            artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
-            artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
-            result.Artifacts.Add(artifact);
-        } catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException || ex is OverflowException) {
+            var options = BuildRenderOptions(block, parsed.Document?.Kind ?? MermaidDiagramKind.Unknown);
+            options.ParseOptions = _parseOptions;
+            options.Presentation = _defaults.Presentation;
+            options.WarningPolicy = _defaults.WarningPolicy;
+            rendered = MermaidRenderer.RenderParsed(parsed, options);
+        } catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is OverflowException) {
+            result.Diagnostics.Add(new MarkupDiagnostic { Line = block.FenceLine, Severity = MarkupDiagnosticSeverity.Error,
+                Code = MermaidDiagnosticCodes.ConversionFailed, Message = exception.Message });
+            return;
+        }
+        foreach (var diagnostic in rendered.Diagnostics) {
             result.Diagnostics.Add(new MarkupDiagnostic {
-                Line = block.FenceLine,
-                Severity = MarkupDiagnosticSeverity.Error,
-                Code = MermaidDiagnosticCodes.ConversionFailed,
-                Message = ex.Message
+                Line = block.StartLine + Math.Max(0, diagnostic.Span.Line - 1),
+                Column = diagnostic.Span.Column,
+                Severity = diagnostic.Severity == MermaidDiagnosticSeverity.Error ? MarkupDiagnosticSeverity.Error : MarkupDiagnosticSeverity.Warning,
+                Code = diagnostic.Code, Message = diagnostic.Message
             });
         }
+        if (rendered.HasErrors || rendered.Artifact == null) return;
+        var artifact = rendered.Artifact;
+        artifact.Metadata["fence"] = block.FenceName;
+        artifact.Metadata["sourceLine"] = block.FenceLine.ToString(CultureInfo.InvariantCulture);
+        artifact.Metadata["payloadStartLine"] = block.StartLine.ToString(CultureInfo.InvariantCulture);
+        artifact.Metadata["payloadEndLine"] = block.EndLine.ToString(CultureInfo.InvariantCulture);
+        result.Artifacts.Add(artifact);
     }
 
     private MermaidRenderOptions BuildRenderOptions(VisualMarkupBlock block, MermaidDiagramKind kind) => kind switch {

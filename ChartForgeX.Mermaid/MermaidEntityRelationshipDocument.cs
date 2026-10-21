@@ -30,6 +30,9 @@ public sealed class MermaidEntityNode : MermaidAstNode {
     /// <summary>Gets the entity id.</summary>
     public string Id { get; }
 
+    /// <summary>Gets or sets an optional display alias; relationships continue to use <see cref="Id"/>.</summary>
+    public string? Label { get; set; }
+
     /// <summary>Gets entity attributes.</summary>
     public List<MermaidEntityAttribute> Attributes { get; } = new();
 }

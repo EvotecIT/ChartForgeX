@@ -244,7 +244,8 @@ linkStyle 0 stroke:#f00,stroke-dasharray: 5 5";
         Assert(!result.HasErrors, "Mermaid flowchart parser should parse render source: " + MermaidDiagnostics(result));
         var document = result.Document ?? throw new InvalidOperationException("Mermaid flowchart parser should produce a document.");
 
-        var options = new MermaidFlowchartRenderOptions { Id = "render-proof", Title = "Render proof", Width = 640, Height = 360 };
+        var options = new MermaidFlowchartRenderOptions { Id = "render-proof", Title = "Render proof", Width = 640, Height = 360,
+            Presentation = new MermaidPresentationOptions { TopologySizing = MermaidTopologySizing.FixedViewport } };
         var topology = document.ToTopologyChart(options);
         var svg = document.ToSvg(options);
         var png = document.ToPng(options);

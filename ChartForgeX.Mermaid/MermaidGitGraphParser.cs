@@ -19,6 +19,7 @@ internal static partial class MermaidGitGraphParser {
 
         AddBranch(document, branches, branchHeads, currentBranch, 0, null, document.HeaderSpan);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             foreach (var statement in SplitStatements(lines[line - 1], line)) {
                 var trimmed = statement.Text;
                 var span = statement.Span;

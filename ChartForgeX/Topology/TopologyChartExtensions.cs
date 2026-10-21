@@ -450,8 +450,8 @@ public static partial class TopologyChartExtensions {
     /// </summary>
     /// <param name="chart">The topology chart.</param>
     /// <param name="id">The edge id.</param>
-    /// <param name="sourceNodeId">The source node id.</param>
-    /// <param name="targetNodeId">The target node id.</param>
+    /// <param name="sourceNodeId">The source node or group id; node ids take precedence.</param>
+    /// <param name="targetNodeId">The target node or group id; node ids take precedence.</param>
     /// <param name="label">The optional edge label.</param>
     /// <param name="kind">The edge kind.</param>
     /// <param name="status">The edge status.</param>

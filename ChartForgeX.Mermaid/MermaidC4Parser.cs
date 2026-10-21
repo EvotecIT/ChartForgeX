@@ -10,6 +10,7 @@ internal static class MermaidC4Parser {
         var boundaryStack = new Stack<string>();
 
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -92,7 +93,10 @@ internal static class MermaidC4Parser {
         };
         boundaries.Add(id, boundary);
         document.Boundaries.Add(boundary);
-        if (call.OpensBlock) boundaryStack.Push(id);
+        if (call.OpensBlock) {
+            MermaidResourceGuard.CheckDepth(boundaryStack.Count + 1, span);
+            boundaryStack.Push(id);
+        }
     }
 
     private static void ParseElement(MermaidC4Document document, Dictionary<string, MermaidC4Element> elements, CallStatement call, MermaidSourceSpan span, Stack<string> boundaryStack, MermaidParseResult<MermaidDocument> result) {

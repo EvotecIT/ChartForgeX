@@ -8,6 +8,7 @@ public static partial class VisualArtifactInterchangeMapping {
     private static VisualArtifactInterchangeTopologyGroup MapGroupPresentation(TopologyGroup group) {
         return new VisualArtifactInterchangeTopologyGroup {
             Status = group.Status,
+            LayoutDirection = group.LayoutDirection,
             IconId = group.IconId,
             Symbol = group.Symbol,
             LayoutPolicy = group.LayoutPolicy,
@@ -29,6 +30,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Longitude = node.Longitude,
             Latitude = node.Latitude,
             ShowStatusBadge = showStatusBadge,
+            ShowLabel = node.ShowLabel,
             MaximumLabelCharacters = node.MaximumLabelCharacters
         };
     }

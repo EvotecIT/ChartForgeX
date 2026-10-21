@@ -9,6 +9,7 @@ internal static class MermaidPacketParser {
     public static void ParseStatements(MermaidPacketDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var expectedStart = 0;
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;

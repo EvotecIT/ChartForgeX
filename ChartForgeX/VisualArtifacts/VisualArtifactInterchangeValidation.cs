@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Topology;
 using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
@@ -73,6 +74,8 @@ internal static class VisualArtifactInterchangeValidation {
             Extensions(group.Extensions, "group extensions");
             ValidateGroupSemantics(group, envelope);
         }
+        var hierarchy = TopologyGroupHierarchy.Validate(envelope.Groups.Select(group => (group.Id, group.Topology?.ParentGroupId)));
+        if (!hierarchy.IsValid) throw new ArgumentException(hierarchy.Errors[0].Message, nameof(envelope));
 
         var nodeIds = new HashSet<string>(StringComparer.Ordinal);
         var portsByNodeId = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
@@ -136,8 +139,8 @@ internal static class VisualArtifactInterchangeValidation {
             UniqueEntityId(entityIds, edge.Id, "edge", envelope);
             RequiredId(edge.SourceId, "edge source id");
             RequiredId(edge.TargetId, "edge target id");
-            if (!nodeIds.Contains(edge.SourceId)) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown source node '" + edge.SourceId + "'.", nameof(envelope));
-            if (!nodeIds.Contains(edge.TargetId)) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown target node '" + edge.TargetId + "'.", nameof(envelope));
+            if (!nodeIds.Contains(edge.SourceId) && !(envelope.Family == VisualArtifactInterchangeFamily.Topology && groupIds.Contains(edge.SourceId))) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown source endpoint '" + edge.SourceId + "'.", nameof(envelope));
+            if (!nodeIds.Contains(edge.TargetId) && !(envelope.Family == VisualArtifactInterchangeFamily.Topology && groupIds.Contains(edge.TargetId))) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown target endpoint '" + edge.TargetId + "'.", nameof(envelope));
             Text(edge.Kind, "edge kind");
             OptionalText(edge.Label, "edge label");
             OptionalText(edge.SecondaryLabel, "edge secondary label");
@@ -147,8 +150,8 @@ internal static class VisualArtifactInterchangeValidation {
             OptionalText(edge.Status, "edge status");
             OptionalText(edge.SourcePortId, "edge source port id");
             OptionalText(edge.TargetPortId, "edge target port id");
-            if (!string.IsNullOrWhiteSpace(edge.SourcePortId) && !portsByNodeId[edge.SourceId].Contains(edge.SourcePortId!)) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown source port '" + edge.SourcePortId + "' on node '" + edge.SourceId + "'.", nameof(envelope));
-            if (!string.IsNullOrWhiteSpace(edge.TargetPortId) && !portsByNodeId[edge.TargetId].Contains(edge.TargetPortId!)) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown target port '" + edge.TargetPortId + "' on node '" + edge.TargetId + "'.", nameof(envelope));
+            if (!string.IsNullOrWhiteSpace(edge.SourcePortId) && (!portsByNodeId.TryGetValue(edge.SourceId, out var sourcePorts) || !sourcePorts.Contains(edge.SourcePortId!))) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown source port '" + edge.SourcePortId + "' on node '" + edge.SourceId + "'.", nameof(envelope));
+            if (!string.IsNullOrWhiteSpace(edge.TargetPortId) && (!portsByNodeId.TryGetValue(edge.TargetId, out var targetPorts) || !targetPorts.Contains(edge.TargetPortId!))) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown target port '" + edge.TargetPortId + "' on node '" + edge.TargetId + "'.", nameof(envelope));
             OptionalText(edge.Color, "edge color");
             SafeLink(edge.Href, "edge href", envelope);
             OptionalText(edge.Tooltip, "edge tooltip");
@@ -214,7 +217,8 @@ internal static class VisualArtifactInterchangeValidation {
             if (annotation.StartIndex.HasValue && annotation.EndIndex.HasValue && annotation.EndIndex.Value < annotation.StartIndex.Value) throw new ArgumentException("Annotation end index must not precede its start index.", nameof(envelope));
             foreach (var targetId in annotation.TargetIds) {
                 RequiredId(targetId, "annotation target id");
-                if (!nodeIds.Contains(targetId)) throw new ArgumentException("Interchange annotation '" + annotation.Id + "' references unknown node '" + targetId + "'.", nameof(envelope));
+                if (!nodeIds.Contains(targetId) && !(annotation.Role == VisualArtifactInterchangeAnnotationRole.Unspecified && groupIds.Contains(targetId)))
+                    throw new ArgumentException("Interchange annotation '" + annotation.Id + "' references unknown node or group '" + targetId + "'.", nameof(envelope));
             }
             Extensions(annotation.Extensions, "annotation extensions");
             ValidateAnnotationSemantics(annotation, envelope);
@@ -246,6 +250,7 @@ internal static class VisualArtifactInterchangeValidation {
         VisualArtifactInterchangeGroupRole expectedGroupRole = envelope.Family switch {
             VisualArtifactInterchangeFamily.Topology => VisualArtifactInterchangeGroupRole.TopologyGroup,
             VisualArtifactInterchangeFamily.Flow => VisualArtifactInterchangeGroupRole.FlowLane,
+            VisualArtifactInterchangeFamily.Sequence => VisualArtifactInterchangeGroupRole.SequenceParticipantGroup,
             _ => VisualArtifactInterchangeGroupRole.Unspecified
         };
         foreach (VisualArtifactInterchangeGroup group in envelope.Groups) {
@@ -362,6 +367,8 @@ internal static class VisualArtifactInterchangeValidation {
         bool topologyRole = group.Role == VisualArtifactInterchangeGroupRole.TopologyGroup;
         if (topologyRole != (group.Topology != null)) throw new ArgumentException("Topology groups must carry exactly one typed topology semantic record.", nameof(envelope));
         if (group.Topology == null) return;
+        OptionalText(group.Topology.ParentGroupId, "topology parent group id");
+        if (group.Topology.LayoutDirection.HasValue) Defined(group.Topology.LayoutDirection.Value, "topology group layout direction", envelope);
         Defined(group.Topology.Status, "topology group status", envelope);
         Defined(group.Topology.LayoutPolicy, "topology group layout policy", envelope);
         Defined(group.Topology.AppliedLayoutPolicy, "topology group applied layout policy", envelope);
@@ -394,6 +401,12 @@ internal static class VisualArtifactInterchangeValidation {
         if (node.Sequence != null) {
             Defined(node.Sequence.Kind, "sequence participant kind", envelope);
             if (node.Sequence.Order < 0) throw new ArgumentOutOfRangeException(nameof(envelope), node.Sequence.Order, "Sequence participant order must not be negative.");
+            var created = node.Sequence.CreatedAtMessageIndex;
+            var destroyed = node.Sequence.DestroyedAtMessageIndex;
+            if (created.HasValue && (created < 0 || created >= envelope.Edges.Count)
+                || destroyed.HasValue && (destroyed < 0 || destroyed >= envelope.Edges.Count)
+                || created.HasValue && destroyed.HasValue && destroyed <= created)
+                throw new ArgumentException("Sequence participant lifetime indices must identify ordered creating and destroying messages.", nameof(envelope));
         }
     }
 

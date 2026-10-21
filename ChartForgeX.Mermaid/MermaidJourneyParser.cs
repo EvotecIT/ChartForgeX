@@ -8,6 +8,7 @@ internal static class MermaidJourneyParser {
         string? currentSection = null;
 
         for (var index = Math.Max(0, startLine - 1); index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[index];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;

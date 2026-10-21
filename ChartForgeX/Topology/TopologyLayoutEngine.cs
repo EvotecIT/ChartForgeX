@@ -26,6 +26,7 @@ internal static partial class TopologyLayoutEngine {
 
         if (view != null) ApplyView(copy, view);
         if (options != null) copy.Legend = options.IncludeLegend ? TopologyLegend.Resolve(copy, options.LegendMode) : null;
+        var compoundLayout = false;
         switch (copy.LayoutMode) {
             case TopologyLayoutMode.GroupGrid:
                 ApplyGroupGrid(copy);
@@ -37,7 +38,8 @@ internal static partial class TopologyLayoutEngine {
                 ApplySwimlane(copy, options);
                 break;
             case TopologyLayoutMode.Layered:
-                ApplyLayered(copy, options);
+                compoundLayout = TryApplyCompoundLayered(copy, options);
+                if (!compoundLayout) ApplyLayered(copy, options);
                 break;
             case TopologyLayoutMode.Matrix:
                 ApplyMatrix(copy, options);
@@ -59,7 +61,7 @@ internal static partial class TopologyLayoutEngine {
                 break;
         }
 
-        if (copy.LayoutMode == TopologyLayoutMode.Layered) PlaceAutomaticLayeredGroups(copy, chart, options, authoredEdges);
+        if (copy.LayoutMode == TopologyLayoutMode.Layered && !compoundLayout) PlaceAutomaticLayeredGroups(copy, chart, options, authoredEdges);
         TopologyLayoutNormalizer.Normalize(copy, options);
         SyncHierarchyRouteDiagnostics(copy);
         return copy;
@@ -139,24 +141,34 @@ internal static partial class TopologyLayoutEngine {
         var hasEdgeKindFilter = view.EdgeKinds.Count > 0;
         var hasStatusFilter = view.HealthStatuses.Count > 0;
         if (!hasGroupFilter && !hasNodeFilter && !hasEdgeFilter && !hasFocusFilter && !hasNodeKindFilter && !hasEdgeKindFilter && !hasStatusFilter) return;
+        if (hasGroupFilter) IncludeSelectedGroupDescendants(chart, selectedGroupIds);
 
         var baseNodes = chart.Nodes
             .Where(node => IsNodeEligible(node, selectedGroupIds, hasGroupFilter, selectedNodeIds, hasNodeFilter, view, false))
             .ToList();
+        // References resolve to an authored node before a same-id group. Filtering a
+        // node out must not silently retarget its edges to that group's shell.
+        var sourceNodeIds = new HashSet<string>(chart.Nodes.Select(node => node.Id), StringComparer.Ordinal);
+        var baseGroupIds = new HashSet<string>(chart.Groups
+            .Where(group => (!hasGroupFilter || selectedGroupIds.Contains(group.Id)) && !sourceNodeIds.Contains(group.Id))
+            .Select(group => group.Id), StringComparer.Ordinal);
         var baseNodeIds = new HashSet<string>(baseNodes.Select(node => node.Id), StringComparer.Ordinal);
+        var baseEndpointIds = new HashSet<string>(baseNodeIds, StringComparer.Ordinal);
+        baseEndpointIds.UnionWith(baseGroupIds);
         var eligibleEdges = chart.Edges
             .Where(edge => IsEdgeEligible(edge, selectedEdgeIds, hasEdgeFilter, view))
-            .Where(edge => baseNodeIds.Contains(edge.SourceNodeId) && baseNodeIds.Contains(edge.TargetNodeId))
+            .Where(edge => baseEndpointIds.Contains(edge.SourceNodeId) && baseEndpointIds.Contains(edge.TargetNodeId))
             .ToList();
 
         List<TopologyNode> visibleNodes;
         List<TopologyEdge> visibleEdges;
         if (hasFocusFilter) {
-            var focused = ExpandFocusNodes(focusNodeIds, baseNodeIds, eligibleEdges, Math.Max(0, view.NeighborDepth), view.IncludeIncomingEdges, view.IncludeOutgoingEdges);
+            var focused = ExpandFocusEndpoints(focusNodeIds, baseNodeIds, baseEndpointIds, eligibleEdges, Math.Max(0, view.NeighborDepth), view.IncludeIncomingEdges, view.IncludeOutgoingEdges);
             visibleNodes = baseNodes.Where(node => focused.Contains(node.Id)).ToList();
             visibleEdges = eligibleEdges.Where(edge => focused.Contains(edge.SourceNodeId) && focused.Contains(edge.TargetNodeId)).ToList();
         } else {
             var visibleNodeIds = new HashSet<string>(baseNodes.Where(node => !hasStatusFilter || view.HealthStatuses.Contains(node.Status)).Select(node => node.Id), StringComparer.Ordinal);
+            visibleNodeIds.UnionWith(baseGroupIds);
             if (hasEdgeFilter || hasEdgeKindFilter || hasStatusFilter) {
                 foreach (var edge in eligibleEdges) {
                     visibleNodeIds.Add(edge.SourceNodeId);
@@ -180,8 +192,19 @@ internal static partial class TopologyLayoutEngine {
         }
 
         var allGroups = chart.Groups.Select(Clone).ToList();
+        var sourceGroupIds = new HashSet<string>(allGroups.Select(group => group.Id), StringComparer.Ordinal);
+        foreach (var edge in visibleEdges) {
+            if (baseGroupIds.Contains(edge.SourceNodeId)) visibleGroupIds.Add(edge.SourceNodeId);
+            if (baseGroupIds.Contains(edge.TargetNodeId)) visibleGroupIds.Add(edge.TargetNodeId);
+        }
         chart.Groups.Clear();
-        foreach (var group in allGroups.Where(group => visibleGroupIds.Contains(group.Id))) chart.Groups.Add(group);
+        foreach (var group in allGroups.Where(group => visibleGroupIds.Contains(group.Id))) {
+            if (group.ParentGroupId != null && sourceGroupIds.Contains(group.ParentGroupId) && !visibleGroupIds.Contains(group.ParentGroupId)) group.ParentGroupId = null;
+            chart.Groups.Add(group);
+        }
+        foreach (var node in visibleNodes) {
+            if (node.GroupId != null && sourceGroupIds.Contains(node.GroupId) && !visibleGroupIds.Contains(node.GroupId)) node.GroupId = null;
+        }
         chart.Nodes.Clear();
         chart.Nodes.AddRange(visibleNodes);
         chart.Edges.Clear();
@@ -203,14 +226,14 @@ internal static partial class TopologyLayoutEngine {
         return true;
     }
 
-    private static HashSet<string> ExpandFocusNodes(HashSet<string> focusNodeIds, HashSet<string> eligibleNodeIds, List<TopologyEdge> eligibleEdges, int depth, bool includeIncoming, bool includeOutgoing) {
+    private static HashSet<string> ExpandFocusEndpoints(HashSet<string> focusNodeIds, HashSet<string> eligibleNodeIds, HashSet<string> eligibleEndpointIds, List<TopologyEdge> eligibleEdges, int depth, bool includeIncoming, bool includeOutgoing) {
         var visible = new HashSet<string>(focusNodeIds.Where(eligibleNodeIds.Contains), StringComparer.Ordinal);
         var frontier = new HashSet<string>(visible, StringComparer.Ordinal);
         for (var hop = 0; hop < depth && frontier.Count > 0; hop++) {
             var next = new HashSet<string>(StringComparer.Ordinal);
             foreach (var edge in eligibleEdges) {
-                if (includeOutgoing && frontier.Contains(edge.SourceNodeId) && eligibleNodeIds.Contains(edge.TargetNodeId)) next.Add(edge.TargetNodeId);
-                if (includeIncoming && frontier.Contains(edge.TargetNodeId) && eligibleNodeIds.Contains(edge.SourceNodeId)) next.Add(edge.SourceNodeId);
+                if (includeOutgoing && frontier.Contains(edge.SourceNodeId) && eligibleEndpointIds.Contains(edge.TargetNodeId)) next.Add(edge.TargetNodeId);
+                if (includeIncoming && frontier.Contains(edge.TargetNodeId) && eligibleEndpointIds.Contains(edge.SourceNodeId)) next.Add(edge.SourceNodeId);
             }
 
             next.ExceptWith(visible);
@@ -304,7 +327,8 @@ internal static partial class TopologyLayoutEngine {
         }
 
         var explicitGroupPositions = ExplicitGroupPositions(chart.Groups);
-        var pad = Math.Max(24, chart.Viewport.Padding);
+        var surfaceInset = chart.RenderOptions == null ? 0 : CanvasSurfaceInset(chart, chart.RenderOptions);
+        var pad = Math.Max(24, chart.Viewport.Padding) + surfaceInset;
         var titleOffset = string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72;
         var legendOffset = LegendReservedHeight(chart.Legend, chart.Viewport);
         if (UsesWrappedDenseRows(chart)) {
@@ -314,8 +338,13 @@ internal static partial class TopologyLayoutEngine {
         }
 
         ApplyDenseGroupEdgeDefaults(chart);
+        // Grow the automatic mirror frame before pinned groups are restored, avoiding a later global translation.
+        var automaticGroups = chart.Groups.Where(group => !explicitGroupPositions.ContainsKey(group.Id));
         if (chart.LayoutDirection == TopologyLayoutDirection.RightToLeft) {
-            MirrorLayoutHorizontally(chart, pad, chart.Viewport.Width - pad);
+            var right = chart.Viewport.Width - pad;
+            var automaticRight = automaticGroups.Select(group => group.X + group.Width).DefaultIfEmpty(0).Max();
+            if (automaticRight > right) right = Math.Ceiling(automaticRight);
+            MirrorLayoutHorizontally(chart, pad, right);
             var restoredGroups = RestoreExplicitDenseGroupPositions(chart, explicitGroupPositions);
             ShiftManualWaypointsForRestoredGroups(chart, restoredGroups);
             ResetDenseInferenceForRestoredGroups(chart, restoredGroups);
@@ -326,6 +355,10 @@ internal static partial class TopologyLayoutEngine {
             // Readable panels take the height of their content, so they are flipped within the content instead of the
             // viewport, which would leave the unused height as a gap under the title.
             var bottom = UsesReadableDenseLayout(chart) ? chart.Groups.Max(group => group.Y + group.Height) : chart.Viewport.Height - pad - legendOffset;
+            if (!UsesReadableDenseLayout(chart)) {
+                var automaticBottom = automaticGroups.Select(group => group.Y + group.Height).DefaultIfEmpty(0).Max();
+                if (automaticBottom > bottom) bottom = Math.Ceiling(automaticBottom);
+            }
             MirrorLayoutVertically(chart, pad + titleOffset, bottom);
             var restoredGroups = RestoreExplicitDenseGroupPositions(chart, explicitGroupPositions);
             ShiftManualWaypointsForRestoredGroups(chart, restoredGroups);
@@ -402,8 +435,12 @@ internal static partial class TopologyLayoutEngine {
                 group.Width = Math.Max(group.Width, Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy)));
                 group.Height = Math.Max(group.Height, Math.Max(170, DenseGroupHeight(chart, nodes, policy)));
             } else {
+                // Reserve an automatic grid before packing neighbors, including declared small panel sizes.
+                var automaticGrid = policy == TopologyGroupLayoutPolicy.Grid && !explicitGroupPositions.ContainsKey(group.Id);
                 if (group.Width <= 0) group.Width = Math.Max(Math.Max(190, cellW), DenseGroupWidth(chart, nodes, policy));
+                else if (automaticGrid) group.Width = Math.Max(group.Width, DenseGroupWidth(chart, nodes, policy));
                 if (group.Height <= 0) group.Height = Math.Max(Math.Max(170, cellH), DenseGroupHeight(chart, nodes, policy));
+                else if (automaticGrid) group.Height = Math.Max(group.Height, DenseGroupHeight(chart, nodes, policy));
             }
             columnWidths[col] = Math.Max(columnWidths[col], group.Width);
             rowHeights[row] = Math.Max(rowHeights[row], group.Height);

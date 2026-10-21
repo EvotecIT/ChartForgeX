@@ -10,7 +10,7 @@ namespace ChartForgeX.Mermaid;
 /// <summary>
 /// Provides ChartForgeX rendering adapters for parsed Mermaid flowcharts.
 /// </summary>
-public static class MermaidFlowchartRendering {
+public static partial class MermaidFlowchartRendering {
     /// <summary>
     /// Converts a Mermaid flowchart document into a renderer-independent topology chart.
     /// </summary>
@@ -40,11 +40,16 @@ public static class MermaidFlowchartRendering {
                 TopologyHealthStatus.Unknown,
                 cssClass: "cfx-mermaid-subgraph");
             var target = chart.Groups[chart.Groups.Count - 1];
+            target.ParentGroupId = subgraph.ParentSubgraphId;
+            if (subgraph.Direction != MermaidFlowchartDirection.None)
+                target.LayoutDirection = ToVisualLinkDirection(EffectiveSubgraphDirection(document, subgraph));
             target.Metadata["mermaid.id"] = subgraph.Id;
             target.Metadata["mermaid.title"] = subgraph.Title;
             target.Metadata["mermaid.nodes"] = string.Join(",", subgraph.NodeIds);
             target.Metadata["mermaid.source.line"] = subgraph.Span.Line.ToString(CultureInfo.InvariantCulture);
             target.Metadata["mermaid.order"] = index.ToString(CultureInfo.InvariantCulture);
+            if (subgraph.ParentSubgraphId != null) target.Metadata["mermaid.parentSubgraph"] = subgraph.ParentSubgraphId;
+            target.Metadata["mermaid.direction"] = subgraph.Direction.ToString();
         }
 
         for (var index = 0; index < document.Nodes.Count; index++) {
@@ -130,9 +135,9 @@ public static class MermaidFlowchartRendering {
             WriteStyleMetadata(target.Metadata, edge.Styles, "mermaid.style.");
         }
 
+        MermaidPresentation.Apply(chart, document, options.Presentation);
         if (fitViewport) ApplyContentFittedViewport(chart, document.Direction, options);
-
-        return MermaidPresentation.Apply(chart, document);
+        return chart;
     }
 
     /// <summary>
@@ -147,8 +152,8 @@ public static class MermaidFlowchartRendering {
         var topology = document.ToTopologyChart(options);
         var artifact = topology.ToVisualArtifact(VisualArtifactSourceLanguage.Mermaid);
         artifact.Kind = VisualArtifactKind.Mermaid;
-        artifact.PreserveNaturalSize = options.HasExplicitViewportSize;
-        if (options.HasExplicitViewportSize) artifact.NaturalSize = new VisualArtifactSize(options.Width, options.Height);
+        artifact.PreserveNaturalSize = options.HasExplicitViewportSize && options.Presentation?.TopologySizing == MermaidTopologySizing.FixedViewport;
+        if (artifact.PreserveNaturalSize) artifact.NaturalSize = new VisualArtifactSize(options.Width, options.Height);
         artifact.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png | VisualArtifactExportFormat.Html | VisualArtifactExportFormat.Json;
         artifact.Metadata["mermaid.kind"] = document.Kind.ToString();
         artifact.Metadata["mermaid.header"] = document.Header;
@@ -170,7 +175,7 @@ public static class MermaidFlowchartRendering {
     /// <returns>SVG markup.</returns>
     public static string ToSvg(this MermaidFlowchartDocument document, MermaidFlowchartRenderOptions? options = null) {
         options ??= new MermaidFlowchartRenderOptions();
-        return document.ToTopologyChart(options).ToSvg(ToTopologyRenderOptions(options));
+        return document.ToVisualArtifact(options).ToSvg();
     }
 
     /// <summary>
@@ -181,7 +186,7 @@ public static class MermaidFlowchartRendering {
     /// <returns>PNG bytes.</returns>
     public static byte[] ToPng(this MermaidFlowchartDocument document, MermaidFlowchartRenderOptions? options = null) {
         options ??= new MermaidFlowchartRenderOptions();
-        return document.ToTopologyChart(options).ToPng(ToTopologyRenderOptions(options));
+        return document.ToVisualArtifact(options).ToPng();
     }
 
     private static TopologyRenderOptions ToTopologyRenderOptions(MermaidFlowchartRenderOptions options) =>
@@ -341,7 +346,7 @@ public static class MermaidFlowchartRendering {
 /// <summary>
 /// Defines conversion defaults for rendering Mermaid flowcharts through ChartForgeX.
 /// </summary>
-public sealed class MermaidFlowchartRenderOptions {
+public sealed class MermaidFlowchartRenderOptions : MermaidDiagramRenderOptions {
     private double _width = 1200;
     private double _height = 700;
     private double _padding = 32;
@@ -350,15 +355,6 @@ public sealed class MermaidFlowchartRenderOptions {
     private double _maximumFittedWidth = 2800;
     private double _maximumFittedHeight = 1800;
     private bool _hasExplicitViewportSize;
-
-    /// <summary>Gets or sets the rendered artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets an optional chart title override.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets an optional chart subtitle override.</summary>
-    public string? Subtitle { get; set; }
 
     /// <summary>Gets or sets whether the viewport and enclosed node dimensions should fit the parsed graph content and prepared font.</summary>
     public bool FitContent { get; set; } = true;

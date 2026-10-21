@@ -50,7 +50,7 @@ The artifact envelope declares SVG, PNG, HTML, and Office-adapter handoff suppor
 
 ## Static Decorations And Raster Metadata
 
-`VisualArtifactRenderOptions` applies export-wide decoration without changing the underlying chart, topology, table, flow, sequence, or visual-block model. Text and raster-image watermarks share anchors, offsets, edge padding, opacity, rotation, scale, and optional repetition across SVG, static HTML, and PNG output. PNG output can also carry physical DPI metadata:
+The optional `ChartForgeX.Visuals` package decorates artifacts without changing the underlying chart, topology, table, flow, sequence, or visual-block model. Text and raster-image watermarks share anchors, offsets, edge padding, opacity, rotation, scale, and optional repetition across SVG, static HTML, and PNG output. `VisualArtifactRenderOptions` supplies native rendering options and raster metadata, including physical DPI:
 
 ```csharp
 var options = new VisualArtifactRenderOptions {
@@ -60,13 +60,21 @@ var watermark = VisualWatermark.FromText("CONFIDENTIAL");
 watermark.Anchor = VisualCanvasAnchor.Center;
 watermark.RotationDegrees = -28;
 watermark.Opacity = 0.16;
-options.Watermarks.Add(watermark);
+var review = artifact.ToWatermarkedArtifact(options, watermark);
 
-artifact.SaveSvg("review.svg", options);
-artifact.SavePng("review.png", options);
+review.SaveSvg("review.svg");
+review.SavePng("review.png", options);
 ```
 
 These are visual export decorations. Word section watermarks, PDF page watermarks, document permissions, and security policy remain document-host concerns in OfficeIMO.
+
+## Static Producers And Raster Limits
+
+`IStaticVisualSource` lets an optional producer supply SVG and native pixels through `RenderSource` or `Model`. A producer that supports raster preallocation checks also implements `IMeasuredStaticVisualSource`. Its `MeasureRasterSize()` returns the exact positive, whole destination pixel dimensions, including output scale, using the same captured state as `RenderRgba()` without allocating a raster canvas. `artifact.MeasureRasterSize(options)` uses that capability or the existing native model's measurement.
+
+Watermarks keep the underlying canvas dimensions and delegate measurement through nested decorations. The copied artifact retains its export policy and captured native options, so pixel limits are checked before raster allocation and encoded-output limits include the added watermark layers. Captured story artifacts expose their retained raster dimensions through the same contract.
+
+Existing producers can render through `IStaticVisualSource` alone when no policy requires preallocation checks. A policy that needs those checks rejects an unmeasured producer before rendering pixels; authored natural size and serialized SVG are not used as allocation estimates.
 
 ## Flow And Topology Artifacts
 

@@ -23,7 +23,7 @@ public static class MermaidIshikawaRendering {
             .WithPadding(options.Padding);
 
         foreach (var child in document.Root.Children) CopyCause(child, block.AddCause(child.Text));
-        return MermaidPresentation.Apply(block, document);
+        return MermaidPresentation.Apply(block, document, options.Presentation);
     }
 
     /// <summary>
@@ -51,11 +51,11 @@ public static class MermaidIshikawaRendering {
 
     /// <summary>Renders a Mermaid Ishikawa document to static SVG.</summary>
     public static string ToSvg(this MermaidIshikawaDocument document, MermaidIshikawaRenderOptions? options = null) =>
-        document.ToFishboneDiagramBlock(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid Ishikawa document to static PNG.</summary>
     public static byte[] ToPng(this MermaidIshikawaDocument document, MermaidIshikawaRenderOptions? options = null) =>
-        document.ToFishboneDiagramBlock(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static void CopyCause(MermaidIshikawaNode source, FishboneCause target) {
         foreach (var child in source.Children) CopyCause(child, target.AddChild(child.Text));
@@ -76,16 +76,7 @@ public static class MermaidIshikawaRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid Ishikawa diagrams.
 /// </summary>
-public sealed class MermaidIshikawaRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidIshikawaRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 900;
 

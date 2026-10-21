@@ -40,6 +40,7 @@ public sealed partial class MermaidParser {
         var rootFlow = false;
         void Count(string line) { length += line.Length + (length > 0 ? 1L : 0L); }
         for (var index = 0; index < lines.Length; index++) {
+            MermaidResourceGuard.Checkpoint();
             var line = lines[index];
             var trimmed = TrimConfigurationYaml(line);
             var indent = ConfigurationYamlIndent(line);

@@ -6,6 +6,7 @@ namespace ChartForgeX.Topology;
 internal sealed partial class VisualTopologyCompiler {
     private VisualArtifactInterchangeEnvelope SemanticSnapshot(ChartForgeX.Accessibility.VisualAccessibility accessibility) {
         var snapshot = TopologyLayoutEngine.Clone(_chart);
+        snapshot.Annotations.RemoveAll(note => !_annotations.Exists(prepared => prepared.Note.Id == note.Id));
         snapshot.Legend = _legend;
         snapshot.Title = HeadingOrSource(_context.Frame.Title, SourceTitle); snapshot.Subtitle = HeadingOrSource(_context.Frame.Subtitle, SourceSubtitle);
         snapshot.Viewport = new TopologyViewport { Width = _context.Layout.Size.Width, Height = _context.Layout.Size.Height, Padding = _context.Layout.Padding };

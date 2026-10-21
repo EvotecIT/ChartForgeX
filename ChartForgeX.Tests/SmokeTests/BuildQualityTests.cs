@@ -11,7 +11,9 @@ internal static partial class SmokeTests {
         var buildScript = Path.Combine(FindRepositoryRoot(), "Build.ps1");
         var script = File.ReadAllText(buildScript);
         var consumerProgram = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "Build", "PackageConsumers", "Adapters", "Program.cs"));
-        Assert(script.Contains("Build/PackageConsumers/Adapters/Program.cs", StringComparison.Ordinal), "Build script should execute the tracked adapter package-consumer source.");
+        Assert(script.Contains("Join-Path $root 'Build/PackageConsumers/Adapters'", StringComparison.Ordinal) &&
+            script.Contains("-Filter '*.cs' -File | Copy-Item -Destination $consumerRoot", StringComparison.Ordinal),
+            "Build script should execute all tracked adapter package-consumer source files.");
         Assert(script.Contains("artifacts/packages/$Configuration", StringComparison.Ordinal), "Build script should put all release packages in a shared ignored artifact folder.");
         Assert(script.Contains("ChartForgeX.Interactivity.Html", StringComparison.Ordinal), "Build script should package the HTML interactivity adapter.");
         Assert(script.Contains("DependencyIds = @('ChartForgeX', 'ChartForgeX.Interactivity')", StringComparison.Ordinal), "Build script should verify adapter package dependencies.");

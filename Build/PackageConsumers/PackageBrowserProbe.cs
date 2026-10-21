@@ -190,6 +190,7 @@ internal static class PackageBrowserProbe {
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(output)) return;
         if (!Path.IsPathRooted(output)) throw new InvalidOperationException("CFX_BROWSER_CAPTURE_DIRECTORY must be absolute.");
+        output = Path.Combine(output, "net" + Environment.Version.Major);
         Directory.CreateDirectory(output);
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(output, name + ".png"), FullPage = true });
     }

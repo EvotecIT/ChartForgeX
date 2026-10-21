@@ -52,7 +52,7 @@ public static class MermaidC4Rendering {
             ApplyPortHints(edge, relationship.Kind);
         }
 
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -76,10 +76,10 @@ public static class MermaidC4Rendering {
     }
 
     /// <summary>Renders a Mermaid C4 document to static SVG.</summary>
-    public static string ToSvg(this MermaidC4Document document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToSvg();
+    public static string ToSvg(this MermaidC4Document document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid C4 document to static PNG.</summary>
-    public static byte[] ToPng(this MermaidC4Document document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();
+    public static byte[] ToPng(this MermaidC4Document document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
 
 
 

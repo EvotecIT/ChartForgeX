@@ -32,7 +32,7 @@ public static class MermaidQuadrantRendering {
         var series = chart.Series[0];
         series.SemanticRole = "mermaid-quadrant-point";
         for (var i = 0; i < document.Points.Count; i++) series.WithPointLabel(i, document.Points[i].Label);
-        MermaidPresentation.Apply(chart, document);
+        MermaidPresentation.Apply(chart, document, options.Presentation);
         for (var quadrant = 1; quadrant <= 4; quadrant++) {
             var right = quadrant == 1 || quadrant == 4;
             var top = quadrant == 1 || quadrant == 2;
@@ -65,13 +65,13 @@ public static class MermaidQuadrantRendering {
     /// Renders a Mermaid quadrant document to static SVG through ChartForgeX chart rendering.
     /// </summary>
     public static string ToSvg(this MermaidQuadrantDocument document, MermaidQuadrantRenderOptions? options = null) =>
-        document.ToChart(options).ToSvg();
+        document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>
     /// Renders a Mermaid quadrant document to static PNG through ChartForgeX chart rendering.
     /// </summary>
     public static byte[] ToPng(this MermaidQuadrantDocument document, MermaidQuadrantRenderOptions? options = null) =>
-        document.ToChart(options).ToPng();
+        document.ToVisualArtifact(options).ToPng();
 
     private static string ResolveTitle(MermaidQuadrantDocument document, MermaidQuadrantRenderOptions options) {
         return MermaidHeading.Title(document, options.Title, document.Title, "Mermaid quadrant");
@@ -88,16 +88,7 @@ public static class MermaidQuadrantRendering {
 /// <summary>
 /// Defines conversion and rendering defaults for Mermaid quadrant charts.
 /// </summary>
-public sealed class MermaidQuadrantRenderOptions {
-    /// <summary>Gets or sets the artifact id.</summary>
-    public string? Id { get; set; }
-
-    /// <summary>Gets or sets the artifact title.</summary>
-    public string? Title { get; set; }
-
-    /// <summary>Gets or sets the artifact subtitle.</summary>
-    public string? Subtitle { get; set; }
-
+public sealed class MermaidQuadrantRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the ChartForgeX series name.</summary>
     public string SeriesName { get; set; } = "Quadrant point";
 

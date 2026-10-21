@@ -1,0 +1,8 @@
+classDiagram
+class Repository~Item~ {
+  +List~Item~ items
+  +find() Item
+}
+Repository --> Store : writes
+note for Repository "Stable identity\nTyped members"
+note "Floating note"

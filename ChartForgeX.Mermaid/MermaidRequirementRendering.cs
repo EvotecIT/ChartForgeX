@@ -50,7 +50,7 @@ public static class MermaidRequirementRendering {
             chart.Edges[chart.Edges.Count - 1].Metadata["mermaid.relationship"] = relationship.RelationshipType;
         }
 
-        return MermaidPresentation.Apply(chart, document);
+        return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 
     /// <summary>
@@ -72,10 +72,10 @@ public static class MermaidRequirementRendering {
     }
 
     /// <summary>Renders a Mermaid requirement document to static SVG.</summary>
-    public static string ToSvg(this MermaidRequirementDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToSvg();
+    public static string ToSvg(this MermaidRequirementDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToSvg();
 
     /// <summary>Renders a Mermaid requirement document to static PNG.</summary>
-    public static byte[] ToPng(this MermaidRequirementDocument document, MermaidTopologyRenderOptions? options = null) => document.ToTopologyChart(options).ToPng();
+    public static byte[] ToPng(this MermaidRequirementDocument document, MermaidTopologyRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
 
     private static string RequirementLabel(MermaidRequirementNode requirement) => string.IsNullOrWhiteSpace(requirement.RequirementId) ? requirement.Name : requirement.RequirementId!;
 

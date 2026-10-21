@@ -125,23 +125,23 @@ Completion: every advertised feature has versioned positive and meaningful negat
 
 The playground preserves authored Mermaid themes in both direct source and Markdown fences; the page theme supplies a default for unthemed source. This host rule uses the Mermaid producer's existing configuration metadata.
 
-- [ ] Extend the shared title, subtitle and presentation precedence to remaining source settings and family options through the existing native export owners.
+- [ ] Extend source setting coverage over the shared host presentation and explicit family overrides, preserving native/source/shared-host/family precedence.
 - [ ] Map remaining supported themes, `themeVariables`, palettes, typography, spacing and family options into the shared prepared scene. Source font stacks and logical-pixel sizes from 1 through 256 use the native owners; additional color variables, family-specific typography, CSS sizing modes, and further family options remain open.
 - [ ] Handle Mermaid 12 `theme`/`look`/`layout` changes deliberately. Preserve older `defaultRenderer` declarations with a documented diagnostic or mapping. Keep deterministic CFX layout and appearance explicit; reproducing ELK or browser paint is a separate fidelity goal.
 - [ ] Extend the implemented Flowchart safe-text, multiline/Markdown and inert HTML/math fallback contracts to remaining families. Richer native HTML labels and math need their own artifact proof.
 - [ ] Extend the implemented flowchart class/style policy across other supported families and edge-ID styling. Flowcharts resolve default classes, class assignments and direct node colors, plus supported link colors and native dash treatment; unsupported properties retain diagnostics. Preserve family-specific inheritance and source order rather than assuming every notation shares the flowchart rules.
-- [ ] Extend shared topology layout for nested compound groups, group endpoints, local direction, ports, self-loops, parallel edges and obstacle-aware label routing where fixtures expose gaps. Extend the qualified orthogonal rank-skipping lanes and separated target ports to further dense, reversed and compound layouts; preserve obstacle avoidance and readable edge labels in SVG and PNG.
-- [ ] Extend host policy beyond the existing configuration budgets and bounded source font sizes to accepted diagram families, source styling, safe links/assets and remaining source/model/render limits. Reuse existing SVG, URI and artwork safety owners; prove script-free output and deterministic rejection without fetching remote assets or invoking source callbacks.
+- [ ] Extend qualified nested compound groups, group endpoints and local directions to further ports, self-loops, parallel edges and dense obstacle-aware label routing where fixtures expose gaps. Extend the qualified orthogonal rank-skipping lanes and separated target ports to further dense, reversed and compound layouts; preserve obstacle avoidance and readable edge labels in SVG and PNG.
+- [ ] Extend captured source/model/depth/output/pixel policy to family/style/link/asset allowlists and further adversarial grammar coverage. Cancellation remains cooperative, with no hard interrupt deadline. Reuse existing SVG, URI and artwork safety owners; prove script-free output and deterministic rejection without fetching remote assets or invoking source callbacks.
 
 Completion: source presentation produces consistent SVG/PNG scenes or specific diagnostics, host policy has a single reusable owner, and compact/dense fixtures remain readable and bounded.
 
 ### 3. Core diagram semantics
 
 - [ ] Complete the remaining shape catalog, icon/image metadata, edge IDs/properties, nested subgraphs and local directions. Qualify authored minimum rank spans in dense, reversed and compound layouts. Keep edge animation and callbacks in optional host adapters.
-- [ ] Complete sequence title statements, participant creation/destruction, participant boxes, supported message variants, nested parallel/critical branches, branch labels, notes, activations and autonumber behavior. Keep actor menus and links as safe host-facing data.
-- [ ] Complete class generics, visibility/static/abstract members, lollipop and two-way relationships, labeled/nested namespaces, notes, styling and safe link metadata.
-- [ ] Complete state fork/join bars, concurrent regions, nested composites, multiline notes and classes. Preserve the implemented choice diamond, plain rounded states, filled start dot, ringed end dot and solid transitions.
-- [ ] Complete ER aliases, optional attribute types, keys/comments, direction, subgraphs and styling while preserving identifying relationships and cardinalities.
+- [ ] Extend sequence title/lifetime/box proof to additional color forms, message variants, nested parallel/critical branches, branch labels, notes, activations and numbering boundaries. Keep actor menus and links as safe host-facing data.
+- [ ] Complete further class generic/member semantics, lollipop relationships, namespace labels, styling and safe link metadata. Preserve qualified base identities, two-way relationships, nested groups and visible notes.
+- [ ] Complete state concurrent regions, further dense nested-composite geometry and classes. Preserve qualified fork/join bars, captionless choices and visible multiline notes. Preserve the implemented choice diamond, plain rounded states, filled start dot, ringed end dot and solid transitions.
+- [ ] Complete ER optional attribute types, subgraphs and styling; broaden alias/attribute/key/comment/direction fixtures while preserving identifying relationships and cardinalities.
 - [ ] Complete requirement kinds, fields, one-line blocks, relation directions, Markdown labels and classes with typed validation.
 
 Completion: the corresponding matrix rows have grammar, semantic and visible-notation proof through direct rendering and Markdown fences; generic topology previews no longer hide supported diagram meaning.

@@ -16,7 +16,11 @@ public sealed class MermaidNotationCompatibilityTests {
         Assert.Equal(new[] { "A", "B", "C" }, document.States.Select(state => state.Id));
         Assert.Equal(2, document.Transitions.Count);
         Assert.Equal("Real title", document.Accessibility.Name);
-        Assert.Equal(opener + "\nBody: A --> Phantom\n" + closer, Assert.Single(document.RawStatements).Text);
+        var note = Assert.Single(document.Notes);
+        Assert.Equal("Body: A --> Phantom", note.Text);
+        Assert.Equal(opener + "\nBody: A --> Phantom\n" + closer,
+            document.SourceText.Substring(document.SourceText.IndexOf(opener, StringComparison.Ordinal), note.Span.Length));
+        Assert.Empty(rendered.Diagnostics);
     }
 
     [Theory]

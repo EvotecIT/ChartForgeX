@@ -4,7 +4,7 @@ namespace ChartForgeX.VisualArtifacts;
 
 public static partial class VisualArtifactRendering {
     internal static VisualArtifactHtmlSizing HtmlSizing(VisualArtifact artifact, VisualArtifactRenderOptions? options) {
-        var sizing = options?.HtmlSizing ?? VisualArtifactHtmlSizing.Automatic;
+        var sizing = options?.HtmlSizing ?? artifact.HtmlSizing;
         return sizing == VisualArtifactHtmlSizing.Automatic
             ? artifact.Model is SequenceArtifact || artifact.Kind == VisualArtifactKind.Sequence ? VisualArtifactHtmlSizing.PreserveSize : VisualArtifactHtmlSizing.FitToWidth
             : sizing;

@@ -5,7 +5,8 @@ using System.Text.RegularExpressions;
 namespace ChartForgeX.Mermaid;
 
 internal static class MermaidClassParser {
-    private static readonly string[] RelationshipConnectors = { "<|--", "--|>", "*--", "--*", "o--", "--o", "..|>", "<|..", "..>", "<..", "-->", "<--", "--", ".." };
+    private static readonly Regex Relationship = new(@"^(?<source>[^\s<|>*:]+)(?:\s+""(?<sourceMultiplicity>[^""]+)"")?\s*(?<connector>(?:<\||[<*o])?(?:--|\.\.)(?:\|>|[>*o])?)\s*(?:""(?<targetMultiplicity>[^""]+)""\s+)?(?<target>\S+?)(?:\s*:\s*(?<label>.*))?$", RegexOptions.CultureInvariant);
+    private static readonly Regex Note = new(@"^note(?:\s+for\s+(?<id>\S+))?\s+""(?<text>.*)""$", RegexOptions.CultureInvariant);
 
     public static void ParseStatements(MermaidClassDocument document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var classes = new Dictionary<string, MermaidClassNode>(StringComparer.Ordinal);
@@ -14,6 +15,7 @@ internal static class MermaidClassParser {
         var namespaces = new Stack<string>();
         var namespaceOpenings = new Stack<MermaidSourceSpan>();
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
@@ -33,7 +35,11 @@ internal static class MermaidClassParser {
                 var name = trimmed.Substring(10, trimmed.Length - 11).Trim();
                 if (name.Length == 0) MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Class namespace names must not be empty.");
                 else {
-                    namespaces.Push(namespaces.Count == 0 ? name : namespaces.Peek() + "." + name);
+                    var qualified = namespaces.Count == 0 ? name : namespaces.Peek() + "." + name;
+                    var depth = 1;
+                    foreach (var character in qualified) if (character == '.') depth++;
+                    MermaidResourceGuard.CheckDepth(depth, span);
+                    namespaces.Push(qualified);
                     namespaceOpenings.Push(span);
                 }
                 continue;
@@ -50,7 +56,20 @@ internal static class MermaidClassParser {
                 continue;
             }
 
-            if (MermaidParserUtilities.StartsStatement(trimmed, "note") || MermaidParserUtilities.StartsStatement(trimmed, "click") ||
+            if (MermaidParserUtilities.StartsStatement(trimmed, "note")) {
+                var note = Note.Match(trimmed);
+                if (note.Success) document.Notes.Add(new MermaidDiagramNote(MermaidNotationText.Note(note.Groups["text"].Value),
+                    note.Groups["id"].Success ? CleanEndpoint(note.Groups["id"].Value) : null, false, span));
+                else MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class note syntax");
+                continue;
+            }
+
+            if (trimmed.IndexOf("()--", StringComparison.Ordinal) >= 0 || trimmed.IndexOf("--()", StringComparison.Ordinal) >= 0) {
+                MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class lollipop interface");
+                continue;
+            }
+
+            if (MermaidParserUtilities.StartsStatement(trimmed, "click") ||
                 MermaidParserUtilities.StartsStatement(trimmed, "link") || MermaidParserUtilities.StartsStatement(trimmed, "callback")) {
                 document.StyleStatements.Add(new MermaidClassStyleStatement(trimmed, span));
                 MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class note or interaction");
@@ -69,7 +88,7 @@ internal static class MermaidClassParser {
                     MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "class style");
                 if (namespaces.Count > 0 && trimmed.StartsWith("class ", StringComparison.Ordinal)) {
                     var ids = trimmed.Substring(6).Split(new[] { ' ', '{', '[' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (ids.Length > 0 && classes.TryGetValue(ids[0], out var declared)) declared.Namespace = namespaces.Peek();
+                    if (ids.Length > 0 && classes.TryGetValue(CleanEndpoint(ids[0]), out var declared)) declared.Namespace = namespaces.Peek();
                 }
                 continue;
             }
@@ -106,6 +125,8 @@ internal static class MermaidClassParser {
 
         if (activeClass != null) Unclosed(activeClassOpening);
         foreach (var opening in namespaceOpenings) Unclosed(opening);
+        foreach (var note in document.Notes) if (note.NodeId != null && !classes.ContainsKey(note.NodeId))
+            MermaidParserUtilities.Add(result, note.Span, MermaidDiagnosticSeverity.Error, "Class notes must reference a declared class or relationship endpoint.", MermaidDiagnosticCodes.InvalidStatement);
         if (document.Classes.Count == 0 && document.Relationships.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid class diagrams require at least one class or relationship.");
 
         void Unclosed(MermaidSourceSpan opening) => MermaidParserUtilities.Add(result, opening, MermaidDiagnosticSeverity.Error,
@@ -127,8 +148,9 @@ internal static class MermaidClassParser {
 
         var braceIndex = body.IndexOf('{');
         if (braceIndex >= 0) {
-            var id = body.Substring(0, braceIndex).Trim();
-            activeClass = EnsureClass(document, classes, id, span);
+            var declaration = body.Substring(0, braceIndex).Trim();
+            activeClass = EnsureClass(document, classes, declaration, span);
+            if (declaration.IndexOf('~') > 0) activeClass.Label = MermaidNotationText.Generics(declaration);
             var remainder = body.Substring(braceIndex + 1).Trim();
             if (remainder.EndsWith("}", StringComparison.Ordinal)) {
                 remainder = remainder.Substring(0, remainder.Length - 1).Trim();
@@ -145,7 +167,10 @@ internal static class MermaidClassParser {
         }
 
         var parts = body.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 1) EnsureClass(document, classes, parts[0], span);
+        if (parts.Length == 1) {
+            var node = EnsureClass(document, classes, parts[0], span);
+            if (parts[0].IndexOf('~') > 0) node.Label = MermaidNotationText.Generics(parts[0]);
+        }
         else document.StyleStatements.Add(new MermaidClassStyleStatement(text, span));
     }
 
@@ -160,34 +185,17 @@ internal static class MermaidClassParser {
 
     private static bool TryParseRelationship(string text, MermaidSourceSpan span, out MermaidClassRelationship relationship) {
         relationship = null!;
-        foreach (var connector in RelationshipConnectors) {
-            var index = text.IndexOf(connector, StringComparison.Ordinal);
-            if (index <= 0) continue;
-            var left = text.Substring(0, index).Trim();
-            var rightWithLabel = text.Substring(index + connector.Length).Trim();
-            var label = SplitLabel(ref rightWithLabel);
-            var source = Regex.Match(left, @"^(\S+?)(?:\s+""([^""]+)"")?$", RegexOptions.CultureInvariant);
-            var target = Regex.Match(rightWithLabel, @"^(?:""([^""]+)""\s+)?(\S+)$", RegexOptions.CultureInvariant);
-            if (!source.Success || !target.Success) return false;
-            relationship = new MermaidClassRelationship(CleanEndpoint(source.Groups[1].Value), CleanEndpoint(target.Groups[2].Value), connector, label, span) {
-                SourceMultiplicity = source.Groups[2].Success ? source.Groups[2].Value : null,
-                TargetMultiplicity = target.Groups[1].Success ? target.Groups[1].Value : null
-            };
-            return true;
-        }
-
-        return false;
+        var match = Relationship.Match(text);
+        if (!match.Success) return false;
+        relationship = new MermaidClassRelationship(CleanEndpoint(match.Groups["source"].Value), CleanEndpoint(match.Groups["target"].Value),
+            match.Groups["connector"].Value, match.Groups["label"].Success ? match.Groups["label"].Value.Trim() : null, span) {
+            SourceMultiplicity = match.Groups["sourceMultiplicity"].Success ? match.Groups["sourceMultiplicity"].Value : null,
+            TargetMultiplicity = match.Groups["targetMultiplicity"].Success ? match.Groups["targetMultiplicity"].Value : null
+        };
+        return true;
     }
 
-    private static string? SplitLabel(ref string text) {
-        var colon = text.IndexOf(':');
-        if (colon < 0) return null;
-        var label = text.Substring(colon + 1).Trim();
-        text = text.Substring(0, colon).Trim();
-        return label.Length == 0 ? null : label;
-    }
-
-    private static string CleanEndpoint(string value) => MermaidParserUtilities.Unquote(value.Trim().Trim('"', '`'));
+    private static string CleanEndpoint(string value) => MermaidNotationText.ClassId(MermaidParserUtilities.Unquote(value));
 
     private static MermaidClassNode EnsureClass(MermaidClassDocument document, Dictionary<string, MermaidClassNode> classes, string id, MermaidSourceSpan span) {
         id = CleanEndpoint(id);

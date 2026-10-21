@@ -11,6 +11,7 @@ internal static class MermaidArchitectureParser {
         var services = new Dictionary<string, MermaidArchitectureService>(StringComparer.Ordinal);
         var junctions = new Dictionary<string, MermaidArchitectureJunction>(StringComparer.Ordinal);
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
+            MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
             var trimmed = MermaidParserUtilities.StripInlineComment(raw.Trim());
             if (MermaidParserUtilities.IsSkippable(trimmed)) continue;
