@@ -3,6 +3,7 @@ using ChartForgeX.Mermaid;
 using ChartForgeX.Raster;
 using ChartForgeX.Typography;
 using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
 using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.VisualBlocks;
