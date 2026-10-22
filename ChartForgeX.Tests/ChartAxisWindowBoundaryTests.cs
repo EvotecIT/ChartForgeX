@@ -36,6 +36,7 @@ public sealed class ChartAxisWindowBoundaryTests {
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 100) };
         if (horizontal) chart.AddHorizontalBar("Primary", points); else chart.AddLine("Primary", points);
         chart.AddLine("Secondary", points).Series[1].UseSecondaryValueAxis();
+        if (horizontal) chart.Options.LineOrientation = ChartOrientation.Horizontal;
         var axis = slot == "x" ? chart.Options.XAxis : slot == "y" ? chart.Options.YAxis
             : slot == "secondaryX" ? chart.Options.SecondaryXAxis : chart.Options.SecondaryYAxis;
         axis.Reversed = reversed;

@@ -7,8 +7,8 @@ const test = require('node:test');
 const source = ['00-svg-coordinate-precision', '43-brush-projection'].map(name =>
   fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source', name + '.js'), 'utf8')).join('\n');
 const { Point, identitySvg, getComputedStyle } = require('../helpers/identity-svg');
-const { projectBrushSelection, finishBrushSelection, projectedAxisValue, transformedAxisValue, projectedAxisRatio, transformedAxisBound, validDataProjection } = new Function('DOMPoint', 'getComputedStyle', 'dataValue', 'clamp', 'stagePoint',
-  source + '\nreturn {projectBrushSelection,finishBrushSelection,projectedAxisValue,transformedAxisValue,projectedAxisRatio,transformedAxisBound,validDataProjection};')(
+const { projectBrushSelection, finishBrushSelection, projectedAxisValue, transformedAxisValue, projectedAxisRatio, transformedAxisBound, validSourceAxisMaximum, validDataProjection } = new Function('DOMPoint', 'getComputedStyle', 'dataValue', 'clamp', 'stagePoint',
+  source + '\nreturn {projectBrushSelection,finishBrushSelection,projectedAxisValue,transformedAxisValue,projectedAxisRatio,transformedAxisBound,validSourceAxisMaximum,validDataProjection};')(
   Point, getComputedStyle, (value, time) => time ? new Date((value - 25569) * 86400000).toISOString() : value,
   (value, min, max) => Math.max(min, Math.min(max, value)), (_, point) => point);
 
@@ -42,7 +42,7 @@ test('symmetric logarithmic projection applies its captured base without changin
 
 test('native negative Y windows reject zero and mixed signs using the same projection policy', () => {
   const nativeSource=fs.readFileSync(path.resolve(__dirname,'../../ChartForgeX.Interactivity.Html/Assets/interactive.source/86-native-cartesian-viewport.js'),'utf8');
-  const validSourceAxisWindow=new Function('transformedAxisBound',nativeSource.slice(nativeSource.indexOf('  const validSourceAxisWindow'),nativeSource.indexOf('  const requestCartesianViewport'))+'\nreturn validSourceAxisWindow;')(transformedAxisBound);
+  const validSourceAxisWindow=new Function('transformedAxisBound','validSourceAxisMaximum',nativeSource.slice(nativeSource.indexOf('  const validSourceAxisWindow'),nativeSource.indexOf('  const requestCartesianViewport'))+'\nreturn validSourceAxisWindow;')(transformedAxisBound,validSourceAxisMaximum);
   const axis={minimum:-64,maximum:-1,transformedMinimum:-6,transformedMaximum:0,
     scale:'logarithmic',logarithmBase:2,logarithmicDomain:'negative',threshold:1,reversed:false};
   assert.equal(validSourceAxisWindow({minimum:-16,maximum:-2},axis,axis),true);
