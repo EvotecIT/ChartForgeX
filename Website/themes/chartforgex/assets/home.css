@@ -379,6 +379,8 @@
 .cfx-psroad__row p { color: #e6e9ee; font-size: .9375rem; line-height: 1.5; }
 .cfx-psroad__cmds { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; }
 .cfx-psroad__cmds a { color: #8fd8ff; font-family: var(--cfx-mono); font-size: .75rem; overflow-wrap: anywhere; }
+.cfx-psroad .cfx-psroad__native { margin-top: 6px; font-size: .8438rem; }
+.cfx-psroad__native a { color: #8fd8ff; text-underline-offset: .15em; }
 .cfx-psroad .cfx-psroad__note { margin-top: 6px; color: var(--cfx-hero-ink-2); font-size: .8438rem; }
 .cfx-psroad__track { margin-top: 28px; }
 /* The surface demo: one chart, every surface. */
