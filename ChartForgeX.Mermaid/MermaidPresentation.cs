@@ -44,6 +44,8 @@ internal static class MermaidPresentation {
             chart.Accessibility.Description = document.Accessibility.Description;
             if (document.Theme != null) chart.WithThemeMode(Mode(document.Theme));
             chart.WithTheme(Theme(chart.Options.Theme, document.Configuration, host));
+            // Native charts are transparent by default. An authored canvas color also requests its paint.
+            if (document.Configuration.ThemeColors?.HasBackground == true) chart.WithTransparentBackground(false);
             document.Configuration.ChartColors?.Apply(chart);
             document.Configuration.RadarTheme?.Apply(chart);
             if (host?.Theme != null) chart.WithTheme(host.Theme.WithTypography(Typography(host.Theme.Typography, document.Configuration, host)));

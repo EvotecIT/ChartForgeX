@@ -117,7 +117,7 @@ Shared source color variables configure the existing immutable paired theme. Exp
 
 | `themeVariables` key | Native presentation role |
 | --- | --- |
-| `background` | Canvas background |
+| `background` | Canvas background; explicitly draws the canvas on native chart families that otherwise remain transparent |
 | `primaryColor` | Primary and weakest neutral surfaces |
 | `secondaryColor` | Elevated surface and secondary accent |
 | `tertiaryColor` | Middle neutral surface |
@@ -332,6 +332,8 @@ The conversion target for state diagrams is `TopologyChart`. Composite states be
 Empty leading, adjacent and trailing regions keep their typed identity and positive layout space without invented states or captions. This is the native empty-region policy; exact reference orientation and empty-region appearance remain qualification limits. A separator outside a composite, unclosed notes/composites and stray terminators report `CFXM008` and prevent shared rendering.
 
 State diagrams use the shared safe `classDef`, `class`, inline `:::` and direct `style` paint declarations. Direct `fill`, `stroke` and `color` values override named classes; named classes override the default class for ordinary states. Composite groups accept explicit paints while synthetic concurrency regions, notes and pseudo-state controls retain their native presentation. Unknown targets and unsupported CSS remain diagnosed. These declarations do not inject CSS or execute source callbacks.
+
+Explicit composite paints are a CFX extension: upstream Mermaid documents limitations on styling composite states. The current pinned State reference fixture checks top-level paints and an unstyled composite; it does not establish matching composite-style behavior across upstream versions.
 
 ## Entity Relationship Diagrams
 
@@ -1013,9 +1015,9 @@ var png = document.ToPng();
 
 The conversion target for XY charts is `Chart`. Category labels, axis ranges, series kind counts, orientation, title, and source spans are retained in the AST or artifact metadata. Static rendering maps vertical Mermaid bars to ChartForgeX bar series and horizontal Mermaid bars to horizontal bar series. Lines share the source orientation, including mixed horizontal bar/line charts. In horizontal charts, the source x-axis supplies categories, captions and bounds on the physical Y axis; the source y-axis supplies values and bounds on the physical X axis. Authored point coordinates remain intact for metadata, pointer tooltips and keyboard selection.
 
-Native callers can set `chart.Options.LineOrientation = ChartOrientation.Horizontal` for line and step-line series. The primary physical X axis owns values, and the physical Y axis owns linear or time categories. Horizontal lines can share a chart with horizontal bars; vertical series and secondary-axis series require a separate chart. Interpolation, step placement, breaks and marker bounds use the same prepared geometry for SVG and PNG.
+Native callers can set `chart.Options.LineOrientation = ChartOrientation.Horizontal` for line and step-line series. The selected primary or secondary physical X axis owns values, and the physical Y axis owns linear or time categories. Horizontal lines can share categories with horizontal bars, ranges and box plots. Each series chooses its primary or secondary physical X value axis; vertical companions require a separate chart. The [combination contract](v2/chart-combinations.md) records the supported mixtures. Interpolation, step placement, breaks and marker bounds use the same prepared geometry for SVG and PNG.
 
-For horizontal line charts, configure value formatting and explicit value labels on `XAxis`, and category formatting and labels on `YAxis`. The mean, median and standard-deviation helpers follow the current value axis during preparation, including orientation changes made after adding them. Explicit `AddHorizontalLine` and `AddHorizontalBand` annotations retain their physical Y coordinates.
+For horizontal line charts, configure value formatting and explicit value labels on the selected `XAxis` or `SecondaryXAxis`, and category formatting and labels on `YAxis`. The mean, median and standard-deviation helpers follow the current value axis during preparation, including orientation changes made after adding them. Explicit `AddHorizontalLine` and `AddHorizontalBand` annotations retain their physical Y coordinates.
 
 ## Sankey Diagrams
 

@@ -18,7 +18,8 @@
   {{~ capture stage_side ~}}
   <dl class="cfx-stage__stats">
     <div><dt>Families rendered</dt><dd>{{ rendered }}</dd></div>
-    <div><dt>Recognised only</dt><dd>{{ m.recognised.size }}</dd></div>
+    {{~ if m.recognised.size > 0 ~}}<div><dt>Recognised only</dt><dd>{{ m.recognised.size }}</dd></div>
+    {{~ else ~}}<div><dt>Atlas themes</dt><dd>2</dd></div>{{~ end ~}}
     <div><dt>Browsers needed</dt><dd>0</dd></div>
   </dl>
   <div class="cfx-stage__actions">
@@ -49,7 +50,7 @@
         {{~ for g in m.groups ~}}
         <a href="#{{ g.id }}" style="--key: var(--cfx-s{{ for.index + 1 }})"><span class="cfx-key" aria-hidden="true"></span>{{ g.name }} <span class="cfx-count">{{ g.families.size }}</span></a>
         {{~ end ~}}
-        <a href="#recognised" style="--key: var(--cfx-ink-3)"><span class="cfx-key cfx-key--hollow" aria-hidden="true"></span>Recognised <span class="cfx-count">{{ m.recognised.size }}</span></a>
+        {{~ if m.recognised.size > 0 ~}}<a href="#recognised" style="--key: var(--cfx-ink-3)"><span class="cfx-key cfx-key--hollow" aria-hidden="true"></span>Recognised <span class="cfx-count">{{ m.recognised.size }}</span></a>{{~ end ~}}
       </nav>
     </div>
 
@@ -88,6 +89,7 @@
     </section>
     {{~ end ~}}
 
+    {{~ if m.recognised.size > 0 ~}}
     <section class="cfx-atlas__group cfx-atlas__group--recognised" id="recognised" aria-labelledby="cfx-atlas-recognised" style="--key: var(--cfx-ink-3)">
       <h3 class="cfx-atlas__group-title" id="cfx-atlas-recognised"><span class="cfx-key cfx-key--hollow" aria-hidden="true"></span>Recognised, not drawn yet <span class="cfx-count">{{ m.recognised.size }}</span></h3>
       <ul class="cfx-atlas__grid">
@@ -102,8 +104,9 @@
         </li>
         {{~ end ~}}
       </ul>
-      <p class="cfx-atlas__reference">{{ m.reference }} The <a href="https://github.com/EvotecIT/ChartForgeX/blob/main/docs/mermaid-support-matrix.md">support matrix</a> lists every family and option.</p>
     </section>
+    {{~ end ~}}
+    <p class="cfx-atlas__reference">{{ m.reference }} The <a href="/docs/mermaid-support-matrix/">support matrix</a> lists the documented syntax, native models and limits.</p>
   </section>
 
   <section class="cfx-guide" aria-labelledby="cfx-guide-title">

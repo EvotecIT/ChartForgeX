@@ -49,6 +49,14 @@ internal sealed partial class VisualTopologyCompiler {
     private SvgPaint GroupLabelPaint(TopologyGroup group, ChartColor color, bool active, bool secondary = false) =>
         SourcePaint(group.LabelColor, color, SvgColorRole.Any, HighlightFactor(active), secondary ? _colors.MutedForeground : _colors.Foreground);
 
+    private ChartColor NodeSubtitleColor(TopologyNode node, bool active) =>
+        Highlight(Color(node.LabelColor, _colors.MutedForeground), active);
+
+    private SvgPaint NodeSubtitlePaint(TopologyNode node, bool active) =>
+        string.IsNullOrWhiteSpace(node.LabelColor)
+            ? MutedPaint(NodeSubtitleColor(node, active), HighlightFactor(active))
+            : SourcePaint(node.LabelColor, NodeSubtitleColor(node, active), SvgColorRole.Any, HighlightFactor(active), _colors.MutedForeground);
+
     private SvgPaint EdgeTextPaint(TopologyEdge edge, ChartColor color, bool secondary = false) =>
         !string.IsNullOrWhiteSpace(edge.LabelColor)
             ? SourcePaint(edge.LabelColor, color, SvgColorRole.Any, EdgeLabelOpacity(edge), secondary ? _colors.MutedForeground : _colors.Foreground)

@@ -391,7 +391,7 @@ public sealed partial class TopologyNode {
     /// <summary>Gets or sets an optional node accent color. When set, this colors the node shell independently from health status.</summary>
     public string? Color { get; set; }
 
-    /// <summary>Gets or sets an optional node label color independently from the node shell.</summary>
+    /// <summary>Gets or sets an optional node title and subtitle color independently from the node shell. Unset subtitles use the muted theme role.</summary>
     public string? LabelColor { get; set; }
 
     /// <summary>Gets or sets an optional node surface fill color. When unset, render options choose the card background.</summary>

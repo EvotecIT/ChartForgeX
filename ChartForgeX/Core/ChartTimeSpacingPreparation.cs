@@ -29,7 +29,7 @@ internal static class ChartTimeSpacingPreparation {
         foreach (var series in chart.Series) {
             if (!category && series.ValueAxis != side) continue;
             if (series.TimeBucketInterval != null) throw new NotSupportedException("Authored time-bucket intervals cannot be combined with discrete time spacing.");
-            var points = series.TrendLineSourcePoints.Count > 0 ? series.TrendLineSourcePoints : series.RenderPoints;
+            var points = TimeAxisPoints(series, category);
             var count = series.TrendLineSourcePoints.Count > 0 ? points.Count : series.ObservationCount;
             var stride = count == 0 ? 1 : Math.Max(1, points.Count / count);
             for (var index = 0; index < points.Count; index += stride) {
@@ -68,7 +68,7 @@ internal static class ChartTimeSpacingPreparation {
         var domain = new ChartTimeSpacingDomain(spacing, instants, minimum, maximum);
         if (domain.Unit) {
             foreach (var series in participating) {
-                var points = series.TrendLineSourcePoints.Count > 0 ? series.TrendLineSourcePoints : series.RenderPoints;
+                var points = TimeAxisPoints(series, category);
                 var count = series.TrendLineSourcePoints.Count > 0 ? points.Count : series.ObservationCount;
                 var stride = count == 0 ? 1 : Math.Max(1, points.Count / count);
                 var seen = new HashSet<double>();
@@ -81,6 +81,16 @@ internal static class ChartTimeSpacingPreparation {
         var captured = axis.Clone(); captured.PreparedTimeDomain = domain;
         return captured;
     }
+
+    /// <summary>Includes typed waterfall display items without changing their intentionally empty ordinary point collection.</summary>
+    private static IReadOnlyList<ChartPoint> TimeAxisPoints(ChartSeries series, bool category) {
+        if (!category || !series.IsTypedWaterfall)
+            return series.TrendLineSourcePoints.Count > 0 ? series.TrendLineSourcePoints : series.RenderPoints;
+        if (series.WaterfallItems.Count > ChartTimeSpacingDomain.MaximumEntries)
+            throw new InvalidOperationException("The ordinal time domain exceeds the 100,000-instant limit.");
+        return ChartCartesianOrientation.Categories(series).Select(value => new ChartPoint(value, 0)).ToArray();
+    }
+
     private static void ValidateInstant(double value) {
         if (!ChartDateTime.TryFromOrderedOaDate(value, out _)) throw new InvalidOperationException("Discrete time spacing requires finite ordered UTC instants on or after 1899-12-30.");
     }

@@ -14,6 +14,6 @@
   "notes": [
     "This page runs ChartForgeX compiled to WebAssembly. The SVG you see is the same output a .NET application gets from the snippet beside this note.",
     "ChartForgeX markup is Markdown with chartforgex fences. Mermaid fences inside a markup document render too, so one document can hold charts, tables, flows and diagrams.",
-    "ZenUML, Agentflow and Railroad diagrams are recognised and reported, but not rendered yet."
+    "Supported ZenUML, Agentflow and Railroad source renders through native diagram owners. The Mermaid support matrix records grammar and layout limits; unsupported constructs retain located diagnostics."
   ]
 }

@@ -121,7 +121,7 @@ internal sealed partial class VisualTopologyCompiler {
             var subtitle = new ChartRect(bounds.X, y, bounds.Width, Math.Min(Math.Max(0, bounds.Bottom - y), subtitleHeight));
             if (_options.CardSubtitleMode == TopologyCardSubtitleMode.Chip) {
                 BuildSubtitleChip(node, EffectiveNodeDisplayMode(node, _options), node.Y + (EffectiveNodeDisplayMode(node, _options) == TopologyNodeDisplayMode.CompactCard ? 31 : CardSubtitleChipOffset(node, _options)), accent, active);
-            } else Text(node.Subtitle!, subtitle, size * .85, Highlight(_colors.MutedForeground, active), 400, "topology-node-subtitle", _options.MaxNodeSubtitleLines, caption, paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)));
+            } else Text(node.Subtitle!, subtitle, size * .85, NodeSubtitleColor(node, active), 400, "topology-node-subtitle", _options.MaxNodeSubtitleLines, caption, paint: NodeSubtitlePaint(node, active));
             y += subtitle.Height;
         }
         if (node.Details.Count > 0) {

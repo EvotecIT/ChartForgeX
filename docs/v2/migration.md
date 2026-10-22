@@ -80,6 +80,8 @@ Native JavaScript connection `axes` is a distinct array such as `['x', 'secondar
 
 Construct uncertainty observations with `new ChartErrorBar(x, y, xBounds: new ChartErrorBounds(...), yBounds: new ChartErrorBounds(...))`. The four-number Y-only constructor and ambiguous `Lower`/`Upper` members are removed. For a former Y-only error bar use `new ChartErrorBar(x, y, yBounds: new ChartErrorBounds(lower, upper))`. Empty/default error bars reject on intake because an observation must declare an interval. Both supplied intervals are immutable and independently validated.
 
+An explicit topology node `LabelColor` applies to its title and subtitle, including native subtitle chips, consistently with group captions. An unset value retains the normal foreground/muted theme roles. Explicit detail-row paints remain independent. This also preserves authored Mermaid class `color` and C4 `fontColor` on secondary captions.
+
 ## Explicit scale and time policies
 
 `ChartAxis.LogarithmBase` applies to logarithmic and symmetric logarithmic transforms; base ten stays the default. `WithLogarithmicScale(base, ChartLogarithmicDomain.Negative)` explicitly selects a negative-only domain. Zero, opposite-sign values and incompatible bounds reject instead of disappearing under clipping. Clear old positive bounds before changing their sign. Source coordinates and reversal retain their existing meaning.

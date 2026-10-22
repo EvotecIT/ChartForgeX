@@ -141,6 +141,11 @@ public sealed class MermaidStateStyleTests {
 
     [Theory]
     [InlineData("classDef")]
+    [InlineData("classDef;")]
+    [InlineData("class")]
+    [InlineData("class;")]
+    [InlineData("style")]
+    [InlineData("style;")]
     [InlineData("class A")]
     [InlineData("class , marked")]
     [InlineData("style A")]
@@ -157,6 +162,20 @@ public sealed class MermaidStateStyleTests {
         var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
         Assert.True(fenced.HasErrors);
         Assert.Empty(fenced.Artifacts);
+    }
+
+    [Fact]
+    public void StyleKeywordPrefixesAndQuotedDescriptionsRemainOrdinaryStateIdentities() {
+        const string source = "stateDiagram-v2\nstate \"classDef\" as C\nclassDefinition --> stylesheet\nC --> classDefinition";
+        var parsed = new MermaidParser().ParseState(source);
+        Assert.Empty(parsed.Diagnostics);
+        var document = parsed.Document!;
+        Assert.Equal(new[] { "C", "classDefinition", "stylesheet" }, document.States.Select(state => state.Id));
+        Assert.Equal("classDef", document.States[0].Label);
+        Assert.Empty(document.StyleStatements);
+        Assert.Equal(new[] { ("classDefinition", "stylesheet"), ("C", "classDefinition") },
+            document.Transitions.Select(transition => (transition.SourceId, transition.TargetId)));
+        Assert.Equal(document.States.Select(state => state.Id), document.ToTopologyChart().Nodes.Select(node => node.Id));
     }
 
     [Fact]

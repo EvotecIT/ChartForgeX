@@ -13,6 +13,8 @@ internal sealed class MermaidThemeColorSettings {
     };
     private readonly Dictionary<string, ChartColor> _colors = new(StringComparer.Ordinal);
 
+    internal bool HasBackground => _colors.ContainsKey("background");
+
     internal static bool IsScalarPath(string path) {
         foreach (var name in Names) if (path == "themeVariables." + name) return true;
         return false;

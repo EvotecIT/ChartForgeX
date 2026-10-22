@@ -2,6 +2,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
+using ChartForgeX.Raster;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
@@ -19,6 +20,7 @@ public sealed class MermaidNativeThemeColorTests {
     [InlineData("flowchart LR\nA[Start] --> B[Finish]")]
     [InlineData("sequenceDiagram\nA->>B: Request\nB-->>A: Response")]
     [InlineData("pie\n\"Accepted\" : 3\n\"Declined\" : 1")]
+    [InlineData("xychart-beta\nx-axis [Jan, Feb]\ny-axis 0 --> 10\nbar [3, 7]")]
     [InlineData("packet-beta\n0-7: \"Header\"\n8-15: \"Data\"")]
     public void SourceColorsUseOneNativeThemeForDirectAndFencedSvgAndPng(string body) {
         var rendered = MermaidRenderer.Render(Colors + body);
@@ -42,11 +44,36 @@ public sealed class MermaidNativeThemeColorTests {
         Assert.DoesNotContain("<script", svg, StringComparison.OrdinalIgnoreCase);
         var png = artifact.ToPng();
         Assert.NotEmpty(png);
+        if (artifact.Model is Chart chart) {
+            Assert.False(chart.Options.TransparentBackground);
+            var pixels = RasterImageDecoder.Decode(png).Pixels;
+            Assert.Equal(new byte[] { 0x11, 0x22, 0x33, 0xff }, pixels.Take(4));
+        }
         var fence = new MermaidVisualMarkupParser().Parse("```mermaid\n" + Colors + body + "\n```");
         Assert.False(fence.HasErrors);
         var fenced = Assert.Single(fence.Artifacts);
         Assert.Equal(svg, fenced.ToSvg());
         Assert.Equal(png, fenced.ToPng());
+    }
+
+    [Theory]
+    [InlineData("pie\n\"Accepted\" : 3\n\"Declined\" : 1")]
+    [InlineData("xychart-beta\nx-axis [Jan, Feb]\ny-axis 0 --> 10\nbar [3, 7]")]
+    public void UnauthoredChartBackgroundStaysTransparentAndExplicitHostColorsKeepPrecedence(string body) {
+        var ordinary = MermaidRenderer.Render(body);
+        Assert.Empty(ordinary.Diagnostics);
+        Assert.True(Assert.IsType<Chart>(ordinary.Artifact!.Model).Options.TransparentBackground);
+        Assert.Equal(0, RasterImageDecoder.Decode(ordinary.Artifact.ToPng()).Pixels[3]);
+
+        var host = VisualTheme.Graphite().Configure(builder => builder.Dark.Background = ChartColor.FromHex("#010203"));
+        var overridden = MermaidRenderer.Render(Colors + body,
+            new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { Theme = host } });
+        Assert.Empty(overridden.Diagnostics);
+        var chart = Assert.IsType<Chart>(overridden.Artifact!.Model);
+        Assert.False(chart.Options.TransparentBackground);
+        Assert.Equal(ChartColor.FromHex("#010203"), chart.Options.Theme.Resolve(chart.Options.ThemeMode).Background);
+        Assert.Equal(new byte[] { 1, 2, 3, 255 }, RasterImageDecoder.Decode(overridden.Artifact.ToPng()).Pixels.Take(4));
+        Assert.Equal(ChartColor.FromHex("#010203"), host.Resolve(VisualThemeMode.Dark).Background);
     }
 
     [Fact]

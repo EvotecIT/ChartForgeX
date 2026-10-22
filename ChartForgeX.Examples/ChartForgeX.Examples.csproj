@@ -25,5 +25,10 @@
     <EmbeddedResource Include="Assets\styled-multilingual-text.svg" LogicalName="ChartForgeX.Examples.styled-multilingual-text.svg" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.html" LogicalName="ChartForgeX.Examples.styled-multilingual-text.html" WithCulture="false" />
     <EmbeddedResource Include="Assets\Gallery\*" LogicalName="ChartForgeX.Examples.Gallery.%(Filename)%(Extension)" WithCulture="false" />
+    <!-- These are inert authored source fixtures, not JavaScript/plugin dependencies. -->
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\agentflow-native-workflow.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\state-native-safe-styles.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\state-concurrent-regions.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="..\tests\mermaid-conformance\external-plugins\zenuml\zenuml-native-occurrences.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
   </ItemGroup>
 </Project>

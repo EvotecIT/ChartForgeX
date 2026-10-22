@@ -9,6 +9,43 @@ namespace ChartForgeX.Tests;
 
 public sealed class NativeTopologyAuthoredPaintTests {
     [Theory]
+    [InlineData(TopologyNodeDisplayMode.Card, false, false)]
+    [InlineData(TopologyNodeDisplayMode.Card, true, false)]
+    [InlineData(TopologyNodeDisplayMode.Card, false, true)]
+    [InlineData(TopologyNodeDisplayMode.Tile, false, true)]
+    public void AuthoredNodeTextPaintIncludesSubtitlesAcrossCardsShapesAndChips(TopologyNodeDisplayMode display, bool shape, bool chip) {
+        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite(), mode).WithViewport(720, 400, 20).WithLegend(null)
+                .AddNode("styled", "Title", 70, 80, subtitle: "Subcaption", width: 240, height: 160)
+                .AddNode("focus", "Focus", 470, 80);
+            var node = chart.Nodes[0];
+            node.BackgroundColor = "#123456";
+            node.LabelColor = "var(--node-text, #fef3c780)";
+            if (shape) { node.Shape = TopologyNodeShape.Rectangle; node.FitLabelToContent = true; }
+            var options = new TopologyRenderOptions { IncludeLegend = false, IncludeStatusBadges = false, NodeDisplayMode = display,
+                IncludeTileSubtitles = true, CardSubtitleMode = chip ? TopologyCardSubtitleMode.Chip : TopologyCardSubtitleMode.Text,
+                DimmedOpacity = .5 };
+            options.HighlightNodeIds.Add("focus");
+            var prepared = chart.Prepare(options);
+            var caption = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneText>(), item =>
+                item.Text.Lines.Any(line => line.Text == "Subcaption"));
+            Assert.Equal(ChartColor.FromRgba(254, 243, 199, 64), caption.Color);
+            var svg = prepared.ToSvg(); var png = prepared.ToPng();
+            var painted = Assert.Single(XDocument.Parse(svg).Descendants(), item => item.Name.LocalName == "text" && item.Value == "Subcaption");
+            Assert.Contains("var(--node-text,", (string?)painted.Attribute("fill"));
+            node.LabelColor = "#fef3c780";
+            Assert.Equal(chart.ToPng(options), png);
+            node.LabelColor = null;
+            var fallback = Assert.Single(chart.Prepare(options).Visual.Scene.Nodes.OfType<VisualSceneText>(), item =>
+                item.Text.Lines.Any(line => line.Text == "Subcaption")).Color;
+            var muted = chart.Theme.Resolve(mode).MutedForeground;
+            Assert.Equal((muted.R, muted.G, muted.B), (fallback.R, fallback.G, fallback.B));
+            Assert.Equal(svg, prepared.ToSvg());
+            Assert.Equal(png, prepared.ToPng());
+        }
+    }
+
+    [Theory]
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]
     public void AuthoredGroupPaintsSurviveThemeBindingsHighlightAndDetachedPreparation(VisualThemeMode mode) {

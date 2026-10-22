@@ -62,9 +62,21 @@ public sealed class MermaidZenUmlTests {
         Assert.Equal(14, xml.Descendants().Count(item => (string?)item.Attribute("data-cfx-role") == "sequence-message"));
         Assert.Contains(xml.Descendants(), item => item.Name.LocalName == "text" && item.Value.Contains("checkout(order)", StringComparison.Ordinal));
         Assert.DoesNotContain(xml.Descendants(), item => item.Name.LocalName is "script" or "foreignObject" or "a");
-        var headers = xml.Descendants().Where(item => (string?)item.Attribute("data-cfx-role") == "sequence-block").Select(item => (string?)item.Attribute("data-label")).ToArray();
-        Assert.Contains(headers, text => text?.Trim() == "try");
-        Assert.DoesNotContain(headers, text => text?.Trim().StartsWith("break", StringComparison.Ordinal) == true);
+        var sequence = Assert.IsType<SequenceArtifact>(artifact.Model);
+        Assert.Equal(string.Empty, Assert.Single(sequence.Blocks, item => item.Kind == SequenceArtifactBlockKind.Try).Text);
+        var facts = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
+        var tryFact = Assert.Single(facts.Annotations, item => item.Sequence?.BlockKind == SequenceArtifactBlockKind.Try);
+        var tryGroup = Assert.Single(xml.Descendants(), item => (string?)item.Attribute("data-cfx-role") == "sequence-block"
+            && (string?)item.Attribute("data-cfx-source-id") == tryFact.Id);
+        Assert.Equal(string.Empty, (string?)tryGroup.Attribute("data-label"));
+        Assert.Contains(tryGroup.Descendants(), item => item.Name.LocalName == "text" && item.Value.Trim() == "try");
+        var branchGroups = xml.Descendants().Where(item => (string?)item.Attribute("data-cfx-role") == "sequence-branch").ToArray();
+        Assert.Contains(branchGroups, group => (string?)group.Attribute("data-label") == "StorageError error"
+            && group.Descendants().Any(item => item.Name.LocalName == "text" && item.Value.Contains("catch", StringComparison.Ordinal)
+                && item.Value.Contains("StorageError error", StringComparison.Ordinal)));
+        Assert.Contains(branchGroups, group => (string?)group.Attribute("data-label") == string.Empty
+            && group.Descendants().Any(item => item.Name.LocalName == "text" && item.Value.Trim() == "finally"));
+        Assert.DoesNotContain(sequence.Blocks, item => item.Kind == SequenceArtifactBlockKind.Break);
         Assert.True(png.Length > 64);
         var fence = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
         Assert.Empty(fence.Diagnostics);

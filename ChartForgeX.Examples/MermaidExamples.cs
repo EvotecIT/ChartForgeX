@@ -6,7 +6,19 @@ internal static class MermaidExamples {
     internal static void Write(string output) {
         ExampleTypography.Register();
         const string mindMap = "mindmap\n    root((Roadmap))\n          plan[Planning]\n            tasks[Tasks]\n                review[Review]\n          delivery[Delivery]\n              releases[Releases]\n                support[Support]\n";
+        var agentflow = MermaidFixtureSources.Read("agentflow-native-workflow");
+        var zenuml = MermaidFixtureSources.Read("zenuml-native-occurrences");
+        var stateStyles = MermaidFixtureSources.Read("state-native-safe-styles");
+        var stateRegions = MermaidFixtureSources.Read("state-concurrent-regions");
         var examples = new Dictionary<string, string> {
+            ["mermaid-agentflow-native-light"] = agentflow,
+            ["mermaid-agentflow-native-dark"] = "%%{init: {'theme':'dark'}}%%\n" + agentflow,
+            ["mermaid-zenuml-native-light"] = zenuml,
+            ["mermaid-zenuml-native-dark"] = "%%{init: {'theme':'dark'}}%%\n" + zenuml,
+            ["mermaid-state-styles-light"] = stateStyles,
+            ["mermaid-state-styles-dark"] = "%%{init: {'theme':'dark'}}%%\n" + stateStyles,
+            ["mermaid-state-regions-light"] = stateRegions,
+            ["mermaid-state-regions-dark"] = "%%{init: {'theme':'dark'}}%%\n" + stateRegions,
             ["mermaid-railroad-ebnf-light"] = MermaidRailroadExamples.Ebnf,
             ["mermaid-railroad-ebnf-dark"] = "%%{init: {'theme':'dark'}}%%\n" + MermaidRailroadExamples.Ebnf,
             ["mermaid-railroad-abnf-light"] = MermaidRailroadExamples.Abnf,

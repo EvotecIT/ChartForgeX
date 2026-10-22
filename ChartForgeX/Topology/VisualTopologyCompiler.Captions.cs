@@ -124,8 +124,8 @@ internal sealed partial class VisualTopologyCompiler {
                 height / 2, "topology-subtitle-chip", paint: new ChartForgeX.Rendering.VisualScenePaintBinding(NodeAccentPaint(node, fill, active, .1), NodeAccentPaint(node, stroke, active, .45)));
             _builder.Text(chip.Text, bounds.X + width / 2,
                 bounds.Y + (height - metrics.Height) / 2 + _builder.TextAscent(size * _scale, 700), size * _scale,
-                Highlight(_colors.MutedForeground, active), 700, "topology-subtitle-chip-text", alignment: TextAlignment.Center,
-                paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)));
+                NodeSubtitleColor(node, active), 700, "topology-subtitle-chip-text", alignment: TextAlignment.Center,
+                paint: NodeSubtitlePaint(node, active));
         }
     }
 }

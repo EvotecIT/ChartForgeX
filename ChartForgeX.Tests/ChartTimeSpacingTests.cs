@@ -95,6 +95,53 @@ public sealed class ChartTimeSpacingTests {
         Assert.Equal("Authored February", Assert.Single(ticks).Text); Assert.Equal(2, chart.Series[0].ObservationCount);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void TypedWaterfallOrdinalCategoriesIncludeAuthoredCheckpointsAndDetachRawCoordinates(bool horizontal, bool reversed) {
+        var instants = new[] { January.AddDays(9), January.AddMonths(2).AddDays(9), January.AddMonths(3).AddDays(9), January.AddMonths(4).AddDays(9) };
+        var items = new[] { ChartWaterfallItem.OpeningBalance(instants[0], 3), ChartWaterfallItem.Delta(instants[1], 4),
+            ChartWaterfallItem.Subtotal(instants[2]), ChartWaterfallItem.Total(instants[3]) };
+        var chart = Chart.Create().WithLegend(false).ConfigureWaterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+            .AddWaterfall("Changes", items);
+        var axis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
+        axis.WithTimeSpacing(ChartTimeSpacing.Ordinal).Reversed = reversed;
+        var prepared = chart.Prepare(Context()); var projection = horizontal ? prepared.YProjection! : prepared.XProjection!;
+        var positions = instants.Select(instant => projection.Project(Oa(instant))).ToArray();
+        Assert.Equal(Math.Abs(positions[1] - positions[0]), Math.Abs(positions[2] - positions[1]), 8);
+        Assert.Equal(Math.Abs(positions[2] - positions[1]), Math.Abs(positions[3] - positions[2]), 8);
+        foreach (var instant in instants) Assert.Equal(Oa(instant), projection.Unproject(projection.Project(Oa(instant))), 8);
+        Assert.Equal(4, chart.Series[0].ObservationCount); Assert.Equal(2, chart.Series[0].SourcePointCount);
+        Assert.Empty(chart.Series[0].Points); Assert.Equal(items, chart.Series[0].WaterfallItems);
+        var svg = prepared.ToSvg(); var png = prepared.ToPng();
+        var marks = XDocument.Parse(svg).Descendants().Where(node => node.Attribute("data-cfx-waterfall-kind") != null).ToArray();
+        Assert.Equal(4, marks.Length);
+        Assert.Equal(items.Select(item => item.X.ToString("G17", CultureInfo.InvariantCulture)), marks.Select(node => node.Attribute("data-cfx-x")!.Value));
+        Assert.Contains(marks, node => (string?)node.Attribute("data-cfx-waterfall-kind") == "subtotal");
+        Assert.Contains(marks, node => (string?)node.Attribute("data-cfx-waterfall-kind") == "total");
+        chart.Series[0].UpdateWaterfallItem(1, ChartWaterfallItem.Delta(instants[1].AddYears(1), 9));
+        axis.TimeSpacing = null; axis.Reversed = !reversed;
+        Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TypedWaterfallUnitBandsRejectMultipleAuthoredItemsIncludingCheckpointsWithoutChangingSources(bool horizontal) {
+        var items = new[] { ChartWaterfallItem.OpeningBalance(January.AddDays(2), 3), ChartWaterfallItem.Total(January.AddDays(19)) };
+        var chart = Chart.Create().WithLegend(false).ConfigureWaterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+            .AddWaterfall("Changes", items);
+        var axis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
+        axis.WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)));
+        var error = Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context()));
+        Assert.Contains("more than one observation", error.Message);
+        Assert.Equal(items, chart.Series[0].WaterfallItems); Assert.Empty(chart.Series[0].Points);
+        Assert.Equal(2, chart.Series[0].ObservationCount); Assert.Equal(1, chart.Series[0].SourcePointCount);
+        Assert.NotNull(axis.TimeSpacing); Assert.Null(axis.PreparedTimeDomain);
+    }
+
     [Fact]
     public void UnitRejectsDuplicateSeriesBandsWithoutMergingSourcesButAllowsSharedBandsAcrossSeries() {
         var chart = ChartOf(January, January.AddDays(2));

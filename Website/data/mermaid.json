@@ -25,13 +25,16 @@
         { "title": "Incident response", "id": "flowchart", "name": "Flowchart", "purpose": "Steps, decisions and branches in a process.", "source": "site:flowchart" },
         { "title": "Dashboard sign-in", "id": "sequence", "name": "Sequence", "purpose": "Messages between participants, in the order they happen.", "source": "playground:mermaid-sequence" },
         { "title": "Chart model", "id": "class", "name": "Class", "purpose": "Types, their members and how they relate.", "source": "playground:mermaid-class" },
-        { "title": "Document review", "id": "state", "name": "State", "purpose": "States an item moves through and what triggers each move.", "source": "playground:mermaid-state" },
+        { "title": "Document review", "id": "state", "name": "State", "purpose": "Composite states, concurrent regions, notes and safe named or direct paints.", "source": "fixture:state-native-safe-styles" },
         { "title": "Orders schema", "id": "er", "name": "Entity relationship", "purpose": "Entities, their attributes and the cardinality between them.", "source": "playground:mermaid-er" },
         { "title": "Sign-in requirements", "id": "requirement", "name": "Requirement", "purpose": "Requirements and the elements that satisfy or verify them.", "source": "site:requirement" },
         { "title": "Report platform", "id": "architecture", "name": "Architecture", "purpose": "Services, groups and connections on a system map.", "source": "site:architecture" },
-        { "id": "c4", "name": "C4", "purpose": "People and software systems in a C4 context view.", "source": "fixture:c4-basic" },
+        { "id": "c4", "name": "C4", "purpose": "People, systems, nested boundaries and ordered relationships.", "source": "fixture:c4-nested-native" },
         { "title": "Render pipeline", "id": "block", "name": "Block", "purpose": "Blocks placed on a column grid, joined by links.", "source": "site:block" },
-        { "title": "TCP header", "id": "packet", "name": "Packet", "purpose": "Bit ranges of a protocol header, row by row.", "source": "fixture:packet-basic" }
+        { "title": "TCP header", "id": "packet", "name": "Packet", "purpose": "Bit ranges of a protocol header, row by row.", "source": "fixture:packet-basic" },
+        { "title": "Review workflow", "id": "agentflow", "name": "Agentflow", "purpose": "Nested agent flows with inert connector and metadata facts.", "source": "fixture:agentflow-native-workflow" },
+        { "id": "zenuml", "name": "ZenUML", "purpose": "Code-like calls and control fragments drawn by the native sequence owner.", "source": "plugin-fixture:zenuml/zenuml-native-occurrences" },
+        { "id": "railroad", "name": "Railroad", "purpose": "Symbolic grammar rules and choices; bounded IR, EBNF, ABNF and PEG frontends.", "source": "fixture:railroad-ir-native" }
       ]
     },
     {
@@ -39,8 +42,8 @@
       "name": "Planning and process",
       "families": [
         { "id": "gantt", "name": "Gantt", "purpose": "Tasks, dependencies and milestones on a calendar.", "source": "playground:mermaid-gantt" },
-        { "id": "timeline", "name": "Timeline", "purpose": "Events grouped into periods along one axis.", "source": "playground:mermaid-timeline" },
-        { "id": "journey", "name": "Journey", "purpose": "Tasks scored by how each actor experiences them.", "source": "playground:mermaid-journey" },
+        { "id": "timeline", "name": "Timeline", "purpose": "Ordered events in authored periods and sections, without invented calendar durations.", "source": "fixture:timeline-period-sections" },
+        { "id": "journey", "name": "Journey", "purpose": "Task scores, actors and repeated authored sections.", "source": "fixture:journey-actors-sections" },
         { "title": "Playground launch", "id": "kanban", "name": "Kanban", "purpose": "Work items in board columns, with optional metadata.", "source": "playground:mermaid-kanban" },
         { "title": "Release 2.0 branch", "id": "gitgraph", "name": "Git graph", "purpose": "Commits, branches, merges and tags.", "source": "playground:mermaid-gitgraph" },
         { "title": "Pull request flow", "id": "swimlane", "name": "Swimlane", "purpose": "A process split into lanes by who owns each step.", "source": "site:swimlane" },
@@ -66,16 +69,12 @@
       "families": [
         { "title": "What ChartForgeX covers", "id": "mindmap", "name": "Mind map", "purpose": "Ideas branching out from a central topic.", "source": "playground:mermaid-mindmap" },
         { "title": "Repository layout", "id": "treeview", "name": "Tree view", "purpose": "A folder or outline hierarchy.", "source": "fixture:treeview-basic" },
-        { "id": "venn", "name": "Venn", "purpose": "Overlapping sets and what their intersections share.", "source": "fixture:venn-basic" },
+        { "id": "venn", "name": "Venn", "purpose": "Proportional set circles, real intersections and reported area-fit limits.", "source": "fixture:venn-proportional-overlap" },
         { "title": "Why the release slipped", "id": "ishikawa", "name": "Ishikawa", "purpose": "Causes grouped by category behind one effect.", "source": "fixture:ishikawa-basic" },
         { "id": "wardley", "name": "Wardley", "purpose": "Components mapped by visibility and evolution.", "source": "fixture:wardley-basic" },
         { "id": "cynefin", "name": "Cynefin", "purpose": "Situations sorted into Cynefin decision domains.", "source": "fixture:cynefin-basic" }
       ]
     }
   ],
-  "recognised": [
-    { "id": "zenuml", "name": "ZenUML", "purpose": "Sequence diagrams written as code-like statements.", "header": "zenuml" },
-    { "id": "agentflow", "name": "Agentflow", "purpose": "Agent and tool call flows.", "header": "agentflow-beta" },
-    { "id": "railroad", "name": "Railroad", "purpose": "Grammar rules drawn as railroad tracks.", "header": "railroad-beta" }
-  ]
+  "recognised": []
 }

@@ -18,7 +18,12 @@
             "New-ImageChartDonut",
             "New-ImageChartTreemap",
             "New-ImageChartWaterfall"
-          ]
+          ],
+          "native": {
+            "summary": "Native APIs also provide explicit concentric Pie/Donut bands and ordinal or calendar-unit time spacing. These are engine capabilities, separate from the released command parameters.",
+            "url": "/docs/api-conventions/",
+            "linkText": "Native chart contracts"
+          }
         },
         {
           "capability": "Legend, data labels, palette, grid, axis titles, transparent backgrounds and donut centre text",
@@ -49,7 +54,7 @@
           ],
           "note": "No dedicated commands yet. The ChartForgeX methods (AddSankey, AddSunburst, AddGanttTask and others) are reachable from -ChartScript.",
           "native": {
-            "summary": "Available through the native chart APIs, including dated Gantt and timeline observations.",
+            "summary": "Native APIs cover these families, including dated schedules and Sunburst/Treemap views that retain source IDs, authored parents and values.",
             "url": "/api/chartforgex-core-chart/",
             "linkText": "Chart API reference"
           }
@@ -75,7 +80,12 @@
             "New-ImageChartBar",
             "New-ImageChartLine",
             "New-ImageChartOptions"
-          ]
+          ],
+          "native": {
+            "summary": "Native vertical and horizontal Cartesian combinations choose independent primary or secondary physical value axes, within the documented family and orientation constraints.",
+            "url": "/docs/chart-combinations/",
+            "linkText": "Supported chart combinations"
+          }
         },
         {
           "capability": "Graphite themes and custom design tokens",
@@ -298,7 +308,7 @@
           "status": "planned",
           "note": "ChartForgeX.Mermaid is not part of the module yet.",
           "native": {
-            "summary": "Available through ChartForgeX.Mermaid for the documented notation subsets, with native SVG and PNG output.",
+            "summary": "Native subsets include Agentflow, Railroad, ZenUML and State paints, plus semantic Journey, Timeline, Venn and C4 models. SVG and PNG share the native scene; grammar and geometry limits remain explicit.",
             "url": "/docs/mermaid-support-matrix/",
             "linkText": "Mermaid support and limits"
           }

@@ -6,6 +6,13 @@ internal static partial class MermaidStateParser {
     /// <summary>Records assignments before resolving identities so forward styles do not manufacture states.</summary>
     private static bool TryReadStyle(MermaidStateDocument document, string text, MermaidSourceSpan span,
         List<StateStyleAssignment> assignments, MermaidParseResult<MermaidDocument> result) {
+        var keyword = text.TrimEnd(';').TrimEnd();
+        if (keyword is "classDef" or "class" or "style") {
+            document.StyleStatements.Add(new MermaidRawStatement(text, span));
+            MermaidResourceGuard.ReserveElements(1, span);
+            Invalid("State style statements require state identities and a value.");
+            return true;
+        }
         var before = document.ClassDefinitions.Count;
         if (MermaidStyleParser.TryDefinition(text, span, result, document.ClassDefinitions, "State")) {
             document.StyleStatements.Add(new MermaidRawStatement(text, span));

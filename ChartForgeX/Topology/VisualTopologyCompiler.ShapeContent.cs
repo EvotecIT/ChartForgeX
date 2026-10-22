@@ -145,9 +145,9 @@ internal sealed partial class VisualTopologyCompiler {
                     subtitle = new ChartRect(subtitle.X + Math.Min(6, subtitle.Width / 2), subtitle.Y + Math.Min(2, subtitle.Height / 2),
                         Math.Max(0, subtitle.Width - 12), Math.Max(0, subtitle.Height - 4));
                 }
-                Text(node.Subtitle!, Project(subtitle), size * .85, Highlight(_colors.MutedForeground, active), chip ? 700 : 400,
+                Text(node.Subtitle!, Project(subtitle), size * .85, NodeSubtitleColor(node, active), chip ? 700 : 400,
                     chip ? "topology-subtitle-chip-text" : "topology-node-subtitle", layout.SubtitleRows, centered: true,
-                    paint: MutedPaint(Highlight(_colors.MutedForeground, active), HighlightFactor(active)));
+                    paint: NodeSubtitlePaint(node, active));
             }
             if (node.Details.Count > 0) y = Math.Min(text.Bottom, y + 6);
             foreach (var detail in node.Details) {
