@@ -33,7 +33,7 @@ public sealed class ExtremeAxisTickLayoutTests {
         } else {
             chart.AddLine("Values", new[] { new ChartPoint(1, minimum), new ChartPoint(2, 0), new ChartPoint(3, maximum) });
             axis = axisRole == "secondary-y" ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-            if (axisRole == "secondary-y") { chart.Series[0].UseSecondaryYAxis(); chart.Options.YAxis.Visible = false; }
+            if (axisRole == "secondary-y") { chart.Series[0].UseSecondaryValueAxis(); chart.Options.YAxis.Visible = false; }
         }
         if (axisRole != "horizontal-value") chart.Series[0].Markers.Enabled = false;
         axis.WithBounds(minimum, maximum); axis.TickCount = 5; axis.Reversed = reversed;

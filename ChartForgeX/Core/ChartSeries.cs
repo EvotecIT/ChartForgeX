@@ -10,7 +10,7 @@ namespace ChartForgeX.Core;
 public sealed partial class ChartSeries {
     private double _strokeWidth = 3;
     internal bool HasExplicitStrokeWidth { get; private set; }
-    private ChartAxisSide _yAxis = ChartAxisSide.Primary;
+    private ChartAxisSide _valueAxis = ChartAxisSide.Primary;
     private ChartDataLabelPlacement? _dataLabelPlacement;
     private ChartFillPattern _fillPattern = ChartFillPattern.None;
 
@@ -160,13 +160,13 @@ public sealed partial class ChartSeries {
     public TextStyleOverride DataLabelStyle { get; private set; } = new();
 
     /// <summary>
-    /// Gets or sets the vertical axis used for cartesian rendering.
+    /// Gets or sets the primary or secondary value axis. Horizontal charts use the X axis; vertical and radial charts use the Y axis.
     /// </summary>
-    public ChartAxisSide YAxis {
-        get => _yAxis;
+    public ChartAxisSide ValueAxis {
+        get => _valueAxis;
         set {
-            if (!Enum.IsDefined(typeof(ChartAxisSide), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown y-axis side.");
-            _yAxis = value;
+            if (!Enum.IsDefined(typeof(ChartAxisSide), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown value-axis side.");
+            _valueAxis = value;
         }
     }
 
@@ -497,20 +497,20 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Assigns the series to the primary left y-axis.
+    /// Assigns the series to the primary value axis.
     /// </summary>
     /// <returns>The current series.</returns>
-    public ChartSeries UsePrimaryYAxis() {
-        YAxis = ChartAxisSide.Primary;
+    public ChartSeries UsePrimaryValueAxis() {
+        ValueAxis = ChartAxisSide.Primary;
         return this;
     }
 
     /// <summary>
-    /// Assigns the series to the secondary right y-axis.
+    /// Assigns the series to the secondary value axis.
     /// </summary>
     /// <returns>The current series.</returns>
-    public ChartSeries UseSecondaryYAxis() {
-        YAxis = ChartAxisSide.Secondary;
+    public ChartSeries UseSecondaryValueAxis() {
+        ValueAxis = ChartAxisSide.Secondary;
         return this;
     }
 

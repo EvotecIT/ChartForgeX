@@ -10,6 +10,9 @@ public sealed partial class ChartOptions {
     /// <summary>Gets the primary vertical axis.</summary>
     public ChartAxis YAxis { get; internal set; } = new();
 
+    /// <summary>Gets the secondary horizontal value axis for horizontal Cartesian charts.</summary>
+    public ChartAxis SecondaryXAxis { get; internal set; } = new();
+
     /// <summary>Gets the secondary vertical axis.</summary>
     public ChartAxis SecondaryYAxis { get; internal set; } = new();
 
@@ -24,14 +27,14 @@ public sealed partial class ChartOptions {
 
     /// <summary>Gets or sets axis-rule visibility for every configured axis.</summary>
     public bool ShowAxisLines {
-        get => XAxis.ShowLine && YAxis.ShowLine && SecondaryYAxis.ShowLine;
-        set { XAxis.ShowLine = value; YAxis.ShowLine = value; SecondaryYAxis.ShowLine = value; }
+        get => XAxis.ShowLine && YAxis.ShowLine && SecondaryXAxis.ShowLine && SecondaryYAxis.ShowLine;
+        set { XAxis.ShowLine = value; YAxis.ShowLine = value; SecondaryXAxis.ShowLine = value; SecondaryYAxis.ShowLine = value; }
     }
 
     /// <summary>Gets or sets the shared legacy tick count for every axis.</summary>
     public int TickCount {
         get => XAxis.TickCount;
-        set { XAxis.TickCount = value; YAxis.TickCount = value; SecondaryYAxis.TickCount = value; }
+        set { XAxis.TickCount = value; YAxis.TickCount = value; SecondaryXAxis.TickCount = value; SecondaryYAxis.TickCount = value; }
     }
 
     /// <summary>Gets or sets x-axis label density.</summary>

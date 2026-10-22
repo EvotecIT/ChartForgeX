@@ -5,7 +5,13 @@
       projection.transformedMinimum, projection.transformedMaximum, projection.transformedFullMinimum, projection.transformedFullMaximum].every(Number.isFinite)
       && projection.fullMinimum < projection.fullMaximum && projection.minimum < projection.maximum
       && projection.transformedMinimum < projection.transformedMaximum && projection.transformedFullMinimum < projection.transformedFullMaximum
-      && validTimeSessions(projection.timeSessions)
+      && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(projection.scale)
+      && Number.isFinite(projection.threshold) && projection.threshold > 0
+      && Number.isFinite(projection.logarithmBase ?? 10) && (projection.logarithmBase ?? 10) > 1
+      && ['positive', 'negative'].includes(projection.logarithmicDomain ?? 'positive')
+      && (projection.scale !== 'logarithmic' || (projection.logarithmicDomain === 'negative' ? projection.fullMaximum < 0 : projection.fullMinimum > 0))
+      && validTimeSessions(projection.timeSessions) && validTimeSpacing(projection.timeSpacing)
+      && (!(projection.timeSessions || projection.timeSpacing) || projection.scale === 'time') && !(projection.timeSessions && projection.timeSpacing)
       && projection.minimum >= projection.fullMinimum && projection.maximum <= projection.fullMaximum
       && typeof projection.reversed === 'boolean' && !!box && [box.x, box.y, box.width, box.height].every(Number.isFinite)
       && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
@@ -20,7 +26,7 @@
   const connectedXViewport = root => !!nativePreparationBinding(root, 'viewport');
   const syncXViewportControls = root => {
     const binding = nativePreparationBinding(root, 'viewport');
-    const unsupported = !!binding && (!chartXProjection(root) || !binding.legacy && binding.axes.includes('y') && !chartYProjection(root));
+    const unsupported = !!binding && (!chartXProjection(root) || !binding.legacy && binding.axes.some(name => !chartAxisProjection(root, name)));
     root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = unsupported; });
     if (unsupported && root.dataset.cfxMode === 'pan') applyMode(root, '');
     syncXNavigation(root);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidEntityRelationshipParser {
+internal static partial class MermaidEntityRelationshipParser {
     private static readonly string[] RelationshipConnectors = {
         "||--||", "||--|{", "||--o{", "||--o|", "|o--||", "|o--|{", "|o--o{", "|o--o|",
         "}o--||", "}o--|{", "}o--o{", "}o--o|", "}|--||", "}|--|{", "}|--o{", "}|--o|",
@@ -15,7 +15,7 @@ internal static class MermaidEntityRelationshipParser {
         var entities = new Dictionary<string, MermaidEntityNode>(StringComparer.Ordinal);
         MermaidEntityNode? activeEntity = null;
         var activeEntityOpening = default(MermaidSourceSpan);
-        var subgraphs = new Stack<MermaidSourceSpan>();
+        var subgraphs = new Stack<MermaidEntityGroup>();
         for (var line = Math.Max(1, startLine); line <= lines.Length; line++) {
             MermaidResourceGuard.Checkpoint();
             var raw = lines[line - 1];
@@ -35,18 +35,13 @@ internal static class MermaidEntityRelationshipParser {
 
             if (MermaidParserUtilities.TryReadDirection(trimmed, span, result, out var direction, ignoreCase: true)) {
                 if (subgraphs.Count == 0) document.Direction = direction;
-                else MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "ER subgraph direction");
+                else subgraphs.Peek().Direction = direction;
                 continue;
             }
-            if (MermaidParserUtilities.StartsStatement(trimmed, "subgraph")) {
-                subgraphs.Push(span);
-                MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "ER subgraph boundary");
-                continue;
-            }
+            if (TryGroup(document, trimmed, span, subgraphs, result)) continue;
             if (trimmed == "end") {
                 if (subgraphs.Count > 0) {
                     subgraphs.Pop();
-                    document.RawStatements.Add(new MermaidRawStatement(trimmed, span));
                 } else MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "ER subgraph closing statement has no open subgraph.", MermaidDiagnosticCodes.InvalidStatement);
                 continue;
             }
@@ -54,13 +49,11 @@ internal static class MermaidEntityRelationshipParser {
                 MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "ER closing brace has no open entity definition.", MermaidDiagnosticCodes.InvalidStatement);
                 continue;
             }
-            if (MermaidParserUtilities.StartsStatement(trimmed, "style") || MermaidParserUtilities.StartsStatement(trimmed, "class") || MermaidParserUtilities.StartsStatement(trimmed, "classDef")) {
-                MermaidParserUtilities.RetainUnsupported(document, trimmed, span, result, "ER style");
-                continue;
-            }
+            if (TryStyle(document, entities, trimmed, span, result)) continue;
 
             if (trimmed.EndsWith("{", StringComparison.Ordinal)) {
                 activeEntity = EnsureEntity(document, entities, trimmed.Substring(0, trimmed.Length - 1).Trim(), span, result);
+                GroupMember(activeEntity, subgraphs);
                 activeEntityOpening = span;
                 continue;
             }
@@ -70,21 +63,23 @@ internal static class MermaidEntityRelationshipParser {
                 var connectorIndex = trimmed.IndexOf(relationship.Connector, StringComparison.Ordinal);
                 if (trimmed.Substring(0, connectorIndex).IndexOf('[') >= 0 || trimmed.Substring(connectorIndex + relationship.Connector.Length).Split(':')[0].IndexOf('[') >= 0)
                     MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "ER aliases belong on entity declarations, not relationship endpoints.", MermaidDiagnosticCodes.InvalidStatement);
-                EnsureEntity(document, entities, trimmed.Substring(0, connectorIndex).Trim(), span, result);
+                GroupMember(EnsureEntity(document, entities, trimmed.Substring(0, connectorIndex).Trim(), span, result), subgraphs);
                 var targetText = trimmed.Substring(connectorIndex + relationship.Connector.Length).Trim();
                 var colon = RelationshipLabelSeparator(targetText);
-                EnsureEntity(document, entities, colon < 0 ? targetText : targetText.Substring(0, colon).Trim(), span, result);
+                GroupMember(EnsureEntity(document, entities, colon < 0 ? targetText : targetText.Substring(0, colon).Trim(), span, result), subgraphs);
             } else {
-                EnsureEntity(document, entities, MermaidParserUtilities.Unquote(trimmed), span, result);
+                GroupMember(EnsureEntity(document, entities, MermaidParserUtilities.Unquote(trimmed), span, result), subgraphs);
             }
         }
 
         if (activeEntity != null) MermaidParserUtilities.Add(result, activeEntityOpening, MermaidDiagnosticSeverity.Error,
             "ER entity definitions must close with '}'.", MermaidDiagnosticCodes.InvalidStatement);
-        foreach (var opening in subgraphs) MermaidParserUtilities.Add(result, opening, MermaidDiagnosticSeverity.Error,
+        foreach (var opening in subgraphs) MermaidParserUtilities.Add(result, opening.Span, MermaidDiagnosticSeverity.Error,
             "ER subgraphs must close with 'end'.", MermaidDiagnosticCodes.InvalidStatement);
 
-        if (document.Entities.Count == 0 && document.Relationships.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid ER diagrams require at least one entity or relationship.");
+        ResolveGroupEndpoints(document, result);
+        if (document.Entities.Count == 0 && document.Relationships.Count == 0 && document.Groups.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid ER diagrams require at least one entity, group or relationship.");
+        ApplyStyles(document);
     }
 
     private static bool TryParseRelationship(string text, MermaidSourceSpan span, out MermaidEntityRelationship relationship) {
@@ -126,6 +121,11 @@ internal static class MermaidEntityRelationshipParser {
     }
 
     private static MermaidEntityNode EnsureEntity(MermaidEntityRelationshipDocument document, Dictionary<string, MermaidEntityNode> entities, string id, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+        var original = id;
+        id = ReadInlineClasses(id, out var classes);
+        if (MermaidStyleParser.Suffix(original) >= 0 && (classes.Count == 0 || classes.Exists(name => name.IndexOf(":::", StringComparison.Ordinal) >= 0)))
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                "ER inline classes require a name after ':::'.", MermaidDiagnosticCodes.InvalidStatement);
         string? label = null;
         if (MermaidParserUtilities.TryBracketed(id, out var bracketId, out var alias, out _)) {
             if (alias.IndexOfAny(new[] { ' ', '\t' }) >= 0 && !(alias.StartsWith("\"", StringComparison.Ordinal) && alias.EndsWith("\"", StringComparison.Ordinal)))
@@ -136,17 +136,22 @@ internal static class MermaidEntityRelationshipParser {
         id = MermaidParserUtilities.Unquote(id);
         if (entities.TryGetValue(id, out var existing)) {
             if (label != null) existing.Label = label;
+            existing.Classes.AddRange(classes);
             return existing;
         }
         var entity = new MermaidEntityNode(id, span);
         entity.Label = label;
+        entity.Classes.AddRange(classes);
         entities.Add(id, entity);
         document.Entities.Add(entity);
         return entity;
     }
 
-    private static string EndpointId(string text) => MermaidParserUtilities.TryBracketed(text, out var id, out _, out _)
-        ? MermaidParserUtilities.Unquote(id) : MermaidParserUtilities.Unquote(text);
+    private static string EndpointId(string text) {
+        text = ReadInlineClasses(text, out _);
+        return MermaidParserUtilities.TryBracketed(text, out var id, out _, out _)
+            ? MermaidParserUtilities.Unquote(id) : MermaidParserUtilities.Unquote(text);
+    }
 
     private static int RelationshipLabelSeparator(string text) {
         var quoted = false;

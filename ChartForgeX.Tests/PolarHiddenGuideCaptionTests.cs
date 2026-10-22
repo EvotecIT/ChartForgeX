@@ -58,7 +58,7 @@ public sealed class PolarHiddenGuideCaptionTests {
         var rates = values.Select(point => new ChartPoint(point.X, point.Y / 10)).ToArray();
         if (polar) chart.AddPolar("Counts", values).AddPolar("Rate", rates);
         else chart.AddRadarLine("Counts", values).AddRadarLine("Rate", rates);
-        chart.Series[1].UseSecondaryYAxis(); chart.Options.XAxis.Visible = false;
+        chart.Series[1].UseSecondaryValueAxis(); chart.Options.XAxis.Visible = false;
         chart.Options.YAxis.Reversed = reversed; chart.Options.SecondaryYAxis.Reversed = reversed;
         foreach (var value in reversed ? new[] { 20d, 60d } : new[] { 40d, 80d }) {
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(value, "Count " + value));

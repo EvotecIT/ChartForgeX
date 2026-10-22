@@ -24,6 +24,10 @@
       || new Set(metadata.series.map(item => item.key)).size !== metadata.series.length
       || metadata.xProjection !== undefined && !validXProjection(metadata.xProjection)
       || metadata.yProjection !== undefined && !validXProjection(metadata.yProjection)
+      || metadata.secondaryXProjection !== undefined && !validXProjection(metadata.secondaryXProjection)
+      || metadata.secondaryYProjection !== undefined && !validXProjection(metadata.secondaryYProjection)
+      || metadata.valueDomain !== undefined && !['fullData', 'visibleCategories'].includes(metadata.valueDomain)
+      || metadata.orientation !== undefined && metadata.orientation !== 'horizontal'
       || metadata.dataProjection !== undefined && !validDataProjection(metadata.dataProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
       || metadata.categoryLabels !== undefined && (!Array.isArray(metadata.categoryLabels)

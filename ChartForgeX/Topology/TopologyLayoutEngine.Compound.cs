@@ -51,6 +51,10 @@ internal static partial class TopologyLayoutEngine {
                 LayoutContainer(child.Id, child.LayoutDirection ?? inheritedDirection);
             }
             var directNodes = chart.Nodes.Where(node => node.GroupId == parentId).ToArray();
+            if (parentId != null && children.Any(group => group.Presentation == TopologyGroupPresentation.Compartment)) {
+                PlaceCompartments(chart, groups[parentId], children, directNodes.Length, inheritedDirection, localOptions, ShiftGroup);
+                return;
+            }
             var local = new TopologyChart {
                 LayoutMode = TopologyLayoutMode.Layered, LayoutDirection = inheritedDirection,
                 Viewport = new TopologyViewport { Width = chart.Viewport.Width, Height = chart.Viewport.Height, Padding = 24 },
@@ -79,10 +83,11 @@ internal static partial class TopologyLayoutEngine {
             var insetY = 24d;
             if (parentId != null) {
                 var parent = groups[parentId];
-                var labelWidth = EstimateTextWidth(parent.Label, 12, true, chart.TextMeasurement) + 48;
+                var compartment = parent.Presentation == TopologyGroupPresentation.Compartment;
+                var labelWidth = compartment ? 0 : EstimateTextWidth(parent.Label, 12, true, chart.TextMeasurement) + 48;
                 parent.Width = Math.Max(Math.Max(190, width + 48), labelWidth);
                 parent.Height = Math.Max(80, height + 48);
-                if (TopologyGroupHeader.IsDrawn(localOptions)) {
+                if (!compartment && TopologyGroupHeader.IsDrawn(localOptions)) {
                     insetY = TopologyGroupHeader.ReservedBounds(chart, parent, localOptions).Bottom - parent.Y + 12;
                     parent.Height = Math.Max(80, height + insetY + 24);
                 }

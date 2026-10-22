@@ -365,6 +365,15 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       value: numericFactText(data, part)
     }));
   };
+  const errorBarTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'errorbar') return [];
+    return ['X', 'Y'].filter(axis => tooltipNumber(data['cfx' + axis + 'Lower']) && tooltipNumber(data['cfx' + axis + 'Upper']))
+      .map(axis => {
+        const lower = numericFactText(data, axis + 'Lower'), upper = numericFactText(data, axis + 'Upper');
+        return { name: rowName(node, axis.toLowerCase() + '-range', axis + ' range'), value: lower === '' && upper === '' ? '' : lower + ' - ' + upper };
+      });
+  };
   const gaugeTargetTooltipRows = (node) => Array.from({ length: Number((node.dataset || {}).cfxGaugeTargetCount) || 0 }, (_, index) => {
     const prefix = 'data-cfx-gauge-target-' + index + '-';
     return { name: node.getAttribute(prefix + 'label') || rowName(node, 'target', 'Target'),
@@ -423,6 +432,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       const lower = numericFactText(data, 'Lower'), upper = numericFactText(data, 'Upper');
       rows.push({ name: 'Range', value: lower === '' && upper === '' ? '' : lower + ' - ' + upper });
     }
+    rows.push(...errorBarTooltipRows(node));
     metadataRows(node).forEach((row) => push(row.name, row.value));
     return rows;
   };
@@ -1817,7 +1827,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   const prepareRootBranchHighlights = (root) => {
     if (root.dataset.cfxHighlightMode !== 'root-branch') return;
     // Prepared targets normalize family names; native metadata also accepts the enum spelling.
-    const nodes = Array.from(root.querySelectorAll('[data-cfx-kind="sunburst" i][data-cfx-target-kind="node"]'));
+    const nodes = Array.from(root.querySelectorAll('[data-cfx-kind="sunburst" i][data-cfx-target-kind="node"]')).filter(node => !isPassiveTarget(node));
     if (!nodes.length) return;
     root._cfxBranchHighlights = nodes;
     nodes.forEach((node) => {
@@ -2110,12 +2120,18 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   const comparisonLegendRows = (node) => {
     const data = node.dataset || {}, kind = (data.cfxKind || '').toLowerCase();
     if (!['dumbbell', 'errorbar'].includes(kind)) return null;
-    const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX;
+    const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || capturedText(data, 'cfxFormattedX', data.cfxX);
     const rows = [{ name: rowName(node, 'category', 'Category'), value: category }];
     if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: numericFactText(data, 'Start') },
       { name: rowName(node, 'end', 'End'), value: numericFactText(data, 'End') }, { name: rowName(node, 'delta', 'Delta'), value: numericFactText(data, 'Delta') });
-    else rows.push({ name: rowName(node, 'value', 'Value'), value: numericFactText(data, 'Value') },
-      { name: rowName(node, 'lower', 'Lower'), value: numericFactText(data, 'Lower') }, { name: rowName(node, 'upper', 'Upper'), value: numericFactText(data, 'Upper') });
+    else {
+      rows.push({ name: rowName(node, 'value', 'Value'), value: numericFactText(data, 'Value') });
+      for (const axis of ['X', 'Y']) {
+        if (!tooltipNumber(data['cfx' + axis + 'Lower']) || !tooltipNumber(data['cfx' + axis + 'Upper'])) continue;
+        rows.push({ name: rowName(node, axis.toLowerCase() + '-lower', axis + ' lower'), value: numericFactText(data, axis + 'Lower') },
+          { name: rowName(node, axis.toLowerCase() + '-upper', axis + ' upper'), value: numericFactText(data, axis + 'Upper') });
+      }
+    }
     return rows.filter((row) => row.value !== undefined && row.value !== null);
   };
   const legendSummaryRows = (item) => {
@@ -2409,6 +2425,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
   // Reset is visible only for a changed view.
   const viewChanged = (root) => {
+    if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
     if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
@@ -2504,12 +2521,13 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
   const captureInteractionState = (root, source) => {
     const snapshot = {
-      version: 1,
+      version: 2,
       chartId: root.dataset.cfxChartId || '',
       source: source || '',
       viewport: getState(root),
-      xWindow: connectedXViewport(root) ? nativeXWindow(root) : null,
-      yWindow: cartesianViewportConnected(root) ? nativeYWindow(root) : null,
+      nativeViewport: cartesianViewportConnected(root) ? nativeViewportWindows(root, true)
+        : connectedXViewport(root) ? { x: nativeXWindow(root) } : null,
+      nativeHierarchy: hierarchyConnected(root) ? hierarchySnapshot(root) : null,
       mode: root.dataset.cfxMode || '',
       brush: root.dataset.cfxBrush || '',
       selectedTargets: selectedTargets(root),
@@ -2532,14 +2550,22 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return snapshot;
   };
   const applyInteractionState = (root, snapshot, emit, sync, nativeAccepted = false) => {
-    if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
-    if (!nativeAccepted && (snapshot.xWindow || snapshot.yWindow)) {
+    if (!snapshot || !hasFeature(root, 'StateBookmarks') || snapshot.xWindow || snapshot.yWindow) return;
+    if (snapshot.nativeHierarchy && snapshot.nativeViewport) return;
+    if (!nativeAccepted && snapshot.nativeHierarchy) {
+      const captured = copyHostValue(snapshot), requested = captured.nativeHierarchy, current = capturedHierarchy(root);
+      if (!current || requested.kind !== current.kind || requested.seriesKey !== current.seriesKey) return;
+      requestNativeHierarchy(root, requested.rootId === null ? null : { rootId: requested.rootId }, false,
+        () => applyInteractionState(root, captured, emit, sync, true));
+      return;
+    }
+    if (!nativeAccepted && snapshot.nativeViewport) {
       const captured = copyHostValue(snapshot);
       const accepted = () => applyInteractionState(root, captured, emit, sync, true);
       if (cartesianViewportConnected(root))
-        requestNativeCartesianWindow(root, { x: captured.xWindow, y: captured.yWindow }, false, accepted);
-      else if (!captured.yWindow && captured.xWindow && connectedXViewport(root))
-        requestNativeXWindow(root, captured.xWindow, false, accepted);
+        requestNativeCartesianWindow(root, captured.nativeViewport, false, accepted);
+      else if (captured.nativeViewport.x && !cartesianAxisNames.some(name => name !== 'x' && captured.nativeViewport[name]) && connectedXViewport(root))
+        requestNativeXWindow(root, captured.nativeViewport.x, false, accepted);
       // Native bounds are one transaction. Unsupported or disconnected replays leave reader state unchanged.
       return;
     }
@@ -2615,6 +2641,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     'word-spacing', 'text-anchor', 'dominant-baseline', 'text-decoration-line', 'text-decoration-color',
     'text-decoration-style', 'text-decoration-thickness'];
   const serializeSvg = (root) => {
+    settleChartUpdateMotion(root);
     const svg = root.querySelector('.cfx-stage svg');
     if (!svg) return null;
     return withPersistentExportPaint(root, svg, () => {
@@ -2632,7 +2659,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           target.removeAttribute(attribute);
       });
       copy.style.removeProperty('transform'); copy.style.removeProperty('transition');
-      copy.querySelectorAll('[data-cfx-browser-hit-area],[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline]').forEach(node => node.remove());
+      copy.querySelectorAll('[data-cfx-browser-hit-area],[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-annotation-editor]').forEach(node => node.remove());
       return { svg: copy, data: new XMLSerializer().serializeToString(copy) };
     });
   };
@@ -3458,14 +3485,14 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
       return;
     }
-    if (detail.action === 'viewport' && (detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
-      // Peers share each representable source axis. A missing or differently scaled
-      // Y projection must not discard a compatible X window (or the reverse).
-      const data = root._cfxDataProjection;
-      requestNativeCartesianWindow(root, {
-        ...(validSourceAxisWindow(detail.xWindow, chartXProjection(root), data?.x) ? { x: detail.xWindow } : {}),
-        ...(validSourceAxisWindow(detail.yWindow, chartYProjection(root), data?.y) ? { y: detail.yWindow } : {})
-      }, false);
+    if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
+      // Exact physical keys prevent a secondary value domain being replayed through a primary axis.
+      const source = detail.viewport || { x: detail.xWindow, y: detail.yWindow };
+      const binding = nativePreparationBinding(root, 'viewport');
+      const viewport = Object.fromEntries(binding.axes.filter(name => validSourceAxisWindow(source[name], chartAxisProjection(root, name)))
+        .map(name => [name, source[name]]));
+      if (source.valueDomain !== undefined) viewport.valueDomain = source.valueDomain;
+      requestNativeCartesianWindow(root, viewport, false);
     }
     else if (detail.action === 'viewport' && detail.xWindow && connectedXViewport(root)) requestNativeXWindow(root, detail.xWindow, false);
     else if (detail.action === 'viewport' && detail.state && !connectedXViewport(root)) applyViewport(root, detail.state);
@@ -3783,6 +3810,40 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       listenChart(root, root, name, event => { const detail = event.detail || {}; execute(root, detail.match, detail); });
     listenChart(root, root, 'cfx-clear-highlight', event => clearHighlightCommand(root, event.detail || {}));
   };
+  const validTimeSpacing = spacing => spacing === undefined || !!spacing && ['ordinal', 'unit'].includes(spacing.kind)
+    && Array.isArray(spacing.instants) && spacing.instants.length >= (spacing.kind === 'unit' ? 2 : 1)
+    && spacing.instants.length <= (spacing.kind === 'unit' ? 100001 : 100000)
+    && spacing.instants.every((value, index, values) => Number.isFinite(value) && value >= 0
+      && (index === 0 || value > values[index - 1]));
+  const timeSpacingIndex = (instants, value) => {
+    let low = 0, high = instants.length - 1;
+    while (low <= high) { const middle = low + Math.floor((high - low) / 2); if (instants[middle] <= value) low = middle + 1; else high = middle - 1; }
+    return high;
+  };
+  const transformedSpacingValue = (spacing, value, bound) => {
+    const values = spacing.instants, last = values.length - 1, found = timeSpacingIndex(values, value);
+    if (spacing.kind === 'unit') {
+      if (found < 0) return (value - values[0]) / (values[1] - values[0]);
+      if (found >= last) return last + (value - values[last]) / (values[last] - values[last - 1]);
+      return found + (bound === undefined ? .5 : bound ? 1 : 0);
+    }
+    if (last === 0) return value - values[0];
+    const index = Math.max(0, Math.min(last - 1, found));
+    return index + (value - values[index]) / (values[index + 1] - values[index]);
+  };
+  const projectedSpacingValue = (spacing, coordinate) => {
+    const values = spacing.instants, last = values.length - 1;
+    if (spacing.kind === 'unit') {
+      if (coordinate <= 0) return values[0] + coordinate * (values[1] - values[0]);
+      if (coordinate >= last) return values[last] + (coordinate - last) * (values[last] - values[last - 1]);
+      return values[Math.floor(coordinate)];
+    }
+    if (last === 0) return values[0] + coordinate;
+    const index = Math.max(0, Math.min(last - 1, Math.floor(coordinate)));
+    return values[index] + (coordinate - index) * (values[index + 1] - values[index]);
+  };
+  const transformedAxisBound = (axis, value, maximum) => axis.timeSpacing
+    ? transformedSpacingValue(axis.timeSpacing, value, maximum) : transformedAxisValue(axis, value);
   const validTimeSessions = sessions => sessions === undefined || Array.isArray(sessions) && sessions.length > 0
     && sessions.every((session, index) => session && [session.minimum, session.maximum, session.offset].every(Number.isFinite)
       && session.minimum >= 0 && session.maximum > session.minimum && session.offset >= 0
@@ -3816,13 +3877,17 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const axis = value => !!value && [value.minimum, value.maximum, value.transformedMinimum, value.transformedMaximum, value.threshold].every(Number.isFinite)
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
-      && validTimeSessions(value.timeSessions) && (value.timeSessions === undefined || value.scale === 'time')
+      && Number.isFinite(value.logarithmBase ?? 10) && (value.logarithmBase ?? 10) > 1
+      && ['positive', 'negative'].includes(value.logarithmicDomain ?? 'positive')
+      && validTimeSessions(value.timeSessions) && validTimeSpacing(value.timeSpacing)
+      && (!(value.timeSessions || value.timeSpacing) || value.scale === 'time') && !(value.timeSessions && value.timeSpacing)
       && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
         tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')))
       && (value.displayBounds === undefined || Array.isArray(value.displayBounds) && value.displayBounds.every(tick =>
         tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')));
     return !!plot && [plot.x, plot.y, plot.width, plot.height].every(Number.isFinite) && plot.width > 0 && plot.height > 0
-      && typeof projection.horizontal === 'boolean' && axis(projection.x) && (projection.y === undefined || axis(projection.y));
+      && typeof projection.horizontal === 'boolean' && (projection.x !== undefined || projection.y !== undefined)
+      && (projection.x === undefined || axis(projection.x)) && (projection.y === undefined || axis(projection.y));
   };
   const brushPointer = (root, stage, event) => {
     const point = stagePointer(stage, event, true), plot = visibleCartesianPlot(root, stage, root._cfxDataProjection?.plotBounds);
@@ -3840,13 +3905,16 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const span = axis.transformedMaximum - axis.transformedMinimum;
     const value = Number.isFinite(span) ? axis.transformedMinimum + ratio * span
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
-    const raw = axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic' ? Math.pow(10, value)
-      : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
+    const base = axis.logarithmBase ?? 10;
+    const raw = axis.timeSpacing ? projectedSpacingValue(axis.timeSpacing, value) : axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic'
+      ? axis.logarithmicDomain === 'negative' ? -Math.pow(base, -value) : Math.pow(base, value)
+      : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(base, Math.abs(value)) - 1) : value;
     return clamp(raw, axis.minimum, axis.maximum);
   };
-  const transformedAxisValue = (axis, value) => axis.timeSessions ? transformedSessionValue(axis.timeSessions, value)
-    : axis.scale === 'logarithmic' ? Math.log10(value)
-    : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * Math.log10(1 + Math.abs(value) / axis.threshold) : value;
+  const axisLogarithm = (axis, value) => (axis.logarithmBase ?? 10) === 10 ? Math.log10(value) : Math.log(value) / Math.log(axis.logarithmBase);
+  const transformedAxisValue = (axis, value) => axis.timeSpacing ? transformedSpacingValue(axis.timeSpacing, value) : axis.timeSessions ? transformedSessionValue(axis.timeSessions, value)
+    : axis.scale === 'logarithmic' ? axis.logarithmicDomain === 'negative' ? -axisLogarithm(axis, -value) : axisLogarithm(axis, value)
+    : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axisLogarithm(axis, 1 + Math.abs(value) / axis.threshold) : value;
   const enclosingAxisTicks = (axis, values) => {
     const ticks = [...(axis.displayTicks || []), ...(axis.displayBounds || [])]
       .filter(tick => tick.value >= axis.minimum && tick.value <= axis.maximum);
@@ -3876,7 +3944,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const categoryDirection = projection.horizontal ? 'y' : 'x';
     const categoryAxis = projection[categoryDirection];
     const categoryLabels = categoryAxis?.scale === 'linear' && Array.isArray(metadata.categoryLabels) ? metadata.categoryLabels : undefined;
-    const selectedAxes = [['x', projection.x, x], ...(root.dataset.cfxBrushAxis !== 'x' && projection.y ? [['y', projection.y, y]] : [])];
+    const selectedAxes = [...(projection.x ? [['x', projection.x, x]] : []),
+      ...(root.dataset.cfxBrushAxis !== 'x' && projection.y ? [['y', projection.y, y]] : [])];
     const range = {}, displayRange = {}, ratios = { x, y }, captions = {};
     for (const [direction, axis, endpoints] of selectedAxes) {
       const raw = endpoints.map(ratio => projectedAxisValue(axis, ratio)).sort((a, b) => a - b);
@@ -4521,8 +4590,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     applyRenderedTargetContract(root);
     bindLegendOverflow(root);
     bindXNavigation(root);
+    bindHierarchyNavigation(root);
     bindChartContextMenu(root);
     bindHostCommands(root);
+    bindAnnotationEditor(root);
     prepareRootBranchHighlights(root);
     if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
       if (event.key !== 'Escape') return;
@@ -4630,6 +4701,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           else toggleSeries(root, activated);
         }
         else {
+          if (activateHierarchyTarget(root, activated)) return;
           toggleSelection(root, activated, event);
           pinTip(root, tip, activated, event);
         }
@@ -4890,6 +4962,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const reset = root.querySelector('[data-cfx-reset]');
     if (reset) listenChart(root, window, 'resize', () => syncResetControl(root));
     if (reset) listenChart(root, reset, 'click', () => {
+      if (hierarchyConnected(root) && (hierarchyViewChanged(root) || chartLifetimes.get(root)?.preparationPending)) {
+        requestNativeHierarchy(root, null); return;
+      }
       if (connectedXViewport(root) && chartXProjection(root) && (nativeViewportChanged(root) || chartLifetimes.get(root)?.preparationPending)) {
         requestViewportReset(root);
         return;
@@ -4939,6 +5014,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       || new Set(metadata.series.map(item => item.key)).size !== metadata.series.length
       || metadata.xProjection !== undefined && !validXProjection(metadata.xProjection)
       || metadata.yProjection !== undefined && !validXProjection(metadata.yProjection)
+      || metadata.secondaryXProjection !== undefined && !validXProjection(metadata.secondaryXProjection)
+      || metadata.secondaryYProjection !== undefined && !validXProjection(metadata.secondaryYProjection)
+      || metadata.valueDomain !== undefined && !['fullData', 'visibleCategories'].includes(metadata.valueDomain)
+      || metadata.orientation !== undefined && metadata.orientation !== 'horizontal'
       || metadata.dataProjection !== undefined && !validDataProjection(metadata.dataProjection)
       || metadata.xLabels.some(item => !item || !Number.isFinite(item.value) || typeof item.text !== 'string')
       || metadata.categoryLabels !== undefined && (!Array.isArray(metadata.categoryLabels)
@@ -5026,13 +5105,14 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   const cancelNativePreparation = lifetime => {
     const pending = lifetime?.preparationPending;
     if (!pending) return;
-    lifetime.preparationPending = null; pending.abort.abort();
-    if (lifetime.controller) syncXNavigation(lifetime.controller.root);
+    lifetime.preparationPending = null; pending.abort.abort(); pending.cancelled?.();
+    if (lifetime.controller) { syncXNavigation(lifetime.controller.root); syncHierarchyNavigation(lifetime.controller.root); }
   };
   const setNativePreparationConnection = (root, channel, connection, settings = {}) => {
     const lifetime = chartLifetimes.get(root);
     if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected a native preparation callback or null to disconnect.');
     cancelNativePreparation(lifetime);
+    resetAnnotationEditor(root);
     if (lifetime.preparationSession && lifetime.preparationSession !== settings.session) {
       for (const key of Object.keys(lifetime.preparationConnections))
         if (lifetime.preparationConnections[key]?.session === lifetime.preparationSession) delete lifetime.preparationConnections[key];
@@ -5040,6 +5120,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       syncXViewportControls(root);
     }
     lifetime.preparationConnections[channel] = connection ? Object.freeze({ ...settings, callback: connection }) : null;
+    syncHierarchyNavigation(root);
   };
   const nativePreparationBasis = basis => {
     if (typeof basis !== 'string' || !basis.trim()) throw new TypeError('A managed native section requires its nonempty opaque basis token.');
@@ -5047,24 +5128,29 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
   const connectNativePreparation = (root, connection, options = {}) => {
     if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected a native preparation callback or null to disconnect.');
-    const axes = options.axes === undefined ? 'x' : options.axes;
-    if (axes !== null && !['x', 'y', 'xy'].includes(axes)) throw new TypeError('Native viewport axes must be x, y, xy or null for annotation-only preparation.');
+    if (options.hierarchy !== undefined && typeof options.hierarchy !== 'boolean') throw new TypeError('The hierarchy capability must be boolean.');
+    const axes = options.axes === null ? null : nativeViewportAxes(options.axes);
+    const motion = captureChartUpdateMotion(options.motion);
     const session = connection ? { basis: nativePreparationBasis(options.basis) } : null;
-    if (connection && axes !== null && (!chartXProjection(root) || axes.includes('y') && !chartYProjection(root)))
-      throw new TypeError('This chart has no unambiguous native projection for the requested axes.');
+    if (connection && axes !== null && axes.some(name => !chartAxisProjection(root, name)))
+      throw new TypeError('This chart has no native projection for every requested physical axis.');
+    if (connection && options.hierarchy === true && (!hasFeature(root, 'HierarchyNavigation') || !capturedHierarchy(root)))
+      throw new TypeError('Native hierarchy preparation requires an enabled Treemap or Sunburst hierarchy.');
     const lifetime = chartLifetimes.get(root);
     cancelNativePreparation(lifetime);
+    resetAnnotationEditor(root);
     lifetime.preparationConnections = {}; lifetime.preparationSession = session;
     if (session) {
-      setNativePreparationConnection(root, 'annotation', connection, { session });
+      setNativePreparationConnection(root, 'annotation', connection, { session, motion });
+      if (options.hierarchy === true) setNativePreparationConnection(root, 'hierarchy', connection, { session, motion });
       if (axes !== null) {
-        setNativePreparationConnection(root, 'viewport', connection, { session, axes, legacy: false });
+        setNativePreparationConnection(root, 'viewport', connection, { session, axes, legacy: false, motion });
         applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
       }
     }
-    syncXViewportControls(root);
+    syncXViewportControls(root); syncHierarchyNavigation(root);
   };
-  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null) => {
+  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null, motion = null) => {
     // Validate alternates before releasing the committed scene.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
     // Commit one active drawing before notifying hosts or exposing fresh controls.
@@ -5082,6 +5168,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const state = chartUpdateState(root, !!adaptiveDrawing);
     const active = root.getRootNode().activeElement;
     const navigationFocus = active && root.contains(active) ? active.dataset?.cfxXControl : null;
+    const hierarchyFocus = active && root.contains(active) ? active.dataset?.cfxHierarchyControl : null;
     const suspended = nativeKind === 'reset' || !!adaptiveDrawing && pointerReadoutSuspended(root);
     // Retain the request until validation can report failures.
     if (nativeKind) lifetime.preparationPending = null;
@@ -5103,6 +5190,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     syncXViewportControls(root);
     if (navigationFocus) Array.from(root.querySelectorAll('[data-cfx-x-control]'))
       .find(control => control.dataset.cfxXControl === navigationFocus && !control.disabled)?.focus({ preventScroll: true });
+    if (hierarchyFocus) Array.from(root.querySelectorAll('[data-cfx-hierarchy-control]'))
+      .find(control => control.dataset.cfxHierarchyControl === hierarchyFocus && !control.disabled)?.focus({ preventScroll: true });
+    syncHierarchyNavigation(root);
+    beginChartUpdateMotion(root, motion);
   };
   const requestNativePreparation = (root, channel, payload, hooks) => {
     const lifetime = chartLifetimes.get(root), binding = nativePreparationBinding(root, channel);
@@ -5112,8 +5203,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       requestId: 'cfx-request-' + (++chartPreparationRequestSequence), sceneRevision: lifetime.sceneRevision,
       ...(binding.session ? { channel, basis: binding.session.basis } : {}),
       ...(lifetime.adaptive ? { drawing: lifetime.adaptive.current } : {}) });
-    const pending = { request, channel, abort: new AbortController() }; lifetime.preparationPending = pending;
-    syncXNavigation(root);
+    const pending = { request, channel, abort: new AbortController(), cancelled: hooks.cancelled }; lifetime.preparationPending = pending;
+    syncXNavigation(root); syncHierarchyNavigation(root); hooks.started?.(request);
     const current = () => root.isConnected && chartLifetimes.get(root) === lifetime && !lifetime.disposed
       && nativePreparationBinding(root, channel) === binding && lifetime.preparationPending === pending
       && lifetime.sceneRevision === request.sceneRevision && !pending.abort.signal.aborted;
@@ -5127,103 +5218,150 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (next.dataset.cfxChartId !== request.chartId) throw new TypeError('A native preparation reply must retain the chart identity.');
       hooks.validate(next, request);
       const before = hooks.beforeCommit?.();
-      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true, nativeState);
+      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true, nativeState, binding.motion);
       hooks.accepted?.(); hooks.committed?.(request, before);
       emitHostEvent(root, hooks.eventPrefix + 'change', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind: request.kind });
     }).catch(error => {
       if (!current()) return;
-      lifetime.preparationPending = null; syncXNavigation(root);
+      lifetime.preparationPending = null; syncXNavigation(root); syncHierarchyNavigation(root); hooks.failed?.(error, request);
       emitHostEvent(root, hooks.eventPrefix + 'error', { requestId: request.requestId, sceneRevision: request.sceneRevision, kind: request.kind,
         message: error instanceof Error ? error.message : String(error) });
     });
     return true;
   };
-  // Explicit primary Y/XY policy uses the same captured transforms and native preparation channel as X.
-  const chartYProjection = root => {
-    try { return JSON.parse(root.dataset.cfxPreparedChart).yProjection || null; } catch { return null; }
+  // Motion changes presentation only; the accepted native scene is committed atomically first.
+  const captureChartUpdateMotion = value => {
+    if (value === undefined || value === null) return Object.freeze({ duration: 0 });
+    if (typeof value !== 'object' || !Number.isFinite(value.duration) || value.duration < 0 || value.duration > 1000)
+      throw new TypeError('Update motion requires a finite duration from zero to 1,000 milliseconds.');
+    return Object.freeze({ duration: value.duration });
   };
-  const nativeYWindow = root => {
-    const projection = chartYProjection(root);
+  const settleChartUpdateMotion = root => chartLifetimes.get(root)?.updateMotionRelease?.();
+  const beginChartUpdateMotion = (root, motion) => {
+    settleChartUpdateMotion(root);
+    if (!motion?.duration || document.hidden) return;
+    const svg = root.querySelector('.cfx-stage svg'), media = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (!svg || typeof svg.animate !== 'function' || media?.matches) return;
+    const lifetime = chartLifetimes.get(root);
+    const animation = svg.animate([{ opacity: .35 }, { opacity: 1 }], { duration: motion.duration, easing: 'ease-out' });
+    svg.dataset.cfxUpdateMotion = 'true';
+    const reduced = event => { if (event.matches) release(); };
+    const hidden = () => { if (document.hidden) release(); };
+    const release = ownChartWork(root, () => {
+      animation.cancel(); delete svg.dataset.cfxUpdateMotion;
+      media?.removeEventListener('change', reduced); document.removeEventListener('visibilitychange', hidden);
+      if (lifetime.updateMotionRelease === release) lifetime.updateMotionRelease = null;
+    });
+    lifetime.updateMotionRelease = release;
+    media?.addEventListener('change', reduced); document.addEventListener('visibilitychange', hidden);
+    animation.finished.then(release, release);
+  };
+  // Every physical axis uses one captured transform and the existing native preparation lifetime.
+  const cartesianAxisNames = Object.freeze(['x', 'y', 'secondaryX', 'secondaryY']);
+  const nativeViewportAxes = (axes, defaults = ['x']) => {
+    const selected = axes === undefined ? defaults : axes;
+    if (!Array.isArray(selected) || !selected.length || selected.length > 4
+      || selected.some(axis => !cartesianAxisNames.includes(axis)) || new Set(selected).size !== selected.length)
+      throw new TypeError('Native viewport axes require a nonempty distinct array of x, y, secondaryX or secondaryY.');
+    return Object.freeze([...selected]);
+  };
+  const capturedCartesianMetadata = root => {
+    try { return JSON.parse(root.dataset.cfxPreparedChart); } catch { return {}; }
+  };
+  const chartAxisProjection = (root, name) => capturedCartesianMetadata(root)[name + 'Projection'] || null;
+  const chartYProjection = root => chartAxisProjection(root, 'y');
+  const nativeAxisWindow = (root, name) => {
+    const projection = chartAxisProjection(root, name);
     return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale } : null;
   };
+  const nativeYWindow = root => nativeAxisWindow(root, 'y');
   const nativeYWindowChanged = root => {
     const projection = chartYProjection(root);
     return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
   };
-  const nativeViewportChanged = root => nativeXWindowChanged(root) || nativeYWindowChanged(root);
+  const nativeViewportChanged = root => cartesianAxisNames.some(name => {
+    const projection = chartAxisProjection(root, name);
+    return projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+  });
   const cartesianViewportConnected = root => nativePreparationBinding(root, 'viewport')?.legacy === false;
-  const nativeViewportWindows = root => ({ x: nativeXWindow(root), y: nativeYWindow(root) });
+  const nativeViewportWindows = (root, connectedOnly = false) => ({ ...Object.fromEntries(
+    (connectedOnly ? cartesianAxisNames.filter(name => chartAxisProjection(root, name)) : cartesianAxisNames).map(name => [name, nativeAxisWindow(root, name)])),
+    ...(capturedCartesianMetadata(root).valueDomain ? { valueDomain: capturedCartesianMetadata(root).valueDomain } : {}) });
   const logicalChartPointer = (root, event) => {
     const matrix = svgScreenMatrix(root.querySelector('.cfx-stage svg'));
     if (!matrix) return null;
     const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
     return Number.isFinite(point.x) && Number.isFinite(point.y) ? { x: point.x, y: point.y } : null;
   };
-  const validSourceAxisWindow = (window, projection, axis) => {
+  const validSourceAxisWindow = (window, projection, axis = projection) => {
     if (!window || !projection || !axis || !Number.isFinite(window.minimum) || !Number.isFinite(window.maximum)
       || window.minimum >= window.maximum || window.scale && window.scale !== projection.scale
-      || axis.scale === 'logarithmic' && window.minimum <= 0) return false;
-    const first = projectedAxisRatio(axis, window.minimum), last = projectedAxisRatio(axis, window.maximum);
+      || axis.scale === 'logarithmic' && !(axis.logarithmicDomain === 'negative' ? window.maximum < 0 : window.minimum > 0)) return false;
+    const first = transformedAxisBound(axis, window.minimum, false), last = transformedAxisBound(axis, window.maximum, true);
     return Number.isFinite(first) && Number.isFinite(last) && first !== last;
   };
+  const viewportValuePolicy = (root, value) => {
+    const policy = value ?? capturedCartesianMetadata(root).valueDomain ?? 'fullData';
+    return ['fullData', 'visibleCategories'].includes(policy) ? policy : null;
+  };
   const requestCartesianViewport = (root, payload, sync = true, accepted) => {
-    if (!cartesianViewportConnected(root) || !chartXProjection(root)
-      || payload.axes?.includes('y') && !chartYProjection(root)) return false;
+    const binding = nativePreparationBinding(root, 'viewport');
+    if (!cartesianViewportConnected(root) || !Array.isArray(payload.axes) || !payload.axes.length
+      || payload.axes.some(name => !chartAxisProjection(root, name))) return false;
+    const valueDomain = viewportValuePolicy(root, payload.valueDomain);
+    if (!valueDomain) return false;
     if (payload.kind === 'reset') suspendPointerReadout(root);
-    return requestNativePreparation(root, 'viewport', payload, {
+    return requestNativePreparation(root, 'viewport', { ...payload, ...(valueDomain === 'visibleCategories' ? { valueDomain } : {}) }, {
       eventPrefix: 'cfxviewport', resetView: payload.kind === 'reset', accepted,
       validate: next => {
-        if (!chartXProjection(next) || (payload.axes?.includes('y') || chartYProjection(root)) && !chartYProjection(next))
-          throw new TypeError('The viewport reply must retain its supported native axis projections.');
+        if (payload.axes.some(name => !chartAxisProjection(next, name)))
+          throw new TypeError('The viewport reply must retain every requested physical axis projection.');
       },
       beforeCommit: () => payload.kind === 'reset' ? selectionSignature(root) : '',
       committed: (_, previousSelection) => {
         if (payload.kind === 'reset') { emitHostEvent(root, 'cfxreset', {}); publishResetSelection(root, previousSelection); }
-        if (sync) emitSync(root, { action: 'viewport', state: getState(root), xWindow: nativeXWindow(root), yWindow: nativeYWindow(root) });
+        if (sync) emitSync(root, { action: 'viewport', state: getState(root), xWindow: nativeXWindow(root), yWindow: nativeYWindow(root), viewport: nativeViewportWindows(root, true) });
       }
     });
   };
   const requestNativeCartesianWindow = (root, viewport, sync = true, accepted) => {
-    if (!cartesianViewportConnected(root) || !viewport || (!viewport.x && !viewport.y)) return false;
-    const x = chartXProjection(root), y = chartYProjection(root), data = root._cfxDataProjection;
-    if (viewport.x && !validSourceAxisWindow(viewport.x, x, data?.x)
-      || viewport.y && !validSourceAxisWindow(viewport.y, y, data?.y)) return false;
-    const sourceViewport = Object.freeze({
-      ...(viewport.x ? { x: Object.freeze({ minimum: viewport.x.minimum, maximum: viewport.x.maximum }) } : {}),
-      ...(viewport.y ? { y: Object.freeze({ minimum: viewport.y.minimum, maximum: viewport.y.maximum }) } : {})
-    });
-    return requestCartesianViewport(root, { kind: 'window', axes: (viewport.x ? 'x' : '') + (viewport.y ? 'y' : ''), sourceViewport }, sync, accepted);
+    if (!cartesianViewportConnected(root) || !viewport || typeof viewport !== 'object'
+      || Object.keys(viewport).some(name => name !== 'valueDomain' && !cartesianAxisNames.includes(name))) return false;
+    const axes = cartesianAxisNames.filter(name => viewport[name]);
+    if (!axes.length || axes.some(name => !validSourceAxisWindow(viewport[name], chartAxisProjection(root, name)))) return false;
+    const valueDomain = viewportValuePolicy(root, viewport.valueDomain);
+    if (!valueDomain) return false;
+    const sourceViewport = Object.freeze(Object.fromEntries(axes.map(name => [name,
+      Object.freeze({ minimum: viewport[name].minimum, maximum: viewport[name].maximum })])));
+    return requestCartesianViewport(root, { kind: 'window', axes: Object.freeze(axes), sourceViewport, valueDomain }, sync, accepted);
   };
   const requestViewportReset = root => {
     if (!cartesianViewportConnected(root)) return requestXViewport(root, 'reset');
-    // Reset restores the native view, rather than replaying a bookmark's complete
-    // window. A replacement can lose Y eligibility while retaining a zoomed X.
-    const axes = nativePreparationBinding(root, 'viewport').axes.replace('y', chartYProjection(root) ? 'y' : '');
-    return requestCartesianViewport(root, { kind: 'reset', axes: axes || 'x' });
+    const axes = cartesianAxisNames.filter(name => chartAxisProjection(root, name));
+    return axes.length ? requestCartesianViewport(root, { kind: 'reset', axes: Object.freeze(axes), valueDomain: 'fullData' }) : false;
   };
   const requestCartesianViewportZoom = (root, factor, logicalX, logicalY) => {
-    const projection = chartXProjection(root), binding = nativePreparationBinding(root, 'viewport'), plot = projection?.plotBounds;
-    if (!plot || !Number.isFinite(factor) || factor <= 0) return;
+    const binding = nativePreparationBinding(root, 'viewport'), plot = chartXProjection(root)?.plotBounds;
+    if (!plot || !binding || !Number.isFinite(factor) || factor <= 0) return;
     const x = Number.isFinite(logicalX) ? clamp(logicalX, plot.x, plot.x + plot.width) : plot.x + plot.width / 2;
     const y = Number.isFinite(logicalY) ? clamp(logicalY, plot.y, plot.y + plot.height) : plot.y + plot.height / 2;
     const axes = binding.axes;
     requestCartesianViewport(root, { kind: 'zoom', axes,
-      ...(axes.includes('x') ? { left: x - (x - plot.x) / factor, right: x + (plot.x + plot.width - x) / factor } : {}),
-      ...(axes.includes('y') ? { top: y - (y - plot.y) / factor, bottom: y + (plot.y + plot.height - y) / factor } : {})
+      ...(axes.some(name => name === 'x' || name === 'secondaryX') ? { left: x - (x - plot.x) / factor, right: x + (plot.x + plot.width - x) / factor } : {}),
+      ...(axes.some(name => name === 'y' || name === 'secondaryY') ? { top: y - (y - plot.y) / factor, bottom: y + (plot.y + plot.height - y) / factor } : {})
     });
   };
   const requestNativeViewportPan = (root, deltaX, deltaY) => {
     const plot = chartXProjection(root)?.plotBounds, binding = nativePreparationBinding(root, 'viewport');
     if (!plot || !binding) return;
-    if (binding.legacy) {
-      if (Math.abs(deltaX) > .5) requestXViewport(root, 'pan', plot.x - deltaX, plot.x + plot.width - deltaX);
-      return;
-    }
+    if (binding.legacy) { if (Math.abs(deltaX) > .5) requestXViewport(root, 'pan', plot.x - deltaX, plot.x + plot.width - deltaX); return; }
     const axes = binding.axes;
-    if (!(axes.includes('x') && Math.abs(deltaX) > .5 || axes.includes('y') && Math.abs(deltaY) > .5)) return;
+    const horizontal = axes.some(name => name === 'x' || name === 'secondaryX');
+    const vertical = axes.some(name => name === 'y' || name === 'secondaryY');
+    if (!(horizontal && Math.abs(deltaX) > .5 || vertical && Math.abs(deltaY) > .5)) return;
     requestCartesianViewport(root, { kind: 'pan', axes,
-      ...(axes.includes('x') ? { left: plot.x - deltaX, right: plot.x + plot.width - deltaX } : {}),
-      ...(axes.includes('y') ? { top: plot.y - deltaY, bottom: plot.y + plot.height - deltaY } : {})
+      ...(horizontal ? { left: plot.x - deltaX, right: plot.x + plot.width - deltaX } : {}),
+      ...(vertical ? { top: plot.y - deltaY, bottom: plot.y + plot.height - deltaY } : {})
     });
   };
   // Native hosts own scenes; the browser owns gestures and reply lifetime.
@@ -5233,7 +5371,13 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       projection.transformedMinimum, projection.transformedMaximum, projection.transformedFullMinimum, projection.transformedFullMaximum].every(Number.isFinite)
       && projection.fullMinimum < projection.fullMaximum && projection.minimum < projection.maximum
       && projection.transformedMinimum < projection.transformedMaximum && projection.transformedFullMinimum < projection.transformedFullMaximum
-      && validTimeSessions(projection.timeSessions)
+      && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(projection.scale)
+      && Number.isFinite(projection.threshold) && projection.threshold > 0
+      && Number.isFinite(projection.logarithmBase ?? 10) && (projection.logarithmBase ?? 10) > 1
+      && ['positive', 'negative'].includes(projection.logarithmicDomain ?? 'positive')
+      && (projection.scale !== 'logarithmic' || (projection.logarithmicDomain === 'negative' ? projection.fullMaximum < 0 : projection.fullMinimum > 0))
+      && validTimeSessions(projection.timeSessions) && validTimeSpacing(projection.timeSpacing)
+      && (!(projection.timeSessions || projection.timeSpacing) || projection.scale === 'time') && !(projection.timeSessions && projection.timeSpacing)
       && projection.minimum >= projection.fullMinimum && projection.maximum <= projection.fullMaximum
       && typeof projection.reversed === 'boolean' && !!box && [box.x, box.y, box.width, box.height].every(Number.isFinite)
       && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
@@ -5248,7 +5392,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   const connectedXViewport = root => !!nativePreparationBinding(root, 'viewport');
   const syncXViewportControls = root => {
     const binding = nativePreparationBinding(root, 'viewport');
-    const unsupported = !!binding && (!chartXProjection(root) || !binding.legacy && binding.axes.includes('y') && !chartYProjection(root));
+    const unsupported = !!binding && (!chartXProjection(root) || !binding.legacy && binding.axes.some(name => !chartAxisProjection(root, name)));
     root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = unsupported; });
     if (unsupported && root.dataset.cfxMode === 'pan') applyMode(root, '');
     syncXNavigation(root);
@@ -5355,9 +5499,294 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     ownChartWork(root, () => { observer?.disconnect(); if (frame) cancelAnimationFrame(frame); });
     queue();
   };
+  const replayAnnotationEdit = (root, state, redo) => {
+    if (state.draft) throw new TypeError('Commit or cancel the current draft before replaying an accepted edit.');
+    const stack = redo ? state.redo : state.undo, entry = stack.at(-1);
+    if (!entry) throw new TypeError('No accepted annotation edit is available.');
+    const expected = redo ? entry.before : entry.after, desired = redo ? entry.after : entry.before;
+    if (!sameAnnotationDrawing(annotationDrawingAt(root, entry.id), expected))
+      throw new TypeError('The annotation changed outside this history; its current source drawing will not be overwritten.');
+    state.replay = { entry, redo };
+    try {
+      if (!requestAnnotationChange(root, { id: entry.id, operation: desired ? expected ? 'replace' : 'add' : 'remove', ...(desired ? { drawing: desired } : {}) }, { entry, redo }))
+        throw new TypeError('Native annotation history preparation could not start.');
+    } catch (error) { state.replay = null; throw error; }
+  };
+  const annotationEditorChangeHooks = (root, id, drawing, replay) => {
+    const state = annotationEditorState(root);
+    if (!state?.enabled) return {};
+    const before = annotationDrawingAt(root, id), after = drawing ?? null;
+
+    const release = () => { state.pending = false; state.replay = null; refreshAnnotationEditor(root); };
+    return {
+      started: () => { state.pending = true; state.error = ''; refreshAnnotationEditor(root); },
+      cancelled: release,
+      failed: () => { release(); state.error = uiText(root, 'AnnotationFailed', 'The annotation could not be updated.'); refreshAnnotationEditor(root); },
+      committed: () => {
+        // Only the native commit owner reaches here, after verifying every requested source fact.
+        if (replay) {
+          const from = replay.redo ? state.redo : state.undo, to = replay.redo ? state.undo : state.redo;
+          if (from.at(-1) === replay.entry) { from.pop(); to.push(replay.entry); }
+        } else {
+          state.redo = [];
+          if (state.limit > 0) {
+            state.undo.push(Object.freeze({ id, before, after }));
+            if (state.undo.length > state.limit) state.undo.splice(0, state.undo.length - state.limit);
+          }
+        }
+        state.draft = null; release();
+        emitHostEvent(root, 'cfxannotationcommit', { id, before, after, history: replay ? replay.redo ? 'redo' : 'undo' : 'edit' });
+      }
+    };
+  };
+  const annotationEditorPoint = (projection, point) => ({
+    x: projection.plot.x + projectedAxisRatio(projection.x, point.x) * projection.plot.width,
+    y: projection.plot.y + (1 - projectedAxisRatio(projection.y, point.y)) * projection.plot.height
+  });
+  const annotationEditorSource = (projection, point) => ({
+    x: projectedAxisValue(projection.x, clamp((point.x - projection.plot.x) / projection.plot.width, 0, 1)),
+    y: projectedAxisValue(projection.y, clamp(1 - (point.y - projection.plot.y) / projection.plot.height, 0, 1))
+  });
+  const drawAnnotationEditorPreview = root => {
+    const state = annotationEditorState(root), svg = root.querySelector('.cfx-stage svg');
+    svg?.querySelector('[data-cfx-annotation-editor]')?.remove();
+    const drawing = state?.enabled && state.draft?.drawing, projection = drawing && sourceAnnotationProjection(root, drawing.yAxis);
+    if (!svg || !drawing || !projection) return;
+    const element = (tag, attributes) => {
+      const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
+      return node;
+    };
+    const group = element('g', { 'data-cfx-annotation-editor': '', 'class': 'cfx-annotation-preview' });
+    svg.append(group);
+    const start = annotationEditorPoint(projection, drawing.start), end = drawing.end && annotationEditorPoint(projection, drawing.end);
+    if (end) {
+      const line = (first, last) => group.append(element('line', { x1: first.x, y1: first.y, x2: last.x, y2: last.y, 'class': 'cfx-annotation-preview__line' }));
+      line(start, end);
+      if (drawing.kind === 'ParallelChannel') {
+        const upperStart = annotationEditorPoint(projection, { x: drawing.start.x, y: drawing.start.y + drawing.yOffset });
+        const upperEnd = annotationEditorPoint(projection, { x: drawing.end.x, y: drawing.end.y + drawing.yOffset });
+        group.append(element('path', { d: `M${start.x} ${start.y}L${end.x} ${end.y}L${upperEnd.x} ${upperEnd.y}L${upperStart.x} ${upperStart.y}Z`, 'class': 'cfx-annotation-preview__channel' }));
+        line(upperStart, upperEnd);
+        handle('offset', upperStart);
+      }
+      handle('end', end);
+    }
+    handle('start', start);
+    function handle(part, point) {
+      const label = uiText(root, part === 'start' ? 'AnnotationStart' : part === 'end' ? 'AnnotationEnd' : 'AnnotationOffset', part === 'start' ? 'Start anchor' : part === 'end' ? 'End anchor' : 'Channel offset');
+      const node = element('circle', { cx: point.x, cy: point.y, r: 7, tabindex: state.pending ? -1 : 0,
+        role: 'button', 'aria-label': label, 'data-cfx-editor-handle': part, 'class': 'cfx-annotation-preview__handle' });
+      group.append(node);
+    }
+  };
+  const moveAnnotationEditorHandle = (root, part, point) => {
+    const state = annotationEditorState(root), drawing = state?.draft?.drawing;
+    if (!drawing || state.pending) return;
+    const projection = sourceAnnotationProjection(root, drawing.yAxis);
+    if (!projection) return;
+    const source = annotationEditorSource(projection, point);
+    const next = part === 'offset' ? { ...drawing, yOffset: source.y - drawing.start.y }
+      : { ...drawing, [part]: source };
+    try { state.api.preview(next); }
+    catch (error) { if (!(error instanceof TypeError)) throw error; } // A degenerate pointer position retains the last valid draft.
+  };
+  const bindAnnotationEditorGestures = root => {
+    const stage = root.querySelector('.cfx-stage');
+    if (!stage) return;
+    let drag = null;
+    const logical = event => {
+      const matrix = svgScreenMatrix(root.querySelector('.cfx-stage svg'));
+      if (!matrix) return null;
+      try { const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+        return Number.isFinite(point.x) && Number.isFinite(point.y) ? point : null; } catch { return null; }
+    };
+    listenChart(root, stage, 'pointerdown', event => {
+      const handle = event.target.closest?.('[data-cfx-editor-handle]'), state = annotationEditorState(root);
+      if (!handle || !state?.enabled || state.pending || event.button !== 0) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      drag = { pointerId: event.pointerId, part: handle.dataset.cfxEditorHandle };
+      stage.setPointerCapture(event.pointerId); handle.focus({ preventScroll: true });
+    }, true);
+    listenChart(root, stage, 'pointermove', event => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      const point = logical(event); if (point) moveAnnotationEditorHandle(root, drag.part, point);
+    }, true);
+    const stop = event => { if (drag && event.pointerId === drag.pointerId) {
+      if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId); drag = null;
+      event.preventDefault(); event.stopImmediatePropagation(); } };
+    listenChart(root, stage, 'pointerup', stop, true); listenChart(root, stage, 'pointercancel', stop, true);
+    ownChartWork(root, () => { if (drag && stage.hasPointerCapture(drag.pointerId)) stage.releasePointerCapture(drag.pointerId); drag = null; });
+    listenChart(root, root, 'keydown', event => {
+      const state = annotationEditorState(root); if (!state?.enabled || !state.draft) return;
+      if (event.key === 'Escape' || event.key === 'Enter' && !event.target.matches('button,input,select,textarea')) {
+        event.preventDefault(); event.stopImmediatePropagation();
+        if (event.key === 'Escape') state.api.cancel(); else if (!state.pending) state.api.commit(); return;
+      }
+      const handle = event.target.closest?.('[data-cfx-editor-handle]');
+      if (!handle || state.pending || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      const part = handle.dataset.cfxEditorHandle, step = event.shiftKey ? 10 : 1;
+      moveAnnotationEditorHandle(root, part, { x: Number(handle.getAttribute('cx')) + (event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0),
+        y: Number(handle.getAttribute('cy')) + (event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0) });
+      root.querySelector(`[data-cfx-editor-handle=${part}]`)?.focus({ preventScroll: true });
+    }, true);
+  };
+  const refreshAnnotationEditor = root => {
+    const state = annotationEditorState(root), view = state?.view;
+    if (!state) return;
+    if (view && root.contains(view.element)) {
+      view.element.hidden = !state.enabled;
+      view.element.setAttribute('aria-busy', state.pending ? 'true' : 'false');
+      const connected = !!nativePreparationBinding(root, 'annotation');
+      const selected = view.select.value, ids = Array.from(root.querySelectorAll('[data-cfx-role=annotation][data-cfx-annotation-id]'))
+        .filter(node => ['Note', 'LineSegment', 'ParallelChannel'].includes(node.dataset.cfxKind));
+      view.select.replaceChildren();
+      for (const node of ids) { const option = document.createElement('option'); option.value = node.dataset.cfxAnnotationId;
+        option.textContent = node.dataset.cfxLabel ? `${node.dataset.cfxLabel} (${option.value})` : option.value; view.select.append(option); }
+      if (ids.some(node => node.dataset.cfxAnnotationId === selected)) view.select.value = selected;
+      view.select.disabled = state.pending || !!state.draft || ids.length === 0;
+      for (const [kind, button] of Object.entries(view.buttons)) button.disabled = !connected || state.pending
+        || ['Note', 'LineSegment', 'ParallelChannel'].includes(kind) && (!state.createId || !!state.draft || !sourceAnnotationProjection(root, 'Primary'))
+        || ['edit', 'remove'].includes(kind) && (!!state.draft || ids.length === 0)
+        || kind === 'commit' && !state.draft || kind === 'cancel' && !state.draft
+        || kind === 'undo' && (!!state.draft || state.undo.length === 0) || kind === 'redo' && (!!state.draft || state.redo.length === 0);
+      // Cancel remains available while a host request is pending.
+      view.buttons.cancel.disabled = !state.draft && !state.pending;
+      view.label.disabled = state.pending || !state.draft?.drawing;
+      view.label.value = state.draft?.drawing?.label ?? '';
+      view.status.textContent = !connected ? uiText(root, 'AnnotationDisconnected', 'Connect native preparation to edit annotations.') : state.pending ? uiText(root, 'AnnotationUpdating', 'Updating annotation…') : state.error
+        || (state.draft ? uiText(root, 'AnnotationDraft', 'Draft: move an anchor, then apply or cancel.') : '');
+    }
+    drawAnnotationEditorPreview(root);
+  };
+  const bindAnnotationEditor = root => {
+    const state = annotationEditorState(root);
+    if (!state?.enabled) return;
+    if (state.view && root.contains(state.view.element)) { refreshAnnotationEditor(root); return; }
+    const panel = document.createElement('section'); panel.className = 'cfx-annotation-editor';
+    panel.setAttribute('aria-label', uiText(root, 'AnnotationEditor', 'Annotation editor'));
+    const selectLabel = document.createElement('label'), select = document.createElement('select');
+    selectLabel.append(document.createTextNode(uiText(root, 'AnnotationChoose', 'Drawing')), select); panel.append(selectLabel);
+    const buttons = {}, control = (kind, key, fallback, action) => {
+      const button = document.createElement('button'); button.type = 'button'; button.dataset.cfxAnnotationControl = kind;
+      button.textContent = uiText(root, key, fallback); panel.append(button); buttons[kind] = button;
+      listenChart(root, button, 'click', () => { try { action(); } catch (error) { state.error = error.message; refreshAnnotationEditor(root); } });
+    };
+    const create = kind => {
+      const projection = sourceAnnotationProjection(root, 'Primary'); if (!projection || !state.createId) return;
+      const source = (x, y) => annotationEditorSource(projection, { x: projection.plot.x + x * projection.plot.width, y: projection.plot.y + y * projection.plot.height });
+      const start = source(.35, .55), end = source(.65, .35);
+      const drawing = { kind, start, ...(kind === 'Note' ? {} : { end }), ...(kind === 'ParallelChannel' ? { yOffset: source(.35, .35).y - start.y } : {}) };
+      state.api.begin({ operation: 'add', id: state.createId(kind), drawing });
+    };
+    control('Note', 'AnnotationNote', 'Add note', () => create('Note'));
+    control('LineSegment', 'AnnotationLine', 'Add line', () => create('LineSegment'));
+    control('ParallelChannel', 'AnnotationChannel', 'Add channel', () => create('ParallelChannel'));
+    control('edit', 'AnnotationEdit', 'Edit', () => state.api.begin({ operation: 'replace', id: select.value }));
+    control('remove', 'AnnotationDelete', 'Delete', () => state.api.begin({ operation: 'remove', id: select.value }));
+    const caption = document.createElement('label'), input = document.createElement('input'); input.type = 'text'; input.maxLength = 4096;
+    caption.append(document.createTextNode(uiText(root, 'AnnotationCaption', 'Caption')), input); panel.append(caption);
+    listenChart(root, input, 'input', () => {
+      if (!state.draft?.drawing || state.pending) return;
+      // Keep editing focus/caret while the source draft and preview update.
+      const start = input.selectionStart, end = input.selectionEnd;
+      state.api.preview({ ...state.draft.drawing, label: input.value }); input.setSelectionRange(start, end);
+    });
+    control('commit', 'AnnotationApply', 'Apply', () => state.api.commit());
+    control('cancel', 'AnnotationCancel', 'Cancel', () => state.api.cancel());
+    control('undo', 'AnnotationUndo', 'Undo', () => state.api.undo());
+    control('redo', 'AnnotationRedo', 'Redo', () => state.api.redo());
+    control('close', 'AnnotationClose', 'Close editor', () => state.api.disable());
+    const status = document.createElement('span'); status.className = 'cfx-annotation-editor__status'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); panel.append(status);
+    const stage = root.querySelector('.cfx-stage'); if (!stage) return;
+    stage.before(panel); state.view = { element: panel, select, label: input, buttons, status };
+    ownChartWork(root, () => { panel.remove(); if (state.view?.element === panel) state.view = null;
+      root.querySelector('[data-cfx-annotation-editor]')?.remove(); });
+    bindAnnotationEditorGestures(root); refreshAnnotationEditor(root);
+  };
+  // The editor owns a draft and bounded accepted-command history, never model storage or transport.
+  const annotationEditorState = root => chartLifetimes.get(root)?.annotationEditor;
+  const annotationDrawingAt = (root, id) => {
+    const data = nativeAnnotationNode(root, id)?.dataset;
+    if (!data || !['Note', 'LineSegment', 'ParallelChannel'].includes(data.cfxKind)) return null;
+    return sourceAnnotationDrawing({ kind: data.cfxKind, label: data.cfxLabel, yAxis: data.cfxYAxis,
+      start: { x: Number(data.cfxSourceX), y: Number(data.cfxSourceY) },
+      ...(data.cfxKind === 'Note' ? {} : { end: { x: Number(data.cfxSourceEndX), y: Number(data.cfxSourceEndY) } }),
+      ...(data.cfxKind === 'ParallelChannel' ? { yOffset: Number(data.cfxChannelOffset) } : {}) });
+  };
+  const sameAnnotationDrawing = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+  const annotationEditorSnapshot = state => copyHostValue({ enabled: state.enabled, pending: state.pending,
+    draft: state.draft, error: state.error, canUndo: !state.pending && state.undo.length > 0,
+    canRedo: !state.pending && state.redo.length > 0 });
+  const resetAnnotationEditor = root => {
+    const state = annotationEditorState(root);
+    if (!state) return;
+    state.draft = null; state.pending = false; state.replay = null; state.undo = []; state.redo = []; state.error = '';
+    refreshAnnotationEditor(root);
+  };
+  const createAnnotationEditor = (root, requireMounted, options = {}) => {
+    const lifetime = chartLifetimes.get(root);
+    const limit = options.historyLimit === undefined ? 32 : options.historyLimit;
+    if (!Number.isInteger(limit) || limit < 0 || limit > 256 || options.createId !== undefined && typeof options.createId !== 'function')
+      throw new TypeError('Annotation historyLimit must be an integer from zero to 256; createId must be a function.');
+    if (!nativePreparationBinding(root, 'annotation')) throw new TypeError('Connect native preparation before enabling annotation editing.');
+    if (lifetime.annotationEditor) {
+      const state = lifetime.annotationEditor;
+      if (state.pending) throw new TypeError('Finish the pending native annotation edit first.');
+      state.enabled = true; state.limit = limit; state.createId = options.createId; state.undo = state.undo.slice(-limit || state.undo.length); state.redo = [];
+      if (limit === 0) state.undo = [];
+      bindAnnotationEditor(root); return state.api;
+    }
+    const state = { enabled: true, limit, createId: options.createId, draft: null, pending: false,
+      undo: [], redo: [], replay: null, error: '', view: null, api: null };
+    const ready = () => { requireMounted(); if (!state.enabled || state.pending || !nativePreparationBinding(root, 'annotation')) throw new TypeError('The annotation editor is disabled or awaiting native preparation.'); };
+    const api = Object.freeze({
+      getState: () => { requireMounted(); return annotationEditorSnapshot(state); },
+      begin: change => {
+        ready();
+        if (!change || !['add', 'replace', 'remove'].includes(change.operation) || typeof change.id !== 'string' || !change.id.trim())
+          throw new TypeError('An edit requires add, replace or remove and an authored ID.');
+        const id = change.id.trim(), existing = nativeAnnotationNode(root, id), before = annotationDrawingAt(root, id);
+        if (change.operation === 'add' ? !!existing : !before) throw new TypeError('Choose an unused ID to add or an existing source drawing to edit.');
+        const drawing = change.operation === 'remove' ? null : sourceAnnotationDrawing(change.drawing ?? before);
+        if (drawing && !sourceAnnotationProjection(root, drawing.yAxis)) throw new TypeError('The source drawing requires captured, unambiguous native axes.');
+        state.draft = Object.freeze({ operation: change.operation, id, ...(drawing ? { drawing } : {}) }); state.error = '';
+        refreshAnnotationEditor(root); return api;
+      },
+      preview: drawing => {
+        ready(); if (!state.draft || state.draft.operation === 'remove') throw new TypeError('Begin a drawable edit first.');
+        const captured = sourceAnnotationDrawing(drawing);
+        if (!sourceAnnotationProjection(root, captured.yAxis)) throw new TypeError('The source drawing requires captured native axes.');
+        state.draft = Object.freeze({ ...state.draft, drawing: captured }); state.error = ''; refreshAnnotationEditor(root); return api;
+      },
+      commit: () => { ready(); if (!state.draft) throw new TypeError('Begin an annotation edit first.');
+        if (!requestAnnotationChange(root, state.draft)) throw new TypeError('Native annotation preparation could not start.'); return api; },
+      cancel: () => { requireMounted(); if (state.pending) cancelNativePreparation(lifetime);
+        state.draft = null; state.error = ''; refreshAnnotationEditor(root); return api; },
+      undo: () => { ready(); replayAnnotationEdit(root, state, false); return api; },
+      redo: () => { ready(); replayAnnotationEdit(root, state, true); return api; },
+      disable: () => { requireMounted(); if (state.pending) cancelNativePreparation(lifetime);
+        state.enabled = false; state.draft = null; refreshAnnotationEditor(root); return api; }
+    });
+    state.api = api; lifetime.annotationEditor = state; bindAnnotationEditor(root); return api;
+  };
   // Commands carry exact source geometry to the host; the native model owns drawing and export.
   const nativeAnnotationNode = (root, id) => Array.from(root.querySelectorAll('[data-cfx-role=annotation][data-cfx-annotation-id]'))
     .find(node => node.dataset.cfxAnnotationId === id);
+  const sourceAnnotationProjection = (root, yAxis) => {
+    let metadata;
+    try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch { return null; }
+    const x = metadata.xProjection, y = yAxis === 'Secondary' ? metadata.secondaryYProjection : metadata.yProjection;
+    const valid = axis => axis && [axis.minimum, axis.maximum, axis.transformedMinimum, axis.transformedMaximum].every(Number.isFinite)
+      && axis.maximum > axis.minimum && axis.transformedMaximum > axis.transformedMinimum;
+    const plot = x?.plotBounds;
+    if (!valid(x) || !valid(y) || !plot || ![plot.x, plot.y, plot.width, plot.height].every(Number.isFinite)
+      || plot.width <= 0 || plot.height <= 0 || metadata.orientation === 'horizontal'
+      || ['x', 'y', 'width', 'height'].some(key => y.plotBounds?.[key] !== plot[key])) return null;
+    return { x, y, plot };
+  };
   const sourceAnnotationDrawing = value => {
     const point = source => {
       if (!source || !Number.isFinite(source.x) || !Number.isFinite(source.y))
@@ -5378,7 +5807,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return Object.freeze({ kind: value.kind, start, ...(end ? { end } : {}),
       ...(value.kind === 'ParallelChannel' ? { yOffset } : {}), label: value.label ?? '', yAxis: value.yAxis ?? 'Primary' });
   };
-  const requestAnnotationChange = (root, change) => {
+  const requestAnnotationChange = (root, change, editorReplay = null) => {
     if (!nativePreparationBinding(root, 'annotation')) throw new TypeError('Connect a native annotation preparation callback first.');
     if (!change || !['add', 'replace', 'remove'].includes(change.operation)
       || typeof change.id !== 'string' || !change.id.trim()) throw new TypeError('An annotation change requires an operation and a nonempty authored ID.');
@@ -5386,10 +5815,11 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     if (change.operation === 'add' ? !!existing : !existing)
       throw new TypeError('Add requires an unused annotation ID; replace and remove require an existing authored annotation.');
     const drawing = change.operation === 'remove' ? undefined : sourceAnnotationDrawing(change.drawing);
-    if (drawing && (!root._cfxDataProjection || root._cfxDataProjection.horizontal))
+    if (drawing && !sourceAnnotationProjection(root, drawing.yAxis))
       throw new TypeError('Source drawings require a vertical Cartesian data projection.');
     return requestNativePreparation(root, 'annotation', { kind: change.operation, annotationId, ...(drawing ? { sourceDrawing: drawing } : {}) }, {
       eventPrefix: 'cfxannotation', preserveViewport: true,
+      ...annotationEditorChangeHooks(root, annotationId, drawing, editorReplay),
       validate: (next, request) => {
         const node = nativeAnnotationNode(next, request.annotationId), source = request.sourceDrawing;
         if (request.kind === 'remove') {
@@ -5405,6 +5835,63 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           throw new TypeError('The native reply did not retain the requested source drawing facts.');
       }
     });
+  };
+  // Native area-chart views share the existing managed preparation transaction.
+  const capturedHierarchy = root => capturedCartesianMetadata(root).hierarchy || null;
+  const hierarchyConnected = root => hasFeature(root, 'HierarchyNavigation') && !!capturedHierarchy(root) && !!nativePreparationBinding(root, 'hierarchy');
+  const hierarchyViewChanged = root => capturedHierarchy(root)?.rootId != null;
+  const hierarchySnapshot = root => {
+    const view = capturedHierarchy(root);
+    return view ? { rootId: view.rootId, kind: view.kind, seriesKey: view.seriesKey, path: copyHostValue(view.path) } : null;
+  };
+  const syncHierarchyNavigation = root => {
+    const panel = root.querySelector('[data-cfx-hierarchy-navigation]');
+    if (!panel) return;
+    const view = capturedHierarchy(root), connected = hierarchyConnected(root);
+    const pending = !!chartLifetimes.get(root)?.preparationPending;
+    panel.querySelectorAll('[data-cfx-hierarchy-control]').forEach(button => { button.disabled = !connected || pending || view?.rootId == null; });
+    const status = panel.querySelector('[data-cfx-hierarchy-status]');
+    if (status) status.textContent = !connected ? uiText(root, 'HierarchyDisconnected', 'Connect native preparation to navigate the hierarchy.')
+      : pending ? uiText(root, 'HierarchyUpdating', 'Updating hierarchy…') : root._cfxHierarchyError || '';
+  };
+  const hierarchyHasSource = (root, id) => interactiveTargets(root, '[data-cfx-target-kind="node"][data-cfx-target-id]')
+    .some(node => node.dataset.cfxTargetId === id) || Array.from(root.querySelectorAll('.cfx-stage [data-cfx-node]')).some(node => node.dataset.cfxNode === id);
+  const requestNativeHierarchy = (root, view, sync = true, accepted) => {
+    const current = capturedHierarchy(root);
+    if (!hierarchyConnected(root) || !current || view !== null && (!view || typeof view !== 'object'
+      || Object.keys(view).some(key => key !== 'rootId') || typeof view.rootId !== 'string' || !view.rootId.trim() || !hierarchyHasSource(root, view.rootId))) return false;
+    const rootId = view === null ? null : view.rootId;
+    root._cfxHierarchyError = '';
+    return requestNativePreparation(root, 'hierarchy', { kind: rootId === null ? 'reset' : 'root', rootId }, {
+      eventPrefix: 'cfxhierarchy', resetView: rootId === null, accepted,
+      started: () => syncHierarchyNavigation(root), cancelled: () => syncHierarchyNavigation(root),
+      validate: next => {
+        const adaptive = readAdaptiveLayout(next);
+        for (const drawing of adaptive ? [adaptive.wide, adaptive.narrow] : [next]) {
+          const reply = capturedHierarchy(drawing);
+          if (!reply || reply.kind !== current.kind || reply.seriesKey !== current.seriesKey || reply.rootId !== rootId)
+            throw new TypeError('Every native hierarchy drawing must retain the source family and series and accept the exact requested root.');
+        }
+      },
+      beforeCommit: () => rootId === null ? selectionSignature(root) : '',
+      committed: (_, previousSelection) => {
+        syncHierarchyNavigation(root); syncResetControl(root);
+        if (rootId === null) { emitHostEvent(root, 'cfxreset', {}); publishResetSelection(root, previousSelection); }
+        publishInteractionState(root, 'hierarchy', sync);
+      },
+      failed: () => { root._cfxHierarchyError = uiText(root, 'HierarchyFailed', 'The hierarchy view could not be updated.'); syncHierarchyNavigation(root); }
+    });
+  };
+  const activateHierarchyTarget = (root, node) => hierarchyConnected(root) && node.dataset.cfxLeaf === 'false'
+    && node.dataset.cfxTargetId !== capturedHierarchy(root).rootId && requestNativeHierarchy(root, { rootId: node.dataset.cfxTargetId });
+  const bindHierarchyNavigation = root => {
+    syncHierarchyNavigation(root);
+    root.querySelectorAll('[data-cfx-hierarchy-control]').forEach(button => listenChart(root, button, 'click', () => {
+      if (button.disabled) return;
+      const path = capturedHierarchy(root)?.path || [];
+      const parent = path.length > 1 ? path[path.length - 2].id : null;
+      requestNativeHierarchy(root, button.dataset.cfxHierarchyControl === 'up' && parent !== null ? { rootId: parent } : null);
+    }));
   };
   // Navigation chrome reuses the captured axis math and requests a fresh native scene.
   const fullXNavigationAxis = root => {
@@ -5673,10 +6160,12 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       unpinTooltip: () => { requireMounted(); unpinTooltip(root); return controller; },
       update: (section, options = {}) => {
         requireMounted();
+        const motion = captureChartUpdateMotion(options.motion);
         const nativeState = lifetime.preparationSession
           ? { session: lifetime.preparationSession, basis: nativePreparationBasis(options.basis) } : null;
         const next = readChartSection(section, true).cloneNode(true);
-        replaceChartSection(root, lifetime, next, '', '', false, nativeState);
+        resetAnnotationEditor(root);
+        replaceChartSection(root, lifetime, next, '', '', false, nativeState, motion);
         emitHostEvent(root, 'cfxupdated', {});
         return controller;
       },
@@ -5695,23 +6184,29 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         if (!requestAnnotationChange(root, change)) throw new TypeError('The native annotation request cannot start on this scene.');
         return controller;
       },
+      editAnnotations: options => { requireMounted(); return createAnnotationEditor(root, requireMounted, options); },
       connectXViewport: connection => {
         requireMounted();
         if (connection !== null && typeof connection !== 'function') throw new TypeError('Expected an X viewport callback or null to disconnect.');
-        setNativePreparationConnection(root, 'viewport', connection, { axes: 'x', legacy: true });
+        setNativePreparationConnection(root, 'viewport', connection, { axes: Object.freeze(['x']), legacy: true });
         if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
         syncXViewportControls(root);
         return controller;
       },
       connectViewport: (connection, options = {}) => {
         requireMounted();
-        const axes = options.axes || 'xy';
-        if (!['x', 'y', 'xy'].includes(axes)) throw new TypeError('Native viewport axes must be x, y or xy.');
-        if (connection !== null && (!chartXProjection(root) || axes.includes('y') && !chartYProjection(root)))
-          throw new TypeError('This chart has no unambiguous native projection for the requested axes.');
+        const axes = nativeViewportAxes(options.axes, ['x', 'y']);
+        if (connection !== null && axes.some(name => !chartAxisProjection(root, name)))
+          throw new TypeError('This chart has no native projection for every requested physical axis.');
         setNativePreparationConnection(root, 'viewport', connection, { axes, legacy: false });
         if (connection) applyViewport(root, { zoom: 1, panX: 0, panY: 0 });
         syncXViewportControls(root); return controller;
+      },
+      getHierarchyView: () => { requireMounted(); return copyHostValue(hierarchySnapshot(root)); },
+      setHierarchyView: view => {
+        requireMounted();
+        if (!requestNativeHierarchy(root, view)) throw new TypeError('A hierarchy view requires a connected supported hierarchy and an existing source root, or null to reset.');
+        return controller;
       },
       getViewport: () => { requireMounted(); return copyHostValue(nativeViewportWindows(root)); },
       setViewport: viewport => {
@@ -5722,7 +6217,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       getYWindow: () => { requireMounted(); return copyHostValue(nativeYWindow(root)); },
       setYWindow: (minimum, maximum) => {
         requireMounted();
-        if (!requestNativeCartesianWindow(root, { y: { minimum, maximum } })) throw new TypeError('A native Y window requires a connected unambiguous primary axis and finite increasing source bounds.');
+        if (!requestNativeCartesianWindow(root, { y: { minimum, maximum } })) throw new TypeError('A native Y window requires a connected primary vertical axis and finite increasing source bounds.');
         return controller;
       },
       getXWindow: () => { requireMounted(); return copyHostValue(nativeXWindow(root)); },
@@ -5733,7 +6228,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         return controller;
       },
       resize: () => {
-        requireMounted(); hideCrosshair(root, root.querySelector('.cfx-crosshair'));
+        requireMounted(); settleChartUpdateMotion(root); hideCrosshair(root, root.querySelector('.cfx-crosshair'));
         refreshKeyboardNavigation(root); refreshTooltipPosition(root); syncResetControl(root);
         return controller;
       },

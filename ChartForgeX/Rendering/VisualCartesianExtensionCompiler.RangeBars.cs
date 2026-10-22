@@ -89,7 +89,8 @@ internal static partial class VisualCartesianCompiler {
         return ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].RenderPoints.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
             horizontal ? plot.Height : plot.Width, context.Theme.Spacing, participants.Length, Array.IndexOf(participants, index), requireMinimumFootprint: true,
             maximumThickness: 28, footprintRatio: 1.5, footprintPadding: padding,
-            measuredFootprint: style.Kind == ChartBarStyle.SegmentedCapsule ? width => ChartSegmentedBarGeometry.RangeCategoryFootprint(style, width) : null);
+            measuredFootprint: style.Kind == ChartBarStyle.SegmentedCapsule ? width => ChartSegmentedBarGeometry.RangeCategoryFootprint(style, width) : null,
+            maximumPitch: map.CalendarBandPitch(horizontal));
     }
 
     private static double RangeBarValuePaintRadius(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, int index) {

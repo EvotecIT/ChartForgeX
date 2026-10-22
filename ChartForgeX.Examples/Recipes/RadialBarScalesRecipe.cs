@@ -5,7 +5,7 @@ public static class RadialBarScalesRecipe {
         if (variant is not ("wide" or "compact" or "dual-axes" or "compact-dual-axes")) throw new ArgumentOutOfRangeException(nameof(variant));
         var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialBar, new[] { new ChartPoint(1, 800) });
         var resolved = new ChartSeries(new ChartSeriesId("resolved"), "Resolved (%)", ChartSeriesKind.RadialBar, new[] { new ChartPoint(1, 85) })
-            .UseSecondaryYAxis();
+            .UseSecondaryValueAxis();
         var chart = Chart.Create().WithXLabels("Overall").WithDataLabels(false)
             .WithRadialGeometry(new ChartRadialGeometryOptions(0, 270, .2, .25, .1)).AddSeries(requests).AddSeries(resolved)
             .WithYAxisBounds(0, 1000).WithSecondaryYAxisBounds(0, 100)

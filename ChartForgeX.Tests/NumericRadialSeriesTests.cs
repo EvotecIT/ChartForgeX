@@ -155,7 +155,7 @@ public sealed class NumericRadialSeriesTests {
             .AddRadialBar("Second", new[] { new ChartPoint(1, 300) }).AddRadialBar("Independent", new[] { new ChartPoint(1, 250) });
         chart.Series[0].WithStackGroup("work").WithNormalization(100);
         chart.Series[1].WithStackGroup("work").WithNormalization(100);
-        chart.Series[2].UseSecondaryYAxis().WithStackGroup("work").WithNormalization(10);
+        chart.Series[2].UseSecondaryValueAxis().WithStackGroup("work").WithNormalization(10);
         chart.WithYAxisBounds(0, 100); chart.Options.SecondaryYAxis.WithBounds(0, 10);
         var calls = new Dictionary<double, int>();
         chart.Options.YAxis.WithLabelFormatter(value => { calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1; return value + " percent"; });

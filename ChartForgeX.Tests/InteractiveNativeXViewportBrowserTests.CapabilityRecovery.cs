@@ -20,7 +20,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         var peer = new CapabilityHost("capability-peer", secondary: !differentYScale, logarithmicY: differentYScale);
         await using var session = await BrowserProofFonts.OpenAsync(sender.Page(peer), 1000, 1450);
         var page = session.Page;
-        await ConnectCapabilitiesAsync(page, new[] { sender, peer }, new[] { "xy", differentYScale ? "xy" : "x" });
+        await ConnectCapabilitiesAsync(page, new[] { sender, peer }, new[] { "x,y", differentYScale ? "x,y" : "x" });
         await page.EvaluateAsync("()=>chartController.setViewport({x:{minimum:2,maximum:10},y:{minimum:20,maximum:80}})");
         await page.WaitForFunctionAsync("()=>capabilityChanges.length>=1");
         await CapabilityDrainAsync(page);
@@ -34,7 +34,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>capabilityControllers[0].getYWindow()"), 20, 80);
         var peerY = await page.EvaluateAsync<JsonElement>("()=>capabilityControllers[1].getYWindow()");
         if (differentYScale) AssertWindow(peerY, 1, 1000);
-        else Assert.Equal(JsonValueKind.Null, peerY.ValueKind);
+        else AssertWindow(peerY, 0, 100);
         var peerRoot = page.Locator(".cfx-interactive-chart[data-cfx-chart-id='" + peer.Id + "']");
         var download = await page.RunAndWaitForDownloadAsync(() => peerRoot.Locator("[data-cfx-export=svg]").ClickAsync());
         var path = await download.PathAsync() ?? throw new InvalidOperationException("The compatible peer did not export.");
@@ -47,29 +47,29 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     }
 
     [BrowserTheory]
-    [InlineData("xy", false)]
-    [InlineData("xy", true)]
-    [InlineData("y", false)]
-    public async Task ResetAfterLosingYStillPreparesFullNativeXAndCommitsReaderResetOnlyAfterAcceptance(string gestureAxes, bool contextMenu) {
+    [InlineData("x,secondaryY", false)]
+    [InlineData("x,secondaryY", true)]
+    [InlineData("secondaryY", false)]
+    public async Task ResetAfterLosingSecondaryYStillPreparesFullNativeAxesAndCommitsOnlyAfterAcceptance(string gestureAxes, bool contextMenu) {
         if (!Enabled) return;
-        var host = new CapabilityHost("reset-capability");
+        var host = new CapabilityHost("reset-capability", secondary: true);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page(), 1000, 800);
         var page = session.Page;
         await ConnectCapabilitiesAsync(page, new[] { host }, new[] { gestureAxes });
         // Programmatic windows are explicit independently of the configured gesture axes.
-        await page.EvaluateAsync("()=>chartController.setViewport({x:{minimum:2,maximum:10},y:{minimum:20,maximum:80}})");
+        await page.EvaluateAsync("()=>chartController.setViewport({x:{minimum:2,maximum:10},secondaryY:{minimum:20,maximum:80}})");
         await page.WaitForFunctionAsync("()=>capabilityChanges.length===1");
         await page.EvaluateAsync("""
             axes=>{window.capabilityControlled=[];window.capabilityResetEvents=0;window.capabilitySelectionEvents=0;
                 chartController.root.addEventListener('cfxreset',()=>capabilityResetEvents++);
                 chartController.root.addEventListener('cfxselectionchange',()=>capabilitySelectionEvents++);
-                chartController.connectViewport((request,signal)=>new Promise((resolve,reject)=>capabilityControlled.push({request,signal,resolve,reject})),{axes});}
+                chartController.connectViewport((request,signal)=>new Promise((resolve,reject)=>capabilityControlled.push({request,signal,resolve,reject})),{axes:axes.split(',')});}
             """, gestureAxes);
         await page.EvaluateAsync("""
             replacement=>{window.capabilityReplacementBasis=replacement.token;chartController.update(replacement.html);
                 capabilityBases.set(chartController.sceneRevision,replacement.token);}
-            """, host.WithoutY(2, 10));
-        Assert.Equal(JsonValueKind.Null, (await page.EvaluateAsync<JsonElement>("()=>chartController.getYWindow()")).ValueKind);
+            """, host.WithoutSecondaryY(2, 10));
+        Assert.Equal(JsonValueKind.Null, (await page.EvaluateAsync<JsonElement>("()=>chartController.getViewport().secondaryY")).ValueKind);
         Assert.True(await page.Locator("[data-cfx-zoom=in]").IsDisabledAsync());
         await page.Locator(Middle).FocusAsync(); await page.Keyboard.PressAsync("Space");
         await page.EvaluateAsync("()=>{capabilityResetEvents=0;capabilitySelectionEvents=0;}");
@@ -91,7 +91,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         Assert.Equal(2, await page.EvaluateAsync<int>("()=>capabilityControlled.length"));
         var reset = await page.EvaluateAsync<JsonElement>("()=>capabilityControlled[1].request");
         Assert.Equal("reset", reset.GetProperty("kind").GetString());
-        Assert.Equal("x", reset.GetProperty("axes").GetString());
+        Assert.Equal(new[] { "x", "y" }, reset.GetProperty("axes").EnumerateArray().Select(axis => axis.GetString()));
         Assert.False(reset.TryGetProperty("sourceViewport", out _));
         Assert.False(reset.TryGetProperty("left", out _));
         await page.EvaluateAsync("""
@@ -100,7 +100,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             """);
         await page.WaitForFunctionAsync("()=>capabilityChanges.length===2");
         AssertWindow(await page.EvaluateAsync<JsonElement>("()=>chartController.getXWindow()"), 0, 12);
-        Assert.Equal(JsonValueKind.Null, (await page.EvaluateAsync<JsonElement>("()=>chartController.getYWindow()")).ValueKind);
+        Assert.Equal(JsonValueKind.Null, (await page.EvaluateAsync<JsonElement>("()=>chartController.getViewport().secondaryY")).ValueKind);
         Assert.Empty((await page.EvaluateAsync<JsonElement>("()=>chartController.getSelection()")).EnumerateArray());
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>capabilityResetEvents"));
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>capabilitySelectionEvents"));
@@ -140,7 +140,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                         const result=await capabilityHostPrepare({...request,basis:capabilityBases.get(request.sceneRevision)});
                         if(signal.aborted)throw new DOMException('Canceled','AbortError');
                         capabilityCandidates.set(request.requestId,result.token);return result.html;
-                    },{axes:axes[index]});
+                    },{axes:axes[index].split(',')});
                 });}
             """, axes);
     }
@@ -157,31 +157,32 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         internal string Page(params CapabilityHost[] peers) => "<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>"
             + _sections["initial"].Section.Html + string.Concat(peers.Select(peer => peer._sections["initial"].Section.Html))
             + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>";
-        internal object WithoutY(double minimum, double maximum) {
-            lock (_sections) return Store(true, new ChartXViewport(minimum, maximum), null);
+        internal object WithoutSecondaryY(double minimum, double maximum) {
+            lock (_sections) return Store(false, new ChartAxisWindow(minimum, maximum), null);
         }
         internal object Prepare(JsonElement request) {
             lock (_sections) {
                 var basis = _sections[request.GetProperty("basis").GetString()!];
                 var prepared = basis.Section.PreparedVisual;
-                ChartXViewport? x = null; ChartYViewport? y = null;
+                ChartAxisWindow? x = null; ChartAxisWindow? y = null;
                 if (request.GetProperty("kind").GetString() != "reset") {
                     var projection = prepared.XProjection!;
                     if (projection.Minimum != projection.FullMinimum || projection.Maximum != projection.FullMaximum)
-                        x = new ChartXViewport(projection.Minimum, projection.Maximum);
-                    var value = prepared.YProjection;
+                        x = new ChartAxisWindow(projection.Minimum, projection.Maximum);
+                    var value = basis.Secondary ? prepared.SecondaryYProjection : prepared.YProjection;
                     if (value != null && (value.Minimum != value.FullMinimum || value.Maximum != value.FullMaximum))
-                        y = new ChartYViewport(value.Minimum, value.Maximum);
+                        y = new ChartAxisWindow(value.Minimum, value.Maximum);
                     var requested = request.GetProperty("sourceViewport");
-                    if (requested.TryGetProperty("x", out var sourceX)) x = projection.ConstrainViewport(new ChartXViewport(sourceX.GetProperty("minimum").GetDouble(), sourceX.GetProperty("maximum").GetDouble()));
-                    if (requested.TryGetProperty("y", out var sourceY)) y = value!.ConstrainViewport(new ChartYViewport(sourceY.GetProperty("minimum").GetDouble(), sourceY.GetProperty("maximum").GetDouble()));
+                    if (requested.TryGetProperty("x", out var sourceX)) x = projection.ConstrainViewport(new ChartAxisWindow(sourceX.GetProperty("minimum").GetDouble(), sourceX.GetProperty("maximum").GetDouble()));
+                    if (requested.TryGetProperty(basis.Secondary ? "secondaryY" : "y", out var sourceY))
+                        y = value!.ConstrainViewport(new ChartAxisWindow(sourceY.GetProperty("minimum").GetDouble(), sourceY.GetProperty("maximum").GetDouble()));
                 }
                 return Store(basis.Secondary, x, y);
             }
         }
-        private object Store(bool secondary, ChartXViewport? x, ChartYViewport? y) {
+        private object Store(bool secondary, ChartAxisWindow? x, ChartAxisWindow? y) {
             var section = x == null && y == null ? _renderer.PrepareSection(Model(secondary), configure: ConfigureSection)
-                : _renderer.PrepareSection(Model(secondary), new ChartCartesianViewport(x, y), ConfigureSection);
+                : _renderer.PrepareSection(Model(secondary), new ChartCartesianViewport(x: x, y: secondary ? null : y, secondaryY: secondary ? y : null), ConfigureSection);
             var token = "capability-" + _sections.Count;
             _sections.Add(token, new CapabilitySnapshot(section, secondary));
             return new { token, html = section.Html };
@@ -193,7 +194,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             primary.ConfigureMarkers(options => options.Enabled = true);
             var reference = new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.StepLine,
                 new[] { new ChartPoint(0, 30), new ChartPoint(12, 30) });
-            if (secondary) reference.UseSecondaryYAxis();
+            if (secondary) reference.UseSecondaryValueAxis();
             var chart = Chart.Create().WithSize(800, 440).WithFontFamily(BrowserProofFonts.Family).WithTitle(Id)
                 .WithXAxisBounds(0, 12).WithYAxisBounds(_logarithmicY ? 1 : 0, _logarithmicY ? 1000 : 100)
                 .WithYAxisScale(_logarithmicY ? ChartScaleKind.Logarithmic : ChartScaleKind.Linear)

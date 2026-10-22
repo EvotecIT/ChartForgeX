@@ -27,6 +27,14 @@ public sealed class VennDiagramBlock : VisualBlock<VennDiagramBlock> {
     /// <summary>Creates a Venn diagram block.</summary>
     public static VennDiagramBlock Create() => new();
 
+    /// <summary>Measures the real circular intersections and their quantitative fit in the current frame.</summary>
+    public VennDiagramLayout MeasureLayout() {
+        var content = VisualBlockRendering.ContentRect(Options);
+        var heading = VisualBlockRendering.Headings(this);
+        var top = content.Top + heading.TitleAdvance + heading.SubtitleAdvance;
+        return VisualBlockRendering.VennLayout(this, new ChartRect(content.Left, top, content.Width, Math.Max(1, content.Bottom - top)));
+    }
+
     /// <summary>Adds a Venn set.</summary>
     public VennDiagramBlock AddSet(string id, string? label = null, double size = 10) {
         _sets.Add(new VennSet(id, label ?? id, size));
@@ -75,6 +83,12 @@ public sealed class VennSet {
     /// <summary>Gets or sets the optional stroke color.</summary>
     public ChartColor? Stroke { get; set; }
 
+    /// <summary>Gets or sets the explicit fill opacity, from zero through one. Null retains the default set translucency.</summary>
+    public double? FillOpacity { get; set; }
+
+    /// <summary>Gets or sets the outline width, in logical pixels.</summary>
+    public double StrokeWidth { get; set; } = 2;
+
     /// <summary>Gets or sets the optional text color.</summary>
     public ChartColor? TextColor { get; set; }
 }
@@ -108,6 +122,12 @@ public sealed class VennIntersection {
 
     /// <summary>Gets or sets the optional stroke color.</summary>
     public ChartColor? Stroke { get; set; }
+
+    /// <summary>Gets or sets the explicit fill opacity, from zero through one. Null retains the default set translucency.</summary>
+    public double? FillOpacity { get; set; }
+
+    /// <summary>Gets or sets the outline width, in logical pixels.</summary>
+    public double StrokeWidth { get; set; } = 2;
 
     /// <summary>Gets or sets the optional text color.</summary>
     public ChartColor? TextColor { get; set; }

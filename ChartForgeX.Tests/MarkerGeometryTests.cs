@@ -203,7 +203,7 @@ public sealed class MarkerGeometryTests {
         chart.Options.XAxis.Scale = scale;
         (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).Scale = scale;
         chart.Series[0].ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Radius = 12; marker.Stroke = Ink; marker.StrokeWidth = 8; });
-        if (secondary) chart.Series[0].UseSecondaryYAxis();
+        if (secondary) chart.Series[0].UseSecondaryValueAxis();
         var prepared = Prepare(chart);
         var xAxis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "axis-x");
         var yAxis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "axis-y");
@@ -225,7 +225,7 @@ public sealed class MarkerGeometryTests {
             ChartSeriesKind.StackedArea => chart.AddStackedArea("Samples", points),
             ChartSeriesKind.Scatter => chart.AddScatter("Samples", points),
             ChartSeriesKind.Bubble => chart.AddBubble("Samples", new[] { new ChartBubble(1, 20, 2), new ChartBubble(3, 30, 10) }),
-            ChartSeriesKind.ErrorBar => chart.AddErrorBar("Samples", new[] { new ChartErrorBar(1, 20, 10, 30) }),
+            ChartSeriesKind.ErrorBar => chart.AddErrorBar("Samples", new[] { new ChartErrorBar(1, 20, yBounds: new ChartErrorBounds(10, 30)) }),
             ChartSeriesKind.Dumbbell => chart.AddDumbbell("Samples", new[] { new ChartDumbbell(1, 10, 30) }),
             ChartSeriesKind.Lollipop => chart.AddLollipop("Samples", points),
             ChartSeriesKind.Slope => chart.AddSlope("Samples", 20, 40),

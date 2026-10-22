@@ -30,6 +30,10 @@ public static class ChartArtifactRendering {
             var prefix = "chart.series." + index.ToString(CultureInfo.InvariantCulture);
             artifact.Metadata[prefix + ".id"] = chart.Series[index].Id.Value;
             artifact.Metadata[prefix + ".scope"] = chart.Series[index].Id.IsAutomatic ? "local" : "shared";
+            if (chart.Series[index].RadialBand is { } band) {
+                artifact.Metadata[prefix + ".radial.innerRatio"] = band.InnerRatio.ToString("R", CultureInfo.InvariantCulture);
+                artifact.Metadata[prefix + ".radial.outerRatio"] = band.OuterRatio.ToString("R", CultureInfo.InvariantCulture);
+            }
         }
         if (chart.Series.Count > 0) artifact.Metadata["chart.kind"] = chart.Series[0].Kind.ToString();
         artifact.Accessibility.Name = chart.Accessibility.Name;

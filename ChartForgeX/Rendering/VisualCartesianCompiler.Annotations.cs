@@ -43,7 +43,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawAnnotations(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, ChartMapper map, VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles,
-        bool constrainXToPlot, ChartXViewport? xViewport = null, ChartRect? labelBounds = null, bool clipGeometry = false,
+        bool constrainXToPlot, ChartAxisWindow? xViewport = null, ChartRect? labelBounds = null, bool clipGeometry = false,
         ChartMapper? secondaryMap = null) {
         var horizontalValues = ChartCartesianOrientation.IsHorizontal(chart);
         VisualAnnotationCompiler.Draw(chart.Annotations, context, builder, plot, map.X, map.Y, colors, bands, obstacles,
@@ -55,8 +55,9 @@ internal static partial class VisualCartesianCompiler {
             (annotation, value) => (annotation.SourceYAxis == ChartAxisSide.Secondary ? secondaryMap! : map).Y(value), colors, bands, obstacles);
     }
 
-    private static bool IsAnnotationVisible(ChartAnnotation annotation, ChartRect plot, ChartMapper map, ChartXViewport? xViewport, ChartAnnotationKind kind) {
+    private static bool IsAnnotationVisible(ChartAnnotation annotation, ChartRect plot, ChartMapper map, ChartAxisWindow? xViewport, ChartAnnotationKind kind) {
         if (kind == ChartAnnotationKind.HorizontalLine || kind == ChartAnnotationKind.HorizontalBand) return true;
+        if (xViewport != null && map.HasCalendarBandAxis(horizontalAxis: true)) return map.OverlapsSourceWindow(xViewport, annotation.Value, annotation.EndValue ?? annotation.Value, horizontalAxis: true);
         var minimum = xViewport?.Minimum ?? plot.Left;
         var maximum = xViewport?.Maximum ?? plot.Right;
         var value = xViewport != null ? annotation.Value : map.X(annotation.Value);

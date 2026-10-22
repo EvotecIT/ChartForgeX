@@ -42,7 +42,7 @@ public sealed class MermaidJourneyTask : MermaidAstNode {
     private string _text;
 
     /// <summary>Initializes a journey task.</summary>
-    public MermaidJourneyTask(string text, string? section, double score, MermaidSourceSpan span) : base(span) {
+    public MermaidJourneyTask(string text, MermaidJourneySection? section, double score, MermaidSourceSpan span) : base(span) {
         _text = text ?? throw new ArgumentNullException(nameof(text));
         Section = section;
         Score = score;
@@ -51,8 +51,8 @@ public sealed class MermaidJourneyTask : MermaidAstNode {
     /// <summary>Gets or sets the task text.</summary>
     public string Text { get => _text; set => _text = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets or sets the containing section name.</summary>
-    public string? Section { get; set; }
+    /// <summary>Gets or sets the containing section object, preserving repeated labels as distinct phases.</summary>
+    public MermaidJourneySection? Section { get; set; }
 
     /// <summary>Gets or sets the Mermaid journey score.</summary>
     public double Score { get; set; }

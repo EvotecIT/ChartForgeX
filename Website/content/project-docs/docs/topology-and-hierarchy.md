@@ -15,4 +15,10 @@ Available layout modes include layered, hub-and-spoke, matrix, dense grouped, ge
 
 Use `TopologyChart.FromData<TNode, TEdge>(...)` when the host already owns its records. The mapper preserves input order and rejects duplicate ids or dangling endpoints before rendering.
 
-For thousands of relationships, hierarchy drill-down, editing, or runtime patches, bridge the model to `GraphScene` and the HTML graph explorer rather than moving browser state into the core renderer.
+For large relationship graphs, editing, or runtime graph patches, bridge the model to `GraphScene` and the HTML graph explorer rather than moving browser state into the core renderer.
+
+## Treemap and Sunburst drill-down
+
+Area hierarchies use their native layout. Call `chart.PrepareHierarchy(context, new ChartHierarchyView("team-id"))` to make an existing item the visible root, or pass null to restore the complete hierarchy. The source items, IDs, authored parents, size/color values and paint overrides remain unchanged. Treemap uses its configured group padding and gap; Sunburst rebases ring depth while preserving authored parent remainders.
+
+For a connected HTML host, use `HtmlInteractiveChartRenderer.PrepareHierarchySection` and enable `ChartInteractionFeatures.HierarchyNavigation`. Group activation, **Up one level** and **Full hierarchy** request native re-preparation through `connectNative(callback, { basis, axes: null, hierarchy: true })`. The callback owns transport and returns the generated section plus a new opaque basis. Bookmarks and SVG/PNG exports follow the accepted view; rejected or stale replies leave it unchanged. The [interactivity reference](../interactivity/) describes the request and lifetime contract.

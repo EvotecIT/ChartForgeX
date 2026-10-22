@@ -51,7 +51,7 @@ internal static partial class VisualCartesianCompiler {
                 ["data-cfx-value"] = Number(value), ["data-cfx-label"] = formatted, ["data-cfx-formatted-value"] = formatted,
                 ["data-cfx-label-outlier"] = chart.Options.Labels.Outlier,
                 ["data-cfx-category-label"] = category, ["data-cfx-label-category"] = chart.Options.Labels.Category,
-                ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(), ["aria-label"] = description
+                ["data-cfx-axis"] = series.ValueAxis.ToString().ToLowerInvariant(), ["aria-label"] = description
             };
             builder.AddRegion(new VisualSemanticRegion(id, "point", bounds, description));
             using (builder.PushGroup(id, "point", metadata))

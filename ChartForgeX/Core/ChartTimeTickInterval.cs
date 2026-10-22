@@ -17,7 +17,9 @@ public enum ChartTimeTickUnit {
     /// <summary>Weeks aligned to the selected weekday and counted from the Unix epoch's week.</summary>
     Week,
     /// <summary>Months within each year, starting at January.</summary>
-    Month
+    Month,
+    /// <summary>Calendar years aligned from year one.</summary>
+    Year
 }
 
 /// <summary>An immutable calendar tick interval, independent of axis label formatting.</summary>

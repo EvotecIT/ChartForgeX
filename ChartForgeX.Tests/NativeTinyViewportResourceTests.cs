@@ -31,8 +31,8 @@ public sealed class NativeTinyViewportResourceTests {
         var chart = Chart.Create().WithSize(390, 280).WithLegend(false).WithXAxisBounds(0, 2).WithYAxisBounds(0, 10).AddSeries(series);
         if (kind == ChartSeriesKind.Line) chart.WithDataLabels();
         chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
-        var x = axes.Contains('x') ? new ChartXViewport(1, Math.BitIncrement(1)) : null;
-        var y = axes.Contains('y') ? new ChartYViewport(6, Math.BitIncrement(6)) : null;
+        var x = axes.Contains('x') ? new ChartAxisWindow(1, Math.BitIncrement(1)) : null;
+        var y = axes.Contains('y') ? new ChartAxisWindow(6, Math.BitIncrement(6)) : null;
         var viewport = new ChartCartesianViewport(x, y);
         PreparedVisual[] drawings;
         if (adaptive) {

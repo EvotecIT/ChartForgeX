@@ -15,11 +15,12 @@ internal readonly struct ChartCategorySlotLayout {
     /// <remarks>When <paramref name="requireMinimumFootprint"/> is true, interval marks must fit their minimum caps and strokes inside the slot.</remarks>
     internal static ChartCategorySlotLayout Create(IEnumerable<double> mappedCategories, double extent, double spacing,
         int count, int position, bool requireMinimumFootprint, double maximumThickness = double.PositiveInfinity, double minimumThickness = .1,
-        int sampleSlots = 0, double footprintRatio = 1, double footprintPadding = 0, Func<double, double>? measuredFootprint = null) {
+        int sampleSlots = 0, double footprintRatio = 1, double footprintPadding = 0, Func<double, double>? measuredFootprint = null, double maximumPitch = double.PositiveInfinity) {
         var centers = mappedCategories.Distinct().OrderBy(value => value).ToArray();
         var pitch = sampleSlots > 0 ? extent / sampleSlots : extent;
         if (sampleSlots == 0)
             for (var index = 1; index < centers.Length; index++) pitch = Math.Min(pitch, centers[index] - centers[index - 1]);
+        pitch = Math.Min(pitch, maximumPitch);
         count = Math.Max(1, count);
         var occupied = pitch * .68;
         var gap = count > 1 ? Math.Min(spacing / 2, occupied / (count * 4)) : 0;

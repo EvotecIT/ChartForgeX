@@ -60,7 +60,7 @@ internal static partial class TopologyNodeShapeGeometry {
         var vertical = port is TopologyEdgePort.Left or TopologyEdgePort.Right;
         var coordinate = vertical ? node.Y + node.Height * offset : node.X + node.Width * offset;
         var intersections = new List<ChartPoint>();
-        if (node.Shape == TopologyNodeShape.Actor) {
+        if (node.Shape is TopologyNodeShape.Actor or TopologyNodeShape.LinedDocument) {
             foreach (var part in SceneParts(node)) AddIntersections(part.Path.Flatten(1), part.Close);
         } else {
             foreach (var path in ChartMapPathParser.ParseSubpaths(Path(node), 1)) AddIntersections(path.Points, path.IsClosed);
@@ -108,7 +108,7 @@ internal static partial class TopologyNodeShapeGeometry {
         var furthest = double.NegativeInfinity;
         // Compact figures have fractional arm coordinates. Route against their painted
         // numeric contours rather than rounding a horizontal arm through SVG text first.
-        if (node.Shape == TopologyNodeShape.Actor) {
+        if (node.Shape is TopologyNodeShape.Actor or TopologyNodeShape.LinedDocument) {
             foreach (var part in SceneParts(node)) Contour(part.Path.Flatten(1), part.Close);
         } else foreach (var path in ChartMapPathParser.ParseSubpaths(Path(node), 1)) Contour(path.Points, path.IsClosed);
         return double.IsNegativeInfinity(furthest) ? origin : new ChartPoint(origin.X + unit.X * (furthest + gap), origin.Y + unit.Y * (furthest + gap));

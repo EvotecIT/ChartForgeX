@@ -93,14 +93,15 @@ public sealed class RangeBarLayoutTests {
     }
 
     [Fact]
-    public void HorizontalRangeBarsRejectOtherKindsAndSecondaryAxesWhileVerticalMixturesRemainSupported() {
-        var chart = Fixture(); chart.Series[1].YAxis = ChartAxisSide.Secondary;
+    public void HorizontalRangeBarsSupportSecondaryValueAndScalarMixtures() {
+        var chart = Fixture(); chart.Series[1].ValueAxis = ChartAxisSide.Secondary;
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
         chart.ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal);
-        Assert.Contains("primary X", Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext())).Message);
-        chart.Series[1].YAxis = ChartAxisSide.Primary;
+        var secondary = chart.Prepare(new VisualRenderContext());
+        Assert.NotNull(secondary.SecondaryXProjection); Assert.NotEmpty(secondary.ToPng());
+        chart.Series[1].ValueAxis = ChartAxisSide.Primary;
         chart.AddHorizontalBar("Scalar", new[] { new ChartPoint(1, 3) });
-        Assert.Contains("only range-bar", Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext())).Message);
+        Assert.Contains(chart.Prepare(new VisualRenderContext()).Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "horizontal-bar");
         chart.RemoveSeries(chart.Series[2]);
         chart.ConfigureRangeBar(options => options.Orientation = ChartOrientation.Vertical);
         chart.AddLine("Target", new[] { new ChartPoint(1, 5), new ChartPoint(3, 6) });
@@ -112,7 +113,7 @@ public sealed class RangeBarLayoutTests {
         var chart = Chart.Create().WithAxes(false).WithLegend(false).WithBarStyle(ChartBarStyle.Flat)
             .AddRangeBar("Primary", new[] { new ChartInterval(1, 2, 8) })
             .AddRangeBar("Secondary", new[] { new ChartInterval(1, 300, 150) });
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         chart.Options.YAxis.WithBounds(0, 10); chart.Options.SecondaryYAxis.WithBounds(100, 500);
         var bodies = Scene(chart).Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "range-bar").ToArray();
         Assert.Equal(80, bodies[0].Bounds.Top, 8); Assert.Equal(240, bodies[0].Bounds.Height, 8);

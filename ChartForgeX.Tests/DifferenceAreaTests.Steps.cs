@@ -119,7 +119,7 @@ public sealed partial class DifferenceAreaTests {
     public void TimeStepsUseSecondaryScaleAndMappedTransitionThroughClippingAndReversal(bool reverseX, bool reverseY) {
         var date = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
         var chart = Model(new(date, 600, 100), new(date.AddDays(10), 100, 500));
-        chart.Series[0].UseSecondaryYAxis().WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        chart.Series[0].UseSecondaryValueAxis().WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         chart.AddLine("Primary", new[] { new ChartPoint(date.ToOADate(), 1), new ChartPoint(date.AddDays(10).ToOADate(), 2) });
         chart.Options.XAxis.Scale = ChartScaleKind.Time;
         chart.Options.XAxis.WithBounds(date.AddDays(2).ToOADate(), date.AddDays(8).ToOADate()).WithReversal(reverseX);

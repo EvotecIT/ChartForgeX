@@ -14,7 +14,7 @@ public static partial class MermaidTopologyRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
         var chart = CreateTopology(options, "mermaid-class", ResolveTitle(document, options, "Mermaid class diagram"), TopologyLayoutMode.Layered, DiagramDirection(document.Direction, TopologyLayoutDirection.LeftToRight));
-        AddClassNamespaces(chart, document);
+        AddClassNamespaceGroups(chart, document);
         foreach (var item in document.Classes) {
             chart.AddAutoNode(item.Id, item.Label ?? item.Id, TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, groupId: item.Namespace, subtitle: item.Annotations.Count == 0 ? null : string.Join(", ", item.Annotations), width: MemberWidth(item), height: 82 + item.Members.Count * 18 + (item.Annotations.Count > 0 ? 20 : 0), cssClass: "cfx-mermaid-class");
             var node = chart.Nodes[chart.Nodes.Count - 1];
@@ -43,6 +43,8 @@ public static partial class MermaidTopologyRendering {
             edge.Metadata["mermaid.connector"] = item.Connector;
         }
 
+        ApplyClassNotation(chart, document);
+        ApplyClassStyles(chart, document);
         AddNotes(chart, document.Notes);
         return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
@@ -51,45 +53,7 @@ public static partial class MermaidTopologyRendering {
     public static TopologyChart ToTopologyChart(this MermaidStateDocument document, MermaidTopologyRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
-        var direction = DiagramDirection(document.Direction, TopologyLayoutDirection.TopToBottom);
-        var chart = CreateTopology(options, "mermaid-state", ResolveTitle(document, options, "Mermaid state diagram"), TopologyLayoutMode.Layered, direction);
-        foreach (var composite in document.States) {
-            if (composite.IsComposite || document.States.Exists(state => state.ParentId == composite.Id)) {
-                chart.AddAutoGroup(composite.Id, composite.Label ?? composite.Id, TopologyHealthStatus.Unknown, cssClass: "cfx-mermaid-state-composite");
-                var group = chart.Groups[chart.Groups.Count - 1];
-                group.ParentGroupId = composite.ParentId;
-                group.LayoutDirection = composite.Direction == null ? null : DiagramDirection(composite.Direction, direction);
-            }
-        }
-
-        foreach (var item in document.States) {
-            if (chart.Groups.Exists(group => group.Id == item.Id)) continue;
-            var localDirection = StateDirection(document, item, direction);
-            // Mermaid draws states as plain surfaces: pseudo-states are markers and no node carries a kind glyph or status.
-            var pseudo = IsPseudoState(item);
-            chart.AddAutoNode(item.Id, pseudo ? item.Kind == "start" ? "Start" : "End" : item.Label ?? item.Id, TopologyNodeKind.Generic, TopologyHealthStatus.Unknown,
-                groupId: item.ParentId, width: ToStateWidth(item, localDirection), height: ToStateHeight(item, localDirection), cssClass: "cfx-mermaid-state");
-            var node = chart.Nodes[chart.Nodes.Count - 1];
-            node.ShowStatusBadge = false;
-            node.DisplayMode = pseudo ? TopologyNodeDisplayMode.Dot : TopologyNodeDisplayMode.Card;
-            node.PreserveDisplayModeSize = true;
-            node.Shape = ToStateShape(item);
-            node.ShowLabel = !IsStateControl(item);
-            node.Metadata["mermaid.id"] = item.Id;
-            node.Metadata["mermaid.kind"] = item.Kind ?? "state";
-            if (item.ParentId != null) node.Metadata["mermaid.parent"] = item.ParentId;
-        }
-
-        for (var index = 0; index < document.Transitions.Count; index++) {
-            var item = document.Transitions[index];
-            chart.AddEdge(EdgeId(index), item.SourceId, item.TargetId, item.Label, TopologyEdgeKind.Dependency, TopologyHealthStatus.Unknown, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
-            var edge = chart.Edges[chart.Edges.Count - 1];
-            edge.MinimumRankSpan = 2;
-            edge.LineStyle = TopologyEdgeLineStyle.Solid;
-        }
-
-        AddNotes(chart, document.Notes);
-        return MermaidPresentation.Apply(chart, document, options.Presentation);
+        return CreateStateTopology(document, options);
     }
 
     /// <summary>Converts a Mermaid ER diagram to a topology chart.</summary>
@@ -120,6 +84,8 @@ public static partial class MermaidTopologyRendering {
             edge.Metadata["mermaid.cardinality"] = item.Connector;
         }
 
+        ApplyEntityGroups(chart, document);
+        ApplyEntityStyles(chart, document);
         return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 

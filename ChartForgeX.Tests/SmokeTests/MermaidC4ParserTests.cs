@@ -21,7 +21,7 @@ UpdateElementStyle(system, $fontColor=""#111"")";
         var result = new MermaidParser().ParseC4(source);
 
         Assert(!result.HasErrors, "Mermaid C4 parser should parse common C4 context syntax: " + MermaidDiagnostics(result));
-        Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Severity == MermaidDiagnosticSeverity.Warning && diagnostic.Message.Contains("retained", StringComparison.OrdinalIgnoreCase)), "Mermaid C4 parser should warn for retained style/layout statements.");
+        Assert(result.Diagnostics.TrueForAll(diagnostic => diagnostic.Code == MermaidDiagnosticCodes.ApproximateMapping), "Supported C4 element paint must not be diagnosed as retained source.");
         var document = result.Document ?? throw new InvalidOperationException("Mermaid C4 parser should produce a document.");
         Assert(document.Kind == MermaidDiagramKind.C4 && document.DiagramType == "C4Context", "Mermaid C4 parser should preserve C4 diagram kind and header type.");
         Assert(document.Title == "System Context", "Mermaid C4 parser should parse title statements.");
@@ -29,7 +29,7 @@ UpdateElementStyle(system, $fontColor=""#111"")";
         Assert(document.Elements.Count == 3 && document.Elements[0].BoundaryId == "bank", "Mermaid C4 parser should associate elements with the active boundary.");
         Assert(document.Elements[2].Kind == "system_external", "Mermaid C4 parser should normalize external C4 element kinds.");
         Assert(document.Relationships.Count == 2 && document.Relationships[1].Technology == "SMTP", "Mermaid C4 parser should parse relationship labels and technology.");
-        Assert(document.RetainedStatements.Count == 1, "Mermaid C4 parser should retain unsupported update/style statements explicitly.");
+        Assert(document.ElementStyles.Count == 1 && document.RetainedStatements.Count == 0, "Mermaid C4 parser should apply supported native element paint updates.");
     }
 
     private static void MermaidC4ConvertsToTopologyArtifactAndRenders() {
@@ -53,7 +53,7 @@ Rel_D(web, db, ""Reads and writes"", ""SQL"")";
         Assert(topology.Groups.Count == 1 && topology.Groups[0].Metadata["mermaid.kind"] == "systemboundary", "Mermaid C4 conversion should map boundaries into topology groups.");
         Assert(topology.Nodes.Count == 3 && topology.Nodes[2].Kind == TopologyNodeKind.Database, "Mermaid C4 conversion should map C4 elements into topology nodes.");
         Assert(topology.Edges.Count == 2 && topology.Edges[0].SecondaryLabel == "HTTPS", "Mermaid C4 conversion should map relationship technology to secondary labels.");
-        Assert(topology.Edges[1].TargetPort == TopologyEdgePort.Bottom, "Mermaid C4 conversion should preserve direction-specific relationship hints.");
+        Assert(topology.Edges[1].SourcePort == TopologyEdgePort.Bottom && topology.Edges[1].TargetPort == TopologyEdgePort.Top, "Mermaid C4 conversion should preserve direction-specific relationship hints.");
 
         var artifact = document.ToVisualArtifact(new MermaidTopologyRenderOptions { Id = "c4-container" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid C4 visual artifact should report Mermaid artifact kind.");

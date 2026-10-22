@@ -124,7 +124,7 @@ public sealed partial class CartesianPlotRegionTests {
         var chart = Bare().WithXAxisBounds(start, start + 10).WithYAxisBounds(0, 10)
             .AddScatter("Primary", new[] { new ChartPoint(start, 1), new ChartPoint(start + 10, 9) })
             .AddScatter("Secondary", new[] { new ChartPoint(start, 1), new ChartPoint(start + 10, 100) });
-        chart.Series[1].UseSecondaryYAxis(); chart.Options.XAxis.Scale = ChartScaleKind.Time;
+        chart.Series[1].UseSecondaryValueAxis(); chart.Options.XAxis.Scale = ChartScaleKind.Time;
         chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
         chart.Options.SecondaryYAxis.Minimum = 1; chart.Options.SecondaryYAxis.Maximum = 100;
         chart.Options.XAxis.Reversed = reversed; chart.Options.SecondaryYAxis.Reversed = reversed;

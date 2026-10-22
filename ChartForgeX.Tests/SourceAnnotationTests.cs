@@ -46,7 +46,7 @@ public sealed class SourceAnnotationTests {
     [Fact]
     public void SourceDrawingsClipToNativeWindowsWithoutClampingAuthoredEndpointsAndUseTheDeclaredValueAxis() {
         var chart = Fixture().AddLine("Ratio", new[] { new ChartPoint(0, .2), new ChartPoint(3, .5), new ChartPoint(10, .8) });
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         chart.Series[1].ConfigureMarkers(options => options.Enabled = true);
         chart.Options.SecondaryYAxis.WithBounds(0, 1);
         chart.AddNote(new ChartPoint(3, .5), "Ratio review", id: new ChartAnnotationId("ratio"), yAxis: ChartAxisSide.Secondary)
@@ -55,7 +55,7 @@ public sealed class SourceAnnotationTests {
         var full = chart.Prepare(Context(900, VisualThemeMode.Light));
         var anchor = Assert.Single(full.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "annotation-anchor");
         Assert.Contains(full.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "marker" && Math.Abs(node.Cx - anchor.Cx) < 1e-7 && Math.Abs(node.Cy - anchor.Cy) < 1e-7);
-        var window = chart.Prepare(Context(390, VisualThemeMode.Dark), new ChartCartesianViewport(x: new ChartXViewport(4, 7)));
+        var window = chart.Prepare(Context(390, VisualThemeMode.Dark), new ChartCartesianViewport(x: new ChartAxisWindow(4, 7)));
         Assert.DoesNotContain(window.Scene.Nodes, node => node.Role == "annotation-anchor");
         var note = window.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Metadata.TryGetValue("data-cfx-annotation-id", out var id) && id == "ratio");
         Assert.Equal("false", note.Metadata["data-cfx-visible"]);

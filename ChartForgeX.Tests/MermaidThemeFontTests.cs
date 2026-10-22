@@ -98,8 +98,9 @@ public sealed class MermaidThemeFontTests {
         Assert.False(result.HasErrors);
         Assert.Single(result.Diagnostics);
         Assert.All(result.Diagnostics, item => Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, item.Code));
-        var unsupported = new MermaidParser().Parse("%%{init: {'themeVariables':{'fontFamily':'Georgia'}}}%%\nagentflow-beta\nflow A");
-        Assert.Contains(unsupported.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration);
+        var workflow = MermaidRenderer.Render("%%{init: {'themeVariables':{'fontFamily':'Georgia'}}}%%\nagentflow-beta\na --> b");
+        Assert.Empty(workflow.Diagnostics);
+        Assert.Equal("Georgia", Assert.IsType<TopologyChart>(workflow.Artifact!.Model).Theme.Typography.Family);
     }
 
     [Fact]

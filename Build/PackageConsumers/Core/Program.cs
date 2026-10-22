@@ -19,6 +19,8 @@ internal static partial class Program {
         ReversedStackCaptionLanes();
         FinancialSessionLifecycle();
         NativeCoordinateDrawings();
+        HierarchySubtreeContracts();
+        ConcentricPieBands();
         GeographicDatasetLifecycle();
         PackageAssertions.Payload("ChartForgeX");
         Console.WriteLine("Core package boundaries, typed ownership, themes and static exports passed.");
@@ -117,7 +119,7 @@ internal static partial class Program {
             .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("volume"), "Volume", new[] { new ChartBubble(origin + 5, 4, 9) })
                 .ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Star))
             .ConfigureBubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
-        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280))), new ChartCartesianViewport(x: new ChartXViewport(origin + 2, origin + 8)));
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280))), new ChartCartesianViewport(x: new ChartAxisWindow(origin + 2, origin + 8)));
         PackageAssertions.Require(prepared.XProjection != null && prepared.XProjection.Scale == ChartScaleKind.Time
             && prepared.XProjection.Minimum == origin + 2, "Packed time/Bubble window lost its native projection.");
         PackageAssertions.Png(prepared.ToPng());

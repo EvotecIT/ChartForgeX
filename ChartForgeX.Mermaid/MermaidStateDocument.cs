@@ -16,11 +16,21 @@ public sealed class MermaidStateDocument : MermaidDocument {
     /// <summary>Gets transitions in source order.</summary>
     public List<MermaidStateTransition> Transitions { get; } = new();
 
-    /// <summary>Gets retained class definitions and other non-rendered state statements.</summary>
+    /// <summary>Gets retained non-rendered state statements.</summary>
     public List<MermaidStateStatement> Statements { get; } = new();
+
+    /// <summary>Gets named paint definitions in source order, including retained unsupported declarations.</summary>
+    public List<MermaidStyleDefinition> ClassDefinitions { get; } = new();
+
+    /// <summary>Gets explicit class and style statements at their original source locations.</summary>
+    public List<MermaidRawStatement> StyleStatements { get; } = new();
 
     /// <summary>Gets visible state-attached notes in source order.</summary>
     public List<MermaidDiagramNote> Notes { get; } = new();
+
+    /// <summary>Gets the ordered regions of composite states, including empty regions.</summary>
+    /// <remarks>A composite without a concurrency boundary has one implicit region.</remarks>
+    public List<MermaidStateRegion> Regions { get; } = new();
 }
 
 /// <summary>
@@ -42,11 +52,20 @@ public sealed class MermaidStateNode : MermaidAstNode {
     /// <summary>Gets or sets the containing composite state id.</summary>
     public string? ParentId { get; set; }
 
+    /// <summary>Gets or sets the region within the containing composite state.</summary>
+    public string? RegionId { get; set; }
+
     /// <summary>Gets or sets whether this state declares a composite boundary, including an empty one.</summary>
     public bool IsComposite { get; set; }
 
     /// <summary>Gets or sets the direction authored within this composite state.</summary>
     public string? Direction { get; set; }
+
+    /// <summary>Gets named classes in assignment order; later classes override earlier class paints.</summary>
+    public List<string> Classes { get; } = new();
+
+    /// <summary>Gets direct declarations, which override named/default paints without changing state semantics.</summary>
+    public Dictionary<string, string> Styles { get; } = new();
 
     /// <summary>Gets or sets the special state marker such as choice, fork, join, start, or end.</summary>
     public string? Kind { get; set; }

@@ -5,7 +5,7 @@ using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidVennParser {
+internal static partial class MermaidVennParser {
     private const int MaximumVennIntersections = 32;
     private const int MaximumVennTextNodes = 64;
 
@@ -49,6 +49,7 @@ internal static class MermaidVennParser {
         }
 
         if (document.Sets.Count == 0) MermaidParserUtilities.Add(result, document.HeaderSpan, MermaidDiagnosticSeverity.Error, "Mermaid Venn diagrams require at least one set.");
+        if (!result.HasErrors) ValidateNativeMemberships(document, result);
     }
 
     private static IReadOnlyList<string>? ParseSet(MermaidVennDocument document, string text, MermaidSourceSpan span, HashSet<string> ids, MermaidParseResult<MermaidDocument> result) {
@@ -81,6 +82,7 @@ internal static class MermaidVennParser {
         }
 
         if (!ValidateKnownIds(setIds, ids, span, result)) return null;
+        if (setIds.Count < 2) { MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Venn union statements require at least two distinct sets."); return null; }
         if (document.Intersections.Count >= MaximumVennIntersections) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "Mermaid Venn diagrams support no more than " + MaximumVennIntersections.ToString(CultureInfo.InvariantCulture) + " intersections.");
             return null;
@@ -285,8 +287,14 @@ internal static class MermaidVennParser {
     }
 
     private static bool TryApplyStyle(MermaidVennSet? set, MermaidVennIntersection? intersection, string key, string value) {
-        if (!ChartColor.TryParse(value, out var color)) return false;
         var normalized = NormalizeStyleKey(key);
+        if (normalized == "strokewidth" || normalized == "fillopacity") {
+            if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) || double.IsNaN(number) || double.IsInfinity(number) || number < 0 || normalized == "fillopacity" && number > 1) return false;
+            if (set != null) { if (normalized == "strokewidth") set.StrokeWidth = number; else set.FillOpacity = number; }
+            if (intersection != null) { if (normalized == "strokewidth") intersection.StrokeWidth = number; else intersection.FillOpacity = number; }
+            return true;
+        }
+        if (!ChartColor.TryParse(value, out var color)) return false;
         if (normalized == "fill") {
             if (set != null) set.Fill = color;
             if (intersection != null) intersection.Fill = color;

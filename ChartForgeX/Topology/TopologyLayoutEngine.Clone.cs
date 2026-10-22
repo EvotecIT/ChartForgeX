@@ -40,6 +40,7 @@ internal static partial class TopologyLayoutEngine {
             Subtitle = group.Subtitle,
             ParentGroupId = group.ParentGroupId,
             LayoutDirection = group.LayoutDirection,
+            Presentation = group.Presentation,
             Status = group.Status,
             X = group.X,
             Y = group.Y,
@@ -53,6 +54,9 @@ internal static partial class TopologyLayoutEngine {
             Symbol = group.Symbol,
             IconId = group.IconId,
             Color = group.Color,
+            BackgroundColor = group.BackgroundColor,
+            BorderColor = group.BorderColor,
+            LabelColor = group.LabelColor,
             LayoutPolicy = group.LayoutPolicy,
             AppliedLayoutPolicy = group.AppliedLayoutPolicy,
             HasPositionOverride = group.HasPositionOverride
@@ -103,7 +107,7 @@ internal static partial class TopologyLayoutEngine {
             copy.Ports.Add(portCopy);
         }
         foreach (var detail in node.Details) {
-            var detailCopy = new TopologyNodeDetail { Text = detail.Text, Label = detail.Label, Value = detail.Value, IconId = detail.IconId, Status = detail.Status, Color = detail.Color };
+            var detailCopy = new TopologyNodeDetail { Text = detail.Text, Label = detail.Label, Value = detail.Value, IconId = detail.IconId, Status = detail.Status, Color = detail.Color, TextStyle = detail.TextStyle?.Clone() };
             foreach (var item in detail.Metadata) detailCopy.Metadata[item.Key] = item.Value;
             copy.Details.Add(detailCopy);
         }
@@ -150,6 +154,7 @@ internal static partial class TopologyLayoutEngine {
             Tooltip = edge.Tooltip,
             CssClass = edge.CssClass,
             Color = edge.Color,
+            LabelColor = edge.LabelColor,
             PaletteIndex = edge.PaletteIndex,
             IsMuted = edge.IsMuted
         };

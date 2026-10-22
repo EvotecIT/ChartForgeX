@@ -1,0 +1,44 @@
+{
+  "entityGroupFacts": {
+    "groups": [
+      [
+        "Domain",
+        "Data domain",
+        null,
+        "TB"
+      ],
+      [
+        "Orders",
+        "Order records",
+        "Domain",
+        "BT"
+      ]
+    ],
+    "entities": [
+      [
+        "Outside",
+        null
+      ],
+      [
+        "C",
+        "Orders"
+      ],
+      [
+        "O",
+        "Orders"
+      ]
+    ],
+    "groupStyles": {
+      "Domain": {
+        "fill": "#bae6fd",
+        "stroke": "#075985",
+        "color": "#082f49"
+      },
+      "Orders": {
+        "fill": "#dcfce7",
+        "stroke": "#166534",
+        "color": "#052e16"
+      }
+    }
+  }
+}

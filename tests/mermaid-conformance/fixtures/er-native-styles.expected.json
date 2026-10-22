@@ -1,0 +1,9 @@
+{
+  "nodeStyleFacts": {
+    "nodeClasses": { "C": ["marked"], "O": ["marked"] },
+    "nodeStyles": {
+      "C": { "fill": "#fef9c3", "stroke": "#1e3a8a", "color": "#7c2d12" },
+      "O": { "fill": "#fed7aa", "stroke": "#c2410c", "color": "#7c2d12" }
+    }
+  }
+}

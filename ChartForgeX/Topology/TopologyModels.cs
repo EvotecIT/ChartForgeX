@@ -734,7 +734,7 @@ public sealed class TopologyNodePort {
 }
 
 /// <summary>Defines a compact typed detail row shown inside a card-like topology node.</summary>
-public sealed class TopologyNodeDetail {
+public sealed partial class TopologyNodeDetail {
     private string _label = string.Empty;
     private string _value = string.Empty;
 

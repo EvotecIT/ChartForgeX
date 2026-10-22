@@ -60,6 +60,7 @@ internal static partial class ChartTimeScale {
                 var remaining = PositiveRemainder(weeks, count);
                 if (remaining != 0) return FixedAddDays(floor, (count - remaining) * 7);
                 break;
+            case ChartTimeTickUnit.Year: floor = new DateTime((value.Year - 1) / count * count + 1, 1, 1); break;
             default: floor = new DateTime(value.Year, (value.Month - 1) / count * count + 1, 1); break;
         }
         var comparable = interval.Unit >= ChartTimeTickUnit.Day ? NormalizeCalendarBoundary(floor, zone) : floor;
@@ -76,6 +77,7 @@ internal static partial class ChartTimeScale {
                 case ChartTimeTickUnit.Hour: return value.Hour + count < 24 ? value.AddHours(count) : value.Date.AddDays(1);
                 case ChartTimeTickUnit.Day: return value.Day - 1 + count < DateTime.DaysInMonth(value.Year, value.Month) ? value.AddDays(count) : new DateTime(value.Year, value.Month, 1).AddMonths(1);
                 case ChartTimeTickUnit.Week: return FixedAddDays(value, count * 7);
+                case ChartTimeTickUnit.Year: return count <= 9999 - value.Year ? value.AddYears((int)count) : null;
                 default: return value.Month - 1 + count < 12 ? value.AddMonths((int)count) : new DateTime(value.Year, 1, 1).AddYears(1);
             }
         } catch (ArgumentOutOfRangeException) { return null; }

@@ -51,6 +51,9 @@ internal static partial class VisualBlockRendering {
 
     public static void Validate(IVisualBlock block) {
         if (block == null) throw new ArgumentNullException(nameof(block));
+        if (block is RailroadDiagramBlock railroad) { ValidateRailroadDiagram(railroad); return; }
+        if (block is JourneyDiagramBlock journey) { ValidateJourneyDiagram(journey); return; }
+        if (block is TimelineDiagramBlock timeline) { ValidateTimelineDiagram(timeline); return; }
         if (block is PacketLayoutBlock packet) {
             ValidatePacketLayout(packet);
             return;

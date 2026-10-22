@@ -36,6 +36,24 @@ internal sealed partial class VisualTopologyCompiler {
     private SvgPaint GroupAccentPaint(TopologyGroup group, ChartColor accent, bool active, double opacity = 1) =>
         SourcePaint(group.Color ?? ResolveGroupIcon(group, _options)?.Color ?? _svgTheme.StatusColor(group.Status), accent, AccentRole(group.Color ?? ResolveGroupIcon(group, _options)?.Color), HighlightFactor(active) * opacity, Status(group.Status));
 
+    private SvgPaint GroupFillPaint(TopologyGroup group, ChartColor fill, bool active, bool neutral) =>
+        !string.IsNullOrWhiteSpace(group.BackgroundColor)
+            ? SourcePaint(group.BackgroundColor, fill, SvgColorRole.Any, HighlightFactor(active), _colors.Surface)
+            : neutral ? CardPaint(fill, HighlightFactor(active)) : GroupAccentPaint(group, fill, active, .06);
+
+    private SvgPaint GroupBorderPaint(TopologyGroup group, ChartColor stroke, bool active, double defaultOpacity = .5) =>
+        !string.IsNullOrWhiteSpace(group.BorderColor)
+            ? SourcePaint(group.BorderColor, stroke, SvgColorRole.Any, HighlightFactor(active), _colors.Border)
+            : GroupAccentPaint(group, stroke, active, defaultOpacity);
+
+    private SvgPaint GroupLabelPaint(TopologyGroup group, ChartColor color, bool active, bool secondary = false) =>
+        SourcePaint(group.LabelColor, color, SvgColorRole.Any, HighlightFactor(active), secondary ? _colors.MutedForeground : _colors.Foreground);
+
+    private SvgPaint EdgeTextPaint(TopologyEdge edge, ChartColor color, bool secondary = false) =>
+        !string.IsNullOrWhiteSpace(edge.LabelColor)
+            ? SourcePaint(edge.LabelColor, color, SvgColorRole.Any, EdgeLabelOpacity(edge), secondary ? _colors.MutedForeground : _colors.Foreground)
+            : secondary ? MutedPaint(color, EdgeLabelOpacity(edge)) : ForegroundPaint(color, EdgeLabelOpacity(edge));
+
     private SvgPaint NodeFillPaint(TopologyNode node, ChartColor fill, ChartColor accent, SvgColorRole role, bool active) {
         var result = Highlight(fill, active);
         if (!string.IsNullOrWhiteSpace(node.BackgroundColor)) return SourcePaint(node.BackgroundColor, result, SvgColorRole.Any, HighlightFactor(active), _colors.Surface);

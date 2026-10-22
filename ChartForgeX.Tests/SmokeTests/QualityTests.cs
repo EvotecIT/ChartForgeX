@@ -48,7 +48,7 @@ internal static partial class SmokeTests {
             Chart.Create().WithSize(640, 360).AddScatter("Scatter", Points(10, 20, 16)).AddTrendLine("Trend", Points(10, 20, 16)),
             Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddHorizontalBar("Horizontal", Points(10, 20, 16)),
             Chart.Create().WithSize(640, 360).AddBubble("Bubble", new[] { new ChartBubble(1, 10, 6), new ChartBubble(2, 20, 16), new ChartBubble(3, 16, 28) }),
-            Chart.Create().WithSize(640, 360).AddErrorBar("Error", new[] { new ChartErrorBar(1, 10, 8, 14), new ChartErrorBar(2, 20, 17, 23), new ChartErrorBar(3, 16, 13, 22) }),
+            Chart.Create().WithSize(640, 360).AddErrorBar("Error", new[] { new ChartErrorBar(1, 10, yBounds: new ChartErrorBounds(8, 14)), new ChartErrorBar(2, 20, yBounds: new ChartErrorBounds(17, 23)), new ChartErrorBar(3, 16, yBounds: new ChartErrorBounds(13, 22)) }),
             Chart.Create().WithSize(640, 360).AddCandlestick("Candles", new[] { new ChartCandlestick(1, 10, 14, 8, 12), new ChartCandlestick(2, 20, 23, 17, 18), new ChartCandlestick(3, 16, 22, 13, 21) }),
             Chart.Create().WithSize(640, 360).AddOhlc("OHLC", new[] { new ChartCandlestick(1, 10, 14, 8, 12), new ChartCandlestick(2, 20, 23, 17, 18), new ChartCandlestick(3, 16, 22, 13, 21) }),
             Chart.Create().WithSize(640, 360).AddRangeBand("Band", new[] { new ChartRangeBand(1, 8, 14), new ChartRangeBand(2, 17, 23), new ChartRangeBand(3, 13, 22) }),

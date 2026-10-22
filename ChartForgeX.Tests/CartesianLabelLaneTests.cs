@@ -68,7 +68,7 @@ public sealed class CartesianLabelLaneTests {
         for (var index = 0; index < 4; index++) {
             var series = ChartSeries.CreateBar(new ChartSeriesId("measure-" + index), "Measure " + index,
                 Enumerable.Range(1, 4).Select(x => new ChartPoint(x, index % 2 == 0 ? 10 : 20)));
-            if (index >= 2) series.UseSecondaryYAxis();
+            if (index >= 2) series.UseSecondaryValueAxis();
             chart.AddSeries(series);
         }
         chart.Options.YAxis.WithBounds(0, 30);

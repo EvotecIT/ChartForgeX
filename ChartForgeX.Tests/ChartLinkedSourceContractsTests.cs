@@ -92,7 +92,7 @@ public sealed class ChartLinkedSourceContractsTests {
     }
 
     [Fact]
-    public void BrushProjectionCapturesFinalScaleWithoutExpandingNativeViewportSupport() {
+    public void BrushAndNativeProjectionCaptureTheSameFinalScale() {
         var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(1, 100).WithYAxisBounds(-10, 10)
             .AddBar("Readings", new[] { new ChartPoint(1, -5), new ChartPoint(100, 5) });
         chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
@@ -100,7 +100,7 @@ public sealed class ChartLinkedSourceContractsTests {
         chart.Options.YAxis.Reversed = true;
         var prepared = chart.Prepare(new VisualRenderContext());
         var projection = Assert.IsType<ChartDataProjection>(prepared.Scene.DataProjection);
-        Assert.Null(prepared.XProjection);
+        Assert.NotNull(prepared.XProjection); Assert.Equal(ChartScaleKind.Logarithmic, prepared.XProjection.Scale);
         Assert.Equal(Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds, projection.Plot);
         Assert.Equal(0, projection.X.TransformedMinimum);
         Assert.Equal(2, projection.X.TransformedMaximum);

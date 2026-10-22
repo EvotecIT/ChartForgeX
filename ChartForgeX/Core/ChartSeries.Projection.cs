@@ -39,7 +39,9 @@ public sealed partial class ChartSeries {
         }
         foreach (var value in Intervals) { points.Add(new ChartPoint(value.X, value.Start)); points.Add(new ChartPoint(value.X, value.End)); }
         foreach (var value in ErrorBars) {
-            points.Add(new ChartPoint(value.X, value.Y)); points.Add(new ChartPoint(value.X, value.Lower)); points.Add(new ChartPoint(value.X, value.Upper));
+            points.Add(new ChartPoint(value.X, value.Y));
+            points.Add(new ChartPoint(value.XBounds?.Lower ?? value.X, value.YBounds?.Lower ?? value.Y));
+            points.Add(new ChartPoint(value.XBounds?.Upper ?? value.X, value.YBounds?.Upper ?? value.Y));
         }
         foreach (var value in BoxPlots) {
             points.Add(new ChartPoint(value.X, value.Minimum)); points.Add(new ChartPoint(value.X, value.Q1)); points.Add(new ChartPoint(value.X, value.Median));

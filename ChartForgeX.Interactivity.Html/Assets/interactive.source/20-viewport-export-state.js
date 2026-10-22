@@ -22,6 +22,7 @@
   };
   // Reset is visible only for a changed view.
   const viewChanged = (root) => {
+    if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
     if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
     const state = getState(root);
     if (Math.abs(state.zoom - 1) > 0.0005 || Math.abs(state.panX) > 0.05 || Math.abs(state.panY) > 0.05) return true;
@@ -117,12 +118,13 @@
   };
   const captureInteractionState = (root, source) => {
     const snapshot = {
-      version: 1,
+      version: 2,
       chartId: root.dataset.cfxChartId || '',
       source: source || '',
       viewport: getState(root),
-      xWindow: connectedXViewport(root) ? nativeXWindow(root) : null,
-      yWindow: cartesianViewportConnected(root) ? nativeYWindow(root) : null,
+      nativeViewport: cartesianViewportConnected(root) ? nativeViewportWindows(root, true)
+        : connectedXViewport(root) ? { x: nativeXWindow(root) } : null,
+      nativeHierarchy: hierarchyConnected(root) ? hierarchySnapshot(root) : null,
       mode: root.dataset.cfxMode || '',
       brush: root.dataset.cfxBrush || '',
       selectedTargets: selectedTargets(root),
@@ -145,14 +147,22 @@
     return snapshot;
   };
   const applyInteractionState = (root, snapshot, emit, sync, nativeAccepted = false) => {
-    if (!snapshot || !hasFeature(root, 'StateBookmarks')) return;
-    if (!nativeAccepted && (snapshot.xWindow || snapshot.yWindow)) {
+    if (!snapshot || !hasFeature(root, 'StateBookmarks') || snapshot.xWindow || snapshot.yWindow) return;
+    if (snapshot.nativeHierarchy && snapshot.nativeViewport) return;
+    if (!nativeAccepted && snapshot.nativeHierarchy) {
+      const captured = copyHostValue(snapshot), requested = captured.nativeHierarchy, current = capturedHierarchy(root);
+      if (!current || requested.kind !== current.kind || requested.seriesKey !== current.seriesKey) return;
+      requestNativeHierarchy(root, requested.rootId === null ? null : { rootId: requested.rootId }, false,
+        () => applyInteractionState(root, captured, emit, sync, true));
+      return;
+    }
+    if (!nativeAccepted && snapshot.nativeViewport) {
       const captured = copyHostValue(snapshot);
       const accepted = () => applyInteractionState(root, captured, emit, sync, true);
       if (cartesianViewportConnected(root))
-        requestNativeCartesianWindow(root, { x: captured.xWindow, y: captured.yWindow }, false, accepted);
-      else if (!captured.yWindow && captured.xWindow && connectedXViewport(root))
-        requestNativeXWindow(root, captured.xWindow, false, accepted);
+        requestNativeCartesianWindow(root, captured.nativeViewport, false, accepted);
+      else if (captured.nativeViewport.x && !cartesianAxisNames.some(name => name !== 'x' && captured.nativeViewport[name]) && connectedXViewport(root))
+        requestNativeXWindow(root, captured.nativeViewport.x, false, accepted);
       // Native bounds are one transaction. Unsupported or disconnected replays leave reader state unchanged.
       return;
     }

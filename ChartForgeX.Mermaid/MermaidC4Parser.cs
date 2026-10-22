@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ChartForgeX.Mermaid;
 
-internal static class MermaidC4Parser {
+internal static partial class MermaidC4Parser {
     public static void ParseStatements(MermaidC4Document document, string[] lines, int startLine, MermaidParseResult<MermaidDocument> result) {
         var elements = new Dictionary<string, MermaidC4Element>(StringComparer.Ordinal);
         var boundaries = new Dictionary<string, MermaidC4Boundary>(StringComparer.Ordinal);
@@ -31,12 +31,19 @@ internal static class MermaidC4Parser {
             }
 
             if (IsBoundary(call.Name)) {
-                ParseBoundary(document, boundaries, call, span, boundaryStack, result);
+                ParseBoundary(document, boundaries, elements, call, span, boundaryStack, result);
                 continue;
             }
 
             if (IsElement(call.Name)) {
-                ParseElement(document, elements, call, span, boundaryStack, result);
+                ParseElement(document, elements, boundaries, call, span, boundaryStack, result);
+                continue;
+            }
+
+            if (TryParseNativeUpdate(document, elements, boundaries, call, span, result)) continue;
+
+            if (NormalizeName(call.Name) == "relindex") {
+                ParseIndexedRelationship(document, elements, call, span, result);
                 continue;
             }
 
@@ -69,7 +76,7 @@ internal static class MermaidC4Parser {
         return true;
     }
 
-    private static void ParseBoundary(MermaidC4Document document, Dictionary<string, MermaidC4Boundary> boundaries, CallStatement call, MermaidSourceSpan span, Stack<string> boundaryStack, MermaidParseResult<MermaidDocument> result) {
+    private static void ParseBoundary(MermaidC4Document document, Dictionary<string, MermaidC4Boundary> boundaries, Dictionary<string, MermaidC4Element> elements, CallStatement call, MermaidSourceSpan span, Stack<string> boundaryStack, MermaidParseResult<MermaidDocument> result) {
         if (call.Arguments.Count < 2) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "C4 boundaries require at least alias and label arguments.");
             return;
@@ -82,13 +89,17 @@ internal static class MermaidC4Parser {
             return;
         }
 
-        if (boundaries.ContainsKey(id)) {
+        if (boundaries.ContainsKey(id) || elements.ContainsKey(id)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "C4 boundary alias '" + id + "' is already defined.");
             return;
         }
 
         var boundary = new MermaidC4Boundary(id, label.Length == 0 ? id : label, NormalizeKind(call.Name), span) {
-            Type = call.Arguments.Count > 2 ? Clean(call.Arguments[2]) : null,
+            Type = BoundaryType(call),
+            Description = IsDeployment(call.Name) ? OptionalArg(call.Arguments, 2, 1, "descr", "description") : null,
+            Sprite = IsDeployment(call.Name) ? OptionalArg(call.Arguments, 2, 2, "sprite") : null,
+            Tags = OptionalArg(call.Arguments, 2, IsDeployment(call.Name) ? 3 : NormalizeName(call.Name) == "boundary" ? 1 : 0, "tags"),
+            Link = OptionalArg(call.Arguments, 2, IsDeployment(call.Name) ? 4 : NormalizeName(call.Name) == "boundary" ? 2 : 1, "link"),
             ParentId = boundaryStack.Count == 0 ? null : boundaryStack.Peek()
         };
         boundaries.Add(id, boundary);
@@ -99,7 +110,7 @@ internal static class MermaidC4Parser {
         }
     }
 
-    private static void ParseElement(MermaidC4Document document, Dictionary<string, MermaidC4Element> elements, CallStatement call, MermaidSourceSpan span, Stack<string> boundaryStack, MermaidParseResult<MermaidDocument> result) {
+    private static void ParseElement(MermaidC4Document document, Dictionary<string, MermaidC4Element> elements, Dictionary<string, MermaidC4Boundary> boundaries, CallStatement call, MermaidSourceSpan span, Stack<string> boundaryStack, MermaidParseResult<MermaidDocument> result) {
         if (call.Arguments.Count < 2) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "C4 elements require at least alias and label arguments.");
             return;
@@ -112,7 +123,7 @@ internal static class MermaidC4Parser {
             return;
         }
 
-        if (elements.ContainsKey(alias)) {
+        if (elements.ContainsKey(alias) || boundaries.ContainsKey(alias)) {
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "C4 element alias '" + alias + "' is already defined.");
             return;
         }

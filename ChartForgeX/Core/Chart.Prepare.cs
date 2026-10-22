@@ -13,25 +13,27 @@ public sealed partial class Chart : IVisualRenderable {
 
     /// <summary>Prepares a detached scene within optional source-coordinate Cartesian windows.</summary>
     /// <param name="context">The logical size, frame, theme and typography used for preparation.</param>
-    /// <param name="viewport">The explicit X, primary Y or XY windows. Null prepares the full domain, including when resetting a previous viewport.
-    /// An omitted axis retains its full-data domain. Y windows require no secondary-axis series.</param>
+    /// <param name="viewport">The physical Cartesian windows and value-domain policy. Null restores every full domain.
+    /// An omitted value axis retains its full domain unless VisibleCategories is selected.</param>
     /// <returns>A prepared scene with its detached native projections when supported.</returns>
-    /// <remarks>Explicit windows support ordinary vertical line, area, scatter, bubble, financial and paired-boundary series with linear or time X axes; sparklines are excluded.
+    /// <remarks>Explicit windows support non-sparkline Cartesian series, including horizontal mixtures and independent secondary value axes.
     /// Time bounds use the same OLE Automation date units as source observations. Interpolation and full-data stack calculations are retained.
-    /// Unrequested primary Y and secondary Y domains and authored series paint remain fixed. Marks are clipped to the plot even
+    /// Unrequested full-data domains remain fixed by default; VisibleCategories fits only unrequested value axes. Authored series paint stays fixed. Marks are clipped to the plot even
     /// when ClipMarksToPlot is false; automatic marker padding does not expand the requested bounds.
     /// All source observations and disconnected paths are retained. The chart and authored axes are unchanged.
     /// Full-domain preparation also supports non-Cartesian charts. This API does not add interactive HTML zoom.</remarks>
     /// <exception cref="ArgumentNullException">Context is null.</exception>
-    /// <exception cref="NotSupportedException">An explicit window uses an unsupported chart, scale or secondary Y axis.</exception>
+    /// <exception cref="NotSupportedException">An explicit window uses an unsupported chart or an unavailable physical secondary slot.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A requested window extends outside its resolved full domain or cannot map source coordinates into finite logical units.</exception>
     /// <exception cref="InvalidOperationException">An explicit window is requested without observations or a usable plot rectangle.</exception>
     public PreparedVisual Prepare(VisualRenderContext context, ChartCartesianViewport? viewport) => PrepareCore(context, viewport);
 
-    private PreparedVisual PrepareCore(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain = null) {
+    private PreparedVisual PrepareCore(VisualRenderContext context, ChartCartesianViewport? viewport, ChartCartesianFullDomain? fullDomain = null, ChartHierarchyView? hierarchyView = null, bool requireHierarchy = false) {
         if (context == null) throw new ArgumentNullException(nameof(context));
         var view = (Chart)MemberwiseClone();
         view.Options = Options.PresentationView(context);
+        view.HierarchyPreparation = ChartHierarchyPreparation.Resolve(view, hierarchyView, requireHierarchy);
+        ChartTimeSpacingPreparation.Capture(view);
         return view.PrepareScene(context, viewport, fullDomain);
     }
 
@@ -66,12 +68,15 @@ public sealed partial class Chart : IVisualRenderable {
         var content = VisualFrameLayout.Build(builder, context, mapLegendInset == null ? entries : Array.Empty<VisualLegendEntry>(), out var legendHeight);
         var projection = VisualChartCompiler.Build(family, this, context, builder, content, axisLabels, bubbleScale, colorScales, legendHeight, viewport, mapLegendInset, fullDomain);
         if (mapLegendInset != null) VisualFrameLayout.PaintOverlayLegend(builder, context, entries, mapLegendInset.LegendArea);
-        builder.CaptureChartIdentity(this);
+        builder.CaptureChartIdentity(this, projection);
         var accessibility = Accessibility.Clone();
         accessibility.Name ??= !string.IsNullOrWhiteSpace(frame.Title) ? frame.Title
             : !string.IsNullOrWhiteSpace(Title) ? Title : Options.Labels.UntitledChart;
         accessibility.Description ??= Options.Labels.Describe(ChartAccessibleDescription.Facts(this));
         return new PreparedVisual(builder.Build(), accessibility,
-            svgOptions: new VisualSvgOptions(colorVariables: Options.SvgColorVariables), xProjection: projection?.X, yProjection: projection?.Y);
+            svgOptions: new VisualSvgOptions(colorVariables: Options.SvgColorVariables), xProjection: projection?.X, yProjection: projection?.Y,
+            secondaryXProjection: projection?.SecondaryX, secondaryYProjection: projection?.SecondaryY, viewport: viewport,
+            cartesianOrientation: projection == null ? null : projection.Horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical,
+            hierarchyPreparation: HierarchyPreparation);
     }
 }

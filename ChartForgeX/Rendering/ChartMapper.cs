@@ -20,7 +20,27 @@ internal sealed class ChartMapper {
 
     /// <summary>Creates a mapper whose horizontal-bar category coordinates remain linear.</summary>
     public static ChartMapper ForHorizontalBars(ChartRect plot, ChartRange range, ChartAxis valueAxis, ChartAxis categoryAxis) =>
-        new ChartMapper(plot, range, valueAxis, new ChartAxis { Reversed = categoryAxis.Reversed });
+        new ChartMapper(plot, range, valueAxis, categoryAxis.Scale == ChartScaleKind.Time ? categoryAxis : new ChartAxis { Reversed = categoryAxis.Reversed });
+
+    /// <summary>Returns the actual calendar-band pitch without inventing missing source observations.</summary>
+    internal double CalendarBandPitch(bool horizontal) {
+        var axis = horizontal ? _yAxis : _xAxis;
+        if (axis.PreparedTimeDomain?.Unit != true) return double.PositiveInfinity;
+        var minimum = horizontal ? _range.MinY : _range.MinX; var maximum = horizontal ? _range.MaxY : _range.MaxX;
+        return (horizontal ? _plot.Height : _plot.Width) / (ChartScaleTransform.Bound(maximum, axis, true) - ChartScaleTransform.Bound(minimum, axis, false));
+    }
+
+    internal bool HasCalendarBandAxis(bool horizontalAxis) => (horizontalAxis ? _xAxis : _yAxis).PreparedTimeDomain?.Unit == true;
+
+    /// <summary>Tests source membership through the same discrete calendar bands as the painted marks.</summary>
+    internal bool OverlapsSourceWindow(ChartAxisWindow? window, double first, double last, bool horizontalAxis) {
+        if (window == null) return true;
+        var axis = horizontalAxis ? _xAxis : _yAxis;
+        if (axis.PreparedTimeDomain?.Unit != true) return System.Math.Max(first, last) >= window.Minimum && System.Math.Min(first, last) <= window.Maximum;
+        var start = ChartScaleTransform.Bound(window.Minimum, axis, false); var end = ChartScaleTransform.Bound(window.Maximum, axis, true);
+        return System.Math.Max(ChartScaleTransform.Forward(first, axis), ChartScaleTransform.Forward(last, axis)) >= start
+            && System.Math.Min(ChartScaleTransform.Forward(first, axis), ChartScaleTransform.Forward(last, axis)) <= end;
+    }
 
     public double X(double value) => ProjectX(ChartScaleTransform.Normalize(value, _range.MinX, _range.MaxX, _xAxis), _plot);
     internal static double ProjectX(double ratio, ChartRect plot) => plot.Left + ratio * plot.Width;
@@ -28,27 +48,27 @@ internal sealed class ChartMapper {
         ChartScaleTransform.Normalize(value, _range.MinY, _range.MaxY, _yAxis));
 
     public double XBaseline() {
-        if (_xAxis.Scale == ChartScaleKind.Logarithmic) return X(_range.MinX);
+        if (_xAxis.Scale == ChartScaleKind.Logarithmic) return X(_xAxis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? _range.MaxX : _range.MinX);
         return System.Math.Min(_plot.Right, System.Math.Max(_plot.Left, X(0)));
     }
 
-    /// <summary>Maps a horizontal cumulative value while treating zero as the positive logarithmic baseline.</summary>
+    /// <summary>Maps a horizontal cumulative value while treating zero as the selected logarithmic domain's nearest baseline.</summary>
     public double XOrBaseline(double value) => _xAxis.Scale == ChartScaleKind.Logarithmic && value == 0 ? XBaseline() : X(value);
 
     public double YBaseline() {
-        if (_yAxis.Scale == ChartScaleKind.Logarithmic) return Y(_range.MinY);
+        if (_yAxis.Scale == ChartScaleKind.Logarithmic) return Y(_yAxis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? _range.MaxY : _range.MinY);
         return System.Math.Min(_plot.Bottom, System.Math.Max(_plot.Top, Y(0)));
     }
 
-    /// <summary>Maps a stacked value while treating zero as the positive logarithmic baseline.</summary>
+    /// <summary>Maps a stacked value while treating zero as the selected logarithmic domain's nearest baseline.</summary>
     public double YOrBaseline(double value) {
         if (_yAxis.Scale == ChartScaleKind.Logarithmic && value == 0) return YBaseline();
         return Y(value);
     }
 
     private static void ValidateRange(double minimum, double maximum, ChartAxis axis, string axisName) {
-        if (axis.Scale == ChartScaleKind.Logarithmic && (minimum <= 0 || maximum <= 0)) {
-            throw new System.InvalidOperationException("The " + axisName + " logarithmic axis requires positive data and bounds.");
+        if (axis.Scale == ChartScaleKind.Logarithmic && (!axis.IsInLogarithmicDomain(minimum) || !axis.IsInLogarithmicDomain(maximum))) {
+            throw new System.InvalidOperationException("The " + axisName + " logarithmic axis requires " + axis.LogarithmicDomainName + " data and bounds.");
         }
     }
 }

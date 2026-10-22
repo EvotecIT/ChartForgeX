@@ -75,7 +75,7 @@ public sealed partial class DifferenceAreaTests {
     public void SecondaryLinearScaleAndClippingKeepTheUnclampedCrossing() {
         var chart = Model(new(0, 600, 100), new(1, 100, 500));
         chart.AddLine("Primary", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
-        chart.Series[0].UseSecondaryYAxis().WithStrokeWidth(1);
+        chart.Series[0].UseSecondaryValueAxis().WithStrokeWidth(1);
         chart.Options.XAxis.WithBounds(.2, .8); chart.Options.YAxis.WithBounds(0, 3);
         chart.Options.SecondaryYAxis.WithBounds(150, 450);
         var prepared = Prepare(chart);
@@ -88,9 +88,9 @@ public sealed partial class DifferenceAreaTests {
         AssertPaint(image, Sample(first, second, .4), Red, 128);
         AssertPaint(image, Sample(first, second, .7), Blue, 128);
         Assert.Equal("secondary", Group(prepared, "series-0-point-0")["data-cfx-axis"]);
-        var automatic = Model(new(0, 600, 100), new(1, 100, 500)); automatic.Series[0].UseSecondaryYAxis();
+        var automatic = Model(new(0, 600, 100), new(1, 100, 500)); automatic.Series[0].UseSecondaryValueAxis();
         automatic.AddLine("Primary", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
-        var primary = ChartRange.FromChart(automatic); var secondary = ChartRange.FromSecondaryYAxis(automatic, primary);
+        var primary = ChartRange.FromChart(automatic); var secondary = ChartRange.FromSecondaryValueAxis(automatic, primary);
         Assert.True(primary.MaxY < 10); Assert.True(secondary.MaxY >= 600 && secondary.MinY <= 100);
     }
 

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-public sealed class ChartXViewportLabelTests {
+public sealed class ChartAxisWindowLabelTests {
     [Theory]
     [InlineData(false, false, false)]
     [InlineData(false, false, true)]
@@ -30,7 +30,7 @@ public sealed class ChartXViewportLabelTests {
         for (var index = 0; index < captions.Length; index++) series.WithPointLabel(index, captions[index]);
         chart.Options.XAxis.Reversed = reversed;
         var context = VisualExportRequest.ForChart(chart).Context;
-        var prepared = chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(3, 7)));
+        var prepared = chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7)));
         var painted = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label")
             .Select(node => node.Text.Lines.Single().Text).ToArray();
         Assert.Equal(new[] { "L", "M", "R" }, painted);
@@ -43,7 +43,7 @@ public sealed class ChartXViewportLabelTests {
 
         var raster = prepared.ToPng();
         series.WithPointLabel(0, "").WithPointLabel(4, "");
-        Assert.Equal(raster, chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(3, 7))).ToPng());
+        Assert.Equal(raster, chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(3, 7))).ToPng());
         series.WithPointLabel(0, captions[0]).WithPointLabel(4, captions[4]);
         var ordinary = chart.Prepare(context).Scene.Nodes.OfType<VisualSceneText>()
             .Where(node => node.Role == "data-label").Select(node => node.Text.Lines.Single().Text);
@@ -66,7 +66,7 @@ public sealed class ChartXViewportLabelTests {
         chart.Series[0].ConfigureMarkers(options => { options.Enabled = true; options.Radius = 4; });
         chart.Options.XAxis.Reversed = reversed;
         var context = VisualExportRequest.ForChart(chart).Context;
-        var viewport = new ChartXViewport(3, 7);
+        var viewport = new ChartAxisWindow(3, 7);
         var withoutReference = chart.Prepare(context, new ChartCartesianViewport(x: viewport));
         Assert.DoesNotContain(withoutReference.Scene.Nodes, node => node.Role == "marker");
         Assert.Equal(3, withoutReference.Regions.Count(region => region.Role == "point"));

@@ -23,18 +23,21 @@ public sealed partial class Chart {
             throw new NotSupportedException("Plot regions require a Cartesian chart.");
         foreach (var region in PlotRegions) {
             if (region == null) throw new InvalidOperationException("Plot regions collection must not contain null entries.");
-            if (region.YAxis == ChartAxisSide.Secondary && !Series.Any(series => series.YAxis == ChartAxisSide.Secondary))
+            if (region.YAxis == ChartAxisSide.Secondary && ChartCartesianOrientation.IsHorizontal(this))
+                throw new NotSupportedException("Horizontal charts have a secondary X value axis, not a secondary physical Y plot-region axis.");
+            if (region.YAxis == ChartAxisSide.Secondary && !Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary))
                 throw new InvalidOperationException("A secondary plot region requires a series on the secondary Y axis.");
             var yAxis = region.YAxis == ChartAxisSide.Secondary ? Options.SecondaryYAxis : Options.YAxis;
-            PositiveLogBounds(Options.XAxis, region.XMinimum, region.XMaximum);
+            ValidateLogBounds(Options.XAxis, region.XMinimum, region.XMaximum);
             // Horizontal charts project physical Y as linear category slots, regardless
             // of the stored category-axis scale, just as ForHorizontalBars does.
-            if (!ChartCartesianOrientation.IsHorizontal(this)) PositiveLogBounds(yAxis, region.YMinimum, region.YMaximum);
+            if (!ChartCartesianOrientation.IsHorizontal(this)) ValidateLogBounds(yAxis, region.YMinimum, region.YMaximum);
         }
     }
 
-    private static void PositiveLogBounds(ChartAxis axis, double? minimum, double? maximum) {
-        if (axis.Scale == ChartScaleKind.Logarithmic && (minimum.HasValue && minimum.Value <= 0 || maximum.HasValue && maximum.Value <= 0))
-            throw new InvalidOperationException("Logarithmic plot regions require positive authored bounds.");
+    private static void ValidateLogBounds(ChartAxis axis, double? minimum, double? maximum) {
+        if (axis.Scale == ChartScaleKind.Logarithmic && (minimum.HasValue && !axis.IsInLogarithmicDomain(minimum.Value)
+            || maximum.HasValue && !axis.IsInLogarithmicDomain(maximum.Value)))
+            throw new InvalidOperationException("Logarithmic plot regions require " + axis.LogarithmicDomainName + " authored bounds.");
     }
 }

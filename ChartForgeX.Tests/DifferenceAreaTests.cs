@@ -49,7 +49,7 @@ public sealed partial class DifferenceAreaTests {
             case "backtracking": series.UpdateDifferencePoint(1, new ChartDifferencePoint(-1, 2, 5)); break;
             case "log-x": chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic; break;
             case "log-y": chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic; break;
-            case "secondary-log-y": series.UseSecondaryYAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; break;
+            case "secondary-log-y": series.UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; break;
             case "sym-log-x": chart.Options.XAxis.Scale = ChartScaleKind.SymmetricLogarithmic; break;
             case "smooth": series.Interpolation = ChartInterpolation.Smooth; break;
         }
@@ -92,7 +92,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "difference-negative");
         if (variant.Contains("dated", StringComparison.Ordinal)) {
             Assert.Equal(ChartScaleKind.Time, chart.Options.XAxis.Scale);
-            Assert.Equal(ChartAxisSide.Secondary, series.YAxis);
+            Assert.Equal(ChartAxisSide.Secondary, series.ValueAxis);
             Assert.Contains(series.DifferencePoints, point => point.BreakBefore);
         }
     }

@@ -23,7 +23,8 @@ internal static partial class ChartTimeScale {
             }
             var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
             var local = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeFromUtc(utc, zone), DateTimeKind.Unspecified);
-            var boundary = interval.Unit == ChartTimeTickUnit.Month ? local.AddMonths(count)
+            var boundary = interval.Unit == ChartTimeTickUnit.Year ? local.AddYears(count)
+                : interval.Unit == ChartTimeTickUnit.Month ? local.AddMonths(count)
                 : local.AddDays(interval.Unit == ChartTimeTickUnit.Week ? (double)count * 7 : count);
             var instants = new List<DateTime>(2);
             ResolveInstants(boundary, zone, new TimeInterval(TimeUnit.Day, 1), instants);

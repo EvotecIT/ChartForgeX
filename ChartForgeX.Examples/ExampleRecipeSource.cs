@@ -23,7 +23,7 @@ public static class ExampleRecipeSource {
             ["{{SUBTITLE}}"] = JsonSerializer.Serialize(subtitle),
             ["{{LEGEND}}"] = legend.HasValue ? legend.Value ? "true" : "false" : "null",
             ["{{SURFACE}}"] = surface ? "true" : "false",
-            ["{{VIEWPORT}}"] = viewport ? ", new ChartCartesianViewport(x: new ChartXViewport(2, 8))" : "",
+            ["{{VIEWPORT}}"] = viewport ? ", new ChartCartesianViewport(x: new ChartAxisWindow(2, 8))" : "",
             ["{{ARTIFACT_KIND}}"] = artifactKind,
             ["{{SOURCE}}"] = ReadResource("ChartForgeX.Examples.Recipes." + recipe.Factory + ".cs").TrimEnd()
         };

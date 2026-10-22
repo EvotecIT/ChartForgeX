@@ -7,10 +7,48 @@ const test = require('node:test');
 const source = ['00-svg-coordinate-precision', '43-brush-projection'].map(name =>
   fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source', name + '.js'), 'utf8')).join('\n');
 const { Point, identitySvg, getComputedStyle } = require('../helpers/identity-svg');
-const { projectBrushSelection, finishBrushSelection } = new Function('DOMPoint', 'getComputedStyle', 'dataValue', 'clamp', 'stagePoint',
-  source + '\nreturn {projectBrushSelection,finishBrushSelection};')(
+const { projectBrushSelection, finishBrushSelection, projectedAxisValue, transformedAxisValue, projectedAxisRatio, transformedAxisBound, validDataProjection } = new Function('DOMPoint', 'getComputedStyle', 'dataValue', 'clamp', 'stagePoint',
+  source + '\nreturn {projectBrushSelection,finishBrushSelection,projectedAxisValue,transformedAxisValue,projectedAxisRatio,transformedAxisBound,validDataProjection};')(
   Point, getComputedStyle, (value, time) => time ? new Date((value - 25569) * 86400000).toISOString() : value,
   (value, min, max) => Math.max(min, Math.min(max, value)), (_, point) => point);
+
+for (const reversed of [false, true]) {
+  test(`captured base-two negative logarithmic brush projection inverts exact source values (reversed=${reversed})`, () => {
+    const axis = {minimum:-64, maximum:-1, transformedMinimum:-6, transformedMaximum:0,
+      scale:'logarithmic', logarithmBase:2, logarithmicDomain:'negative', threshold:1, reversed,
+      displayTicks:[-64,-8,-1].map(value => ({value,text:String(value)}))};
+    assert.equal(transformedAxisValue(axis, -8), -3);
+    assert.equal(projectedAxisValue(axis, .5), -8);
+    for (const value of [-64,-8,-1]) assert.equal(projectedAxisValue(axis, projectedAxisRatio(axis,value)), value);
+    const result = brush(axis,.4,.6);
+    assert.deepEqual(result.range.x,[-64,-1]);
+    assert.equal(result.rangeLabel,'-64 – -1');
+    const projection={horizontal:false,plotBounds:{x:0,y:0,width:100,height:100},x:axis};
+    assert.equal(validDataProjection(projection),true);
+    assert.equal(validDataProjection({...projection,x:{...axis,logarithmBase:1}}),false);
+    assert.equal(validDataProjection({...projection,x:{...axis,logarithmicDomain:'automatic'}}),false);
+  });
+}
+
+test('symmetric logarithmic projection applies its captured base without changing the linear threshold', () => {
+  const axis={minimum:-14,maximum:14,transformedMinimum:-3,transformedMaximum:3,
+    scale:'symmetriclogarithmic',logarithmBase:2,threshold:2,reversed:false};
+  assert.equal(transformedAxisValue(axis,-14),-3);
+  assert.equal(transformedAxisValue(axis,14),3);
+  assert.equal(projectedAxisValue(axis,.5),0);
+  assert.equal(projectedAxisValue(axis,0),-14);
+  assert.equal(projectedAxisValue(axis,1),14);
+});
+
+test('native negative Y windows reject zero and mixed signs using the same projection policy', () => {
+  const nativeSource=fs.readFileSync(path.resolve(__dirname,'../../ChartForgeX.Interactivity.Html/Assets/interactive.source/86-native-cartesian-viewport.js'),'utf8');
+  const validSourceAxisWindow=new Function('transformedAxisBound',nativeSource.slice(nativeSource.indexOf('  const validSourceAxisWindow'),nativeSource.indexOf('  const requestCartesianViewport'))+'\nreturn validSourceAxisWindow;')(transformedAxisBound);
+  const axis={minimum:-64,maximum:-1,transformedMinimum:-6,transformedMaximum:0,
+    scale:'logarithmic',logarithmBase:2,logarithmicDomain:'negative',threshold:1,reversed:false};
+  assert.equal(validSourceAxisWindow({minimum:-16,maximum:-2},axis,axis),true);
+  assert.equal(validSourceAxisWindow({minimum:-16,maximum:0},axis,axis),false);
+  assert.equal(validSourceAxisWindow({minimum:-16,maximum:2},axis,axis),false);
+});
 const selectionSource = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source/40-selection-hover-sync.js'), 'utf8');
 const hostSource = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/interactive.source/42-host-commands.js'), 'utf8');
 const dataValue = (value,time) => time ? new Date((Number(value)-25569)*86400000).toISOString() : Number(value);
@@ -247,3 +285,14 @@ for (const horizontal of [false,true]) {
     assert.deepEqual(selectTargetsInBox(root,rect,false,selection.data).map(target=>target.id),['last']);
   });
 }
+
+test('horizontal mixed value axes retain only the unambiguous category brush instead of inventing an X inverse', () => {
+  const category={minimum:1,maximum:3,transformedMinimum:1,transformedMaximum:3,scale:'linear',threshold:1,reversed:false};
+  const projection={horizontal:true,plotBounds:{x:0,y:0,width:100,height:100},y:category};
+  assert.equal(validDataProjection(projection),true);
+  const root={_cfxDataProjection:projection,dataset:{cfxBrushAxis:'xy',cfxPreparedChart:'{}'},querySelector:identitySvg};
+  const selected=projectBrushSelection(root,{left:0,right:100,top:25,bottom:75});
+  assert.deepEqual(selected.data.range,{y:[1.5,2.5]});
+  assert.deepEqual(selected.data.categoryRange,[1.5,2.5]);
+  assert.equal('x' in selected.data.range,false);
+});

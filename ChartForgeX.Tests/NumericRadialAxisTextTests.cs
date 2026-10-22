@@ -109,7 +109,7 @@ public sealed class NumericRadialAxisTextTests {
         chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
         chart.Options.SecondaryYAxis.LabelDensity = ChartLabelDensity.Relaxed;
         Assert.Equal(primaryPrepared.ToSvg(), Prepare(chart).ToSvg());
-        NumericRadialSeriesTests.Add(chart, bars, "Missing rate", Array.Empty<ChartPoint>()).Series[1].UseSecondaryYAxis();
+        NumericRadialSeriesTests.Add(chart, bars, "Missing rate", Array.Empty<ChartPoint>()).Series[1].UseSecondaryValueAxis();
         chart.Options.SecondaryYAxis.WithAutomaticBounds();
         Assert.DoesNotContain(Prepare(chart).Scene.Nodes.OfType<VisualSceneText>(), text => text.Id == "radial-value-axis-title-secondary");
         chart.WithSecondaryYAxis("Empty rate (%)").WithSecondaryYAxisBounds(0, 100);
@@ -151,7 +151,7 @@ public sealed class NumericRadialAxisTextTests {
             .ConfigureXAxis(axis => axis.LabelAngle = -30).ConfigureYAxis(axis => { axis.LabelAngle = 30; axis.TickCount = 3; })
             .ConfigureSecondaryYAxis(axis => { axis.LabelAngle = 90; axis.TickCount = 3; });
         NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("requests"), "Requests", new(1, 1200), new(2, 900), new(3, 700));
-        NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("resolved"), "Resolved (%)", new(1, 85), new(2, 70), new(3, 60)).Series[1].UseSecondaryYAxis();
+        NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("resolved"), "Resolved (%)", new(1, 85), new(2, 70), new(3, 60)).Series[1].UseSecondaryValueAxis();
         chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         return chart;
     }

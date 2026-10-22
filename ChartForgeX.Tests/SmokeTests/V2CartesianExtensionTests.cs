@@ -43,7 +43,7 @@ public sealed class V2CartesianExtensionTests {
     [Fact]
     public void MixedFinancialRanges_UseSharedExtentsAndRetainCompleteObservationTuples() {
         var chart = Chart.Create().AddLine("Observed", new[] { new ChartPoint(1, 4), new ChartPoint(2, 8) })
-            .AddErrorBar("Uncertainty", new[] { new ChartErrorBar(1, 4, -20, 80) })
+            .AddErrorBar("Uncertainty", new[] { new ChartErrorBar(1, 4, yBounds: new ChartErrorBounds(-20, 80)) })
             .AddCandlestick("Trade", new[] { new ChartCandlestick(2, 8, 110, -30, 12) })
             .AddRangeBar("Interval", new[] { new ChartInterval(1.5, -10, 95) });
         var range = ChartRange.FromChart(chart);
@@ -159,11 +159,11 @@ public sealed class V2CartesianExtensionTests {
     [Fact]
     public void SecondaryErrorAndFinancialMarks_UseTheirOwnExtentsAndLogarithmicMapper() {
         var chart = Chart.Create().AddLine("Primary", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) })
-            .AddErrorBar("Secondary", new[] { new ChartErrorBar(1, 100, 10, 1000) })
+            .AddErrorBar("Secondary", new[] { new ChartErrorBar(1, 100, yBounds: new ChartErrorBounds(10, 1000)) })
             .AddOhlc("Price", new[] { new ChartCandlestick(2, 20, 2000, 5, 90) });
-        chart.Series[1].YAxis = ChartAxisSide.Secondary; chart.Series[2].YAxis = ChartAxisSide.Secondary;
+        chart.Series[1].ValueAxis = ChartAxisSide.Secondary; chart.Series[2].ValueAxis = ChartAxisSide.Secondary;
         chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
-        var primary = ChartRange.FromChart(chart); var secondary = ChartRange.FromSecondaryYAxis(chart, primary);
+        var primary = ChartRange.FromChart(chart); var secondary = ChartRange.FromSecondaryValueAxis(chart, primary);
         Assert.True(primary.MaxY < 10); Assert.True(secondary.MinY <= 5); Assert.True(secondary.MaxY >= 2000);
         var prepared = chart.Prepare(new VisualRenderContext());
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "ohlc-stem");
@@ -188,7 +188,7 @@ public sealed class V2CartesianExtensionTests {
 
     private static Chart Fixture(ChartSeriesKind kind) => kind switch {
         ChartSeriesKind.Bubble => Chart.Create().AddBubble("Bubbles", new[] { new ChartBubble(1, 3, 2), new ChartBubble(2, 6, 8) }),
-        ChartSeriesKind.ErrorBar => Chart.Create().AddErrorBar("Errors", new[] { new ChartErrorBar(1, 3, 1, 5), new ChartErrorBar(2, 6, 4, 8) }),
+        ChartSeriesKind.ErrorBar => Chart.Create().AddErrorBar("Errors", new[] { new ChartErrorBar(1, 3, yBounds: new ChartErrorBounds(1, 5)), new ChartErrorBar(2, 6, yBounds: new ChartErrorBounds(4, 8)) }),
         ChartSeriesKind.Candlestick => Chart.Create().AddCandlestick("Trades", new[] { new ChartCandlestick(1, 3, 6, 2, 5), new ChartCandlestick(2, 6, 8, 3, 4) }),
         ChartSeriesKind.Ohlc => Chart.Create().AddOhlc("Trades", new[] { new ChartCandlestick(1, 3, 6, 2, 5), new ChartCandlestick(2, 6, 8, 3, 4) }),
         ChartSeriesKind.RangeBand => Chart.Create().AddRangeBand("Band", new[] { new ChartRangeBand(1, 2, 5), new ChartRangeBand(2, 3, 7) }),

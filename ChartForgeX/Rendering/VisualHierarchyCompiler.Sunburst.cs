@@ -13,12 +13,14 @@ internal static partial class VisualHierarchyCompiler {
         var model = ChartSunburstLayout.Compute(chart, areas.Content);
         var total = model.Nodes[model.Root].Value;
         var cornerRadius = chart.Options.Sunburst.CornerRadius;
+        var sectorGap = chart.Options.Sunburst.SectorGap;
         if (total == 0) builder.AddDiagnostic(new VisualDiagnostic("hierarchy.no-data", "The Sunburst has no positive sizes."));
         foreach (var node in model.Nodes.OrderByDescending(node => node.Depth)) {
             var item = series.HierarchyItems[node.Index];
             var sweep = node.EndAngle - node.StartAngle;
-            var visible = node.Value > 0 && sweep > 0 && (cornerRadius == 0
-                || ChartSlicePathGeometry.HasEncodedFillArea(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, cornerRadius));
+            var geometry = SunburstPaintGeometry(node, sectorGap);
+            var visible = (chart.HierarchyPreparation?.Contains(node.Index) ?? true) && node.Value > 0 && geometry.Sweep > 0 && !geometry.PaddingCollapsed && (sectorGap == 0 && cornerRadius == 0
+                || ChartSlicePathGeometry.HasEncodedFillArea(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, geometry.Sweep, cornerRadius));
             var blend = surface.Blend(node.Index, node.Depth == 0 ? 0 : node.Index + node.Depth - 1);
             var color = blend.Color; var paint = blend.Paint;
             var state = ChartRelationshipPaint.State(series, node.Index);
@@ -36,7 +38,7 @@ internal static partial class VisualHierarchyCompiler {
             metadata["data-cfx-depth"] = N(node.Depth); metadata["data-cfx-value"] = N(node.Value);
             metadata["data-cfx-formatted-value"] = formatted; metadata["data-cfx-leaf"] = node.Children.Count == 0 ? "true" : "false";
             if (item.ParentId != null) metadata["data-cfx-parent"] = item.ParentId;
-            var branchRoot = series.Relationships!.HierarchyBranchRoot(node.Index);
+            var branchRoot = chart.HierarchyPreparation?.BranchRoot(node.Index) ?? (chart.HierarchyPreparation == null ? series.Relationships!.HierarchyBranchRoot(node.Index) : null);
             if (branchRoot != null) metadata["data-cfx-branch-root"] = branchRoot;
             if (item.Value.HasValue) metadata["data-cfx-authored-value"] = N(item.Value.Value);
             if (item.ColorValue.HasValue) {
@@ -45,22 +47,31 @@ internal static partial class VisualHierarchyCompiler {
             }
             else if (surface.Scale != null) metadata["data-cfx-color-missing"] = "true";
             if (node.Children.Count > 0) metadata["data-cfx-remainder-value"] = N(node.RemainderValue);
-            metadata["data-cfx-geometry-status"] = visible ? "visible" : node.Value == 0 ? "zero" : "precision-collapse";
-            if (total > 0) metadata["data-cfx-percent"] = N(node.Value / total);
+            metadata["data-cfx-geometry-status"] = visible ? "visible" : node.Value == 0 ? "zero" : geometry.PaddingCollapsed ? "padding-collapse" : "precision-collapse";
+            if (sectorGap > 0) {
+                metadata["data-cfx-sector-gap"] = N(sectorGap);
+                metadata["data-cfx-paint-start-angle"] = N(geometry.StartAngle); metadata["data-cfx-paint-sweep"] = N(geometry.Sweep);
+                metadata["data-cfx-paint-inner-radius"] = N(geometry.InnerRadius); metadata["data-cfx-paint-outer-radius"] = N(geometry.OuterRadius);
+                if (!visible) { metadata["data-cfx-visible"] = "false"; metadata["data-cfx-passive"] = "true"; }
+            }
+            ApplyHierarchyViewMetadata(metadata, chart.HierarchyPreparation, node.Index);
+            if (total > 0 && (chart.HierarchyPreparation?.Contains(node.Index) ?? true)) metadata["data-cfx-percent"] = N(node.Value / total);
             metadata["data-cfx-start-angle"] = N(node.StartAngle); metadata["data-cfx-sweep"] = N(sweep);
             metadata["data-cfx-inner-radius"] = N(node.InnerRadius); metadata["data-cfx-outer-radius"] = N(node.OuterRadius);
             var id = ChartRelationshipMetadata.SourceId("node", node.Id);
             using (builder.PushGroup(id, "sunburst-segment", metadata)) if (visible) {
                 var stroke = surface.Scale != null && state != ChartSeriesState.None ? ChartSeriesColours.State(state, colors, colors.Foreground) : colors.Surface;
-                builder.Slice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, color, stroke,
+                builder.Slice(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, geometry.Sweep, color, stroke,
                     surface.Scale != null && state != ChartSeriesState.None ? 2 : 1, "sunburst-segment-mark",
                     paint: new VisualScenePaintBinding(paint, SvgPaint.Of(stroke, surface.Scale != null && state != ChartSeriesState.None ? SvgColorRole.Status : SvgColorRole.Surface)), cornerRadius: cornerRadius);
                 var pattern = Pattern(series, node.Index);
-                if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, node.OuterRadius, node.InnerRadius, node.StartAngle, sweep, pattern,
+                if (pattern != ChartFillPattern.None) builder.PatternSlice(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, geometry.Sweep, pattern,
                     ChartColorMath.AccessibleTextOnBackground(color).WithAlpha(90), role: "sunburst-pattern", cornerRadius: cornerRadius);
-                if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) SunburstLabel(chart, context, builder, model, node, color, paint, secondary);
+                if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) SunburstLabel(chart, context, builder, model, node, geometry, color, paint, secondary);
             }
-            var bounds = visible ? new ChartRect(model.CenterX - node.OuterRadius, model.CenterY - node.OuterRadius, node.OuterRadius * 2, node.OuterRadius * 2)
+            var bounds = visible ? sectorGap > 0
+                ? ChartSlicePathGeometry.Bounds(model.CenterX, model.CenterY, geometry.OuterRadius, geometry.InnerRadius, geometry.StartAngle, geometry.Sweep)
+                : new ChartRect(model.CenterX - node.OuterRadius, model.CenterY - node.OuterRadius, node.OuterRadius * 2, node.OuterRadius * 2)
                 : new ChartRect(model.CenterX, model.CenterY, 0, 0);
             var description = full + ": " + formatted;
             if (secondary != null) description += "; " + secondary;

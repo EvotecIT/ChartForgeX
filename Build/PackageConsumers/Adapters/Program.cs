@@ -21,6 +21,7 @@ internal static partial class Program {
         PackageAssertions.CoreFixtures();
         NativeViewportSection();
         NativeCartesianAndDrawingSection();
+        NativeHierarchySection();
         RadarSourcePaint();
         MermaidSourceDiagnostics();
         MermaidSequencePolicyContracts();
@@ -189,7 +190,7 @@ internal static partial class Program {
         PackageAssertions.Require(requested is not null && Math.Abs(requested.Minimum - 3) < 1e-9 && Math.Abs(requested.Maximum - 7) < 1e-9,
             "Packed logical gesture did not produce the source X window.");
         var narrowed = renderer.PrepareSection(chart, requested == null ? null : new ChartCartesianViewport(x: requested));
-        PackageAssertions.Require(narrowed.PreparedVisual.XProjection is ChartXProjection window && window.Minimum > 2.99 && window.Maximum < 7.01 &&
+        PackageAssertions.Require(narrowed.PreparedVisual.XProjection is ChartAxisProjection window && window.Minimum > 2.99 && window.Maximum < 7.01 &&
             narrowed.Html.Contains("data-cfx-observation-id=\"native-middle\"", StringComparison.Ordinal) &&
             !narrowed.Html.Contains("<script", StringComparison.OrdinalIgnoreCase), "Packed native section lost its window, source identity or asset-free contract.");
         PackageAssertions.Require(!full.PreparedVisual.Regions.Where(region => region.Role == "axis-x-label").Select(region => region.Label)
@@ -226,7 +227,7 @@ internal static partial class Program {
         PackageAssertions.Require(full.PreparedVisual.ToSvg() == nativeFull.ToSvg()
             && nativeFull.ToSvg() == ((IVisualRenderable)chart).Prepare(context).ToSvg(),
             "Packed HTML plain-null full preparation disagreed with Core or IVisualRenderable dispatch.");
-        foreach (var viewport in new[] { new ChartCartesianViewport(x: new ChartXViewport(2, 8)), new ChartCartesianViewport(y: new ChartYViewport(20, 80)) }) {
+        foreach (var viewport in new[] { new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)), new ChartCartesianViewport(y: new ChartAxisWindow(20, 80)) }) {
             var section = renderer.PrepareSection(chart, viewport, Configure);
             PackageAssertions.Require(section.PreparedVisual.ToSvg() == chart.Prepare(context, viewport).ToSvg()
                 && section.NarrowPreparedVisual!.XProjection!.Minimum == (viewport.X?.Minimum ?? 0)
@@ -235,7 +236,7 @@ internal static partial class Program {
                 && section.NarrowPreparedVisual.YProjection.Maximum == (viewport.Y?.Maximum ?? 100),
                 "Packed HTML X/Y Cartesian input changed the native scene or an omitted full domain.");
         }
-        var requested = new ChartCartesianViewport(new ChartXViewport(2, 8), new ChartYViewport(20, 80));
+        var requested = new ChartCartesianViewport(new ChartAxisWindow(2, 8), new ChartAxisWindow(20, 80));
         var window = renderer.PrepareSection(chart, requested, Configure);
         PackageAssertions.Require(window.PreparedVisual.YProjection?.Minimum == 20 && window.NarrowPreparedVisual?.YProjection?.Maximum == 80
             && window.PreparedVisual.XProjection?.Minimum == 2 && window.NarrowPreparedVisual?.XProjection?.Maximum == 8,

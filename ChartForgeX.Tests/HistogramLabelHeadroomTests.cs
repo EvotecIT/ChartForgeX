@@ -46,7 +46,7 @@ public sealed class HistogramLabelHeadroomTests {
         axis.WithBounds(-100, 100).WithReversal(reversed);
         for (var index = 0; index < 2; index++) {
             var series = chart.Series[index];
-            if (secondary) series.UseSecondaryYAxis();
+            if (secondary) series.UseSecondaryValueAxis();
             series.WithPointLabel(0, index == 0 ? "Upper edge" : "Lower edge");
             series.DataLabelPlacement = (index == 0) != reversed ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Below;
         }

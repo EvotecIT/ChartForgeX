@@ -6,8 +6,8 @@ using ChartForgeX.SvgRaster;
 
 namespace ChartForgeX.Mermaid;
 
-/// <summary>Shares the native paint boundary between source diagnostics and flowchart conversion.</summary>
-internal static class MermaidFlowchartStyleValues {
+/// <summary>Shares the native paint boundary between Mermaid source diagnostics and conversion.</summary>
+internal static class MermaidStyleValues {
     internal static bool IsColor(string value) => SvgRasterColor.TryParse(value, out _)
         || SvgPaint.TryCssVariable(value, ChartColor.Black, out _, out _);
 

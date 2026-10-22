@@ -39,6 +39,8 @@ internal static partial class TopologyNodeShapeGeometry {
             }), true, fill));
         }
         switch (node.Shape ?? TopologyNodeShape.Rounded) {
+            case TopologyNodeShape.LinedDocument:
+                return LinedDocumentParts(node);
             case TopologyNodeShape.Actor:
                 var cx = x + w / 2;
                 var actorScale = ActorScale(node);

@@ -163,6 +163,11 @@ public sealed class TextStyleOverride {
     /// <summary>Creates an independent copy of the optional typography values.</summary>
     public TextStyleOverride Clone() => (TextStyleOverride)MemberwiseClone();
 
+    // Preserve explicit false separately from inheritance in typed interchange.
+    internal bool? ItalicOverride => _hasItalic ? _italic : null;
+    internal bool? UnderlineOverride => _hasUnderline ? _underline : null;
+    internal bool? StrikethroughOverride => _hasStrikethrough ? _strikethrough : null;
+
     internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveEmphasisWeight(FontWeight, fallback);
 
     internal TextStyleOverride WithDefaultFontWeight(int weight) {

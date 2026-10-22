@@ -231,7 +231,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         chart.Series[0].WithInterpolation(ChartInterpolation.Step, position)
             .ConfigureMarkers(markers => markers.Enabled = false);
         if (reversedSecondary) {
-            chart.Series[0].UseSecondaryYAxis();
+            chart.Series[0].UseSecondaryValueAxis();
             chart.Options.XAxis.WithReversal(); chart.Options.SecondaryYAxis.WithBounds(0, 10).WithReversal();
             chart.Options.YAxis.WithBounds(0, 100);
         }

@@ -30,6 +30,7 @@
     'word-spacing', 'text-anchor', 'dominant-baseline', 'text-decoration-line', 'text-decoration-color',
     'text-decoration-style', 'text-decoration-thickness'];
   const serializeSvg = (root) => {
+    settleChartUpdateMotion(root);
     const svg = root.querySelector('.cfx-stage svg');
     if (!svg) return null;
     return withPersistentExportPaint(root, svg, () => {
@@ -47,7 +48,7 @@
           target.removeAttribute(attribute);
       });
       copy.style.removeProperty('transform'); copy.style.removeProperty('transition');
-      copy.querySelectorAll('[data-cfx-browser-hit-area],[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline]').forEach(node => node.remove());
+      copy.querySelectorAll('[data-cfx-browser-hit-area],[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-annotation-editor]').forEach(node => node.remove());
       return { svg: copy, data: new XMLSerializer().serializeToString(copy) };
     });
   };

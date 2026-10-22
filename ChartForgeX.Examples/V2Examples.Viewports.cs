@@ -20,7 +20,7 @@ public static partial class V2Examples {
                     var subtitle = compact ? "Full-data Y; gap at 6; labels in X 2–8" : "Utilization labels within X 2–8; full-data Y scales; gap at sample 6";
                     var recipe = ExampleRecipes.Named(steps ? "step-line-viewport" : "line-viewport");
                     var chart = (Chart)recipe.Create(variant, mode);
-                    var viewport = new ChartCartesianViewport(x: new ChartXViewport(2, 8));
+                    var viewport = new ChartCartesianViewport(x: new ChartAxisWindow(2, 8));
                     var model = new ViewportExample(chart, viewport);
                     var prepared = model.Prepare(GalleryContext(width, height, mode, title, subtitle, !compact));
                     ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), prepared.ToSvg(id));

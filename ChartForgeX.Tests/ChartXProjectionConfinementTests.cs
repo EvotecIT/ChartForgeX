@@ -5,7 +5,7 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
-public sealed class ChartXProjectionConfinementTests {
+public sealed class ChartAxisProjectionConfinementTests {
     [Theory]
     [InlineData(false, 3, 7, 3, 7)]
     [InlineData(true, 3, 7, 3, 7)]
@@ -20,7 +20,7 @@ public sealed class ChartXProjectionConfinementTests {
         var projection = Projection(reversed);
         // Drag direction and X-axis reversal must both yield the same increasing native window.
         foreach (var pair in new[] { (first, second), (second, first) }) {
-            var window = Assert.IsType<ChartXViewport>(projection.ConstrainViewport(projection.Project(pair.Item1), projection.Project(pair.Item2)));
+            var window = Assert.IsType<ChartAxisWindow>(projection.ConstrainViewport(projection.Project(pair.Item1), projection.Project(pair.Item2)));
             Assert.Equal(expectedMinimum, window.Minimum, 10);
             Assert.Equal(expectedMaximum, window.Maximum, 10);
             Assert.Equal(Math.Abs(second - first), window.Maximum - window.Minimum, 10);
@@ -51,20 +51,20 @@ public sealed class ChartXProjectionConfinementTests {
 
     [Fact]
     public void FiniteExtremeDomainsDoNotOverflowSpanComparisonOrEdgeShifting() {
-        var projection = new ChartXProjection(-double.MaxValue, double.MaxValue, -double.MaxValue, double.MaxValue,
-            new ChartRect(0, 0, 100, 100), reversed: false);
+        var projection = new ChartAxisProjection(-double.MaxValue, double.MaxValue, -double.MaxValue, double.MaxValue,
+            new ChartRect(0, 0, 100, 100), new ChartAxis { Reversed = false }, ChartAxisDimension.X);
         Assert.Null(projection.ConstrainViewport(0, 100));
-        var window = Assert.IsType<ChartXViewport>(projection.ConstrainViewport(5, 75));
+        var window = Assert.IsType<ChartAxisWindow>(projection.ConstrainViewport(5, 75));
         Assert.InRange(window.Minimum, -double.MaxValue, 0);
         Assert.InRange(window.Maximum, 0, double.MaxValue);
         // The requested span overflows a direct subtraction, while each requested endpoint stays finite.
-        var shifted = new ChartXProjection(-1.7e308, 1.7e308, -1e308, 1e308,
-            new ChartRect(0, 0, 100, 100), reversed: true);
-        var confined = Assert.IsType<ChartXViewport>(shifted.ConstrainViewport(-39, 85));
+        var shifted = new ChartAxisProjection(-1.7e308, 1.7e308, -1e308, 1e308,
+            new ChartRect(0, 0, 100, 100), new ChartAxis { Reversed = true }, ChartAxisDimension.X);
+        var confined = Assert.IsType<ChartAxisWindow>(shifted.ConstrainViewport(-39, 85));
         Assert.Equal(1.7e308, confined.Maximum);
         Assert.True(double.IsFinite(confined.Minimum));
         Assert.InRange(confined.Minimum, -double.MaxValue, 0);
     }
 
-    private static ChartXProjection Projection(bool reversed) => new(0, 10, 2, 6, new ChartRect(50, 40, 400, 200), reversed);
+    private static ChartAxisProjection Projection(bool reversed) => new(0, 10, 2, 6, new ChartRect(50, 40, 400, 200), new ChartAxis { Reversed = reversed }, ChartAxisDimension.X);
 }

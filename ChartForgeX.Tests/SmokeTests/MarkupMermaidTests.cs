@@ -283,8 +283,8 @@ section Start
         Assert(!result.HasErrors, "Mermaid visual markup parser should parse journey fences without errors: " + Diagnostics(result));
         Assert(result.Artifacts.Count == 1, "Mermaid journey fences should emit a visual artifact.");
         Assert(result.Artifacts[0].Kind == VisualArtifactKind.Mermaid, "Mermaid journey fences should emit Mermaid visual artifacts.");
-        Assert(result.Artifacts[0].Model is Chart, "Mermaid journey fences should carry a renderable chart model.");
-        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(Chart), "Mermaid journey fence artifacts should expose the chart render model.");
+        Assert(result.Artifacts[0].Model is JourneyDiagramBlock, "Mermaid journey fences should carry a native diagram model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(JourneyDiagramBlock), "Mermaid journey fence artifacts should expose the native diagram owner.");
         Assert(result.Artifacts[0].Metadata["mermaid.tasks"] == "2", "Mermaid journey fence artifacts should expose task counts.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid journey artifacts should expose natural size.");
         Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid journey fence size attributes should map to artifact natural size.");
@@ -331,8 +331,8 @@ Artifacts : SVG preview : PNG preview
         Assert(!result.HasErrors, "Mermaid visual markup parser should parse timeline fences without errors: " + Diagnostics(result));
         Assert(result.Artifacts.Count == 1, "Mermaid timeline fences should emit a visual artifact.");
         Assert(result.Artifacts[0].Kind == VisualArtifactKind.Mermaid, "Mermaid timeline fences should emit Mermaid visual artifacts.");
-        Assert(result.Artifacts[0].Model is Chart, "Mermaid timeline fences should carry a renderable chart model.");
-        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(Chart), "Mermaid timeline fence artifacts should expose the chart render model.");
+        Assert(result.Artifacts[0].Model is TimelineDiagramBlock, "Mermaid timeline fences should carry a native diagram model.");
+        Assert(result.Artifacts[0].Metadata["render.model"] == nameof(TimelineDiagramBlock), "Mermaid timeline fence artifacts should expose the native diagram owner.");
         Assert(result.Artifacts[0].Metadata["mermaid.events"] == "3", "Mermaid timeline fence artifacts should expose event counts.");
         var naturalSize = result.Artifacts[0].NaturalSize ?? throw new InvalidOperationException("Mermaid timeline artifacts should expose natural size.");
         Assert(naturalSize.Width == 720 && naturalSize.Height == 420, "Mermaid timeline fence size attributes should map to artifact natural size.");

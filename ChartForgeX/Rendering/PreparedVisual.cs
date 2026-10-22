@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Accessibility;
 using ChartForgeX.Diagnostics;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.VisualArtifacts;
@@ -75,7 +76,9 @@ public sealed class PreparedVisual {
     private readonly Lazy<string>? _semanticInterchange;
     private readonly VisualSvgOptions? _defaultSvgOptions;
     internal PreparedVisual(VisualScene scene, VisualAccessibility? accessibility = null, VisualArtifactInterchangeEnvelope? semanticInterchange = null,
-        VisualSvgOptions? svgOptions = null, ChartXProjection? xProjection = null, ChartYProjection? yProjection = null) {
+        VisualSvgOptions? svgOptions = null, ChartAxisProjection? xProjection = null, ChartAxisProjection? yProjection = null,
+        ChartAxisProjection? secondaryXProjection = null, ChartAxisProjection? secondaryYProjection = null,
+        ChartCartesianViewport? viewport = null, ChartOrientation? cartesianOrientation = null, ChartHierarchyPreparation? hierarchyPreparation = null) {
         _scene = scene; _accessibility = accessibility?.Clone() ?? new VisualAccessibility();
         // Portable-envelope budgets apply when semantics cross that boundary, not to static rendering.
         // Capture all mutable DTO collections now; serialize only if a host requests interchange.
@@ -83,6 +86,9 @@ public sealed class PreparedVisual {
         _semanticInterchange = semanticSnapshot == null ? null : new Lazy<string>(semanticSnapshot.ToJson);
         _defaultSvgOptions = svgOptions;
         XProjection = xProjection; YProjection = yProjection;
+        SecondaryXProjection = secondaryXProjection; SecondaryYProjection = secondaryYProjection;
+        CartesianViewport = viewport; CartesianOrientation = cartesianOrientation;
+        HierarchyPreparation = hierarchyPreparation;
         _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
@@ -91,24 +97,38 @@ public sealed class PreparedVisual {
         _scene = scene; _accessibility = basis._accessibility.Clone();
         _semanticInterchange = basis._semanticInterchange; _defaultSvgOptions = svgOptions;
         XProjection = basis.XProjection; YProjection = basis.YProjection;
+        SecondaryXProjection = basis.SecondaryXProjection; SecondaryYProjection = basis.SecondaryYProjection;
+        CartesianViewport = basis.CartesianViewport; CartesianOrientation = basis.CartesianOrientation;
+        HierarchyPreparation = basis.HierarchyPreparation;
         _svgIdPrefix = new Lazy<string>(() => _defaultSvgOptions?.IdPrefix ?? VisualSceneSvgRenderer.Identity(_scene, _accessibility.Name,
             _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _defaultSvgOptions));
     }
     internal PreparedVisual WithScene(VisualScene scene, VisualSvgOptions? svgOptions) => new PreparedVisual(scene, this, svgOptions);
     internal VisualScene Scene => _scene;
+    internal ChartHierarchyPreparation? HierarchyPreparation { get; }
+    /// <summary>Gets the immutable subtree request, or null for the complete source hierarchy.</summary>
+    public ChartHierarchyView? HierarchyView => HierarchyPreparation?.Request;
     /// <summary>Gets the logical viewport.</summary>
     public VisualSize Size => _scene.Size;
     /// <summary>Gets preparation diagnostics.</summary>
     public IReadOnlyList<VisualDiagnostic> Diagnostics => _scene.Diagnostics;
     /// <summary>Gets descriptive source regions.</summary>
     public IReadOnlyList<VisualSemanticRegion> Regions => _scene.Regions;
-    /// <summary>Gets the detached X projection for a supported usable vertical Cartesian scene, or null otherwise.</summary>
+    /// <summary>Gets the detached primary horizontal projection for a supported usable Cartesian scene, or null otherwise.</summary>
     /// <remarks>Ordinary preparation captures the full resolved window. This fact does not change static paint or SVG metadata.
     /// It is absent for empty, unsupported, sparkline or composite scenes that have no single supported X projection.</remarks>
-    public ChartXProjection? XProjection { get; }
-    /// <summary>Gets the detached primary Y projection when the chart has one unambiguous supported Y owner.</summary>
-    /// <remarks>It is absent for secondary-axis, empty, unsupported, sparkline or composite scenes.</remarks>
-    public ChartYProjection? YProjection { get; }
+    public ChartAxisProjection? XProjection { get; }
+    /// <summary>Gets the detached primary Y projection for a supported usable Cartesian scene.</summary>
+    /// <remarks>It is absent for empty, unsupported, sparkline or composite scenes.</remarks>
+    public ChartAxisProjection? YProjection { get; }
+    /// <summary>Gets the detached secondary horizontal value projection on a supported horizontal chart.</summary>
+    public ChartAxisProjection? SecondaryXProjection { get; }
+    /// <summary>Gets the detached secondary vertical value projection on a supported vertical chart.</summary>
+    public ChartAxisProjection? SecondaryYProjection { get; }
+    /// <summary>Gets the captured immutable Cartesian request, or null for full-domain preparation.</summary>
+    public ChartCartesianViewport? CartesianViewport { get; }
+    /// <summary>Gets the captured Cartesian orientation, or null for a non-Cartesian or unusable scene.</summary>
+    public ChartOrientation? CartesianOrientation { get; }
     /// <summary>Gets an independent copy of the text alternative.</summary>
     public VisualAccessibility Accessibility => _accessibility.Clone();
     /// <summary>Exports script-free SVG without repeating layout.</summary>

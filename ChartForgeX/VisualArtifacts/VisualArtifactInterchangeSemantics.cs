@@ -175,6 +175,8 @@ public sealed class VisualArtifactInterchangeLegendItem {
 
 /// <summary>Represents topology-specific group semantics.</summary>
 public sealed class VisualArtifactInterchangeTopologyGroup {
+    /// <summary>Gets or sets whether this group is an independent container or an ordered compartment.</summary>
+    public TopologyGroupPresentation Presentation { get; set; }
     /// <summary>Gets or sets the containing group id, or null for a root region.</summary>
     public string? ParentGroupId { get; set; }
     /// <summary>Gets or sets a local direction; null inherits the parent region.</summary>

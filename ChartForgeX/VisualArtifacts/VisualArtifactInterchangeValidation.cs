@@ -6,7 +6,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 
 namespace ChartForgeX.VisualArtifacts;
 
-internal static class VisualArtifactInterchangeValidation {
+internal static partial class VisualArtifactInterchangeValidation {
     internal const int MaximumJsonCharacters = VisualArtifactInterchangeEnvelope.MaximumJsonCharacters;
     // Keep model serialization and parsed JSON materialization on the same
     // public aggregate budget, independently from the byte/character limits.
@@ -65,6 +65,9 @@ internal static class VisualArtifactInterchangeValidation {
             OptionalText(group.Subtitle, "group subtitle");
             OptionalText(group.Status, "group status");
             OptionalText(group.Color, "group color");
+            OptionalText(group.BackgroundColor, "group background color");
+            OptionalText(group.BorderColor, "group border color");
+            OptionalText(group.LabelColor, "group label color");
             SafeLink(group.Href, "group href", envelope);
             OptionalText(group.Tooltip, "group tooltip");
             FiniteOptional(group.X, "group x");
@@ -124,6 +127,7 @@ internal static class VisualArtifactInterchangeValidation {
                 OptionalText(detail.IconId, "detail icon id");
                 OptionalText(detail.Status, "detail status");
                 OptionalText(detail.Color, "detail color");
+                ValidateDetailTextStyle(detail.TextStyle);
                 Extensions(detail.Extensions, "detail extensions");
             }
         }
@@ -153,6 +157,7 @@ internal static class VisualArtifactInterchangeValidation {
             if (!string.IsNullOrWhiteSpace(edge.SourcePortId) && (!portsByNodeId.TryGetValue(edge.SourceId, out var sourcePorts) || !sourcePorts.Contains(edge.SourcePortId!))) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown source port '" + edge.SourcePortId + "' on node '" + edge.SourceId + "'.", nameof(envelope));
             if (!string.IsNullOrWhiteSpace(edge.TargetPortId) && (!portsByNodeId.TryGetValue(edge.TargetId, out var targetPorts) || !targetPorts.Contains(edge.TargetPortId!))) throw new ArgumentException("Interchange edge '" + edge.Id + "' references unknown target port '" + edge.TargetPortId + "' on node '" + edge.TargetId + "'.", nameof(envelope));
             OptionalText(edge.Color, "edge color");
+            OptionalText(edge.LabelColor, "edge label color");
             SafeLink(edge.Href, "edge href", envelope);
             OptionalText(edge.Tooltip, "edge tooltip");
             if (edge.Order < 0) throw new ArgumentOutOfRangeException(nameof(envelope), edge.Order, "Edge order must not be negative.");
@@ -368,6 +373,9 @@ internal static class VisualArtifactInterchangeValidation {
         if (topologyRole != (group.Topology != null)) throw new ArgumentException("Topology groups must carry exactly one typed topology semantic record.", nameof(envelope));
         if (group.Topology == null) return;
         OptionalText(group.Topology.ParentGroupId, "topology parent group id");
+        Defined(group.Topology.Presentation, "topology group presentation", envelope);
+        if (group.Topology.Presentation == TopologyGroupPresentation.Compartment && group.Topology.ParentGroupId == null)
+            throw new ArgumentException("Topology compartments require a containing group.", nameof(envelope));
         if (group.Topology.LayoutDirection.HasValue) Defined(group.Topology.LayoutDirection.Value, "topology group layout direction", envelope);
         Defined(group.Topology.Status, "topology group status", envelope);
         Defined(group.Topology.LayoutPolicy, "topology group layout policy", envelope);

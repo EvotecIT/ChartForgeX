@@ -171,11 +171,8 @@ internal sealed partial class VisualTopologyCompiler {
                                 color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
                     }
                 }
-                var textColor = Highlight(Color(detail.Color, _colors.Foreground), active);
-                Text(detail.Text ?? detail.Label + " " + detail.Value, Project(new ChartRect(row.X + reserve, row.Y,
-                    Math.Max(0, row.Width - reserve), row.Height)), size * .8, textColor, 400, "topology-node-detail",
-                    paint: SourcePaint(detail.Color ?? _svgTheme?.Foreground, textColor,
-                        string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
+                BuildDetailText(detail, Project(new ChartRect(row.X + reserve, row.Y,
+                    Math.Max(0, row.Width - reserve), row.Height)), size * .8, active);
             }
         }
         var footer = new ChartRect(area.X, area.Bottom - layout.FooterHeight, area.Width, layout.FooterHeight);

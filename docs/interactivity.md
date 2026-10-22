@@ -738,7 +738,7 @@ HtmlChartSection PrepareWindow(HtmlChartSection basis, string kind, double left,
 }
 ```
 
-`left` and `right` are logical SVG positions sent by the browser. `ConstrainViewport` uses the captured native projection, handles a reversed X axis, and shifts an edge-crossing window into the full bounds while retaining its span. It returns null when the request covers the full span. Reset also uses null, restoring ordinary preparation. Explicit `ChartXViewport` values remain strict and must lie within the full resolved bounds.
+`left` and `right` are logical SVG positions sent by the browser. `ConstrainViewport` uses the captured native projection, handles a reversed X axis, and shifts an edge-crossing window into the full bounds while retaining its span. It returns null when the request covers the full span. Reset also uses null, restoring ordinary preparation. Explicit `ChartAxisWindow` values remain strict and must lie within the full resolved bounds.
 
 Connect the mounted controller with `connectNative`. Its callback receives `channel` (`viewport` or `annotation`), the committed native `basis`, `chartId`, an opaque `requestId`, `sceneRevision` and the operation in `kind`. The application bridge looks up that immutable native section, prepares the requested operation, retains the result and returns `{ html, basis }` with its opaque native token. The callback is the response path; request events are notifications.
 
@@ -746,13 +746,13 @@ Connect the mounted controller with `connectNative`. Its callback receives `chan
 const controller = ChartForgeXCharts.mount(root);
 controller.connectNative((request, signal) => renderNativeSection(request, signal), {
     basis: initialNativeToken,
-    axes: 'x'
+    axes: ['x']
 });
 ```
 
 The existing native preparation owner carries only the committed basis. It advances that token with the accepted section before notifying change listeners, so a listener can immediately submit a command against the new scene. Rejected, canceled and stale responses never advance it. The application owns transport, chart data and retention of native sections; it can retire rejected candidates and old tokens according to its own retention policy. Browser-side revision and candidate maps are unnecessary.
 
-Zoom and pan contain logical `left` and `right`; explicit windows use `sourceViewport.x`, and reset omits bounds. Constrain logical positions through the committed drawing's `XProjection`. For explicit source bounds, call `ConstrainViewport(new ChartXViewport(minimum, maximum))` directly, then wrap the returned X window in `ChartCartesianViewport`, preserving null for full view. Toolbar zoom uses the plot centre; wheel zoom keeps the source coordinate beneath the pointer as its anchor.
+Zoom and pan contain logical `left` and `right`; explicit windows use `sourceViewport.x`, and reset omits bounds. Constrain logical positions through the committed drawing's `XProjection`. For explicit source bounds, call `ConstrainViewport(new ChartAxisWindow(minimum, maximum))` directly, then wrap the returned X window in `ChartCartesianViewport`, preserving null for full view. Toolbar zoom uses the plot centre; wheel zoom keeps the source coordinate beneath the pointer as its anchor.
 
 An external replacement on a managed connection must carry the replacement's matching native basis. A missing or empty token rejects before changing the committed section:
 
@@ -760,15 +760,15 @@ An external replacement on a managed connection must carry the replacement's mat
 controller.update(replacement.html, { basis: replacement.basis });
 ```
 
-`axes` defaults to `x`; use `y` or `xy` for eligible primary-axis navigation, or null for annotation-only native preparation with ordinary browser zoom. Adaptive sections capture both `PreparedVisual` and `NarrowPreparedVisual` under one native token. A request's `drawing: "wide" | "narrow"` chooses the captured projection used to constrain its coordinates. Layout changes retain that basis and cancel pending work for the replaced drawing.
+`axes` defaults to `['x']`; select a distinct array of `x`, `y`, `secondaryX` and `secondaryY`, or null for annotation-only native preparation with ordinary browser zoom. Adaptive sections capture both `PreparedVisual` and `NarrowPreparedVisual` under one native token. A request's `drawing: "wide" | "narrow"` chooses the captured projection used to constrain its coordinates. Layout changes retain that basis and cancel pending work for the replaced drawing.
 
 Hosts that intentionally manage channel-specific lifetimes can use the existing lower-level `connectXViewport`, `connectViewport` and `connectAnnotations` callbacks returning generated HTML strings. Selecting one of those methods detaches the managed connection completely; it cannot leave one channel using an obsolete managed basis.
 
 Only the latest request for the current scene and connection can commit. A newer request, ordinary update, reconnect, disconnect, disposal, removal, or Escape aborts pending work. A rejected, invalid or stale reply leaves the committed SVG and export intact. `cfxviewportchange` carries the accepted `requestId`, new `sceneRevision` and `kind`. A failed current reply emits `cfxviewporterror` with its request identity and message. Pass null to `connectNative` to disconnect its native channels and cancel pending work.
 
-Native X windows support vertical, non-sparkline Line, StepLine, Area, StepArea, StackedArea, Scatter, Bubble, Candlestick, OHLC, RangeBand, RangeArea, DifferenceArea, ErrorBar, Lollipop, Dumbbell, Slope and TrendLine charts on linear or time X axes, including smooth Line and Area interpolation. The adapter disables native zoom/pan controls while a connected section lacks that projection, including empty and unsupported charts. A window can contain no observations while a connected path still crosses it. Native preparation keeps the full source facts and authored observation identities, excludes off-window marks from pointer and keyboard access, regenerates X ticks and keeps the full-data Y bounds. A native commit clears transient brush and tooltip state and removes the previous whole-SVG transform. Export uses the committed native window.
+Native Cartesian windows support non-sparkline Cartesian series, including vertical and horizontal bar, range, box, line and step mixtures. All captured axis transforms participate; a secondary window requires a series using its physical value-axis slot. Smooth interpolation and authored path gaps are retained. The adapter disables native zoom/pan controls while a connected section lacks that projection, including empty and unsupported charts. A window can contain no observations while a connected path still crosses it. Native preparation keeps the full source facts and authored observation identities, excludes off-window marks from pointer and keyboard access, regenerates X ticks and keeps the full-data Y bounds. A native commit clears transient brush and tooltip state and removes the previous whole-SVG transform. Export uses the committed native window.
 
-`controller.getXWindow()` returns a detached `{ minimum, maximum, scale }` snapshot of the committed native scene, or null when no native projection is available. `controller.setXWindow(minimum, maximum)` requests finite, increasing source bounds through the same callback, with `kind: "window"`. It returns the controller immediately; `cfxviewportchange` signals the accepted scene and `cfxviewporterror` reports failure. A connection and supported projection are required. The host still calls `ConstrainViewport`, so edge-crossing source requests retain their span within the full domain. Time bounds use the chart's OLE Automation date coordinates, as in `ChartXViewport`, rather than JavaScript epoch milliseconds.
+`controller.getXWindow()` returns a detached `{ minimum, maximum, scale }` snapshot of the committed native scene, or null when no native projection is available. `controller.setXWindow(minimum, maximum)` requests finite, increasing source bounds through the same callback, with `kind: "window"`. It returns the controller immediately; `cfxviewportchange` signals the accepted scene and `cfxviewporterror` reports failure. A connection and supported projection are required. The host still calls `ConstrainViewport`, so edge-crossing source requests retain their span within the full domain. Time bounds use the chart's OLE Automation date coordinates, as in `ChartAxisWindow`, rather than JavaScript epoch milliseconds.
 
 ```javascript
 const current = controller.getXWindow();
@@ -776,24 +776,29 @@ const inset = (current.maximum - current.minimum) / 4;
 controller.setXWindow(current.minimum + inset, current.maximum - inset);
 ```
 
-Bookmarks captured from a connected chart include `xWindow`. Applying one requests that source domain through the native callback; wait for `cfxviewportchange` before treating its native scene as committed. Connected synchronized peers exchange source bounds with a matching scale, so different plot sizes and reversed X directions retain the same source window. Each host constrains the request against its own full domain. Link charts whose source coordinates have the same meaning and units.
+Bookmarks captured from a connected chart use version 2 with one `nativeViewport` containing physical axis windows. Applying one requests that source domain through the native callback; wait for `cfxviewportchange` before treating its native scene as committed. Connected synchronized peers exchange source bounds with a matching scale, so different plot sizes and reversed X directions retain the same source window. Each host constrains the request against its own full domain. Link charts whose source coordinates have the same meaning and units.
 
 ### Native Y and XY windows
 
-`ChartCartesianViewport` combines an optional `ChartXViewport` and `ChartYViewport`. At least one is required. Pass it to `chart.Prepare(context, viewport)` or `renderer.PrepareSection(chart, viewport, Configure)`. An explicit primary Y window uses the existing Linear, Time, positive base-10 Logarithmic or SymmetricLogarithmic transform. It keeps full-data calculations; it does not autoscale Y from the visible X observations. Y and XY windows require the supported vertical families above and no secondary-axis series. X-only windows retain their existing secondary-axis support.
+`ChartCartesianViewport` accepts physical `x`, `y`, `secondaryX` and `secondaryY` windows, all using immutable `ChartAxisWindow`. At least one is required. Primary and secondary value axes are independent: use SecondaryY on a vertical chart and SecondaryX on a horizontal chart. Pass null to preparation for complete reset. An omitted axis keeps its full-data domain by default.
 
 ```csharp
 var viewport = new ChartCartesianViewport(
-    x: new ChartXViewport(2, 8),
-    y: new ChartYViewport(20, 80));
+    x: new ChartAxisWindow(2, 8),
+    secondaryY: new ChartAxisWindow(200, 800),
+    valueDomain: ChartValueDomain.VisibleCategories);
 var section = renderer.PrepareSection(chart, viewport, Configure);
 ```
 
-Connect with `controller.connectNative(callback, { basis: initialNativeToken, axes: 'xy' })`; `axes` selects the gesture axes. The callback returns the managed `{ html, basis }` reply described above. Logical zoom/pan requests include `axes` and the requested `left/right` and/or `top/bottom` coordinates. Constrain them through the committed drawing's `XProjection` and `YProjection`. Each projection handles its own reversal and nonlinear transform. Reset requests omit logical bounds. Preserve an unrequested axis's committed window when preparing the reply.
+Connect with `controller.connectNative(callback, { basis: initialNativeToken, axes: ['x', 'secondaryY'] })`. Gesture axes must be a nonempty array of distinct exact physical names. Logical zoom/pan requests include that frozen array and the applicable `left/right` and/or `top/bottom` logical positions. Select the matching detached `XProjection`, `YProjection`, `SecondaryXProjection` or `SecondaryYProjection`; every slot uses `ChartAxisProjection`. Do not map a secondary value request through a primary inverse. Reset omits bounds and restores all full domains. Preserve each unrequested axis's committed request when preparing an ordinary reply.
 
-`controller.getViewport()` returns detached `x` and `y` windows, with null for an unavailable projection. `setViewport({ x: { minimum, maximum }, y: { minimum, maximum } })` requests explicit source bounds through `sourceViewport`; either axis may be omitted. `getYWindow()` and `setYWindow(minimum, maximum)` are Y conveniences. The existing X methods also work with this connection. Programmatic windows are explicit independently of the configured gesture axes. Bookmarks and linked peers carry both windows when available. A replacement that loses its eligible Y projection disables Y/XY gesture controls until a supported scene returns.
+`getViewport()` returns detached `x`, `y`, `secondaryX` and `secondaryY` windows, null for unavailable projections, and the optional `valueDomain`. `setViewport({ x: { minimum, maximum }, secondaryY: { minimum, maximum }, valueDomain: 'visibleCategories' })` requests source windows; either physical slot can be omitted. `getXWindow`/`setXWindow` and `getYWindow`/`setYWindow` remain primary physical-axis conveniences. Programmatic windows are explicit independently of gesture selection. Unsupported secondary slots reject without changing the committed scene.
 
-Adaptive drawings resolve one native automatic-domain envelope before preparing their windows. A marker padded against a narrow drawing can therefore keep the same source window in its wide counterpart. Authored axis ends remain exact. This requires additional native preparation; a host should retain the paired section rather than preparing an unrelated wide basis for a narrow gesture.
+`FullData`/`'fullData'` is the default value-domain policy. `VisibleCategories`/`'visibleCategories'` fits each unrequested value slot from geometry intersecting the current category window. Explicit value windows win only on their own axis; authored axis bounds remain constraints, and an empty visible window retains the full domain. Full-data stacks, colors, source identities and gaps remain unchanged. The [native contract](v2/api-conventions.md#cartesian-viewports) defines continuous crossings and discrete interval membership.
+
+Prepared metadata exposes `xProjection`, `yProjection`, `secondaryXProjection` and `secondaryYProjection` independently. Each captures full/window source and transformed bounds, scale, reversal and plot bounds, plus nondefault logarithm and time-session policy. A general brush omits an ambiguous value coordinate when two slots are populated; explicit physical projections remain available. Logarithmic axes can select a positive or negative domain and a configured base; the browser uses the accepted native transform rather than guessing it.
+
+Adaptive drawings enclose every captured physical axis in one full-domain envelope before preparing their windows. A narrow drawing's fitted edge remains portable to its wide counterpart. Authored axis ends remain exact. Bookmarks carry the complete available physical window state in `nativeViewport`; linked peers apply compatible selected physical slots. Hosts retain the paired native section and accepted basis through the existing lifetime.
 
 ### Navigator, presets and trading sessions
 
@@ -859,3 +864,11 @@ chart.dispatchEvent(new CustomEvent('cfx-apply-state', {
 For a connected native window, replay copies the snapshot and waits for its matching prepared reply before restoring selection, mode and scenario playback or emitting `cfxstateapplied`. Rejected, canceled or superseded replies leave the committed state intact. A native replay keeps the geometric camera at its base scale; source bounds determine the data view.
 
 When synchronized charts are enabled, state payloads use the same `cfxsync` channel with action `state`; each chart applies only the target identities and scenario ids it understands.
+
+
+Native time windows retain source instants when the axis uses `ChartTimeSpacing.Ordinal` or explicit calendar units. Captured `timeSpacing` metadata accompanies each physical projection; the browser uses that detached map for readouts, source-window validation and inverse gestures. Ordinal values interpolate between the actual supplied instants. Unit-time values share their calendar band's center; inverse gestures select canonical calendar boundaries. No missing observation is synthesized and no data aggregation occurs. See [explicit time spacing](v2/api-conventions.md#explicit-time-spacing) for limits and discrete inverse semantics.
+
+
+## Native hierarchy views
+
+Treemap and Sunburst can prepare an existing source item as a detached visible root. The [native hierarchy view reference](hierarchy-views.md) covers `ChartHierarchyView`, matching Core/HTML preparation, opt-in group/Up/Home navigation, accepted basis tokens, bookmarks, source identity and committed exports.

@@ -25,9 +25,7 @@
     ],
     "notes": []
   },
-  "nativeRetainedStatements": [
-    "Service --() Interface"
-  ],
+  "nativeRetainedStatements": [],
   "nativeClasses": [
     "Service"
   ],

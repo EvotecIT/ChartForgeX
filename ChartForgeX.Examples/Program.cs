@@ -46,6 +46,7 @@ CartesianCategoryExamples.Write(output, DemoPngOutputScale);
 NumericAxisExamples.Write(output, DemoPngOutputScale);
 ReportingExamples.Write(output, DemoPngOutputScale);
 SunburstBranchHighlightExamples.Write(output);
+HierarchyViewExamples.Write(output);
 DenseLegendExamples.Write(output, DemoPngOutputScale);
 PagedFacetExamples.Write(output, DemoPngOutputScale);
 AnimatedVisualStoryExamples.Write(output, DemoPngOutputScale);

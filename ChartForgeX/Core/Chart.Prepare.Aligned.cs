@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Rendering;
 
 namespace ChartForgeX.Core;
@@ -12,7 +13,9 @@ public sealed partial class Chart {
         // Both native domains are fixed before layout, so a section without an overview needs only its requested drawings.
         if (viewport != null && !retainFullDrawings && VisualCartesianCompiler.SupportsYViewport(this)
             && Options.XAxis.Minimum.HasValue && Options.XAxis.Maximum.HasValue
-            && Options.YAxis.Minimum.HasValue && Options.YAxis.Maximum.HasValue)
+            && Options.YAxis.Minimum.HasValue && Options.YAxis.Maximum.HasValue
+            && (!Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary)
+                || ChartCartesianOrientation.ValueAxis(this, ChartAxisSide.Secondary) is { Minimum: not null, Maximum: not null }))
             return (PrepareCore(firstContext, viewport), PrepareCore(secondContext, viewport), null, null);
         // Discover the common envelope before applying a request: a narrow padded edge may exceed the standalone wide domain.
         var scenes = new[] { PrepareCore(firstContext, null), PrepareCore(secondContext, null) };

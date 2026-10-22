@@ -22,8 +22,11 @@ public sealed class MermaidRequirementDocument : MermaidDocument {
     /// <summary>Gets parsed requirement relationships in source order.</summary>
     public List<MermaidRequirementRelationship> Relationships { get; } = new();
 
-    /// <summary>Gets retained style and class statements that are not rendered exactly by the static topology preview.</summary>
+    /// <summary>Gets authored style and class statements with their original locations.</summary>
     public List<MermaidRawStatement> StyleStatements { get; } = new();
+
+    /// <summary>Gets named native style declarations in source order.</summary>
+    public List<MermaidStyleDefinition> ClassDefinitions { get; } = new();
 }
 
 /// <summary>
@@ -59,6 +62,9 @@ public sealed class MermaidRequirementNode : MermaidAstNode {
 
     /// <summary>Gets style classes assigned to the requirement.</summary>
     public List<string> Classes { get; } = new();
+
+    /// <summary>Gets direct authored styles; unsupported properties remain diagnosed.</summary>
+    public Dictionary<string, string> Styles { get; } = new();
 }
 
 /// <summary>
@@ -83,6 +89,9 @@ public sealed class MermaidRequirementElement : MermaidAstNode {
 
     /// <summary>Gets style classes assigned to the element.</summary>
     public List<string> Classes { get; } = new();
+
+    /// <summary>Gets direct authored styles; unsupported properties remain diagnosed.</summary>
+    public Dictionary<string, string> Styles { get; } = new();
 }
 
 /// <summary>

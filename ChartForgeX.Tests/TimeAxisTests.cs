@@ -85,7 +85,7 @@ public sealed class TimeAxisTests {
         var end = start + 200.0 / 86400000;
         var chart = Chart.Create().WithSize(900, 450).WithLegend(false)
             .AddLine("Fast", new[] { new ChartPoint(1, start), new ChartPoint(2, end) });
-        if (secondary) chart.Series[0].UseSecondaryYAxis();
+        if (secondary) chart.Series[0].UseSecondaryValueAxis();
         var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
         axis.WithTimeScale().WithBounds(start, end);
         var role = secondary ? "axis-secondary-y-label" : "axis-y-label";

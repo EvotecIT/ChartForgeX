@@ -10,8 +10,10 @@
     applyRenderedTargetContract(root);
     bindLegendOverflow(root);
     bindXNavigation(root);
+    bindHierarchyNavigation(root);
     bindChartContextMenu(root);
     bindHostCommands(root);
+    bindAnnotationEditor(root);
     prepareRootBranchHighlights(root);
     if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
       if (event.key !== 'Escape') return;
@@ -119,6 +121,7 @@
           else toggleSeries(root, activated);
         }
         else {
+          if (activateHierarchyTarget(root, activated)) return;
           toggleSelection(root, activated, event);
           pinTip(root, tip, activated, event);
         }
@@ -379,6 +382,9 @@
     const reset = root.querySelector('[data-cfx-reset]');
     if (reset) listenChart(root, window, 'resize', () => syncResetControl(root));
     if (reset) listenChart(root, reset, 'click', () => {
+      if (hierarchyConnected(root) && (hierarchyViewChanged(root) || chartLifetimes.get(root)?.preparationPending)) {
+        requestNativeHierarchy(root, null); return;
+      }
       if (connectedXViewport(root) && chartXProjection(root) && (nativeViewportChanged(root) || chartLifetimes.get(root)?.preparationPending)) {
         requestViewportReset(root);
         return;

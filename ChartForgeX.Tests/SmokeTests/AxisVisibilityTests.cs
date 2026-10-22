@@ -78,7 +78,7 @@ internal static partial class SmokeTests {
             .WithSecondaryYAxis("Rate")
             .AddLine("Primary", Points(2, 4))
             .AddLine("Secondary", Points(20, 40));
-        hiddenSecondary.Series[1].UseSecondaryYAxis();
+        hiddenSecondary.Series[1].UseSecondaryValueAxis();
         hiddenSecondary.Options.SecondaryYAxis.Visible = false;
         var hiddenSecondarySvg = hiddenSecondary.ToSvg();
         Assert(!hiddenSecondarySvg.Contains("secondary-y-axis", StringComparison.Ordinal), "A hidden secondary axis should suppress its rule, ticks, title, and layout reserve.");

@@ -60,7 +60,7 @@ public sealed class RadialAngularReversalTests {
             .AddRadarArea("Observed", new[] { new ChartPoint(3, 60), new ChartPoint(1, 80), new ChartPoint(2, 50), new ChartPoint(4, 70) })
             .AddRadarLine("Target", new[] { new ChartPoint(4, reverseSecondaryRadius ? 3 : 7), new ChartPoint(1, reverseSecondaryRadius ? 2 : 8), new ChartPoint(2, 5) });
         chart.Series[0].WithPointColor(0, color).WithPointLabel(0, "South source").ConfigureMarkers(markers => markers.Radius = 6);
-        chart.Series[1].UseSecondaryYAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
+        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
         var normal = Prepare(chart);
         chart.Options.XAxis.WithReversal();
         var reversed = Prepare(chart);
@@ -101,7 +101,7 @@ public sealed class RadialAngularReversalTests {
         chart.Options.XAxis.TickCount = 8;
         chart.Options.XAxis.LabelFormatter = angle => (angle * 180 / Math.PI).ToString("0", CultureInfo.InvariantCulture) + "°";
         chart.Series[0].WithPointColor(2, color).WithPointLabel(2, "Negative-angle source").ConfigureMarkers(markers => markers.Radius = 6);
-        chart.Series[1].UseSecondaryYAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
+        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
         var normal = Prepare(chart); chart.Options.XAxis.WithReversal(); var reversed = Prepare(chart);
         var spokes = reversed.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "polar-spoke").ToArray();
         var center = spokes[0].Start;
@@ -136,7 +136,7 @@ public sealed class RadialAngularReversalTests {
         if (radarFirst) chart.AddRadarLine("Target", radar).AddRadialColumn("Observed", columns);
         else chart.AddRadialColumn("Observed", columns).AddRadarLine("Target", radar);
         var radarIndex = radarFirst ? 0 : 1;
-        chart.Series[radarIndex].UseSecondaryYAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
+        chart.Series[radarIndex].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
         chart.Options.XAxis.WithReversal();
         var prepared = Prepare(chart);
         var column = prepared.Scene.Nodes.OfType<VisualSceneSlice>().First(slice => slice.Role == "radial-column");

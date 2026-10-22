@@ -158,7 +158,7 @@ public sealed class BoxPlotDistributionRenderingTests {
     [Fact]
     public void VerticalSecondaryProjectionIncludesSourceExtremaAndHorizontalRestrictionsStayExplicit() {
         var chart = Create(800, VisualThemeMode.Light);
-        chart.Series[0].YAxis = ChartAxisSide.Secondary;
+        chart.Series[0].ValueAxis = ChartAxisSide.Secondary;
         chart.AddLine("Primary", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) });
         var prepared = chart.Prepare(new VisualRenderContext());
         var points = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point" && group.Metadata.TryGetValue("data-cfx-kind", out var kind) && kind == "BoxPlotOutlier");

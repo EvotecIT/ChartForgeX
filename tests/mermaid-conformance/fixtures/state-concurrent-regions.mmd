@@ -1,0 +1,23 @@
+stateDiagram-v2
+direction TB
+[*] --> Active
+state Active {
+  direction TB
+  [*] --> Off
+  Off --> On : switch
+  On --> [*]
+  --
+  direction LR
+  [*] --> Waiting
+  state Waiting {
+    direction BT
+    [*] --> Queued
+    Queued --> Running
+    Running --> [*]
+  }
+  Waiting --> Ready
+  Ready --> [*]
+}
+note right of On : Independent region
+Active --> Done : complete
+Done --> [*]

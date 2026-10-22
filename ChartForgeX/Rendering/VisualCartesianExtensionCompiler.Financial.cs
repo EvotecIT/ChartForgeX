@@ -10,12 +10,12 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualCartesianCompiler {
     private static void DrawFinancial(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
-        ChartXViewport? xViewport = null, ChartYViewport? yViewport = null) {
+        ChartAxisWindow? xViewport = null, ChartAxisWindow? yViewport = null) {
         var series = chart.Series[index]; var stride = ObservationStride(series.Kind); var count = series.RenderPoints.Count / stride;
         var visibleCount = xViewport == null ? count : series.RenderPoints.Where((point, raw) => raw % stride == 0
-            && point.X >= xViewport.Minimum && point.X <= xViewport.Maximum).Count();
+            && map.OverlapsSourceWindow(xViewport, point.X, point.X, horizontalAxis: true)).Count();
         var slot = ChartCategorySlotLayout.Create(series.RenderPoints.Where((_, raw) => raw % stride == 0).Select(point => map.X(point.X)),
-            plot.Width, context.Theme.Spacing, 1, 0, requireMinimumFootprint: false);
+            plot.Width, context.Theme.Spacing, 1, 0, requireMinimumFootprint: false, maximumPitch: map.CalendarBandPitch(horizontal: false));
         for (var item = 0; item < count; item++) {
             var raw = item * stride; var xValue = series.RenderPoints[raw].X; var x = map.X(xValue);
             var open = series.RenderPoints[raw].Y; var high = series.RenderPoints[raw + 1].Y; var low = series.RenderPoints[raw + 2].Y; var close = series.RenderPoints[raw + 3].Y;
@@ -30,7 +30,7 @@ internal static partial class VisualCartesianCompiler {
             var body = FinancialBody(x, width, openY, closeY);
             var bounds = FinancialBounds(candle, body, highY, lowY, openY, closeY, style);
             var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("close", close));
-            var visible = ViewportObservationVisible(xViewport, yViewport, xValue, low, high);
+            var visible = ViewportObservationVisible(xViewport, yViewport, xValue, low, high, map);
             using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, visible, null,
                 ("x", xValue), ("open", open), ("high", high), ("low", low), ("close", close))) {
                 if (visible) DrawFinancialMark(builder, candle, body, highY, lowY, openY, closeY, style,

@@ -307,6 +307,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Subtitle = group.Subtitle,
             Status = group.Status.ToString(),
             Color = group.Color,
+            BackgroundColor = group.BackgroundColor, BorderColor = group.BorderColor, LabelColor = group.LabelColor,
             Href = SafeHref(group.Href),
             Tooltip = group.Tooltip,
             X = group.X,
@@ -362,7 +363,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 Value = detail.Value,
                 IconId = detail.IconId,
                 Status = detail.Status?.ToString(),
-                Color = detail.Color
+                Color = detail.Color, TextStyle = detail.TextStyle?.Clone()
             };
             Copy(detail.Metadata, mappedDetail.Extensions);
             mapped.Details.Add(mappedDetail);
@@ -394,7 +395,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Status = edge.Status.ToString(),
             SourcePortId = sourcePortId,
             TargetPortId = targetPortId,
-            Color = edge.Color,
+            Color = edge.Color, LabelColor = edge.LabelColor,
             Href = SafeHref(edge.Href),
             Tooltip = edge.Tooltip,
             Order = order,

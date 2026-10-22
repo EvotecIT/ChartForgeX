@@ -14,6 +14,7 @@ public sealed class InteractivityBenchmarkLane : IDisposable {
     private readonly object[] _arguments;
     private readonly string? _receiptName;
     private object? _fixture;
+    private readonly bool _sustainedUpdate;
 
     /// <summary>Loads the fixture without launching a browser, so PowerForge Plan remains read-only.</summary>
     public InteractivityBenchmarkLane(string fixturePath, string binaries, string source, int points, int queries)
@@ -26,6 +27,14 @@ public sealed class InteractivityBenchmarkLane : IDisposable {
         : this(fixturePath, binaries, current ? "CartesianSectionPreparationBenchmarkFixture" : "SectionPreparationBenchmarkFixture") {
         _arguments = new object[] { caseName, tokens, font, boldFont };
         _receiptName = (current ? "Candidate-" : "Baseline-") + caseName;
+    }
+
+    /// <summary>Loads the identical full-path update fixture without starting a browser or preparing source.</summary>
+    public InteractivityBenchmarkLane(string fixturePath, string binaries, int points, int updates, bool secondary,
+        string tokens, string font, string boldFont, string engineName)
+        : this(fixturePath, binaries, "SustainedUpdateBenchmarkFixture") {
+        _points = points; _arguments = new object[] { points, updates, secondary, tokens, font, boldFont };
+        _receiptName = engineName + "-Update-" + points; _sustainedUpdate = true;
     }
 
     private InteractivityBenchmarkLane(string fixturePath, string binaries, string fixtureType) {
@@ -67,6 +76,11 @@ public sealed class InteractivityBenchmarkLane : IDisposable {
     public int WideSvgElementCount => (int)Property("WideSvgElementCount");
     /// <summary>Gets the narrow native drawing's exported SVG element count.</summary>
     public int NarrowSvgElementCount => (int)Property("NarrowSvgElementCount");
+    /// <summary>Gets the fully validated actual browser commit count for one complete update operation.</summary>
+    public int CommittedUpdates => (int)Property("CommittedUpdates");
+    /// <summary>Returns only full-path update browser identities without starting uninitialized cases.</summary>
+    public static string[] SustainedBrowserVersions() => Lanes.FindAll(lane => lane._sustainedUpdate).ConvertAll(lane => lane._receiptName + ": "
+        + (lane._fixture == null ? "Not started" : (string)lane.Property("BrowserVersion"))).ToArray();
     /// <summary>Returns the browser versions without creating uninitialized cases.</summary>
     public static string[] BrowserVersions() => Lanes.FindAll(lane => lane._receiptName == null).ConvertAll(lane => lane._fixture == null ? "Not started"
         : lane._points + ": " + (string)lane._type.GetProperty("BrowserVersion")!.GetValue(lane._fixture)!).ToArray();

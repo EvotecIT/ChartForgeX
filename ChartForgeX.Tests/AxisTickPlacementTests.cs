@@ -150,7 +150,7 @@ public sealed class AxisTickPlacementTests {
     public void DurationAndSecondaryCaptionsKeepCompleteAnchoredEndValues() {
         var chart = Create(640, 300).WithYAxisBounds(0, 100).AddLine("Latency", new[] { new ChartPoint(0, 20), new ChartPoint(5, 90) });
         chart.AddLine("Other", new[] { new ChartPoint(0, 80), new ChartPoint(5, 20) });
-        chart.Series[1].UseSecondaryYAxis(); chart.Options.SecondaryYAxis.WithBounds(0, 100);
+        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithBounds(0, 100);
         chart.Options.YAxis.WithLabelFormatter(value => value == 100 ? "1 min 40 s" : value.ToString("0", CultureInfo.InvariantCulture) + " s");
         var prepared = Prepare(chart);
         AssertAxis(prepared, "axis-y-label", "grid-y", horizontal: false);
@@ -204,7 +204,7 @@ public sealed class AxisTickPlacementTests {
         } else {
             chart.AddLine("Latency", new[] { new ChartPoint(0, 20), new ChartPoint(5, 90) });
             axis = mode == "secondary" ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-            if (mode == "secondary") { chart.Series[0].UseSecondaryYAxis(); chart.Options.YAxis.Visible = false; }
+            if (mode == "secondary") { chart.Series[0].UseSecondaryValueAxis(); chart.Options.YAxis.Visible = false; }
         }
         axis.WithBounds(0, 100); axis.TickCount = 6;
         axis.WithLabelFormatter(value => {

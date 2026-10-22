@@ -17,7 +17,7 @@ internal static class ChartMarkParityFixture {
         chart.Options.XAxis.Minimum = 0; chart.Options.XAxis.Maximum = 4;
         chart.Options.YAxis.Minimum = 0; chart.Options.YAxis.Maximum = 10;
         switch (family) {
-            case "error": chart.AddErrorBar("Range", new[] { new ChartErrorBar(2, 5, 2, 8) }, ink); break;
+            case "error": chart.AddErrorBar("Range", new[] { new ChartErrorBar(2, 5, yBounds: new ChartErrorBounds(2, 8)) }, ink); break;
             case "box": chart.AddBoxPlot("Distribution", new[] { new ChartBoxPlot(2, 1, 3, 5, 7, 9) }, ink); break;
             case "candle": chart.AddCandlestick("Price", new[] { new ChartCandlestick(2, 3, 9, 1, 7) }, ink); break;
             case "ohlc": chart.AddOhlc("Price", new[] { new ChartCandlestick(2, 3, 9, 1, 7) }, ink); break;

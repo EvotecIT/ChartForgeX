@@ -104,7 +104,7 @@ public sealed class ChartLinkedProjectionContractsTests {
         if (!domains.StartsWith("secondary", StringComparison.Ordinal)) chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("primary"), "Primary",
             domains == "empty-primary" ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(1, 2), new ChartPoint(2, 8) }));
         if (domains != "primary") chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("secondary"), "Secondary",
-            domains == "empty-secondary" ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(1, 1200), new ChartPoint(2, 1800) }).UseSecondaryYAxis());
+            domains == "empty-secondary" ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(1, 1200), new ChartPoint(2, 1800) }).UseSecondaryValueAxis());
         if (domains == "secondary-primary-y-line") chart.AddHorizontalLine(5, "Primary threshold");
         if (domains == "secondary-primary-y-region") chart.AddPlotRegion(new ChartPlotRegion(0, yMinimum: 2, yMaximum: 8));
         if (domains == "secondary-x-only") chart.AddVerticalLine(1.5, "Shared X").AddPlotRegion(new ChartPlotRegion(0, xMinimum: 1, xMaximum: 2));

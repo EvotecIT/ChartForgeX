@@ -21,6 +21,7 @@ internal sealed class ChartSunburstNode {
     public double Value { get; set; }
     public double RemainderValue { get; set; }
     public int Depth { get; set; }
+    public int ViewDepth { get; set; }
     public double StartAngle { get; set; }
     public double EndAngle { get; set; }
     public double InnerRadius { get; set; }
@@ -52,23 +53,25 @@ internal static class ChartSunburstLayout {
         var values = facts.ResolveHierarchyValues(chart.Options.Sunburst.ParentValuePolicy);
         var nodes = new List<ChartSunburstNode>();
         for (var i = 0; i < facts.Nodes.Count; i++)
-            nodes.Add(new ChartSunburstNode(i, facts.Nodes[i].Id, facts.Nodes[i].Label) { Value = values[i], Parent = facts.Parent(i), Depth = facts.Depths[i] });
+            nodes.Add(new ChartSunburstNode(i, facts.Nodes[i].Id, facts.Nodes[i].Label) { Value = values[i], Parent = facts.Parent(i), Depth = facts.Depths[i], ViewDepth = chart.HierarchyPreparation?.Depth(i) ?? facts.Depths[i] });
         for (var i = 0; i < nodes.Count; i++) {
             nodes[i].Children.AddRange(facts.Children(i));
             var childTotal = 0d;
             foreach (var child in nodes[i].Children) childTotal += values[child];
             if (nodes[i].Children.Count > 0) nodes[i].RemainderValue = Math.Max(0, values[i] - childTotal);
         }
-        var root = facts.Root;
-        var maxDepth = Math.Max(0, nodes.Max(node => node.Depth));
+        var view = chart.HierarchyPreparation;
+        var root = view?.RootIndex ?? facts.Root;
+        var maxDepth = Math.Max(0, nodes.Where(node => view == null || view.Contains(node.Index)).Max(node => node.ViewDepth));
         var radius = Math.Max(1, Math.Min(plot.Width, plot.Height) * 0.46);
         var ringWidth = radius / Math.Max(1, maxDepth + 1);
         var centerX = plot.Left + plot.Width / 2;
         var centerY = plot.Top + plot.Height / 2;
         AssignAngles(nodes, root, -Math.PI / 2, nodes[root].Value > 0 ? Math.PI * 3 / 2 : -Math.PI / 2);
         foreach (var node in nodes) {
-            node.InnerRadius = node.Depth * ringWidth;
-            node.OuterRadius = (node.Depth + 1) * ringWidth;
+            if (view != null && !view.Contains(node.Index)) continue;
+            node.InnerRadius = node.ViewDepth * ringWidth;
+            node.OuterRadius = (node.ViewDepth + 1) * ringWidth;
         }
 
         return new ChartSunburstModel(nodes, root, maxDepth, centerX, centerY);

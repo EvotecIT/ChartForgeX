@@ -1,0 +1,67 @@
+{
+  "classFacts": {
+    "nodes": [
+      [
+        "Store",
+        "Store<Item>",
+        [
+          "+List<List<int>> values",
+          "+int count"
+        ],
+        [
+          "+lookup(int id, string key) Item",
+          "+create() Item",
+          "+reset()"
+        ]
+      ],
+      [
+        "Customer",
+        "Customer, account",
+        [],
+        []
+      ]
+    ],
+    "relationships": [
+      [
+        "Store",
+        "Customer",
+        "None",
+        "Arrow",
+        "Solid",
+        "",
+        "",
+        ""
+      ]
+    ],
+    "notes": []
+  },
+  "classNamespaceFacts": {
+    "namespaces": [
+      [
+        "Domain",
+        "Domain",
+        null
+      ],
+      [
+        "Domain.Core",
+        "Domain core",
+        "Domain"
+      ],
+      [
+        "Empty",
+        "Empty namespace",
+        null
+      ]
+    ],
+    "classes": [
+      [
+        "Store",
+        "Domain.Core"
+      ],
+      [
+        "Customer",
+        "Domain.Core"
+      ]
+    ]
+  }
+}

@@ -154,9 +154,7 @@ internal sealed partial class VisualTopologyCompiler {
                 }
                 else using (PinnedState()) _builder.Ellipse(row.X + 5 * _scale, row.Y + row.Height / 2, 2.5 * _scale, 2.5 * _scale, color, role: "topology-detail-status", paint: new VisualScenePaintBinding(SourcePaint(detail.Color ?? (detail.Status.HasValue ? _svgTheme?.StatusColor(detail.Status.Value) : _svgTheme?.Foreground), color, AccentRole(detail.Color), HighlightFactor(active), detail.Status.HasValue ? Status(detail.Status.Value) : _colors.Foreground)));
             }
-            Text(detail.Text ?? (detail.Label + " " + detail.Value), new ChartRect(row.X + reserve, row.Y, Math.Max(0, row.Width - reserve), row.Height), size * .8,
-                Highlight(Color(detail.Color, _colors.Foreground), active), 400, "topology-node-detail", 1,
-                paint: SourcePaint(detail.Color ?? _svgTheme?.Foreground, Highlight(Color(detail.Color, _colors.Foreground), active), string.IsNullOrWhiteSpace(detail.Color) ? SvgColorRole.Text : SvgColorRole.Any, HighlightFactor(active), _colors.Foreground));
+            BuildDetailText(detail, new ChartRect(row.X + reserve, row.Y, Math.Max(0, row.Width - reserve), row.Height), size * .8, active);
             y += row.Height;
         }
     }

@@ -233,6 +233,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .EndElement().Line()
             .RawTrusted(BuildResetControl(options))
             .RawTrusted(BuildXNavigation(chart, options, prepared, context, viewport, scope, fullDrawing))
+            .RawTrusted(BuildHierarchyNavigation(options, prepared))
             .RawTrusted(BuildCompareTray(options))
             .EndElement().Line()
             .StartElement("div").Attribute("class", "cfx-tooltip").Attribute("data-cfx-pinned-label", options.Localization[HtmlChartText.Pinned])

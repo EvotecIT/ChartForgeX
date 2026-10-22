@@ -120,8 +120,8 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             ()=>{chartController.root.dispatchEvent(new CustomEvent('cfx-capture-state',{detail:{source:'native-test',sync:false}}));
                 window.nativeBookmark=JSON.parse(chartController.root.dataset.cfxInteractionSnapshot);return nativeBookmark;}
             """);
-        AssertWindow(snapshot.GetProperty("xWindow"), host.Origin + 2, host.Origin + 10);
-        Assert.Equal("time", snapshot.GetProperty("xWindow").GetProperty("scale").GetString());
+        AssertWindow(snapshot.GetProperty("nativeViewport").GetProperty("x"), host.Origin + 2, host.Origin + 10);
+        Assert.Equal("time", snapshot.GetProperty("nativeViewport").GetProperty("x").GetProperty("scale").GetString());
         await page.EvaluateAsync("bounds=>chartController.setXWindow(bounds.minimum,bounds.maximum)", new { minimum = host.Origin + 4, maximum = host.Origin + 8 });
         await WaitForChangesAsync(page, 2);
         await page.EvaluateAsync("()=>{chartController.clearSelection();chartController.root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:nativeBookmark,sync:false}}));}");

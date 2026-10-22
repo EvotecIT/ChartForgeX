@@ -75,7 +75,7 @@ internal static partial class Program {
         var full = chart.Prepare(context, null);
         PackageAssertions.Require(full.ToSvg() == prepare(context).ToSvg() && full.ToSvg() == ((IVisualRenderable)chart).Prepare(context).ToSvg(),
             "Packed full-domain null preparation disagreed with public method-group or IVisualRenderable dispatch.");
-        foreach (var viewport in new[] { new ChartCartesianViewport(x: new ChartXViewport(2, 8)), new ChartCartesianViewport(y: new ChartYViewport(20, 80)) }) {
+        foreach (var viewport in new[] { new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)), new ChartCartesianViewport(y: new ChartAxisWindow(20, 80)) }) {
             var singleAxis = chart.Prepare(context, viewport);
             PackageAssertions.Require(singleAxis.XProjection!.Minimum == (viewport.X?.Minimum ?? 0)
                 && singleAxis.XProjection.Maximum == (viewport.X?.Maximum ?? 10)
@@ -85,7 +85,7 @@ internal static partial class Program {
                 "Packed single-axis Cartesian input changed an omitted full domain or dropped source observations.");
         }
         var prepared = chart.Prepare(context,
-            new ChartCartesianViewport(new ChartXViewport(2, 8), new ChartYViewport(20, 80)));
+            new ChartCartesianViewport(new ChartAxisWindow(2, 8), new ChartAxisWindow(20, 80)));
         var x = prepared.XProjection!; var y = prepared.YProjection!;
         var svg = prepared.ToSvg(); var png = prepared.ToPng(); var xml = XDocument.Parse(svg);
         var anchor = xml.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "annotation-anchor");

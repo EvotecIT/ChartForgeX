@@ -31,18 +31,18 @@ public sealed class EmptyHorizontalBaselineCompanionTests {
             chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
         } else if (physicalAxis == 1) chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic;
         else {
-            chart.Series[0].UseSecondaryYAxis();
+            chart.Series[0].UseSecondaryValueAxis();
             chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
         }
         ChartRange Domain() {
             var primary = ChartRange.FromChart(chart);
-            return physicalAxis == 2 ? ChartRange.FromSecondaryYAxis(chart, primary) : primary;
+            return physicalAxis == 2 ? ChartRange.FromSecondaryValueAxis(chart, primary) : primary;
         }
         var expected = Domain();
         if (physicalAxis == 0) chart.AddHorizontalBar("Empty", Array.Empty<ChartPoint>());
         else {
             chart.AddBar("Empty", Array.Empty<ChartPoint>());
-            if (physicalAxis == 2) chart.Series[1].UseSecondaryYAxis();
+            if (physicalAxis == 2) chart.Series[1].UseSecondaryValueAxis();
         }
         var actual = Domain();
         Assert.Equal(expected.MinX, actual.MinX); Assert.Equal(expected.MaxX, actual.MaxX);

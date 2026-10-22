@@ -4,6 +4,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
 
@@ -361,12 +362,12 @@ section ChartForgeX
         Assert(document.Title == "Native Projection", "Mermaid timeline parser should parse title.");
         Assert(document.Sections.Count == 2, "Mermaid timeline parser should parse sections.");
         Assert(document.Periods.Count == 2, "Mermaid timeline parser should parse periods.");
-        Assert(document.Periods[0].Section == "OfficeIMO", "Mermaid timeline periods should retain section membership.");
+        Assert(document.Periods[0].Section?.Name == "OfficeIMO", "Mermaid timeline periods should retain section membership.");
         Assert(document.Periods[0].Events.Count == 2, "Mermaid timeline parser should parse continuation events.");
         Assert(document.Periods[1].Events.Count == 2, "Mermaid timeline parser should parse multiple inline events.");
     }
 
-    private static void MermaidTimelineConvertsToChartArtifactAndRenders() {
+    private static void MermaidTimelineConvertsToNativeArtifactAndRenders() {
         const string source = @"timeline
 title Native Visuals
 section OfficeIMO
@@ -378,20 +379,20 @@ Artifacts : SVG preview : PNG preview";
         Assert(!result.HasErrors, "Mermaid timeline parser should parse renderable source: " + MermaidDiagnostics(result));
         var document = result.Document ?? throw new InvalidOperationException("Mermaid timeline parser should produce a document.");
 
-        var chart = document.ToChart(new MermaidTimelineRenderOptions { Id = "native-visuals", Width = 720, Height = 420 });
-        Assert(chart.Series.Count == 3, "Mermaid timeline conversion should produce one timeline item per event.");
-        Assert(chart.Series[0].Kind == ChartSeriesKind.Timeline, "Mermaid timeline conversion should produce ChartForgeX timeline series.");
+        var chart = document.ToTimelineDiagramBlock(new MermaidTimelineRenderOptions { Id = "native-visuals", Width = 720, Height = 420 });
+        Assert(chart.Periods.Sum(period => period.Events.Count) == 3, "Mermaid timeline conversion should retain every ordered event.");
+        Assert(chart.Periods.Count == 2, "Mermaid timeline conversion should retain categorical periods.");
         Assert(chart.Title == "Native Visuals", "Mermaid timeline conversion should use Mermaid title by default.");
 
         var artifact = document.ToVisualArtifact(new MermaidTimelineRenderOptions { Id = "native-visuals" });
         Assert(artifact.Kind == VisualArtifactKind.Mermaid, "Mermaid timeline visual artifact should report Mermaid artifact kind.");
-        Assert(artifact.Model is Chart, "Mermaid timeline visual artifact should carry a renderable chart model.");
+        Assert(artifact.Model is TimelineDiagramBlock, "Mermaid timeline visual artifact should carry a native categorical timeline.");
         Assert(artifact.Metadata["mermaid.sections"] == "2", "Mermaid timeline artifacts should expose section counts.");
         Assert(artifact.Metadata["mermaid.events"] == "3", "Mermaid timeline artifacts should expose event counts.");
 
         var svg = document.ToSvg(new MermaidTimelineRenderOptions { Id = "native-visuals" });
         var png = document.ToPng(new MermaidTimelineRenderOptions { Id = "native-visuals" });
-        Assert(svg.Contains("data-cfx-role=\"timeline\"", StringComparison.Ordinal), "Mermaid timeline SVG rendering should emit ChartForgeX timeline output.");
+        Assert(svg.Contains("data-cfx-role=\"timeline-period\"", StringComparison.Ordinal), "Mermaid timeline SVG rendering should emit native categorical periods.");
         Assert(png.Length > 64 && png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47, "Mermaid timeline PNG rendering should emit a valid PNG.");
     }
 
@@ -738,34 +739,16 @@ Second : bad, 2026-01-01, nope";
         Assert(result.Diagnostics.Exists(diagnostic => diagnostic.Message.Contains("dates, durations or until clauses", StringComparison.Ordinal)), "Invalid Gantt end values should explain the date, duration and until contract.");
     }
 
-    private static void MermaidParserReportsRecognizedButUnimplementedFamilies() {
-        const string source = @"zenuml
-  title Order
-  A.method()";
-
+    private static void MermaidParserParsesNativeZenUmlOccurrences() {
+        const string source = "zenuml\n  title Order\n  A.method()";
         var result = new MermaidParser().Parse(source);
-
-        Assert(!result.HasErrors, "Recognized Mermaid families should remain inspectable while semantic support is pending.");
-        Assert(result.Document != null && result.Document.Kind == MermaidDiagramKind.ZenUml, "Mermaid parser should identify recognized diagram families.");
-        Assert(result.Diagnostics.Count == 1, "Recognized but unimplemented Mermaid families should produce one diagnostic.");
-        Assert(result.Diagnostics[0].Severity == MermaidDiagnosticSeverity.Warning, "Recognized but unimplemented Mermaid families should be warnings.");
-        Assert(result.Diagnostics[0].Span.Line == 1, "Mermaid family diagnostics should point at the header line.");
-        Assert(result.Diagnostics[0].Message.Contains("not implemented", StringComparison.Ordinal), "Mermaid family diagnostics should be explicit.");
-        Assert(result.Document!.RawStatements.Count == 2, "Recognized but unimplemented Mermaid families should retain raw body statements.");
-        Assert(result.Document.RawStatements[0].Text == "title Order", "Raw statements should preserve trimmed Mermaid body text.");
-        Assert(result.Document.RawStatements[0].Span.Line == 2 && result.Document.RawStatements[0].Span.Column == 3, "Raw statements should preserve one-based source spans.");
-
-        var families = new[] {
-            ("zenuml\n  title Order\n  A.method()", MermaidDiagramKind.ZenUml)
-        };
-
-        foreach (var family in families) {
-            var familyResult = new MermaidParser().Parse(family.Item1);
-            Assert(!familyResult.HasErrors, "Recognized Mermaid family should remain inspectable while semantic support is pending: " + family.Item2);
-            Assert(familyResult.Document != null && familyResult.Document.Kind == family.Item2, "Mermaid parser should identify recognized family: " + family.Item2);
-            Assert(familyResult.Diagnostics.Count == 1 && familyResult.Diagnostics[0].Severity == MermaidDiagnosticSeverity.Warning, "Unimplemented recognized families should produce one warning diagnostic: " + family.Item2);
-            Assert(familyResult.Document!.RawStatements.Count > 0, "Unimplemented recognized families should retain raw body statements: " + family.Item2);
-        }
+        Assert(!result.HasErrors && result.Diagnostics.Count == 0, "Native ZenUML syntax should parse without fallback diagnostics.");
+        Assert(result.Document is MermaidZenUmlDocument, "ZenUML should produce its typed occurrence model.");
+        var document = (MermaidZenUmlDocument)result.Document!;
+        Assert(document.Title == "Order" && document.SourceText == source, "Native ZenUML must retain its title and authored source.");
+        Assert(document.Statements.Count == 1 && document.Statements[0].TargetId == "A", "Native ZenUML must retain the actual call target.");
+        Assert(document.Statements[0].Span.Line == 3 && document.Statements[0].Span.Column == 3, "Native ZenUML occurrences must retain source positions.");
+        Assert(MermaidRenderer.Render(source).Artifact != null, "Native ZenUML must produce a reusable artifact.");
     }
 
     private static void MermaidParserRejectsUnknownDiagramFamily() {

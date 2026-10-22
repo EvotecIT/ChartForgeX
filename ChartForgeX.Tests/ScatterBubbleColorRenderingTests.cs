@@ -87,7 +87,7 @@ public sealed class ScatterBubbleColorRenderingTests {
         var first = XDocument.Parse(Prepare(chart).ToSvg());
         Assert.Equal("100", (string?)Role(first, "color-scale-0").Single().Attribute("data-cfx-max-value"));
         chart.AddScatter("Samples", new[] { new ChartPoint(1, 30).WithColorValue(900), new ChartPoint(2, 35).WithColorValue(1000) });
-        chart.Series[1].WithColorScale(chart.Series[0].ColorScale); chart.Series[1].YAxis = ChartAxisSide.Secondary;
+        chart.Series[1].WithColorScale(chart.Series[0].ColorScale); chart.Series[1].ValueAxis = ChartAxisSide.Secondary;
         var document = XDocument.Parse(Prepare(chart).ToSvg());
         Assert.Equal("-10", (string?)Role(document, "color-scale-0").Single().Attribute("data-cfx-min-value"));
         Assert.Equal("900", (string?)Role(document, "color-scale-1").Single().Attribute("data-cfx-min-value"));

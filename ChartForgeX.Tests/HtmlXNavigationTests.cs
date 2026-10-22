@@ -22,7 +22,7 @@ public sealed class HtmlXNavigationTests {
         var renderer = new HtmlInteractiveChartRenderer();
         Assert.DoesNotContain("data-cfx-x-navigation", renderer.PrepareSection(chart).Html);
         var full = renderer.PrepareSection(chart, configure: Configure);
-        var detail = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(4, 6)), Configure);
+        var detail = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)), Configure);
         Assert.Contains("data-cfx-x-navigation=\"true\"", detail.Html);
         Assert.Contains("data-cfx-x-range=\"start\"", detail.Html);
         Assert.Contains("data-cfx-x-range=\"end\"", detail.Html);
@@ -32,7 +32,7 @@ public sealed class HtmlXNavigationTests {
         Assert.Contains("data-cfx-x=\"0\"", native); Assert.Contains("data-cfx-x=\"10\"", native);
         Assert.DoesNotContain("data-cfx-visible=\"false\"", native);
         Assert.Equal(4, detail.PreparedVisual.XProjection!.Minimum); Assert.Equal(6, detail.PreparedVisual.XProjection.Maximum);
-        var controlsOnly = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartXViewport(4, 6)), options => {
+        var controlsOnly = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6)), options => {
             Configure(options); options.XNavigation.IncludeNavigator = false; options.XNavigation.IncludeScrollbar = false;
         }).Html;
         Assert.DoesNotContain("data:image/svg+xml", controlsOnly);

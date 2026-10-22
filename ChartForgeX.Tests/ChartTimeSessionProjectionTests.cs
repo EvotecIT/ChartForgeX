@@ -63,7 +63,7 @@ public sealed class ChartTimeSessionProjectionTests {
     public void RawWeekendWindowBoundsSurviveSourceConfinementWithoutBecomingObservations() {
         var chart = Mixed(); var full = chart.Prepare(Context());
         var minimum = Oa(Monday.AddDays(-1)); var maximum = Oa(Monday.AddHours(6));
-        var requested = new ChartXViewport(minimum, maximum);
+        var requested = new ChartAxisWindow(minimum, maximum);
         var confined = full.XProjection!.ConstrainViewport(requested)!;
         Assert.Equal(requested.Minimum, confined.Minimum); Assert.Equal(requested.Maximum, confined.Maximum);
         var window = chart.Prepare(Context(), new ChartCartesianViewport(x: confined)); var projection = window.XProjection!;
@@ -74,8 +74,8 @@ public sealed class ChartTimeSessionProjectionTests {
         var before = XDocument.Parse(window.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-x") == Oa(Friday.AddHours(8)).ToString("G17", System.Globalization.CultureInfo.InvariantCulture)
             && (string?)node.Attribute("data-cfx-role") == "point");
         Assert.All(before, point => Assert.Equal("false", (string?)point.Attribute("data-cfx-visible")));
-        Assert.Null(full.XProjection.ConstrainViewport(new ChartXViewport(full.XProjection.FullMinimum, full.XProjection.FullMaximum)));
-        var zero = new ChartXViewport(Oa(Friday.AddDays(1)), Oa(Friday.AddDays(2)));
+        Assert.Null(full.XProjection.ConstrainViewport(new ChartAxisWindow(full.XProjection.FullMinimum, full.XProjection.FullMaximum)));
+        var zero = new ChartAxisWindow(Oa(Friday.AddDays(1)), Oa(Friday.AddDays(2)));
         Assert.Throws<ArgumentOutOfRangeException>(() => full.XProjection.ConstrainViewport(zero));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Prepare(Context(), new ChartCartesianViewport(x: zero)));
         Assert.NotEmpty(window.ToPng());
@@ -101,7 +101,7 @@ public sealed class ChartTimeSessionProjectionTests {
     [Fact]
     public void CompactWeekendWindowKeepsDateContextWhenCalendarStrideFitsCaptions() {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 440)), VisualTheme.Graphite());
-        var window = Mixed().Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(Oa(Monday.AddDays(-1)), Oa(Monday.AddHours(6)))));
+        var window = Mixed().Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(Oa(Monday.AddDays(-1)), Oa(Monday.AddHours(6)))));
         var ticks = window.Scene.DataProjection!.X.DisplayTicks;
         Assert.NotEmpty(ticks);
         Assert.All(ticks, tick => Assert.Contains("02-02", tick.Text));

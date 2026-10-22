@@ -1,3 +1,37 @@
+  const validTimeSpacing = spacing => spacing === undefined || !!spacing && ['ordinal', 'unit'].includes(spacing.kind)
+    && Array.isArray(spacing.instants) && spacing.instants.length >= (spacing.kind === 'unit' ? 2 : 1)
+    && spacing.instants.length <= (spacing.kind === 'unit' ? 100001 : 100000)
+    && spacing.instants.every((value, index, values) => Number.isFinite(value) && value >= 0
+      && (index === 0 || value > values[index - 1]));
+  const timeSpacingIndex = (instants, value) => {
+    let low = 0, high = instants.length - 1;
+    while (low <= high) { const middle = low + Math.floor((high - low) / 2); if (instants[middle] <= value) low = middle + 1; else high = middle - 1; }
+    return high;
+  };
+  const transformedSpacingValue = (spacing, value, bound) => {
+    const values = spacing.instants, last = values.length - 1, found = timeSpacingIndex(values, value);
+    if (spacing.kind === 'unit') {
+      if (found < 0) return (value - values[0]) / (values[1] - values[0]);
+      if (found >= last) return last + (value - values[last]) / (values[last] - values[last - 1]);
+      return found + (bound === undefined ? .5 : bound ? 1 : 0);
+    }
+    if (last === 0) return value - values[0];
+    const index = Math.max(0, Math.min(last - 1, found));
+    return index + (value - values[index]) / (values[index + 1] - values[index]);
+  };
+  const projectedSpacingValue = (spacing, coordinate) => {
+    const values = spacing.instants, last = values.length - 1;
+    if (spacing.kind === 'unit') {
+      if (coordinate <= 0) return values[0] + coordinate * (values[1] - values[0]);
+      if (coordinate >= last) return values[last] + (coordinate - last) * (values[last] - values[last - 1]);
+      return values[Math.floor(coordinate)];
+    }
+    if (last === 0) return values[0] + coordinate;
+    const index = Math.max(0, Math.min(last - 1, Math.floor(coordinate)));
+    return values[index] + (coordinate - index) * (values[index + 1] - values[index]);
+  };
+  const transformedAxisBound = (axis, value, maximum) => axis.timeSpacing
+    ? transformedSpacingValue(axis.timeSpacing, value, maximum) : transformedAxisValue(axis, value);
   const validTimeSessions = sessions => sessions === undefined || Array.isArray(sessions) && sessions.length > 0
     && sessions.every((session, index) => session && [session.minimum, session.maximum, session.offset].every(Number.isFinite)
       && session.minimum >= 0 && session.maximum > session.minimum && session.offset >= 0
@@ -31,13 +65,17 @@
     const axis = value => !!value && [value.minimum, value.maximum, value.transformedMinimum, value.transformedMaximum, value.threshold].every(Number.isFinite)
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
-      && validTimeSessions(value.timeSessions) && (value.timeSessions === undefined || value.scale === 'time')
+      && Number.isFinite(value.logarithmBase ?? 10) && (value.logarithmBase ?? 10) > 1
+      && ['positive', 'negative'].includes(value.logarithmicDomain ?? 'positive')
+      && validTimeSessions(value.timeSessions) && validTimeSpacing(value.timeSpacing)
+      && (!(value.timeSessions || value.timeSpacing) || value.scale === 'time') && !(value.timeSessions && value.timeSpacing)
       && (value.displayTicks === undefined || Array.isArray(value.displayTicks) && value.displayTicks.every(tick =>
         tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')))
       && (value.displayBounds === undefined || Array.isArray(value.displayBounds) && value.displayBounds.every(tick =>
         tick && Number.isFinite(tick.value) && typeof tick.text === 'string' && (tick.instant === undefined || typeof tick.instant === 'string')));
     return !!plot && [plot.x, plot.y, plot.width, plot.height].every(Number.isFinite) && plot.width > 0 && plot.height > 0
-      && typeof projection.horizontal === 'boolean' && axis(projection.x) && (projection.y === undefined || axis(projection.y));
+      && typeof projection.horizontal === 'boolean' && (projection.x !== undefined || projection.y !== undefined)
+      && (projection.x === undefined || axis(projection.x)) && (projection.y === undefined || axis(projection.y));
   };
   const brushPointer = (root, stage, event) => {
     const point = stagePointer(stage, event, true), plot = visibleCartesianPlot(root, stage, root._cfxDataProjection?.plotBounds);
@@ -55,13 +93,16 @@
     const span = axis.transformedMaximum - axis.transformedMinimum;
     const value = Number.isFinite(span) ? axis.transformedMinimum + ratio * span
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
-    const raw = axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic' ? Math.pow(10, value)
-      : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(10, Math.abs(value)) - 1) : value;
+    const base = axis.logarithmBase ?? 10;
+    const raw = axis.timeSpacing ? projectedSpacingValue(axis.timeSpacing, value) : axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic'
+      ? axis.logarithmicDomain === 'negative' ? -Math.pow(base, -value) : Math.pow(base, value)
+      : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(base, Math.abs(value)) - 1) : value;
     return clamp(raw, axis.minimum, axis.maximum);
   };
-  const transformedAxisValue = (axis, value) => axis.timeSessions ? transformedSessionValue(axis.timeSessions, value)
-    : axis.scale === 'logarithmic' ? Math.log10(value)
-    : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * Math.log10(1 + Math.abs(value) / axis.threshold) : value;
+  const axisLogarithm = (axis, value) => (axis.logarithmBase ?? 10) === 10 ? Math.log10(value) : Math.log(value) / Math.log(axis.logarithmBase);
+  const transformedAxisValue = (axis, value) => axis.timeSpacing ? transformedSpacingValue(axis.timeSpacing, value) : axis.timeSessions ? transformedSessionValue(axis.timeSessions, value)
+    : axis.scale === 'logarithmic' ? axis.logarithmicDomain === 'negative' ? -axisLogarithm(axis, -value) : axisLogarithm(axis, value)
+    : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axisLogarithm(axis, 1 + Math.abs(value) / axis.threshold) : value;
   const enclosingAxisTicks = (axis, values) => {
     const ticks = [...(axis.displayTicks || []), ...(axis.displayBounds || [])]
       .filter(tick => tick.value >= axis.minimum && tick.value <= axis.maximum);
@@ -91,7 +132,8 @@
     const categoryDirection = projection.horizontal ? 'y' : 'x';
     const categoryAxis = projection[categoryDirection];
     const categoryLabels = categoryAxis?.scale === 'linear' && Array.isArray(metadata.categoryLabels) ? metadata.categoryLabels : undefined;
-    const selectedAxes = [['x', projection.x, x], ...(root.dataset.cfxBrushAxis !== 'x' && projection.y ? [['y', projection.y, y]] : [])];
+    const selectedAxes = [...(projection.x ? [['x', projection.x, x]] : []),
+      ...(root.dataset.cfxBrushAxis !== 'x' && projection.y ? [['y', projection.y, y]] : [])];
     const range = {}, displayRange = {}, ratios = { x, y }, captions = {};
     for (const [direction, axis, endpoints] of selectedAxes) {
       const raw = endpoints.map(ratio => projectedAxisValue(axis, ratio)).sort((a, b) => a - b);

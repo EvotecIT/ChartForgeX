@@ -9,19 +9,22 @@ public sealed class HorizontalViewportBoundaryTests {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void HorizontalLinesRejectTheVerticalOnlyXWindow(bool step) {
+    public void HorizontalLinesApplyThePhysicalValueWindow(bool step) {
         var chart = Model(step);
         var context = VisualExportRequest.ForChart(chart).Context;
-        Assert.Throws<NotSupportedException>(() => chart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(15, 35))));
+        var prepared = chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(15, 35)));
+        Assert.Equal(15, prepared.XProjection!.Minimum); Assert.Equal(35, prepared.XProjection.Maximum);
+        Assert.Equal(0, prepared.YProjection!.Minimum); Assert.Equal(4, prepared.YProjection.Maximum);
+        Assert.NotEmpty(prepared.ToPng());
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void FullHorizontalScenesRetainTheirObservationsWithoutAnUnsupportedProjection(bool step) {
+    public void FullHorizontalScenesRetainTheirObservationsWithDetachedPhysicalProjections(bool step) {
         var chart = Model(step);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        Assert.Null(prepared.XProjection);
+        Assert.NotNull(prepared.XProjection); Assert.NotNull(prepared.YProjection);
         Assert.Equal(3, prepared.Regions.Count(region => region.Role == "point"));
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneText>(), label => label.Role == "data-label");
         Assert.NotEmpty(prepared.ToPng());

@@ -10,6 +10,7 @@ namespace ChartForgeX.Tests;
 public sealed class MermaidNotationReferenceCorpusTests {
     [Theory]
     [InlineData("class-native-notes-generics")]
+    [InlineData("class-native-members-namespaces")]
     [InlineData("class-two-way")]
     [InlineData("state-controls-notes")]
     [InlineData("state-nested-directions")]
@@ -77,12 +78,17 @@ public sealed class MermaidNotationReferenceCorpusTests {
     }
 
     [Fact]
-    public void LollipopReferenceAcceptanceDoesNotBecomeANativeFidelityClaim() {
+    public void SharedLollipopFixtureMapsItsInterfaceToADistinctNativeEndpoint() {
         var path = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "class-lollipop-retained");
         var parsed = new MermaidParser().ParseClass(File.ReadAllText(path + ".mmd"));
         using var expected = JsonDocument.Parse(File.ReadAllText(path + ".expected.json"));
         Assert.False(parsed.HasErrors);
-        Assert.Equal(MermaidDiagnosticCodes.UnsupportedStatement, Assert.Single(parsed.Diagnostics).Code);
+        Assert.Empty(parsed.Diagnostics);
+        var chart = parsed.Document!.ToTopologyChart();
+        var endpoint = Assert.Single(chart.Nodes, item => item.Id != "Service");
+        Assert.Equal(TopologyNodeShape.Circle, endpoint.Shape);
+        Assert.Equal("Interface", endpoint.Metadata["mermaid.id"]);
+        Assert.Equal(endpoint.Id, Assert.Single(chart.Edges).TargetNodeId);
         Assert.Equal(expected.RootElement.GetProperty("nativeClasses").EnumerateArray().Select(item => item.GetString()), parsed.Document!.Classes.Select(item => item.Id));
         Assert.Equal(expected.RootElement.GetProperty("nativeRetainedStatements").EnumerateArray().Select(item => item.GetString()), parsed.Document.RawStatements.Select(item => item.Text));
     }

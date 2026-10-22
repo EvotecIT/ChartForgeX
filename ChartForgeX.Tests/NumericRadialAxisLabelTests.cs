@@ -68,7 +68,7 @@ public sealed class NumericRadialAxisLabelTests {
             .WithXLabels("North", "South", "East").WithRadialGeometry(new(-75, 195, .2, .25, .1))
             .AddRadialBar("Count", new[] { new ChartPoint(1, minimum + 60), new ChartPoint(2, minimum + 70), new ChartPoint(3, minimum + 80) })
             .AddRadialBar("Rate", new[] { new ChartPoint(1, (minimum + 50) / 10d), new ChartPoint(2, (minimum + 65) / 10d), new ChartPoint(3, (minimum + 75) / 10d) });
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         chart.Options.YAxis.WithBounds(minimum, minimum + 100).WithReversal(reversed);
         chart.Options.SecondaryYAxis.WithBounds(minimum / 10d, (minimum + 100) / 10d).WithReversal(reversed);
         chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;

@@ -1160,6 +1160,206 @@
         "12": "accepted"
       },
       "provenance": "Authored participant boxes and creation/destruction lifecycle from https://mermaid.js.org/syntax/sequenceDiagram.html#actor-creation-and-destruction-v10-3-0; message-index and box membership facts qualified against pinned official 10.9.8, 11.17.2 and 12.2.0 engines."
+    },
+    "fixtures/class-native-styles.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored local regression from official Class/ER syntax. Source-derived candidate outcomes must be qualified against pinned engines before publication; no producer pass yet."
+    },
+    "fixtures/er-native-styles.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored local regression from official Class/ER syntax. Source-derived candidate outcomes must be qualified against pinned engines before publication; no producer pass yet."
+    },
+    "fixtures/class-native-members-namespaces.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored local regression from official Class/ER syntax. Source-derived candidate outcomes must be qualified against pinned engines before publication; no producer pass yet."
+    },
+    "fixtures/class-native-lollipops.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored local regression from official Class/ER syntax. Source-derived candidate outcomes must be qualified against pinned engines before publication; no producer pass yet."
+    },
+    "fixtures/er-native-groups.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "accepted"
+      },
+      "provenance": "Authored local regression from official Class/ER syntax. Source-derived candidate outcomes must be qualified against pinned engines before publication; no producer pass yet."
+    },
+    "fixtures/state-concurrent-regions.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored nested concurrent-region fixture from the official Mermaid state diagram concurrency, composite, direction and note grammar. Expected acceptance must be exercised against the repository-pinned parsers before publication."
+    },
+    "fixtures/agentflow-native-workflow.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "rejected",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression based on documented Mermaid notation (https://mermaid.js.org/syntax/agentflow.html). These are provisional source-derived expectations, not observed producer outcomes; all pinned syntax lanes require execution before qualification.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/railroad-abnf-native.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression based on documented Mermaid notation (https://mermaid.js.org/syntax/railroad.html). These are provisional source-derived expectations, not observed producer outcomes; all pinned syntax lanes require execution before qualification.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/railroad-ebnf-native.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression based on documented Mermaid notation (https://mermaid.js.org/syntax/railroad.html). These are provisional source-derived expectations, not observed producer outcomes; all pinned syntax lanes require execution before qualification.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/railroad-peg-native.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression based on documented Mermaid notation (https://mermaid.js.org/syntax/railroad.html). These are provisional source-derived expectations, not observed producer outcomes; all pinned syntax lanes require execution before qualification.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/railroad-ir-native.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression based on documented Mermaid notation (https://mermaid.js.org/syntax/railroad.html). These are provisional source-derived expectations, not observed producer outcomes; all pinned syntax lanes require execution before qualification.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/c4-nested-native.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression based on documented Mermaid notation (https://mermaid.js.org/syntax/c4.html). These are provisional source-derived expectations, not observed producer outcomes; all pinned syntax lanes require execution before qualification.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/journey-actors-sections.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression based on documented Mermaid notation (https://mermaid.js.org/syntax/userJourney.html). These are provisional source-derived expectations, not observed producer outcomes; all pinned syntax lanes require execution before qualification.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/timeline-period-sections.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression based on documented Mermaid notation (https://mermaid.js.org/syntax/timeline.html). These are provisional source-derived expectations, not observed producer outcomes; all pinned syntax lanes require execution before qualification.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/venn-proportional-overlap.mmd": {
+      "syntax": {
+        "10": "rejected",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Original authored ChartForgeX regression based on documented Mermaid notation (https://mermaid.js.org/syntax/venn.html). These are provisional source-derived expectations, not observed producer outcomes; all pinned syntax lanes require execution before qualification.",
+      "qualification": {
+        "status": "provisional-source-derived",
+        "referenceRuns": {
+          "10": "not-run",
+          "11": "not-run",
+          "12": "not-run"
+        }
+      }
+    },
+    "fixtures/shared-native-colors.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored source-color and frontmatter/directive precedence contract from documented Mermaid themeVariables. Candidate syntax/semantic expectations are source-derived and must be qualified by the pinned engines before publication; no producer pass yet."
     }
   }
 }

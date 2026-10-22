@@ -78,7 +78,7 @@ public sealed class CartesianLollipopLabelTests {
     internal static Chart Create(bool secondary, bool reversed, int sign) {
         var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
             .WithDataLabels().AddLollipop("Observations", new[] { new ChartPoint(1, 40 * sign), new ChartPoint(2, 60 * sign) });
-        if (secondary) chart.Series[0].UseSecondaryYAxis();
+        if (secondary) chart.Series[0].UseSecondaryValueAxis();
         chart.Options.YAxis.WithBounds(-100, 100).WithReversal(secondary ? false : reversed);
         chart.Options.SecondaryYAxis.WithBounds(-100, 100).WithReversal(secondary ? reversed : false);
         return chart;

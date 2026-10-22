@@ -171,7 +171,7 @@ public sealed class RangeBarEndpointLabelTests {
 
     [Fact]
     public void VerticalSecondaryIntervalsAndScalarMixturesKeepTheirExistingLabelOwners() {
-        var chart = Fixture(); chart.Series[1].YAxis = ChartAxisSide.Secondary;
+        var chart = Fixture(); chart.Series[1].ValueAxis = ChartAxisSide.Secondary;
         chart.Series[1].UpdateInterval(0, new ChartInterval(1, 900, 100));
         chart.Options.SecondaryYAxis.WithBounds(0, 1000).WithLabelFormatter(_ => "Axis-only");
         chart.AddLine("Scalar", new[] { new ChartPoint(.25, 5), new ChartPoint(1.75, 5) });

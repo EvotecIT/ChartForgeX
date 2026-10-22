@@ -16,8 +16,8 @@ internal static partial class VisualCartesianCompiler {
                 || ChartStackLayout.Participates(chart, series)) continue;
             var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
             if (placement is not (ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below)) continue;
-            var axis = series.YAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-            var selectedRange = series.YAxis == ChartAxisSide.Secondary ? secondaryRange! : range;
+            var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
+            var selectedRange = series.ValueAxis == ChartAxisSide.Secondary ? secondaryRange! : range;
             var map = new ChartMapper(plot, selectedRange, chart.Options.XAxis, axis);
             var barLayout = ResolveBarLayout(chart, context, plot, coordinates, map, stacks, seriesIndex);
             var style = SeriesLabelStyle(chart, context, series, colors);

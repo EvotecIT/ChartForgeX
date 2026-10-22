@@ -44,7 +44,7 @@
   const prepareRootBranchHighlights = (root) => {
     if (root.dataset.cfxHighlightMode !== 'root-branch') return;
     // Prepared targets normalize family names; native metadata also accepts the enum spelling.
-    const nodes = Array.from(root.querySelectorAll('[data-cfx-kind="sunburst" i][data-cfx-target-kind="node"]'));
+    const nodes = Array.from(root.querySelectorAll('[data-cfx-kind="sunburst" i][data-cfx-target-kind="node"]')).filter(node => !isPassiveTarget(node));
     if (!nodes.length) return;
     root._cfxBranchHighlights = nodes;
     nodes.forEach((node) => {

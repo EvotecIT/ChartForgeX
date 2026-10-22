@@ -100,11 +100,11 @@ public sealed class V2StackingTests {
         var chart = Bars(false, new[] { 3d }, new[] { 20d }, new[] { 9d }, new[] { 30d });
         chart.Series[0].WithStackGroup("Shared name").WithNormalization(100);
         chart.Series[2].WithStackGroup("Shared name").WithNormalization(100);
-        chart.Series[1].UseSecondaryYAxis().WithStackGroup("Shared name").WithNormalization(1);
-        chart.Series[3].UseSecondaryYAxis().WithStackGroup("Shared name").WithNormalization(1);
+        chart.Series[1].UseSecondaryValueAxis().WithStackGroup("Shared name").WithNormalization(1);
+        chart.Series[3].UseSecondaryValueAxis().WithStackGroup("Shared name").WithNormalization(1);
         var coordinates = ChartBarCoordinateMap.Create(chart); var stacks = ChartStackLayout.Create(chart, coordinates);
         Assert.Equal(25, stacks.Point(2, 0).Base); Assert.Equal(.4, stacks.Point(3, 0).Base, 8);
-        var range = ChartRange.FromChart(chart, coordinates, stacks); var secondary = ChartRange.FromSecondaryYAxis(chart, range, stacks);
+        var range = ChartRange.FromChart(chart, coordinates, stacks); var secondary = ChartRange.FromSecondaryValueAxis(chart, range, stacks);
         Assert.InRange(range.MaxY, 100, 110); Assert.InRange(secondary.MaxY, 1, 1.1);
         var prepared = Prepare(chart);
         Assert.Equal("100", Point(prepared, 2, 0).Metadata["data-cfx-stack-end"]);
@@ -161,7 +161,7 @@ public sealed class V2StackingTests {
         chart.Series[0].WithStackGroup("Pair").WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Start);
         chart.Series[1].WithStackGroup("Pair").WithInterpolation(interpolation, position);
         chart.Series[2].WithStackGroup("Separate").WithInterpolation(ChartInterpolation.Smooth);
-        chart.Series[3].UseSecondaryYAxis().WithStackGroup("Pair").WithInterpolation(ChartInterpolation.Step, ChartStepPosition.End);
+        chart.Series[3].UseSecondaryValueAxis().WithStackGroup("Pair").WithInterpolation(ChartInterpolation.Step, ChartStepPosition.End);
         var exception = Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         Assert.Contains("Interpolation and StepPosition", exception.Message);
 

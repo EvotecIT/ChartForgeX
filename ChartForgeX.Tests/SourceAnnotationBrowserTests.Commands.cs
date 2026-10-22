@@ -73,7 +73,7 @@ public sealed partial class SourceAnnotationBrowserTests {
         Assert.All(invalid, error => Assert.Equal("TypeError", error));
         await page.EvaluateAsync("""
             () => { window.pending=[];
-                drawings.connectViewport((request,signal)=>new Promise(resolve=>pending.push({request,signal,resolve})),{axes:'x'});
+                drawings.connectViewport((request,signal)=>new Promise(resolve=>pending.push({request,signal,resolve})),{axes:['x']});
                 drawings.connectAnnotations((request,signal)=>new Promise(resolve=>pending.push({request,signal,resolve})));
                 window.newDrawing={operation:'add',id:'added',drawing:{kind:'Note',start:{x:4,y:30},label:'Added'}};
                 drawings.setViewport({x:{minimum:2,maximum:8}}); }
@@ -117,7 +117,7 @@ public sealed partial class SourceAnnotationBrowserTests {
         var host = new AnnotationHost(800, VisualThemeMode.Light, secondary: true);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, 900, 900);
         var page = session.Page; await ConnectAnnotations(page, host);
-        Assert.True(await page.EvaluateAsync<bool>("() => drawings.getYWindow()===null"));
+        Assert.True(await page.EvaluateAsync<bool>("() => drawings.getYWindow()!==null&&JSON.parse(drawings.root.dataset.cfxPreparedChart).secondaryYProjection!==undefined"));
         await page.EvaluateAsync("""
             () => drawings.applyAnnotationChange({operation:'add',id:'secondary-note',drawing:{kind:'Note',start:{x:5,y:1500},label:'Secondary review',yAxis:'Secondary'}})
             """);
@@ -165,11 +165,11 @@ public sealed partial class SourceAnnotationBrowserTests {
         }
         internal string Initial => Create().ToInteractiveHtmlFragment(CommandOptions);
         internal string Fresh() => Create().ToInteractiveHtmlFragmentWithoutAssets(CommandOptions);
-        internal string Window() => new HtmlInteractiveChartRenderer().PrepareSection(Create(), new ChartCartesianViewport(x: new ChartXViewport(2, 8)), CommandOptions).Html;
+        internal string Window() => new HtmlInteractiveChartRenderer().PrepareSection(Create(), new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)), CommandOptions).Html;
         private Chart Create() {
             var chart = Model(_width, _mode, false);
             if (_secondary) chart.WithSecondaryYAxisBounds(1000, 2000).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("secondary"), "Secondary",
-                new[] { new ChartPoint(0, 1000), new ChartPoint(10, 2000) }).UseSecondaryYAxis());
+                new[] { new ChartPoint(0, 1000), new ChartPoint(10, 2000) }).UseSecondaryValueAxis());
             return chart;
         }
         internal object Prepare(JsonElement request) {

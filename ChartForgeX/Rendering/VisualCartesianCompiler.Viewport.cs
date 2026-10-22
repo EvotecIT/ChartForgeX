@@ -5,11 +5,11 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
-    private static bool ViewportObservationVisible(ChartXViewport? x, ChartYViewport? y, double sourceX, double minimumY, double maximumY) =>
-        (x == null || sourceX >= x.Minimum && sourceX <= x.Maximum)
-        && (y == null || maximumY >= y.Minimum && minimumY <= y.Maximum);
+    private static bool ViewportObservationVisible(ChartAxisWindow? x, ChartAxisWindow? y, double sourceX, double minimumY, double maximumY, ChartMapper map) =>
+        map.OverlapsSourceWindow(x, sourceX, sourceX, horizontalAxis: true)
+        && map.OverlapsSourceWindow(y, minimumY, maximumY, horizontalAxis: false);
 
-    private static bool ViewportLogicalYVisible(ChartYViewport? y, ChartRect plot, double first, double second) =>
+    private static bool ViewportLogicalYVisible(ChartAxisWindow? y, ChartRect plot, double first, double second) =>
         y == null || Math.Max(first, second) >= plot.Top && Math.Min(first, second) <= plot.Bottom;
 
     private static void ValidateFiniteYProjection(Chart chart, ChartMapper map) {

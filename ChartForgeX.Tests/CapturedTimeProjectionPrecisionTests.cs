@@ -66,7 +66,7 @@ public sealed class CapturedTimeProjectionPrecisionTests {
         valueAxis.Labels.Add(new ChartAxisLabel(First, "Start"));
         valueAxis.Labels.Add(new ChartAxisLabel(First.AddSeconds(10), "End"));
         categoryAxis.WithBounds(0, 3);
-        if (secondary) chart.Series[0].UseSecondaryYAxis();
+        if (secondary) chart.Series[0].UseSecondaryValueAxis();
         var prepared = chart.Prepare(new VisualRenderContext());
         var projection = Assert.IsType<ChartDataProjection>(prepared.Scene.DataProjection);
         var axis = horizontal ? projection.X : Assert.IsType<ChartDataAxisProjection>(projection.Y);

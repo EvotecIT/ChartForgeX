@@ -99,6 +99,8 @@ internal static partial class VisualArtifactInterchangeJson {
         writer.Property("topology");
         writer.StartObject();
         OptionalString(writer, "parentGroupId", topology.ParentGroupId);
+        if (topology.Presentation != ChartForgeX.Topology.TopologyGroupPresentation.Container)
+            String(writer, "presentation", topology.Presentation.ToString());
         OptionalString(writer, "layoutDirection", topology.LayoutDirection?.ToString());
         String(writer, "status", topology.Status.ToString());
         String(writer, "layoutPolicy", topology.LayoutPolicy.ToString());
@@ -324,6 +326,7 @@ internal static partial class VisualArtifactInterchangeJson {
         if (item == null) return null;
         return new VisualArtifactInterchangeTopologyGroup {
             ParentGroupId = OptionalString(item, "parentGroupId"),
+            Presentation = OptionalEnum<ChartForgeX.Topology.TopologyGroupPresentation>(item, "presentation") ?? ChartForgeX.Topology.TopologyGroupPresentation.Container,
             LayoutDirection = OptionalEnum<ChartForgeX.Topology.TopologyLayoutDirection>(item, "layoutDirection"),
             Status = RequiredEnum<ChartForgeX.Topology.TopologyHealthStatus>(item, "status"),
             LayoutPolicy = RequiredEnum<ChartForgeX.Topology.TopologyGroupLayoutPolicy>(item, "layoutPolicy"),

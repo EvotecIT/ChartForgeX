@@ -100,7 +100,7 @@ public sealed class AutomaticAxisPrecisionTests {
     public void PreparedPrimaryAndSecondaryTicksRetainSmallSignedFactsAndDetachedExports(bool secondary) {
         var observations = Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3));
         var chart = Chart.Create().WithSize(640, 400).WithLegend(false).AddTrendLine("Regression", observations);
-        if (secondary) chart.Series[0].UseSecondaryYAxis();
+        if (secondary) chart.Series[0].UseSecondaryValueAxis();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var role = secondary ? "axis-secondary-y-label" : "axis-y-label";
         var captions = Captions(prepared, role);

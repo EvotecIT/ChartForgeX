@@ -117,6 +117,20 @@ var section = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
 });
 ```
 
+## Native journey and categorical timeline diagrams
+
+The dependency-free core namespace `ChartForgeX.VisualBlocks` includes `JourneyDiagramBlock` and `TimelineDiagramBlock`. They render through the same native SVG scene and PNG raster owner as the other core diagrams. Journey tasks have stable identities, a one-to-five score, optional section identity and actor membership. Timeline periods have ordered text events and optional section identity; reading direction is explicit and period labels are never inferred to be durations.
+
+```csharp
+var journey = JourneyDiagramBlock.Create()
+    .AddSection("resolve", "Resolve")
+    .AddTask("diagnose", "Diagnose", 3, new[] { "Customer", "Agent" }, "resolve")
+    .AddTask("recover", "Recover", 5, new[] { "Agent" }, "resolve");
+var timeline = TimelineDiagramBlock.Create()
+    .AddSection("delivery", "Delivery")
+    .AddPeriod("launch", "Before launch", new[] { "Interview users", "Review findings" }, "delivery");
+```
+
 ## Terminal Presentations
 
 `TerminalStory`, in `ChartForgeX.Stories`, creates a deterministic console presentation from structured commands and output. It does not execute commands. That separation makes the same renderer suitable for authored product demos, documentation, release evidence, and transcripts captured by a caller-controlled script:

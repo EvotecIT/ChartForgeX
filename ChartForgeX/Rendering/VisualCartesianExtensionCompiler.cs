@@ -37,7 +37,7 @@ internal static partial class VisualCartesianCompiler {
     private static void DrawExtensionSeries(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         ChartMapper map, ChartStackLayout stacks, int index, VisualThemeColors colors, List<LabelPlacementRequest> labels, List<LabelObstacle> obstacles,
         ChartBubbleSizeScale? bubbleScale, IReadOnlyDictionary<double, string>? categoryCaptions, ChartSeriesColorSurface? colorSurface = null,
-        ChartXViewport? xViewport = null, ChartYViewport? yViewport = null) {
+        ChartAxisWindow? xViewport = null, ChartAxisWindow? yViewport = null) {
         var series = chart.Series[index];
         switch (series.Kind) {
             case ChartSeriesKind.DifferenceArea:
@@ -115,7 +115,7 @@ internal static partial class VisualCartesianCompiler {
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(observation),
             ["data-cfx-x"] = Number(series.RenderPoints[rawStart].X), ["data-cfx-y"] = Number(series.RenderPoints[rawStart].Y),
-            ["data-cfx-label"] = label.DisplayedText, ["data-cfx-axis"] = series.YAxis.ToString().ToLowerInvariant(),
+            ["data-cfx-label"] = label.DisplayedText, ["data-cfx-axis"] = series.ValueAxis.ToString().ToLowerInvariant(),
             ["data-cfx-fill-pattern"] = ObservationPattern(series, observation).ToString(),
             ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-source-count"] = "1",
             ["data-cfx-break-before"] = series.RenderPoints[rawStart].BreakBefore ? "true" : "false"

@@ -52,7 +52,7 @@ public sealed class GraphiteFrameTypographyTests {
         var links = new[] { new ChartTreeLink("Root", "First", 30), new ChartTreeLink("Root", "Second", 20) };
         switch (kind) {
             case ChartSeriesKind.Bubble: return chart.AddBubble("Measure", new[] { new ChartBubble(1, 20, 10) });
-            case ChartSeriesKind.ErrorBar: return chart.AddErrorBar("Measure", new[] { new ChartErrorBar(1, 20, 10, 30) });
+            case ChartSeriesKind.ErrorBar: return chart.AddErrorBar("Measure", new[] { new ChartErrorBar(1, 20, yBounds: new ChartErrorBounds(10, 30)) });
             case ChartSeriesKind.Candlestick: return chart.AddCandlestick("Measure", candles);
             case ChartSeriesKind.Ohlc: return chart.AddOhlc("Measure", candles);
             case ChartSeriesKind.RangeBand: return chart.AddRangeBand("Measure", ranges);

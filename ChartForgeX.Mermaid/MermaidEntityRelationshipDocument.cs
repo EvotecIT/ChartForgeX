@@ -13,8 +13,17 @@ public sealed class MermaidEntityRelationshipDocument : MermaidDocument {
     /// <summary>Gets entities in source order.</summary>
     public List<MermaidEntityNode> Entities { get; } = new();
 
+    /// <summary>Gets source-authored groups in declaration order.</summary>
+    public List<MermaidEntityGroup> Groups { get; } = new();
+
     /// <summary>Gets relationships in source order.</summary>
     public List<MermaidEntityRelationship> Relationships { get; } = new();
+
+    /// <summary>Gets named style definitions in source order.</summary>
+    public List<MermaidStyleDefinition> ClassDefinitions { get; } = new();
+
+    /// <summary>Gets style declarations and assignments in source order.</summary>
+    public List<MermaidRawStatement> StyleStatements { get; } = new();
 }
 
 /// <summary>
@@ -33,8 +42,17 @@ public sealed class MermaidEntityNode : MermaidAstNode {
     /// <summary>Gets or sets an optional display alias; relationships continue to use <see cref="Id"/>.</summary>
     public string? Label { get; set; }
 
+    /// <summary>Gets or sets the containing entity-group identity.</summary>
+    public string? GroupId { get; set; }
+
     /// <summary>Gets entity attributes.</summary>
     public List<MermaidEntityAttribute> Attributes { get; } = new();
+
+    /// <summary>Gets assigned style classes in source order.</summary>
+    public List<string> Classes { get; } = new();
+
+    /// <summary>Gets resolved style declarations, including properties diagnosed without a native mapping.</summary>
+    public Dictionary<string, string> Styles { get; } = new();
 }
 
 /// <summary>

@@ -17,7 +17,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task AcceptedNativeResetPublishesTheCommittedSelectionAndClearsSynchronizedPeers(bool dark, bool selected) {
         if (!Enabled) return;
         var chart = NativeLinkedChart(dark);
-        var initial = NativeLinkedSection(chart, new ChartXViewport(2, 8));
+        var initial = NativeLinkedSection(chart, new ChartAxisWindow(2, 8));
         var full = NativeLinkedSection(chart);
         var peer = NativeLinkedSection(chart, id: "linked-native-peer");
         await using var session = await OpenAsync(NativeLinkedPage(initial, peer, dark), 820, 1000);
@@ -55,7 +55,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task FailedOrCanceledNativeResetRetainsSelectionAndSettlesTheHostCandidate(string outcome) {
         if (!Enabled) return;
         var chart = NativeLinkedChart(false);
-        await using var session = await OpenAsync(NativeLinkedPage(NativeLinkedSection(chart, new ChartXViewport(2, 8)),
+        await using var session = await OpenAsync(NativeLinkedPage(NativeLinkedSection(chart, new ChartAxisWindow(2, 8)),
             NativeLinkedSection(chart, id: "linked-native-peer"), false), 820, 1000);
         var page = session.Page;
         await BindNativeLinkedProbeAsync(page, true);
@@ -98,13 +98,13 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task ReplacementRestorationHonorsSingleSelectionForOrdinaryAndNativeCommits(bool dark, bool native) {
         if (!Enabled) return;
         var chart = NativeLinkedChart(dark);
-        await using var session = await OpenAsync(NativeLinkedPage(NativeLinkedSection(chart, native ? new ChartXViewport(2, 8) : null), null, dark), 820, 700);
+        await using var session = await OpenAsync(NativeLinkedPage(NativeLinkedSection(chart, native ? new ChartAxisWindow(2, 8) : null), null, dark), 820, 700);
         var page = session.Page;
         await BindNativeLinkedProbeAsync(page, false);
         var ids = native ? new[] { "middle", "last" } : new[] { "first", "middle", "last" };
         await page.EvaluateAsync("ids=>{chartController.select({observationIds:ids});window.nativeSelectionSnapshot=chartController.getSelection()}", ids);
         Assert.Equal(ids.Length, await page.EvaluateAsync<int>("()=>chartController.getSelection().length"));
-        var replacement = NativeLinkedSection(NativeLinkedChart(dark, removeFirst: !native), native ? new ChartXViewport(2.6, 7.4) : null,
+        var replacement = NativeLinkedSection(NativeLinkedChart(dark, removeFirst: !native), native ? new ChartAxisWindow(2.6, 7.4) : null,
             ChartSelectionMode.Single);
         if (native) {
             await page.Locator("#native-source [data-cfx-zoom=in]").ClickAsync();
@@ -140,7 +140,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddSeries(series);
     }
 
-    private static string NativeLinkedSection(Chart chart, ChartXViewport? viewport = null,
+    private static string NativeLinkedSection(Chart chart, ChartAxisWindow? viewport = null,
         ChartSelectionMode mode = ChartSelectionMode.Toggle, bool adaptive = false, string id = "linked-native-source") =>
         new HtmlInteractiveChartRenderer().PrepareSection(chart, viewport == null ? null : new ChartCartesianViewport(x: viewport), options => {
             Fit(options); options.Interaction.ChartId = id; options.Interaction.GroupName = "linked-native-contract";

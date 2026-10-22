@@ -8,10 +8,10 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>Partitions every sibling set with the same binary rectangle layout, inside its parent's measured header and padding.</summary>
 internal static class ChartTreemapLayout {
-    internal static IReadOnlyList<ChartTreemapTile> Compute(ChartSeries series, ChartRect plot, ChartTreemapOptions options, Func<int, double> headerHeight) {
+    internal static IReadOnlyList<ChartTreemapTile> Compute(ChartSeries series, ChartRect plot, ChartTreemapOptions options, Func<int, double> headerHeight, ChartHierarchyPreparation? view = null) {
         var index = series.Relationships ?? throw new InvalidOperationException("Treemaps require explicit items.");
         var tiles = new List<ChartTreemapTile>(series.HierarchyItems.Count);
-        Siblings(index.Roots, plot);
+        Siblings(view?.Roots ?? index.Roots, plot);
         return tiles;
 
         void Siblings(IReadOnlyList<int> siblings, ChartRect area) {

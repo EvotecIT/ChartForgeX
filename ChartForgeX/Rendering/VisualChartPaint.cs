@@ -33,9 +33,9 @@ internal static class VisualChartPaint {
             top ? ChartVisualPrimitives.BarGradientTopBlend : ChartVisualPrimitives.BarGradientBottomBlend).WithOpacity(actual, opacity);
     }
 
-    internal static bool ExplicitDataLabelColor(Chart chart, int point = -1, bool ticks = false) {
+    internal static bool ExplicitDataLabelColor(Chart chart, int point = -1, bool ticks = false, int seriesIndex = 0) {
         if (ticks) return chart.Options.TickLabelStyle.Color.HasValue;
-        var series = chart.Series[0];
+        var series = chart.Series[seriesIndex];
         return chart.Options.DataLabelStyle.Color.HasValue || series.DataLabelStyle.Color.HasValue
             || point >= 0 && point < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[point]?.Color != null;
     }

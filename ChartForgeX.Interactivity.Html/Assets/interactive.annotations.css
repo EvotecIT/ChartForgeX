@@ -1,0 +1,21 @@
+.cfx-annotation-editor {
+  display: flex; flex-wrap: wrap; align-items: end; gap: 8px; padding: 12px 16px;
+  background: var(--cfx-tooltip-surface, #0f172a); border-block: 1px solid var(--cfx-tooltip-line, #64748b); color: var(--cfx-tooltip-text, #e5e7eb);
+}
+.cfx-annotation-editor[hidden] { display: none; }
+.cfx-annotation-editor label { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 12px; }
+.cfx-annotation-editor select, .cfx-annotation-editor input { min-width: 0; max-width: min(100%, 24rem); }
+.cfx-annotation-editor button, .cfx-annotation-editor select, .cfx-annotation-editor input {
+  border: 1px solid currentColor; border-radius: 5px; color: inherit; background: transparent; padding: 6px 9px; font: inherit;
+}
+.cfx-annotation-editor button { cursor: pointer; }
+.cfx-annotation-editor :disabled { opacity: .5; cursor: default; }
+.cfx-annotation-editor :focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+.cfx-annotation-editor__status { flex-basis: 100%; min-height: 1.4em; font-size: 12px; }
+.cfx-annotation-preview { color: var(--cfx-tooltip-text, #e5e7eb); pointer-events: none; }
+.cfx-annotation-preview__line { stroke: currentColor; stroke-width: 2; stroke-dasharray: 5 3; vector-effect: non-scaling-stroke; }
+.cfx-annotation-preview__channel { fill: currentColor; fill-opacity: .12; }
+.cfx-annotation-preview__handle { pointer-events: all; fill: var(--cfx-tooltip-surface, #0f172a); stroke: currentColor; stroke-width: 2; cursor: move; vector-effect: non-scaling-stroke; }
+.cfx-annotation-preview__handle:focus-visible { stroke-width: 4; }
+@media (prefers-reduced-motion: reduce) { .cfx-annotation-editor *, .cfx-annotation-preview * { transition: none; animation: none; } }
+@media (forced-colors: active) { .cfx-annotation-preview { color: CanvasText; } .cfx-annotation-preview__handle { fill: Canvas; } }

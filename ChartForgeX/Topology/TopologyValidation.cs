@@ -99,12 +99,21 @@ public sealed class TopologyChartValidator {
         foreach (var group in chart.Groups) {
             if (string.IsNullOrWhiteSpace(group.Id)) Add(result, "group-id-empty", "Group id is required.", null);
             if (string.IsNullOrWhiteSpace(group.Label)) Add(result, "group-label-empty", "Group label is required.", group.Id);
+            if (group.Presentation == TopologyGroupPresentation.Compartment && group.ParentGroupId == null)
+                Add(result, "compartment-parent", "A compartment requires a containing group.", group.Id);
             if (!IsPositive(group.Width)) Add(result, "group-width", "Group '" + group.Id + "' width must be positive.", group.Id);
             if (!IsPositive(group.Height)) Add(result, "group-height", "Group '" + group.Id + "' height must be positive.", group.Id);
             if (!IsFinite(group.X) || !IsFinite(group.Y)) Add(result, "group-coordinate", "Group '" + group.Id + "' coordinates must be finite.", group.Id);
             ValidateCoordinatePair(result, "group", group.Id, group.Longitude, group.Latitude);
             if (group.LayoutDirection.HasValue && !Enum.IsDefined(typeof(TopologyLayoutDirection), group.LayoutDirection.Value))
                 Add(result, "group-layout-direction", "Group '" + group.Id + "' has an undefined layout direction.", group.Id);
+        }
+        foreach (var parent in chart.Groups) {
+            var children = chart.Groups.Where(group => group.ParentGroupId == parent.Id).ToArray();
+            if (!children.Any(group => group.Presentation == TopologyGroupPresentation.Compartment)) continue;
+            if (children.Any(group => group.Presentation != TopologyGroupPresentation.Compartment)
+                || chart.Nodes.Any(node => node.GroupId == parent.Id))
+                Add(result, "compartment-membership", "A compartmented group contains only ordered compartments; put nodes and other groups inside them.", parent.Id);
         }
         foreach (var duplicate in chart.Groups.Where(group => !string.IsNullOrWhiteSpace(group.Id)).GroupBy(group => group.Id, StringComparer.Ordinal).Where(group => group.Count() > 1)) {
             Add(result, "duplicate-group-id", "Duplicate group id '" + duplicate.Key + "'.", duplicate.Key);

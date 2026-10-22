@@ -165,7 +165,7 @@ public sealed class TypedObservationLifecycleTests {
             ChartSeriesKind.RangeBand => ChartSeries.CreateRangeBand(id, "Typed", new[] { new ChartRangeBand(1, 2, 6) }),
             ChartSeriesKind.RangeArea => ChartSeries.CreateRangeArea(id, "Typed", new[] { new ChartRangeBand(1, 2, 6) }, smooth: false),
             ChartSeriesKind.RangeBar => ChartSeries.CreateRangeBar(id, "Typed", new[] { new ChartInterval(1, 6, 2) }),
-            ChartSeriesKind.ErrorBar => ChartSeries.CreateErrorBar(id, "Typed", new[] { new ChartErrorBar(1, 4, 2, 6) }),
+            ChartSeriesKind.ErrorBar => ChartSeries.CreateErrorBar(id, "Typed", new[] { new ChartErrorBar(1, 4, yBounds: new ChartErrorBounds(2, 6)) }),
             ChartSeriesKind.BoxPlot => ChartSeries.CreateBoxPlot(id, "Typed", new[] { new ChartBoxPlot(1, 1, 2, 3, 4, 5) }),
             ChartSeriesKind.Dumbbell => ChartSeries.CreateDumbbell(id, "Typed", new[] { new ChartDumbbell(1, 6, 2) }),
             _ => ChartSeries.CreateDifferenceArea(id, "Typed", new[] { new ChartDifferencePoint(1, 6, 2) })
@@ -177,7 +177,7 @@ public sealed class TypedObservationLifecycleTests {
             case ChartSeriesKind.Candlestick: case ChartSeriesKind.Ohlc: series.UpdateFinancialValue(0, new ChartCandlestick(1, value, value + 5, value - 5, value + 2)); break;
             case ChartSeriesKind.RangeBand: case ChartSeriesKind.RangeArea: series.UpdateRange(0, new ChartRangeBand(1, value, value + 5)); break;
             case ChartSeriesKind.RangeBar: series.UpdateInterval(0, new ChartInterval(1, value, value + 5)); break;
-            case ChartSeriesKind.ErrorBar: series.UpdateErrorBar(0, new ChartErrorBar(1, value, value - 2, value + 2)); break;
+            case ChartSeriesKind.ErrorBar: series.UpdateErrorBar(0, new ChartErrorBar(1, value, yBounds: new ChartErrorBounds(value - 2, value + 2))); break;
             case ChartSeriesKind.BoxPlot: series.UpdateBoxPlot(0, new ChartBoxPlot(1, value, value + 1, value + 2, value + 3, value + 4)); break;
             case ChartSeriesKind.Dumbbell: series.UpdateDumbbell(0, new ChartDumbbell(1, value, value + 5)); break;
             default: series.UpdateDifferencePoint(0, new ChartDifferencePoint(1, value, value + 5)); break;

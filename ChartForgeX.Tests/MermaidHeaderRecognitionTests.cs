@@ -1,3 +1,4 @@
+using ChartForgeX.Markup;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.VisualArtifacts;
@@ -8,7 +9,7 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidHeaderRecognitionTests {
     [Fact]
-    public void UpstreamRecognitionFixturesRetainTheirSourceWithoutArtifacts() {
+    public void UpstreamRecognitionFixturesRetainSourceAndNativeArtifacts() {
         var directory = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "recognition");
         var fixtures = Directory.GetFiles(directory, "*.mmd");
         Assert.NotEmpty(fixtures);
@@ -16,50 +17,45 @@ public sealed class MermaidHeaderRecognitionTests {
             var source = File.ReadAllText(path);
             var result = MermaidRenderer.Render(source);
             Assert.False(result.HasErrors, path);
-            Assert.Null(result.Artifact);
-            Assert.True(result.Document!.IsDiagnosticOnly);
-            Assert.Equal(source, result.Document.SourceText);
-            Assert.NotEmpty(result.Document.RawStatements);
-            Assert.Equal("CFXM002", Assert.Single(result.Diagnostics).Code);
+            Assert.True(result.Document is MermaidAgentflowDocument or MermaidRailroadDocument);
+            Assert.NotNull(result.Artifact);
+            Assert.Equal(source, result.Document!.SourceText);
+            Assert.False(result.Document.IsDiagnosticOnly);
         }
     }
 
-    [Theory]
-    [InlineData("agentflow-beta", "Agentflow")]
-    [InlineData("railroad-beta", "Railroad")]
-    [InlineData("railroad-ebnf-beta", "Railroad")]
-    [InlineData("railroad-abnf-beta", "Railroad")]
-    [InlineData("railroad-peg-beta", "Railroad")]
-    [InlineData("zenuml", "ZenUml")]
-    public void RecognizedFamiliesRetainSourceAndReportMissingRendering(string header, string kind) {
-        var source = "%% retained comment\n  " + header + "\n  retained body";
+    [Fact]
+    public void ZenUmlHeaderSelectsTypedNativeRendering() {
+        const string source = "%% retained comment\n  zenuml\n  A.run()";
         var result = MermaidRenderer.Render(source);
         Assert.False(result.HasErrors);
-        Assert.Null(result.Artifact);
-        var document = Assert.IsType<MermaidDocument>(result.Document);
-        Assert.Equal(kind, document.Kind.ToString());
+        var document = Assert.IsType<MermaidZenUmlDocument>(result.Document);
         Assert.Equal(source, document.SourceText);
-        Assert.Equal("retained body", Assert.Single(document.RawStatements).Text);
-        var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.True(document.IsDiagnosticOnly);
-        Assert.Equal("CFXM002", diagnostic.Code);
-        Assert.Equal(MermaidDiagnosticSeverity.Warning, diagnostic.Severity);
-        Assert.Equal(2, diagnostic.Span.Line);
-        Assert.Equal(3, diagnostic.Span.Column);
-        Assert.Equal(header.Length, diagnostic.Span.Length);
+        Assert.False(document.IsDiagnosticOnly);
+        Assert.NotNull(result.Artifact);
+        Assert.Equal(2, document.HeaderSpan.Line);
+        Assert.Equal(3, document.HeaderSpan.Column);
     }
 
-    [Theory]
-    [InlineData("agentflow-beta")]
-    [InlineData("railroad-ebnf-beta")]
-    public void MarkdownPreservesRecognizedFamilyWarningsWithoutConversionErrors(string header) {
-        var result = new MermaidVisualMarkupParser().Parse("Text\n\n```mermaid\n" + header + "\nbody\n```");
-        Assert.False(result.HasErrors);
+    [Fact]
+    public void ZenUmlBodyErrorsAreLocatedInsteadOfRecognitionOnlyWarnings() {
+        var result = MermaidRenderer.Render("%% heading\n  zenuml\n  return orphan");
+        Assert.True(result.HasErrors);
+        Assert.Null(result.Artifact);
+        Assert.IsType<MermaidZenUmlDocument>(result.Document);
+        var diagnostic = Assert.Single(result.Diagnostics, item => item.Severity == MermaidDiagnosticSeverity.Error);
+        Assert.Equal(3, diagnostic.Span.Line);
+        Assert.Equal(MermaidDiagnosticCodes.InvalidStatement, diagnostic.Code);
+    }
+
+    [Fact]
+    public void MarkdownPreservesLocatedZenUmlGrammarErrors() {
+        var result = new MermaidVisualMarkupParser().Parse("Text\n\n```mermaid\nzenuml\nreturn orphan\n```");
+        Assert.True(result.HasErrors);
         Assert.Empty(result.Artifacts);
-        var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.Equal(4, diagnostic.Line);
-        Assert.Equal("CFXM002", diagnostic.Code);
-        Assert.Equal(MermaidDiagnosticSeverity.Warning, diagnostic.Severity);
+        var diagnostic = Assert.Single(result.Diagnostics, item => item.Severity == MarkupDiagnosticSeverity.Error);
+        Assert.Equal(5, diagnostic.Line);
+        Assert.Equal(MermaidDiagnosticCodes.InvalidStatement, diagnostic.Code);
     }
 
     [Fact]

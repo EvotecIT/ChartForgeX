@@ -85,7 +85,7 @@ void Run(string name, ExampleRecipe recipe, string variant, VisualThemeMode mode
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode,
             new VisualFrame(name, showSurface: variant == "surface"));
         var prepared = name.EndsWith("viewport", StringComparison.Ordinal) && model is Chart viewportChart
-            ? viewportChart.Prepare(context, new ChartCartesianViewport(x: new ChartXViewport(2, 8))) : model.Prepare(context);
+            ? viewportChart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8))) : model.Prepare(context);
         var svg = prepared.ToSvg();
         var root = XDocument.Parse(svg).Root ?? throw new InvalidOperationException("The recipe produced no SVG root.");
         if ((string?)root.Attribute("width") != width.ToString(CultureInfo.InvariantCulture)

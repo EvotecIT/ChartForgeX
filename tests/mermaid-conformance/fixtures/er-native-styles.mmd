@@ -1,0 +1,15 @@
+erDiagram
+direction BT
+classDef default fill:#dbeafe,stroke:#1e3a8a,color:#172554
+classDef marked fill:#fef9c3,color:#7c2d12
+C["Customer account"]:::marked {
+  string id PK, FK "External key"
+  string? display_name
+}
+O[Orders] {
+  string id PK
+  string? note "Optional note"
+}
+C ||--o{ O : places
+class O marked
+style O fill:#fed7aa,stroke:#c2410c

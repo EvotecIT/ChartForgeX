@@ -119,6 +119,9 @@ internal static partial class VisualArtifactInterchangeJson {
             OptionalString(writer, "subtitle", group.Subtitle);
             OptionalString(writer, "status", group.Status);
             OptionalString(writer, "color", group.Color);
+            OptionalString(writer, "backgroundColor", group.BackgroundColor);
+            OptionalString(writer, "borderColor", group.BorderColor);
+            OptionalString(writer, "labelColor", group.LabelColor);
             OptionalString(writer, "href", group.Href);
             OptionalString(writer, "tooltip", group.Tooltip);
             OptionalNumber(writer, "x", group.X);
@@ -206,6 +209,7 @@ internal static partial class VisualArtifactInterchangeJson {
             OptionalString(writer, "iconId", detail.IconId);
             OptionalString(writer, "status", detail.Status);
             OptionalString(writer, "color", detail.Color);
+            DetailTextStyle(writer, detail.TextStyle);
             Extensions(writer, detail.Extensions);
             writer.EndObject();
         }
@@ -231,6 +235,7 @@ internal static partial class VisualArtifactInterchangeJson {
             OptionalString(writer, "sourcePortId", edge.SourcePortId);
             OptionalString(writer, "targetPortId", edge.TargetPortId);
             OptionalString(writer, "color", edge.Color);
+            OptionalString(writer, "labelColor", edge.LabelColor);
             OptionalString(writer, "href", edge.Href);
             OptionalString(writer, "tooltip", edge.Tooltip);
             Number(writer, "order", edge.Order);
@@ -326,7 +331,7 @@ internal static partial class VisualArtifactInterchangeJson {
             var item = value.AsObject("group");
             var group = new VisualArtifactInterchangeGroup {
                 Id = RequiredString(item, "id"), Role = OptionalEnum<VisualArtifactInterchangeGroupRole>(item, "role") ?? VisualArtifactInterchangeGroupRole.Unspecified, Kind = OptionalString(item, "kind") ?? string.Empty, Label = OptionalString(item, "label") ?? string.Empty,
-                Subtitle = OptionalString(item, "subtitle"), Status = OptionalString(item, "status"), Color = OptionalString(item, "color"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"),
+                Subtitle = OptionalString(item, "subtitle"), Status = OptionalString(item, "status"), Color = OptionalString(item, "color"), BackgroundColor = OptionalString(item, "backgroundColor"), BorderColor = OptionalString(item, "borderColor"), LabelColor = OptionalString(item, "labelColor"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"),
                 X = OptionalNumber(item, "x"), Y = OptionalNumber(item, "y"), Width = OptionalNumber(item, "width"), Height = OptionalNumber(item, "height")
             };
             group.Topology = ReadTopologyGroup(item);
@@ -362,7 +367,7 @@ internal static partial class VisualArtifactInterchangeJson {
             }
             foreach (var detailValue in OptionalArray(item, "details")) {
                 var detailItem = detailValue.AsObject("detail");
-                var detail = new VisualArtifactInterchangeDetail { Text = OptionalString(detailItem, "text"), Label = OptionalString(detailItem, "label") ?? string.Empty, Value = OptionalString(detailItem, "value") ?? string.Empty, IconId = OptionalString(detailItem, "iconId"), Status = OptionalString(detailItem, "status"), Color = OptionalString(detailItem, "color") };
+                var detail = new VisualArtifactInterchangeDetail { Text = OptionalString(detailItem, "text"), Label = OptionalString(detailItem, "label") ?? string.Empty, Value = OptionalString(detailItem, "value") ?? string.Empty, IconId = OptionalString(detailItem, "iconId"), Status = OptionalString(detailItem, "status"), Color = OptionalString(detailItem, "color"), TextStyle = ReadDetailTextStyle(detailItem) };
                 ReadExtensions(detailItem, detail.Extensions);
                 node.Details.Add(detail);
             }
@@ -377,7 +382,7 @@ internal static partial class VisualArtifactInterchangeJson {
                 Id = RequiredString(item, "id"), Role = OptionalEnum<VisualArtifactInterchangeEdgeRole>(item, "role") ?? VisualArtifactInterchangeEdgeRole.Unspecified, Kind = OptionalString(item, "kind") ?? string.Empty, SourceId = RequiredString(item, "sourceId"), TargetId = RequiredString(item, "targetId"),
                 Label = OptionalString(item, "label"), SecondaryLabel = OptionalString(item, "secondaryLabel"), TertiaryLabel = OptionalString(item, "tertiaryLabel"), SourceLabel = OptionalString(item, "sourceLabel"), TargetLabel = OptionalString(item, "targetLabel"),
                 Status = OptionalString(item, "status"), SourcePortId = OptionalString(item, "sourcePortId"), TargetPortId = OptionalString(item, "targetPortId"),
-                Color = OptionalString(item, "color"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"), Order = OptionalInt(item, "order") ?? 0
+                Color = OptionalString(item, "color"), LabelColor = OptionalString(item, "labelColor"), Href = OptionalString(item, "href"), Tooltip = OptionalString(item, "tooltip"), Order = OptionalInt(item, "order") ?? 0
             };
             edge.Topology = ReadTopologyEdge(item);
             edge.Flow = ReadFlowEdge(item);

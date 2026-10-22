@@ -1,0 +1,22 @@
+erDiagram
+direction LR
+Outside ||--o{ Domain : contains
+subgraph Domain["Data domain"]
+  direction TB
+  C["Customer account"] {
+    string id PK "Stable identity"
+    string? display_name
+  }
+  subgraph Orders["Order records"]
+    direction BT
+    O[Orders] {
+      int id PK
+    }
+    C ||--o{ O : places
+  end
+end
+classDef default fill:#fff7ed,stroke:#9a3412,color:#431407
+classDef region fill:#e0f2fe,stroke:#075985,color:#082f49
+class Domain region
+style Domain fill:#bae6fd
+style Orders fill:#dcfce7,stroke:#166534,color:#052e16

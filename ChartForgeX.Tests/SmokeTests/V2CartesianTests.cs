@@ -166,7 +166,7 @@ public sealed class V2CartesianTests {
         var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().AddLine("Primary", new[] { new ChartPoint(start, 0), new ChartPoint(start.AddDays(2), 100) })
             .AddScatter("Secondary", new[] { new ChartPoint(start, 1), new ChartPoint(start.AddDays(1), 10), new ChartPoint(start.AddDays(2), 100) });
-        chart.Series[1].UseSecondaryYAxis();
+        chart.Series[1].UseSecondaryValueAxis();
         chart.Options.XAxis.WithTimeScale().WithBounds(start.ToOADate(), start.AddDays(2).ToOADate());
         chart.Options.YAxis.WithBounds(0, 100);
         chart.Options.SecondaryYAxis.WithScale(ChartScaleKind.Logarithmic).WithBounds(1, 100).WithLabelFormatter(value => "L" + value);

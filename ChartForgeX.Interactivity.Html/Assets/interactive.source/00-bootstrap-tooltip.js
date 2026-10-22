@@ -166,6 +166,15 @@
       value: numericFactText(data, part)
     }));
   };
+  const errorBarTooltipRows = (node) => {
+    const data = node.dataset || {};
+    if ((data.cfxKind || '').toLowerCase() !== 'errorbar') return [];
+    return ['X', 'Y'].filter(axis => tooltipNumber(data['cfx' + axis + 'Lower']) && tooltipNumber(data['cfx' + axis + 'Upper']))
+      .map(axis => {
+        const lower = numericFactText(data, axis + 'Lower'), upper = numericFactText(data, axis + 'Upper');
+        return { name: rowName(node, axis.toLowerCase() + '-range', axis + ' range'), value: lower === '' && upper === '' ? '' : lower + ' - ' + upper };
+      });
+  };
   const gaugeTargetTooltipRows = (node) => Array.from({ length: Number((node.dataset || {}).cfxGaugeTargetCount) || 0 }, (_, index) => {
     const prefix = 'data-cfx-gauge-target-' + index + '-';
     return { name: node.getAttribute(prefix + 'label') || rowName(node, 'target', 'Target'),
@@ -224,6 +233,7 @@
       const lower = numericFactText(data, 'Lower'), upper = numericFactText(data, 'Upper');
       rows.push({ name: 'Range', value: lower === '' && upper === '' ? '' : lower + ' - ' + upper });
     }
+    rows.push(...errorBarTooltipRows(node));
     metadataRows(node).forEach((row) => push(row.name, row.value));
     return rows;
   };

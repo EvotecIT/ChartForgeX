@@ -10,6 +10,7 @@ internal static partial class ChartTimeScale {
     internal static IReadOnlyList<double>? GenerateFitting(ChartAxis axis, double min, double max,
         Func<IReadOnlyList<double>, bool> fits, bool allowCompactDates, IReadOnlyList<double>? regularObservations = null, double minimumStepDays = 0,
         int automaticTickCount = 8, double? calendarAnchor = null, Func<IReadOnlyList<double>, IReadOnlyList<double>>? selectTicks = null) {
+        if (axis.PreparedTimeDomain is { } domain) return domain.FitTicks(min, max, axis.HasExplicitTickCount ? axis.TickCount : automaticTickCount, fits);
         if (min < 0 || !IsRepresentable(max) || max - min < DaysPerSecond) return null;
         var limit = axis.HasExplicitTickCount ? axis.TickCount : automaticTickCount;
         var interval = FittingStartInterval(axis, min, max, limit, minimumStepDays);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
@@ -13,13 +14,15 @@ internal static partial class VisualBlockRendering {
         var theme = block.Options.ResolvedTheme;
         var requests = new List<LabelPlacementRequest>();
         var colors = new List<ChartColor>();
-        var radius = placements[0].Radius;
+        var radius = placements.Max(item => item.Radius);
         var captionCount = placements.Count + block.Intersections.Count + block.TextNodes.Count;
         var lineBudget = Math.Min(radius * .24, Math.Max(18, radius * 1.4 / (captionCount + 1)));
         var denseTextBudget = block.TextNodes.Count > 17 ? Math.Min(lineBudget, radius / (block.TextNodes.Count + 1)) : lineBudget;
         var gap = Math.Min(3, denseTextBudget * .15);
-        foreach (var placement in placements)
-            Add(new[] { placement.Set.Id }, placement.Set.Label, placement.X, placement.Y - radius * .52, radius * 1.16, 13.5, 800, placement.Set.TextColor ?? theme.Text);
+        foreach (var placement in placements) {
+            if (placement.Radius <= 0) continue;
+            Add(new[] { placement.Set.Id }, placement.Set.Label, placement.X, placement.Y - placement.Radius * .52, placement.Radius * 1.16, 13.5, 800, placement.Set.TextColor ?? theme.Text);
+        }
         foreach (var intersection in block.Intersections)
             AddRegion(intersection.SetIds, intersection.Label, 12.5, 700, intersection.TextColor ?? theme.Text);
         foreach (var text in block.TextNodes)
@@ -35,7 +38,11 @@ internal static partial class VisualBlockRendering {
         return result;
 
         void AddRegion(IReadOnlyList<string> ids, string text, double defaultSize, int weight, ChartColor color, double? heightBudget = null) {
-            var center = VennRegionCenter(placements, ids);
+            var circles = placements.Select(item => new VennCircle(item.X, item.Y, item.Radius)).ToArray();
+            var indices = ids.Select(id => { for (var i = 0; i < placements.Count; i++) if (placements[i].Set.Id == id) return i; throw new InvalidOperationException("Unknown Venn set."); }).ToArray();
+            var geometry = VennIntersection(circles, indices);
+            if (geometry.Area <= 0) return;
+            var center = geometry.Anchor;
             var width = Math.Max(42, radius * (ids.Count == 1 ? .95 : .72));
             var offset = ids.Count == 1 ? radius * .12 : ids.Count == 2 ? 5 : 18;
             Add(ids, text, center.X, center.Y + offset, width, defaultSize, weight, color, heightBudget);
@@ -47,7 +54,7 @@ internal static partial class VisualBlockRendering {
             foreach (var placement in placements) {
                 if (!ContainsId(ids, placement.Set.Id)) continue;
                 var verticalReach = Math.Abs(baseline - placement.Y) + textBudget;
-                var horizontalReach = Math.Sqrt(Math.Max(0, radius * radius - verticalReach * verticalReach));
+                var horizontalReach = Math.Sqrt(Math.Max(0, placement.Radius * placement.Radius - verticalReach * verticalReach));
                 width = Math.Min(width, Math.Max(1, 2 * (horizontalReach - Math.Abs(x - placement.X))));
             }
             var style = FitBodyTextStyle(theme, text, defaultSize, width, textBudget, weight);
@@ -66,7 +73,7 @@ internal static partial class VisualBlockRendering {
             foreach (var placement in placements) {
                 if (!ContainsId(ids, placement.Set.Id)) continue;
                 var horizontalReach = Math.Abs(x - placement.X) + metrics.Width / 2;
-                var verticalReach = Math.Sqrt(Math.Max(0, radius * radius - horizontalReach * horizontalReach));
+                var verticalReach = Math.Sqrt(Math.Max(0, placement.Radius * placement.Radius - horizontalReach * horizontalReach));
                 top = Math.Max(top, placement.Y - verticalReach); bottom = Math.Min(bottom, placement.Y + verticalReach);
             }
             // Every corner of the text box remains in each referenced circle. Vertical

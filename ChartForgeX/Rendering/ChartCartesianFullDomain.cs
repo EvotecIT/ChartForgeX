@@ -4,36 +4,52 @@ using ChartForgeX.Core;
 
 namespace ChartForgeX.Rendering;
 
-/// <summary>A native full-domain envelope shared by several layout contexts without changing authored axes.</summary>
+/// <summary>One completed physical-axis envelope shared by alternate native layouts without changing authored axes.</summary>
 internal sealed class ChartCartesianFullDomain {
-    private ChartCartesianFullDomain(ChartXViewport x, ChartYViewport? y) { X = x; Y = y; }
-    internal ChartXViewport X { get; }
-    internal ChartYViewport? Y { get; }
-    internal static ChartCartesianFullDomain Enclose(IReadOnlyList<PreparedVisual> scenes) {
-        var minimumX = double.PositiveInfinity; var maximumX = double.NegativeInfinity;
-        var minimumY = double.PositiveInfinity; var maximumY = double.NegativeInfinity; var hasY = true;
-        foreach (var scene in scenes) {
-            var x = scene.XProjection ?? throw new InvalidOperationException("Aligned Cartesian preparation requires a supported X projection in every drawing.");
-            minimumX = Math.Min(minimumX, x.FullMinimum); maximumX = Math.Max(maximumX, x.FullMaximum);
-            if (scene.YProjection is { } y) { minimumY = Math.Min(minimumY, y.FullMinimum); maximumY = Math.Max(maximumY, y.FullMaximum); }
-            else hasY = false;
-        }
-        return new ChartCartesianFullDomain(new ChartXViewport(minimumX, maximumX), hasY ? new ChartYViewport(minimumY, maximumY) : null);
+    private ChartCartesianFullDomain(ChartAxisWindow x, ChartAxisWindow y, ChartAxisWindow? secondaryX, ChartAxisWindow? secondaryY) {
+        X = x; Y = y; SecondaryX = secondaryX; SecondaryY = secondaryY;
     }
-    internal bool Matches(PreparedVisual scene) => scene.XProjection is { } x && x.FullMinimum == X.Minimum && x.FullMaximum == X.Maximum
-        && (Y == null || scene.YProjection is { } y && y.FullMinimum == Y.Minimum && y.FullMaximum == Y.Maximum);
+    internal ChartAxisWindow X { get; }
+    internal ChartAxisWindow Y { get; }
+    internal ChartAxisWindow? SecondaryX { get; }
+    internal ChartAxisWindow? SecondaryY { get; }
+    internal static ChartCartesianFullDomain Enclose(IReadOnlyList<PreparedVisual> scenes) => new(
+        Enclose(scenes, scene => scene.XProjection) ?? throw new InvalidOperationException("Aligned preparation requires an X projection in every drawing."),
+        Enclose(scenes, scene => scene.YProjection) ?? throw new InvalidOperationException("Aligned preparation requires a Y projection in every drawing."),
+        Enclose(scenes, scene => scene.SecondaryXProjection), Enclose(scenes, scene => scene.SecondaryYProjection));
 
-    internal void Apply(Chart chart, ChartRange range, ChartRange? secondaryRange) {
-        var x = Expanded(chart.Options.XAxis, range.MinX, range.MaxX, X.Minimum, X.Maximum);
-        range.SetXBounds(x.Minimum, x.Maximum); secondaryRange?.SetXBounds(x.Minimum, x.Maximum);
-        if (Y != null) {
-            var y = Expanded(chart.Options.YAxis, range.MinY, range.MaxY, Y.Minimum, Y.Maximum);
-            range.SetYBounds(y.Minimum, y.Maximum);
+    private static ChartAxisWindow? Enclose(IReadOnlyList<PreparedVisual> scenes, Func<PreparedVisual, ChartAxisProjection?> select) {
+        var minimum = double.PositiveInfinity; var maximum = double.NegativeInfinity;
+        foreach (var scene in scenes) {
+            var projection = select(scene);
+            if (projection == null) return null;
+            minimum = Math.Min(minimum, projection.FullMinimum); maximum = Math.Max(maximum, projection.FullMaximum);
+        }
+        return new ChartAxisWindow(minimum, maximum);
+    }
+    internal bool Matches(PreparedVisual scene) => Matches(X, scene.XProjection) && Matches(Y, scene.YProjection)
+        && Matches(SecondaryX, scene.SecondaryXProjection) && Matches(SecondaryY, scene.SecondaryYProjection);
+    private static bool Matches(ChartAxisWindow? window, ChartAxisProjection? projection) => window == null ? projection == null
+        : projection != null && projection.FullMinimum == window.Minimum && projection.FullMaximum == window.Maximum;
+
+    internal void Apply(Chart chart, ChartRange range, ChartRange? secondary) {
+        var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
+        var x = Expanded(chart.Options.XAxis, range.MinX, range.MaxX, X);
+        var y = Expanded(chart.Options.YAxis, range.MinY, range.MaxY, Y);
+        range.SetXBounds(x.Minimum, x.Maximum); range.SetYBounds(y.Minimum, y.Maximum);
+        if (secondary == null) return;
+        if (horizontal) {
+            var value = Expanded(chart.Options.SecondaryXAxis, secondary.MinX, secondary.MaxX, SecondaryX!);
+            secondary.SetXBounds(value.Minimum, value.Maximum); secondary.SetYBounds(y.Minimum, y.Maximum);
+        } else {
+            var value = Expanded(chart.Options.SecondaryYAxis, secondary.MinY, secondary.MaxY, SecondaryY!);
+            secondary.SetYBounds(value.Minimum, value.Maximum); secondary.SetXBounds(x.Minimum, x.Maximum);
         }
     }
-    private static (double Minimum, double Maximum) Expanded(ChartAxis axis, double minimum, double maximum, double domainMinimum, double domainMaximum) {
-        if (axis.Minimum.HasValue && domainMinimum != minimum || axis.Maximum.HasValue && domainMaximum != maximum)
+    private static ChartAxisWindow Expanded(ChartAxis axis, double minimum, double maximum, ChartAxisWindow domain) {
+        if (axis.Minimum.HasValue && domain.Minimum != minimum || axis.Maximum.HasValue && domain.Maximum != maximum)
             throw new InvalidOperationException("Aligned preparation must preserve every authored axis bound exactly.");
-        return (axis.Minimum.HasValue ? minimum : Math.Min(minimum, domainMinimum), axis.Maximum.HasValue ? maximum : Math.Max(maximum, domainMaximum));
+        return new ChartAxisWindow(axis.Minimum.HasValue ? minimum : Math.Min(minimum, domain.Minimum),
+            axis.Maximum.HasValue ? maximum : Math.Max(maximum, domain.Maximum));
     }
 }

@@ -22,12 +22,18 @@
   const comparisonLegendRows = (node) => {
     const data = node.dataset || {}, kind = (data.cfxKind || '').toLowerCase();
     if (!['dumbbell', 'errorbar'].includes(kind)) return null;
-    const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || data.cfxX;
+    const category = data.cfxCategoryLabel !== undefined ? data.cfxCategoryLabel : data.cfxXLabel || capturedText(data, 'cfxFormattedX', data.cfxX);
     const rows = [{ name: rowName(node, 'category', 'Category'), value: category }];
     if (kind === 'dumbbell') rows.push({ name: rowName(node, 'start', 'Start'), value: numericFactText(data, 'Start') },
       { name: rowName(node, 'end', 'End'), value: numericFactText(data, 'End') }, { name: rowName(node, 'delta', 'Delta'), value: numericFactText(data, 'Delta') });
-    else rows.push({ name: rowName(node, 'value', 'Value'), value: numericFactText(data, 'Value') },
-      { name: rowName(node, 'lower', 'Lower'), value: numericFactText(data, 'Lower') }, { name: rowName(node, 'upper', 'Upper'), value: numericFactText(data, 'Upper') });
+    else {
+      rows.push({ name: rowName(node, 'value', 'Value'), value: numericFactText(data, 'Value') });
+      for (const axis of ['X', 'Y']) {
+        if (!tooltipNumber(data['cfx' + axis + 'Lower']) || !tooltipNumber(data['cfx' + axis + 'Upper'])) continue;
+        rows.push({ name: rowName(node, axis.toLowerCase() + '-lower', axis + ' lower'), value: numericFactText(data, axis + 'Lower') },
+          { name: rowName(node, axis.toLowerCase() + '-upper', axis + ' upper'), value: numericFactText(data, axis + 'Upper') });
+      }
+    }
     return rows.filter((row) => row.value !== undefined && row.value !== null);
   };
   const legendSummaryRows = (item) => {
