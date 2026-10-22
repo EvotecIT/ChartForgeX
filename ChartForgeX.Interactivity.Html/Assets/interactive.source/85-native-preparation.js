@@ -50,9 +50,9 @@
     }
     syncXViewportControls(root); syncHierarchyNavigation(root);
   };
-  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null, motion = null) => {
+  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null, motion = null, preparedAdaptive) => {
     // Validate alternates before releasing the committed scene.
-    const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
+    const adaptive = adaptiveDrawing ? lifetime.adaptive : preparedAdaptive === undefined ? readAdaptiveLayout(next) : preparedAdaptive;
     // Commit one active drawing before notifying hosts or exposing fresh controls.
     // Native replies retain their captured layout policy; ordinary updates use the
     // current host width and the new breakpoint. Hidden hosts retain their drawing.
@@ -116,9 +116,11 @@
       if (typeof html !== 'string') throw new TypeError('A native preparation callback must return a fresh generated section HTML string.');
       const next = readChartSection(html, true).cloneNode(true);
       if (next.dataset.cfxChartId !== request.chartId) throw new TypeError('A native preparation reply must retain the chart identity.');
-      hooks.validate(next, request);
+      // Validate every drawing that this accepted native reply can expose before advancing its basis.
+      const adaptive = readAdaptiveLayout(next);
+      for (const drawing of adaptive ? [adaptive.wide, adaptive.narrow] : [next]) hooks.validate(drawing, request);
       const before = hooks.beforeCommit?.();
-      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true, nativeState, binding.motion);
+      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true, nativeState, binding.motion, adaptive);
       hooks.accepted?.(); hooks.committed?.(request, before);
       emitHostEvent(root, hooks.eventPrefix + 'change', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind: request.kind });
     }).catch(error => {

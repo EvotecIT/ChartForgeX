@@ -10,11 +10,11 @@ function fixture() {
   const requests = []; const binding = {};
   const api = new Function('capturedCartesianMetadata', 'hasFeature', 'nativePreparationBinding', 'copyHostValue',
     'chartLifetimes', 'uiText', 'interactiveTargets', 'requestNativePreparation', 'selectionSignature', 'emitHostEvent',
-    'publishResetSelection', 'publishInteractionState', 'syncResetControl', 'listenChart', 'readAdaptiveLayout', source + '\nreturn {requestNativeHierarchy,hierarchySnapshot};')(
+    'publishResetSelection', 'publishInteractionState', 'syncResetControl', 'listenChart', source + '\nreturn {requestNativeHierarchy,hierarchySnapshot};')(
     target => ({ hierarchy: target.model || model }), () => true, () => binding, value => JSON.parse(JSON.stringify(value)),
     new WeakMap([[root, {}]]), (_, __, fallback) => fallback, () => [],
     (target, channel, payload, hooks) => { requests.push({ target, channel, payload, hooks }); return true; },
-    () => '', () => {}, () => {}, () => {}, () => {}, () => {}, target => target.adaptive || null);
+    () => '', () => {}, () => {}, () => {}, () => {}, () => {});
   return { root, model, requests, api };
 }
 test('hierarchy requests validate source identity and use the existing managed transaction seam', () => {
@@ -28,10 +28,6 @@ test('hierarchy requests validate source identity and use the existing managed t
   for (const model of [{ kind: 'sunburst', seriesKey: 'work', rootId: 'team' },
     { kind: 'treemap', seriesKey: 'different', rootId: 'team' }, { kind: 'treemap', seriesKey: 'work', rootId: null }])
     assert.throws(() => requests[0].hooks.validate({ model }), TypeError);
-  assert.throws(() => requests[0].hooks.validate({ adaptive: {
-    wide: { model: { kind: 'treemap', seriesKey: 'work', rootId: 'team' } },
-    narrow: { model: { kind: 'treemap', seriesKey: 'work', rootId: null } }
-  } }), TypeError);
   assert.equal(api.requestNativeHierarchy(root, null), true); assert.deepEqual(requests[1].payload, { kind: 'reset', rootId: null });
 });
 test('committed root observations are detached from host mutation', () => {

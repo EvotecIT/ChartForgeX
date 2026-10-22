@@ -5158,9 +5158,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     }
     syncXViewportControls(root); syncHierarchyNavigation(root);
   };
-  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null, motion = null) => {
+  const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null, motion = null, preparedAdaptive) => {
     // Validate alternates before releasing the committed scene.
-    const adaptive = adaptiveDrawing ? lifetime.adaptive : readAdaptiveLayout(next);
+    const adaptive = adaptiveDrawing ? lifetime.adaptive : preparedAdaptive === undefined ? readAdaptiveLayout(next) : preparedAdaptive;
     // Commit one active drawing before notifying hosts or exposing fresh controls.
     // Native replies retain their captured layout policy; ordinary updates use the
     // current host width and the new breakpoint. Hidden hosts retain their drawing.
@@ -5224,9 +5224,11 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       if (typeof html !== 'string') throw new TypeError('A native preparation callback must return a fresh generated section HTML string.');
       const next = readChartSection(html, true).cloneNode(true);
       if (next.dataset.cfxChartId !== request.chartId) throw new TypeError('A native preparation reply must retain the chart identity.');
-      hooks.validate(next, request);
+      // Validate every drawing that this accepted native reply can expose before advancing its basis.
+      const adaptive = readAdaptiveLayout(next);
+      for (const drawing of adaptive ? [adaptive.wide, adaptive.narrow] : [next]) hooks.validate(drawing, request);
       const before = hooks.beforeCommit?.();
-      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true, nativeState, binding.motion);
+      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true, nativeState, binding.motion, adaptive);
       hooks.accepted?.(); hooks.committed?.(request, before);
       emitHostEvent(root, hooks.eventPrefix + 'change', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind: request.kind });
     }).catch(error => {
@@ -5525,8 +5527,11 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
   const annotationEditorChangeHooks = (root, id, drawing, replay) => {
     const state = annotationEditorState(root);
-    if (!state?.enabled) return {};
+    if (!state) return {};
     const before = annotationDrawingAt(root, id), after = drawing ?? null;
+    // A native reference line or band exists, but cannot be restored by this source-drawing editor.
+    const representable = before !== null || !nativeAnnotationNode(root, id);
+    if (!state.enabled) return representable ? {} : { committed: () => { state.undo = []; state.redo = []; } };
 
     const release = () => { state.pending = false; state.replay = null; refreshAnnotationEditor(root); };
     return {
@@ -5535,7 +5540,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       failed: () => { release(); state.error = uiText(root, 'AnnotationFailed', 'The annotation could not be updated.'); refreshAnnotationEditor(root); },
       committed: () => {
         // Only the native commit owner reaches here, after verifying every requested source fact.
-        if (replay) {
+        if (!representable) {
+          state.undo = []; state.redo = [];
+        } else if (replay) {
           const from = replay.redo ? state.redo : state.undo, to = replay.redo ? state.undo : state.redo;
           if (from.at(-1) === replay.entry) { from.pop(); to.push(replay.entry); }
         } else {
@@ -5546,7 +5553,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           }
         }
         state.draft = null; release();
-        emitHostEvent(root, 'cfxannotationcommit', { id, before, after, history: replay ? replay.redo ? 'redo' : 'undo' : 'edit' });
+        if (representable) emitHostEvent(root, 'cfxannotationcommit', { id, before, after, history: replay ? replay.redo ? 'redo' : 'undo' : 'edit' });
       }
     };
   };
@@ -5876,13 +5883,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return requestNativePreparation(root, 'hierarchy', { kind: rootId === null ? 'reset' : 'root', rootId }, {
       eventPrefix: 'cfxhierarchy', resetView: rootId === null, accepted,
       started: () => syncHierarchyNavigation(root), cancelled: () => syncHierarchyNavigation(root),
-      validate: next => {
-        const adaptive = readAdaptiveLayout(next);
-        for (const drawing of adaptive ? [adaptive.wide, adaptive.narrow] : [next]) {
-          const reply = capturedHierarchy(drawing);
-          if (!reply || reply.kind !== current.kind || reply.seriesKey !== current.seriesKey || reply.rootId !== rootId)
-            throw new TypeError('Every native hierarchy drawing must retain the source family and series and accept the exact requested root.');
-        }
+      validate: drawing => {
+        const reply = capturedHierarchy(drawing);
+        if (!reply || reply.kind !== current.kind || reply.seriesKey !== current.seriesKey || reply.rootId !== rootId)
+          throw new TypeError('Every native hierarchy drawing must retain the source family and series and accept the exact requested root.');
       },
       beforeCommit: () => rootId === null ? selectionSignature(root) : '',
       committed: (_, previousSelection) => {

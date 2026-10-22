@@ -159,15 +159,18 @@ public sealed partial class SourceAnnotationBrowserTests {
         private readonly int _width;
         private readonly VisualThemeMode _mode;
         private readonly bool _secondary;
+        private readonly bool _references;
         private readonly Dictionary<string, ChartAnnotation[]> _scenes = new();
-        internal AnnotationHost(int width, VisualThemeMode mode, bool secondary = false) {
-            _width = width; _mode = mode; _secondary = secondary; _scenes.Add("initial", Create().Annotations.ToArray());
+        internal AnnotationHost(int width, VisualThemeMode mode, bool secondary = false, bool references = false) {
+            _width = width; _mode = mode; _secondary = secondary; _references = references; _scenes.Add("initial", Create().Annotations.ToArray());
         }
         internal string Initial => Create().ToInteractiveHtmlFragment(CommandOptions);
         internal string Fresh() => Create().ToInteractiveHtmlFragmentWithoutAssets(CommandOptions);
         internal string Window() => new HtmlInteractiveChartRenderer().PrepareSection(Create(), new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)), CommandOptions).Html;
         private Chart Create() {
             var chart = Model(_width, _mode, false);
+            if (_references) chart.AddHorizontalLine(new ChartAnnotationId("reference-line"), 60, "Reference line")
+                .AddHorizontalBand(new ChartAnnotationId("reference-band"), 70, 80, "Reference band");
             if (_secondary) chart.WithSecondaryYAxisBounds(1000, 2000).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("secondary"), "Secondary",
                 new[] { new ChartPoint(0, 1000), new ChartPoint(10, 2000) }).UseSecondaryValueAxis());
             return chart;

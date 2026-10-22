@@ -13,8 +13,11 @@
   };
   const annotationEditorChangeHooks = (root, id, drawing, replay) => {
     const state = annotationEditorState(root);
-    if (!state?.enabled) return {};
+    if (!state) return {};
     const before = annotationDrawingAt(root, id), after = drawing ?? null;
+    // A native reference line or band exists, but cannot be restored by this source-drawing editor.
+    const representable = before !== null || !nativeAnnotationNode(root, id);
+    if (!state.enabled) return representable ? {} : { committed: () => { state.undo = []; state.redo = []; } };
 
     const release = () => { state.pending = false; state.replay = null; refreshAnnotationEditor(root); };
     return {
@@ -23,7 +26,9 @@
       failed: () => { release(); state.error = uiText(root, 'AnnotationFailed', 'The annotation could not be updated.'); refreshAnnotationEditor(root); },
       committed: () => {
         // Only the native commit owner reaches here, after verifying every requested source fact.
-        if (replay) {
+        if (!representable) {
+          state.undo = []; state.redo = [];
+        } else if (replay) {
           const from = replay.redo ? state.redo : state.undo, to = replay.redo ? state.undo : state.redo;
           if (from.at(-1) === replay.entry) { from.pop(); to.push(replay.entry); }
         } else {
@@ -34,7 +39,7 @@
           }
         }
         state.draft = null; release();
-        emitHostEvent(root, 'cfxannotationcommit', { id, before, after, history: replay ? replay.redo ? 'redo' : 'undo' : 'edit' });
+        if (representable) emitHostEvent(root, 'cfxannotationcommit', { id, before, after, history: replay ? replay.redo ? 'redo' : 'undo' : 'edit' });
       }
     };
   };

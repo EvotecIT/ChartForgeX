@@ -27,13 +27,10 @@
     return requestNativePreparation(root, 'hierarchy', { kind: rootId === null ? 'reset' : 'root', rootId }, {
       eventPrefix: 'cfxhierarchy', resetView: rootId === null, accepted,
       started: () => syncHierarchyNavigation(root), cancelled: () => syncHierarchyNavigation(root),
-      validate: next => {
-        const adaptive = readAdaptiveLayout(next);
-        for (const drawing of adaptive ? [adaptive.wide, adaptive.narrow] : [next]) {
-          const reply = capturedHierarchy(drawing);
-          if (!reply || reply.kind !== current.kind || reply.seriesKey !== current.seriesKey || reply.rootId !== rootId)
-            throw new TypeError('Every native hierarchy drawing must retain the source family and series and accept the exact requested root.');
-        }
+      validate: drawing => {
+        const reply = capturedHierarchy(drawing);
+        if (!reply || reply.kind !== current.kind || reply.seriesKey !== current.seriesKey || reply.rootId !== rootId)
+          throw new TypeError('Every native hierarchy drawing must retain the source family and series and accept the exact requested root.');
       },
       beforeCommit: () => rootId === null ? selectionSignature(root) : '',
       committed: (_, previousSelection) => {
