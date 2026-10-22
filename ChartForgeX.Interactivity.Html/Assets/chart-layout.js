@@ -22,7 +22,7 @@
     let lastWidth=0;
     function layout(requestedWidth,printing=false){
       const available=requestedWidth||host.getBoundingClientRect().width;
-      if(!host.isConnected || !available || !host.checkVisibility())return;
+      if(!host.isConnected || !available || (typeof host.checkVisibility === "function" ? !host.checkVisibility() : !host.getClientRects().length))return;
       const width=printing ? available : Math.min(spec.maximum,Math.max(spec.minimum,available));
       if(!source){source=window.ChartForgeXLayoutGeometry.snapshot(svg,spec);legend=window.ChartForgeXLayoutLegend.snapshot(svg,spec);}
       const delta=window.ChartForgeXLayoutLegend.layout(legend,spec,width);

@@ -7,6 +7,18 @@ namespace ChartForgeX.Tests;
 
 public sealed class ResponsiveChartLayoutContractsTests {
     [BrowserFact]
+    public async Task OfflineLayoutWorksWhenTheBrowserLacksCheckVisibility() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var chart = Chart.Create().WithSize(760, 280).WithLegend(false).AddBar("Count", new[] { new ChartPoint(1, 2) });
+        var html = "<html><body><script>HTMLElement.prototype.checkVisibility=undefined;</script><div style='width:320px'>" +
+            new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600) + "</div></body></html>";
+        await using var session = await InteractiveChartBrowser.OpenAsync(html, 390, 700);
+        await session.Page.WaitForFunctionAsync("()=>Number(document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutWidth)===320");
+        Assert.Equal(280, await session.Page.Locator("[data-cfx-responsive-chart] svg").EvaluateAsync<double>("svg=>svg.getBoundingClientRect().height"));
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
     public async Task IdenticalUnscopedChartsHaveIndependentDefinitionsAtDifferentWidths() {
         if (!InteractiveChartBrowser.Enabled) return;
         Chart Build() => Chart.Create().WithSize(760, 280).WithHeader(false).WithLegend(false).WithDataLabels(false)

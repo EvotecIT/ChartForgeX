@@ -85,7 +85,7 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
       imageUrl: attr(el, 'data-node-image-url'),
       icon: attr(el, 'data-node-icon'),
       backgroundColor: attr(el, 'data-node-background-color') || (attr(el, 'data-node-card') === 'true' ? (cardFill ||= graphThemePalette(root).card) : ''),
-      borderColor: attr(el, 'data-node-border-color'),
+      borderColor: graphTopologyStatusAccent(root, el) || attr(el, 'data-node-border-color'),
       labelColor: attr(el, 'data-node-label-color'),
       labelBackgroundColor: attr(el, 'data-node-label-background-color'),
       shadow: attr(el, 'data-node-shadow') === 'true',

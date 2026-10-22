@@ -27,9 +27,9 @@ internal sealed partial class VisualTopologyCompiler {
         SvgPaint.TryCssVariable(source, fallback ?? result, out _, out var paint) ? (opacity == 1 ? paint : paint.WithOpacity(result, opacity)) : SvgPaint.Of(result, role);
 
     private SvgPaint NodeAccentPaint(TopologyNode node, ChartColor accent, bool active, double opacity = 1) {
-        var authored = node.Color ?? ResolveNodeIcon(node, _options)?.Color;
-        return node.PaletteIndex.HasValue && string.IsNullOrWhiteSpace(authored)
-            ? PalettePaint(node.PaletteIndex.Value, accent, HighlightFactor(active) * opacity)
+        var authored = NodeAccentSource(node);
+        return NodeUsesPalette(node) && string.IsNullOrWhiteSpace(authored)
+            ? PalettePaint(node.PaletteIndex.GetValueOrDefault(), accent, HighlightFactor(active) * opacity)
             : SourcePaint(authored ?? _svgTheme.StatusColor(node.Status), accent, AccentRole(authored), HighlightFactor(active) * opacity, Status(node.Status));
     }
 
@@ -42,7 +42,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (EffectiveNodeSurfaceStyle(_options) == TopologyNodeSurfaceStyle.Card) return CardPaint(result, HighlightFactor(active));
         var source = NodeAccentPaint(node, accent, true);
         var background = BackgroundPaint(_colors.Background);
-        var tint = node.PaletteIndex.HasValue || source.HasCssVariable || background.HasCssVariable
+        var tint = NodeUsesPalette(node) || source.HasCssVariable || background.HasCssVariable
             ? SvgPaint.Mix(fill, background, source, IsMonitoringDashboardStyle(_options) ? .065 : .10)
             : SvgPaint.Mix(fill, _colors.Background, SvgColorRole.Surface, accent, role, IsMonitoringDashboardStyle(_options) ? .065 : .10);
         return HighlightFactor(active) == 1 ? tint : tint.WithOpacity(result, HighlightFactor(active));

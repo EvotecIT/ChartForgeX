@@ -35,6 +35,9 @@ public sealed class TopologyRenderOptions {
         return new TopologyRenderOptions().ApplyPreset(preset);
     }
 
+    /// <summary>Gets or sets the node accent source. Status preserves semantic theme and SVG status bindings, including nodes with icons.</summary>
+    public TopologyAccentSource AccentSource { get; set; } = TopologyAccentSource.Auto;
+
     /// <summary>Gets or sets whether the chart title should be rendered.</summary>
     public bool IncludeTitle { get; set; } = true;
 
