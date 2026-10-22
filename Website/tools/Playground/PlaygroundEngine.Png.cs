@@ -106,7 +106,9 @@ public static partial class PlaygroundEngine {
 
     /// <summary>Adapts completed native SVG to existing strict rasterization without repeating layout or theme selection.</summary>
     private sealed class CompletedComposition : IMeasuredStaticVisualSource {
-        private readonly string _pixelSvg;
+        private readonly XElement _element;
+        private readonly double _width;
+        private readonly double _height;
 
         internal CompletedComposition(XElement element, double width, double height) {
             if (!double.IsFinite(width) || !double.IsFinite(height) || width <= 0 || height <= 0
@@ -116,18 +118,9 @@ public static partial class PlaygroundEngine {
             if (Svg.Length > MaximumSvgCharacters) throw new InvalidOperationException("The composed SVG exceeds the supported native export limit.");
             PixelWidth = checked((int)Math.Ceiling(width * 2));
             PixelHeight = checked((int)Math.Ceiling(height * 2));
-
-            // The browser's former canvas scaled by exactly two, then left fractional rounding
-            // residual transparent. A pixel-grid outer viewport preserves that mapping instead
-            // of centering a fractional frame in a slightly taller integer viewport.
-            var child = new XElement(element);
-            child.SetAttributeValue("x", "0");
-            child.SetAttributeValue("y", "0");
-            child.SetAttributeValue("width", Number(width * 2));
-            child.SetAttributeValue("height", Number(height * 2));
-            var wrapper = new XElement(SvgNamespace + "svg", new XAttribute("width", PixelWidth), new XAttribute("height", PixelHeight),
-                new XAttribute("viewBox", "0 0 " + PixelWidth.ToString(CultureInfo.InvariantCulture) + " " + PixelHeight.ToString(CultureInfo.InvariantCulture)), child);
-            _pixelSvg = wrapper.ToString(SaveOptions.DisableFormatting);
+            _element = element;
+            _width = width;
+            _height = height;
         }
 
         internal string Svg { get; }
@@ -136,6 +129,22 @@ public static partial class PlaygroundEngine {
 
         public VisualSize MeasureRasterSize() => new(PixelWidth, PixelHeight);
         public string RenderSvg(string idScope) => Svg;
-        public RgbaImage RenderRgba() => SvgRasterizer.Rasterize(_pixelSvg, PixelWidth, PixelHeight, strict: true).Image;
+
+        public RgbaImage RenderRgba() {
+            // SVG previews do not need this PNG-only wrapper. Export builds it after the
+            // destination pixel bounds and every captured producer policy have been checked.
+
+            // The browser's former canvas scaled by exactly two, then left fractional rounding
+            // residual transparent. A pixel-grid outer viewport preserves that mapping instead
+            // of centering a fractional frame in a slightly taller integer viewport.
+            var child = new XElement(_element);
+            child.SetAttributeValue("x", "0");
+            child.SetAttributeValue("y", "0");
+            child.SetAttributeValue("width", Number(_width * 2));
+            child.SetAttributeValue("height", Number(_height * 2));
+            var wrapper = new XElement(SvgNamespace + "svg", new XAttribute("width", PixelWidth), new XAttribute("height", PixelHeight),
+                new XAttribute("viewBox", "0 0 " + PixelWidth.ToString(CultureInfo.InvariantCulture) + " " + PixelHeight.ToString(CultureInfo.InvariantCulture)), child);
+            return SvgRasterizer.Rasterize(wrapper.ToString(SaveOptions.DisableFormatting), PixelWidth, PixelHeight, strict: true).Image;
+        }
     }
 }

@@ -121,4 +121,4 @@ The player lists every declared chapter and seeks to its first sample at least h
 
 Run the examples with `dotnet run --project ChartForgeX.Examples -- --story-playback-only --output ./story-output`. They show a source typo, build error, selection and correction, successful output and a real chart in all three aspect ratios. The error transcript is authored; the example does not execute the displayed source. MP4 encoding and platform uploads are outside these exports.
 
-For raw RGBA producers and bounded GIF/APNG encoding, see [encoding animation frames](/docs/raster-animation/).
+For raw RGBA producers and bounded GIF/APNG encoding, see [encoding animation frames](../raster-animation/).

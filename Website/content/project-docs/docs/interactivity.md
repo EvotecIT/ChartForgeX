@@ -13,4 +13,4 @@ The adapter is opt in. The same underlying models can still produce script-free 
 
 For graph explorers, use stable node ids and explicit host callbacks for validated changes. Search, navigation, persisted interaction state, and graph manipulation remain adapter or host concerns; application data and authorization remain with the application.
 
-See the maintained [interactivity reference](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/interactivity.md) for the complete HTML option and event contracts. For the host-neutral graph document, patches, backends and limits, use the [graph explorer reference](/docs/graph-explorer/). The [API conventions](/docs/api-conventions/) cover preparation, native updates and identity.
+See the maintained [interactivity reference](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/interactivity.md) for the complete HTML option and event contracts. For the host-neutral graph document, patches, backends and limits, use the [graph explorer reference](../graph-explorer/). The [API conventions](../api-conventions/) cover preparation, native updates and identity.

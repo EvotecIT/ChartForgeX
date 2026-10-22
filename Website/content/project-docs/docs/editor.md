@@ -28,7 +28,7 @@ values 12 18 16
 
 Open the command palette and run **ChartForgeX Markup: Open Preview**. The preview can refresh as you edit. **ChartForgeX Markup: Validate** reports diagnostics against the original source lines.
 
-The extension recognizes `.cfx.md`, `.chartforgex.md` and Markdown files containing native visual fences. Supported Mermaid fences use the Mermaid adapter included with the packaged CLI; consult the [Mermaid catalog](/mermaid/) for the supported syntax rather than assuming every Mermaid construct is accepted.
+The extension recognizes `.cfx.md`, `.chartforgex.md` and Markdown files containing native visual fences. Supported Mermaid fences use the Mermaid adapter included with the packaged CLI; consult the [Mermaid catalog](https://chartforgex.com/mermaid/) for the supported syntax rather than assuming every Mermaid construct is accepted.
 
 ## Export or move into application code
 
@@ -40,4 +40,4 @@ Run **ChartForgeX Markup: Export SVG**, **Export PNG** or **Export HTML** from t
 
 Use VS Code settings to choose automatic preview refresh, validation delay, export format and output folder. Set `chartforgexMarkup.ganttDateAnchor` when a Mermaid Gantt document uses yearless dates. `chartforgexMarkup.cliPath` selects a custom CLI when the bundled tool is not the desired host.
 
-Continue with the [markup guide](/docs/markup/), [v1 reference](/docs/markup-v1-reference/) or [CLI commands](/docs/cli/).
+Continue with the [markup guide](../markup/), [v1 reference](../markup-v1-reference/) or [CLI commands](../cli/).

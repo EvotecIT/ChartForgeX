@@ -41,7 +41,7 @@ The output extension selects the export format. Open the HTML file in a browser 
 
 ## Mermaid and diagnostics
 
-Use a fenced `mermaid` block in the Markdown file for a supported diagram. The [Mermaid catalog](/mermaid/) shows the implemented families and limits. For yearless Gantt input, pass `--gantt-date-anchor YYYY-MM-DD` to validation, preview and export so each command uses the same calendar context.
+Use a fenced `mermaid` block in the Markdown file for a supported diagram. The [Mermaid catalog](https://chartforgex.com/mermaid/) shows the implemented families and limits. For yearless Gantt input, pass `--gantt-date-anchor YYYY-MM-DD` to validation, preview and export so each command uses the same calendar context.
 
 Validation reports source locations. Exit code `0` means the input is valid, `2` means invalid input or no supported visual artifacts, and `1` means an invocation or file-access error.
 
@@ -55,4 +55,4 @@ chartforgex-markup emit topology.cfx.md --target csharp --output Topology.cs
 
 Code generation supports topology documents. It is not a general converter for every chart or Mermaid family.
 
-Continue with [markup authoring](/docs/markup/), the [v1 grammar reference](/docs/markup-v1-reference/), or [VS Code](/docs/editor/) for the same authoring workflow inside an editor.
+Continue with [markup authoring](../markup/), the [v1 grammar reference](../markup-v1-reference/), or [VS Code](../editor/) for the same authoring workflow inside an editor.
