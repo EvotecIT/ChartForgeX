@@ -36,6 +36,7 @@ public static partial class ExampleRecipes {
             variants.Add("gradient-color-legend"); variants.Add("compact-gradient-color-legend");
             variants.Add("swatch-color-legend"); variants.Add("compact-swatch-color-legend");
         }
+        if (kind == ChartSeriesKind.Donut) { variants.Add("concentric"); variants.Add("compact-concentric"); }
         if (kind == ChartSeriesKind.Pyramid) { variants.Add("dense"); variants.Add("compact-dense"); }
         if (kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea) {
             variants.AddRange(new[] { "singleton", "compact-singleton" });
