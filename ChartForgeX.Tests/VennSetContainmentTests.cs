@@ -54,10 +54,23 @@ public sealed class VennSetContainmentTests {
         var svg = artifact.ToSvg();
         var document = XDocument.Parse(svg);
         var labels = document.Descendants().Where(element => element.Name.LocalName == "text").ToArray();
-        foreach (var required in new[] { "API", "UI", "Operations", "Shared UX", "Automation", "Runbooks", "Reviewed" })
-            Assert.Contains(labels, element => element.Value == required);
-        foreach (var label in labels)
-            Assert.True((double)label.Attribute("font-size")! >= 8, label.Value + " must retain the gallery's readable font size.");
+        // Persist the decisive artifact before any caption/readability assertion can fail.
+        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        var name = "venn-readable-baseline-" + (dark ? "dark" : "light");
+        if (!string.IsNullOrWhiteSpace(captures)) {
+            Directory.CreateDirectory(captures);
+            File.WriteAllText(Path.Combine(captures, name + ".svg"), svg);
+        }
+        var png = artifact.ToPng();
+        if (!string.IsNullOrWhiteSpace(captures)) File.WriteAllBytes(Path.Combine(captures, name + ".png"), png);
+        var captions = labels.Select(element => element.Value).ToArray();
+        foreach (var required in new[] { "API", "UI", "Operations", "Shared UX", "Automation", "Runbooks", "Platform", "Reviewed" })
+            Assert.Contains(required, captions);
+        foreach (var label in labels) {
+            var size = (double)label.Attribute("font-size")!;
+            Assert.True(size >= 8, label.Value + " has font size " + size.ToString(CultureInfo.InvariantCulture)
+                + "; the gallery requires at least 8px.");
+        }
 
         // A real output line box is asymmetric around its baseline. Check both
         // opposing circle edges so a readable font cannot escape its membership.
@@ -85,7 +98,6 @@ public sealed class VennSetContainmentTests {
             }
         }
 
-        var png = artifact.ToPng();
         var image = RasterImageDecoder.Decode(png);
         Assert.Equal((780, 460), (image.Width, image.Height));
         var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```");
@@ -95,11 +107,5 @@ public sealed class VennSetContainmentTests {
         Assert.IsType<VennDiagramBlock>(fenced.Model).WithCard(false);
         Assert.Equal(svg, fenced.ToSvg());
         Assert.Equal(png, fenced.ToPng());
-        var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
-        if (string.IsNullOrWhiteSpace(captures)) return;
-        Directory.CreateDirectory(captures);
-        var name = "venn-readable-baseline-" + (dark ? "dark" : "light");
-        File.WriteAllText(Path.Combine(captures, name + ".svg"), svg);
-        File.WriteAllBytes(Path.Combine(captures, name + ".png"), png);
     }
 }
