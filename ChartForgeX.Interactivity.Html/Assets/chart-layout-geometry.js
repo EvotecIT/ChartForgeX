@@ -1,0 +1,93 @@
+(function () {
+  "use strict";
+  if (window.ChartForgeXLayoutGeometry) return;
+  const numeric = /[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g;
+  const tokens = /[MmLlHhVvCcSsQqTtAaZz]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g;
+  const finite = value => Number.isFinite(value) ? Math.round(value * 1000000) / 1000000 : 0;
+  function path(value, x, y) {
+    const list = value.match(tokens) || [], out = []; let at = 0, command, px = 0, py = 0, sx = 0, sy = 0;
+    const counts = { M:2,L:2,H:1,V:1,C:6,S:4,Q:4,T:2,A:7 };
+    while (at < list.length) {
+      if (/^[A-Za-z]$/.test(list[at])) command = list[at++];
+      const kind = command.toUpperCase(), relative = command !== kind;
+      if (kind === "Z") { out.push("Z"); px=sx;py=sy;command=null;continue; }
+      const count=counts[kind]; if(!count || at+count>list.length) return value;
+      const data=list.slice(at,at+count).map(Number);at+=count;
+      if(kind==='H'){px=(relative?px:0)+data[0];out.push('H'+finite(x(px)));continue;}
+      if(kind==='V'){py=(relative?py:0)+data[0];out.push('V'+finite(y(py)));continue;}
+      const start=kind==='A'?5:0;
+      for(let i=start;i<count;i+=2){data[i]+=(relative?px:0);data[i+1]+=(relative?py:0);}
+      px=data[count-2];py=data[count-1];
+      if(kind==='M'){sx=px;sy=py;}
+      for(let i=start;i<count;i+=2){data[i]=finite(x(data[i]));data[i+1]=finite(y(data[i+1]));}
+      out.push(kind+data.join(' ')); if(kind==='M')command=relative?'l':'L';
+    }
+    return out.join(' ');
+  }
+  function snapshot(svg, spec) {
+    const nodes=[...svg.querySelectorAll('*')], bars=new Map(), excluded=new Set();
+    for(const entry of svg.querySelectorAll('[data-cfx-role=legend-entry]')){
+      excluded.add(entry);for(const node of entry.querySelectorAll('*'))excluded.add(node);
+      for(const node of entry.querySelectorAll('[clip-path]')){const id=node.getAttribute('clip-path').match(/url\(#([^)]*)\)/)?.[1],clip=id&&svg.getElementById(id);if(clip)for(const child of clip.querySelectorAll('*'))excluded.add(child);}
+    }
+    const plot=spec.plot, slots=new Map(spec.bars.map(slot=>[slot.series+':'+slot.point,slot]));
+    const points=[...svg.querySelectorAll('[data-cfx-role="point"]')];
+    for(const point of points){
+      const kind=point.closest('[data-cfx-role="series"]')?.dataset.cfxKind;
+      if(kind!=='Bar')continue;
+      const bar=point.querySelector('[data-cfx-role="bar"]'); if(!bar)continue;
+      const slot=slots.get(point.dataset.cfxSeries+':'+point.dataset.cfxPoint);if(!slot)continue;
+      const bounds=bar.getBBox(), box={center:bounds.x+bounds.width/2,width:bounds.width,
+        categoryCenter:slot.anchor,count:slot.count,position:slot.position};
+      for(const node of point.querySelectorAll('*'))bars.set(node,box);
+      for(const node of point.querySelectorAll('[clip-path]')){
+        const id=node.getAttribute('clip-path').match(/url\(#([^)]*)\)/)?.[1];
+        const clip=id && svg.getElementById(id);if(clip)for(const child of clip.querySelectorAll('*'))bars.set(child,box);
+      }
+    }
+    const recipes=[];
+    for(const node of nodes){
+      if(node.closest('pattern,marker') || excluded.has(node))continue;
+      const attributes={};
+      for(const name of ['x','y','cx','cy','x1','y1','x2','y2','width','height','d','points','transform']){
+        const value=node.getAttribute(name);if(value!=null && !value.includes('%'))attributes[name]=value;
+      }
+      if(Object.keys(attributes).length)recipes.push({node,attributes,bar:bars.get(node)});
+    }
+    const labels=[...svg.querySelectorAll('[data-cfx-role="axis-x-label"]')].map(group=>{
+      const text=group.querySelector('text')||group, box=text.getBBox();
+      return {group,text,center:box.x+box.width/2,sourceWidth:box.width};
+    });
+    const centers=[...new Set(spec.bars.map(slot=>slot.categoryAnchor))].sort((a,b)=>a-b);
+    const pitch=centers.slice(1).reduce((p,c,i)=>Math.min(p,c-centers[i]),plot[2]);
+    return {recipes,labels,pitch,plot};
+  }
+  function project(state, spec, width, plot) {
+    const [left,top,pw,ph]=spec.plot, [nl,nt,nw,nh]=plot;
+    const map=(v,low,size,newLow,newSize,totalDelta)=>v<low? v : v>low+size ? v+totalDelta : newLow+(v-low)*newSize/size;
+    const x=v=>spec.cartesian ? map(v,left,pw,nl,nw,width-spec.width) : v+(width-spec.width)/2, y=v=>map(v,top,ph,nt,nh,0);
+    for(const recipe of state.recipes){
+      const {node,attributes:a,bar}=recipe;
+      // Match the native category-slot contract: 68% occupied pitch, bounded gaps, independently capped bodies.
+      const occupied=state.pitch*nw/pw*.68, gap=bar && bar.count>1 ? Math.min(spec.spacing/2,occupied/(bar.count*4)):0;
+      const thickness=bar?Math.max(Math.min(.1,spec.maximumBarWidth),Math.min(spec.maximumBarWidth,(occupied-gap*(bar.count-1))/bar.count)):0;
+      const center=bar?x(bar.categoryCenter)+(bar.position-(bar.count-1)/2)*(thickness+gap):0;
+      const bx=bar?v=>center+(v-bar.center)*thickness/Math.max(.001,bar.width):x;
+      const baseX=Number(a.x||0),baseY=Number(a.y||0);
+      for(const [name,value] of Object.entries(a)){
+        let result=value;
+        if(['x','cx','x1','x2'].includes(name))result=finite(bx(Number(value)));
+        else if(['y','cy','y1','y2'].includes(name))result=finite(y(Number(value)));
+        else if(name==='width')result=finite(!spec.cartesian && baseX===0 && Number(value)===spec.width ? width : bx(baseX+Number(value))-bx(baseX));
+        else if(name==='height')result=finite(y(baseY+Number(value))-y(baseY));
+        else if(name==='d')result=path(value,bx,y);
+        else if(name==='points'){let i=0;result=value.replace(numeric,n=>finite(i++%2?y(Number(n)):bx(Number(n))));}
+        else if(name==='transform')result=value.replace(/translate\(\s*([-+.\deE]+)(?:[, ]+([-+.\deE]+))?\s*\)/g,(_,a,b)=>`translate(${finite(bx(Number(a)))} ${finite(y(Number(b||0)))})`)
+          .replace(/rotate\(\s*([-+.\deE]+)[, ]+([-+.\deE]+)[, ]+([-+.\deE]+)\s*\)/g,(_,a,b,c)=>`rotate(${a} ${finite(bx(Number(b)))} ${finite(y(Number(c)))})`);
+        node.setAttribute(name,result);
+      }
+    }
+    return {x,y};
+  }
+  window.ChartForgeXLayoutGeometry={snapshot,project};
+})();

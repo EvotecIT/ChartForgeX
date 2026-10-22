@@ -1,4 +1,5 @@
 using ChartForgeX.Core;
+using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
@@ -44,6 +45,10 @@ public static class IntegerAxisExamples {
                 .AddBar("Passed", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) })
                 .AddBar("Pending", new[] { new ChartPoint(1, 1), new ChartPoint(2, 0) });
             ExampleArtifactWriter.SaveChart(sparse, output, "category-counts-" + mode.ToString().ToLowerInvariant(), scale);
+            var responsive = new HtmlResponsiveChartRenderer().RenderFragment(sparse, minimumWidth: 240, maximumWidth: 1600, printWidth: 688);
+            File.WriteAllText(Path.Combine(output, "responsive-category-counts-" + mode.ToString().ToLowerInvariant() + ".html"),
+                "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Offline category-count layout</title>" +
+                "<style>body{margin:24px;font:14px system-ui}main{max-width:1600px;margin:auto}.plot{overflow:auto;min-width:0}</style></head><body><main><h1>Offline category-count layout</h1><p>Resize the panel: text stays at its token size, height stays at 280 pixels, and the legend and bar slots reflow.</p><div class=\"plot\">" + responsive + "</div></main></body></html>");
             foreach (var width in new[] { 320, 1120 })
                 ExampleArtifactWriter.SaveChart(CreateMonthlyCounts(width, mode), output,
                     "monthly-counts-" + width + "-" + mode.ToString().ToLowerInvariant(), scale);

@@ -1,64 +1,37 @@
 (function () {
   "use strict";
-  const current = document.currentScript?.parentElement;
-  if (window.ChartForgeXResponsive) { window.ChartForgeXResponsive.mount(current); return; }
-  async function initialize(host) {
-  const compressed = host.querySelector("[data-cfx-layouts-gzip]");
-  let payload = host.querySelector("[data-cfx-layouts]")?.textContent;
-  if (compressed) {
-    if (typeof DecompressionStream !== "function") return;
-    const bytes = Uint8Array.from(atob(compressed.textContent), character => character.charCodeAt(0));
-    payload = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
-  }
-  if (!host.isConnected) { delete host.cfxResponsiveReady; return; }
-  const frames = JSON.parse(payload);
-  const number = /[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g;
-  let active, svg, nodes, pending = false, width = 0;
-  function layout() {
-    pending = false;
-    if (!host.isConnected || !host.clientWidth) return;
-    const nextWidth = Math.min(frames[frames.length - 1].width, Math.max(frames[0].width, host.clientWidth));
-    if (width === nextWidth) return;
-    width = nextWidth;
-    let index = 0;
-    while (index + 1 < frames.length && frames[index + 1].width <= width) index++;
-    let frame = frames[index];
-    if (!frame.interpolate && frames[index + 1] && width - frame.width > frames[index + 1].width - width) frame = frames[index + 1];
-    if (frame !== active) {
-      const parsed = new DOMParser().parseFromString(frame.svg, "image/svg+xml").documentElement;
-      host.querySelector(":scope > svg").replaceWith(document.importNode(parsed, true));
-      svg = host.querySelector(":scope > svg"); nodes = [...svg.querySelectorAll("*")]; active = frame;
+  const current=document.currentScript?.parentElement;
+  if(window.ChartForgeXResponsive){window.ChartForgeXResponsive.mount(current);return;}
+  async function initialize(host){
+    const compressed=host.querySelector('[data-cfx-spec-gzip]');
+    let payload=host.querySelector('[data-cfx-spec]')?.textContent;
+    if(compressed){
+      if(typeof DecompressionStream!=='function')return;
+      const bytes=Uint8Array.from(atob(compressed.textContent),c=>c.charCodeAt(0));
+      payload=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
     }
-    const delta = width - frame.width;
-    for (const [index, name, value, slopes] of frame.interpolate ? frame.coordinates : []) {
-      let n = 0;
-      nodes[index].setAttribute(name, value.replace(number, token => String(Number(token) + slopes[n++] * delta)));
-    }
-    svg.setAttribute("width", width); svg.setAttribute("viewBox", `0 0 ${width} ${svg.getAttribute("height")}`);
-    svg.style.cssText = `display:block;width:${width}px;height:${svg.getAttribute("height")}px;max-width:none`;
-    host.dataset.cfxLayoutWidth = String(width);
+    if(!host.isConnected){delete host.cfxResponsiveReady;return;}
+    await document.fonts?.ready;
+    if(!host.isConnected){delete host.cfxResponsiveReady;return;}
+    const spec=JSON.parse(payload),drawing=window.ChartForgeXLayout.create(host,spec);
+    let timer=0,disposed=false,printing=matchMedia('print').matches;
+    host.style.minWidth=printing?'0':spec.minimum+'px';
+    const layout=(width,forPrint=printing)=>{if(!disposed)drawing.layout(width,forPrint);};
+    const schedule=()=>{clearTimeout(timer);timer=setTimeout(()=>layout(),60);};
+    const observer=new ResizeObserver(schedule);observer.observe(host);
+    const print=()=>{printing=true;host.style.minWidth='0';clearTimeout(timer);layout(host.getBoundingClientRect().width||spec.printWidth);};
+    const afterPrint=()=>{printing=false;host.style.minWidth=spec.minimum+'px';layout();};
+    const media=matchMedia('print'),changed=event=>event.matches?print():afterPrint();
+    addEventListener('beforeprint',print);addEventListener('afterprint',afterPrint);media.addEventListener('change',changed);
+    host.cfxResponsive={layout,dispose:()=>{disposed=true;clearTimeout(timer);observer.disconnect();removeEventListener('beforeprint',print);removeEventListener('afterprint',afterPrint);media.removeEventListener('change',changed);delete host.cfxResponsive;delete host.cfxResponsiveReady;}};
+    layout();
+    document.fonts?.ready.then(()=>{if(!disposed)layout();});
   }
-  const observer = new ResizeObserver(() => { if (!pending) { pending = true; requestAnimationFrame(layout); } });
-  observer.observe(host);
-  // Hosts removing a report can explicitly release its observer, without touching another chart.
-  host.cfxResponsive = { layout, dispose: () => { observer.disconnect(); delete host.cfxResponsiveReady; delete host.cfxResponsive; } };
-  layout();
-  }
-  function hosts(scope) {
-    if (!scope?.querySelectorAll) return [];
-    return [...(scope.matches?.('[data-cfx-responsive-chart]') ? [scope] : []), ...scope.querySelectorAll('[data-cfx-responsive-chart]')];
-  }
-  function mount(scope = document) {
-    return Promise.all(hosts(scope).map(host => host.cfxResponsiveReady ||= initialize(host)));
-  }
-  window.ChartForgeXResponsive = { mount };
-  const additions = new MutationObserver(records => {
-    for (const record of records) {
-      for (const node of record.addedNodes) mount(node);
-      for (const node of record.removedNodes) for (const host of hosts(node)) if (!host.isConnected) host.cfxResponsive?.dispose();
-    }
-  });
-  additions.observe(document.documentElement, { childList: true, subtree: true });
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => mount(document), { once: true });
-  mount(current || document);
+  function hosts(scope){if(!scope?.querySelectorAll)return[];return[...(scope.matches?.('[data-cfx-responsive-chart]')?[scope]:[]),...scope.querySelectorAll('[data-cfx-responsive-chart]')];}
+  function mount(scope=document){return Promise.all(hosts(scope).map(host=>host.cfxResponsiveReady ||= initialize(host)));}
+  window.ChartForgeXResponsive={mount};
+  const changes=new MutationObserver(records=>{for(const record of records){for(const node of record.addedNodes)mount(node);for(const node of record.removedNodes)for(const host of hosts(node))if(!host.isConnected)host.cfxResponsive?.dispose();}});
+  changes.observe(document.documentElement,{childList:true,subtree:true});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>mount(document),{once:true});
+  mount(current||document);
 })();

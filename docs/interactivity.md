@@ -264,25 +264,33 @@ Synchronized host highlights and restored selection use the source chart's actua
 
 For a report that needs a drawing without interactive controls, use
 `new HtmlResponsiveChartRenderer().RenderFragment(chart, minimumWidth: 240, maximumWidth: 1600)`.
-It prepares native SVG geometry at bounded width bands, including the authored width
-and a 320-pixel phone content width. Native preparation chooses ticks, label density
-and legend wrapping. Explicit X tick requests act as preferred maxima and reduce with available width;
-the caller's axis object and authored settings are retained after preparation. Quarter,
-middle and three-quarter native samples validate each band's geometry within half a
-CSS pixel. Collision-avoiding annotation labels allow two pixels of placement variation.
-Bands split where geometry clamps or label
-decisions change. The ResizeObserver interpolates between compatible native drawings
-at the actual container width; it never extrapolates a local derivative. It never
-scales the SVG drawing, fonts or strokes. Height stays at the configured chart height,
-or the optional `height` argument. Wider panels centre the drawing at the cap; panels
-below the minimum scroll within their host.
+Native preparation emits one portable `chartforgex/layout-1` specification with
+source series values, candidate axis captions, semantic paint, plot bounds and
+category-slot constraints. The browser measures captions in their actual token
+font, allocates bar slots and legend rows, and projects geometry into the panel's
+CSS-pixel plot bounds. A debounced ResizeObserver repeats that layout at arbitrary
+widths, including fractional widths. No C# callback or network request is needed.
+The payload contains no sampled width bands or coordinate derivatives.
 
-This uses the native scene's stable path structure within each band. Text and scene
-changes refine to the native engine's one-pixel width resolution, where the nearest
-native drawing supplies the labels. Preparation is bounded to 512 retained bands;
-a layout needing more transitions reports a clear error rather than generating a
-drawing for every possible viewport. Resizing runs offline, with no host
-callback or network request. The fallback SVG remains available without script.
+Text and strokes keep their token sizes. Height stays at the configured chart
+height, or the optional `height` argument. Tick captions thin at a measured regular
+stride, keeping both endpoints. Legends wrap before consuming plot space. An oversized caption truncates with its
+full name in an SVG tooltip; legend rows use at most 35% of the fixed height,
+with a named overflow summary when more entries remain. Regular
+bars use the native 68% category pitch and bounded group gaps, with the configured
+maximum bar width. Wider panels centre the drawing at the cap; panels below the
+minimum scroll within their host. Hidden fragments wait until visible before
+measuring text. The caller's chart size and axis policies are restored after
+serialization. Canonical bar slots and mapped source anchors are serialized, so
+sparse categories retain the same series slots. Every mounted fragment gets
+independent SVG definition IDs, even when two charts have identical content.
+
+Browser printing lays out at the actual print panel width, including below the
+screen scrolling minimum, and restores the screen minimum after printing. `printWidth` chooses
+the width of the script-free native fallback; a report host can supply its page's
+printable width. The fallback remains available without script. Static SVG and
+PNG rendering continue to use the native renderer.
+
 Responsive SVG uses native pattern tiles so hatched bars keep the same native brush
 without a different number of explicit hatch lines at every width. Static SVG and
 native PNG retain their default paint path; `VisualSvgOptions.WithPatternTiles()`

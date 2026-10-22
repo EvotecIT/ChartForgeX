@@ -41,6 +41,9 @@
     <ProjectReference Include="..\ChartForgeX.Interactivity\ChartForgeX.Interactivity.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Assets\chart-layout-geometry.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.chart-layout-geometry.js" />
+    <EmbeddedResource Include="Assets\chart-layout-legend.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.chart-layout-legend.js" />
+    <EmbeddedResource Include="Assets\chart-layout.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.chart-layout.js" />
     <EmbeddedResource Include="Assets\responsive-chart.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.responsive-chart.js" />
   </ItemGroup>
 
