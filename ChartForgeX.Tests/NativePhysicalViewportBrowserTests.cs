@@ -33,9 +33,11 @@ public sealed partial class NativePhysicalViewportBrowserTests {
                 physical.connectNative((request,signal)=>new Promise((resolve,reject)=>pendingPhysical.push({request,signal,resolve,reject})),
                     {basis:'initial',axes:[horizontal?'y':'x',secondary]});
                 window.setPhysical=minimum=>physical.setViewport({[secondary]:{minimum,maximum:1000-minimum}});
-                setPhysical(200);setPhysical(300);
+                setPhysical(200);
             }
             """, new { horizontal, secondary });
+        await Pending(page, 1);
+        await page.EvaluateAsync("()=>setPhysical(300)");
         await Pending(page, 2);
         Assert.True(await page.EvaluateAsync<bool>("()=>pendingPhysical[0].signal.aborted&&!pendingPhysical[1].signal.aborted"));
         Assert.Equal("initial", await page.EvaluateAsync<string>("()=>pendingPhysical[1].request.basis"));

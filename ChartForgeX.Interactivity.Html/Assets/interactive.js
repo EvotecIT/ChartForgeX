@@ -2765,6 +2765,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     return viewport.width > 0 && viewport.height > 0;
   };
   const keyboardTargets = (root) => withNativeHighlightPaint(root, () => {
+    const hierarchy = hasFeature(root, 'HierarchyNavigation') ? capturedHierarchy(root) : null;
     const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
     const candidateSet = new Set(candidates);
     const containers = new Set();
@@ -2775,8 +2776,15 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     });
     const seen = new Set();
     return candidates.filter((node) => {
-      // A containing series is useful to pointer hover, but it is not an extra keyboard datum.
-      if (containers.has(node)) return false;
+      if (containers.has(node)) {
+        // Native hierarchy branches own drill-down actions; structural and series containers do not.
+        const data = node.dataset;
+        const hierarchyBranch = hierarchy && ['treemap', 'sunburst'].includes(hierarchy.kind)
+          && data.cfxTargetKind === 'node' && data.cfxNode === data.cfxTargetId && data.cfxTargetId
+          && (data.cfxKind || '').toLowerCase() === hierarchy.kind && seriesKey(node) === hierarchy.seriesKey
+          && data.cfxLeaf === 'false' && data.cfxTargetId !== hierarchy.rootId;
+        if (!hierarchyBranch) return false;
+      }
       const focusNode = targetFocusNode(node);
       if (seen.has(focusNode)) return false;
       seen.add(focusNode);

@@ -100,8 +100,10 @@ public sealed partial class SourceAnnotationBrowserTests {
         await page.EvaluateAsync("() => editor.commit()"); await page.WaitForFunctionAsync("() => pendingEdits.length===2");
         await page.EvaluateAsync("() => editor.cancel()");
         Assert.True(await page.EvaluateAsync<bool>("() => pendingEdits[1].signal.aborted && !editor.getState().canUndo"));
-        var native = await page.EvaluateAsync<JsonElement>("async()=>annotationHostPrepare(pendingEdits[1].request)");
-        await page.EvaluateAsync("reply=>pendingEdits[1].resolve({html:reply.html,basis:reply.token})", native);
+        await page.EvaluateAsync("""
+            async()=>{const reply=await annotationHostPrepare(pendingEdits[1].request);
+                pendingEdits[1].resolve({html:reply.html,basis:reply.token});}
+            """);
         await page.EvaluateAsync("() => new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
         Assert.Empty(await page.EvaluateAsync<JsonElement[]>("() => annotationChanges"));
         Assert.Equal("Review", await page.Locator("[data-cfx-annotation-id=note]").GetAttributeAsync("data-cfx-label"));

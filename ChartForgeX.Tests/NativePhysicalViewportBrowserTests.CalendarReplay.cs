@@ -20,9 +20,10 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         await page.EvaluateAsync("""
             ()=>{
                 window.timeController=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));
-                window.timeRequests=[];window.timeChanges=[];window.timeErrors=[];window.calendarApplied=[];
+                window.timeRequests=[];window.timeChanges=[];window.timeErrors=[];window.timeBrush=[];window.calendarApplied=[];
                 timeController.root.addEventListener('cfxviewportchange',event=>timeChanges.push(event.detail));
                 timeController.root.addEventListener('cfxviewporterror',event=>timeErrors.push(event.detail));
+                timeController.root.addEventListener('cfxbrush',event=>timeBrush.push(event.detail));
                 timeController.root.addEventListener('cfxstateapplied',event=>calendarApplied.push(event.detail));
                 timeController.connectNative(async(request,signal)=>{
                     timeRequests.push(request);const reply=await prepareDiscreteTime(request);

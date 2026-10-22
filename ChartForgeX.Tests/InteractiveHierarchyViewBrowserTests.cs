@@ -35,10 +35,10 @@ public sealed class InteractiveHierarchyViewBrowserTests {
                 },{basis:'initial',axes:null,hierarchy:true});
             }
             """);
-        await page.Locator("[data-cfx-node=services]").FocusAsync(); await page.Keyboard.PressAsync("Enter");
+        await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-node=services]")); await page.Keyboard.PressAsync("Enter");
         await Changes(page, 1); Assert.Equal("services", await Root(page));
         var worker = page.Locator("[data-cfx-node=worker]");
-        await worker.FocusAsync(); await page.Keyboard.PressAsync("Space");
+        await FocusWithKeyboardAsync(page, worker); await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await worker.GetAttributeAsync("aria-selected"));
         await page.EvaluateAsync("""
             ()=>{const root=hierarchyController.root;root.dispatchEvent(new CustomEvent('cfx-capture-state',{detail:{sync:false}}));
@@ -56,7 +56,7 @@ public sealed class InteractiveHierarchyViewBrowserTests {
         Assert.Equal(0, await page.Locator("[data-cfx-node=other] [data-cfx-browser-hit-area]").CountAsync());
         Assert.True(await page.Locator(".cfx-tooltip").EvaluateAsync<bool>("tip=>tip.hidden"));
         if (kind == ChartSeriesKind.Sunburst) {
-            await page.Locator("[data-cfx-node=api]").FocusAsync();
+            await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-node=api]"));
             Assert.Equal("item", await page.Locator("[data-cfx-node=api]").GetAttributeAsync("data-cfx-highlight-state"));
             Assert.Equal("other-branch", await page.Locator("[data-cfx-node=worker]").GetAttributeAsync("data-cfx-highlight-state"));
             Assert.Null(await page.Locator("[data-cfx-node=other]").GetAttributeAsync("data-cfx-highlight-managed"));

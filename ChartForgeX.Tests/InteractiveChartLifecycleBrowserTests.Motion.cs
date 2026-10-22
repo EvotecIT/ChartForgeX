@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Xml.Linq;
+using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using Microsoft.Playwright;
 using Xunit;
@@ -14,10 +15,14 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData(true, 900)]
     public async Task OptInUpdateMotionKeepsAcceptedFactsAndExportFinalWhileReplacementAndDisposalReleaseItsWork(bool dark, int width) {
         if (!Enabled) return;
-        await using var session = await OpenAsync(Readings(dark).ToInteractiveHtmlPage(Fit), width + 24, 760);
+        void Configure(HtmlChartInteractionOptions options) {
+            Fit(options);
+            options.Interaction.Enable(ChartInteractionFeatures.Export);
+        }
+        await using var session = await OpenAsync(Readings(dark).ToInteractiveHtmlPage(Configure), width + 24, 760);
         var page = session.Page; await BindControllerAsync(page);
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
-        var next = Readings(dark, updated: true).ToInteractiveHtmlFragmentWithoutAssets(Fit);
+        var next = Readings(dark, updated: true).ToInteractiveHtmlFragmentWithoutAssets(Configure);
         var observed = await page.EvaluateAsync<JsonElement>("""
             html => {
                 chartController.update(html,{motion:{duration:1000}});
