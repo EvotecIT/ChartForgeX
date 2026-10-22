@@ -1,3 +1,7 @@
+---
+description: "Read the proposed shared visual-effects design, its intended API and delivery phases. This document describes work that is not implemented."
+---
+
 # Visual effects
 
 Status: **design, not implemented.** This document defines one shared visual-effects system for every ChartForgeX family. Implementation follows the phases in [Delivery phases](#delivery-phases); the active checklist lives in [TODO.md](../TODO.md#visual-effects).

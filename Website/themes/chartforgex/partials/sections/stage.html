@@ -12,19 +12,10 @@
 
     <div class="cfx-demo__screen">
       <div class="cfx-panel cfx-panel--code" role="tabpanel" id="cfx-panel-csharp" aria-labelledby="cfx-tab-csharp" hidden>
-<pre class="cfx-code"><code><span class="k">var</span> chart = <span class="t">Chart</span>.Create()
-    .WithTitle(<span class="s">"Sign-ins by method"</span>)
-    .WithSubtitle(<span class="s">"Weekly sign-ins across the tenant, last 12 weeks"</span>)
-    .WithYAxis(<span class="s">"Sign-ins"</span>)
-    .WithXLabels(weeks)
-    .AddStackedArea(<span class="s">"Passkey"</span>, Points(<span class="n">800</span>, <span class="n">1200</span>, <span class="n">1700</span>, <span class="c">/* … */</span> <span class="n">8900</span>))
-    .AddStackedArea(<span class="s">"Authenticator app"</span>, Points(<span class="n">7200</span>, <span class="c">/* … */</span> <span class="n">6200</span>))
-    .AddStackedArea(<span class="s">"SMS code"</span>, Points(<span class="n">4200</span>, <span class="c">/* … */</span> <span class="n">1300</span>))
-    .AddStackedArea(<span class="s">"Password only"</span>, Points(<span class="n">5600</span>, <span class="c">/* … */</span> <span class="n">1500</span>));
-
-chart.SaveSvg(<span class="s">"sign-ins.svg"</span>);
-chart.SavePng(<span class="s">"sign-ins.png"</span>);
-chart.SaveHtml(<span class="s">"sign-ins.html"</span>);</code></pre>
+        <figure class="cfx-codeblock" data-lang="csharp">
+          <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">C#</span><span class="cfx-codeblock__actions"><a class="cfx-codeblock__btn" href="{{ data.hero.source }}" download="sign-ins.cs" aria-label="Download the complete C# program">Download</a></span></figcaption>
+<pre class="cfx-code"><code class="language-csharp">{{ data.hero.code | html.escape }}</code></pre>
+        </figure>
       </div>
 
       <div class="cfx-panel cfx-panel--svg" role="tabpanel" id="cfx-panel-svg" aria-labelledby="cfx-tab-svg">

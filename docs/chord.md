@@ -1,3 +1,7 @@
+---
+description: "Build weighted chord charts with directed flows, proportional ribbons, complete source facts, semantic node state and native SVG and PNG output."
+---
+
 # Weighted chord charts
 
 `AddChord` renders directed flows as proportional endpoint slots, node arcs, and curved ribbons. SVG and PNG use one prepared native scene. Static exports are deterministic and script-free.

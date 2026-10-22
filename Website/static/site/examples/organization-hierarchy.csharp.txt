@@ -1,0 +1,43 @@
+using System;
+using System.Linq;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+
+var mode = args.Contains("--dark")
+    ? VisualThemeMode.Dark : VisualThemeMode.Light;
+
+var members = new[] {
+    new TopologyTeamMember("marta", "Marta", "Head of platform") {
+        LayoutPolicy = TopologyHierarchyLayoutPolicy.Standard
+    },
+    new TopologyTeamMember("jonas", "Jonas", "Sales lead") {
+        ParentId = "marta",
+        LayoutPolicy = TopologyHierarchyLayoutPolicy.Vertical
+    },
+    new TopologyTeamMember("deniz", "Deniz", "Design lead") {
+        ParentId = "marta",
+        LayoutPolicy = TopologyHierarchyLayoutPolicy.Compact
+    },
+    Reports("ana", "Ana", "Product designer", "deniz"),
+    Reports("pawel", "Pawel", "Illustrator", "deniz", TopologyHealthStatus.Warning),
+    Reports("ruben", "Ruben", "Brand designer", "deniz"),
+    Reports("emre", "Emre", "Product designer", "deniz"),
+    Reports("vipul", "Vipul", "Account manager", "jonas"),
+    Reports("karan", "Karan", "Account manager", "jonas"),
+    Reports("lena", "Lena", "Sales engineer", "jonas")
+};
+
+var chart = TopologyChart.Create()
+    .WithThemeMode(mode)
+    .WithTitle("Platform team")
+    .WithSubtitle("Standard, compact and vertical branches")
+    .WithViewport(1180, 620, 28)
+    .AddTeam("platform", "Platform team", members,
+        new TopologyTeamOptions { MaxLevel = 3 });
+
+chart.SaveSvg("platform-team.svg");
+chart.SavePng("platform-team.png");
+
+static TopologyTeamMember Reports(string id, string name, string role, string manager,
+    TopologyHealthStatus status = TopologyHealthStatus.Unknown) =>
+    new(id, name, role) { ParentId = manager, Status = status };

@@ -115,22 +115,7 @@ var horizontal = Chart.Create()
 
 SaveChart(horizontal, "domain-control-horizontal-light");
 
-var heatmap = Chart.Create()
-    .WithTitle("Control Coverage Matrix")
-    .WithSubtitle("Heatmap rows for comparing domain groups across security controls")
-    .WithXAxis("Control")
-    .WithYAxis("Domain group")
-    .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
-    .WithSize(980, 560)
-    .WithLegend(false)
-    .WithDataLabels()
-    .WithHeatmapScale(ChartHeatmapScale.Semantic)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT", "CT")
-    .AddHeatmapRow("Primary domains", Points(96, 88, 74, 63, 58, 92))
-    .AddHeatmapRow("Parked domains", Points(74, 62, 51, 42, 38, 66))
-    .AddHeatmapRow("Regional domains", Points(82, 77, 68, 54, 49, 80))
-    .AddHeatmapRow("Acquired domains", Points(58, 43, 36, 28, 25, 52));
+var heatmap = ControlCoverageRecipe.Create();
 
 SaveChart(heatmap, "control-coverage-heatmap-dark");
 FoundationExamples.Write(output, DemoPngOutputScale);
@@ -530,16 +515,7 @@ var policyBacklog = Chart.Create()
 
 SaveChart(policyBacklog, "policy-backlog-step-area-light");
 
-var cost = Chart.Create()
-    .WithTitle("License Cost Trend")
-    .WithSubtitle("Long formatted y-axis labels keep their own space")
-    .WithXAxis("Quarter")
-    .WithYAxis("Spend")
-    .WithTheme(VisualTheme.Report())
-    .WithSize(760, 460)
-    .WithValueFormatter(value => "$" + value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture))
-    .WithXLabels("Q1", "Q2", "Q3", "Q4")
-    .AddColumnAreaCombo("Actual", Points(820000, 970000, 1010000, 1210000), "Projected", Points(860000, 940000, 1050000, 1160000), ChartColor.FromRgb(14, 165, 233), ChartColor.FromRgb(37, 99, 235));
+var cost = LicenseCostRecipe.Create();
 
 SaveChart(cost, "license-cost-light");
 

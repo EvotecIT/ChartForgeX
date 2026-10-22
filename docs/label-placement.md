@@ -1,3 +1,7 @@
+---
+description: "Understand shared SVG and PNG label measurement, collision handling, caption fitting and diagnostics, including the reusable placement service."
+---
+
 # Measured label placement
 
 SVG and PNG charts use one final text scene. It measures the resolved family, weight, italic face, variation settings and language with the same font engine that paints PNG glyphs. Native PNG marks retain their raster renderer; the positioned text and its backdrops are painted from the shared scene. A bounded measurement cache and the existing shaped-glyph cache avoid measuring repeated captions again. Register font files when exports must have identical geometry on different machines. Portable estimation is a fallback when no face resolves; topology and canvas also expose explicit `TextMeasurementMode.PortableEstimate` for legacy estimated layout.

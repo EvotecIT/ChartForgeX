@@ -16,3 +16,5 @@ Available layout modes include layered, hub-and-spoke, matrix, dense grouped, ge
 Use `TopologyChart.FromData<TNode, TEdge>(...)` when the host already owns its records. The mapper preserves input order and rejects duplicate ids or dangling endpoints before rendering.
 
 For thousands of relationships, hierarchy drill-down, editing, or runtime patches, bridge the model to `GraphScene` and the HTML graph explorer rather than moving browser state into the core renderer.
+
+Use the [topology icon-pack guide](../topology-icon-packs/) for reusable stencils and the [graph explorer reference](../graph-explorer/) for large interactive scenes.

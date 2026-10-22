@@ -1,3 +1,7 @@
+---
+description: "Check native Mermaid rendering, retained syntax, diagnostics and fidelity limits by family, with explicit pinned-reference qualification boundaries."
+---
+
 # Mermaid Support Matrix
 
 This matrix is the working contract for ChartForgeX Mermaid support. A family is complete only when it has source-preserving parsing, typed semantic models where rendering is implemented, diagnostics for unsupported syntax, deterministic SVG and PNG output where renderable, Markdown fence coverage, Mermaid.js conformance fixtures, and smoke tests that prove the public artifact contract.

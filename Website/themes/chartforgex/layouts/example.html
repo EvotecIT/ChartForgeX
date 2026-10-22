@@ -37,6 +37,7 @@
         <span class="cfx-showcase__links">
           <a href="/site/examples/{{ slug }}.html">Open full page</a>
           <a href="{{ o.base }}-light.svg">Static SVG</a>
+          {{ if o.source }}<a href="{{ o.source }}" download="Program.cs">C# program</a>{{ end }}
         </span>
       </div>
       <iframe class="cfx-showcase__iframe" src="/site/examples/{{ slug }}.html" title="{{ page.title }}, the HTML page this program writes" loading="lazy"></iframe>
@@ -53,6 +54,7 @@
           <a class="cfx-only-dark" aria-label="PNG, dark theme" href="{{ o.base }}-dark.png">PNG <span class="cfx-count">{{ o.pngKb }} KB</span></a>
           <a class="cfx-only-light" aria-label="HTML, light theme" href="{{ o.base }}-light.html">HTML</a>
           <a class="cfx-only-dark" aria-label="HTML, dark theme" href="{{ o.base }}-dark.html">HTML</a>
+          {{ if o.source }}<a href="{{ o.source }}" download="Program.cs">C# program</a>{{ end }}
         </span>
       </div>
       <div class="cfx-showcase__plate">

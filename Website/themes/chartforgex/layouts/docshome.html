@@ -20,8 +20,9 @@
     <button type="button" class="cfx-copy" data-cfx-copy="dotnet add package ChartForgeX">Copy</button>
   </div>
   <div class="cfx-stage__actions">
-    <a class="cfx-btn cfx-btn--glow" href="/docs/install/">Install</a>
-    <a class="cfx-btn cfx-btn--ghost" href="/examples/static-chart/">Your first chart</a>
+    <a class="cfx-btn cfx-btn--glow" href="/docs/install/">.NET library</a>
+    <a class="cfx-btn cfx-btn--ghost" href="/docs/cli/">Command line</a>
+    <a class="cfx-btn cfx-btn--ghost" href="/docs/editor/">VS Code</a>
   </div>
   {{~ end ~}}
   {{~ capture stage_art ~}}
@@ -62,13 +63,33 @@
     </ol>
   </section>
 
+  <section class="cfx-wide cfx-docmap" aria-labelledby="cfx-guides-title">
+    <div class="cfx-docmap__head">
+      <h2 id="cfx-guides-title">Detailed guides</h2>
+      <p>These pages use the maintained repository guides. The design note describes proposed work; the other guides cover the current API.</p>
+    </div>
+    <div class="cfx-docmap__grid">
+      {{~ for group in docs.guideGroups ~}}
+      <section class="cfx-prose" aria-labelledby="cfx-guide-group-{{ for.index }}">
+        <h3 id="cfx-guide-group-{{ for.index }}">{{ group.title }}</h3>
+        <p>{{ group.summary }}</p>
+        <ul>
+          {{~ for guide in group.guides ~}}
+          <li><a href="/docs/{{ guide.slug }}/">{{ guide.title }}</a> — {{ guide.summary }}</li>
+          {{~ end ~}}
+        </ul>
+      </section>
+      {{~ end ~}}
+    </div>
+  </section>
+
   <section class="cfx-wide cfx-docmap__more" aria-label="Introduction">
     <div class="cfx-prose">
 {{ content }}
     </div>
     {{~ thumbs = data.visuals.nav.thumbs ~}}
     <ul class="cfx-docmap__refs">
-      {{~ for r in [["api", "/api/", "API reference", "Every public type and member."], ["examples", "/examples/", "Examples", "Four programs and their output."], ["gallery", "/gallery/", "Gallery", "Sixty charts with C# source."], ["mermaid", "/mermaid/", "Mermaid", "Thirty diagram families."]] ~}}
+      {{~ for r in [["api", "/api/", "API reference", "Every public type and member."], ["examples", "/examples/", "Examples", "Runnable programs and their output."], ["gallery", "/gallery/", "Gallery", "Sixty charts with C# source."], ["mermaid", "/mermaid/", "Mermaid", "Thirty diagram families."]] ~}}
       {{~ th = thumbs[r[0]] ~}}
       <li><a href="{{ r[1] }}">
         <span class="cfx-docmap__refthumb" aria-hidden="true">
