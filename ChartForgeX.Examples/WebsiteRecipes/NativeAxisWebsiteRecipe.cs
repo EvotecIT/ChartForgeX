@@ -30,7 +30,7 @@ public static class NativeAxisWebsiteRecipe {
         if (variant is "positive-log" or "negative-log") {
             var negative = variant == "negative-log";
             var magnitudes = new[] { 1d, 8, 64 };
-            var values = negative ? magnitudes.Reverse().Select(value => -value) : magnitudes.AsEnumerable();
+            var values = negative ? magnitudes.AsEnumerable().Reverse().Select(value => -value) : magnitudes.AsEnumerable();
             return chart.WithTitle(negative ? "Negative logarithmic domain" : "Positive logarithmic domain")
                 .WithSubtitle("Base two; the authored sign remains part of the data")
                 .AddLine(negative ? "Loss" : "Capacity", values.Select((value, index) => new ChartPoint(index + 1, value)))
