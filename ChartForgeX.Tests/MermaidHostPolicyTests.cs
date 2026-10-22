@@ -77,7 +77,11 @@ public sealed class MermaidHostPolicyTests {
 
     [Fact]
     public void RejectWarningsIsIdenticalForSourceAndFencedHosts() {
-        const string source = "requirementDiagram\nrequirement r {\nid: 1\ntext: Work\nrisk: high\nverifymethod: test\n}\nstyle r fill:#ff0000";
+        const string source = "requirementDiagram\nrequirement r {\nid: 1\ntext: Work\nrisk: high\nverifymethod: test\n}\nstyle r fill:#ff0000,filter:blur(2px)";
+        var permissive = MermaidRenderer.Render(source);
+        Assert.False(permissive.HasErrors);
+        Assert.NotNull(permissive.Artifact);
+        Assert.Contains(permissive.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedStatement && item.Severity == MermaidDiagnosticSeverity.Warning);
         var options = new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject };
         var direct = MermaidRenderer.Render(source, options);
         Assert.True(direct.HasErrors);

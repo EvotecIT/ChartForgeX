@@ -1,4 +1,4 @@
-  // Every native edit shares one scene revision, cancellation and generated-section commit owner.
+  // One scene/revision/cancel/commit owner.
   let chartSceneSequence = 0, chartPreparationRequestSequence = 0;
   const nextChartSceneRevision = () => 'cfx-scene-' + (++chartSceneSequence);
   const nativePreparationBinding = (root, channel) => chartLifetimes.get(root)?.preparationConnections[channel] || null;
@@ -51,11 +51,11 @@
     syncXViewportControls(root); syncHierarchyNavigation(root);
   };
   const replaceChartSection = (root, lifetime, next, nativeKind = '', adaptiveDrawing = '', preserveViewport = false, nativeState = null, motion = null, preparedAdaptive) => {
-    // Validate alternates before releasing the committed scene.
+    // Validate alternates before scene release.
     const adaptive = adaptiveDrawing ? lifetime.adaptive : preparedAdaptive === undefined ? readAdaptiveLayout(next) : preparedAdaptive;
-    // Commit one active drawing before notifying hosts or exposing fresh controls.
-    // Native replies retain their captured layout policy; ordinary updates use the
-    // current host width and the new breakpoint. Hidden hosts retain their drawing.
+    // Commit drawing before host events.
+    // Replies keep layout; updates use live width; hidden keeps scene.
+
     if (adaptive && !adaptiveDrawing) {
       if (nativeKind && lifetime.adaptive) adaptive.current = lifetime.adaptive.current;
       else {
@@ -70,19 +70,19 @@
     const navigationFocus = active && root.contains(active) ? active.dataset?.cfxXControl : null;
     const hierarchyFocus = active && root.contains(active) ? active.dataset?.cfxHierarchyControl : null;
     const suspended = nativeKind === 'reset' || !!adaptiveDrawing && pointerReadoutSuspended(root);
-    // Retain the request until validation can report failures.
+    // Keep pending until validation reports errors.
     if (nativeKind) lifetime.preparationPending = null;
     if (nativeKind === 'reset') { state.selected = []; state.muted = []; state.isolated = []; state.focused = null; }
     releaseChartLifetime(root);
     installChartSection(root, next);
-    // Retain the root and connection; replace scene-owned work.
+    // Keep root/connections; replace scene work.
     lifetime.disposed = false; lifetime.sceneRevision = nextChartSceneRevision();
-    // Publish the accepted native basis before restoring state can notify a host.
+    // Publish accepted basis before restore/host events.
     if (nativeState && lifetime.preparationSession === nativeState.session) nativeState.session.basis = nativeState.basis;
     lifetime.adaptive = adaptive;
     if (adaptiveDrawing) adaptive.current = adaptiveDrawing;
     chartLifetimes.set(root, lifetime); mountedCharts.add(root);
-    // Preserve reset dismissal before binding the fresh scene.
+    // Keep reset dismissal before rebinding.
     if (suspended) suspendPointerReadout(root);
     prepareAdaptiveRoot(root, lifetime);
     bindChart(root); watchChartLifetimes(); restoreChartUpdateState(root, state, !!nativeKind && !preserveViewport);
@@ -116,7 +116,7 @@
       if (typeof html !== 'string') throw new TypeError('A native preparation callback must return a fresh generated section HTML string.');
       const next = readChartSection(html, true).cloneNode(true);
       if (next.dataset.cfxChartId !== request.chartId) throw new TypeError('A native preparation reply must retain the chart identity.');
-      // Validate every drawing that this accepted native reply can expose before advancing its basis.
+      // Validate all drawings before advancing basis.
       const adaptive = readAdaptiveLayout(next);
       for (const drawing of adaptive ? [adaptive.wide, adaptive.narrow] : [next]) hooks.validate(drawing, request);
       const before = hooks.beforeCommit?.();

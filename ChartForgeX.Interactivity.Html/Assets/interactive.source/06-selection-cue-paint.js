@@ -1,4 +1,4 @@
-  // Selection is persistent reader state. Its cue uses native geometry without changing authored mark ink.
+
   const stateCueGeometry = ['x', 'y', 'width', 'height', 'rx', 'ry', 'cx', 'cy', 'r', 'x1', 'y1', 'x2', 'y2',
     'd', 'points', 'transform', 'fill-rule', 'clip-path'];
   const stateCueStyle = (node, name, value) => {
@@ -32,7 +32,7 @@
       let geometricCue = false;
       for (const source of primary.length ? primary : shapes) {
         if (!shapePaint(source, styles, node)) continue;
-        // Hatches and their base mark can share geometry. They need one cue, with every native layer retained.
+
         const signature = source.localName + stateCueGeometry.map(key => source.getAttribute(key) || '').join('|');
         let seen = geometryByParent.get(source.parentNode);
         if (!seen) geometryByParent.set(source.parentNode, seen = new Set());

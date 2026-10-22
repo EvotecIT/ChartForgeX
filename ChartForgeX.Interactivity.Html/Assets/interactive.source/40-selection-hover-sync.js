@@ -44,16 +44,16 @@
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
-    // A following target transition updates each class to its new state. Keep unchanged
-    // series paint instead of removing and restoring thousands of related observations.
+
+
     if (!preservePaint || root._cfxBranchHighlights)
       root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column,.cfx-hover-series').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series'));
-    // A published hover change supersedes the peer's guide emphasis; the next guide must restore it.
+
     if (emit !== false || sync !== false) delete root._cfxCrosshairMode;
     if (emit !== false) emitHostEvent(root, 'cfxhoverclear', {});
     if (sync !== false) emitSync(root, { action: 'hover-clear' });
   };
-  // Pie-like legends name points, so their emphasis unit is one point rather than the containing series.
+
   const pointLegendUnits = (root, target) => target.point !== undefined && Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-point]'))
     .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));
   const legendItemUnit = (root, target) => {
@@ -79,14 +79,14 @@
   };
   const hoverModeForTarget = (root, node, mode) => mode === 'shared' ? 'shared'
     : root._cfxBranchHighlights?.includes(node) ? 'root-branch' : 'series';
-  // 'series' keeps the pointed series at full strength while other series recede;
-  // 'shared' (crosshair over the plot background) keeps every series at full strength.
+
+
   const applyHoverByTarget = (root, target, mode) => {
     if (!target) { clearHover(root, false, false); return false; }
     const nodes = interactiveTargets(root);
     const localNode = nodes.find((node) => matchesTargetIdentity(node, target));
     if (!localNode && target.targetKind && target.targetId) { clearHover(root, false, false); return false; }
-    // A peer's equivalent mark may have a different local point ordinal or series position.
+
     const localTarget = localNode ? targetIdentity(localNode) : target;
     const hoverMode = hoverModeForTarget(root, localNode, mode);
     if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
@@ -196,7 +196,7 @@
   const publishResetSelection = (root, previousSelection) => {
     if (previousSelection) publishSelectionChange(root, 'reset');
     publishCompare(root, false);
-    // Reset clears the group's data selection even when the compare tray is disabled.
+
     emitSync(root, { action: 'compare', count: 0, targets: [] });
   };
   const selectionTargetBatch = root => {
@@ -230,8 +230,8 @@
     return count;
   };
   const reconcileSourceSelection = (root, previous, targets) => {
-    // One chart can share raw observations with one peer and derived summaries with another.
-    // Reconcile only this gesture's represented identities; an unrelated peer fact stays selected.
+    // Reconcile gesture IDs, not unrelated peer state.
+
     const batch = selectionTargetBatch(root), before = new Set(), after = new Set();
     for (const target of previous) batch.resolve(target).forEach(node => before.add(node));
     for (const target of targets) {
@@ -257,8 +257,8 @@
     const projection = root._cfxDataProjection;
     if (!projection || !selection?.range) return null;
     const target = targetIdentity(node), data = node.dataset;
-    // Scalar source coordinates survive SVG/CSS quantization. Interval facts and
-    // non-point marks retain their existing visual-centre selection contract.
+
+
     if (target.targetKind !== 'point' || target.x === undefined || target.range) return null;
     if (!keyboardTargetAvailable(node)) return false;
     const box = node.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + box.height / 2;
@@ -295,12 +295,12 @@
     if (!detail || detail.chartId === root.dataset.cfxChartId) return;
     if (['hover', 'crosshair', 'navigate'].includes(detail.action)
       && !interactiveTargets(root).some(node => matchesTargetIdentity(node, detail.target))) {
-      // An absent identity retires only this sender's previously accepted hover.
+
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
       return;
     }
     if (detail.action === 'viewport' && (detail.viewport || detail.xWindow || detail.yWindow) && cartesianViewportConnected(root)) {
-      // Exact physical keys prevent a secondary value domain being replayed through a primary axis.
+      // Keep primary/secondary physical axes distinct.
       const source = detail.viewport || { x: detail.xWindow, y: detail.yWindow };
       const binding = nativePreparationBinding(root, 'viewport');
       const viewport = Object.fromEntries(binding.axes.filter(name => validSourceAxisWindow(source[name], chartAxisProjection(root, name)))
@@ -335,7 +335,7 @@
       if (applyHoverByTarget(root, detail.target)) root._cfxPeerHoverSource = detail.chartId;
       revealTargets(root, [detail.target], false, false, detail.source || 'hover');
     } else if (detail.action === 'hover-clear') {
-      // A peer retires only its accepted hover; a local pointer or keyboard move takes ownership.
+      // Retire accepted hover only; local input takes over.
       if (root._cfxPeerHoverSource !== undefined && root._cfxPeerHoverSource === detail.chartId) clearHover(root, false, false);
     }
     else if (detail.action === 'crosshair' || detail.action === 'navigate') {

@@ -122,12 +122,12 @@
     root.removeAttribute('data-cfx-crosshair');
     delete root._cfxCrosshairMode;
   };
-  // A producer's coordinate contract controls inferred geometry; native painted targets always retain their identity.
+
   const usesPolarCoordinates = (node) => !!node.closest('[data-cfx-coordinate-system="polar"]');
   const usesCartesianCoordinates = (node) => node.closest('[data-cfx-coordinate-system]')?.dataset.cfxCoordinateSystem === 'cartesian';
   const inferredPlotSurfaceRoles = new Set(['background', 'frame-card', 'frame-card-shadow', 'content-surface',
     'grid-x', 'grid-y', 'axis-x', 'axis-y', 'axis-secondary-y']);
-  // Retain native summaries separately: an Exact line hit is not an inferred observation or crosshair.
+
   const pointerCandidates = (root, event, searchNearest, nativeTarget = event.target, withinSeries = null) => {
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
@@ -135,8 +135,8 @@
     if (event.clientX < stageRect.left || event.clientX > stageRect.right || event.clientY < stageRect.top || event.clientY > stageRect.bottom) return null;
     const styles = new Map();
     let hit = pointLabelTarget(root, nativeTarget) || (nativeTarget instanceof Element ? nativeTarget.closest(targetSelector) : null);
-    // Native captions can repeat their owner's facts without becoming separate interactive targets.
-    // Stop at the nearest independent identity before checking paint; unavailable marks never fall through.
+    // Stop at caption owner/independent ID; never skip hidden targets.
+
     while (hit && root.contains(hit) && !isInteractiveTarget(hit)) {
       if (hit.dataset.cfxRole === 'legend-entry-omitted') { hit = null; break; }
       hit = hit.parentElement && hit.parentElement.closest(targetSelector);
@@ -149,8 +149,8 @@
         y: usesPolarCoordinates(hit) || summary ? event.clientY : box.top + box.height / 2, distance: 0, exact: true, summary };
       if (!summary) return { native, observation: hit.hasAttribute('data-cfx-point') && usesCartesianCoordinates(hit) ? native : null };
     }
-    // Sparse-plot inference starts on the native stage surface, never on an unrelated host veil.
-    // Explicit native targets and mapped captions retain their own acquisition contract.
+
+
     const svg = stage.querySelector('svg');
     const plotSurface = nativeTarget === stage || nativeTarget === svg || nativeTarget instanceof SVGElement
       && svg?.contains(nativeTarget) && !nativeTarget.closest('foreignObject')
@@ -167,15 +167,15 @@
       const rank = withinSeries ? Math.abs(root._cfxDataProjection?.horizontal ? y - event.clientY : x - event.clientX) : distance;
       candidates.push({ node, x, y, distance, rank, order: candidates.length, exact: false });
     });
-    // Rank fresh geometry before paint checks; hidden marks fall through and ties retain DOM order.
+
     candidates.sort((first, second) => first.rank - second.rank || first.distance - second.distance || first.order - second.order);
     return { native, observation: candidates.find(candidate => pointerTargetPaint(candidate.node, styles)) || null };
   };
   const pointerActivationTarget = (root, node, event) => {
     if (isDataTarget(node) || renderedTargetKind(node) !== 'series' || !usesCartesianCoordinates(node)
       || !(event instanceof MouseEvent) || event.detail <= 0) return node;
-    // Native fill paint owns the click, including when it covers another series' hit regions.
-    // Resolve a real observation at the closest category coordinate within that topmost series.
+    // Topmost fill owns hit/nearest source observation.
+
     const series = seriesTarget(node), candidates = pointerCandidates(root, event, true, event.target, series);
     const fill = event.target instanceof Element ? event.target.closest('[data-cfx-role]') : null;
     return candidates?.native?.summary && matchesLocalSeriesTarget(candidates.native.node, series)
@@ -205,7 +205,7 @@
     crosshair.style.top = bounds.top + 'px';
     crosshair.style.width = bounds.width + 'px';
     crosshair.style.height = bounds.height + 'px';
-    // Only SVG-sized rounding excursions reach here. Keep their anchors on the actual visible plot.
+
     const x = clamp(local.x - bounds.left, 0, bounds.width), y = clamp(local.y - bounds.top, 0, bounds.height);
     crosshair.style.setProperty('--cfx-crosshair-x', x + 'px');
     crosshair.style.setProperty('--cfx-crosshair-y', y + 'px');
@@ -213,13 +213,13 @@
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
     if (label) {
       label.textContent = text(point.node);
-      // Measure the constrained label, including its border/padding, before placing it in a narrow plot.
+
       label.style.left = clamp(x + 10, 0, Math.max(0, bounds.width - label.offsetWidth)) + 'px';
       label.style.top = clamp(y - label.offsetHeight - 6, 0, Math.max(0, bounds.height - label.offsetHeight)) + 'px';
     }
     const target = targetIdentity(point.node);
     const key = targetKey(target), mode = crosshairHoverMode(event, point.node, nativeTarget);
-    // A native summary can stay unchanged while its independently inferred guide advances.
+
     const changed = root.dataset.cfxCrosshair !== key || root._cfxCrosshairMode !== mode;
     root.dataset.cfxCrosshair = key;
     root._cfxCrosshairMode = mode;
@@ -228,8 +228,8 @@
       emitSync(root, { action: 'crosshair', label: text(point.node), target, mode });
     }
   };
-  // A pointer resting on a mark of the nearest point's series emphasizes that series; anywhere else on the
-  // plot the crosshair is a shared readout and no series recedes.
+
+
   const crosshairHoverMode = (event, node, nativeTarget = event && event.target) => {
     const hit = nativeTarget instanceof Element ? nativeTarget.closest('[data-cfx-series]') : null;
     return hit && (hit.dataset || {}).cfxSeries === (node.dataset || {}).cfxSeries ? 'series' : 'shared';
@@ -240,8 +240,8 @@
     if (!guideEnabled && !hasFeature(root, 'Tooltips')) return;
     const legend = nativeTarget instanceof Element && nativeTarget.closest('[data-cfx-role="legend-item"]');
     if (legend && root.contains(legend)) {
-      // A reset can suppress native entry before this fresh, coalesced move resumes acquisition.
-      // Keep the legend's own live painted summary; never search the plot for a replacement.
+
+
       hideCrosshair(root, crosshair);
       const available = hasFeature(root, 'Tooltips') ? currentPointerTooltip(root, event) === legend : pointerTargetPaint(legend);
       if (available) {
@@ -257,7 +257,7 @@
     const searchNearest = guideEnabled || root.dataset.cfxTooltipRange !== 'exact';
     const candidates = pointerCandidates(root, event, searchNearest, nativeTarget);
     const observation = candidates && candidates.observation;
-    // Nearest/bounded acquisition can refine a line summary to a real observation; Exact retains the summary.
+
     const tooltipPoint = acquiredTooltipPoint(root, candidates);
     const guidePoint = guideEnabled && observation && (observation.exact || observation.distance <= 120) ? observation : null;
     if (!tooltipPoint && !guidePoint) {
@@ -274,7 +274,7 @@
     if (changed) setHover(root, point.node, true, true, mode);
     if (guidePoint) showCrosshair(root, crosshair, guidePoint, event, nativeTarget);
     else hideCrosshair(root, crosshair);
-    // Recheck paint on each event: host CSS may change while the semantic target remains the same.
+
     if (tooltipPoint) showTip(root, tip, tooltipPoint.node, event);
     else hideTip(root, tip, false);
   };

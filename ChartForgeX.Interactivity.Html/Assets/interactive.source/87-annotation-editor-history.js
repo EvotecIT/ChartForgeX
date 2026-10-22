@@ -15,7 +15,7 @@
     const state = annotationEditorState(root);
     if (!state) return {};
     const before = annotationDrawingAt(root, id), after = drawing ?? null;
-    // A native reference line or band exists, but cannot be restored by this source-drawing editor.
+    // Editor history cannot restore native lines/bands.
     const representable = before !== null || !nativeAnnotationNode(root, id);
     if (!state.enabled) return representable ? {} : { committed: () => { state.undo = []; state.redo = []; } };
 
@@ -25,7 +25,7 @@
       cancelled: release,
       failed: () => { release(); state.error = uiText(root, 'AnnotationFailed', 'The annotation could not be updated.'); refreshAnnotationEditor(root); },
       committed: () => {
-        // Only the native commit owner reaches here, after verifying every requested source fact.
+        // Only validated native commits enter history.
         if (!representable) {
           state.undo = []; state.redo = [];
         } else if (replay) {

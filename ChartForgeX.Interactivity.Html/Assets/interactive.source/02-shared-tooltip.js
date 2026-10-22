@@ -1,4 +1,4 @@
-  // The prepared kind names distinguish source quantities from map/grid coordinates and tuple summaries.
+
   const sharedXSeriesKinds = new Set(['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'lollipop', 'scatter', 'bubble', 'errorbar', 'slope', 'trendline', 'waterfall', 'differencearea']);
   const sharedXObservation = (data) => sharedXSeriesKinds.has((data.cfxKind || '').toLowerCase()) && !data.cfxDerived;
   const sharedXValue = (data) => (data.cfxKind || '').toLowerCase() === 'differencearea' ? data.cfxFirst : data.cfxY;
@@ -10,7 +10,7 @@
     const x = Number(data.cfxX), styles = new Map();
     const addObservation = (point) => {
       const candidate = point.dataset;
-      // Reject unrelated coordinates and duplicate series before resolving any computed mark styles.
+
       if (!sharedXObservation(candidate) || !tooltipNumber(candidate.cfxX) || !tooltipNumber(sharedXValue(candidate))
         || Number(candidate.cfxX) !== x || points.has(candidate.cfxSeries) || !isInteractiveTarget(point)
         || point.closest('.cfx-series-muted,[data-cfx-role="legend-item"]')) return;
@@ -21,7 +21,7 @@
         state: candidate.cfxState || svg.getAttribute('data-cfx-series-state-' + index) || 'none',
         value: Number(sharedXValue(candidate)), rawValue: sharedXValue(candidate), colour: paint.colour || paintColour(point, styles) });
     };
-    // Duplicate x coordinates are valid: retain the observation the reader actually interacted with.
+    // Keep the acquired duplicate-X observation.
     addObservation(node);
     svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x]').forEach(addObservation);
     const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };

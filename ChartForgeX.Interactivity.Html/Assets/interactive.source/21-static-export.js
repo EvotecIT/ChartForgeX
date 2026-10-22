@@ -1,5 +1,5 @@
-  // Exports retain the committed native scene and persistent reader state. The standalone
-  // geometric camera, hover, focus outlines and focus trails are browser presentation only.
+  // Export committed state, never camera/hover/focus.
+
   const withPersistentExportPaint = (root, svg, read) => {
     const transientClasses = ['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series', 'cfx-trail'];
     const classes = Array.from(svg.querySelectorAll('[class]')).map(node => [node, node.getAttribute('class')]);
@@ -39,7 +39,7 @@
       sources.forEach((source, index) => {
         const target = copies[index], style = getComputedStyle(source);
         for (const property of exportPaintProperties) {
-          // Browser computed URLs are absolute; retain local resources inside this standalone SVG.
+          // Rebind computed URLs to local SVG.
           const value = style.getPropertyValue(property).replace(/url\(["']?[^)"']*#([^)"']+)["']?\)/g,
             (match, id) => ids.has(id) ? 'url(#' + id + ')' : match);
           if (value) target.style.setProperty(property, value);

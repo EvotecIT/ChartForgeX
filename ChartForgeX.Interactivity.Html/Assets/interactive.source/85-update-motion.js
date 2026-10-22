@@ -1,4 +1,4 @@
-  // Motion changes presentation only; the accepted native scene is committed atomically first.
+  // Commit native state before motion.
   const captureChartUpdateMotion = value => {
     if (value === undefined || value === null) return Object.freeze({ duration: 0 });
     if (typeof value !== 'object' || !Number.isFinite(value.duration) || value.duration < 0 || value.duration > 1000)

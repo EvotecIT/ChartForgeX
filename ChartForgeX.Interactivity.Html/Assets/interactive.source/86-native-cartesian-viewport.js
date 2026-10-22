@@ -1,4 +1,4 @@
-  // Every physical axis uses one captured transform and the existing native preparation lifetime.
+
   const cartesianAxisNames = Object.freeze(['x', 'y', 'secondaryX', 'secondaryY']);
   const nativeViewportAxes = (axes, defaults = ['x']) => {
     const selected = axes === undefined ? defaults : axes;

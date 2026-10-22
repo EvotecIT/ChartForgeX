@@ -15,7 +15,7 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const lassoSelector = '.cfx-interactive-region,[data-cfx-target-kind]:not([data-cfx-target-kind="legend"]),[data-cfx-label],[data-cfx-point],[data-cfx-region],[data-cfx-node]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
-  // Complete source catalogs describe facts; their painted observations own interaction.
+
   const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"],[data-cfx-role="word-cloud-source"],[data-cfx-positioning="absolute"][data-cfx-stop-count]');
   const isInteractiveTarget = (node) => {
     if (isPassiveTarget(node)) return false;
@@ -23,7 +23,7 @@
     if (role === 'legend-entry-omitted') return false;
     if (role === 'legend-item') return true;
     if (node.closest('[data-cfx-role="legend-item"]')) return false;
-    // Bind a semantic group once; a nested group with its own explicit identity remains a target.
+
     const owner = node.parentElement && node.parentElement.closest('[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-series][data-cfx-value]:not([data-cfx-point])');
     if (!owner) return true;
     const data = node.dataset || {}, ownerData = owner.dataset || {};
@@ -32,13 +32,13 @@
   };
   const interactiveTargets = (root, selector = targetSelector) => Array.from(root.querySelectorAll(selector)).filter(isInteractiveTarget);
   const targetFocusNode = (node) => {
-    // Only the renderer-owned cell link is a mark's alternate keyboard target.
+
     const link = node.parentElement;
     if (link && link.matches('a[data-cfx-role="heatmap-cell-link"][href]')) return link;
-    // Prepared marks put identity on the outer group and their cell link inside it.
+
     return Array.from(node.children).find((child) => child.matches('a[data-cfx-role="heatmap-cell-link"][href]')) || node;
   };
-  // A legend may refer to an authored native item while retaining its own legend identity.
+
   const legendTarget = (node) => {
     const data = node.dataset || {};
     return data.cfxLegendTargetKind && data.cfxLegendTargetId
@@ -86,7 +86,7 @@
     const svg = node.closest('svg');
     return svg && data.cfxSeries !== undefined ? svg.getAttribute('data-cfx-series-key-' + data.cfxSeries) || '' : '';
   };
-  // Series groups use source-points as a count; marks use it as an authored collection.
+
   const hasSourcePointCollection = (node) => {
     const data = node.dataset || {};
     return data.cfxSourcePoints !== undefined && data.cfxRole !== 'series';
@@ -113,7 +113,7 @@
     const data = node.dataset || {};
     if (data.cfxDerivedIdentity !== undefined) return data.cfxDerivedIdentity;
     const derived = data.cfxDerived || 'aggregate';
-    // Layout ordinals do not identify equivalent summaries in charts with different partitions.
+    // Summary ordinals are partition-local.
     if (derived === 'histogram-bin' && data.cfxBinLower !== undefined && data.cfxBinUpper !== undefined)
       return [derived, String(Number(data.cfxBinLower)), String(Number(data.cfxBinUpper)), data.cfxBinUpperInclusive || 'false',
         data.cfxHistogramAggregation || 'count', data.cfxHistogramEncoding || 'value'].join(':');
@@ -132,7 +132,7 @@
     const point = derived ? 'derived:' + derivedPointIdentity(node) : sourcePointIndex(node) ?? '0';
     return `${seriesKey(node) || data.cfxSeries || 'series'}:${point}`;
   };
-  // Group legends own a distribution; the individual outlier retains its sample target.
+
   const boxPlotGroup = (node) => {
     const data = node.dataset || {};
     return data.cfxGroupIndex !== undefined && (data.cfxDerived === 'five-number-summary'
@@ -169,7 +169,7 @@
       if (reference) return JSON.stringify([seriesKey(node) || data.cfxSeries || 'series', reference.targetKind, reference.targetId]);
       return data.cfxPoint === undefined ? seriesKey(node) || data.cfxSeries || data.cfxLabel || '' : pointTargetId(node);
     }
-    // Captions and values can repeat; native source identity addresses one annotation in this scene.
+
     if (kind === 'annotation') return data.cfxId || data.cfxSourceId || node.id || '';
     return data.cfxId || node.id || data.cfxLabel || data.cfxRole || '';
   };

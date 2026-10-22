@@ -1,13 +1,13 @@
-  // Transient HTML paint is separate from native primitives and their current host CSS.
-  // The probe attribute is deliberately outside the scoped availability observer's attribute filter.
+
+
   const withNativeHighlightPaint = (node, read) => {
     const root = node && node.closest('.cfx-interactive-chart');
     if (!root || !root._cfxBranchHighlights || root.hasAttribute('data-cfx-highlight-probe')) return read();
     root.setAttribute('data-cfx-highlight-probe', '');
     try { return read(); } finally { root.removeAttribute('data-cfx-highlight-probe'); }
   };
-  // Prepared point targets own selection. Every Cartesian legend follows that state;
-  // only connected geometry also carries it to its line/fill owner.
+
+
   const syncCartesianLinkedPaint = (root, nodes) => {
     const owners = new Map();
     for (const owner of root.querySelectorAll('[data-cfx-role="series"][data-cfx-coordinate-system="cartesian"]')) {
@@ -30,8 +30,8 @@
       owner.classList.toggle('cfx-linked-series-active', state.connected && state.active);
       owner.classList.toggle('cfx-linked-series-dim', state.connected && state.dim && !state.active);
     }
-    // Legends live outside the series group. Match their local source ordinal, so
-    // their swatch and caption retain the same foreground even over a peer's mark.
+
+
     const series = new Map(Array.from(owners, ([owner, state]) => [owner.dataset.cfxSeries, state]));
     for (const legend of root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-series]')) {
       const state = legend.dataset.cfxPoint === undefined ? series.get(legend.dataset.cfxSeries)
@@ -43,7 +43,7 @@
   };
   const prepareRootBranchHighlights = (root) => {
     if (root.dataset.cfxHighlightMode !== 'root-branch') return;
-    // Prepared targets normalize family names; native metadata also accepts the enum spelling.
+
     const nodes = Array.from(root.querySelectorAll('[data-cfx-kind="sunburst" i][data-cfx-target-kind="node"]')).filter(node => !isPassiveTarget(node));
     if (!nodes.length) return;
     root._cfxBranchHighlights = nodes;
@@ -51,7 +51,7 @@
       node.dataset.cfxHighlightManaged = 'true';
       const paint = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       paint.setAttribute('data-cfx-highlight-paint', '');
-      // Keep accessible names on the identity owner. Captions and hatches stay with their native mark.
+
       Array.from(node.children).filter(child => !child.matches('title,desc')).forEach(child => paint.appendChild(child));
       node.appendChild(paint);
     });
@@ -73,7 +73,7 @@
     outline.setAttribute('focusable', 'false');
     return outline;
   };
-  // Keyboard focus and text-only state cues share the same live native-to-SVG footprint.
+
   const interactionOutlineFootprint = (node) => {
     const svg = node?.ownerSVGElement, matrix = svgScreenMatrix(svg);
     if (!matrix) return null;
@@ -94,7 +94,7 @@
       if (outline) outline.remove();
       return;
     }
-    // Copy only the primary geometry: no hatch, IDs, targets, tab stops or native paint attributes.
+    // Clone geometry, not IDs/targets/hatch/focus/paint.
     if (!outline) {
       outline = interactionOutlineNode(primary.localName, 'data-cfx-highlight-outline');
       paint.insertBefore(outline, paint.firstChild);
@@ -105,7 +105,7 @@
     });
     const native = getComputedStyle(primary);
     const width = Number(style['stroke-width'] ?? 2.5);
-    // Native stroke stays on top. The extra width exposes the requested outline outside it.
+
     paint.style.setProperty('--cfx-highlight-stroke', style.stroke ?? native.stroke);
     paint.style.setProperty('--cfx-highlight-stroke-width', width > 0 ? String(Math.min(Number.MAX_VALUE, (parseFloat(native.strokeWidth) || 0) + width * 2)) : '0');
   };
@@ -126,10 +126,10 @@
     withNativeHighlightPaint(root, () => (root._cfxBranchHighlights || []).forEach(node => {
       const available = !!pointerTargetPaint(node);
       node.toggleAttribute('data-cfx-highlight-unavailable', !available);
-      // Zero/collapsed facts deliberately have no pointer paint, but keep keyboard readouts.
+
       if (!available && node.dataset.cfxHighlightState === 'item' && node.dataset.cfxGeometryStatus === 'visible') hiddenActive = true;
     }));
-    // Host paint is local to this chart; losing it must not clear an available peer's hover.
+    // Local paint loss keeps peer hover.
     if (hiddenActive) clearHover(root, true, false);
   };
   const applyRootBranchHighlight = (root, active) => {
@@ -144,7 +144,7 @@
       const ownBranch = node.dataset.cfxBranchRoot;
       const highlighted = node === active;
       const related = branch && ownBranch === branch;
-      // The central root has no branch. Focusing it leaves the surrounding branches at native strength.
+
       let style = {}, state = 'neutral';
       if (highlighted) { style = { opacity: '1', ...(branch ? branchStyle : {}), ...itemStyle }; state = 'item'; }
       else if (related) { style = { opacity: graphite ? '1' : '.82', ...branchStyle, ...otherItemStyle }; state = 'branch'; }

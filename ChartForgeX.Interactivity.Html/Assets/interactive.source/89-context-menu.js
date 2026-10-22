@@ -1,4 +1,4 @@
-  // A second presentation of existing commands, never a second reset/export owner.
+
   const bindChartContextMenu = root => {
     if (root.dataset.cfxContextMenu !== 'true') return;
     const stage = root.querySelector('.cfx-stage'), view = root.ownerDocument.defaultView;
@@ -17,8 +17,8 @@
       close();
       const tree = root.getRootNode(), style = view.getComputedStyle(root);
       returnFocus = tree.activeElement || root;
-      // The portal belongs to this chart during replacement. Preserve its source
-      // focus rather than treating the menu's document-level button as unrelated.
+      // Portals keep chart ownership/source focus.
+
       root._cfxContextMenuSourceFocus = root.contains(returnFocus) ? returnFocus : stage;
       menu = root.ownerDocument.createElement('div');
       menu.className = 'cfx-chart-context-menu'; menu.setAttribute('role', 'menu');

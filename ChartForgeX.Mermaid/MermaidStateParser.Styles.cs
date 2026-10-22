@@ -6,6 +6,8 @@ internal static partial class MermaidStateParser {
     /// <summary>Records assignments before resolving identities so forward styles do not manufacture states.</summary>
     private static bool TryReadStyle(MermaidStateDocument document, string text, MermaidSourceSpan span,
         List<StateStyleAssignment> assignments, MermaidParseResult<MermaidDocument> result) {
+        // Bare keywords remain state identities; only declarations enter style dispatch.
+        if (text is "classDef" or "class" or "style") return false;
         var keyword = text.TrimEnd(';').TrimEnd();
         if (keyword is "classDef" or "class" or "style") {
             document.StyleStatements.Add(new MermaidRawStatement(text, span));

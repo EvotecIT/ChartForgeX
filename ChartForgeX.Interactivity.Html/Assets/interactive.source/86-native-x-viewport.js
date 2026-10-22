@@ -1,4 +1,4 @@
-  // Native hosts own scenes; the browser owns gestures and reply lifetime.
+
   const validXProjection = projection => {
     const box = projection?.plotBounds;
     return !!projection && [projection.fullMinimum, projection.fullMaximum, projection.minimum, projection.maximum,
@@ -67,7 +67,7 @@
       || !Number.isFinite(window.minimum) || !Number.isFinite(window.maximum) || window.minimum >= window.maximum
       || window.scale && window.scale !== (projection.scale || 'linear')
       || !validSourceAxisMaximum(window, axis)) return false;
-    // Reuse the captured data projection's mapping; the host still owns confinement, ticks and native re-preparation.
+
     const first = projection.plotBounds.x + projectedAxisRatio(axis, window.minimum, false) * projection.plotBounds.width;
     const last = projection.plotBounds.x + projectedAxisRatio(axis, window.maximum, true, window.maximumInclusive !== false) * projection.plotBounds.width;
     if (!Number.isFinite(first) || !Number.isFinite(last) || first === last) return false;

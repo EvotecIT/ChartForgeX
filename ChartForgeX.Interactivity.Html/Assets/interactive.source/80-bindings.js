@@ -82,15 +82,15 @@
           if (!retainPointerTip(root, event)) hideTip(root, tip, false);
         });
       });
-      // Preserve native link focus; disabled adapter navigation must not create implicit SVG tab stops.
+
       if (hasFeature(root, 'KeyboardNavigation') || focusNode.matches('a[href]')) {
         let pointerFocus = false;
-        // Touch compatibility mouse events can focus the mark after pointerup has already cleared the press.
+        // Touch mouse follows pointerup; mid-press reveal retargets.
         ['pointerdown', 'mousedown'].forEach(type => listenChart(root, focusNode, type, (event) => { pointerFocus = event.button === 0; }));
         ['pointerup', 'pointercancel', 'pointerleave', 'mouseup'].forEach(type => listenChart(root, focusNode, type, () => { pointerFocus = false; }));
         listenChart(root, focusNode, 'focus', (event) => {
           refreshKeyboardNavigation(root, node);
-          // Revealing a partly visible mark between pointer down and up retargets its native click.
+
           const keyboardFocus = focusNode.matches(':focus-visible');
           if (keyboardFocus && !pointerFocus) delete root._cfxPointerFocus;
           refreshKeyboardFocusPaint(root);
@@ -145,11 +145,11 @@
           return;
         }
         if (event.key !== 'Enter' && event.key !== ' ') return;
-        // Enter on a link must retain native navigation. Space selects the cell without following the link.
+        // Enter follows links; Space selects without navigation.
         if (event.key === 'Enter' && focusNode.matches('a[href]')) return;
         event.preventDefault();
         event.stopPropagation();
-        // Keep the keyboard event: a synthetic click's finite (0,0) would replace the focused mark's position.
+        // Keep key events; synthetic (0,0) loses focus.
         activateTarget(event);
       });
     });
@@ -233,7 +233,7 @@
     }
     if (stage) {
       listenChart(root, stage, 'pointerenter', (event) => {
-        // A new contact can acquire sparse plot space before any native mark receives its own entry.
+
         if (keyboardReadoutOwnsPointer(root)) return;
         if (!ownsTooltipPointer(root, event)) updateNearestPoint(root, crosshair, tip, event);
       });
@@ -250,8 +250,8 @@
         if (pointerFrame) cancelAnimationFrame(pointerFrame);
         pointerFrame = 0; pendingPointerMove = null;
       };
-      // Tooltip cancellation owns queued hover work; an active gesture keeps its
-      // provisional movement and still commits its final sample on pointerup.
+      // Cancel hover, not gestures; pointerup commits final sample.
+
       root._cfxCancelPointerHover = () => { if (!drag) cancelPointerMove(); };
       const applyPointerMove = (event, nativeTarget = event.target) => {
         if (!drag || drag.id !== event.pointerId) {
@@ -269,8 +269,8 @@
           setBrushBox(root, stage, brush, drag, brushPointer(root, stage, event));
         }
       };
-      // Keep the last sample in each display frame; pointerup commits its final position
-      // synchronously, so coalescing cannot omit the last drag segment or selection.
+
+
       root._cfxCancelBrushDrag = () => {
         if (drag?.mode !== 'brush') return false;
         cancelPointerMove();
@@ -318,8 +318,8 @@
       listenChart(root, stage, 'pointermove', (event) => {
         resumePointerHover(root);
         if (drag ? drag.id !== event.pointerId : !ownsTooltipPointer(root, event)) return;
-        // A shadow event is retargeted as dispatch leaves the chart. Capture its
-        // native surface now, while retaining the PointerEvent for timing and ownership.
+        // Capture native target/timing before shadow retargeting.
+
         const nativeTarget = event.composedPath().find(node => node instanceof Element && stage.contains(node)) || event.target;
         pendingPointerMove = { event, nativeTarget };
         if (pointerFrame) return;
@@ -366,7 +366,7 @@
       listenChart(root, stage, 'pointercancel', (event) => {
         if (drag?.id === event.pointerId || !drag && ownsTooltipPointer(root, event)) cancelPointerMove();
         if (drag && drag.id === event.pointerId) {
-          // Cancel only the provisional gesture; a previously committed selection and box remain current.
+          // Cancel draft gesture only; keep selection/box.
           if (drag.mode === 'brush' && brush) {
             brush.hidden = drag.previousBrush.hidden;
             for (const name of ['left', 'top', 'width', 'height']) brush.style[name] = drag.previousBrush[name];

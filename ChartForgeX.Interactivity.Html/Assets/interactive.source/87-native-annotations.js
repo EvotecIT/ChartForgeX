@@ -1,4 +1,4 @@
-  // Commands carry exact source geometry to the host; the native model owns drawing and export.
+  // Exact geometry; native owns drawing/export.
   const nativeAnnotationNode = (root, id) => Array.from(root.querySelectorAll('[data-cfx-role=annotation][data-cfx-annotation-id]'))
     .find(node => node.dataset.cfxAnnotationId === id);
   const sourceAnnotationProjection = (root, yAxis) => {

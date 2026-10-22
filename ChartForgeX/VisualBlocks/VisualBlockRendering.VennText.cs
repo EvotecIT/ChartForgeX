@@ -51,9 +51,14 @@ internal static partial class VisualBlockRendering {
         void Add(IReadOnlyList<string> ids, string text, double x, double baseline, double width, double defaultSize, int weight, ChartColor color, double? heightBudget = null) {
             if (text.Length == 0) return;
             var textBudget = heightBudget ?? lineBudget;
+            // Reserve the height-capped line around its baseline, not the whole
+            // allocation below it. The final width fit can only reduce this box.
+            var heightStyle = FitBodyTextStyle(theme, text, defaultSize, double.MaxValue, textBudget, weight);
+            var lineTop = baseline - TextAscent(heightStyle);
+            var lineBottom = lineTop + TextLayoutEngine.Measure("Mg", heightStyle).Height;
             foreach (var placement in placements) {
                 if (!ContainsId(ids, placement.Set.Id)) continue;
-                var verticalReach = Math.Abs(baseline - placement.Y) + textBudget;
+                var verticalReach = Math.Max(Math.Abs(lineTop - placement.Y), Math.Abs(lineBottom - placement.Y));
                 var horizontalReach = Math.Sqrt(Math.Max(0, placement.Radius * placement.Radius - verticalReach * verticalReach));
                 width = Math.Min(width, Math.Max(1, 2 * (horizontalReach - Math.Abs(x - placement.X))));
             }

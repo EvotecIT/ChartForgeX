@@ -1,4 +1,4 @@
-  // Navigation chrome reuses the captured axis math and requests a fresh native scene.
+
   const fullXNavigationAxis = root => {
     const projection = chartXProjection(root), axis = root._cfxDataProjection?.x;
     return projection && axis ? { ...axis, minimum: projection.fullMinimum, maximum: projection.fullMaximum,
@@ -6,8 +6,8 @@
       timeSessions: projection.timeSessions, maximumInclusive: true, reversed: false } : null;
   };
   const xNavigationWindow = (root, axis, minimum, maximum, maximumInclusive) => {
-    // An authored full edge inside a unit stays inclusive after native confinement.
-    // Otherwise navigation emits exact canonical calendar edges, never centered marks.
+    // Keep full-edge inclusion; emit canonical, uncentered calendar edges.
+
     const inclusive = maximumInclusive ?? (axis.timeSpacing?.kind === 'unit'
       ? !validSourceAxisMaximum({ maximum, maximumInclusive: false }, axis) : chartXProjection(root)?.maximumInclusive !== false);
     return { minimum, maximum, ...(inclusive ? {} : { maximumInclusive: false }) };

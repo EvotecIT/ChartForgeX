@@ -1,4 +1,4 @@
-  // The editor owns a draft and bounded accepted-command history, never model storage or transport.
+  // Browser: drafts/bounded history; native: model/transport.
   const annotationEditorState = root => chartLifetimes.get(root)?.annotationEditor;
   const annotationDrawingAt = (root, id) => {
     const data = nativeAnnotationNode(root, id)?.dataset;

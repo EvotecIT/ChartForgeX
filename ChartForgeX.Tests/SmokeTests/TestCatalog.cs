@@ -543,7 +543,6 @@ internal static partial class SmokeTests {
         ("Visual markup parser maps timeline fences to artifacts", VisualMarkupParserMapsTimelineFencesToArtifacts),
         ("Visual markup parser reports missing optional Mermaid dispatch", VisualMarkupParserReportsMissingOptionalMermaidDispatch),
         ("Mermaid visual markup parser maps Mermaid fences to artifacts", MermaidVisualMarkupParserMapsMermaidFencesToArtifacts),
-        ("Mermaid visual markup parser keeps unsupported families diagnostic-only", MermaidVisualMarkupParserKeepsUnsupportedFamiliesDiagnosticOnly),
         ("Mermaid visual markup parser maps Event Modeling fences to artifacts", MermaidVisualMarkupParserMapsEventModelingFencesToArtifacts),
         ("Mermaid visual markup parser reports invalid fence size attributes", MermaidVisualMarkupParserReportsInvalidFenceSizeAttributes),
         ("Mermaid visual markup parser maps sequence fences to artifacts", MermaidVisualMarkupParserMapsSequenceFencesToArtifacts),

@@ -1,4 +1,4 @@
-  // Calibrate viewport scaling while retaining native viewBox alignment and local transforms.
+
   const svgScreenProjection = (svg, styles) => {
     const projections = styles && (styles._cfxScreenProjections ||= new WeakMap());
     if (projections?.has(svg)) return projections.get(svg);
@@ -28,12 +28,12 @@
     const matrix = node?.getScreenCTM();
     return matrix && projection ? projection.multiply(matrix) : matrix;
   };
-  // Bound comparisons by the native .001 coordinate quantum and live screen rounding.
+  // Allow native .001/screen rounding.
   const svgCoordinatePrecision = matrix => ({
     x: .001 * (Math.abs(matrix.a) + Math.abs(matrix.c)) + .0001,
     y: .001 * (Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001
   });
-  // Captured geometry excludes inflated browser hit areas and layout rounding.
+
   const nativeRegionScreenBox = (node, region = node._cfxNativeRegion, projection) => {
     const matrix = region && svgScreenMatrix(node, projection);
     if (!matrix) return null;

@@ -1,4 +1,4 @@
-  // Native area-chart views share the existing managed preparation transaction.
+
   const capturedHierarchy = root => capturedCartesianMetadata(root).hierarchy || null;
   const hierarchyConnected = root => hasFeature(root, 'HierarchyNavigation') && !!capturedHierarchy(root) && !!nativePreparationBinding(root, 'hierarchy');
   const hierarchyViewChanged = root => capturedHierarchy(root)?.rootId != null;

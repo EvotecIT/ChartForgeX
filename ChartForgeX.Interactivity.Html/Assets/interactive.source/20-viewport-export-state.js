@@ -20,7 +20,7 @@
     stage.style.setProperty('--cfx-pan-y', state.panY + 'px');
     refreshTooltipPosition(root);
   };
-  // Reset is visible only for a changed view.
+
   const viewChanged = (root) => {
     if (hierarchyConnected(root) && hierarchyViewChanged(root)) return true;
     if (connectedXViewport(root) && nativeViewportChanged(root)) return true;
@@ -34,7 +34,7 @@
     if (!reset) return;
     const changed = viewChanged(root);
     if (!changed && document.activeElement === reset) {
-      // Move focus before hiding its control.
+
       if (!root.hasAttribute('tabindex')) root.setAttribute('tabindex', '-1');
       try { root.focus({ preventScroll: true }); } catch { root.focus(); }
     }
@@ -46,7 +46,7 @@
   };
   const emitSync = (root, payload) => {
     if (!hasFeature(root, 'SynchronizedCharts') || !root.dataset.cfxInteractionGroup) return;
-    // Automatic IDs never match peer charts.
+
     const sharedTarget = target => target && target.seriesScope !== 'local';
     if (payload.target?.seriesScope === 'local') {
       if (['hover', 'crosshair', 'navigate'].includes(payload.action) && root._cfxSharedHover) emitSync(root, { action: 'hover-clear' });
@@ -61,7 +61,7 @@
       payload[field] = shared;
     }
     if (['compare', 'lasso'].includes(payload.action) && Array.isArray(payload.targets)) {
-      // A local selection retires shared IDs without publishing local targets.
+
       if (Array.isArray(payload.previousTargets) && !payload.previousTargets.length && !payload.targets.length) return;
       payload.count = payload.targets.length;
     }
@@ -88,7 +88,7 @@
     });
   };
   const setMode = (root, mode) => applyMode(root, root.dataset.cfxMode === mode ? '' : mode);
-  // Cancel provisional ranges before pointerup can recommit.
+  // Cancel draft before pointerup recommits.
   const clearBrush = root => {
     const brush = root.querySelector('.cfx-brush-box');
     const changed = Boolean(root.dataset.cfxBrush || root.dataset.cfxMode === 'brush' || brush && !brush.hidden);
@@ -163,7 +163,7 @@
         requestNativeCartesianWindow(root, captured.nativeViewport, false, accepted);
       else if (captured.nativeViewport.x && !cartesianAxisNames.some(name => name !== 'x' && captured.nativeViewport[name]) && connectedXViewport(root))
         requestNativeXWindow(root, captured.nativeViewport.x, false, accepted);
-      // Native bounds are one transaction. Unsupported or disconnected replays leave reader state unchanged.
+      // Atomic replay; rejected reader state stays intact.
       return;
     }
     const previousSelection = selectedTargets(root).map(targetKey).join('\n');

@@ -17,7 +17,7 @@
         || ['edit', 'remove'].includes(kind) && (!!state.draft || ids.length === 0)
         || kind === 'commit' && !state.draft || kind === 'cancel' && !state.draft
         || kind === 'undo' && (!!state.draft || state.undo.length === 0) || kind === 'redo' && (!!state.draft || state.redo.length === 0);
-      // Cancel remains available while a host request is pending.
+
       view.buttons.cancel.disabled = !state.draft && !state.pending;
       view.label.disabled = state.pending || !state.draft?.drawing;
       view.label.value = state.draft?.drawing?.label ?? '';
@@ -55,7 +55,7 @@
     caption.append(document.createTextNode(uiText(root, 'AnnotationCaption', 'Caption')), input); panel.append(caption);
     listenChart(root, input, 'input', () => {
       if (!state.draft?.drawing || state.pending) return;
-      // Keep editing focus/caret while the source draft and preview update.
+
       const start = input.selectionStart, end = input.selectionEnd;
       state.api.preview({ ...state.draft.drawing, label: input.value }); input.setSelectionRange(start, end);
     });

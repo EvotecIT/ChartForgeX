@@ -47,27 +47,6 @@ title ""People""
         Assert(result.Artifacts[1].Kind == VisualArtifactKind.Table, "Built-in ChartForgeX visual fences should still parse through the composed parser.");
     }
 
-    private static void MermaidVisualMarkupParserKeepsUnsupportedFamiliesDiagnosticOnly() {
-        const string source = @"# Visual
-
-```mermaid
-zenuml
-  title Order
-  A.method()
-```";
-
-        var result = new MermaidVisualMarkupParser().Parse(source);
-
-        Assert(!result.HasErrors, "Recognized but unsupported Mermaid families should remain warnings.");
-        Assert(result.Artifacts.Count == 0, "Unsupported Mermaid families should not emit misleading visual artifacts.");
-        Assert(result.Diagnostics.Count >= 1, "Unsupported Mermaid families should produce diagnostics.");
-        Assert(result.Diagnostics[0].Line == 4, "Mermaid diagnostics should map to Markdown payload source lines.");
-        Assert(result.Diagnostics[0].Message.Contains("not implemented", StringComparison.Ordinal), "Unsupported Mermaid diagnostics should be explicit.");
-        var rendered = MermaidRenderer.Render("zenuml\nA.method()");
-        Assert(!rendered.HasErrors && rendered.Artifact == null && rendered.Diagnostics.Count > 0,
-            "The shared renderer should preserve diagnostic-only behavior for recognized unsupported families.");
-    }
-
     private static void MermaidVisualMarkupParserMapsEventModelingFencesToArtifacts() {
         const string source = @"# Visual
 

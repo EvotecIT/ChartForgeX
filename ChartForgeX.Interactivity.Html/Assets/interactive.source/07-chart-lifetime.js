@@ -1,4 +1,4 @@
-  // One owner releases a chart's browser work. Source data and layout remain native prepared facts.
+
   const chartLifetimes = new WeakMap();
   const mountedCharts = new Set();
   let chartLifetimeObserver = null;

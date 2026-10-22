@@ -41,9 +41,11 @@ public sealed class HtmlXNavigationTests {
 
     [Fact]
     public void UnsupportedChartsOmitNativeNavigationAndControlMessagesAreLocalizable() {
-        var chart = Chart.Create().AddBar("Categories", new[] { new ChartPoint(0, 2), new ChartPoint(1, 3) });
+        var chart = Chart.Create().AddPie("Categories", new[] { new ChartPoint(0, 2), new ChartPoint(1, 3) });
         var renderer = new HtmlInteractiveChartRenderer();
-        Assert.DoesNotContain("data-cfx-x-navigation", renderer.PrepareSection(chart, configure: Configure).Html);
+        var unsupported = renderer.PrepareSection(chart, configure: Configure);
+        Assert.Null(unsupported.PreparedVisual.XProjection);
+        Assert.DoesNotContain("data-cfx-x-navigation", unsupported.Html);
         var supported = Chart.Create().AddLine("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(1, 3) });
         var html = renderer.PrepareSection(supported, configure: options => {
             Configure(options); options.Localization[HtmlChartText.XNavigation] = "Zakres danych";

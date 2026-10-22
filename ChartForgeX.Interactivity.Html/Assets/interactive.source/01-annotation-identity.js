@@ -1,4 +1,4 @@
-  // A declared native binding, rather than a caller scope hint, makes an annotation durable.
+  // Only exact catalog IDs persist; hints stay local.
   const annotationCatalog = (svg, metadata) => {
     const entries = metadata.annotations ?? [], ids = new Set(), sources = new Set(), bindings = new Map();
     const nodes = Array.from(svg.querySelectorAll('[data-cfx-role^="annotation"],[data-cfx-target-kind="annotation"]'));
@@ -17,7 +17,7 @@
         || metadata.regions.filter(region => region.id === item.sourceId && region.role === 'annotation').length !== 1) invalid();
       ids.add(item.id); sources.add(item.sourceId); bindings.set(node, item.id);
     }
-    // The authored namespace belongs only to the catalog's exact native node, including alternate target IDs.
+
     for (const node of nodes) if (!bindings.has(node) && (node.dataset.cfxAnnotationId !== undefined
       || [node.dataset.cfxSourceId, node.dataset.cfxId, node.dataset.cfxTargetId].some(id => id?.startsWith('annotation-id-')))) invalid();
     return bindings;

@@ -89,12 +89,30 @@ public sealed class MermaidResourceBudgetTests {
     public void NamespaceShellsCountOnceAlongsideTheirMemberClasses() {
         const string source = "classDiagram\nnamespace A.B {\nclass C\nclass D\n}";
         var parser = new MermaidParser();
-        Assert.NotNull(parser.Parse(source, Options(new MermaidResourceLimits { MaximumElements = 4 })).Document);
+        var accepted = parser.Parse(source, Options(new MermaidResourceLimits { MaximumElements = 4 }));
+        Assert.Empty(accepted.Diagnostics);
+        var document = Assert.IsType<MermaidClassDocument>(accepted.Document);
+        Assert.Equal(new[] { "C", "D" }, document.Classes.Select(item => item.Id));
+        Assert.Equal(new[] { "A", "A.B" }, document.Namespaces.Select(item => item.Id));
         var result = parser.Parse(source, Options(new MermaidResourceLimits { MaximumElements = 3 }));
         Assert.Null(result.Document);
         var diagnostic = Assert.Single(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.ResourceLimitExceeded);
         Assert.Contains(nameof(MermaidResourceLimits.MaximumElements), diagnostic.Message);
-        Assert.Equal(3, diagnostic.Span.Line);
+        // Explicit namespace shells retain their own declaration location.
+        Assert.Equal(2, diagnostic.Span.Line);
+
+        // Empty shells are native notation and still consume the same semantic budget.
+        const string emptySource = "classDiagram\nnamespace A.B {\n}";
+        var empty = parser.Parse(emptySource, Options(new MermaidResourceLimits { MaximumElements = 2 }));
+        Assert.Empty(empty.Diagnostics);
+        var emptyDocument = Assert.IsType<MermaidClassDocument>(empty.Document);
+        Assert.Empty(emptyDocument.Classes);
+        Assert.Equal(new[] { "A", "A.B" }, emptyDocument.Namespaces.Select(item => item.Id));
+        var emptyRejected = parser.Parse(emptySource, Options(new MermaidResourceLimits { MaximumElements = 1 }));
+        Assert.Null(emptyRejected.Document);
+        var emptyDiagnostic = Assert.Single(emptyRejected.Diagnostics, item => item.Code == MermaidDiagnosticCodes.ResourceLimitExceeded);
+        Assert.Contains(nameof(MermaidResourceLimits.MaximumElements), emptyDiagnostic.Message);
+        Assert.Equal(2, emptyDiagnostic.Span.Line);
     }
 
     [Fact]

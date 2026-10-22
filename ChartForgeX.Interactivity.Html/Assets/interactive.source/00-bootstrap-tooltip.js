@@ -1,10 +1,10 @@
-  // Captured display text may deliberately be empty; only an absent attribute falls back to raw facts.
+  // Only absent captions fall back.
   const capturedText = (data, key, fallback) => data[key] !== undefined ? data[key] : fallback;
   const tooltipNumber = (value) => value !== undefined && value !== null && String(value).trim() !== '' && Number.isFinite(Number(value));
-  // Source metadata stays exact; fallback captions use the browser's shortest round-trip number.
+
   const numericDisplayText = (value) => tooltipNumber(value) ? String(Number(value)) : value;
   const numericFactText = (data, member) => capturedText(data, 'cfxFormatted' + member, numericDisplayText(data['cfx' + member]));
-  // Native observed bindings retain full category context independently of fitted axis ink.
+
   const targetCategoryPath = node => {
     const root = node.closest?.('.cfx-interactive-chart'), paths = root?._cfxCategoryPaths;
     if (!paths) return undefined;
@@ -44,7 +44,7 @@
       rangeLabel: data.cfxRangeLabel,
       series: data.cfxSeries,
       seriesKey: seriesKey(node),
-      // Only the validated native annotation catalog opts into sharing; ordinals and caller hints stay local.
+      // Share validated IDs, never ordinals/hints.
       seriesScope: targetKind === 'annotation' ? node._cfxAnnotationId === undefined ? 'local' : 'shared' : data.cfxSeriesScope,
       annotationId: node._cfxAnnotationId,
       observationId: data.cfxObservationId,
@@ -95,7 +95,7 @@
   };
   const dimensionTooltipRows = (node) => sizeTooltipRows(node).map((row) => ({ ...row, dimension: 'size' }))
     .concat(colorTooltipRows(node).map((row) => ({ ...row, dimension: 'color' })));
-  // A financial Y is the tuple's opening member; all readouts use the complete prices.
+
   const financialTooltipRows = (node) => {
     const data = node.dataset || {};
     if (!['candlestick', 'ohlc'].includes((data.cfxKind || '').toLowerCase())) return null;
@@ -242,7 +242,7 @@
     const root = node.closest && node.closest('.cfx-interactive-chart');
     if (root && root.dataset.cfxTooltipMode === 'shared-x' && renderSharedXTip(tip, node, root)) return true;
     const label = text(node, true);
-    // An explicitly captured empty caption remains a valid readout of the source fields.
+
     if (label === undefined || label === null) return false;
     tip.replaceChildren();
     const title = document.createElement('div');
@@ -327,11 +327,11 @@
     return items;
   };
   const hideTip = (root, tip, force) => {
-    // A delayed pointer handoff can hide an active readout; a force-dismissed readout has no request to restore.
+
     const restoreKeyboardReadout = tip && (!tip.hidden || tooltipRequests.has(root));
     cancelTooltipRequest(root);
     if (!tip || (!force && root.dataset.cfxTooltipPinned === 'true')) return;
-    // Pointer exit can follow host reflow while a keyboard target still owns focus, even in a closed tree.
+
     const active = !force && hasFeature(root, 'Tooltips') && root.getRootNode().activeElement;
     const focused = active && root.contains(active) && interactiveTargets(root).find(node => targetFocusNode(node) === active);
     if (restoreKeyboardReadout && focused && active.matches(':focus-visible') && tooltipReadoutAvailable(focused)) {

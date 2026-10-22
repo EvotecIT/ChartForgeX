@@ -140,11 +140,11 @@ public sealed class MermaidStateStyleTests {
     }
 
     [Theory]
-    [InlineData("classDef")]
+    [InlineData("classDef marked")]
     [InlineData("classDef;")]
-    [InlineData("class")]
+    [InlineData("class A ,")]
     [InlineData("class;")]
-    [InlineData("style")]
+    [InlineData("style , fill:#fff")]
     [InlineData("style;")]
     [InlineData("class A")]
     [InlineData("class , marked")]
