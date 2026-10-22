@@ -12,7 +12,7 @@ using ChartForgeX.VisualBlocks;
 
 namespace SiteVisuals;
 
-internal static class DocVisuals {
+internal static partial class DocVisuals {
     public const string ServiceMap = """
         ```chartforgex topology v1
         id service-map
@@ -46,6 +46,8 @@ internal static class DocVisuals {
             ["hierarchy"] = Example("organization-hierarchy"),
             ["interactivity"] = Example("interactive-topology")
         };
+
+        WriteNativeCapabilities(output, figures, examples);
 
         // A story is a timeline, so its figure is a strip of frames from the example on the Stories page.
         var frames = new[] { 2.4, 6.5, 9.5 };

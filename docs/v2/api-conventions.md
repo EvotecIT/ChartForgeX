@@ -865,16 +865,7 @@ Full secondary text remains in `data-cfx-secondary-label` and descriptive node r
 
 `ChartAxis.LogarithmBase` accepts a finite value greater than one for both `Logarithmic` and `SymmetricLogarithmic`. Base ten remains the default. A logarithmic axis explicitly selects `ChartLogarithmicDomain.Positive` or `Negative`; it never guesses a sign or discards opposite-sign observations. Zero, opposite-sign values and bounds outside the selected domain reject before authored clipping can hide them. Bounds remain increasing source coordinates, so a negative domain can use `-64` through `-1`; `Reversed` independently changes its screen direction.
 
-```csharp
-using ChartForgeX.Core;
-using ChartForgeX.Primitives;
-
-var chart = Chart.Create().WithSize(640, 420)
-    .AddLine("Loss", new[] { new ChartPoint(1, -64), new ChartPoint(2, -8), new ChartPoint(3, -1) })
-    .ConfigureYAxis(axis => axis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative).WithBounds(-64, -1));
-var svg = chart.ToSvg();
-var png = chart.ToPng();
-```
+The [compiled native axis recipe](../../ChartForgeX.Examples/WebsiteRecipes/NativeAxisWebsiteRecipe.cs) shows positive and negative base-two domains in one ordinary console program. The website presents its exact SVG and native PNG output beside the complete downloadable source.
 
 `WithLogarithmicScale(base, domain)` selects scale, base and sign in one validated operation. Clear contradictory existing bounds before changing their sign, or use the chart's transactional `Configure*Axis` callback to install a coherent candidate. Symmetric logarithmic axes retain their existing linear threshold, accept either sign and ignore `LogarithmicDomain`; set their `LogarithmBase` when a base other than ten is needed. Other mathematical scales retain the configured base without applying it. Axis formatting, raw values and source identity remain independent of the transform.
 
@@ -922,21 +913,7 @@ A time axis retains elapsed spacing by default. `axis.WithTimeSpacing(ChartTimeS
 
 For example, these two observations occupy January and March, with an empty February band:
 
-```csharp
-using System;
-using ChartForgeX.Core;
-using ChartForgeX.Primitives;
-
-var chart = Chart.Create().WithSize(640, 420)
-    .AddBar("Orders", new[] {
-        new ChartPoint(new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc), 18),
-        new ChartPoint(new DateTime(2026, 3, 30, 0, 0, 0, DateTimeKind.Utc), 27)
-    })
-    .ConfigureXAxis(axis => axis.WithTimeScale(TimeZoneInfo.Utc)
-        .WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month))));
-var svg = chart.ToSvg();
-var png = chart.ToPng();
-```
+The same [compiled native axis recipe](../../ChartForgeX.Examples/WebsiteRecipes/NativeAxisWebsiteRecipe.cs) renders its two UTC observations with both ordinal and calendar-month policies. Both views retain the original January and March instants and values; only their native spacing policy changes.
 
 Use `axis.WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)))` for equally wide calendar bands, including months without observations. The axis display zone aligns the existing calendar boundary schedule; days across DST and months of different lengths retain equal band widths. Unit spacing does not aggregate: each series may supply at most one observation per band. Multiple series can share a band while retaining distinct raw source instants. The existing interval units, including `Year`, are supported; no automatic unit inference occurs.
 

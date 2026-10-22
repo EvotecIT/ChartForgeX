@@ -1,0 +1,15 @@
+{{~ n = native_examples; program = data.visuals.examples[n.recipe] ~}}
+<section class="cfx-doc-native" id="{{ n.id }}" aria-labelledby="{{ n.id }}-title">
+<h2 id="{{ n.id }}-title">{{ n.title }}</h2>
+<p>{{ n.summary }} <a href="{{ program.source }}" download>Download the complete C# program</a>.</p>
+{{~ for item in n.figures; f = data.visuals.docs.figures[item.id] ~}}
+<figure class="cfx-figure">
+<div class="cfx-figure__plate">
+<a class="cfx-figure__open cfx-only-light" href="{{ f.base }}-light.{{ f.ext }}" aria-label="Open {{ item.title }}, light theme"><img src="{{ f.base }}-light.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="{{ item.caption }}" /></a>
+<a class="cfx-figure__open cfx-only-dark" href="{{ f.base }}-dark.{{ f.ext }}" aria-label="Open {{ item.title }}, dark theme"><img src="{{ f.base }}-dark.{{ f.ext }}" width="{{ f.w }}" height="{{ f.h }}" loading="lazy" decoding="async" alt="{{ item.caption }}" /></a>
+</div>
+<figcaption>{{ item.caption }} <a class="cfx-only-light" href="{{ f.png }}-light.png" aria-label="Open {{ item.title }} as PNG, light theme">PNG</a><a class="cfx-only-dark" href="{{ f.png }}-dark.png" aria-label="Open {{ item.title }} as PNG, dark theme">PNG</a></figcaption>
+</figure>
+{{~ end ~}}
+<pre><code class="language-csharp">{{ program.program | html.escape }}</code></pre>
+</section>
