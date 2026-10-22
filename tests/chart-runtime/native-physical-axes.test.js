@@ -63,7 +63,8 @@ test('visible-category policy and all connected physical windows are captured in
 
 test('generated physical projection validation rejects invalid captured scale and sign policies', () => {
   const native=fs.readFileSync(path.join(sourceRoot,'86-native-x-viewport.js'),'utf8');
-  const valid=new Function('validTimeSessions','validTimeSpacing',native.slice(0,native.indexOf('  const chartXProjection'))+'\nreturn validXProjection;')(() => true, () => true);
+  const transforms=fs.readFileSync(path.join(sourceRoot,'43-brush-projection.js'),'utf8');
+  const valid=new Function(transforms+'\n'+native.slice(0,native.indexOf('  const chartXProjection'))+'\nreturn validXProjection;')();
   const {meta}=runtime();
   assert.equal(valid(meta.yProjection),true);
   assert.equal(valid({...meta.yProjection,scale:'automatic'}),false);

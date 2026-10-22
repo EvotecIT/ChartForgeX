@@ -8,12 +8,18 @@
     while (low <= high) { const middle = low + Math.floor((high - low) / 2); if (instants[middle] <= value) low = middle + 1; else high = middle - 1; }
     return high;
   };
-  const transformedSpacingValue = (spacing, value, bound) => {
+  const validSourceAxisMaximum = (window, axis = window) => {
+    if (window.maximumInclusive !== undefined && typeof window.maximumInclusive !== 'boolean') return false;
+    if (window.maximumInclusive !== false || axis.timeSpacing?.kind !== 'unit') return true;
+    const values = axis.timeSpacing.instants;
+    return Array.isArray(values) && values[timeSpacingIndex(values, window.maximum)] === window.maximum;
+  };
+  const transformedSpacingValue = (spacing, value, bound, maximumInclusive = true) => {
     const values = spacing.instants, last = values.length - 1, found = timeSpacingIndex(values, value);
     if (spacing.kind === 'unit') {
       if (found < 0) return (value - values[0]) / (values[1] - values[0]);
       if (found >= last) return last + (value - values[last]) / (values[last] - values[last - 1]);
-      return found + (bound === undefined ? .5 : bound ? 1 : 0);
+      return found + (bound === undefined ? .5 : bound && (maximumInclusive || value !== values[found]) ? 1 : 0);
     }
     if (last === 0) return value - values[0];
     const index = Math.max(0, Math.min(last - 1, found));
@@ -30,8 +36,8 @@
     const index = Math.max(0, Math.min(last - 1, Math.floor(coordinate)));
     return values[index] + (coordinate - index) * (values[index + 1] - values[index]);
   };
-  const transformedAxisBound = (axis, value, maximum) => axis.timeSpacing
-    ? transformedSpacingValue(axis.timeSpacing, value, maximum) : transformedAxisValue(axis, value);
+  const transformedAxisBound = (axis, value, maximum, maximumInclusive = axis.maximumInclusive !== false) => axis.timeSpacing
+    ? transformedSpacingValue(axis.timeSpacing, value, maximum, maximumInclusive) : transformedAxisValue(axis, value);
   const validTimeSessions = sessions => sessions === undefined || Array.isArray(sessions) && sessions.length > 0
     && sessions.every((session, index) => session && [session.minimum, session.maximum, session.offset].every(Number.isFinite)
       && session.minimum >= 0 && session.maximum > session.minimum && session.offset >= 0
@@ -64,6 +70,7 @@
     const plot = projection?.plotBounds;
     const axis = value => !!value && [value.minimum, value.maximum, value.transformedMinimum, value.transformedMaximum, value.threshold].every(Number.isFinite)
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
+      && validSourceAxisMaximum(value)
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
       && Number.isFinite(value.logarithmBase ?? 10) && (value.logarithmBase ?? 10) > 1
       && ['positive', 'negative'].includes(value.logarithmicDomain ?? 'positive')
@@ -88,13 +95,13 @@
     brush.style.width = Math.abs(point.x - drag.left) + 'px';
     brush.style.height = (plot ? plot.height : Math.abs(point.y - drag.top)) + 'px';
   };
-  const projectedAxisValue = (axis, ratio) => {
+  const projectedAxisValue = (axis, ratio, bound) => {
     if (axis.reversed) ratio = 1 - ratio;
     const span = axis.transformedMaximum - axis.transformedMinimum;
     const value = Number.isFinite(span) ? axis.transformedMinimum + ratio * span
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
     const base = axis.logarithmBase ?? 10;
-    const raw = axis.timeSpacing ? projectedSpacingValue(axis.timeSpacing, value) : axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic'
+    const raw = axis.timeSpacing ? projectedSpacingValue(axis.timeSpacing, axis.timeSpacing.kind === 'unit' && bound !== undefined ? bound ? Math.ceil(value) : Math.floor(value) : value) : axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic'
       ? axis.logarithmicDomain === 'negative' ? -Math.pow(base, -value) : Math.pow(base, value)
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(base, Math.abs(value)) - 1) : value;
     return clamp(raw, axis.minimum, axis.maximum);
@@ -110,8 +117,9 @@
     const upper = ticks.filter(tick => tick.value >= values[1]).sort((a, b) => a.value - b.value)[0];
     return lower && upper ? [lower, upper] : undefined;
   };
-  const projectedAxisRatio = (axis, value) => {
-    const transformed = transformedAxisValue(axis, value), span = axis.transformedMaximum - axis.transformedMinimum;
+  const projectedAxisRatio = (axis, value, bound, maximumInclusive) => {
+    const transformed = bound === undefined ? transformedAxisValue(axis, value) : transformedAxisBound(axis, value, bound, maximumInclusive);
+    const span = axis.transformedMaximum - axis.transformedMinimum;
     const ratio = Number.isFinite(span) ? (transformed - axis.transformedMinimum) / span
       : (transformed / 2 - axis.transformedMinimum / 2) / (axis.transformedMaximum / 2 - axis.transformedMinimum / 2);
     return axis.reversed ? 1 - ratio : ratio;

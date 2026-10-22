@@ -125,7 +125,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
                     ChartAxisWindow? window;
                     if (request.TryGetProperty("sourceViewport", out var source)) {
                         var bounds = source.GetProperty(name);
-                        window = projection!.ConstrainViewport(new ChartAxisWindow(bounds.GetProperty("minimum").GetDouble(), bounds.GetProperty("maximum").GetDouble()));
+                        window = projection!.ConstrainViewport(NativeWindowTransport.Read(bounds));
                     } else window = projection!.ConstrainViewport(request.GetProperty(name is "x" or "secondaryX" ? "left" : "top").GetDouble(),
                         request.GetProperty(name is "x" or "secondaryX" ? "right" : "bottom").GetDouble());
                     switch (name) { case "x": x = window; break; case "y": y = window; break; case "secondaryX": secondaryX = window; break; default: secondaryY = window; break; }

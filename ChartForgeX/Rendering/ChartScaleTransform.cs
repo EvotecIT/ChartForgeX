@@ -14,8 +14,10 @@ internal static class ChartScaleTransform {
     }
 
     /// <summary>Calendar bands enclose a source window by complete units while marks remain at band centers.</summary>
-    internal static double Bound(double value, ChartAxis axis, bool maximum) => axis.Scale == ChartScaleKind.Time && axis.PreparedTimeDomain is { } domain
-        ? domain.Bound(value, maximum) : Forward(value, axis);
+    internal static double Bound(double value, ChartAxis axis, bool maximum, bool? maximumInclusive = null) => axis.Scale == ChartScaleKind.Time && axis.PreparedTimeDomain is { } domain
+        ? domain.Bound(value, maximum, maximumInclusive ?? MaximumInclusive(axis, value)) : Forward(value, axis);
+    internal static bool MaximumInclusive(ChartAxis axis, double maximum) => axis.PreparedViewportWindow is not { } window
+        || window.Maximum != maximum || window.MaximumInclusive;
     internal static double InverseBound(double value, ChartAxis axis, bool maximum) => axis.Scale == ChartScaleKind.Time && axis.PreparedTimeDomain is { } domain
         ? domain.InverseBound(value, maximum) : Inverse(value, axis);
 

@@ -165,7 +165,7 @@ internal static partial class VisualCartesianCompiler {
         {
             if (ReferenceEquals(seriesBuilder, builder)) {
                 DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
-                    xViewport: xViewport, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
+                    xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
             }
             foreach (var index in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[index];
@@ -185,18 +185,19 @@ internal static partial class VisualCartesianCompiler {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
                         DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index], clipMarks,
-                            horizontal ? null : xViewport, horizontal ? null : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
+                            horizontal ? series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryX : xViewport : xViewport,
+                            horizontal ? yViewport : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
                     else DrawExtensionSeries(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, bubbleScale, categoryCaptions, colorScales[index],
                         horizontal ? null : xViewport, horizontal ? null : series.ValueAxis == ChartAxisSide.Secondary ? sourceViewport?.SecondaryY : yViewport);
                 }
             }
             if (!ReferenceEquals(seriesBuilder, builder)) {
                 DrawAnnotations(chart, context, builder, plot, map, colors, true, obstacles, constrainXToPlot: xViewport != null,
-                    xViewport: xViewport, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
+                    xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
                 builder.Append(seriesBuilder.Build());
             }
             DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null,
-                xViewport: xViewport, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
+                xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
         }
         if (chart.Options.ShowStackTotals && stacks.HasBarStacks) {
             if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, secondaryMap, stacks, labels);

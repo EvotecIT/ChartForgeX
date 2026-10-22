@@ -15,6 +15,10 @@ internal static partial class VisualCartesianCompiler {
             ValidateWindow(viewport.SecondaryX, secondary.MinX, secondary.MaxX, chart.Options.SecondaryXAxis, "secondary X");
             ValidateWindow(viewport.SecondaryY, secondary.MinY, secondary.MaxY, chart.Options.SecondaryYAxis, "secondary Y");
         }
+        chart.Options.XAxis.PreparedViewportWindow = viewport.X;
+        chart.Options.YAxis.PreparedViewportWindow = viewport.Y;
+        chart.Options.SecondaryXAxis.PreparedViewportWindow = viewport.SecondaryX;
+        chart.Options.SecondaryYAxis.PreparedViewportWindow = viewport.SecondaryY;
         if (horizontal && viewport.Y != null) {
             range.SetYBounds(viewport.Y.Minimum, viewport.Y.Maximum); secondary?.SetYBounds(viewport.Y.Minimum, viewport.Y.Maximum);
         } else if (!horizontal && viewport.X != null) {
@@ -37,14 +41,15 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static ChartAxis CategoryProjectionAxis(Chart chart) => chart.Options.YAxis.Scale == ChartScaleKind.Time
-        ? chart.Options.YAxis.Clone() : new ChartAxis { Reversed = chart.Options.YAxis.Reversed };
+        ? chart.Options.YAxis.Clone() : new ChartAxis { Reversed = chart.Options.YAxis.Reversed, PreparedViewportWindow = chart.Options.YAxis.PreparedViewportWindow };
 
     private static void ValidateWindow(ChartAxisWindow? window, double fullMinimum, double fullMaximum, ChartAxis axis, string name) {
         if (window == null) return;
+        axis.PreparedTimeDomain?.ValidateMaximum(window, "viewport");
         ChartTimeSessionValidation.ValidateWindow(axis, window.Minimum, window.Maximum, name + " viewport");
         if (window.Minimum < fullMinimum || window.Maximum > fullMaximum)
             throw new ArgumentOutOfRangeException("viewport", "The " + name + " viewport must be contained in its resolved full domain.");
-        var minimum = ChartScaleTransform.Bound(window.Minimum, axis, false); var maximum = ChartScaleTransform.Bound(window.Maximum, axis, true);
+        var minimum = ChartScaleTransform.Bound(window.Minimum, axis, false); var maximum = ChartScaleTransform.Bound(window.Maximum, axis, true, window.MaximumInclusive);
         if (!ChartMath.IsFinite(minimum) || !ChartMath.IsFinite(maximum) || maximum <= minimum)
             throw new ArgumentOutOfRangeException("viewport", "The " + name + " viewport requires a finite nonempty projected domain.");
     }

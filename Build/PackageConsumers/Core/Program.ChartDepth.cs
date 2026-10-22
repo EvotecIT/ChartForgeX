@@ -84,6 +84,12 @@ internal static partial class Program {
                 && XDocument.Parse(singleAxis.ToSvg()).Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "point") == 4,
                 "Packed single-axis Cartesian input changed an omitted full domain or dropped source observations.");
         }
+        var excluded = chart.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(0, 10, maximumInclusive: false)));
+        var excludedWindow = excluded.XProjection!.ConstrainViewport(new ChartAxisWindow(0, 10, maximumInclusive: false));
+        PackageAssertions.Require(excludedWindow != null && !excludedWindow.MaximumInclusive && !excluded.XProjection.MaximumInclusive
+            && XDocument.Parse(excluded.ToSvg()).Descendants().Any(node => (string?)node.Attribute("data-cfx-role") == "point"
+                && (string?)node.Attribute("data-cfx-x") == "10" && (string?)node.Attribute("data-cfx-visible") == "false"),
+            "Packed exclusive physical window lost its source endpoint policy or became a full reset.");
         var prepared = chart.Prepare(context,
             new ChartCartesianViewport(new ChartAxisWindow(2, 8), new ChartAxisWindow(20, 80)));
         var x = prepared.XProjection!; var y = prepared.YProjection!;

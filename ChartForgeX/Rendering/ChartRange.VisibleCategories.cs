@@ -13,16 +13,15 @@ internal sealed partial class ChartRange {
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
         var axis = ChartCartesianOrientation.ValueAxis(chart, side);
         var categoryAxis = ChartCartesianOrientation.CategoryAxis(chart);
-        if (horizontal && categoryAxis.Scale != ChartScaleKind.Time) categoryAxis = new ChartAxis();
+        if (horizontal && categoryAxis.Scale != ChartScaleKind.Time) categoryAxis = new ChartAxis { PreparedViewportWindow = categoryAxis.PreparedViewportWindow };
         var fullMin = horizontal ? MinX : MinY; var fullMax = horizontal ? MaxX : MaxY;
-        var categoryMin = window.Minimum; var categoryMax = window.Maximum;
         var minimum = double.PositiveInfinity; var maximum = double.NegativeInfinity; var baseline = false;
         var categories = horizontal ? stacks.HorizontalCategories.ToArray() : coordinates.Categories.Select(value => value.Value).ToArray();
         var categoryHalfSpan = CategoryPadding(categories.ToList());
         if (categoryHalfSpan == 0) categoryHalfSpan = .5;
         var transformedMin = ChartScaleTransform.Bound(fullMin, axis, false); var transformedMax = ChartScaleTransform.Bound(fullMax, axis, true);
         var categoryStart = ChartScaleTransform.Bound(window.Minimum, categoryAxis, false);
-        var categoryEnd = ChartScaleTransform.Bound(window.Maximum, categoryAxis, true);
+        var categoryEnd = ChartScaleTransform.Bound(window.Maximum, categoryAxis, true, window.MaximumInclusive);
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
             if (series.ValueAxis != side) continue;
@@ -97,8 +96,8 @@ internal sealed partial class ChartRange {
 
         bool Overlaps(double first, double last) => categoryAxis.PreparedTimeDomain?.Unit == true
             ? Math.Max(ChartScaleTransform.Forward(first, categoryAxis), ChartScaleTransform.Forward(last, categoryAxis)) >= categoryStart
-                && Math.Min(ChartScaleTransform.Forward(first, categoryAxis), ChartScaleTransform.Forward(last, categoryAxis)) <= categoryEnd
-            : Math.Max(first, last) >= categoryMin && Math.Min(first, last) <= categoryMax;
+                && Math.Min(ChartScaleTransform.Forward(first, categoryAxis), ChartScaleTransform.Forward(last, categoryAxis)) < categoryEnd
+            : window.Overlaps(first, last);
         void Include(double value) {
             if (axis.Scale == ChartScaleKind.Logarithmic && value == 0) return; // Stack zero is the selected logarithmic baseline, not an observation.
             minimum = Math.Min(minimum, value); maximum = Math.Max(maximum, value);

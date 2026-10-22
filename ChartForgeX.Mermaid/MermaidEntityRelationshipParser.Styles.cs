@@ -20,15 +20,16 @@ internal static partial class MermaidEntityRelationshipParser {
         }
         var declarations = new Dictionary<string, string>();
         if (direct) MermaidStyleParser.Read(declarations, value, span, result, "ER");
+        var classes = direct ? new List<string>() : MermaidStyleParser.Names(value);
         var missing = false;
         foreach (var id in MermaidStyleParser.Names(selector)) {
             var group = document.Groups.Find(candidate => candidate.Id == id);
             if (group != null) {
-                if (direct) MermaidStyleParser.Copy(group.Styles, declarations);
-                else foreach (var name in MermaidStyleParser.Names(value)) group.Classes.Add(name);
+                if (direct) MermaidStyleParser.Copy(group.Styles, declarations, span);
+                else { MermaidResourceGuard.ReserveElements(classes.Count, span); group.Classes.AddRange(classes); }
             } else if (entities.TryGetValue(id, out var node)) {
-                if (direct) MermaidStyleParser.Copy(node.Styles, declarations);
-                else foreach (var name in MermaidStyleParser.Names(value)) node.Classes.Add(name);
+                if (direct) MermaidStyleParser.Copy(node.Styles, declarations, span);
+                else { MermaidResourceGuard.ReserveElements(classes.Count, span); node.Classes.AddRange(classes); }
             } else missing = true;
         }
         if (missing) MermaidParserUtilities.RetainUnsupported(document, text, span, result, "ER style target not yet declared");
@@ -46,12 +47,12 @@ internal static partial class MermaidEntityRelationshipParser {
     private static void ApplyStyles(MermaidEntityRelationshipDocument document) {
         var definitions = MermaidStyleParser.Definitions(document.ClassDefinitions);
         foreach (var group in document.Groups) {
-            var resolved = MermaidStyleParser.Resolve(definitions, group.Classes, group.Styles, includeDefault: false);
+            var resolved = MermaidStyleParser.Resolve(definitions, group.Classes, group.Styles, group.Span, includeDefault: false);
             group.Styles.Clear();
             MermaidStyleParser.Copy(group.Styles, resolved);
         }
         foreach (var node in document.Entities) {
-            var resolved = MermaidStyleParser.Resolve(definitions, node.Classes, node.Styles);
+            var resolved = MermaidStyleParser.Resolve(definitions, node.Classes, node.Styles, node.Span);
             node.Styles.Clear();
             MermaidStyleParser.Copy(node.Styles, resolved);
         }

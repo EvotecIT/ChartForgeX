@@ -70,7 +70,8 @@ internal static partial class VisualCartesianCompiler {
         for (var pointIndex = 0; pointIndex < points.Count; pointIndex++) {
             var point = points[pointIndex];
             var sourceX = series.RenderPoints[pointIndex].X;
-            var insideSourceX = ViewportObservationVisible(xViewport, yViewport, sourceX, stacks.Point(index, pointIndex).End, stacks.Point(index, pointIndex).End, map);
+            var sourceY = horizontal ? sourceX : stacks.Point(index, pointIndex).End;
+            var insideSourceX = ViewportObservationVisible(xViewport, yViewport, horizontal ? series.RenderPoints[pointIndex].Y : sourceX, sourceY, sourceY, map);
             var bounds = VisualMarkerScene.Bounds(point.X, point.Y, Math.Max(radius, VisualMarkerScene.Extent(series, radius)));
             var inside = point.X >= plot.Left && point.X <= plot.Right && point.Y >= plot.Top && point.Y <= plot.Bottom;
             var visible = radius > 0 && insideSourceX && (!clipMarks || inside)

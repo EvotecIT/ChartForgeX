@@ -21,6 +21,7 @@ internal static partial class Program {
         NativeCoordinateDrawings();
         HierarchySubtreeContracts();
         ConcentricPieBands();
+        NativeAxisAndUncertaintyContracts();
         GeographicDatasetLifecycle();
         PackageAssertions.Payload("ChartForgeX");
         Console.WriteLine("Core package boundaries, typed ownership, themes and static exports passed.");

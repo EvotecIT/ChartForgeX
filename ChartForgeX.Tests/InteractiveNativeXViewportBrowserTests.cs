@@ -232,14 +232,14 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 ChartAxisWindow? x = null; ChartAxisWindow? y = null;
                 if (kind != "reset") {
                     var projection = basisScene.XProjection!;
-                    x = projection.Minimum != projection.FullMinimum || projection.Maximum != projection.FullMaximum ? new ChartAxisWindow(projection.Minimum, projection.Maximum) : null;
+                    x = projection.Minimum != projection.FullMinimum || projection.Maximum != projection.FullMaximum || !projection.MaximumInclusive ? new ChartAxisWindow(projection.Minimum, projection.Maximum, projection.MaximumInclusive) : null;
                     var primary = basisScene.YProjection;
-                    if (primary != null && (primary.Minimum != primary.FullMinimum || primary.Maximum != primary.FullMaximum)) y = new ChartAxisWindow(primary.Minimum, primary.Maximum);
+                    if (primary != null && (primary.Minimum != primary.FullMinimum || primary.Maximum != primary.FullMaximum || !primary.MaximumInclusive)) y = new ChartAxisWindow(primary.Minimum, primary.Maximum, primary.MaximumInclusive);
                     if (request.TryGetProperty("sourceWindow", out var sourceWindow))
-                        x = projection.ConstrainViewport(new ChartAxisWindow(sourceWindow.GetProperty("minimum").GetDouble(), sourceWindow.GetProperty("maximum").GetDouble()));
+                        x = projection.ConstrainViewport(NativeWindowTransport.Read(sourceWindow));
                     else if (request.TryGetProperty("sourceViewport", out var sourceViewport)) {
-                        if (sourceViewport.TryGetProperty("x", out var sourceX)) x = projection.ConstrainViewport(new ChartAxisWindow(sourceX.GetProperty("minimum").GetDouble(), sourceX.GetProperty("maximum").GetDouble()));
-                        if (sourceViewport.TryGetProperty("y", out var sourceY)) y = primary!.ConstrainViewport(new ChartAxisWindow(sourceY.GetProperty("minimum").GetDouble(), sourceY.GetProperty("maximum").GetDouble()));
+                        if (sourceViewport.TryGetProperty("x", out var sourceX)) x = projection.ConstrainViewport(NativeWindowTransport.Read(sourceX));
+                        if (sourceViewport.TryGetProperty("y", out var sourceY)) y = primary!.ConstrainViewport(NativeWindowTransport.Read(sourceY));
                     } else {
                         var axes = request.TryGetProperty("axes", out var configuredAxes) ? configuredAxes.EnumerateArray().Select(axis => axis.GetString()!).ToArray() : new[] { "x" };
                         if (axes.Contains("x")) x = projection.ConstrainViewport(request.GetProperty("left").GetDouble(), request.GetProperty("right").GetDouble());

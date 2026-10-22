@@ -34,7 +34,7 @@ public static class MermaidRequirementRendering {
             if (!string.IsNullOrWhiteSpace(requirement.Risk)) node.Metadata["mermaid.risk"] = requirement.Risk!;
             if (!string.IsNullOrWhiteSpace(requirement.VerifyMethod)) node.Metadata["mermaid.verifyMethod"] = requirement.VerifyMethod!;
             AddRequirementDetails(node, requirement);
-            MermaidTopologyRendering.ApplyNodeStyle(node, requirement.Classes, MermaidStyleParser.Resolve(definitions, requirement.Classes, requirement.Styles));
+            MermaidTopologyRendering.ApplyNodeStyle(node, requirement.Classes, MermaidStyleParser.Resolve(definitions, requirement.Classes, requirement.Styles, requirement.Span));
         }
 
         foreach (var element in document.Elements) {
@@ -45,7 +45,7 @@ public static class MermaidRequirementRendering {
             if (!string.IsNullOrWhiteSpace(element.DocumentReference)) node.Metadata["mermaid.docref"] = element.DocumentReference!;
             if (element.ElementType != null) node.Details.Add(new TopologyNodeDetail { Label = "type", Value = element.ElementType });
             if (element.DocumentReference != null) node.Details.Add(new TopologyNodeDetail { Label = "docref", Value = element.DocumentReference });
-            MermaidTopologyRendering.ApplyNodeStyle(node, element.Classes, MermaidStyleParser.Resolve(definitions, element.Classes, element.Styles));
+            MermaidTopologyRendering.ApplyNodeStyle(node, element.Classes, MermaidStyleParser.Resolve(definitions, element.Classes, element.Styles, element.Span));
         }
 
         for (var index = 0; index < document.Relationships.Count; index++) {

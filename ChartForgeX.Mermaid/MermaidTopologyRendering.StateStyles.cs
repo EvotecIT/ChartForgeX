@@ -9,7 +9,7 @@ public static partial class MermaidTopologyRendering {
         foreach (var state in document.States) {
             var group = chart.Groups.Find(candidate => candidate.Id == state.Id);
             if (group != null) {
-                var styles = MermaidStyleParser.Resolve(definitions, state.Classes, state.Styles, includeDefault: false);
+                var styles = MermaidStyleParser.Resolve(definitions, state.Classes, state.Styles, state.Span, includeDefault: false);
                 if (state.Classes.Count > 0) group.Metadata["mermaid.classes"] = string.Join(",", state.Classes);
                 foreach (var entry in styles) group.Metadata["mermaid.style." + entry.Key] = entry.Value;
                 if (Paint("fill") is { } fill) group.BackgroundColor = fill;
@@ -20,7 +20,7 @@ public static partial class MermaidTopologyRendering {
             } else {
                 var node = chart.Nodes.Find(candidate => candidate.Id == state.Id);
                 if (node != null) ApplyNodeStyle(node, state.Classes,
-                    MermaidStyleParser.Resolve(definitions, state.Classes, state.Styles, includeDefault: !IsPseudoState(state)));
+                    MermaidStyleParser.Resolve(definitions, state.Classes, state.Styles, state.Span, includeDefault: !IsPseudoState(state)));
             }
         }
     }

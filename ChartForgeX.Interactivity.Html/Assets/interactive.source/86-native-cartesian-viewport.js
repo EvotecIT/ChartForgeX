@@ -14,16 +14,16 @@
   const chartYProjection = root => chartAxisProjection(root, 'y');
   const nativeAxisWindow = (root, name) => {
     const projection = chartAxisProjection(root, name);
-    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale } : null;
+    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale, ...(projection.maximumInclusive === false ? { maximumInclusive: false } : {}) } : null;
   };
   const nativeYWindow = root => nativeAxisWindow(root, 'y');
   const nativeYWindowChanged = root => {
     const projection = chartYProjection(root);
-    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum || projection.maximumInclusive === false);
   };
   const nativeViewportChanged = root => cartesianAxisNames.some(name => {
     const projection = chartAxisProjection(root, name);
-    return projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+    return projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum || projection.maximumInclusive === false);
   });
   const cartesianViewportConnected = root => nativePreparationBinding(root, 'viewport')?.legacy === false;
   const nativeViewportWindows = (root, connectedOnly = false) => ({ ...Object.fromEntries(
@@ -38,8 +38,9 @@
   const validSourceAxisWindow = (window, projection, axis = projection) => {
     if (!window || !projection || !axis || !Number.isFinite(window.minimum) || !Number.isFinite(window.maximum)
       || window.minimum >= window.maximum || window.scale && window.scale !== projection.scale
+      || !validSourceAxisMaximum(window, axis)
       || axis.scale === 'logarithmic' && !(axis.logarithmicDomain === 'negative' ? window.maximum < 0 : window.minimum > 0)) return false;
-    const first = transformedAxisBound(axis, window.minimum, false), last = transformedAxisBound(axis, window.maximum, true);
+    const first = transformedAxisBound(axis, window.minimum, false), last = transformedAxisBound(axis, window.maximum, true, window.maximumInclusive !== false);
     return Number.isFinite(first) && Number.isFinite(last) && first !== last;
   };
   const viewportValuePolicy = (root, value) => {
@@ -74,7 +75,7 @@
     const valueDomain = viewportValuePolicy(root, viewport.valueDomain);
     if (!valueDomain) return false;
     const sourceViewport = Object.freeze(Object.fromEntries(axes.map(name => [name,
-      Object.freeze({ minimum: viewport[name].minimum, maximum: viewport[name].maximum })])));
+      Object.freeze({ minimum: viewport[name].minimum, maximum: viewport[name].maximum, ...(viewport[name].maximumInclusive === false ? { maximumInclusive: false } : {}) })])));
     return requestCartesianViewport(root, { kind: 'window', axes: Object.freeze(axes), sourceViewport, valueDomain }, sync, accepted);
   };
   const requestViewportReset = root => {

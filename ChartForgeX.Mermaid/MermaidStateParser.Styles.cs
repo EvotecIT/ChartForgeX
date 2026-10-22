@@ -13,12 +13,9 @@ internal static partial class MermaidStateParser {
             Invalid("State style statements require state identities and a value.");
             return true;
         }
-        var before = document.ClassDefinitions.Count;
         if (MermaidStyleParser.TryDefinition(text, span, result, document.ClassDefinitions, "State")) {
             document.StyleStatements.Add(new MermaidRawStatement(text, span));
             MermaidResourceGuard.ReserveElements(1, span);
-            for (var index = before; index < document.ClassDefinitions.Count; index++)
-                MermaidResourceGuard.ReserveElements(1L + document.ClassDefinitions[index].Styles.Count, span);
             return true;
         }
         var direct = MermaidParserUtilities.StartsStatement(text, "style");

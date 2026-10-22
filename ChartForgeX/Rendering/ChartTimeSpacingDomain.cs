@@ -21,6 +21,14 @@ internal sealed class ChartTimeSpacingDomain {
     internal double FullMinimum { get; }
     internal double FullMaximum { get; }
 
+    /// <summary>Exclusive unit maxima name a captured calendar edge; partial-band geometry is not supported.</summary>
+    internal void ValidateMaximum(ChartAxisWindow window, string parameterName) {
+        if (Unit && !window.MaximumInclusive && !IsBoundary(window.Maximum))
+            throw new ArgumentOutOfRangeException(parameterName, window.Maximum, "An exclusive calendar-unit maximum must equal a captured canonical calendar boundary.");
+    }
+
+    internal bool IsBoundary(double value) => Array.BinarySearch(_instants, value) >= 0;
+
     internal double Forward(double value) {
         var index = Find(value);
         if (Unit) return index < 0 ? (value - Minimum) / (_instants[1] - Minimum)
@@ -44,26 +52,26 @@ internal sealed class ChartTimeSpacingDomain {
     }
 
     /// <summary>Source windows select whole calendar bands, independently of a band's centered mark position.</summary>
-    internal double Bound(double value, bool maximum) {
+    internal double Bound(double value, bool maximum, bool maximumInclusive = true) {
         if (!Unit) return Forward(value);
         var index = Find(value);
         if (index < 0 || index >= _instants.Length - 1) return Forward(value);
-        return maximum ? index + 1 : index;
+        return maximum && (maximumInclusive || value != _instants[index]) ? index + 1 : index;
     }
     internal double InverseBound(double coordinate, bool maximum) => Unit
         ? Inverse(maximum ? Math.Ceiling(coordinate) : Math.Floor(coordinate)) : Inverse(coordinate);
 
-    internal IReadOnlyList<double> Ticks(double minimum, double maximum, int desiredCount) {
+    internal IReadOnlyList<double> Ticks(double minimum, double maximum, int desiredCount, bool maximumInclusive = true) {
         var candidates = _instants.Take(Unit ? _instants.Length - 1 : _instants.Length)
-            .Where(value => Unit ? Bound(value, true) >= Bound(minimum, false) && Bound(value, false) < Bound(maximum, true)
-                : value >= minimum && value <= maximum).ToArray();
+            .Where(value => Unit ? Forward(value) >= Bound(minimum, false) && Forward(value) < Bound(maximum, true, maximumInclusive)
+                : value >= minimum && (maximumInclusive ? value <= maximum : value < maximum)).ToArray();
         var limit = Math.Min(2_000, Math.Max(1, desiredCount));
         if (candidates.Length <= limit) return candidates;
         var stride = (int)Math.Ceiling((double)candidates.Length / limit);
         return candidates.Where((_, index) => index % stride == 0).ToArray();
     }
-    internal IReadOnlyList<double> FitTicks(double minimum, double maximum, int count, Func<IReadOnlyList<double>, bool> fits) {
-        var ticks = Ticks(minimum, maximum, count);
+    internal IReadOnlyList<double> FitTicks(double minimum, double maximum, int count, Func<IReadOnlyList<double>, bool> fits, bool maximumInclusive = true) {
+        var ticks = Ticks(minimum, maximum, count, maximumInclusive);
         for (var stride = 1; stride <= ticks.Count; stride++) {
             var selected = ticks.Where((_, index) => index % stride == 0).ToArray();
             if (fits(selected)) return selected;

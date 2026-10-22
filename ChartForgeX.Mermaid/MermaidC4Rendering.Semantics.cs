@@ -16,7 +16,7 @@ public static partial class MermaidC4Rendering {
             var group = chart.Groups.FirstOrDefault(item => item.Id == style.Name);
             foreach (var entry in style.Styles) {
                 if (node != null) { if (entry.Key == "fill") node.BackgroundColor = entry.Value; if (entry.Key == "color") node.LabelColor = entry.Value; if (entry.Key == "stroke") node.Color = entry.Value; }
-                if (group != null) { if (entry.Key == "fill") group.BackgroundColor = entry.Value; if (entry.Key == "color") group.LabelColor = entry.Value; if (entry.Key == "stroke") group.Color = entry.Value; }
+                if (group != null) { if (entry.Key == "fill") group.BackgroundColor = entry.Value; if (entry.Key == "color") group.LabelColor = entry.Value; if (entry.Key == "stroke") group.BorderColor = entry.Value; }
             }
         }
         foreach (var style in document.RelationshipStyles) foreach (var edge in chart.Edges.Where(item => item.SourceNodeId == style.SourceAlias && item.TargetNodeId == style.TargetAlias)) {

@@ -26,6 +26,10 @@ internal static partial class MermaidResourceGuard {
                 break;
             case MermaidFlowchartDocument flow:
                 Items(flow.Nodes); Items(flow.Subgraphs); Items(flow.ClassDefinitions); Items(flow.LinkStyles); Links(flow.Edges);
+                foreach (var definition in flow.ClassDefinitions) AddElements(definition.Styles.Count, definition.Span);
+                foreach (var node in flow.Nodes) AddElements(node.Classes.Count + node.Styles.Count, node.Span);
+                foreach (var style in flow.LinkStyles) AddElements(style.Styles.Count, style.Span);
+                foreach (var edge in flow.Edges) AddElements(edge.Styles.Count, edge.Span);
                 ParentDepths(flow.Subgraphs.Select(group => (group.Id, group.ParentSubgraphId, group.Span)));
                 break;
             case MermaidSequenceDocument sequence:
@@ -167,6 +171,9 @@ internal static partial class MermaidResourceGuard {
             default: Items(document.RawStatements); break;
         }
         Checkpoint();
+        // A fresh conversion scope starts with the retained source model. Later
+        // named/default style expansion must fit alongside those existing records.
+        context.ReservedElements = Math.Max(context.ReservedElements, elements);
 
         void Items(IEnumerable<MermaidAstNode> items) { foreach (var item in items) AddElements(1, item.Span); }
         void Spans(IEnumerable<MermaidSourceSpan> spans) { foreach (var span in spans) AddElements(1, span); }

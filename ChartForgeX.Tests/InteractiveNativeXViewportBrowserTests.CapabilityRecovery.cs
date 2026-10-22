@@ -167,15 +167,15 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
                 ChartAxisWindow? x = null; ChartAxisWindow? y = null;
                 if (request.GetProperty("kind").GetString() != "reset") {
                     var projection = prepared.XProjection!;
-                    if (projection.Minimum != projection.FullMinimum || projection.Maximum != projection.FullMaximum)
-                        x = new ChartAxisWindow(projection.Minimum, projection.Maximum);
+                    if (projection.Minimum != projection.FullMinimum || projection.Maximum != projection.FullMaximum || !projection.MaximumInclusive)
+                        x = new ChartAxisWindow(projection.Minimum, projection.Maximum, projection.MaximumInclusive);
                     var value = basis.Secondary ? prepared.SecondaryYProjection : prepared.YProjection;
-                    if (value != null && (value.Minimum != value.FullMinimum || value.Maximum != value.FullMaximum))
-                        y = new ChartAxisWindow(value.Minimum, value.Maximum);
+                    if (value != null && (value.Minimum != value.FullMinimum || value.Maximum != value.FullMaximum || !value.MaximumInclusive))
+                        y = new ChartAxisWindow(value.Minimum, value.Maximum, value.MaximumInclusive);
                     var requested = request.GetProperty("sourceViewport");
-                    if (requested.TryGetProperty("x", out var sourceX)) x = projection.ConstrainViewport(new ChartAxisWindow(sourceX.GetProperty("minimum").GetDouble(), sourceX.GetProperty("maximum").GetDouble()));
+                    if (requested.TryGetProperty("x", out var sourceX)) x = projection.ConstrainViewport(NativeWindowTransport.Read(sourceX));
                     if (requested.TryGetProperty(basis.Secondary ? "secondaryY" : "y", out var sourceY))
-                        y = value!.ConstrainViewport(new ChartAxisWindow(sourceY.GetProperty("minimum").GetDouble(), sourceY.GetProperty("maximum").GetDouble()));
+                        y = value!.ConstrainViewport(NativeWindowTransport.Read(sourceY));
                 }
                 return Store(basis.Secondary, x, y);
             }

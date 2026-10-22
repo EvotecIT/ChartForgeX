@@ -8,7 +8,12 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.VisualBlocks;
 
 internal static partial class VisualBlockRendering {
-    internal static VennDiagramLayout VennLayout(VennDiagramBlock block, ChartRect rect) {
+    internal static VennDiagramLayout VennLayout(VennDiagramBlock block, ChartRect rect) => VennGeometry(block, rect);
+
+    /// <summary>Checks source cardinalities and circular-fit residuals without selecting a host frame or measuring headings.</summary>
+    internal static VennDiagramLayout VennMembershipGeometry(VennDiagramBlock block) => VennGeometry(block, null);
+
+    private static VennDiagramLayout VennGeometry(VennDiagramBlock block, ChartRect? frame) {
         ValidateVennDiagram(block);
         var maximum = block.Sets.Max(set => set.Size); var divisor = maximum > 0 ? maximum : 1;
         var circles = block.Sets.Select(set => new VennCircle(0, 0, Math.Sqrt(set.Size / divisor / Math.PI))).ToArray();
@@ -24,11 +29,15 @@ internal static partial class VisualBlockRendering {
         }
         var left = circles.Min(circle => circle.X - circle.R); var right = circles.Max(circle => circle.X + circle.R);
         var top = circles.Min(circle => circle.Y - circle.R); var bottom = circles.Max(circle => circle.Y + circle.R);
-        var stroke = block.Sets.Select(set => set.StrokeWidth).Concat(block.Intersections.Select(region => region.StrokeWidth)).Max();
-        if (stroke >= rect.Width || stroke >= rect.Height) throw new InvalidOperationException("Venn outlines must fit within the diagram content frame.");
-        var scale = Math.Min(Math.Max(1, rect.Width - stroke - 2) / Math.Max(.001, right - left), Math.Max(1, rect.Height - stroke - 2) / Math.Max(.001, bottom - top));
-        var dx = rect.X + rect.Width / 2 - (left + right) * scale / 2;
-        var dy = rect.Y + rect.Height / 2 - (top + bottom) * scale / 2;
+        double scale = 1, dx = 0, dy = 0;
+        if (frame.HasValue) {
+            var rect = frame.Value;
+            var stroke = block.Sets.Select(set => set.StrokeWidth).Concat(block.Intersections.Select(region => region.StrokeWidth)).Max();
+            if (stroke >= rect.Width || stroke >= rect.Height) throw new InvalidOperationException("Venn outlines must fit within the diagram content frame.");
+            scale = Math.Min(Math.Max(1, rect.Width - stroke - 2) / Math.Max(.001, right - left), Math.Max(1, rect.Height - stroke - 2) / Math.Max(.001, bottom - top));
+            dx = rect.X + rect.Width / 2 - (left + right) * scale / 2;
+            dy = rect.Y + rect.Height / 2 - (top + bottom) * scale / 2;
+        }
         var placed = circles.Select((circle, index) => new VennCirclePlacement(block.Sets[index].Id, new ChartPoint(dx + circle.X * scale, dy + circle.Y * scale), circle.R * scale)).ToArray();
         var regions = new List<VennRegionPlacement>(); var error = 0.0;
         foreach (var region in block.Intersections) {

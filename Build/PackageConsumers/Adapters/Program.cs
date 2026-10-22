@@ -25,6 +25,8 @@ internal static partial class Program {
         RadarSourcePaint();
         MermaidSourceDiagnostics();
         MermaidSequencePolicyContracts();
+        NativeDiagramContracts();
+        NativeRailroadContracts();
         var values = ChartSeries.CreateLine(new ChartSeriesId("package-values"), "Values",
             new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
         var bubble = ChartSeries.CreateBubble(new ChartSeriesId("0"), "Values", new[] { new ChartBubble(1.5, 2.5, 7) })
@@ -172,10 +174,24 @@ internal static partial class Program {
         PackageAssertions.Require(invalid.HasErrors && invalid.Artifact == null
             && invalid.Diagnostics.All(item => item.Code == MermaidDiagnosticCodes.InvalidStatement),
             "Packed GitGraph accepted an invalid commit type without its stable error code.");
-        var approximation = new MermaidVisualMarkupParser().Parse("Intro\n\n```mermaid\njourney\nsection Work\nTask: 4: User\n```");
-        PackageAssertions.Require(!approximation.HasErrors && approximation.Artifacts.Count == 1
-            && approximation.Diagnostics.Any(item => item.Code == MermaidDiagnosticCodes.ApproximateMapping && item.Line == 4),
-            "Packed Markdown bridge lost the native mapping warning or its source location.");
+        const string journeySource = "journey\nsection Work\nTask: 4: User";
+        var journey = MermaidRenderer.Render(journeySource, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
+        var fencedJourney = new MermaidVisualMarkupParser(new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject })
+            .Parse("Intro\n\n```mermaid\n" + journeySource + "\n```");
+        PackageAssertions.Require(!journey.HasErrors && journey.Diagnostics.Count == 0 && journey.Artifact?.Model is JourneyDiagramBlock nativeJourney
+            && nativeJourney.Tasks.Count == 1 && nativeJourney.Tasks[0].Score == 4 && nativeJourney.Tasks[0].Actors.SequenceEqual(new[] { "User" })
+            && nativeJourney.Sections.Single().Label == "Work" && nativeJourney.Tasks[0].SectionId == nativeJourney.Sections[0].Id
+            && !fencedJourney.HasErrors && fencedJourney.Diagnostics.Count == 0 && fencedJourney.Artifacts.Count == 1,
+            "Packed direct and Markdown Journey lost native score, actor or ordered section identity.");
+        var journeySvg = XDocument.Parse(journey.Artifact!.ToSvg());
+        PackageAssertions.Require(journeySvg.Descendants().Any(node => (string?)node.Attribute("data-cfx-role") == "journey-task"
+                && (string?)node.Attribute("data-score") == "4")
+            && journeySvg.Descendants().Any(node => (string?)node.Attribute("data-cfx-role") == "journey-actor-membership"
+                && (string?)node.Attribute("data-actor") == "User"), "Packed Journey painted no scored task or actor membership.");
+        PackageAssertions.Require(journey.Artifact.ToSvg() == fencedJourney.Artifacts[0].ToSvg()
+            && journey.Artifact.ToPng().SequenceEqual(fencedJourney.Artifacts[0].ToPng()),
+            "Packed Journey direct and Markdown exports disagree.");
+        PackageAssertions.Png(journey.Artifact.ToPng());
     }
 
     private static void NativeViewportSection() {

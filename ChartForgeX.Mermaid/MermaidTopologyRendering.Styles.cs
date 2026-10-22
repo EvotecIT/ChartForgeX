@@ -8,7 +8,7 @@ public static partial class MermaidTopologyRendering {
         var definitions = MermaidStyleParser.Definitions(document.ClassDefinitions);
         foreach (var item in document.Classes) {
             var node = chart.Nodes.Find(candidate => candidate.Id == item.Id);
-            if (node != null) ApplyNodeStyle(node, item.Classes, MermaidStyleParser.Resolve(definitions, item.Classes, item.Styles));
+            if (node != null) ApplyNodeStyle(node, item.Classes, MermaidStyleParser.Resolve(definitions, item.Classes, item.Styles, item.Span));
         }
     }
 
@@ -18,7 +18,7 @@ public static partial class MermaidTopologyRendering {
             var group = chart.Groups.Find(candidate => candidate.Id == item.Id);
             if (group == null) continue;
             if (item.Classes.Count > 0) group.Metadata["mermaid.classes"] = string.Join(",", item.Classes);
-            var styles = MermaidStyleParser.Resolve(definitions, item.Classes, item.Styles, includeDefault: false);
+            var styles = MermaidStyleParser.Resolve(definitions, item.Classes, item.Styles, item.Span, includeDefault: false);
             foreach (var entry in styles) group.Metadata["mermaid.style." + entry.Key] = entry.Value;
             if (Paint("fill") is { } fill) group.BackgroundColor = fill;
             if (Paint("stroke") is { } stroke) group.BorderColor = stroke;
@@ -28,7 +28,7 @@ public static partial class MermaidTopologyRendering {
         }
         foreach (var item in document.Entities) {
             var node = chart.Nodes.Find(candidate => candidate.Id == item.Id);
-            if (node != null) ApplyNodeStyle(node, item.Classes, MermaidStyleParser.Resolve(definitions, item.Classes, item.Styles));
+            if (node != null) ApplyNodeStyle(node, item.Classes, MermaidStyleParser.Resolve(definitions, item.Classes, item.Styles, item.Span));
         }
     }
 

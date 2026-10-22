@@ -136,6 +136,7 @@ try {
         'InteractiveChartLifecycleBrowserTests.ReducedMotionAndInvalidMotionOptionsCannotLeavePresentationWorkOrMutateTheCommittedScene',
         'NativePhysicalViewportBrowserTests.SecondaryPhysicalWindowsKeepPrimaryAxesBookmarksExportsAndAcceptedBasis',
         'NativePhysicalViewportBrowserTests.DiscreteTimeSpacingKeepsCalendarAndOrdinalFactsThroughBrushNavigationExportsAndReset',
+        'NativePhysicalViewportBrowserTests.CalendarExclusiveEdgeSurvivesNativeBookmarkReplayAndKeyboardNavigation',
         'SourceAnnotationBrowserTests.NativeSourceDrawingsKeepPaintedCaptionsAndAuthoredStateAcrossReplacement',
         'SourceAnnotationBrowserTests.ConnectedSourceCommandsCommitNativeFactsKeepReaderStateAndExportTheCommittedDrawing',
         'SourceAnnotationBrowserTests.SourceCommandsRejectInvalidRepliesAndShareCancellationWithViewportUpdateAndDisposal',

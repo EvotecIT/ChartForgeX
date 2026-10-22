@@ -20,7 +20,7 @@ internal sealed class ChartMapper {
 
     /// <summary>Creates a mapper whose horizontal-bar category coordinates remain linear.</summary>
     public static ChartMapper ForHorizontalBars(ChartRect plot, ChartRange range, ChartAxis valueAxis, ChartAxis categoryAxis) =>
-        new ChartMapper(plot, range, valueAxis, categoryAxis.Scale == ChartScaleKind.Time ? categoryAxis : new ChartAxis { Reversed = categoryAxis.Reversed });
+        new ChartMapper(plot, range, valueAxis, categoryAxis.Scale == ChartScaleKind.Time ? categoryAxis : new ChartAxis { Reversed = categoryAxis.Reversed, PreparedViewportWindow = categoryAxis.PreparedViewportWindow });
 
     /// <summary>Returns the actual calendar-band pitch without inventing missing source observations.</summary>
     internal double CalendarBandPitch(bool horizontal) {
@@ -36,10 +36,10 @@ internal sealed class ChartMapper {
     internal bool OverlapsSourceWindow(ChartAxisWindow? window, double first, double last, bool horizontalAxis) {
         if (window == null) return true;
         var axis = horizontalAxis ? _xAxis : _yAxis;
-        if (axis.PreparedTimeDomain?.Unit != true) return System.Math.Max(first, last) >= window.Minimum && System.Math.Min(first, last) <= window.Maximum;
-        var start = ChartScaleTransform.Bound(window.Minimum, axis, false); var end = ChartScaleTransform.Bound(window.Maximum, axis, true);
+        if (axis.PreparedTimeDomain?.Unit != true) return window.Overlaps(first, last);
+        var start = ChartScaleTransform.Bound(window.Minimum, axis, false); var end = ChartScaleTransform.Bound(window.Maximum, axis, true, window.MaximumInclusive);
         return System.Math.Max(ChartScaleTransform.Forward(first, axis), ChartScaleTransform.Forward(last, axis)) >= start
-            && System.Math.Min(ChartScaleTransform.Forward(first, axis), ChartScaleTransform.Forward(last, axis)) <= end;
+            && System.Math.Min(ChartScaleTransform.Forward(first, axis), ChartScaleTransform.Forward(last, axis)) < end;
     }
 
     public double X(double value) => ProjectX(ChartScaleTransform.Normalize(value, _range.MinX, _range.MaxX, _xAxis), _plot);

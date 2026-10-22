@@ -3820,12 +3820,18 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     while (low <= high) { const middle = low + Math.floor((high - low) / 2); if (instants[middle] <= value) low = middle + 1; else high = middle - 1; }
     return high;
   };
-  const transformedSpacingValue = (spacing, value, bound) => {
+  const validSourceAxisMaximum = (window, axis = window) => {
+    if (window.maximumInclusive !== undefined && typeof window.maximumInclusive !== 'boolean') return false;
+    if (window.maximumInclusive !== false || axis.timeSpacing?.kind !== 'unit') return true;
+    const values = axis.timeSpacing.instants;
+    return Array.isArray(values) && values[timeSpacingIndex(values, window.maximum)] === window.maximum;
+  };
+  const transformedSpacingValue = (spacing, value, bound, maximumInclusive = true) => {
     const values = spacing.instants, last = values.length - 1, found = timeSpacingIndex(values, value);
     if (spacing.kind === 'unit') {
       if (found < 0) return (value - values[0]) / (values[1] - values[0]);
       if (found >= last) return last + (value - values[last]) / (values[last] - values[last - 1]);
-      return found + (bound === undefined ? .5 : bound ? 1 : 0);
+      return found + (bound === undefined ? .5 : bound && (maximumInclusive || value !== values[found]) ? 1 : 0);
     }
     if (last === 0) return value - values[0];
     const index = Math.max(0, Math.min(last - 1, found));
@@ -3842,8 +3848,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const index = Math.max(0, Math.min(last - 1, Math.floor(coordinate)));
     return values[index] + (coordinate - index) * (values[index + 1] - values[index]);
   };
-  const transformedAxisBound = (axis, value, maximum) => axis.timeSpacing
-    ? transformedSpacingValue(axis.timeSpacing, value, maximum) : transformedAxisValue(axis, value);
+  const transformedAxisBound = (axis, value, maximum, maximumInclusive = axis.maximumInclusive !== false) => axis.timeSpacing
+    ? transformedSpacingValue(axis.timeSpacing, value, maximum, maximumInclusive) : transformedAxisValue(axis, value);
   const validTimeSessions = sessions => sessions === undefined || Array.isArray(sessions) && sessions.length > 0
     && sessions.every((session, index) => session && [session.minimum, session.maximum, session.offset].every(Number.isFinite)
       && session.minimum >= 0 && session.maximum > session.minimum && session.offset >= 0
@@ -3876,6 +3882,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const plot = projection?.plotBounds;
     const axis = value => !!value && [value.minimum, value.maximum, value.transformedMinimum, value.transformedMaximum, value.threshold].every(Number.isFinite)
       && value.maximum > value.minimum && value.transformedMaximum > value.transformedMinimum && value.threshold > 0
+      && validSourceAxisMaximum(value)
       && typeof value.reversed === 'boolean' && ['linear', 'time', 'logarithmic', 'symmetriclogarithmic'].includes(value.scale)
       && Number.isFinite(value.logarithmBase ?? 10) && (value.logarithmBase ?? 10) > 1
       && ['positive', 'negative'].includes(value.logarithmicDomain ?? 'positive')
@@ -3900,13 +3907,13 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     brush.style.width = Math.abs(point.x - drag.left) + 'px';
     brush.style.height = (plot ? plot.height : Math.abs(point.y - drag.top)) + 'px';
   };
-  const projectedAxisValue = (axis, ratio) => {
+  const projectedAxisValue = (axis, ratio, bound) => {
     if (axis.reversed) ratio = 1 - ratio;
     const span = axis.transformedMaximum - axis.transformedMinimum;
     const value = Number.isFinite(span) ? axis.transformedMinimum + ratio * span
       : axis.transformedMinimum * (1 - ratio) + axis.transformedMaximum * ratio;
     const base = axis.logarithmBase ?? 10;
-    const raw = axis.timeSpacing ? projectedSpacingValue(axis.timeSpacing, value) : axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic'
+    const raw = axis.timeSpacing ? projectedSpacingValue(axis.timeSpacing, axis.timeSpacing.kind === 'unit' && bound !== undefined ? bound ? Math.ceil(value) : Math.floor(value) : value) : axis.timeSessions ? projectedSessionValue(axis.timeSessions, value) : axis.scale === 'logarithmic'
       ? axis.logarithmicDomain === 'negative' ? -Math.pow(base, -value) : Math.pow(base, value)
       : axis.scale === 'symmetriclogarithmic' ? Math.sign(value) * axis.threshold * (Math.pow(base, Math.abs(value)) - 1) : value;
     return clamp(raw, axis.minimum, axis.maximum);
@@ -3922,8 +3929,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const upper = ticks.filter(tick => tick.value >= values[1]).sort((a, b) => a.value - b.value)[0];
     return lower && upper ? [lower, upper] : undefined;
   };
-  const projectedAxisRatio = (axis, value) => {
-    const transformed = transformedAxisValue(axis, value), span = axis.transformedMaximum - axis.transformedMinimum;
+  const projectedAxisRatio = (axis, value, bound, maximumInclusive) => {
+    const transformed = bound === undefined ? transformedAxisValue(axis, value) : transformedAxisBound(axis, value, bound, maximumInclusive);
+    const span = axis.transformedMaximum - axis.transformedMinimum;
     const ratio = Number.isFinite(span) ? (transformed - axis.transformedMinimum) / span
       : (transformed / 2 - axis.transformedMinimum / 2) / (axis.transformedMaximum / 2 - axis.transformedMinimum / 2);
     return axis.reversed ? 1 - ratio : ratio;
@@ -5272,16 +5280,16 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   const chartYProjection = root => chartAxisProjection(root, 'y');
   const nativeAxisWindow = (root, name) => {
     const projection = chartAxisProjection(root, name);
-    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale } : null;
+    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale, ...(projection.maximumInclusive === false ? { maximumInclusive: false } : {}) } : null;
   };
   const nativeYWindow = root => nativeAxisWindow(root, 'y');
   const nativeYWindowChanged = root => {
     const projection = chartYProjection(root);
-    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum || projection.maximumInclusive === false);
   };
   const nativeViewportChanged = root => cartesianAxisNames.some(name => {
     const projection = chartAxisProjection(root, name);
-    return projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+    return projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum || projection.maximumInclusive === false);
   });
   const cartesianViewportConnected = root => nativePreparationBinding(root, 'viewport')?.legacy === false;
   const nativeViewportWindows = (root, connectedOnly = false) => ({ ...Object.fromEntries(
@@ -5296,8 +5304,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   const validSourceAxisWindow = (window, projection, axis = projection) => {
     if (!window || !projection || !axis || !Number.isFinite(window.minimum) || !Number.isFinite(window.maximum)
       || window.minimum >= window.maximum || window.scale && window.scale !== projection.scale
+      || !validSourceAxisMaximum(window, axis)
       || axis.scale === 'logarithmic' && !(axis.logarithmicDomain === 'negative' ? window.maximum < 0 : window.minimum > 0)) return false;
-    const first = transformedAxisBound(axis, window.minimum, false), last = transformedAxisBound(axis, window.maximum, true);
+    const first = transformedAxisBound(axis, window.minimum, false), last = transformedAxisBound(axis, window.maximum, true, window.maximumInclusive !== false);
     return Number.isFinite(first) && Number.isFinite(last) && first !== last;
   };
   const viewportValuePolicy = (root, value) => {
@@ -5332,7 +5341,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const valueDomain = viewportValuePolicy(root, viewport.valueDomain);
     if (!valueDomain) return false;
     const sourceViewport = Object.freeze(Object.fromEntries(axes.map(name => [name,
-      Object.freeze({ minimum: viewport[name].minimum, maximum: viewport[name].maximum })])));
+      Object.freeze({ minimum: viewport[name].minimum, maximum: viewport[name].maximum, ...(viewport[name].maximumInclusive === false ? { maximumInclusive: false } : {}) })])));
     return requestCartesianViewport(root, { kind: 'window', axes: Object.freeze(axes), sourceViewport, valueDomain }, sync, accepted);
   };
   const requestViewportReset = root => {
@@ -5379,6 +5388,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       && validTimeSessions(projection.timeSessions) && validTimeSpacing(projection.timeSpacing)
       && (!(projection.timeSessions || projection.timeSpacing) || projection.scale === 'time') && !(projection.timeSessions && projection.timeSpacing)
       && projection.minimum >= projection.fullMinimum && projection.maximum <= projection.fullMaximum
+      && validSourceAxisMaximum(projection)
       && typeof projection.reversed === 'boolean' && !!box && [box.x, box.y, box.width, box.height].every(Number.isFinite)
       && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
   };
@@ -5387,7 +5397,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
   const nativeXWindowChanged = root => {
     const projection = chartXProjection(root);
-    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum || projection.maximumInclusive === false);
   };
   const connectedXViewport = root => !!nativePreparationBinding(root, 'viewport');
   const syncXViewportControls = root => {
@@ -5403,7 +5413,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return false;
     if (kind === 'reset') suspendPointerReadout(root);
     return requestNativePreparation(root, 'viewport', { kind,
-      ...(sourceWindow ? { sourceWindow: Object.freeze({ minimum: sourceWindow.minimum, maximum: sourceWindow.maximum }) } : {}),
+      ...(sourceWindow ? { sourceWindow: Object.freeze({ minimum: sourceWindow.minimum, maximum: sourceWindow.maximum, ...(sourceWindow.maximumInclusive === false ? { maximumInclusive: false } : {}) }) } : {}),
       ...(kind === 'reset' ? {} : { left, right }) }, {
       eventPrefix: 'cfxviewport', resetView: kind === 'reset', accepted,
       validate: next => { if (!chartXProjection(next)) throw new TypeError('The viewport reply requires a supported X projection.'); },
@@ -5423,17 +5433,18 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   };
   const nativeXWindow = root => {
     const projection = chartXProjection(root);
-    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale || 'linear' } : null;
+    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale || 'linear', ...(projection.maximumInclusive === false ? { maximumInclusive: false } : {}) } : null;
   };
   const requestNativeXWindow = (root, window, sync = true, accepted) => {
     if (cartesianViewportConnected(root)) return requestNativeCartesianWindow(root, { x: window }, sync, accepted);
     const projection = chartXProjection(root), axis = root._cfxDataProjection?.x;
     if (!connectedXViewport(root) || !projection || !axis || !window
       || !Number.isFinite(window.minimum) || !Number.isFinite(window.maximum) || window.minimum >= window.maximum
-      || window.scale && window.scale !== (projection.scale || 'linear')) return false;
+      || window.scale && window.scale !== (projection.scale || 'linear')
+      || !validSourceAxisMaximum(window, axis)) return false;
     // Reuse the captured data projection's mapping; the host still owns confinement, ticks and native re-preparation.
-    const first = projection.plotBounds.x + projectedAxisRatio(axis, window.minimum) * projection.plotBounds.width;
-    const last = projection.plotBounds.x + projectedAxisRatio(axis, window.maximum) * projection.plotBounds.width;
+    const first = projection.plotBounds.x + projectedAxisRatio(axis, window.minimum, false) * projection.plotBounds.width;
+    const last = projection.plotBounds.x + projectedAxisRatio(axis, window.maximum, true, window.maximumInclusive !== false) * projection.plotBounds.width;
     if (!Number.isFinite(first) || !Number.isFinite(last) || first === last) return false;
     requestXViewport(root, 'window', Math.min(first, last), Math.max(first, last), sync, accepted, window);
     return true;
@@ -5898,7 +5909,14 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const projection = chartXProjection(root), axis = root._cfxDataProjection?.x;
     return projection && axis ? { ...axis, minimum: projection.fullMinimum, maximum: projection.fullMaximum,
       transformedMinimum: projection.transformedFullMinimum, transformedMaximum: projection.transformedFullMaximum,
-      timeSessions: projection.timeSessions, reversed: false } : null;
+      timeSessions: projection.timeSessions, maximumInclusive: true, reversed: false } : null;
+  };
+  const xNavigationWindow = (root, axis, minimum, maximum, maximumInclusive) => {
+    // An authored full edge inside a unit stays inclusive after native confinement.
+    // Otherwise navigation emits exact canonical calendar edges, never centered marks.
+    const inclusive = maximumInclusive ?? (axis.timeSpacing?.kind === 'unit'
+      ? !validSourceAxisMaximum({ maximum, maximumInclusive: false }, axis) : chartXProjection(root)?.maximumInclusive !== false);
+    return { minimum, maximum, ...(inclusive ? {} : { maximumInclusive: false }) };
   };
   const xNavigationCaption = (root, value) => {
     const axis = root._cfxDataProjection?.x;
@@ -5910,7 +5928,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     if (!panel || !projection || !axis) return;
     const start = panel.querySelector('[data-cfx-x-range="start"]'), end = panel.querySelector('[data-cfx-x-range="end"]');
     start.value = String(first); end.value = String(last);
-    const lower = rawWindow?.minimum ?? projectedAxisValue(axis, first), upper = rawWindow?.maximum ?? projectedAxisValue(axis, last);
+    const lower = rawWindow?.minimum ?? projectedAxisValue(axis, first, false), upper = rawWindow?.maximum ?? projectedAxisValue(axis, last, true);
     const captions = [xNavigationCaption(root, lower), xNavigationCaption(root, upper)];
     [start, end].forEach((input, index) => { input.setAttribute('aria-valuetext', captions[index]); });
     panel.querySelector('[data-cfx-x-value="start"]').textContent = captions[0];
@@ -5937,7 +5955,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     panel.hidden = !enabled;
     panel.querySelectorAll('button,input').forEach(control => { control.disabled = !enabled; });
     if (!enabled) return;
-    const first = projectedAxisRatio(axis, projection.minimum), last = projectedAxisRatio(axis, projection.maximum);
+    const first = projectedAxisRatio(axis, projection.minimum, false), last = projectedAxisRatio(axis, projection.maximum, true, projection.maximumInclusive !== false);
     paintXNavigationRange(root, first, last, { minimum: projection.minimum, maximum: projection.maximum });
     const pending = chartLifetimes.get(root)?.preparationPending?.channel === 'viewport';
     panel.setAttribute('aria-busy', String(pending));
@@ -5947,7 +5965,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     panel.querySelectorAll('[data-cfx-x-preset]').forEach(button => {
       const maximum = projection.fullMaximum, minimum = Math.max(projection.fullMinimum, maximum - Number(button.dataset.cfxXPreset));
       button.disabled = !(minimum < maximum);
-      button.setAttribute('aria-pressed', String(projection.minimum === minimum && projection.maximum === maximum));
+      button.setAttribute('aria-pressed', String(projection.minimum === minimum && projection.maximum === maximum && projection.maximumInclusive !== false));
     });
   };
   const bindXNavigation = root => {
@@ -5955,12 +5973,12 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     if (!panel) return;
     const commit = (first, last, rawWindow) => {
       const axis = fullXNavigationAxis(root);
-      if (!axis || !requestNativeXWindow(root, rawWindow || { minimum: projectedAxisValue(axis, first), maximum: projectedAxisValue(axis, last) }))
+      if (!axis || !requestNativeXWindow(root, rawWindow || xNavigationWindow(root, axis, projectedAxisValue(axis, first, false), projectedAxisValue(axis, last, true))))
         syncXNavigation(root);
     };
     const ratios = () => {
       const projection = chartXProjection(root), axis = fullXNavigationAxis(root);
-      return projection && axis ? [projectedAxisRatio(axis, projection.minimum), projectedAxisRatio(axis, projection.maximum)] : null;
+      return projection && axis ? [projectedAxisRatio(axis, projection.minimum, false), projectedAxisRatio(axis, projection.maximum, true, projection.maximumInclusive !== false)] : null;
     };
     const overview = panel.querySelector('.cfx-x-navigation__overview');
     if (overview) {
@@ -6007,8 +6025,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           if (kind === 'start') draft[0] = Math.min(value, draft[1] - Number.EPSILON);
           else draft[1] = Math.max(value, draft[0] + Number.EPSILON);
           const projection = chartXProjection(root), axis = fullXNavigationAxis(root);
-          draft.push({ minimum: kind === 'start' ? projectedAxisValue(axis, draft[0]) : projection.minimum,
-            maximum: kind === 'end' ? projectedAxisValue(axis, draft[1]) : projection.maximum });
+          draft.push(xNavigationWindow(root, axis,
+            kind === 'start' ? projectedAxisValue(axis, draft[0], false) : projection.minimum,
+            kind === 'end' ? projectedAxisValue(axis, draft[1], true) : projection.maximum,
+            kind === 'start' ? projection.maximumInclusive !== false : undefined));
         }
         paintXNavigationRange(root, draft[0], draft[1], draft[2]);
       };

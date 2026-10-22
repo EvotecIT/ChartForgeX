@@ -226,19 +226,17 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
                 foreach (var annotation in previous.Annotations) chart.AddAnnotation(annotation);
                 var xProjection = previous.Section.PreparedVisual.XProjection!;
                 var yProjection = previous.Section.PreparedVisual.YProjection!;
-                ChartAxisWindow? x = xProjection.Minimum != xProjection.FullMinimum || xProjection.Maximum != xProjection.FullMaximum
-                    ? new ChartAxisWindow(xProjection.Minimum, xProjection.Maximum) : null;
-                ChartAxisWindow? y = yProjection.Minimum != yProjection.FullMinimum || yProjection.Maximum != yProjection.FullMaximum
-                    ? new ChartAxisWindow(yProjection.Minimum, yProjection.Maximum) : null;
+                ChartAxisWindow? x = xProjection.Minimum != xProjection.FullMinimum || xProjection.Maximum != xProjection.FullMaximum || !xProjection.MaximumInclusive
+                    ? new ChartAxisWindow(xProjection.Minimum, xProjection.Maximum, xProjection.MaximumInclusive) : null;
+                ChartAxisWindow? y = yProjection.Minimum != yProjection.FullMinimum || yProjection.Maximum != yProjection.FullMaximum || !yProjection.MaximumInclusive
+                    ? new ChartAxisWindow(yProjection.Minimum, yProjection.Maximum, yProjection.MaximumInclusive) : null;
                 var operation = request.GetProperty("kind").GetString();
                 if (request.GetProperty("channel").GetString() == "viewport") {
                     if (operation == "reset") { x = null; y = null; }
                     else {
                         var viewport = request.GetProperty("sourceViewport");
-                        if (viewport.TryGetProperty("x", out var sourceX)) x = xProjection.ConstrainViewport(new ChartAxisWindow(
-                            sourceX.GetProperty("minimum").GetDouble(), sourceX.GetProperty("maximum").GetDouble()));
-                        if (viewport.TryGetProperty("y", out var sourceY)) y = yProjection.ConstrainViewport(new ChartAxisWindow(
-                            sourceY.GetProperty("minimum").GetDouble(), sourceY.GetProperty("maximum").GetDouble()));
+                        if (viewport.TryGetProperty("x", out var sourceX)) x = xProjection.ConstrainViewport(NativeWindowTransport.Read(sourceX));
+                        if (viewport.TryGetProperty("y", out var sourceY)) y = yProjection.ConstrainViewport(NativeWindowTransport.Read(sourceY));
                     }
                 } else {
                     var id = new ChartAnnotationId(request.GetProperty("annotationId").GetString()!);

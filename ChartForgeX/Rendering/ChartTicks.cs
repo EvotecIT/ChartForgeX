@@ -11,7 +11,7 @@ internal static class ChartTicks {
 
     /// <summary>Uses authored tick positions when present, otherwise the canonical bounded scale ticks.</summary>
     internal static IReadOnlyList<double> ForAxis(ChartAxis axis, double minimum, double maximum) =>
-        axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray()
+        axis.Labels.Count > 0 ? axis.Labels.Select(label => label.Value).Where(value => InDomain(axis, value, minimum, maximum)).Distinct().OrderBy(value => value).ToArray()
             : GenerateInside(axis, minimum, maximum);
 
     /// <summary>Keeps generated numeric value ticks alongside authored label positions within the visible domain.</summary>
@@ -19,8 +19,13 @@ internal static class ChartTicks {
         var generated = GenerateInside(axis, minimum, maximum);
         if (axis.Labels.Count == 0) return generated;
         return PreserveFormatting(generated, generated.Concat(axis.Labels.Select(label => label.Value))
-            .Where(value => value >= minimum && value <= maximum).Distinct().OrderBy(value => value).ToArray());
+            .Where(value => InDomain(axis, value, minimum, maximum)).Distinct().OrderBy(value => value).ToArray());
     }
+
+    private static bool InDomain(ChartAxis axis, double value, double minimum, double maximum) => axis.PreparedTimeDomain?.Unit == true
+        ? ChartScaleTransform.Forward(value, axis) >= ChartScaleTransform.Bound(minimum, axis, false)
+            && ChartScaleTransform.Forward(value, axis) < ChartScaleTransform.Bound(maximum, axis, true)
+        : value >= minimum && value <= maximum;
 
     public static IReadOnlyList<double> Generate(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));

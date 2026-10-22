@@ -9,13 +9,18 @@ internal static class MermaidStyleParser {
         List<MermaidStyleDefinition> definitions, string family) {
         if (!MermaidParserUtilities.StartsStatement(text, "classDef")) return false;
         var body = text.Substring(8).Trim();
-        if (!SplitHead(body, out var head, out var declarations) || Names(head).Count == 0) {
+        if (!SplitHead(body, out var head, out var declarations)) {
             Invalid("Named style definitions require a name and declarations.");
             return true;
         }
+        var names = Names(head);
+        if (names.Count == 0) { Invalid("Named style definitions require a name and declarations."); return true; }
+        MermaidResourceGuard.ReserveElements(names.Count, span);
         var styles = new Dictionary<string, string>();
         Read(styles, declarations, span, result, family);
-        foreach (var name in Names(head)) {
+        MermaidResourceGuard.ReserveElements(checked((long)names.Count * styles.Count), span);
+        foreach (var name in names) {
+            MermaidResourceGuard.Checkpoint();
             var definition = new MermaidStyleDefinition(name, span);
             Copy(definition.Styles, styles);
             definitions.Add(definition);
@@ -64,12 +69,26 @@ internal static class MermaidStyleParser {
     }
 
     internal static Dictionary<string, string> Resolve(Dictionary<string, Dictionary<string, string>> definitions,
-        IEnumerable<string> classes, Dictionary<string, string> direct, bool includeDefault = true) {
+        IEnumerable<string> classes, Dictionary<string, string> direct, MermaidSourceSpan span, bool includeDefault = true) {
+        // Count the union before cloning. Direct model properties are already retained;
+        // named/default properties newly expanded onto this target consume the same policy.
+        var keys = new HashSet<string>(direct.Keys, StringComparer.Ordinal);
+        var selected = new List<Dictionary<string, string>>();
+        if (includeDefault && definitions.TryGetValue("default", out var defaults)) Add(defaults);
+        foreach (var name in classes) {
+            MermaidResourceGuard.Checkpoint();
+            if (definitions.TryGetValue(name, out var style)) Add(style);
+        }
+        MermaidResourceGuard.ReserveElements(keys.Count - direct.Count, span);
         var resolved = new Dictionary<string, string>();
-        if (includeDefault && definitions.TryGetValue("default", out var defaults)) Copy(resolved, defaults);
-        foreach (var name in classes) if (definitions.TryGetValue(name, out var style)) Copy(resolved, style);
+        foreach (var style in selected) Copy(resolved, style);
         Copy(resolved, direct);
         return resolved;
+
+        void Add(Dictionary<string, string> style) {
+            selected.Add(style);
+            foreach (var key in style.Keys) { MermaidResourceGuard.Checkpoint(); keys.Add(key); }
+        }
     }
 
     internal static void Read(Dictionary<string, string> styles, string text, MermaidSourceSpan span,
@@ -106,8 +125,13 @@ internal static class MermaidStyleParser {
         return resolved;
     }
 
-    internal static void Copy(Dictionary<string, string> target, Dictionary<string, string> source) {
-        foreach (var item in source) target[item.Key] = item.Value;
+    internal static void Copy(Dictionary<string, string> target, Dictionary<string, string> source, MermaidSourceSpan? span = null) {
+        if (span.HasValue) {
+            long added = 0;
+            foreach (var key in source.Keys) { MermaidResourceGuard.Checkpoint(); if (!target.ContainsKey(key)) added++; }
+            MermaidResourceGuard.ReserveElements(added, span.Value);
+        }
+        foreach (var item in source) { MermaidResourceGuard.Checkpoint(); target[item.Key] = item.Value; }
     }
 
     internal static List<string> Names(string text) {

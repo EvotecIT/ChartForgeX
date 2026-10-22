@@ -45,14 +45,7 @@ internal static partial class Program {
             && invalidFence.HasErrors && invalidFence.Artifacts.Count == 0,
             "Packed invalid sequence numbering escaped parse validation into a lazy export failure.");
 
-        const string styled = "requirementDiagram\nrequirement req {\nid: 1\n}\nstyle req fill:#ff0000";
-        var strict = MermaidRenderer.Render(styled, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
-        var strictFence = new MermaidVisualMarkupParser(new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject })
-            .Parse("```mermaid\n" + styled + "\n```");
-        PackageAssertions.Require(strict.HasErrors && strict.Artifact == null
-            && strict.Diagnostics.Any(item => item.Code == MermaidDiagnosticCodes.UnsupportedStatement)
-            && strictFence.HasErrors && strictFence.Artifacts.Count == 0,
-            "Packed strict fidelity accepted Requirement styling without a native appearance mapping.");
+        MermaidRequirementStyleContracts();
         var bounded = new MermaidRenderOptions {
             ParseOptions = new MermaidParseOptions { ResourceLimits = new MermaidResourceLimits { MaximumSourceCharacters = 16 } }
         };

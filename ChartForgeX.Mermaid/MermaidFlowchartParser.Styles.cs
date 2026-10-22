@@ -40,7 +40,10 @@ internal static partial class MermaidFlowchartParser {
         if (split <= 0) return false;
         var styles = new Dictionary<string, string>();
         ReadStyles(styles, body.Substring(split + 1), span, result, edge: false);
-        foreach (var name in SplitCsv(body.Substring(0, split))) {
+        var names = SplitCsv(body.Substring(0, split));
+        MermaidResourceGuard.ReserveElements(checked((long)names.Count * (1L + styles.Count)), span);
+        foreach (var name in names) {
+            MermaidResourceGuard.Checkpoint();
             var definition = new MermaidStyleDefinition(name, span);
             CopyStyles(definition.Styles, styles);
             document.ClassDefinitions.Add(definition);
@@ -57,7 +60,7 @@ internal static partial class MermaidFlowchartParser {
         var nodeId = body.Substring(0, split);
         var styles = new Dictionary<string, string>();
         ReadStyles(styles, body.Substring(split + 1), span, result, edge: false);
-        CopyStyles(GetOrAddNode(document, nodes, nodeId, span).Styles, styles);
+        CopyStyles(GetOrAddNode(document, nodes, nodeId, span).Styles, styles, span);
         return true;
     }
 
@@ -85,18 +88,11 @@ internal static partial class MermaidFlowchartParser {
     private static void ApplyClassDefinitions(MermaidFlowchartDocument document) {
         var definitions = MermaidStyleParser.Definitions(document.ClassDefinitions);
         foreach (var node in document.Nodes) {
-            var resolved = new Dictionary<string, string>();
-            Apply("default");
-            Apply("node");
-            foreach (var className in node.Classes) Apply(className);
-            // Direct declarations win independently of whether they precede a classDef.
-            CopyStyles(resolved, node.Styles);
+            var classes = new List<string>(node.Classes.Count + 1) { "node" };
+            classes.AddRange(node.Classes);
+            var resolved = MermaidStyleParser.Resolve(definitions, classes, node.Styles, node.Span);
             node.Styles.Clear();
             CopyStyles(node.Styles, resolved);
-
-            void Apply(string name) {
-                if (definitions.TryGetValue(name, out var styles)) CopyStyles(resolved, styles);
-            }
         }
     }
 
@@ -113,13 +109,13 @@ internal static partial class MermaidFlowchartParser {
         }
         for (var index = 0; index < document.Edges.Count; index++) {
             var styles = document.Edges[index].Styles;
-            if (defaults != null) CopyStyles(styles, defaults.Styles);
-            if (selected.TryGetValue(index, out var explicitStyle)) CopyStyles(styles, explicitStyle.Styles);
+            if (defaults != null) CopyStyles(styles, defaults.Styles, document.Edges[index].Span);
+            if (selected.TryGetValue(index, out var explicitStyle)) CopyStyles(styles, explicitStyle.Styles, document.Edges[index].Span);
         }
     }
 
     private static void ReadStyles(Dictionary<string, string> styles, string text, MermaidSourceSpan span,
         MermaidParseResult<MermaidDocument> result, bool edge) => MermaidStyleParser.Read(styles, text, span, result, "Flowchart", edge);
 
-    private static void CopyStyles(Dictionary<string, string> target, Dictionary<string, string> source) => MermaidStyleParser.Copy(target, source);
+    private static void CopyStyles(Dictionary<string, string> target, Dictionary<string, string> source, MermaidSourceSpan? span = null) => MermaidStyleParser.Copy(target, source, span);
 }

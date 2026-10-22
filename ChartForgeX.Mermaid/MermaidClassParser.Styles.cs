@@ -24,14 +24,15 @@ internal static partial class MermaidClassParser {
         if (direct) MermaidStyleParser.Read(declarations, value, span, result, "Class");
         var ids = direct ? new List<string> { MermaidParserUtilities.Unquote(selector) }
             : MermaidStyleParser.Names(MermaidParserUtilities.Unquote(selector));
+        var named = direct ? new List<string>() : MermaidStyleParser.Names(value);
         var missing = false;
         foreach (var id in ids) {
             if (!classes.TryGetValue(CleanEndpoint(id), out var node)) {
                 missing = true;
                 continue;
             }
-            if (direct) MermaidStyleParser.Copy(node.Styles, declarations);
-            else foreach (var name in MermaidStyleParser.Names(value)) node.Classes.Add(name);
+            if (direct) MermaidStyleParser.Copy(node.Styles, declarations, span);
+            else { MermaidResourceGuard.ReserveElements(named.Count, span); node.Classes.AddRange(named); }
         }
         if (missing) MermaidParserUtilities.RetainUnsupported(document, text, span, result, "class style target not yet declared");
         return true;
@@ -50,7 +51,7 @@ internal static partial class MermaidClassParser {
     private static void ApplyStyles(MermaidClassDocument document) {
         var definitions = MermaidStyleParser.Definitions(document.ClassDefinitions);
         foreach (var node in document.Classes) {
-            var resolved = MermaidStyleParser.Resolve(definitions, node.Classes, node.Styles);
+            var resolved = MermaidStyleParser.Resolve(definitions, node.Classes, node.Styles, node.Span);
             node.Styles.Clear();
             MermaidStyleParser.Copy(node.Styles, resolved);
         }

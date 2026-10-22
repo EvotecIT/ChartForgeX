@@ -212,7 +212,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
                 if (request.GetProperty("kind").GetString() != "reset") {
                     if (request.TryGetProperty("sourceViewport", out var viewport)) {
                         var bounds = viewport.GetProperty("x");
-                        window = basis.XProjection!.ConstrainViewport(new ChartAxisWindow(bounds.GetProperty("minimum").GetDouble(), bounds.GetProperty("maximum").GetDouble()));
+                        window = basis.XProjection!.ConstrainViewport(NativeWindowTransport.Read(bounds));
                     } else window = basis.XProjection!.ConstrainViewport(request.GetProperty("left").GetDouble(), request.GetProperty("right").GetDouble());
                 }
                 Last = _renderer.PrepareSection(_source, window == null ? null : new ChartCartesianViewport(x: window), Configure);
@@ -224,7 +224,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         private static void Configure(HtmlChartInteractionOptions options) {
             options.IdScope = "native-discrete-time"; options.Interaction.ChartId = "discrete-time";
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
-            options.Interaction.Enable(ChartInteractionFeatures.Brush | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan);
+            options.Interaction.Enable(ChartInteractionFeatures.Brush | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.StateBookmarks | ChartInteractionFeatures.Export);
             options.Interaction.BrushAxis = ChartBrushAxis.X;
             options.XNavigation.Enabled = true; options.XNavigation.IncludeNavigator = false;
         }

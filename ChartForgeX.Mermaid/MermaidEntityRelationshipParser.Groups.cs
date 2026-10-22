@@ -26,8 +26,8 @@ internal static partial class MermaidEntityRelationshipParser {
         return true;
     }
 
-    private static void GroupMember(MermaidEntityNode node, Stack<MermaidEntityGroup> groups) {
-        if (groups.Count == 0) return;
+    private static void GroupMember(MermaidEntityNode? node, Stack<MermaidEntityGroup> groups) {
+        if (node == null || groups.Count == 0) return;
         // Inner groups close before their ancestors in Mermaid's grammar. Their
         // members win over an ancestor declaration; a later sibling cannot steal them.
         if (node.GroupId == null) { node.GroupId = groups.Peek().Id; return; }

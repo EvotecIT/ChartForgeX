@@ -31,9 +31,9 @@ internal static partial class MermaidRequirementParser {
             } else if (!TryParseClassAssignment(statement.Text, out names, out classes)) continue;
             foreach (var name in names) {
                 if (requirements.TryGetValue(name, out var requirement)) {
-                    if (direct) MermaidStyleParser.Copy(requirement.Styles, styles); else AddClasses(requirement.Classes, classes);
+                    if (direct) MermaidStyleParser.Copy(requirement.Styles, styles, statement.Span); else AddClasses(requirement.Classes, classes, statement.Span);
                 } else if (elements.TryGetValue(name, out var element)) {
-                    if (direct) MermaidStyleParser.Copy(element.Styles, styles); else AddClasses(element.Classes, classes);
+                    if (direct) MermaidStyleParser.Copy(element.Styles, styles, statement.Span); else AddClasses(element.Classes, classes, statement.Span);
                 } else Invalid("Requirement style target '" + name + "' must refer to a declared requirement or element.");
             }
 

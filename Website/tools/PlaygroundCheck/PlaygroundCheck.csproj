@@ -24,6 +24,13 @@
     <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Regular.ttf" LogicalName="Fonts.Carlito-Regular.ttf" />
     <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Bold.ttf" LogicalName="Fonts.Carlito-Bold.ttf" />
     <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\OFL.txt" LogicalName="Fonts.Carlito-OFL.txt" />
+    <!-- Desktop-check source text only; these do not enter the Playground/WASM project. -->
+    <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\fixtures\agentflow-native-workflow.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.agentflow-native-workflow.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\external-plugins\zenuml\zenuml-native-occurrences.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.zenuml-native-occurrences.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\fixtures\railroad-ir-native.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.railroad-ir-native.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\fixtures\railroad-ebnf-native.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.railroad-ebnf-native.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\fixtures\railroad-abnf-native.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.railroad-abnf-native.mmd" WithCulture="false" />
+    <EmbeddedResource Include="..\..\..\tests\mermaid-conformance\fixtures\railroad-peg-native.mmd" LogicalName="PlaygroundCheck.MermaidFixtures.railroad-peg-native.mmd" WithCulture="false" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ChartForgeX\ChartForgeX.csproj" />

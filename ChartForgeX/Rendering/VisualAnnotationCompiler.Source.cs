@@ -11,7 +11,7 @@ internal static partial class VisualAnnotationCompiler {
     /// <summary>Maps source drawings once into the shared scene consumed by every export backend.</summary>
     internal static void DrawSources(IReadOnlyList<ChartAnnotation> annotations, VisualRenderContext context,
         VisualSceneBuilder builder, ChartRect plot, Func<double, double> mapX, Func<ChartAnnotation, double, double> mapY,
-        VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles) {
+        VisualThemeColors colors, bool bands, List<LabelObstacle> obstacles, Func<ChartAnnotation, bool>? isVisible = null) {
         for (var index = 0; index < annotations.Count; index++) {
             var annotation = annotations[index];
             if (!annotation.HasSourceGeometry || annotation.IsBand != bands) continue;
@@ -27,8 +27,8 @@ internal static partial class VisualAnnotationCompiler {
             var right = Math.Min(plot.Right, Math.Max(start.X, end.X));
             var top = Math.Max(plot.Top, Math.Min(Math.Min(start.Y, end.Y), Math.Min(upperStart.Y, upperEnd.Y)));
             var bottom = Math.Min(plot.Bottom, Math.Max(Math.Max(start.Y, end.Y), Math.Max(upperStart.Y, upperEnd.Y)));
-            var visible = annotation.Kind == ChartAnnotationKind.Note ? ChartPlotClip.Contains(plot, start.X, start.Y)
-                : shape.Intersects(plot);
+            var visible = (annotation.Kind == ChartAnnotationKind.Note ? ChartPlotClip.Contains(plot, start.X, start.Y)
+                : shape.Intersects(plot)) && (isVisible == null || isVisible(annotation));
             var bounds = new ChartRect(Math.Max(plot.Left, Math.Min(plot.Right, left)), Math.Max(plot.Top, Math.Min(plot.Bottom, top)),
                 Math.Max(0, right - left), Math.Max(0, bottom - top));
             var id = annotation.Id is ChartAnnotationId authoredId ? VisualAnnotationIdentity.SourceIdFor(authoredId) : "annotation-" + Number(index);

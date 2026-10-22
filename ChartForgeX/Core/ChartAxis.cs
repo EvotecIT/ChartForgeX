@@ -228,6 +228,9 @@ public sealed class ChartAxis {
     }
     private ChartTimeSpacing? _timeSpacing;
     internal ChartTimeSpacingDomain? PreparedTimeDomain { get; set; }
+    // Derived only from the immutable public request in the private presentation view.
+    // Every layout/paint/tick owner therefore resolves the same explicit source edge policy.
+    internal ChartAxisWindow? PreparedViewportWindow { get; set; }
 
     /// <summary>
     /// Gets or sets the time-zone designator shown when <see cref="ShowTimeZone"/> is enabled.

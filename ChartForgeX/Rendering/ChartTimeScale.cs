@@ -30,7 +30,7 @@ internal static partial class ChartTimeScale {
     /// <summary>Returns calendar-aligned ticks, or null when the range cannot be represented as dates.</summary>
     public static IReadOnlyList<double>? Generate(ChartAxis axis, double min, double max, bool inside) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
-        if (axis.PreparedTimeDomain is { } domain) return domain.Ticks(min, max, axis.TickCount);
+        if (axis.PreparedTimeDomain is { } domain) return domain.Ticks(min, max, axis.TickCount, ChartScaleTransform.MaximumInclusive(axis, max));
         if (min > max) (min, max) = (max, min);
         // OLE dates before 1899-12-30 store the time of day with an inverted sign, so they are not ordered within a day.
         if (min < 0 || !IsRepresentable(max) || max - min < DaysPerSecond) return null;

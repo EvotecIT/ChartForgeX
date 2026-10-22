@@ -58,17 +58,15 @@ internal static partial class MermaidEntityRelationshipParser {
                 continue;
             }
 
-            if (TryParseRelationship(trimmed, span, out var relationship)) {
+            if (TryParseRelationship(trimmed, span, result, out var relationship, out var sourceText, out var targetText)) {
+                if (relationship == null) continue;
                 document.Relationships.Add(relationship);
-                var connectorIndex = trimmed.IndexOf(relationship.Connector, StringComparison.Ordinal);
-                if (trimmed.Substring(0, connectorIndex).IndexOf('[') >= 0 || trimmed.Substring(connectorIndex + relationship.Connector.Length).Split(':')[0].IndexOf('[') >= 0)
+                if (sourceText.IndexOf('[') >= 0 || targetText.IndexOf('[') >= 0)
                     MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error, "ER aliases belong on entity declarations, not relationship endpoints.", MermaidDiagnosticCodes.InvalidStatement);
-                GroupMember(EnsureEntity(document, entities, trimmed.Substring(0, connectorIndex).Trim(), span, result), subgraphs);
-                var targetText = trimmed.Substring(connectorIndex + relationship.Connector.Length).Trim();
-                var colon = RelationshipLabelSeparator(targetText);
-                GroupMember(EnsureEntity(document, entities, colon < 0 ? targetText : targetText.Substring(0, colon).Trim(), span, result), subgraphs);
+                GroupMember(EnsureEntity(document, entities, sourceText, span, result), subgraphs);
+                GroupMember(EnsureEntity(document, entities, targetText, span, result), subgraphs);
             } else {
-                GroupMember(EnsureEntity(document, entities, MermaidParserUtilities.Unquote(trimmed), span, result), subgraphs);
+                GroupMember(EnsureEntity(document, entities, trimmed, span, result), subgraphs);
             }
         }
 
@@ -82,26 +80,34 @@ internal static partial class MermaidEntityRelationshipParser {
         ApplyStyles(document);
     }
 
-    private static bool TryParseRelationship(string text, MermaidSourceSpan span, out MermaidEntityRelationship relationship) {
-        relationship = null!;
-        foreach (var connector in RelationshipConnectors) {
-            var index = text.IndexOf(connector, StringComparison.Ordinal);
-            if (index <= 0) continue;
-            var left = EndpointId(text.Substring(0, index).Trim());
-            var rightWithLabel = text.Substring(index + connector.Length).Trim();
-            var colon = RelationshipLabelSeparator(rightWithLabel);
-            var label = string.Empty;
-            if (colon >= 0) {
-                label = MermaidParserUtilities.Unquote(rightWithLabel.Substring(colon + 1).Trim());
-                rightWithLabel = rightWithLabel.Substring(0, colon).Trim();
-            }
-
-            var right = EndpointId(rightWithLabel);
-            relationship = new MermaidEntityRelationship(left, right, connector, label, span);
+    private static bool TryParseRelationship(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result,
+        out MermaidEntityRelationship? relationship, out string sourceText, out string targetText) {
+        relationship = null;
+        sourceText = targetText = string.Empty;
+        var connector = string.Empty;
+        var index = -1;
+        foreach (var candidate in RelationshipConnectors) {
+            var found = RelationshipConnectorIndex(text, candidate);
+            if (found >= 0 && (index < 0 || found < index)) { index = found; connector = candidate; }
+        }
+        if (index < 0) return false;
+        sourceText = text.Substring(0, index).Trim();
+        var left = EndpointId(sourceText);
+        targetText = text.Substring(index + connector.Length).Trim();
+        var colon = RelationshipLabelSeparator(targetText);
+        var label = string.Empty;
+        if (colon >= 0) {
+            label = MermaidParserUtilities.Unquote(targetText.Substring(colon + 1).Trim());
+            targetText = targetText.Substring(0, colon).Trim();
+        }
+        var right = EndpointId(targetText);
+        if (MissingEntityIdentity(left) || MissingEntityIdentity(right)) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                "ER relationship endpoints require identities before inline classes.", MermaidDiagnosticCodes.InvalidStatement);
             return true;
         }
-
-        return false;
+        relationship = new MermaidEntityRelationship(left, right, connector, label, span);
+        return true;
     }
 
     private static void ParseAttribute(MermaidEntityNode entity, string text, MermaidSourceSpan span) {
@@ -120,8 +126,9 @@ internal static partial class MermaidEntityRelationshipParser {
         entity.Attributes.Add(new MermaidEntityAttribute(type, name, key, comment, span));
     }
 
-    private static MermaidEntityNode EnsureEntity(MermaidEntityRelationshipDocument document, Dictionary<string, MermaidEntityNode> entities, string id, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
+    private static MermaidEntityNode? EnsureEntity(MermaidEntityRelationshipDocument document, Dictionary<string, MermaidEntityNode> entities, string id, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result) {
         var original = id;
+        var missingAliasIdentity = id.TrimStart().StartsWith("[", StringComparison.Ordinal);
         id = ReadInlineClasses(id, out var classes);
         if (MermaidStyleParser.Suffix(original) >= 0 && (classes.Count == 0 || classes.Exists(name => name.IndexOf(":::", StringComparison.Ordinal) >= 0)))
             MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
@@ -134,6 +141,11 @@ internal static partial class MermaidEntityRelationshipParser {
             label = MermaidParserUtilities.Unquote(alias);
         }
         id = MermaidParserUtilities.Unquote(id);
+        if (missingAliasIdentity || MissingEntityIdentity(id)) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                "ER declarations require an identity before aliases or inline classes.", MermaidDiagnosticCodes.InvalidStatement);
+            return null;
+        }
         if (entities.TryGetValue(id, out var existing)) {
             if (label != null) existing.Label = label;
             existing.Classes.AddRange(classes);
@@ -153,15 +165,43 @@ internal static partial class MermaidEntityRelationshipParser {
             ? MermaidParserUtilities.Unquote(id) : MermaidParserUtilities.Unquote(text);
     }
 
+    private static int RelationshipConnectorIndex(string text, string connector) {
+        var quote = '\0';
+        var brackets = 0;
+        for (var index = 0; index <= text.Length - connector.Length; index++) {
+            var ch = text[index];
+            if (quote != '\0') {
+                if (ch == '\\' && index + 1 < text.Length) index++;
+                else if (ch == quote) quote = '\0';
+                continue;
+            }
+            if (ch is '"' or '`') { quote = ch; continue; }
+            if (ch == '[') brackets++;
+            else if (ch == ']') brackets--;
+            else if (brackets == 0 && string.CompareOrdinal(text, index, connector, 0, connector.Length) == 0) return index;
+        }
+        return -1;
+    }
+
+    private static bool MissingEntityIdentity(string id) => string.IsNullOrWhiteSpace(id);
+
     private static int RelationshipLabelSeparator(string text) {
-        var quoted = false;
+        var quote = '\0';
         var brackets = 0;
         for (var index = 0; index < text.Length; index++) {
-            if (text[index] == '"') quoted = !quoted;
-            if (quoted) continue;
-            if (text[index] == '[') brackets++;
-            else if (text[index] == ']') brackets--;
-            else if (text[index] == ':' && brackets == 0) return index;
+            var ch = text[index];
+            if (quote != '\0') {
+                if (ch == '\\' && index + 1 < text.Length) index++;
+                else if (ch == quote) quote = '\0';
+                continue;
+            }
+            if (ch is '"' or '`') { quote = ch; continue; }
+            if (ch == '[') brackets++;
+            else if (ch == ']') brackets--;
+            else if (ch == ':' && brackets == 0) {
+                if (index + 2 < text.Length && text[index + 1] == ':' && text[index + 2] == ':') { index += 2; continue; }
+                return index;
+            }
         }
         return -1;
     }

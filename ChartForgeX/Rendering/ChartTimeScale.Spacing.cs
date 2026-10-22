@@ -11,6 +11,11 @@ internal static partial class ChartTimeScale {
     internal static double[] UnitBoundaries(ChartAxis axis, double minimum, double maximum, ChartTimeTickInterval interval) {
         var zone = interval.Unit == ChartTimeTickUnit.Millisecond ? TimeZoneInfo.Utc : axis.TimeZone ?? TimeZoneInfo.Utc;
         var localMin = ToLocal(minimum, zone);
+        var localMax = ToLocal(maximum, zone);
+        // Repeated wall-clock boundaries interleave their UTC occurrences. Walk both sides
+        // before selecting the closest actual enclosing boundaries, as fixed ticks already do.
+        var walkMax = localMax + RepeatedHourWidth(localMax, zone);
+        localMin -= RepeatedHourWidth(localMin, zone);
         var count = interval.Count;
         DateTime floor;
         switch (interval.Unit) {
@@ -30,7 +35,8 @@ internal static partial class ChartTimeScale {
             case ChartTimeTickUnit.Month: floor = new DateTime(localMin.Year, (localMin.Month - 1) / count * count + 1, 1); break;
             default: floor = new DateTime((localMin.Year - 1) / count * count + 1, 1, 1); break;
         }
-        var boundaries = new List<double>(); var instants = new List<DateTime>(2);
+        var boundaries = new SortedSet<double>(); var instants = new List<DateTime>(2);
+        double? lower = null, upper = null;
         var resolution = new TimeInterval(interval.Unit <= ChartTimeTickUnit.Hour ? TimeUnit.Second : TimeUnit.Day, 1);
         var current = (DateTime?)floor;
         while (current.HasValue) {
@@ -38,19 +44,20 @@ internal static partial class ChartTimeScale {
             foreach (var instant in instants) {
                 var value = ChartDateTime.ToOADate(instant);
                 if (value < 0) throw new InvalidOperationException("Discrete time bands require ordered instants on or after 1899-12-30 UTC.");
-                boundaries.Add(value);
-                if (boundaries.Count > ChartTimeSpacingDomain.MaximumEntries + 1)
+                if (value <= minimum) lower = !lower.HasValue || value > lower.Value ? value : lower;
+                else if (value <= maximum) boundaries.Add(value);
+                else upper = !upper.HasValue || value < upper.Value ? value : upper;
+                // Count actual retained bands, not extra repeated-hour walk candidates.
+                if (boundaries.Count >= ChartTimeSpacingDomain.MaximumEntries)
                     throw new InvalidOperationException("The calendar time domain exceeds the 100,000-band limit; select a coarser calendar unit or narrower authored bounds.");
             }
-            if (boundaries.Count > 0 && boundaries[boundaries.Count - 1] > maximum) break;
+            if (current.Value > walkMax && upper.HasValue) break;
             current = FixedNext(current.Value, interval);
         }
-        boundaries.Sort();
-        var ordered = boundaries.Distinct().ToArray(); var first = 0;
-        while (first + 1 < ordered.Length && ordered[first + 1] <= minimum) first++;
-        var result = ordered.Skip(first).ToArray();
-        if (result.Length < 2 || result[0] > minimum || result[result.Length - 1] <= maximum)
+        if (!lower.HasValue || !upper.HasValue)
             throw new InvalidOperationException("The calendar time domain requires a representable enclosing calendar boundary.");
+        var result = new double[boundaries.Count + 2];
+        result[0] = lower.Value; boundaries.CopyTo(result, 1); result[result.Length - 1] = upper.Value;
         return result;
     }
 }

@@ -27,6 +27,8 @@ public sealed class ChartAxisProjection {
     public double Minimum => _axis.Minimum;
     /// <summary>Gets the upper source bound used by this scene.</summary>
     public double Maximum => _axis.Maximum;
+    /// <summary>Gets whether observations exactly at the current upper source bound belong to this window.</summary>
+    public bool MaximumInclusive => _axis.MaximumInclusive;
     /// <summary>Gets the final logical plot rectangle.</summary>
     public ChartRect PlotBounds { get; }
     /// <summary>Gets whether the authored axis is reversed.</summary>
@@ -52,16 +54,13 @@ public sealed class ChartAxisProjection {
     /// <summary>Inverts a finite logical coordinate through the captured scale. Unit time selects the canonical lower calendar boundary.</summary>
     public double Unproject(double logical) => _axis.Unproject(logical);
     /// <summary>Confines a logical gesture, shifting a narrower crossing span intact into the full domain.</summary>
-    /// <returns>The confined source window, or null when it covers the full domain.</returns>
-    public ChartAxisWindow? ConstrainViewport(double firstLogical, double secondLogical) {
-        var window = _axis.ConstrainLogical(firstLogical, secondLogical);
-        return window.HasValue ? new ChartAxisWindow(window.Value.Minimum, window.Value.Maximum) : null;
-    }
-    /// <summary>Confines a source window, preserving exact contained bounds including raw time bounds in closures.</summary>
+    /// <returns>The confined source window, or null when it covers the full domain. Calendar gestures use an exclusive canonical upper edge.</returns>
+    public ChartAxisWindow? ConstrainViewport(double firstLogical, double secondLogical) => _axis.ConstrainLogical(firstLogical, secondLogical);
+    /// <summary>Confines a source window, preserving exact contained bounds and their upper-endpoint policy.</summary>
+    /// <remarks>Unit time spacing accepts exclusive maxima only at captured canonical calendar boundaries.</remarks>
     /// <returns>The confined window, or null for the exact complete raw domain.</returns>
     public ChartAxisWindow? ConstrainViewport(ChartAxisWindow requested) {
         if (requested == null) throw new ArgumentNullException(nameof(requested));
-        var window = _axis.ConstrainSource(requested.Minimum, requested.Maximum);
-        return window.HasValue ? new ChartAxisWindow(window.Value.Minimum, window.Value.Maximum) : null;
+        return _axis.ConstrainSource(requested);
     }
 }

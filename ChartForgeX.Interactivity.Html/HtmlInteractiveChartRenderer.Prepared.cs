@@ -118,13 +118,13 @@ public sealed partial class HtmlInteractiveChartRenderer {
         json.Append(',').Append(HtmlJsonString.Encode(name)).Append(':');
         AppendViewportAxis(json, axis.FullMinimum, axis.FullMaximum, axis.Minimum, axis.Maximum,
             axis.TransformedFullMinimum, axis.TransformedFullMaximum, axis.TransformedMinimum, axis.TransformedMaximum,
-            axis.Scale, axis.Threshold, axis.Reversed, axis.PlotBounds, axis.TimeSessions, axis.LogarithmBase, axis.LogarithmicDomain, axis.TimeDomain);
+            axis.Scale, axis.Threshold, axis.Reversed, axis.PlotBounds, axis.TimeSessions, axis.LogarithmBase, axis.LogarithmicDomain, axis.TimeDomain, axis.MaximumInclusive);
     }
 
     private static void AppendViewportAxis(StringBuilder json, double fullMinimum, double fullMaximum, double minimum, double maximum,
         double transformedFullMinimum, double transformedFullMaximum, double transformedMinimum, double transformedMaximum,
         ChartScaleKind scale, double threshold, bool reversed, ChartForgeX.Primitives.ChartRect plot, ChartTimeSessionDomain? sessions,
-        double logarithmBase = 10, ChartLogarithmicDomain logarithmicDomain = ChartLogarithmicDomain.Positive, ChartTimeSpacingDomain? timeDomain = null) {
+        double logarithmBase = 10, ChartLogarithmicDomain logarithmicDomain = ChartLogarithmicDomain.Positive, ChartTimeSpacingDomain? timeDomain = null, bool maximumInclusive = true) {
         json.Append("{\"fullMinimum\":").Append(fullMinimum.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"fullMaximum\":").Append(fullMaximum.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"minimum\":").Append(minimum.ToString("R", CultureInfo.InvariantCulture))
@@ -136,6 +136,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .Append(",\"scale\":").Append(HtmlJsonString.Encode(scale.ToString().ToLowerInvariant()))
             .Append(",\"threshold\":").Append(threshold.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"reversed\":").Append(reversed ? "true" : "false");
+        if (!maximumInclusive) json.Append(",\"maximumInclusive\":false");
         AppendLogarithmicPolicy(json, logarithmBase, logarithmicDomain);
         AppendTimeSessions(json, sessions);
         AppendTimeSpacing(json, timeDomain);
@@ -154,6 +155,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         .Append(",\"scale\":").Append(HtmlJsonString.Encode(axis.Scale.ToString().ToLowerInvariant()))
         .Append(",\"threshold\":").Append(axis.Threshold.ToString("R", CultureInfo.InvariantCulture))
         .Append(",\"reversed\":").Append(axis.Reversed ? "true" : "false");
+        if (!axis.MaximumInclusive) json.Append(",\"maximumInclusive\":false");
         AppendLogarithmicPolicy(json, axis.LogarithmBase, axis.LogarithmicDomain);
         AppendTimeSessions(json, axis.TimeSessions);
         AppendTimeSpacing(json, axis.TimeDomain);

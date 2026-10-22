@@ -56,11 +56,19 @@ internal static partial class MermaidClassParser {
         return true;
     }
 
-    private static bool TryLollipop(string text, MermaidSourceSpan span, out MermaidClassRelationship relationship) {
+    private static bool TryLollipop(string text, MermaidSourceSpan span, MermaidParseResult<MermaidDocument> result,
+        out MermaidClassRelationship? relationship) {
         var match = Lollipop.Match(text);
         relationship = null!;
         if (!match.Success) return false;
-        relationship = new MermaidClassRelationship(CleanEndpoint(match.Groups["source"].Value), CleanEndpoint(match.Groups["target"].Value),
+        var source = CleanEndpoint(match.Groups["source"].Value);
+        var target = CleanEndpoint(match.Groups["target"].Value);
+        if (MissingClassIdentity(source) || MissingClassIdentity(target)) {
+            MermaidParserUtilities.Add(result, span, MermaidDiagnosticSeverity.Error,
+                "Class lollipop endpoints require nonempty identities.", MermaidDiagnosticCodes.InvalidStatement);
+            return true;
+        }
+        relationship = new MermaidClassRelationship(source, target,
             match.Groups["connector"].Value, match.Groups["label"].Success ? match.Groups["label"].Value.Trim() : null, span);
         return true;
     }

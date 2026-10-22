@@ -18,13 +18,13 @@ internal sealed class ChartDataProjection {
         var projectedX = ChartDataAxisProjection.TryCreate(range.MinX, range.MaxX, x);
         if (!UsablePlot(plot) || projectedX == null) return null;
         var projectedY = includeY ? ChartDataAxisProjection.TryCreate(range.MinY, range.MaxY, horizontal
-            ? y.Scale == ChartScaleKind.Time ? y.Clone() : new ChartAxis { Reversed = y.Reversed } : y) : null;
+            ? y.Scale == ChartScaleKind.Time ? y.Clone() : new ChartAxis { Reversed = y.Reversed, PreparedViewportWindow = y.PreparedViewportWindow } : y) : null;
         return new ChartDataProjection(plot, projectedX, projectedY, horizontal, includeX: includeX);
     }
 
     internal static ChartDataProjection? TryCreate(ChartRect plot, double minimum, double maximum, ChartAxis x, bool linearOnly = false) {
         var projectedX = ChartDataAxisProjection.TryCreate(minimum, maximum, linearOnly
-            ? x.Scale == ChartScaleKind.Time ? x.Clone() : new ChartAxis { Reversed = x.Reversed } : x);
+            ? x.Scale == ChartScaleKind.Time ? x.Clone() : new ChartAxis { Reversed = x.Reversed, PreparedViewportWindow = x.PreparedViewportWindow } : x);
         return !UsablePlot(plot) || projectedX == null ? null : new ChartDataProjection(plot, projectedX);
     }
 
@@ -52,7 +52,7 @@ internal sealed class ChartDataAxisCaption {
 
 internal sealed class ChartDataAxisProjection {
     private ChartDataAxisProjection(double minimum, double maximum, ChartAxis axis, double transformedMinimum, double transformedMaximum) {
-        Minimum = minimum; Maximum = maximum; Scale = axis.Scale;
+        Minimum = minimum; Maximum = maximum; MaximumInclusive = ChartScaleTransform.MaximumInclusive(axis, maximum); Scale = axis.Scale;
         Threshold = axis.SymmetricLogarithmThreshold; Reversed = axis.Reversed;
         LogarithmBase = axis.LogarithmBase; LogarithmicDomain = axis.LogarithmicDomain;
         TimeSessions = axis.TimeSessions; TimeDomain = axis.PreparedTimeDomain;
@@ -68,6 +68,7 @@ internal sealed class ChartDataAxisProjection {
     }
     internal double Minimum { get; }
     internal double Maximum { get; }
+    internal bool MaximumInclusive { get; }
     internal double TransformedMinimum { get; }
     internal double TransformedMaximum { get; }
     internal ChartScaleKind Scale { get; }

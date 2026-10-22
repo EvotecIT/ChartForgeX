@@ -52,14 +52,14 @@ internal static partial class MermaidRequirementParser {
                 MermaidResourceGuard.CheckDepth(1, span);
                 if (elements.ContainsKey(name)) Invalid("Requirement name '" + name + "' is already defined as an element.", span);
                 requirement = EnsureRequirement(document, requirements, name, type, span);
-                AddClasses(requirement.Classes, classes);
+                AddClasses(requirement.Classes, classes, span);
                 continue;
             }
             if (TryParseElementStart(text, out name, out classes)) {
                 MermaidResourceGuard.CheckDepth(1, span);
                 if (requirements.ContainsKey(name)) Invalid("Element name '" + name + "' is already defined as a requirement.", span);
                 element = EnsureElement(document, elements, name, span);
-                AddClasses(element.Classes, classes);
+                AddClasses(element.Classes, classes, span);
                 continue;
             }
             if (TryParseRelationship(text, span, out var relationship)) { document.Relationships.Add(relationship); continue; }
@@ -207,8 +207,13 @@ internal static partial class MermaidRequirementParser {
         return element;
     }
 
-    private static void AddClasses(List<string> target, IReadOnlyList<string> classes) {
+    private static void AddClasses(List<string> target, IReadOnlyList<string> classes, MermaidSourceSpan span) {
+        var names = new HashSet<string>(target, StringComparer.Ordinal);
+        var originalCount = names.Count;
+        foreach (var name in classes) { MermaidResourceGuard.Checkpoint(); if (name.Length > 0) names.Add(name); }
+        MermaidResourceGuard.ReserveElements(names.Count - originalCount, span);
         foreach (var className in classes) {
+            MermaidResourceGuard.Checkpoint();
             if (className.Length > 0 && !target.Contains(className)) target.Add(className);
         }
     }

@@ -13,6 +13,7 @@
       && validTimeSessions(projection.timeSessions) && validTimeSpacing(projection.timeSpacing)
       && (!(projection.timeSessions || projection.timeSpacing) || projection.scale === 'time') && !(projection.timeSessions && projection.timeSpacing)
       && projection.minimum >= projection.fullMinimum && projection.maximum <= projection.fullMaximum
+      && validSourceAxisMaximum(projection)
       && typeof projection.reversed === 'boolean' && !!box && [box.x, box.y, box.width, box.height].every(Number.isFinite)
       && box.width > 0 && box.height > 0 && Number.isFinite(box.x + box.width) && Number.isFinite(box.y + box.height);
   };
@@ -21,7 +22,7 @@
   };
   const nativeXWindowChanged = root => {
     const projection = chartXProjection(root);
-    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum);
+    return !!projection && (projection.minimum !== projection.fullMinimum || projection.maximum !== projection.fullMaximum || projection.maximumInclusive === false);
   };
   const connectedXViewport = root => !!nativePreparationBinding(root, 'viewport');
   const syncXViewportControls = root => {
@@ -37,7 +38,7 @@
     if (kind !== 'reset' && (!Number.isFinite(left) || !Number.isFinite(right) || left >= right)) return false;
     if (kind === 'reset') suspendPointerReadout(root);
     return requestNativePreparation(root, 'viewport', { kind,
-      ...(sourceWindow ? { sourceWindow: Object.freeze({ minimum: sourceWindow.minimum, maximum: sourceWindow.maximum }) } : {}),
+      ...(sourceWindow ? { sourceWindow: Object.freeze({ minimum: sourceWindow.minimum, maximum: sourceWindow.maximum, ...(sourceWindow.maximumInclusive === false ? { maximumInclusive: false } : {}) }) } : {}),
       ...(kind === 'reset' ? {} : { left, right }) }, {
       eventPrefix: 'cfxviewport', resetView: kind === 'reset', accepted,
       validate: next => { if (!chartXProjection(next)) throw new TypeError('The viewport reply requires a supported X projection.'); },
@@ -57,17 +58,18 @@
   };
   const nativeXWindow = root => {
     const projection = chartXProjection(root);
-    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale || 'linear' } : null;
+    return projection ? { minimum: projection.minimum, maximum: projection.maximum, scale: projection.scale || 'linear', ...(projection.maximumInclusive === false ? { maximumInclusive: false } : {}) } : null;
   };
   const requestNativeXWindow = (root, window, sync = true, accepted) => {
     if (cartesianViewportConnected(root)) return requestNativeCartesianWindow(root, { x: window }, sync, accepted);
     const projection = chartXProjection(root), axis = root._cfxDataProjection?.x;
     if (!connectedXViewport(root) || !projection || !axis || !window
       || !Number.isFinite(window.minimum) || !Number.isFinite(window.maximum) || window.minimum >= window.maximum
-      || window.scale && window.scale !== (projection.scale || 'linear')) return false;
+      || window.scale && window.scale !== (projection.scale || 'linear')
+      || !validSourceAxisMaximum(window, axis)) return false;
     // Reuse the captured data projection's mapping; the host still owns confinement, ticks and native re-preparation.
-    const first = projection.plotBounds.x + projectedAxisRatio(axis, window.minimum) * projection.plotBounds.width;
-    const last = projection.plotBounds.x + projectedAxisRatio(axis, window.maximum) * projection.plotBounds.width;
+    const first = projection.plotBounds.x + projectedAxisRatio(axis, window.minimum, false) * projection.plotBounds.width;
+    const last = projection.plotBounds.x + projectedAxisRatio(axis, window.maximum, true, window.maximumInclusive !== false) * projection.plotBounds.width;
     if (!Number.isFinite(first) || !Number.isFinite(last) || first === last) return false;
     requestXViewport(root, 'window', Math.min(first, last), Math.max(first, last), sync, accepted, window);
     return true;
