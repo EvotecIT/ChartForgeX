@@ -158,7 +158,16 @@ jobs:
 
       - name: Run quality loop
         shell: pwsh
-        run: ./Build.ps1 -Configuration Release -QualifyPackages:($env:RUNNER_OS -eq 'Windows')
+        run: ./Build.ps1 -Configuration Release -QualifyPackages:($env:RUNNER_OS -eq 'Windows') -TestDiagnosticsDirectory (Join-Path $env:RUNNER_TEMP 'chartforgex-native-results')
+
+      - name: Retain native test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chartforgex-native-results-${{ matrix.name }}
+          path: ${{ runner.temp }}/chartforgex-native-results
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Export Website API documentation bundle
         if: runner.os == 'Linux'

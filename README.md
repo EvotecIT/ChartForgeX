@@ -352,6 +352,8 @@ For the repository quality loop, run:
 
 The quality loop builds and tests the solution, checks the pinned Mermaid reference corpus, runs the AOT smoke, generates examples, checks visual-health baselines, and packs and inspects packages. `-QualifyPackages` additionally builds and runs isolated consumers of the packed packages.
 
+For slow native test runs, add `-TestDiagnosticsDirectory <output-directory>`. This records named test timings, warnings identifying tests still running after 30 seconds, a final TRX report, and incremental VSTest logs that remain available if the process times out. It preserves the existing 900-second command limit and test scheduling. CI retains these files in the `chartforgex-native-results-<OS>` artifacts, including after a failed run.
+
 The [website gallery](https://chartforgex.com/gallery/) is the public showcase. `ChartForgeX.Examples` supplies its executable recipes and also runs offline SVG/PNG comparisons and browser fixtures. `ChartForgeX.Examples.Snippets` compiles those recipes against the core library without referencing the examples executable. See [Contributing](CONTRIBUTING.md#examples-and-website) when changing a recipe or its presentation.
 
 The Windows CI quality job enables this gate and retains its reports. Core, Visuals and Stories execute net472 consumers on the runner's installed .NET Framework. All five consumer lanes execute net8.0 and net10.0, while netstandard2.0 has compile proof.
