@@ -1,10 +1,12 @@
-// Test-only native paint facts from the pinned Mermaid 11/12 class and ER databases.
-// Source declarations are resolved semantically; browser CSS is not a production dependency.
+// Test-only resolved source styles from the pinned Mermaid 11/12 class and ER databases.
+// These semantic declarations are not a browser-paint oracle or a production CSS dependency.
 export function nodeStyleFacts(db, family) {
   const values = collection => collection instanceof Map ? [...collection.values()] : Object.values(collection ?? {});
   const nodes = family === 'class' ? values(db.getClasses()) : values(db.getEntities());
   const definitions = family === 'class' ? values(db.styleClasses) : values(db.getClasses());
-  const parse = declarations => Object.fromEntries((declarations ?? []).filter(text => text.trim()).map(text => {
+  // ClassDB retains comma-joined classDef entries; mirror its direct-style declaration normalization.
+  const parse = declarations => Object.fromEntries((declarations ?? [])
+    .flatMap(text => family === 'class' ? text.split(',') : [text]).filter(text => text.trim()).map(text => {
     const separator = text.indexOf(':');
     return [text.slice(0, separator).trim().toLowerCase(), text.slice(separator + 1).trim()];
   }));

@@ -1163,11 +1163,14 @@
     },
     "fixtures/class-native-styles.mmd": {
       "syntax": {
-        "10": "accepted",
+        "10": "rejected",
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored local regression from official Class/ER syntax. Source-derived candidate outcomes must be qualified against pinned engines before publication; no producer pass yet."
+      "provenance": "Authored Class style regression; pinned 10.9.8 syntax rejection and 11.17.2/12.2.0 syntax acceptance observed independently. Syntax acceptance does not establish rendered paint fidelity.",
+      "notes": {
+        "10": "Mermaid 10.9.8 rejects classDef on source line 3; its Class grammar has no classDef production. Versions 11.17.2/12.2.0 accept the source. Strict declarations for named, default and direct styles remain enforced; rendering is qualified separately."
+      }
     },
     "fixtures/er-native-styles.mmd": {
       "syntax": {
@@ -1191,15 +1194,24 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored local regression from official Class/ER syntax. Source-derived candidate outcomes must be qualified against pinned engines before publication; no producer pass yet."
+      "provenance": "Authored Class lollipop regression; syntax and per-version node identities observed with pinned 10.9.8, 11.17.2 and 12.2.0.",
+      "expectedByReference": {
+        "10": "class-native-lollipops.expected.10.json"
+      },
+      "notes": {
+        "10": "Mermaid 10.9.8 exposes Port and Clock as classes; versions 11.17.2/12.2.0 retain internal interface endpoints. The 10 variant preserves the same three relationship facts and the shared native expectations."
+      }
     },
     "fixtures/er-native-groups.mmd": {
       "syntax": {
         "10": "rejected",
-        "11": "rejected",
+        "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored local regression from official Class/ER syntax. Source-derived candidate outcomes must be qualified against pinned engines before publication; no producer pass yet."
+      "provenance": "Authored ER group regression; pinned 10.9.8 rejects the source, 11.17.2 accepts it, and 12.2.0 matches the shared strict group facts.",
+      "notes": {
+        "11": "Mermaid 11.17.2 accepts this source and uses the shared strict group, entity and style expectation."
+      }
     },
     "fixtures/state-concurrent-regions.mmd": {
       "syntax": {
@@ -1363,24 +1375,23 @@
     },
     "fixtures/state-native-safe-styles.mmd": {
       "syntax": {
-        "10": "accepted",
+        "10": "rejected",
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored bounded State fixture from https://mermaid.js.org/syntax/stateDiagram.html classDef/class/inline-class and composite syntax, plus the direct-style production in the pinned Mermaid12.2.0 State grammar. Paints target only top-level states; the composite is intentionally unstyled. All syntax/structural expectations are source-derived candidates, not observed producer or rendered-style acceptance.",
+      "provenance": "Authored State class, inline-class, composite and direct-style regression; pinned 10.9.8 rejects direct style, while 11.17.2/12.2.0 accept the source. Paints target top-level states; the composite is unstyled.",
       "qualification": {
-        "syntax": "pending-pinned10-11-12-execution",
-        "structuralSemantics": "source-authored-current12-only-pending-pinned-execution",
-        "renderedStyleSemantics": "not-projected-by-existing-stateFacts; native/referencepaintqualificationheld",
-        "legacyReferences": "parser-only-candidate-outcomes; no class/direct-style semantic or paint assertion"
+        "syntax": "Observed 10.9.8 rejection; 11.17.2/12.2.0 acceptance.",
+        "structuralSemantics": "12.2.0 matches strict shared stateFacts; 11.17.2 is parser-only.",
+        "renderedStyleSemantics": "stateFacts does not project paints; rendered style fidelity is unqualified.",
+        "legacyReferences": "10 syntax rejection; 11 parser-only, with no structural or style assertion."
       },
       "notes": {
-        "10": "PARSER-ONLY UNQUALIFIED candidate. Official10.9.8 State grammar has no direct-style production and may reject or interpret direct-style tokens as ordinary states. The explicit empty legacy expectation does not assert identities/style semantics. Run and record actual syntax before publication; parse acceptance is not style support.",
-        "11": "PARSER-ONLY UNQUALIFIED candidate. Exact11.17.2 syntax is unobserved; the explicit empty legacy expectation makes no structural/style fidelity assertion. No new11 browser paint comparison is counted.",
-        "12": "UNQUALIFIED current12 candidate. The retained12.2.0 grammar has direct-style/class productions; the strict shared stateFacts expectation is current12-only. Existing stateFacts observes structure, not paints; actual rendered style fidelity remains held."
+        "10": "Mermaid 10.9.8 rejects direct style on source line 6. No structural or style equivalence is claimed.",
+        "11": "Mermaid 11.17.2 accepts syntax. The explicit empty expectation is parser-only and asserts no structural, style or paint equivalence.",
+        "12": "Mermaid 12.2.0 matches the shared six-state, four-edge and direction stateFacts. This structural projection does not establish rendered style fidelity."
       },
       "expectedByReference": {
-        "10": "state-native-safe-styles.expected.10.json",
         "11": "state-native-safe-styles.expected.11.json"
       }
     }

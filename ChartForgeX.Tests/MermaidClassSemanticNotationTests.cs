@@ -63,7 +63,9 @@ public sealed class MermaidClassSemanticNotationTests {
 
     [Fact]
     public void NamespaceLabelsAndEmptyDottedNamespacesPreserveNativeGroupIdentity() {
-        var parsed = new MermaidParser().ParseClass(Fixture("class-native-members-namespaces"));
+        // Keep native empty-group coverage separate from the nonempty shared reference fixture.
+        var source = Fixture("class-native-members-namespaces") + "\nnamespace Empty[\"Empty namespace\"] {\n}\n";
+        var parsed = new MermaidParser().ParseClass(source);
         Assert.Empty(parsed.Diagnostics);
         Assert.Equal(new[] { "Domain", "Domain.Core", "Empty" }, parsed.Document!.Namespaces.Select(item => item.Id));
         var chart = parsed.Document.ToTopologyChart();
@@ -72,6 +74,7 @@ public sealed class MermaidClassSemanticNotationTests {
         Assert.Equal("Empty namespace", chart.Groups.Single(group => group.Id == "Empty").Label);
         Assert.Equal("Domain.Core", chart.Nodes.Single(node => node.Id == "Customer").GroupId);
         Assert.DoesNotContain(chart.Nodes, node => node.Id == "Domain" || node.Id == "Empty");
+        Assert.DoesNotContain(chart.Nodes, node => node.GroupId == "Empty");
     }
 
     [Fact]
