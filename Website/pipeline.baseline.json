@@ -155,7 +155,7 @@
       "task": "audit",
       "dependsOn": ["build-site", "baseline-build-apidocs", "baseline-build-powershell-commands"],
       "siteRoot": "./_site",
-      "exclude": "examples/generated/**,site/**",
+      "exclude": "examples/generated/**,site/**,playground/engine/**,powershell/examples/**",
       "requiredRoutes": "/404.html,/,/docs/,/docs/install/,/docs/cli/,/docs/editor/,/docs/markup/,/docs/markup-v1-reference/,/docs/visual-artifacts/,/docs/mermaid-support-matrix/,/docs/visual-blocks/,/docs/visual-canvas/,/docs/raster-animation/,/docs/label-placement/,/docs/chord/,/docs/topology-icon-packs/,/docs/graph-explorer/,/docs/api-conventions/,/docs/chart-combinations/,/docs/migration/,/docs/visual-effects/",
       "requireExplicitChecks": true,
       "checkSeoMeta": false,
