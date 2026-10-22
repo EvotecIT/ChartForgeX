@@ -223,7 +223,7 @@ public sealed class InteractiveHierarchyViewBrowserTests {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.NarrowWidth = 340; options.Adaptive.NarrowHeight = 420;
         }
         internal object Reply(JsonElement request) {
-            Assert.True(_bases.Contains(request.GetProperty("basis").GetString()!));
+            Assert.Contains(request.GetProperty("basis").GetString()!, _bases);
             Assert.Equal("hierarchy", request.GetProperty("channel").GetString());
             var root = request.GetProperty("rootId"); Last = Section(root.ValueKind == JsonValueKind.Null ? null : root.GetString());
             var basis = "hierarchy-" + (++_sequence); _bases.Add(basis);

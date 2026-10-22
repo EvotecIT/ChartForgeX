@@ -14,6 +14,7 @@ public sealed class MermaidNotationReferenceCorpusTests {
     [InlineData("class-two-way")]
     [InlineData("state-controls-notes")]
     [InlineData("state-nested-directions")]
+    [InlineData("state-native-safe-styles")]
     [InlineData("er-alias-attributes")]
     public void NativeNotationMatchesTheSharedReferenceFacts(string name) {
         var path = Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", name);

@@ -25,6 +25,7 @@ internal static partial class SmokeTests {
             ("sequence-rich.mmd", typeof(MermaidSequenceDocument)),
             ("class-basic.mmd", typeof(MermaidClassDocument)),
             ("state-basic.mmd", typeof(MermaidStateDocument)),
+            ("state-native-safe-styles.mmd", typeof(MermaidStateDocument)),
             ("er-basic.mmd", typeof(MermaidEntityRelationshipDocument)),
             ("requirement-basic.mmd", typeof(MermaidRequirementDocument)),
             ("requirement-rich.mmd", typeof(MermaidRequirementDocument)),

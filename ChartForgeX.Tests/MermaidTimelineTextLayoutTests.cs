@@ -4,6 +4,7 @@ using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Raster;
 using ChartForgeX.Themes;
+using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using Xunit;
 

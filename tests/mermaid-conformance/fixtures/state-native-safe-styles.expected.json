@@ -1,0 +1,83 @@
+{
+  "stateFacts": {
+    "states": [
+      [
+        "Ready",
+        "state",
+        null
+      ],
+      [
+        "Review",
+        "state",
+        null
+      ],
+      [
+        "Processing",
+        "state",
+        null
+      ],
+      [
+        "InnerReady",
+        "state",
+        "Processing"
+      ],
+      [
+        "InnerDone",
+        "state",
+        "Processing"
+      ],
+      [
+        "Done",
+        "state",
+        null
+      ]
+    ],
+    "edges": [
+      [
+        "Ready",
+        "Review",
+        "submit"
+      ],
+      [
+        "InnerReady",
+        "InnerDone",
+        "finish"
+      ],
+      [
+        "Review",
+        "Processing",
+        "accept"
+      ],
+      [
+        "Processing",
+        "Done",
+        "complete"
+      ]
+    ],
+    "notes": [],
+    "directions": {
+      "root": "LR",
+      "Processing": "TB"
+    }
+  },
+  "peerExplicitIds": [
+    "Ready",
+    "Review",
+    "Processing",
+    "InnerReady",
+    "InnerDone",
+    "Done"
+  ],
+  "peerVisibleText": [
+    "Ready",
+    "Review",
+    "Processing",
+    "InnerReady",
+    "InnerDone",
+    "Done",
+    "submit",
+    "finish",
+    "accept",
+    "complete"
+  ]
+}

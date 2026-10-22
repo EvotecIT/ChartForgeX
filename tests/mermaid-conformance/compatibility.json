@@ -1360,6 +1360,29 @@
         "12": "accepted"
       },
       "provenance": "Authored source-color and frontmatter/directive precedence contract from documented Mermaid themeVariables. Candidate syntax/semantic expectations are source-derived and must be qualified by the pinned engines before publication; no producer pass yet."
+    },
+    "fixtures/state-native-safe-styles.mmd": {
+      "syntax": {
+        "10": "accepted",
+        "11": "accepted",
+        "12": "accepted"
+      },
+      "provenance": "Authored bounded State fixture from https://mermaid.js.org/syntax/stateDiagram.html classDef/class/inline-class and composite syntax, plus the direct-style production in the pinned Mermaid12.2.0 State grammar. Paints target only top-level states; the composite is intentionally unstyled. All syntax/structural expectations are source-derived candidates, not observed producer or rendered-style acceptance.",
+      "qualification": {
+        "syntax": "pending-pinned10-11-12-execution",
+        "structuralSemantics": "source-authored-current12-only-pending-pinned-execution",
+        "renderedStyleSemantics": "not-projected-by-existing-stateFacts; native/referencepaintqualificationheld",
+        "legacyReferences": "parser-only-candidate-outcomes; no class/direct-style semantic or paint assertion"
+      },
+      "notes": {
+        "10": "PARSER-ONLY UNQUALIFIED candidate. Official10.9.8 State grammar has no direct-style production and may reject or interpret direct-style tokens as ordinary states. The explicit empty legacy expectation does not assert identities/style semantics. Run and record actual syntax before publication; parse acceptance is not style support.",
+        "11": "PARSER-ONLY UNQUALIFIED candidate. Exact11.17.2 syntax is unobserved; the explicit empty legacy expectation makes no structural/style fidelity assertion. No new11 browser paint comparison is counted.",
+        "12": "UNQUALIFIED current12 candidate. The retained12.2.0 grammar has direct-style/class productions; the strict shared stateFacts expectation is current12-only. Existing stateFacts observes structure, not paints; actual rendered style fidelity remains held."
+      },
+      "expectedByReference": {
+        "10": "state-native-safe-styles.expected.10.json",
+        "11": "state-native-safe-styles.expected.11.json"
+      }
     }
   }
 }
