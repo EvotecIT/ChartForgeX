@@ -6,7 +6,7 @@ internal static class TopologyNodeAccent {
         TopologyAccentSource.Status => null,
         TopologyAccentSource.Icon => icon?.Color,
         TopologyAccentSource.Explicit => node.Color,
-        _ => node.Color ?? icon?.Color
+        _ => !string.IsNullOrWhiteSpace(node.Color) ? node.Color : icon?.Color
     };
 
     internal static bool UsesPalette(TopologyNode node, TopologyAccentSource source) => node.PaletteIndex.HasValue &&

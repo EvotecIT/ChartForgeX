@@ -73,6 +73,29 @@ public sealed class TopologyAccentSourceTests {
         Assert.Equal(Surface(chart.ToSvg(options)), graph.Nodes[0].Style.BorderColor);
     }
 
+    [Theory]
+    [InlineData("", false)]
+    [InlineData("", true)]
+    [InlineData("   ", false)]
+    [InlineData("   ", true)]
+    public void AutoAccentSkipsBlankNodeColorForIconInSvgNativeAndGraph(string color, bool dark) {
+        var chart = Chart().WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        chart.Nodes[0].Color = color;
+        chart.Nodes[0].PaletteIndex = 1;
+        var options = Options(TopologyAccentSource.Auto);
+        var iconColor = ChartColor.Parse("#2468AC");
+        Assert.Equal(iconColor.ToCss(), Surface(chart.ToSvg(options)));
+        var reference = Chart().WithThemeMode(chart.ThemeMode);
+        reference.Nodes[0].Color = "#2468AC";
+        Assert.Equal(reference.ToPng(options), chart.ToPng(options));
+        var graph = chart.ToGraphScene(o => { o.IconCatalog = options.IconCatalog; o.AccentSource = TopologyAccentSource.Auto; });
+        Assert.Equal(iconColor.ToCss(), ChartColor.Parse(graph.Nodes[0].Style.BorderColor!).ToCss());
+        options.SvgColorVariables = new SvgColorVariables().Add("--icon-source", iconColor, SvgColorRole.Any)
+            .Add("--status-source", chart.Theme.Resolve(chart.ThemeMode).Status.Critical.Fill, SvgColorRole.Status);
+        Assert.Contains("var(--icon-source,", Surface(chart.ToSvg(options)));
+        Assert.DoesNotContain("--status-source", Surface(chart.ToSvg(options)));
+    }
+
     internal static TopologyChart Chart() {
         var chart = TopologyChart.Create().WithId("status-accent").WithViewport(420, 200, 20).WithLegend(null)
             .AddNode("node", "Service", 60, 70, width: 180, height: 80, status: TopologyHealthStatus.Critical);

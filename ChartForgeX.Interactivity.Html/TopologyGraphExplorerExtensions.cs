@@ -161,7 +161,8 @@ public static class TopologyGraphExplorerExtensions {
             ? palette[node.PaletteIndex.GetValueOrDefault() % palette.Count].ToCss() : null;
         var accentColor = FirstText(authoredAccent, paletteAccent, theme.StatusColor(node.Status))!;
         var card = shape == GraphNodeShape.Box && display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill;
-        graphNode.Style.BackgroundColor = card && string.IsNullOrWhiteSpace(node.BackgroundColor)
+        var themedBackground = string.IsNullOrWhiteSpace(node.BackgroundColor);
+        graphNode.Style.BackgroundColor = themedBackground
             ? null
             : TopologyRenderPrimitives.NodeFill(node, theme, accentColor, new TopologyRenderOptions());
         graphNode.Style.BorderColor = options.AccentSource == TopologyAccentSource.Status
@@ -179,7 +180,10 @@ public static class TopologyGraphExplorerExtensions {
         AddMetadata(graphNode.Metadata, "topology.displayMode", node.DisplayMode?.ToString());
         if (card) graphNode.Metadata["topology.card"] = "true";
         // Retain the projected surface for script-free output without treating it as an authored fill.
-        if (card && string.IsNullOrWhiteSpace(node.BackgroundColor)) graphNode.Metadata["topology.cardBackgroundColor"] = theme.Card;
+        if (themedBackground) {
+            graphNode.Metadata["topology.backgroundSource"] = "theme";
+            graphNode.Metadata["topology.cardBackgroundColor"] = theme.Card;
+        }
         AddMetadata(graphNode.Metadata, "topology.iconId", node.IconId);
         AddMetadata(graphNode.Metadata, "topology.iconQualifiedId", icon?.QualifiedId);
         AddMetadata(graphNode.Metadata, "topology.iconCategory", icon?.Category);

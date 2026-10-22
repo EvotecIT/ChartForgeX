@@ -100,7 +100,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static string NodeMarkStyle(GraphSceneNode node) {
         var parts = new List<string>();
         var fill = node.Style.BackgroundColor;
-        if (string.IsNullOrWhiteSpace(fill) && IsCardNode(node)) {
+        if (string.IsNullOrWhiteSpace(fill) && (IsCardNode(node) || node.Metadata.ContainsKey("topology.cardBackgroundColor"))) {
             fill = node.Metadata.TryGetValue("topology.cardBackgroundColor", out var surface) && !string.IsNullOrWhiteSpace(surface)
                 ? surface : "var(--cfx-color-surface-solid,#ffffff)";
         }
@@ -119,7 +119,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static string NodeIconStyle(GraphSceneNode node) {
         var card = IsCardNode(node);
         var fill = node.Style.BackgroundColor;
-        if (string.IsNullOrWhiteSpace(fill) && card) node.Metadata.TryGetValue("topology.cardBackgroundColor", out fill);
+        if (string.IsNullOrWhiteSpace(fill)) node.Metadata.TryGetValue("topology.cardBackgroundColor", out fill);
         if (string.IsNullOrWhiteSpace(fill)) { if (card) return string.Empty; fill = "#2563eb"; }
         if (!ChartColor.TryParse(fill, out var surface)) return string.Empty;
         string Foreground(bool dark) {
