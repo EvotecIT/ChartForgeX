@@ -6,6 +6,9 @@ public sealed partial class ChartOptions {
     internal ChartOptions PanelView() { var view = (ChartOptions)MemberwiseClone(); view.IsPanel = true; return view; }
     internal ChartOptions PresentationView(Rendering.VisualRenderContext context) {
         var view = (ChartOptions)MemberwiseClone();
+        // Prepared domains and viewport edge policies belong to this private preparation only.
+        view.XAxis = XAxis.Clone(); view.YAxis = YAxis.Clone();
+        view.SecondaryXAxis = SecondaryXAxis.Clone(); view.SecondaryYAxis = SecondaryYAxis.Clone();
         var font = context.Font;
         view.Theme = context.Theme.WithFontFamily(font.Family);
         view.ThemeMode = context.ThemeMode;

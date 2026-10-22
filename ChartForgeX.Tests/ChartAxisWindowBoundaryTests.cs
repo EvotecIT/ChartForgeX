@@ -77,6 +77,13 @@ public sealed class ChartAxisWindowBoundaryTests {
         Assert.False(Assert.IsType<ChartAxisWindow>(narrowed.XProjection.ConstrainViewport(narrowed.XProjection.PlotBounds.Left, narrowed.XProjection.PlotBounds.Right)).MaximumInclusive);
         Assert.Equal(full.XProjection.Project(2), narrowed.XProjection.Project(2), 8);
         Assert.Equal(full.ToSvg(), chart.Prepare(context, null).ToSvg());
+        var reset = chart.Prepare(context, null);
+        Assert.True(reset.XProjection!.MaximumInclusive);
+        var htmlReset = new HtmlInteractiveChartRenderer().PrepareSection(chart, null);
+        Assert.True(htmlReset.PreparedVisual.XProjection!.MaximumInclusive);
+        using var metadata = Metadata(htmlReset.Html);
+        var projectionMetadata = metadata.RootElement.GetProperty("xProjection");
+        if (projectionMetadata.TryGetProperty("maximumInclusive", out var flag)) Assert.True(flag.GetBoolean());
     }
 
     [Fact]
