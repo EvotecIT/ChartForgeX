@@ -3,6 +3,7 @@ using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using Microsoft.Playwright;
 using Xunit;
@@ -66,6 +67,7 @@ public sealed class InteractiveHierarchyViewBrowserTests {
         await page.WaitForFunctionAsync("drawing=>hierarchyController.root.dataset.cfxAdaptiveDrawing===drawing", width < 600 ? "wide" : "narrow");
         Assert.Equal("services", await Root(page));
         Assert.Equal(5, await page.EvaluateAsync<int>("()=>hierarchyRequests.length"));
+        await AssertHierarchyNavigationContrastAsync(page);
         var svgDownload = await page.RunAndWaitForDownloadAsync(() => page.Locator("[data-cfx-export=svg]").ClickAsync());
         var svgPath = await svgDownload.PathAsync() ?? throw new InvalidOperationException("No hierarchy SVG download.");
         var svg = XDocument.Load(svgPath);
@@ -204,6 +206,22 @@ public sealed class InteractiveHierarchyViewBrowserTests {
 
     private static Task Changes(IPage page, int count) => page.WaitForFunctionAsync("count=>hierarchyChanges.length===count", count);
     private static Task<string?> Root(IPage page) => page.EvaluateAsync<string?>("()=>hierarchyController.getHierarchyView().rootId");
+    private static async Task AssertHierarchyNavigationContrastAsync(IPage page) {
+        var paint = await page.Locator("[data-cfx-hierarchy-navigation]").EvaluateAsync<JsonElement>("""
+            navigation=>({surface:getComputedStyle(navigation).backgroundColor,
+                path:getComputedStyle(navigation.querySelector('[data-cfx-hierarchy-path]')).color,
+                status:getComputedStyle(navigation.querySelector('[data-cfx-hierarchy-status]')).color})
+            """);
+        var rgba = await ResolveCssColorsAsync(page, paint.GetProperty("surface").GetString()!,
+            paint.GetProperty("path").GetString()!, paint.GetProperty("status").GetString()!);
+        Assert.Equal(255, rgba[0][3]);
+        ChartColor Color(int[] value) => ChartColor.FromRgba((byte)value[0], (byte)value[1], (byte)value[2], (byte)value[3]);
+        foreach (var ink in rgba.Skip(1)) {
+            var contrast = ChartColorMath.ContrastRatio(Color(ink), Color(rgba[0]));
+            Assert.True(contrast >= 4.5, "Hierarchy navigation text must contrast with its own surface: " + contrast + "; " + paint.GetRawText());
+        }
+    }
+
     private sealed class Host {
         private readonly Chart _chart;
         private readonly HtmlInteractiveChartRenderer _renderer = new();

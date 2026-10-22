@@ -153,7 +153,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         private void Configure(HtmlChartInteractionOptions options) {
             options.IdScope = "native-physical-axis"; options.Interaction.ChartId = "physical-axes";
             options.IncludeContextMenu = true;
-            options.Interaction.Enable(ChartInteractionFeatures.StateBookmarks);
+            options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Export | ChartInteractionFeatures.StateBookmarks);
         }
     }
 }
