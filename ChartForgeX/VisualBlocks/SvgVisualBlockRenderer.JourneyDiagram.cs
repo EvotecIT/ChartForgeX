@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using ChartForgeX.Primitives;
 using ChartForgeX.Svg;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -32,7 +33,7 @@ public sealed partial class SvgVisualBlockRenderer {
                 if (sectionIndex >= 0) { DiagramRect(writer, sectionBounds, accent.WithAlpha(36), accent); WriteDiagramLabel(writer, block.Sections[sectionIndex].Label, sectionBounds, theme, theme.Text, 12, 700, "journey-section"); }
             }
             var label = new ChartRect(x + 4, y + 31, Math.Max(1, column - 8), Math.Max(1, header - 31));
-            WriteDiagramLabel(writer, task.Label, label, theme, theme.Text, 12, 600, "journey-task-label");
+            WriteDiagramLabel(writer, task.Label, label, theme, theme.Text, ResolvedVisualTheme.DefaultDataLabelFontSize, 600, "journey-task-label");
             var pointY = scoreTop + (5 - task.Score) * scoreHeight / 4;
             path.Append(index == 0 ? "M" : " L").Append(F(center)).Append(' ').Append(F(pointY));
             writer.StartElement("circle").Attribute("data-cfx-role", "journey-score").Attribute("cx", F(center)).Attribute("cy", F(pointY)).Attribute("r", 7).Attribute("fill", accent.ToCss()).Attribute("stroke", theme.CardBackground.ToCss()).Attribute("stroke-width", 2).EndEmptyElement().Line();

@@ -128,7 +128,7 @@ try {
         'InteractiveNativeXViewportBrowserTests.AdaptiveAutomaticMarkerPaddingKeepsNarrowEdgeWindowsPortableThroughLinkedWideResetAndExport',
         'InteractiveNativeXViewportBrowserTests.NativeBookmarksCannotPartiallyApplyWhenTheirCompleteWindowCannotStart',
         'InteractiveNativeXViewportBrowserTests.LinkedCartesianPeersKeepCompatibleXWhenYIsMissingOrUsesAnotherScale',
-        'InteractiveNativeXViewportBrowserTests.ResetAfterLosingYStillPreparesFullNativeXAndCommitsReaderResetOnlyAfterAcceptance',
+        'InteractiveNativeXViewportBrowserTests.ResetAfterLosingSecondaryYStillPreparesFullNativeAxesAndCommitsOnlyAfterAcceptance',
         'SourceAnnotationBrowserTests.SourceEditorDraftsAreTransientAndOnlyNativeAcceptedEditsEnterUndoHistory',
         'SourceAnnotationBrowserTests.SourceEditorPointerControlsCreateNativeDrawingsAndCancelRetainsTheCommittedScene',
         'SourceAnnotationBrowserTests.SourceEditorRejectedCanceledAndExternalUpdatesCannotManufactureAcceptedHistory',

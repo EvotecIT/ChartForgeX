@@ -58,6 +58,8 @@ internal static partial class VisualBlockRendering {
                 width = Math.Min(width, Math.Max(1, 2 * (horizontalReach - Math.Abs(x - placement.X))));
             }
             var style = FitBodyTextStyle(theme, text, defaultSize, width, textBudget, weight);
+            // Omit a caption that only fits below one source pixel; retain deliberately smaller authored typography.
+            if (style.FontSize < Math.Min(1, BodyFontSize(theme, defaultSize))) return;
             var displayed = FitMeasuredText(text, style.FontSize, width, theme.FontFamily, weight);
             var metrics = TextLayoutEngine.Measure(displayed, style);
             var ascent = VisualBlockRendering.TextAscent(style);

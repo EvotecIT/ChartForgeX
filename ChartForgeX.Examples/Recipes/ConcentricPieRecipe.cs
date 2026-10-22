@@ -13,8 +13,9 @@ public static class ConcentricPieRecipe {
             .WithObservationIds(new[] { new ChartObservationId("subscriptions"), new ChartObservationId("consulting") });
         prior.DataLabelPlacement = ChartDataLabelPlacement.Inside;
         current.DataLabelPlacement = ChartDataLabelPlacement.Inside;
+        // The legend retains each period's values; keep these small concentric holes free of center text.
         return Chart.Create().WithXLabels("Subscriptions", "Consulting").WithDataLabels()
-            .WithPieSliceLabelContent(ChartPieSliceLabelContent.Percent).WithDonutCenterText("100", "Prior")
+            .WithPieSliceLabelContent(ChartPieSliceLabelContent.Percent).WithDonutCenterLabel(false)
             .AddSeries(prior).AddSeries(current)
             .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture));
     }
