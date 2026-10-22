@@ -24,10 +24,25 @@ public static class ExampleRecipeSource {
             ["{{LEGEND}}"] = legend.HasValue ? legend.Value ? "true" : "false" : "null",
             ["{{SURFACE}}"] = surface ? "true" : "false",
             ["{{VIEWPORT}}"] = viewport ? ", new ChartCartesianViewport(x: new ChartAxisWindow(2, 8))" : "",
-            ["{{ARTIFACT_KIND}}"] = artifactKind,
-            ["{{SOURCE}}"] = ReadResource("ChartForgeX.Examples.Recipes." + recipe.Factory + ".cs").TrimEnd()
+            ["{{ARTIFACT_KIND}}"] = artifactKind
         };
-        var source = Regex.Replace(ReadResource("ChartForgeX.Examples.RecipeProgram.cs"), @"\{\{[A-Z_]+\}\}", match => tokens[match.Value]);
+        return Package(recipe, "RecipeProgram", tokens);
+    }
+
+    /// <summary>Creates a standalone chart program preserving the factory's own frame, theme, size and output names.</summary>
+    public static string EmitChart(ExampleRecipe recipe, string name, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+        if (recipe == null) throw new ArgumentNullException(nameof(recipe));
+        return Package(recipe, "RecipeChartProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
+            ["{{FACTORY}}"] = recipe.Factory,
+            ["{{VARIANT}}"] = JsonSerializer.Serialize(variant),
+            ["{{MODE}}"] = mode.ToString(),
+            ["{{NAME}}"] = JsonSerializer.Serialize(name)
+        });
+    }
+
+    private static string Package(ExampleRecipe recipe, string template, Dictionary<string, string> tokens) {
+        tokens["{{SOURCE}}"] = ReadResource("ChartForgeX.Examples.Recipes." + recipe.Factory + ".cs").TrimEnd();
+        var source = Regex.Replace(ReadResource("ChartForgeX.Examples." + template + ".cs"), @"\{\{[A-Z_]+\}\}", match => tokens[match.Value]);
         return source.Replace("\r\n", "\n").TrimEnd() + "\n";
     }
 

@@ -22,31 +22,8 @@ Directory.CreateDirectory(output);
 Directory.CreateDirectory(partials);
 var modes = new[] { (Name: "light", Mode: VisualThemeMode.Light), (Name: "dark", Mode: VisualThemeMode.Dark) };
 
-string[] HeroSeries = { "Passkey", "Authenticator app", "SMS code", "Password only" };
-string[] HeroWeeks = Enumerable.Range(1, 12).Select(w => $"W{w}").ToArray();
-double[][] HeroData = {
-    new double[] { 800, 1200, 1700, 2300, 3000, 3800, 4700, 5500, 6400, 7200, 8100, 8900 },
-    new double[] { 7200, 7400, 7500, 7600, 7500, 7400, 7300, 7100, 6900, 6700, 6400, 6200 },
-    new double[] { 4200, 4000, 3800, 3500, 3200, 2900, 2600, 2300, 2000, 1800, 1500, 1300 },
-    new double[] { 5600, 5300, 4900, 4500, 4100, 3700, 3300, 2900, 2500, 2100, 1800, 1500 }
-};
-
-// One chart definition, every surface. The C# shown on the home page mirrors this method.
-Chart HeroChart(VisualThemeMode mode) => Chart.Create()
-    .WithTitle("Sign-ins by method")
-    .WithSubtitle("Weekly sign-ins across the tenant, last 12 weeks")
-    .WithYAxis("Sign-ins")
-    .WithThemeMode(mode)
-    .ConfigureAccessibility(a => a.WithTextAlternative(
-        "Sign-ins by method",
-        "Passkey sign-ins grow from 800 to 8,900 a week while password-only and SMS sign-ins decline.",
-        "en"))
-    .WithSize(960, 540)
-    .WithXLabels(HeroWeeks)
-    .AddStackedArea("Passkey", Points(HeroData[0]))
-    .AddStackedArea("Authenticator app", Points(HeroData[1]))
-    .AddStackedArea("SMS code", Points(HeroData[2]))
-    .AddStackedArea("Password only", Points(HeroData[3]));
+var (HeroSeries, HeroWeeks, HeroData) = HeroSignInsWebsiteRecipe.GetData();
+Chart HeroChart(VisualThemeMode mode) => HeroSignInsWebsiteRecipe.Create(mode);
 
 var lightVariables = VisualDesignTokens.GraphiteLight().ToSvgColorVariables();
 var darkVariables = VisualDesignTokens.GraphiteDark().ToSvgColorVariables();
@@ -125,8 +102,12 @@ var sizes = new SortedDictionary<string, string>(StringComparer.Ordinal);
 foreach (var name in new[] { "hero.svg", "hero-light.png", "hero-light.html", "hero-light.interactive.html" }) {
     sizes[name] = FormatSize(new FileInfo(Path.Combine(output, name)).Length);
 }
+var heroCode = SiteVisuals.SiteRecipeSource.CompleteProgram(
+    SiteVisuals.SiteRecipeSource.Read(nameof(HeroSignInsWebsiteRecipe)), true, "chart", "save", "data", "points");
+Write("hero.csharp.txt", heroCode);
 File.WriteAllText(Path.Combine(website, "data", "hero.json"),
-    JsonSerializer.Serialize(new { generatedBy = "Website/tools/SiteVisuals", width = 960, height = 540, sizes },
+    JsonSerializer.Serialize(new { generatedBy = "Website/tools/SiteVisuals", width = 960, height = 540, sizes,
+        code = heroCode, source = "/site/hero.csharp.txt" },
         new JsonSerializerOptions { WriteIndented = true }) + "\n",
     new UTF8Encoding(false));
 
@@ -220,12 +201,6 @@ static void Report(string label, IEnumerable<string?> diagnostics) {
 static string FormatSize(long bytes) => bytes < 1024
     ? $"{bytes} B"
     : string.Format(CultureInfo.InvariantCulture, "{0:0} KB", Math.Ceiling(bytes / 1024d));
-
-static IEnumerable<ChartPoint> Points(params double[] y) {
-    for (var i = 0; i < y.Length; i++) {
-        yield return new ChartPoint(i + 1, y[i]);
-    }
-}
 
 static string ThemeCss(SvgColorVariables lightVariables, SvgColorVariables darkVariables) {
     var darkByName = darkVariables.Variables.GroupBy(v => v.Name).ToDictionary(g => g.Key, g => g.First().Color);

@@ -2,14 +2,14 @@
 <section class="cfx-ps cfx-psroad cfx-tone-dark" id="roadmap" aria-labelledby="cfx-psroad-title">
   <div class="cfx-psroad__inner">
     <div class="cfx-psroad__head">
-      <h2 id="cfx-psroad-title">Coverage and roadmap</h2>
+      <h2 id="cfx-psroad-title">ChartForgeX support and PowerShell coverage</h2>
       <p>{{ coverage.intro }}</p>
     </div>
     {{ include "imageplayground-about" }}
-    <ul class="cfx-psroad__legend" aria-label="Status">
+    <ul class="cfx-psroad__legend" aria-label="ImagePlayground command status">
       <li><i class="cfx-status cfx-status--available">Available</i> works in ImagePlayground {{ psx.module.version }}</li>
       <li><i class="cfx-status cfx-status--partial">Partial</i> works with the limits noted</li>
-      <li><i class="cfx-status cfx-status--planned">Planned</i> in ChartForgeX, not yet a command</li>
+      <li><i class="cfx-status cfx-status--planned">Planned</i> not yet exposed by ImagePlayground</li>
     </ul>
     <div class="cfx-psroad__groups">
       {{~ for g in coverage.groups ~}}
@@ -21,8 +21,9 @@
             <i class="cfx-status cfx-status--{{ r.status }}">{{ r.status | string.capitalize }}</i>
             <div>
               <p>{{ r.capability }}</p>
+              {{~ if r.native ~}}<p class="cfx-psroad__native"><strong>ChartForgeX:</strong> {{ r.native.summary }} <a href="{{ r.native.url }}">{{ r.native.linkText }}</a></p>{{~ end ~}}
               {{~ if r.commands && r.commands.size > 0 ~}}<p class="cfx-psroad__cmds">{{~ for c in r.commands ~}}<a href="/powershell/commands/{{ c | string.downcase }}/">{{ c }}</a>{{~ end ~}}</p>{{~ end ~}}
-              {{~ if r.note ~}}<p class="cfx-psroad__note">{{ r.note }}</p>{{~ end ~}}
+              {{~ if r.note ~}}<p class="cfx-psroad__note"><strong>ImagePlayground:</strong> {{ r.note }}</p>{{~ end ~}}
             </div>
           </li>
           {{~ end ~}}

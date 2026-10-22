@@ -7,7 +7,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 /// <summary>Protects the downloadable public-package recipe boundary and the data retained during extraction.</summary>
-public sealed class ExampleRecipeTests {
+public sealed partial class ExampleRecipeTests {
     [Theory]
     [InlineData(ChartSeriesKind.Bar)]
     [InlineData(ChartSeriesKind.HorizontalBar)]

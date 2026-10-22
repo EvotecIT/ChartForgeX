@@ -116,6 +116,8 @@
   function ensurePrism() {
     var configure = function () {
       var prism = window.Prism;
+      // Native authoring fences use Prism's existing plain-text grammar, including inside Markdown examples.
+      prism.languages.chartforgex = prism.languages.plain;
       if (prism.plugins && prism.plugins.autoloader) prism.plugins.autoloader.languages_path = PRISM_ROOT + 'components/';
       return prism;
     };
@@ -140,7 +142,7 @@
   var LANGUAGES = {
     csharp: 'C#', cs: 'C#', powershell: 'PowerShell', ps1: 'PowerShell', bash: 'Shell', shell: 'Shell', sh: 'Shell',
     json: 'JSON', xml: 'XML', markup: 'HTML', html: 'HTML', markdown: 'Markdown', md: 'Markdown', mermaid: 'Mermaid',
-    yaml: 'YAML', css: 'CSS', javascript: 'JavaScript', js: 'JavaScript', typescript: 'TypeScript', text: 'Text'
+    yaml: 'YAML', css: 'CSS', javascript: 'JavaScript', js: 'JavaScript', typescript: 'TypeScript', chartforgex: 'ChartForgeX markup', text: 'Text'
   };
   var COPY_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 3.5v-.5A1.5 1.5 0 0 0 9 1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
 

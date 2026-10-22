@@ -1,3 +1,7 @@
+---
+description: "Use typed visual artifacts to carry ChartForgeX models, metadata, natural sizes and export capabilities between renderers and host applications."
+---
+
 # Visual Artifacts
 
 The [Graphite chart look specification](design/chart-look-spec.html) defines the shared light and dark colours, frame, typography, marks, legends, and interaction appearance. Open it with `#light` or `#dark` to inspect either theme.

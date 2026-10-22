@@ -1,5 +1,5 @@
 {
-  "intro": "ChartForgeX ships features first; ImagePlayground exposes them as commands. This table describes ImagePlayground 3.3.0: rows marked available work from commands alone, and partial rows work with the limits noted, often through -ChartScript, which hands a script the ChartForgeX chart and its .NET API.",
+  "intro": "The status badges describe commands in ImagePlayground 3.3.0. The ChartForgeX notes identify features already available through the native .NET libraries and link to their documentation. A partial or planned command does not mean the rendering engine lacks that feature.",
   "tracking": {
     "title": "Request a command or vote on the roadmap",
     "url": "https://github.com/EvotecIT/ImagePlayground/issues"
@@ -47,7 +47,12 @@
           "commands": [
             "New-ImageChart"
           ],
-          "note": "No dedicated commands yet. The ChartForgeX methods (AddSankey, AddSunburst, AddGanttTask and others) are reachable from -ChartScript."
+          "note": "No dedicated commands yet. The ChartForgeX methods (AddSankey, AddSunburst, AddGanttTask and others) are reachable from -ChartScript.",
+          "native": {
+            "summary": "Available through the native chart APIs, including dated Gantt and timeline observations.",
+            "url": "/api/chartforgex-core-chart/",
+            "linkText": "Chart API reference"
+          }
         },
         {
           "capability": "Dotted, region and tile maps",
@@ -55,7 +60,12 @@
           "commands": [
             "New-ImageChart"
           ],
-          "note": "Reachable from -ChartScript with AddDottedMap, AddRegionMap and AddTileMap; no map commands yet."
+          "note": "Reachable from -ChartScript with AddDottedMap, AddRegionMap and AddTileMap; no map commands yet.",
+          "native": {
+            "summary": "Available through AddDottedMap, AddRegionMap and AddTileMap, with independent weight and color values.",
+            "url": "/api/chartforgex-core-chart/",
+            "linkText": "Map chart APIs"
+          }
         },
         {
           "capability": "Bar, line, area, scatter and range series combined in one chart, with per-series markers and a secondary axis",
@@ -68,12 +78,17 @@
           ]
         },
         {
-          "capability": "Graphite design tokens and brand kits",
+          "capability": "Graphite themes and custom design tokens",
           "status": "partial",
           "commands": [
             "New-ImageChart"
           ],
-          "note": "-Theme offers fourteen named themes. The Graphite tokens and brand kits that chartforgex.com uses need the .NET API."
+          "note": "-Theme offers fourteen named themes. Custom VisualTheme configuration and palette imports need the .NET API.",
+          "native": {
+            "summary": "Available through immutable VisualTheme palettes, typography and geometry. Configure creates an independent theme.",
+            "url": "/docs/api-conventions/#one-theme-and-an-explicit-mode",
+            "linkText": "Theme configuration"
+          }
         }
       ]
     },
@@ -139,14 +154,24 @@
           ]
         },
         {
-          "capability": "Vendor icon packs (Azure, Fortinet, Veeam)",
+          "capability": "Custom and vendor icon-pack loading",
           "status": "planned",
-          "note": "Nodes accept -IconId, but no command loads a ChartForgeX icon pack yet."
+          "note": "Nodes accept -IconId, but no command loads a ChartForgeX icon pack yet.",
+          "native": {
+            "summary": "Available through catalog and manifest loaders. Curated packs, imported Azure artwork and Veeam/Fortinet samples have their own provenance and licenses; complete vendor catalogs are not all built in.",
+            "url": "/docs/topology-icon-packs/",
+            "linkText": "Icon-pack loading and provenance"
+          }
         },
         {
           "capability": "Graph explorer for large graphs (Canvas and WebGL)",
           "status": "planned",
-          "note": "Part of ChartForgeX.Interactivity.Html, not yet exposed."
+          "note": "Graph explorer commands are not part of ImagePlayground.",
+          "native": {
+            "summary": "Available in ChartForgeX.Interactivity.Html with SVG, Canvas and WebGL backends, hierarchy and bounded graph updates.",
+            "url": "/docs/graph-explorer/",
+            "linkText": "Graph explorer guide"
+          }
         }
       ]
     },
@@ -246,12 +271,22 @@
             "New-ImageChart",
             "New-ImageVisualGrid"
           ],
-          "note": "Files are written, but the current WebP encoder barely compresses them; prefer PNG until it is fixed."
+          "note": "ImagePlayground writes WebP files, but its current encoder barely compresses them; prefer PNG until that encoder is fixed.",
+          "native": {
+            "summary": "Provides PNG, SVG and RGBA output. WebP encoding belongs to the receiving image adapter, rather than the ChartForgeX renderer.",
+            "url": "/docs/choosing-a-surface/",
+            "linkText": "Choose a rendering surface"
+          }
         },
         {
           "capability": "Interactive chart HTML: tooltips, selection, zoom and brushing",
           "status": "planned",
-          "note": "Chart HTML is static and script-free. Only topology has -InteractiveHtml."
+          "note": "ImagePlayground chart HTML is static and script-free. Only topology has -InteractiveHtml.",
+          "native": {
+            "summary": "Available through the optional ChartForgeX.Interactivity.Html adapter; core chart HTML stays static and script-free.",
+            "url": "/docs/interactivity/",
+            "linkText": "Interactive HTML guide"
+          }
         }
       ]
     },
@@ -261,12 +296,22 @@
         {
           "capability": "Mermaid diagrams rendered by ChartForgeX.Mermaid",
           "status": "planned",
-          "note": "ChartForgeX.Mermaid is not part of the module yet."
+          "note": "ChartForgeX.Mermaid is not part of the module yet.",
+          "native": {
+            "summary": "Available through ChartForgeX.Mermaid for the documented notation subsets, with native SVG and PNG output.",
+            "url": "/docs/mermaid-support-matrix/",
+            "linkText": "Mermaid support and limits"
+          }
         },
         {
           "capability": "ChartForgeX Markup fences: charts and diagrams from Markdown",
           "status": "planned",
-          "note": "ChartForgeX.Markup is not part of the module yet."
+          "note": "ChartForgeX.Markup is not part of the module yet.",
+          "native": {
+            "summary": "Available through ChartForgeX.Markup parsers, diagnostics and native visual artifacts.",
+            "url": "/docs/markup/",
+            "linkText": "Markup authoring guide"
+          }
         }
       ]
     }

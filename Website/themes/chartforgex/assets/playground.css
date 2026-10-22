@@ -33,6 +33,7 @@
 .cfx-pg__btn--primary:hover:not(:disabled) { border-color: var(--cfx-accent); background: var(--cfx-accent); filter: brightness(1.08); }
 .cfx-pg__btn:disabled { cursor: not-allowed; opacity: .5; }
 .cfx-pg__btn[data-done] { border-color: var(--cfx-accent); color: var(--cfx-accent); }
+.cfx-pg__btn--primary[data-done] { color: var(--cfx-accent-ink); }
 .cfx-pg button:focus-visible, .cfx-pg select:focus-visible, .cfx-pg__stage:focus-visible { outline: 2px solid var(--cfx-focus); outline-offset: 2px; }
 
 /* Editor beside preview. */

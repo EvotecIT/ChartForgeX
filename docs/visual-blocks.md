@@ -1,3 +1,7 @@
+---
+description: "Render tables, lists, metric cards and timelines as native SVG, PNG or HTML, then compose exact facts with charts in a visual grid."
+---
+
 # Visual Blocks
 
 `ChartGrid` remains a chart-only composition surface in core. Install `ChartForgeX.Visuals` and use the `ChartForgeX.VisualBlocks` namespace for tables, lists, metric cards, status panels, and infographic snippets.

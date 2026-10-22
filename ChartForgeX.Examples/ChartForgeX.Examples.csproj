@@ -20,6 +20,7 @@
     <None Update="Fixtures\Fonts\Carlito\*" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="Recipes\*Recipe.cs" LogicalName="ChartForgeX.Examples.Recipes.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="Snippets\RecipeProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="Snippets\RecipeChartProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeChartProgram.cs" WithCulture="false" />
     <EmbeddedResource Include="Snippets\FiveLineChart.cs.txt" LogicalName="ChartForgeX.Examples.FiveLineChart.cs" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.svg" LogicalName="ChartForgeX.Examples.styled-multilingual-text.svg" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.html" LogicalName="ChartForgeX.Examples.styled-multilingual-text.html" WithCulture="false" />

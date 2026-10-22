@@ -11,6 +11,10 @@
 
 const DEFAULT_FRAMEWORK_URL = '/playground/engine/_framework/';
 const EXPORTS_NAMESPACE = ['ChartForgeX', 'Playground', 'PlaygroundExports'];
+const PREVIEW_FONTS = [
+  { file: 'Carlito-Regular.ttf', weight: '400' },
+  { file: 'Carlito-Bold.ttf', weight: '700' }
+];
 
 let sharedEngine = null;
 
@@ -31,8 +35,9 @@ export function loadPlaygroundEngine(options = {}) {
 
 /**
  * @typedef {{ phase: 'loading' | 'downloading' | 'starting' | 'ready' | 'failed', loaded: number, total: number, elapsedMs: number, error?: Error }} EngineProgress
- * @typedef {{ status: string, error: Error | null, info: object | null, bootMs: number | null, ready: Promise<object>,
- *   render: (language: string, source: string, theme?: string) => Promise<object>, samples: () => Promise<object[]>,
+ * @typedef {{ status: string, error: Error | null, info: object | null, bootMs: number | null, fontCss: string, ready: Promise<object>,
+ *   render: (language: string, source: string, theme?: string) => Promise<object>,
+ *   renderPng: (language: string, source: string, theme?: string) => Promise<object>, samples: () => Promise<object[]>,
  *   onProgress: (listener: (progress: EngineProgress) => void) => () => void }} PlaygroundEngine
  */
 function createEngine(frameworkUrl) {
@@ -57,6 +62,7 @@ function createEngine(frameworkUrl) {
     error: null,
     info: null,
     bootMs: null,
+    fontCss: '',
     ready: null,
 
     onProgress(listener) {
@@ -65,19 +71,12 @@ function createEngine(frameworkUrl) {
       return () => listeners.delete(listener);
     },
 
-    async render(language, source, theme = 'light') {
-      await engine.ready;
-      const begin = performance.now();
-      let result;
-      try {
-        result = JSON.parse(api.Render(String(language ?? ''), String(source ?? ''), String(theme ?? 'light')));
-      } catch (error) {
-        // The engine returns failures as JSON; reaching here means the runtime itself faulted.
-        result = { ok: false, svg: null, error: 'Engine fault: ' + (error && error.message ? error.message : String(error)),
-          line: null, column: null, diagramType: null, elapsedMs: null, diagnostics: [] };
-      }
-      result.wallMs = Math.round((performance.now() - begin) * 100) / 100;
-      return result;
+    render(language, source, theme = 'light') {
+      return renderNative('Render', language, source, theme);
+    },
+
+    renderPng(language, source, theme = 'light') {
+      return renderNative('RenderPng', language, source, theme);
     },
 
     async samples() {
@@ -86,6 +85,21 @@ function createEngine(frameworkUrl) {
       return samplesCache.map((sample) => ({ ...sample }));
     }
   };
+
+  async function renderNative(method, language, source, theme) {
+    await engine.ready;
+    const begin = performance.now();
+    let result;
+    try {
+      result = JSON.parse(api[method](String(language ?? ''), String(source ?? ''), String(theme ?? 'light')));
+    } catch (error) {
+      // The engine returns failures as JSON; reaching here means the runtime itself faulted.
+      result = { ok: false, error: 'Engine fault: ' + (error && error.message ? error.message : String(error)),
+        line: null, column: null, diagramType: null, elapsedMs: null, diagnostics: [] };
+    }
+    result.wallMs = Math.round((performance.now() - begin) * 100) / 100;
+    return result;
+  }
 
   engine.ready = (async () => {
     try {
@@ -102,6 +116,8 @@ function createEngine(frameworkUrl) {
       if (!api || typeof api.Render !== 'function') {
         throw new Error('The playground engine loaded, but its exports were not found.');
       }
+      // The renderer measures with embedded Carlito; preview and isolated SVG images need the same faces.
+      engine.fontCss = await loadPreviewFonts();
       engine.info = JSON.parse(api.Info());
       engine.bootMs = Math.round(performance.now() - started);
       engine.status = 'ready';
@@ -119,4 +135,20 @@ function createEngine(frameworkUrl) {
   // Callers that only use render()/samples() still see the failure; avoid an extra unhandled-rejection report.
   engine.ready.catch(() => {});
   return engine;
+}
+
+async function loadPreviewFonts() {
+  const rules = await Promise.all(PREVIEW_FONTS.map(async ({ file, weight }) => {
+    const response = await fetch('/examples/generated/fonts/' + file);
+    if (!response.ok) throw new Error('The preview font could not be loaded: ' + file);
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    const face = new FontFace('Carlito', bytes, { weight, style: 'normal' });
+    document.fonts.add(await face.load());
+    let binary = '';
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return '@font-face{font-family:Carlito;font-style:normal;font-weight:' + weight +
+      ';src:url(data:font/ttf;base64,' + btoa(binary) + ') format("truetype")}';
+  }));
+  await document.fonts.ready;
+  return rules.join('\n');
 }

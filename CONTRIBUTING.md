@@ -43,6 +43,17 @@ The runner builds the tests, generates and serves a fresh v2 gallery on loopback
 
 The ordinary test loop reports disabled browser contracts and missing platform prerequisites as explicit skips. Required mode fails on incomplete setup, an empty selection, or skipped tests. A passing build without the required browser lane does not qualify interaction behavior or complete appearance.
 
+## Examples and Website
+
+The website presents the examples; the executable projects own their source and qualification. Keep chart definitions in compiled recipes, then generate displayed code and artifacts from those recipes. Do not maintain a second chart definition in a page or snippet string.
+
+- `ChartForgeX.Examples` generates the gallery manifest, SVG/PNG/HTML artifacts, downloadable programs and visual-health results. It also supplies fixtures to the browser quality lane.
+- `ChartForgeX.Examples.Snippets` links the core-only recipes and executes their advertised selections without referencing the examples executable.
+- `Website/build/Sync-GeneratedExamples.ps1` imports the gallery manifest and its artifacts. The website does not maintain a separate family catalog.
+- `Website/tools/SiteVisuals` generates the site's curated examples and presentation artwork. Shared documentation comes from the source-backed collections configured in `Website/site.json`.
+
+Keep offline fixtures that cover distinct rendering or interaction contracts, even when they are not public gallery cards. Keep branding and page composition in the website generator. After changing a recipe, compile its displayed program, inspect the affected SVG and PNG, and regenerate the website through its existing owners. [The website guide](Website/AGENTS.md) describes those sources and commands.
+
 ## Build Timeouts
 
 `Build.ps1` time-limits every `dotnet` validation step so a stuck restore, build, test, example, pack, or package-consumer run fails with a named timeout instead of hanging indefinitely.

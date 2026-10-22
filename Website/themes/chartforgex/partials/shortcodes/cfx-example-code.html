@@ -1,0 +1,7 @@
+{{~ a = shortcode.attrs; parts = (a.parts ?? a.part) | string.split ","; source = ""
+    for part in parts
+        if source != ""; source = source + "\n\n"; end
+        key = part | string.strip
+        source = source + data.visuals.examples[a.id].code[key]
+    end ~}}
+<pre><code class="language-csharp">{{ source | html.escape }}</code></pre>

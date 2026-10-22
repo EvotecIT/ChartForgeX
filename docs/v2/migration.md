@@ -1,3 +1,7 @@
+---
+description: "Migrate ChartForgeX consumers to the current preparation, data-editing, annotation and presentation contracts without compatibility shims."
+---
+
 # ChartForgeX consumer migration
 
 This guide records the breaking-release target and the observed consumer contracts. Charts, grids, topology, flow and sequence diagrams use the shared native scene. Optional package extraction and actual consumer upgrades have their own qualification gates. The [capability ledger](consumer-capabilities.csv) maps inspected calls to their destination, migration recipe and acceptance fixture. Its `owner_implementation` and `owner_evidence` columns distinguish available source and owner fixtures from downstream qualification. A row with `status=planned` still requires consumer migration or qualification; an implemented owner path does not close that gate. The ledger covers observed consumer capabilities, not every exported member of ChartForgeX.
@@ -447,7 +451,7 @@ Pie and donut display lists descend by value, with an aggregate `Other` last. Or
 
 | Consumer | Inspected source | Declared dependency / boundary |
 | --- | --- | --- |
-| [PowerBGInfo](https://github.com/EvotecIT/PowerBGInfo) | `v2-speedygonzales`, `63f30cef2a92df8cbd9b7a8d0780cd2dfdaec4d8` | Core + Visuals produce wallpapers; Stories retains the existing GIF file export. Preserve explicit source qualification and installed-module authoring. |
+| [PowerBGInfo repository](https://github.com/EvotecIT/PowerBGInfo) | `v2-speedygonzales`, `63f30cef2a92df8cbd9b7a8d0780cd2dfdaec4d8` | Core + Visuals produce wallpapers; Stories retains the existing GIF file export. Preserve explicit source qualification and installed-module authoring. |
 | [ImagePlayground](https://github.com/EvotecIT/ImagePlayground) | Initial `master` inventory at `fb433aad14a071e301cc4e7686a4680bf1fb8bab`; qualified managed-imaging candidate at `04a2f5f6500ba1d3a4a89f006787014791bb9f58` | The PowerShell surface requires core + Visuals + Stories and the HTML interaction adapter. The base image-processing library remains independent. |
 | [OfficeIMO.ChartForgeX](https://github.com/EvotecIT/OfficeIMO) | `master`, `ee066fe0dced8c5948500aaecdd0757f1289d142` | Rebuild the core adapter against `2.0.0`; the Markdown companion also consumes Mermaid. Optional producers hand off through neutral artifacts. |
 | Private HTML adapter | Isolated consumer candidate | Keep the base adapter core-focused; qualify composition and story peer packages independently. |

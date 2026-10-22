@@ -12,8 +12,15 @@
     <Compile Include="Program.cs" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="..\ChartForgeX.Examples\ExampleRecipeImports.cs" Link="RecipeImports.cs" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="..\ChartForgeX.Examples\ExampleRecipes.cs" Link="ExampleRecipes.cs" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipes.*.cs" Link="%(Filename)%(Extension)" Condition="'$(RecipeSource)' == ''" />
+    <Compile Include="..\ChartForgeX.Examples\ExampleRecipeSource.cs" Link="ExampleRecipeSource.cs" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="..\ChartForgeX.Examples\Recipes\*Recipe.cs" Link="Recipes\%(Filename)%(Extension)" Condition="'$(RecipeSource)' == ''" />
     <Compile Include="$(RecipeSource)" Link="Program.cs" Condition="'$(RecipeSource)' != ''" />
     <ProjectReference Include="..\ChartForgeX\ChartForgeX.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(RecipeSource)' == ''">
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Recipes\*Recipe.cs" LogicalName="ChartForgeX.Examples.Recipes.%(Filename)%(Extension)" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeProgram.cs" WithCulture="false" />
+    <EmbeddedResource Include="..\ChartForgeX.Examples\Snippets\RecipeChartProgram.cs.txt" LogicalName="ChartForgeX.Examples.RecipeChartProgram.cs" WithCulture="false" />
   </ItemGroup>
 </Project>

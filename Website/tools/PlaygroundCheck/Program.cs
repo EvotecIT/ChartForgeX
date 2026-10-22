@@ -1,5 +1,5 @@
 // Renders every playground sample through the same engine code the browser runs, in both themes.
-// Usage: dotnet run --project Website/tools/PlaygroundCheck -c Release [-- --theme-proof [output-dir] --fixtures <dir-with-.mmd-files>]
+// Usage: dotnet run --project Website/tools/PlaygroundCheck -c Release [-- --theme-proof [output-dir] --png-proof <dir> --fixtures <dir-with-.mmd-files>]
 // Exit code 1 when a sample fails, a theme is not applied, or an error path stops returning structured JSON.
 using System;
 using System.Collections.Generic;
@@ -92,6 +92,11 @@ PlaygroundThemeContracts.Check(failures,
     themeProofIndex >= 0 && themeProofIndex + 1 < args.Length
         && !args[themeProofIndex + 1].StartsWith("--", StringComparison.Ordinal)
         ? args[themeProofIndex + 1] : null);
+var pngProofIndex = Array.IndexOf(args, "--png-proof");
+PlaygroundPngContracts.Check(failures,
+    pngProofIndex >= 0 && pngProofIndex + 1 < args.Length
+        && !args[pngProofIndex + 1].StartsWith("--", StringComparison.Ordinal)
+        ? args[pngProofIndex + 1] : null);
 
 // Optional: every Mermaid fixture, to document which families or constructs the playground cannot render.
 var fixtureIndex = Array.IndexOf(args, "--fixtures");

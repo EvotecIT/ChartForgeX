@@ -20,17 +20,15 @@
     <IsPackable>false</IsPackable>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 
-    <!-- Small runtime: no ICU data, full trimming of framework and ChartForgeX assemblies.
-         InvariantTimezone is deliberately not set: dropping time zone data relinks dotnet.native.wasm and needs wasm-tools. -->
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Trim managed assemblies while retaining the prebuilt runtime's ICU and time-zone support.
+         Removing either requires native relinking and the wasm-tools workload. -->
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>full</TrimMode>
     <!-- Surface every trim warning (the browser SDKs can default to hiding them); with TreatWarningsAsErrors they fail the publish. -->
     <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
 
-    <!-- Workload-free: interpreter only, prebuilt dotnet.native.wasm. -->
-    <RunAOTCompilation>false</RunAOTCompilation>
+    <!-- Workload-free: AOT is opt-in; keep the prebuilt interpreter runtime. -->
     <WasmBuildNative>false</WasmBuildNative>
 
     <!-- GitHub Pages and Cloudflare compress on the fly; precompressed .br/.gz copies would only double the artifact. -->

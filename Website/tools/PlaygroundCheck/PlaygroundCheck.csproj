@@ -16,6 +16,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Playground\PlaygroundEngine.cs" Link="Engine\PlaygroundEngine.cs" />
+    <Compile Include="..\Playground\PlaygroundEngine.Png.cs" Link="Engine\PlaygroundEngine.Png.cs" />
+    <Compile Include="..\Playground\PlaygroundEngine.Fonts.cs" Link="Engine\PlaygroundEngine.Fonts.cs" />
     <Compile Include="..\Playground\PlaygroundJson.cs" Link="Engine\PlaygroundJson.cs" />
     <Compile Include="..\Playground\PlaygroundSamples.cs" Link="Engine\PlaygroundSamples.cs" />
     <Compile Include="..\Playground\PlaygroundFonts.cs" Link="Engine\PlaygroundFonts.cs" />
