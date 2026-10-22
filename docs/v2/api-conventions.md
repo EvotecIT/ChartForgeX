@@ -1,3 +1,7 @@
+---
+description: "Follow the public ChartForgeX contracts for preparation, configuration, data transactions, identity, annotations, themes and export ownership."
+---
+
 # V2 public API conventions
 
 These rules govern the shared prepared-rendering contracts and their model entry points. All chart families and chart grids compile through the native scene, alongside topology, flow and sequence diagrams. Model convenience exports resolve a request and use the same preparation route. Static composition belongs to `ChartForgeX.Visuals`; animation belongs to `ChartForgeX.Stories`. The [API ledger](api-ledger.md) records naming and ownership changes; this document does not claim that every existing public member conforms already.

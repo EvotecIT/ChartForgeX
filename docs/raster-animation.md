@@ -1,3 +1,7 @@
+---
+description: "Encode complete RGBA frames as GIF or APNG with explicit timing, streaming sources, buffer ownership and bounded animation resources."
+---
+
 # Encoding RGBA animation frames
 
 `RasterAnimationEncoder` writes complete RGBA canvases as GIF or animated PNG. Use it for frames produced by `ImageComposition`, chart renderers, or another image library. It shares the same palette, frame optimization, and encoding engines as visual stories and terminal presentations.

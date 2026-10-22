@@ -64,6 +64,8 @@ function start(root) {
     samples: [],
     result: null,
     lastGood: null,
+    downloadsEnabled: false,
+    pngExport: null,
     token: 0,
     timer: 0,
     lineCount: 0,
@@ -437,72 +439,53 @@ function start(root) {
 
   // Downloads and sharing.
   function setDownloads(enabled) {
-    ui.downloads.forEach((button) => { button.disabled = !enabled; });
+    state.downloadsEnabled = enabled;
+    ui.downloads.forEach((button) => { button.disabled = !enabled || (button.dataset.pgDownload === 'png' && state.pngExport !== null); });
   }
 
   async function download(kind, button) {
-    const markup = composedSvg();
-    if (!markup) return;
-    const name = 'chartforgex-' + slug(describe(state.result || {})) + '-' + state.theme;
+    if (!state.downloadsEnabled) return;
+    const accepted = state.lastGood;
+    if (!accepted) return;
+    const name = 'chartforgex-' + slug(describe(state.result || {})) + '-' + accepted.theme;
     if (kind === 'svg') {
+      const markup = composedSvg();
+      if (!markup) return;
       saveBlob(new Blob([markup.text], { type: 'image/svg+xml' }), name + '.svg');
       flash(button, 'Saved');
       return;
     }
+    if (state.pngExport) return;
+    const pending = { ...accepted, token: state.token };
+    state.pngExport = pending;
+    setDownloads(state.downloadsEnabled);
+    const isCurrent = () => root.isConnected && state.pngExport === pending && state.lastGood === accepted &&
+      state.token === pending.token && state.downloadsEnabled;
     try {
-      const image = new Image();
-      image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markup.text);
-      await image.decode();
-      const scale = 2;
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.ceil(markup.width * scale);
-      canvas.height = Math.ceil(markup.height * scale);
-      const context = canvas.getContext('2d');
-      context.scale(scale, scale);
-      context.drawImage(image, 0, 0, markup.width, markup.height);
-      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-      if (!blob) throw new Error('The browser could not encode the PNG.');
-      saveBlob(blob, name + '.png');
+      const result = await engine.renderPng(pending.language, pending.source, pending.theme);
+      if (!isCurrent()) return;
+      if (!result.ok || result.format !== 'png' || typeof result.png !== 'string')
+        throw new Error(result.error || 'The engine could not render the PNG.');
+      const bytes = Uint8Array.from(atob(result.png), (character) => character.charCodeAt(0));
+      saveBlob(new Blob([bytes], { type: 'image/png' }), name + '.png');
       flash(button, 'Saved');
     } catch (error) {
-      ui.status.replaceChildren(element('span', 'is-error', 'PNG export failed: ' + (error.message || error) + ' Download the SVG instead.'));
+      if (isCurrent()) ui.status.replaceChildren(element('span', 'is-error', 'PNG export failed: ' + (error.message || error) + ' Download the SVG instead.'));
+    } finally {
+      if (state.pngExport === pending) { state.pngExport = null; setDownloads(state.downloadsEnabled); }
     }
   }
 
   function composedSvg() {
-    const svgs = Array.from(ui.canvas.querySelectorAll(':scope > svg'));
-    if (!svgs.length) return null;
-    const serializer = new XMLSerializer();
-    if (svgs.length === 1) {
-      const size = naturalSize(svgs[0]);
-      const copy = svgs[0].cloneNode(true);
-      copy.removeAttribute('style');
-      copy.setAttribute('width', String(size.width));
-      copy.setAttribute('height', String(size.height));
-      return { text: serializer.serializeToString(copy), width: size.width, height: size.height };
-    }
-    // Several fences: stack them in one valid SVG document.
-    const gap = 32;
-    const sizes = svgs.map(naturalSize);
-    const width = Math.max(...sizes.map((size) => size.width));
-    const height = sizes.reduce((sum, size) => sum + size.height, 0) + gap * (svgs.length - 1);
-    const outer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    outer.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    outer.setAttribute('width', String(width));
-    outer.setAttribute('height', String(height));
-    outer.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
-    let y = 0;
-    svgs.forEach((svg, index) => {
-      const copy = svg.cloneNode(true);
-      copy.removeAttribute('style');
-      copy.setAttribute('x', String(Math.round((width - sizes[index].width) / 2)));
-      copy.setAttribute('y', String(y));
-      copy.setAttribute('width', String(sizes[index].width));
-      copy.setAttribute('height', String(sizes[index].height));
-      outer.appendChild(copy);
-      y += sizes[index].height + gap;
-    });
-    return { text: serializer.serializeToString(outer), width, height };
+    const source = state.result && state.result.downloadSvg;
+    if (!source) return null;
+    const copy = sanitizeSvgs(source)[0];
+    if (!copy) return null;
+    const size = naturalSize(copy);
+    const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    style.textContent = engine.fontCss;
+    copy.prepend(style);
+    return { text: new XMLSerializer().serializeToString(copy), width: size.width, height: size.height };
   }
 
   async function share() {

@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 
 /// <summary>Compiled example factories and their native source files. This catalog is development tooling only.</summary>
-public static class ExampleRecipes {
+public static partial class ExampleRecipes {
     private static readonly IReadOnlyDictionary<ChartSeriesKind, ExampleRecipe> Families = new ReadOnlyDictionary<ChartSeriesKind, ExampleRecipe>(new Dictionary<ChartSeriesKind, ExampleRecipe> {
         [ChartSeriesKind.Line] = new(nameof(LineRecipe), LineRecipe.Create),
         [ChartSeriesKind.StepLine] = new(nameof(StepLineRecipe), StepLineRecipe.Create),
@@ -59,6 +59,10 @@ public static class ExampleRecipes {
         [ChartSeriesKind.DifferenceArea] = new(nameof(DifferenceAreaRecipe), DifferenceAreaRecipe.Create),
     });
     private static readonly IReadOnlyDictionary<string, ExampleRecipe> NamedRecipes = new ReadOnlyDictionary<string, ExampleRecipe>(new Dictionary<string, ExampleRecipe>(StringComparer.Ordinal) {
+        ["license-cost"] = new(nameof(LicenseCostRecipe), LicenseCostRecipe.Create),
+        ["dashboard-premium-trend"] = new(nameof(DashboardPremiumTrendRecipe), DashboardPremiumTrendRecipe.Create),
+        ["control-coverage-heatmap"] = new(nameof(ControlCoverageRecipe), ControlCoverageRecipe.Create),
+        ["travel-dotted-map"] = new(nameof(TravelDottedMapRecipe), TravelDottedMapRecipe.Create),
         ["histogram"] = new(nameof(HistogramRecipe), HistogramRecipe.Create),
         ["chart-grid"] = new(nameof(ChartGridRecipe), ChartGridRecipe.Create),
         ["topology"] = new(nameof(TopologyRecipe), TopologyRecipe.Create),

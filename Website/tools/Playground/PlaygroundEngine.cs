@@ -17,10 +17,10 @@ using ChartForgeX.VisualBlocks;
 namespace ChartForgeX.Playground;
 
 /// <summary>
-/// Renders playground source to SVG and reports the outcome as JSON. Shared by the browser exports and the desktop sample check,
+/// Renders playground source to SVG or native PNG and reports the outcome as JSON. Shared by browser exports and the desktop sample check,
 /// so every call path is identical. Nothing in here throws: every failure is returned as structured JSON.
 /// </summary>
-public static class PlaygroundEngine {
+public static partial class PlaygroundEngine {
     /// <summary>Largest accepted source, in UTF-16 characters.</summary>
     public const int MaxSourceLength = 64 * 1024;
 
@@ -32,13 +32,19 @@ public static class PlaygroundEngine {
 
     private static int _renderCount;
 
-    /// <summary>Renders <paramref name="source"/> and returns <c>{ ok, svg, error, line, column, diagramType, elapsedMs, ... }</c>.</summary>
-    public static string Render(string? language, string? source, string? theme) {
+    /// <summary>Renders source as SVG, or exports its completed composition as a native 2x PNG.</summary>
+    public static string Render(string? language, string? source, string? theme, string? format = null) =>
+        Render(language, source, theme, format, new MermaidResourceLimits());
+
+    // Capture the request once. The browser entry point supplies fixed defaults; no mutable
+    // resource policy crosses the JavaScript boundary.
+    internal static string Render(string? language, string? source, string? theme, string? format, MermaidResourceLimits limits) {
         var stopwatch = Stopwatch.StartNew();
-        var outcome = new RenderOutcome();
+        var outcome = new RenderOutcome(format, limits.Clone());
         try {
             PlaygroundFonts.EnsureRegistered();
-            RenderCore(language, source, theme, outcome);
+            if (outcome.Format != "svg" && outcome.Format != "png") outcome.Fail("Unknown export format. Use 'svg' or 'png'.", null, null);
+            else RenderCore(language, source, theme, outcome);
         } catch (Exception exception) {
             outcome.Fail("Internal renderer error (" + exception.GetType().Name + "): " + exception.Message, null, null);
         }
@@ -105,7 +111,9 @@ public static class PlaygroundEngine {
         }
 
         var dark = normalizedTheme == "dark";
-        var parseOptions = new MermaidParseOptions { GanttDateAnchor = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc) };
+        var parseOptions = new MermaidParseOptions {
+            GanttDateAnchor = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc), ResourceLimits = outcome.Limits
+        };
         if (normalizedLanguage == MermaidLanguage) RenderMermaid(source, dark, parseOptions, outcome);
         else RenderMarkup(source, dark, parseOptions, outcome);
     }
@@ -215,10 +223,11 @@ public static class PlaygroundEngine {
             case FlowArtifact flow:
                 // Same context as the convenience export, with the requested palette mode.
                 var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(flow.Width, flow.Height), flow.Padding),
-                    themeMode: theme.Mode, frame: new VisualFrame(showLegend: false));
+                    theme: PreviewTheme, themeMode: theme.Mode, frame: new VisualFrame(showLegend: false));
                 return flow.Prepare(context).ToSvg(new VisualSvgOptions(scope));
             case TableArtifact table:
                 var preview = table.ToPreviewBlock();
+                if (UsesPreviewFont(artifact)) preview.Options.Theme = preview.Options.Theme.WithFontFamily(PreviewFontFamily);
                 preview.Options.ThemeMode = theme.Mode;
                 return preview.RenderSvg(scope);
             case IVisualBlock block when artifact.RenderSource == null:
@@ -231,17 +240,24 @@ public static class PlaygroundEngine {
 
     private static void RenderArtifacts(IReadOnlyList<VisualArtifact> artifacts, PageTheme? theme, RenderOutcome outcome) {
         var svg = new StringBuilder();
+        var completed = new List<CompletedSvg>();
         foreach (var artifact in artifacts) {
             var scope = "cfx-pg-" + (++_renderCount).ToString(System.Globalization.CultureInfo.InvariantCulture);
             try {
+                ApplyPreviewFont(artifact);
                 if (svg.Length > 0) svg.Append('\n');
                 var themed = theme == null ? null : RenderThemed(artifact, theme, scope);
                 if (theme != null && themed == null) outcome.Themed = false;
-                svg.Append(themed ?? artifact.ToSvg(null, scope));
+                var markup = themed ?? artifact.ToSvg(null, scope);
+                svg.Append(markup);
+                completed.Add(new CompletedSvg(artifact, markup));
             } catch (TopologyValidationException exception) {
                 foreach (var error in exception.Result.Errors) outcome.Add("Error", error.Code, error.Message, SourceLine(artifact), null);
                 foreach (var warning in exception.Result.Warnings) outcome.Add("Warning", warning.Code, warning.Message, SourceLine(artifact), null);
                 outcome.FailFromFirstError();
+                return;
+            } catch (MermaidResourceLimitException exception) {
+                outcome.Fail(exception.Message, exception.Span.Line, exception.Span.Column);
                 return;
             } catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is OverflowException) {
                 outcome.Fail(exception.Message, SourceLine(artifact), null);
@@ -249,7 +265,15 @@ public static class PlaygroundEngine {
             }
         }
 
-        outcome.Succeed(svg.ToString(), artifacts.Count);
+        try {
+            var composition = ComposeCompletedSvgs(completed);
+            var png = outcome.Format == "png" ? ExportPng(completed, composition, outcome.Limits) : null;
+            outcome.Succeed(svg.ToString(), artifacts.Count, composition, png);
+        } catch (MermaidResourceLimitException exception) {
+            outcome.Fail(exception.Message, exception.Span.Line, exception.Span.Column);
+        } catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is OverflowException || exception is NotSupportedException) {
+            outcome.Fail(exception.Message, artifacts.Count > 0 ? SourceLine(artifacts[0]) : null, null);
+        }
     }
 
     private static int? SourceLine(VisualArtifact artifact) =>
@@ -288,12 +312,24 @@ public static class PlaygroundEngine {
     private sealed class RenderOutcome {
         private readonly List<Diagnostic> _diagnostics = new();
 
+        internal RenderOutcome(string? format, MermaidResourceLimits limits) {
+            Format = string.IsNullOrWhiteSpace(format) ? "svg" : format!.Trim().ToLowerInvariant();
+            Limits = limits;
+        }
+
+        internal string Format { get; }
+        internal MermaidResourceLimits Limits { get; }
+
         public string? Language { get; set; }
         public string? Theme { get; set; }
         public string? DiagramType { get; set; }
         public bool Themed { get; set; }
         private bool Ok { get; set; }
         private string? Svg { get; set; }
+        private string? DownloadSvg { get; set; }
+        private string? Png { get; set; }
+        private int? OutputWidth { get; set; }
+        private int? OutputHeight { get; set; }
         private string? Error { get; set; }
         private int? Line { get; set; }
         private int? Column { get; set; }
@@ -302,9 +338,15 @@ public static class PlaygroundEngine {
         public void Add(string severity, string? code, string message, int? line, int? column) =>
             _diagnostics.Add(new Diagnostic(severity.ToLowerInvariant(), code ?? string.Empty, message, line, column));
 
-        public void Succeed(string svg, int artifactCount) {
+        public void Succeed(string svg, int artifactCount, CompletedComposition composition, byte[]? png) {
             Ok = true;
-            Svg = svg;
+            // PNG callers consume only the encoded image; do not duplicate large SVG strings
+            // alongside its base64 bytes across the WebAssembly bridge.
+            Svg = png == null ? svg : null;
+            DownloadSvg = png == null ? composition.Svg : null;
+            Png = png == null ? null : Convert.ToBase64String(png);
+            OutputWidth = png == null ? null : composition.PixelWidth;
+            OutputHeight = png == null ? null : composition.PixelHeight;
             ArtifactCount = artifactCount;
             Error = null;
             Line = null;
@@ -314,6 +356,10 @@ public static class PlaygroundEngine {
         public void Fail(string error, int? line, int? column) {
             Ok = false;
             Svg = null;
+            DownloadSvg = null;
+            Png = null;
+            OutputWidth = null;
+            OutputHeight = null;
             Error = error;
             Line = line;
             Column = column;
@@ -322,22 +368,27 @@ public static class PlaygroundEngine {
         public void FailFromFirstError() {
             var first = _diagnostics.FirstOrDefault(diagnostic => diagnostic.Severity == "error");
             if (first == null) Fail("Rendering failed.", null, null);
-            else Fail(Format(first), first.Line, first.Column);
+            else Fail(FormatDiagnostic(first), first.Line, first.Column);
         }
 
         public void FailFromFirstWarning(string fallback) {
             var first = _diagnostics.FirstOrDefault(diagnostic => diagnostic.Severity == "warning");
             if (first == null) Fail(fallback, null, null);
-            else Fail(fallback + " " + Format(first), first.Line, first.Column);
+            else Fail(fallback + " " + FormatDiagnostic(first), first.Line, first.Column);
         }
 
-        private static string Format(Diagnostic diagnostic) =>
+        private static string FormatDiagnostic(Diagnostic diagnostic) =>
             diagnostic.Code.Length == 0 ? diagnostic.Message : diagnostic.Code + ": " + diagnostic.Message;
 
         public string ToJson(double elapsedMs) {
             var json = new PlaygroundJson().BeginObject()
                 .Property("ok", Ok)
                 .Property("svg", Svg)
+                .Property("downloadSvg", DownloadSvg)
+                .Property("png", Png)
+                .Property("format", Format)
+                .Property("width", OutputWidth)
+                .Property("height", OutputHeight)
                 .Property("error", Error)
                 .Property("line", Line)
                 .Property("column", Column)

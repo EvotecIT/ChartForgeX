@@ -20,6 +20,10 @@ public static partial class PlaygroundExports {
     [JSExport]
     internal static string Render(string language, string source, string theme) => PlaygroundEngine.Render(language, source, theme);
 
+    /// <summary>Exports the same source and theme as a bounded native 2x PNG JSON result.</summary>
+    [JSExport]
+    internal static string RenderPng(string language, string source, string theme) => PlaygroundEngine.Render(language, source, theme, "png");
+
     /// <summary>Returns the bundled samples: <c>[{ id, title, language, source }]</c>.</summary>
     [JSExport]
     internal static string Samples() => PlaygroundEngine.SamplesJson();

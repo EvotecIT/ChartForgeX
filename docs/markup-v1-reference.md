@@ -1,3 +1,7 @@
+---
+description: "Use the ChartForgeX markup v1 grammar reference for supported fences, attributes, data commands, typed models and static preview contracts."
+---
+
 # ChartForgeX Markup v1 Reference
 
 ChartForgeX native markup fences use the canonical form `chartforgex <kind> v1`. The `v1` token is required for native ChartForgeX fences and is the compatibility boundary for future grammar changes.

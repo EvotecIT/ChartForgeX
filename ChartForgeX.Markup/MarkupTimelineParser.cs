@@ -93,27 +93,36 @@ public sealed class MarkupTimelineParser {
             .WithTitle(state.Title)
             .WithSubtitle(state.Subtitle)
             .WithSize(state.Width, state.Height);
-        if (state.Today.HasValue) chart.WithGanttToday(state.Today.Value.ToAxisValue());
+        if (state.Today.HasValue) {
+            var today = state.Today.Value;
+            if (today.IsDate) chart.WithGanttToday(today.Date);
+            else chart.WithGanttToday(today.ToAxisValue());
+        }
         var ganttItems = new List<ChartSeries>();
 
         foreach (var item in state.Items) {
             var color = string.IsNullOrWhiteSpace(item.Color) ? (ChartColor?)null : ChartColor.FromHex(item.Color!);
             var start = item.Start.ToAxisValue();
             var end = item.End.ToAxisValue();
+            var dates = item.Start.IsDate && item.End.IsDate;
             var predecessor = item.DependsOn >= 0 && IsGanttItem(state, item) ? ganttItems[item.DependsOn] : null;
             if (item.Kind == TimelineItemKind.Milestone) {
                 if (state.Mode == TimelineMode.Gantt) {
-                    chart.AddGanttMilestone(item.Label, start, predecessor, color);
+                    if (dates) chart.AddGanttMilestone(item.Label, item.Start.Date, predecessor, color);
+                    else chart.AddGanttMilestone(item.Label, start, predecessor, color);
                     ganttItems.Add(chart.Series[chart.Series.Count - 1]);
                 }
+                else if (dates) chart.AddTimelineItem(item.Label, item.Start.Date, item.Start.Date, color);
                 else chart.AddTimelineRange(item.Label, start, start, color);
                 continue;
             }
 
             if (state.Mode == TimelineMode.Gantt || item.Kind == TimelineItemKind.Task) {
-                chart.AddGanttTask(item.Label, start, end, item.Progress, predecessor, color);
+                if (dates) chart.AddGanttTask(item.Label, item.Start.Date, item.End.Date, item.Progress, predecessor, color);
+                else chart.AddGanttTask(item.Label, start, end, item.Progress, predecessor, color);
                 ganttItems.Add(chart.Series[chart.Series.Count - 1]);
             }
+            else if (dates) chart.AddTimelineItem(item.Label, item.Start.Date, item.End.Date, color);
             else chart.AddTimelineRange(item.Label, start, end, color);
         }
 
@@ -477,6 +486,8 @@ public sealed class MarkupTimelineParser {
         }
 
         public double ToAxisValue() => _isDate ? _date.ToOADate() : _number;
+        public bool IsDate => _isDate;
+        public DateTime Date => _date;
     }
 
     private static class EmptyAttributes {

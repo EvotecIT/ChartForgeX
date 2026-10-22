@@ -1,0 +1,16 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+
+var chart = {{FACTORY}}.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+var name = {{NAME}};
+chart.SaveSvg(name + ".svg");
+chart.SavePng(name + ".png");
+chart.SaveHtml(name + ".html");
+
+{{SOURCE}}

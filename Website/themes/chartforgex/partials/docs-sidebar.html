@@ -3,6 +3,21 @@
     <summary>Contents</summary>
     <h2>Documentation</h2>
     {{ pf.menu_tree "docs" 2 }}
+    <h2>Detailed guides</h2>
+    {{~ for group in data.docs.guideGroups
+        current_group = false
+        for guide in group.guides
+          if page.output_path == ("/docs/" + guide.slug + "/"); current_group = true; end
+        end ~}}
+    <details class="cfx-docs__group"{{ if current_group }} open{{ end }}>
+      <summary>{{ group.title }}</summary>
+      <ul>
+        {{~ for guide in group.guides ~}}
+        <li><a href="/docs/{{ guide.slug }}/"{{ if page.output_path == ("/docs/" + guide.slug + "/") }} aria-current="page"{{ end }}>{{ guide.title }}</a></li>
+        {{~ end ~}}
+      </ul>
+    </details>
+    {{~ end ~}}
     <h2>Examples</h2>
     {{ pf.menu_tree "examples" 2 }}
     <h2>Reference</h2>

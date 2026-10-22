@@ -11,78 +11,24 @@ A `GraphScene` becomes one self-contained HTML file with search, drill-down and 
 
 Nodes carry labels, badges, secondary text and a status. `ParentId` builds the hierarchy the explorer drills into.
 
-```csharp
-using System.IO;
-using ChartForgeX.Interactivity;
-using ChartForgeX.Interactivity.Html;
-
-var graph = GraphScene.Create("estate", "Global estate")
-    .AddNode("global", "Global", node => node.BadgeText = "42")
-    .AddNode("europe", "Europe", node => {
-        node.ParentId = "global";
-        node.SecondaryLabel = "4 sites · 18 workloads";
-        node.Status = "warning";
-    })
-    .AddNode("americas", "Americas", node => {
-        node.ParentId = "global";
-        node.SecondaryLabel = "3 sites · 14 workloads";
-        node.Status = "healthy";
-    })
-    .AddNode("apac", "Asia Pacific", node => {
-        node.ParentId = "global";
-        node.SecondaryLabel = "2 sites · 10 workloads";
-        node.Status = "healthy";
-    })
-    .AddEdge("global-europe", "global", "europe",
-        configure: edge => edge.Directed = true)
-    .AddEdge("global-americas", "global", "americas",
-        configure: edge => edge.Directed = true)
-    .AddEdge("global-apac", "global", "apac",
-        configure: edge => edge.Directed = true)
-    .AddEdge("europe-apac", "europe", "apac", "replication",
-        edge => edge.Status = "warning");
-```
+{{< cfx-example-code id="interactive-topology" part="estate" >}}
 
 ## Add the sites
 
 Sites hang under their region. Stable ids keep selection and links valid when the data changes.
 
-```csharp
-foreach (var (id, label, region) in new[] {
-    ("warsaw", "Warsaw", "europe"), ("london", "London", "europe"),
-    ("frankfurt", "Frankfurt", "europe"), ("new-york", "New York", "americas"),
-    ("toronto", "Toronto", "americas"), ("sydney", "Sydney", "apac"),
-    ("singapore", "Singapore", "apac")
-}) {
-    graph.AddNode(id, label, node => node.ParentId = region)
-        .AddEdge(region + "-" + id, region, id,
-            configure: edge => edge.Directed = true);
-}
-```
+{{< cfx-example-code id="interactive-topology" part="sites" >}}
 
 ## Lay it out as a hierarchy
 
 The hierarchical layout sets regions under the global node and sites under their region. The explorer opens on the global node with one level of children; readers drill into a region from there.
 
-```csharp
-graph.Options.UseSuperTopologyDefaults();
-graph.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
-graph.Options.Hierarchy.InitialRootNodeId = "global";
-graph.Options.Hierarchy.InitialDepth = 1;
-```
+{{< cfx-example-code id="interactive-topology" part="layout" >}}
 
 ## Write one HTML file
 
 The page carries its own script and styles. Switch the backend to Canvas or WebGL for larger scenes while keeping the same model and navigation.
 
-```csharp
-var html = graph.ToGraphExplorerHtmlPage(options => {
-    options.RenderBackend = HtmlGraphRenderBackend.Svg;
-    options.Theme = HtmlGraphExplorerTheme.System;
-    options.IncludeThemeToggle = true;
-});
-
-File.WriteAllText("estate.html", html);
-```
+{{< cfx-example-code id="interactive-topology" part="save" >}}
 
 `graph.ToGraphSvg()` writes a script-free SVG of the same scene for documents that cannot run script; set `Theme` in its options for a dark export. The card image on the examples page is that export, in both themes.
