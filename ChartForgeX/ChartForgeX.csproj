@@ -22,7 +22,7 @@
     <Authors>Evotec</Authors>
     <Description>Dependency-free charts and diagrams with shared SVG, HTML and native raster rendering, typography, theme/frame contracts and semantic artifact handoff.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>ChartForgeX 3.0.0 unifies paired themes, typed observations, stable series handles and atomic configuration callbacks. See the consumer migration guide for breaking API changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.0.1 adds offline responsive chart layouts, integer axis ticks, configurable bar widths and topology accent controls. See the consumer migration guide for 3.0 API changes.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>
