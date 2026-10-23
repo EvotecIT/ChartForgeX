@@ -755,7 +755,7 @@ Family render options share `MermaidDiagramRenderOptions` for identity, title, s
 
 Supported class and state notes are typed `Notes` with source spans, rather than retained raw statements. Generic class identities use the base ID (`Store`) while the display label retains `Store<Item>`. ER aliases are labels, not entity IDs. State composites map to native groups, so inspect `TopologyChart.Groups` for their geometry instead of expecting duplicate state cards. Group endpoints preserve authored identities in native interchange.
 
-Sequence participant lifetimes and boxes are native semantic facts, not metadata-only decoration. Invalid sequence numbering and requirement enum values now fail parsing. Relative Kanban indentation preserves the column/task hierarchy. Retained requirement styling produces a warning; hosts requiring complete source application can select `MermaidWarningPolicy.Reject`.
+Sequence participant lifetimes and boxes are native semantic facts, not metadata-only decoration. Invalid sequence numbering and requirement enum values now fail parsing. Relative Kanban indentation preserves the column/task hierarchy. Unsupported requirement styling retains a warning; supported safe class/direct paints render natively. Hosts requiring complete source application can select `MermaidWarningPolicy.Reject`.
 
 New default source/model/export limits reject excessive requests deterministically. Configure `MermaidParseOptions.ResourceLimits` deliberately for larger trusted diagrams, and handle deferred `MermaidResourceLimitException` from artifact export. A cancellation token is cooperative, not a hard layout timeout. See [Mermaid host policy](../mermaid.md#shared-host-presentation-and-resource-policy) for precedence and limits.
 

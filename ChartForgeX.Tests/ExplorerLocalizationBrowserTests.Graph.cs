@@ -33,6 +33,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         });
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>", width, 850);
         var page = session.Page;
+        await ObserveNativeCanvasPaintAsync(page);
         if (external) foreach (var asset in HtmlInteractiveAssetFiles.GraphExplorer())
             await page.RouteAsync("https://assets.example.test/" + asset.FileName, route => route.FulfillAsync(new() { ContentType = asset.ContentType, Body = asset.Content }));
         var baseline = graph.ToGraphExplorerHtmlPage(options => { options.RenderBackend = backend; options.Theme = HtmlGraphExplorerTheme.Light; options.PersistThemePreference = false; });

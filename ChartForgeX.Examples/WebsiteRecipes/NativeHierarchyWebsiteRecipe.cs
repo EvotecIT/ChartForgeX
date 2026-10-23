@@ -1,4 +1,5 @@
 #region imports
+// Uses post-3.0.1 hierarchy-view APIs. Build current source or use a later package containing them.
 using System;
 using System.IO;
 using System.Linq;
