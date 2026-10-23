@@ -152,7 +152,7 @@ public static class DifferenceAreaRecipe {
             _ =&gt; ChartStepPosition.Middle
         });
         if (dated) {
-            comparison.UseSecondaryYAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
+            comparison.UseSecondaryValueAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
             chart.WithSecondaryYAxis(&quot;Completed requests&quot;);
         }
         return chart.AddSeries(comparison).WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
@@ -230,7 +230,7 @@ public static class DifferenceAreaRecipe {
             _ =&gt; ChartStepPosition.Middle
         });
         if (dated) {
-            comparison.UseSecondaryYAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
+            comparison.UseSecondaryValueAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
             chart.WithSecondaryYAxis(&quot;Completed requests&quot;);
         }
         return chart.AddSeries(comparison).WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));

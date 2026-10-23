@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-efb1cef0" width="871" height="653" viewBox="0 0 870.7 653" role="img" aria-labelledby="cfx-visual-efb1cef0-title cfx-visual-efb1cef0-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" data-cfx-label-layout="measured" data-cfx-label-count="16" data-cfx-label-dropped="0">
+<title id="cfx-visual-efb1cef0-title">Expression grammar</title>
+<desc id="cfx-visual-efb1cef0-desc">Static ChartForgeX visual block.</desc>
+<defs>
+<style>#cfx-visual-efb1cef0 .cfx-guide-stroke,#cfx-visual-efb1cef0 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-efb1cef0 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-efb1cef0-visualCardClip"><rect x="0" y="0" width="920" height="690" rx="3"/></clipPath>
+</defs>
+<rect data-cfx-role="visual-background" width="100%" height="100%" fill="#F2F3F4"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="919" height="689" rx="3" fill="#FFFFFF" stroke="#E2E4E7"/>
+<text data-cfx-role="visual-title" x="18" y="32.187" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="17" font-weight="700" data-cfx-label-original="Expression grammar" data-cfx-label-status="placed" data-cfx-label-x="18" data-cfx-label-y="16" data-cfx-label-width="143.695" data-cfx-label-height="20.752">Expression grammar</text>
+<text data-cfx-role="visual-subtitle" x="18" y="61.606" text-anchor="start" fill="#4D525B" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="400" data-cfx-label-original="Railroad" data-cfx-label-status="placed" data-cfx-label-x="18" data-cfx-label-y="48.752" data-cfx-label-width="45.16" data-cfx-label-height="16.479">Railroad</text>
+<g id="cfx-visual-efb1cef0-grammar-rule-0" data-cfx-role="railroad-rule" data-rule-id="expression" data-rule-index="0"><text data-cfx-role="railroad-rule-label" x="18" y="93.378" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="700" data-cfx-label-original="expression" data-cfx-label-status="placed" data-cfx-label-x="18" data-cfx-label-y="79.232" data-cfx-label-width="66.102" data-cfx-label-height="18.136">expression</text>
+<path data-cfx-role="railroad-rail" d="M 22 128.614 L 46 128.614" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Sequence"><g data-cfx-role="railroad-expression" data-expression-kind="Reference"><a href="#cfx-visual-efb1cef0-grammar-rule-1" data-cfx-role="railroad-reference" data-reference-scope="local" data-reference-id="term"><rect x="46" y="110.546" width="57.257" height="36.136" rx="2" fill="#FFFFFF" stroke="#16181C"/>
+<text data-cfx-role="railroad-symbol-label" x="74.629" y="133.692" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="term" data-cfx-label-status="placed" data-cfx-label-x="60.001" data-cfx-label-y="119.546" data-cfx-label-width="29.257" data-cfx-label-height="18.136">term</text>
+</a>
+</g>
+<path data-cfx-role="railroad-rail" d="M 103.257 128.614 L 121.257 128.614" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 112.257 125.614 L 116.257 128.614 L 112.257 131.614" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Repeat" data-minimum="0" data-maximum="unbounded"><path data-cfx-role="railroad-rail" d="M 121.257 128.614 L 355.826 128.614" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-rail" d="M 121.257 128.614 C 135.257 128.614 135.257 164.682 149.257 164.682" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Sequence"><g data-cfx-role="railroad-expression" data-expression-kind="Choice" data-ordered-choice="false"><path data-cfx-role="railroad-rail" d="M 149.257 164.682 C 163.257 164.682 163.257 164.682 177.257 164.682" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Terminal"><g data-cfx-role="railroad-terminal" data-case-sensitive="true"><rect x="177.257" y="146.614" width="47.311" height="36.136" rx="10" fill="#FFFFFF" stroke="#16181C"/>
+<text data-cfx-role="railroad-symbol-label" x="200.913" y="169.76" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="&quot;+&quot;" data-cfx-label-status="placed" data-cfx-label-x="191.257" data-cfx-label-y="155.614" data-cfx-label-width="19.311" data-cfx-label-height="18.136">"+"</text>
+</g>
+</g>
+<path data-cfx-role="railroad-rail" d="M 224.569 164.682 C 238.569 164.682 238.569 164.682 252.569 164.682" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 169.257 161.682 L 173.257 164.682 L 169.257 167.682" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-rail" d="M 149.257 164.682 C 163.257 164.682 164.683 218.818 178.683 218.818" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Terminal"><g data-cfx-role="railroad-terminal" data-case-sensitive="true"><rect x="178.683" y="200.75" width="44.46" height="36.136" rx="10" fill="#FFFFFF" stroke="#16181C"/>
+<text data-cfx-role="railroad-symbol-label" x="200.913" y="223.896" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="&quot;-&quot;" data-cfx-label-status="placed" data-cfx-label-x="192.683" data-cfx-label-y="209.75" data-cfx-label-width="16.46" data-cfx-label-height="18.136">"-"</text>
+</g>
+</g>
+<path data-cfx-role="railroad-rail" d="M 223.143 218.818 C 237.143 218.818 238.569 164.682 252.569 164.682" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 170.683 215.818 L 174.683 218.818 L 170.683 221.818" fill="none" stroke="#16181C" stroke-width="1.5"/>
+</g>
+<path data-cfx-role="railroad-rail" d="M 252.569 164.682 L 270.569 164.682" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 261.569 161.682 L 265.569 164.682 L 261.569 167.682" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Reference"><a href="#cfx-visual-efb1cef0-grammar-rule-1" data-cfx-role="railroad-reference" data-reference-scope="local" data-reference-id="term"><rect x="270.569" y="146.614" width="57.257" height="36.136" rx="2" fill="#FFFFFF" stroke="#16181C"/>
+<text data-cfx-role="railroad-symbol-label" x="299.197" y="169.76" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="term" data-cfx-label-status="placed" data-cfx-label-x="284.569" data-cfx-label-y="155.614" data-cfx-label-width="29.257" data-cfx-label-height="18.136">term</text>
+</a>
+</g>
+</g>
+<path data-cfx-role="railroad-rail" d="M 327.826 164.682 C 341.826 164.682 341.826 128.614 355.826 128.614" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 141.257 161.682 L 145.257 164.682 L 141.257 167.682" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-repeat-loop" d="M 327.826 164.682 C 341.826 164.682 341.826 254.886 327.826 254.886 L 149.257 254.886 C 135.257 254.886 135.257 164.682 149.257 164.682" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 242.542 251.886 L 238.542 254.886 L 242.542 257.886" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<text data-cfx-role="railroad-repeat-constraint" x="238.542" y="273.743" text-anchor="middle" fill="#4D525B" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="0..unbounded" data-cfx-label-status="placed" data-cfx-label-x="196.093" data-cfx-label-y="259.597" data-cfx-label-width="84.898" data-cfx-label-height="18.136">0..unbounded</text>
+</g>
+</g>
+<path data-cfx-role="railroad-rail" d="M 355.826 128.614 L 379.826 128.614" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<circle data-cfx-role="railroad-rule-marker" cx="22" cy="128.614" r="3.5" fill="#16181C"/>
+<circle data-cfx-role="railroad-rule-marker" cx="379.826" cy="128.614" r="3.5" fill="#16181C"/>
+<path data-cfx-role="railroad-arrow" d="M 35 125.614 L 39 128.614 L 35 131.614" fill="none" stroke="#16181C" stroke-width="1.5"/>
+</g>
+<g id="cfx-visual-efb1cef0-grammar-rule-1" data-cfx-role="railroad-rule" data-rule-id="term" data-rule-index="1"><text data-cfx-role="railroad-rule-label" x="18" y="327.604" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="700" data-cfx-label-original="term" data-cfx-label-status="placed" data-cfx-label-x="18" data-cfx-label-y="313.458" data-cfx-label-width="29.816" data-cfx-label-height="18.136">term</text>
+<path data-cfx-role="railroad-rail" d="M 22 362.84 L 46 362.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Sequence"><g data-cfx-role="railroad-expression" data-expression-kind="Optional"><path data-cfx-role="railroad-rail" d="M 46 362.84 L 146.46 362.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-rail" d="M 46 362.84 C 60 362.84 60 398.908 74 398.908" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Terminal"><g data-cfx-role="railroad-terminal" data-case-sensitive="true"><rect x="74" y="380.84" width="44.46" height="36.136" rx="10" fill="#FFFFFF" stroke="#16181C"/>
+<text data-cfx-role="railroad-symbol-label" x="96.23" y="403.986" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="&quot;-&quot;" data-cfx-label-status="placed" data-cfx-label-x="88" data-cfx-label-y="389.84" data-cfx-label-width="16.46" data-cfx-label-height="18.136">"-"</text>
+</g>
+</g>
+<path data-cfx-role="railroad-rail" d="M 118.46 398.908 C 132.46 398.908 132.46 362.84 146.46 362.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 66 395.908 L 70 398.908 L 66 401.908" fill="none" stroke="#16181C" stroke-width="1.5"/>
+</g>
+<path data-cfx-role="railroad-rail" d="M 146.46 362.84 L 164.46 362.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 155.46 359.84 L 159.46 362.84 L 155.46 365.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Repeat" data-minimum="1" data-maximum="unbounded"><path data-cfx-role="railroad-rail" d="M 164.46 362.84 C 178.46 362.84 179.612 362.84 193.612 362.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Reference"><a href="#cfx-visual-efb1cef0-grammar-rule-2" data-cfx-role="railroad-reference" data-reference-scope="local" data-reference-id="digit"><rect x="193.612" y="344.772" width="54.595" height="36.136" rx="2" fill="#FFFFFF" stroke="#16181C"/>
+<text data-cfx-role="railroad-symbol-label" x="220.91" y="367.918" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="digit" data-cfx-label-status="placed" data-cfx-label-x="207.613" data-cfx-label-y="353.772" data-cfx-label-width="26.595" data-cfx-label-height="18.136">digit</text>
+</a>
+</g>
+<path data-cfx-role="railroad-rail" d="M 248.207 362.84 C 262.207 362.84 263.359 362.84 277.359 362.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 185.612 359.84 L 189.612 362.84 L 185.612 365.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-repeat-loop" d="M 248.207 362.84 C 262.207 362.84 262.207 398.908 248.207 398.908 L 193.612 398.908 C 179.612 398.908 179.612 362.84 193.612 362.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 224.91 395.908 L 220.91 398.908 L 224.91 401.908" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<text data-cfx-role="railroad-repeat-constraint" x="220.91" y="417.765" text-anchor="middle" fill="#4D525B" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="1..unbounded" data-cfx-label-status="placed" data-cfx-label-x="178.461" data-cfx-label-y="403.619" data-cfx-label-width="84.898" data-cfx-label-height="18.136">1..unbounded</text>
+</g>
+</g>
+<path data-cfx-role="railroad-rail" d="M 277.359 362.84 L 301.359 362.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<circle data-cfx-role="railroad-rule-marker" cx="22" cy="362.84" r="3.5" fill="#16181C"/>
+<circle data-cfx-role="railroad-rule-marker" cx="301.359" cy="362.84" r="3.5" fill="#16181C"/>
+<path data-cfx-role="railroad-arrow" d="M 35 359.84 L 39 362.84 L 35 365.84" fill="none" stroke="#16181C" stroke-width="1.5"/>
+</g>
+<g id="cfx-visual-efb1cef0-grammar-rule-2" data-cfx-role="railroad-rule" data-rule-id="digit" data-rule-index="2"><text data-cfx-role="railroad-rule-label" x="18" y="471.626" text-anchor="start" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="700" data-cfx-label-original="digit" data-cfx-label-status="placed" data-cfx-label-x="18" data-cfx-label-y="457.48" data-cfx-label-width="27.465" data-cfx-label-height="18.136">digit</text>
+<path data-cfx-role="railroad-rail" d="M 22 506.862 L 46 506.862" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Choice" data-ordered-choice="false"><path data-cfx-role="railroad-rail" d="M 46 506.862 C 60 506.862 124.877 506.862 138.877 506.862" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Terminal"><g data-cfx-role="railroad-terminal" data-case-sensitive="true"><rect x="138.877" y="488.794" width="47.442" height="36.136" rx="10" fill="#FFFFFF" stroke="#16181C"/>
+<text data-cfx-role="railroad-symbol-label" x="162.598" y="511.94" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="&quot;0&quot;" data-cfx-label-status="placed" data-cfx-label-x="152.877" data-cfx-label-y="497.794" data-cfx-label-width="19.442" data-cfx-label-height="18.136">"0"</text>
+</g>
+</g>
+<path data-cfx-role="railroad-rail" d="M 186.319 506.862 C 200.319 506.862 265.195 506.862 279.195 506.862" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 130.877 503.862 L 134.877 506.862 L 130.877 509.862" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-rail" d="M 46 506.862 C 60 506.862 124.877 560.998 138.877 560.998" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Terminal"><g data-cfx-role="railroad-terminal" data-case-sensitive="true"><rect x="138.877" y="542.93" width="47.442" height="36.136" rx="10" fill="#FFFFFF" stroke="#16181C"/>
+<text data-cfx-role="railroad-symbol-label" x="162.598" y="566.076" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="&quot;1&quot;" data-cfx-label-status="placed" data-cfx-label-x="152.877" data-cfx-label-y="551.93" data-cfx-label-width="19.442" data-cfx-label-height="18.136">"1"</text>
+</g>
+</g>
+<path data-cfx-role="railroad-rail" d="M 186.319 560.998 C 200.319 560.998 265.195 506.862 279.195 506.862" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 130.877 557.998 L 134.877 560.998 L 130.877 563.998" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-rail" d="M 46 506.862 C 60 506.862 60 615.134 74 615.134" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<g data-cfx-role="railroad-expression" data-expression-kind="Special"><g data-cfx-role="railroad-special"><rect x="74" y="597.066" width="177.195" height="36.136" rx="10" fill="#FFFFFF" stroke="#16181C" stroke-dasharray="4 3"/>
+<text data-cfx-role="railroad-symbol-label" x="162.598" y="620.212" text-anchor="middle" fill="#16181C" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="14.857" font-weight="500" data-cfx-label-original="? another decimal digit ?" data-cfx-label-status="placed" data-cfx-label-x="88.001" data-cfx-label-y="606.066" data-cfx-label-width="149.194" data-cfx-label-height="18.136">? another decimal digit ?</text>
+</g>
+</g>
+<path data-cfx-role="railroad-rail" d="M 251.195 615.134 C 265.195 615.134 265.195 506.862 279.195 506.862" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<path data-cfx-role="railroad-arrow" d="M 66 612.134 L 70 615.134 L 66 618.134" fill="none" stroke="#16181C" stroke-width="1.5"/>
+</g>
+<path data-cfx-role="railroad-rail" d="M 279.195 506.862 L 303.195 506.862" fill="none" stroke="#16181C" stroke-width="1.5"/>
+<circle data-cfx-role="railroad-rule-marker" cx="22" cy="506.862" r="3.5" fill="#16181C"/>
+<circle data-cfx-role="railroad-rule-marker" cx="303.195" cy="506.862" r="3.5" fill="#16181C"/>
+<path data-cfx-role="railroad-arrow" d="M 35 503.862 L 39 506.862 L 35 509.862" fill="none" stroke="#16181C" stroke-width="1.5"/>
+</g>
+</svg>

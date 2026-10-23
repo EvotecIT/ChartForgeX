@@ -1,0 +1,33 @@
+---
+title: Review workflow
+---
+agentflow-beta LR
+connector store["Object store"]
+store@{ endpoint: "https://example.invalid/data", protocol: http }
+global
+  shared["Policy guide"]@{ shape: refdoc }
+end
+flow team["Review team"]
+  brief["Request"]@{ shape: input }
+  flow worker["Worker"]
+    read["Read input"]@{
+      shape: tool
+      connectorRef: store.read
+      policy:
+        retries: 2
+        enabled: true
+        tags: [safe, deterministic]
+        constructor: ignored
+      instruction: "Display data, never execute it."
+    }
+    gate["Ready?"]@{ shape: decision }
+    read edge1@--> gate
+    gate -- no --> read
+    read -.- shared
+  end
+  worker@{ view: collapsed }
+  publish["Publish"]@{ shape: action }
+  brief --> read
+  gate --x publish
+end
+edge1@{ instruction: "Only after validation" }

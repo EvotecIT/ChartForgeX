@@ -70,7 +70,7 @@ public static class DifferenceAreaRecipe {
             _ => ChartStepPosition.Middle
         });
         if (dated) {
-            comparison.UseSecondaryYAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
+            comparison.UseSecondaryValueAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
             chart.WithSecondaryYAxis("Completed requests");
         }
         return chart.AddSeries(comparison).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));

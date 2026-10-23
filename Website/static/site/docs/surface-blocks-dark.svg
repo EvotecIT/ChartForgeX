@@ -1,19 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-91961ce6" width="584" height="274" viewBox="0 0 584 274" role="img" aria-labelledby="cfx-visual-grid-91961ce6-title cfx-visual-grid-91961ce6-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
-<title id="cfx-visual-grid-91961ce6-title">Endpoint snapshot</title>
-<desc id="cfx-visual-grid-91961ce6-desc">Static visual grid containing charts and visual blocks.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-grid-fe7ea096" width="584" height="274" viewBox="0 0 584 274" role="img" aria-labelledby="cfx-visual-grid-fe7ea096-title cfx-visual-grid-fe7ea096-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="max-width:100%;height:auto;display:block">
+<title id="cfx-visual-grid-fe7ea096-title">Endpoint snapshot</title>
+<desc id="cfx-visual-grid-fe7ea096-desc">Static visual grid containing charts and visual blocks.</desc>
 <defs>
-<style>#cfx-visual-grid-91961ce6 .cfx-guide-stroke,#cfx-visual-grid-91961ce6 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-91961ce6 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<style>#cfx-visual-grid-fe7ea096 .cfx-guide-stroke,#cfx-visual-grid-fe7ea096 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-grid-fe7ea096 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
 </defs>
 <rect width="100%" height="100%" fill="#0C0D10"/>
 <text data-cfx-role="visual-grid-title" data-cfx-target="title" x="24" y="36.75" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="17" font-weight="700">Endpoint snapshot</text>
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-baebc070" width="260" height="150" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-baebc070-title cfx-visual-baebc070-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="24" y="100" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-baebc070-title">CPU load</title>
-<desc id="cfx-visual-baebc070-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-2bc3ed87" width="260" height="150" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-2bc3ed87-title cfx-visual-2bc3ed87-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="24" y="100" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-2bc3ed87-title">CPU load</title>
+<desc id="cfx-visual-2bc3ed87-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-baebc070 .cfx-guide-stroke,#cfx-visual-baebc070 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-baebc070 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-baebc070-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="3"/></clipPath>
+<style>#cfx-visual-2bc3ed87 .cfx-guide-stroke,#cfx-visual-2bc3ed87 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-2bc3ed87 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-2bc3ed87-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="3"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="2.5" fill="#16181C" stroke="#272A30"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="3" fill="#16181C" stroke="#272A30"/>
 <text data-cfx-role="metric-label" x="18" y="29.5" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">CPU load</text>
 <text data-cfx-role="metric-value" x="18" y="97.5" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="54" font-weight="700">38%</text>
 <g data-cfx-role="metric-mini-sparkline" data-cfx-style="area" data-cfx-min="38" data-cfx-max="52">
@@ -23,14 +23,14 @@
 </g>
 </svg>
 
-<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-6d44afa2" width="260" height="150" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-6d44afa2-title cfx-visual-6d44afa2-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="300" y="100" data-cfx-role="visual-grid-panel">
-<title id="cfx-visual-6d44afa2-title">Memory used</title>
-<desc id="cfx-visual-6d44afa2-desc">Static ChartForgeX visual block.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" id="cfx-visual-a7800f62" width="260" height="150" viewBox="0 0 520 300" role="img" aria-labelledby="cfx-visual-a7800f62-title cfx-visual-a7800f62-desc" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" data-cfx-look="graphite" style="max-width:100%;height:auto;display:block" x="300" y="100" data-cfx-role="visual-grid-panel">
+<title id="cfx-visual-a7800f62-title">Memory used</title>
+<desc id="cfx-visual-a7800f62-desc">Static ChartForgeX visual block.</desc>
 <defs>
-<style>#cfx-visual-6d44afa2 .cfx-guide-stroke,#cfx-visual-6d44afa2 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-6d44afa2 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
-<clipPath id="cfx-visual-6d44afa2-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="3"/></clipPath>
+<style>#cfx-visual-a7800f62 .cfx-guide-stroke,#cfx-visual-a7800f62 .cfx-premium-stroke{vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision}#cfx-visual-a7800f62 text{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}</style>
+<clipPath id="cfx-visual-a7800f62-visualCardClip"><rect x="0" y="0" width="520" height="300" rx="3"/></clipPath>
 </defs>
-<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="2.5" fill="#16181C" stroke="#272A30"/>
+<rect data-cfx-role="visual-card" class="cfx-guide-stroke" x="0.5" y="0.5" width="519" height="299" rx="3" fill="#16181C" stroke="#272A30"/>
 <text data-cfx-role="metric-label" x="18" y="29.5" fill="#B0B4BC" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="13.5" font-weight="700">Memory used</text>
 <text data-cfx-role="metric-value" x="18" y="97.5" fill="#F2F3F5" font-family="Calibri, Carlito, Segoe UI, Arial, system-ui, sans-serif" font-size="54" font-weight="700">71%</text>
 <g data-cfx-role="metric-mini-bars" data-cfx-min="0" data-cfx-max="100">

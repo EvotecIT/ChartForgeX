@@ -1,0 +1,41 @@
+// Uses post-3.0.1 logarithmic/time-spacing APIs. Build current source or use a later package containing them.
+// Exact documentation typography uses Carlito regular/bold installed or registered on the host; other hosts retain normal font fallback.
+using System;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
+
+var mode = args.Contains("--dark")
+    ? VisualThemeMode.Dark : VisualThemeMode.Light;
+
+foreach (var variant in new[] { "positive-log", "negative-log", "ordinal", "calendar-month" }) {
+    var chart = CreateChart(variant, mode);
+    chart.SaveSvg("axis-" + variant + ".svg");
+    chart.SavePng("axis-" + variant + ".png");
+}
+
+static Chart CreateChart(string variant, VisualThemeMode mode) {
+    var chart = Chart.Create().WithSize(760, 440).WithThemeMode(mode).WithLegend(false);
+    if (variant is "positive-log" or "negative-log") {
+        var negative = variant == "negative-log";
+        var magnitudes = new[] { 1d, 8, 64 };
+        var values = negative ? magnitudes.AsEnumerable().Reverse().Select(value => -value) : magnitudes.AsEnumerable();
+        return chart.WithTitle(negative ? "Negative logarithmic domain" : "Positive logarithmic domain")
+            .WithSubtitle("Base two; the authored sign remains part of the data")
+            .AddLine(negative ? "Loss" : "Capacity", values.Select((value, index) => new ChartPoint(index + 1, value)))
+            .ConfigureYAxis(axis => axis.WithLogarithmicScale(2, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
+                .WithBounds(negative ? -64 : 1, negative ? -1 : 64));
+    }
+    if (variant is not ("ordinal" or "calendar-month")) throw new ArgumentOutOfRangeException(nameof(variant));
+    return chart.WithTitle(variant == "ordinal" ? "Ordinal observations" : "Calendar-month bands")
+        .WithSubtitle(variant == "ordinal" ? "January and March are adjacent supplied observations" : "An empty February band remains visible")
+        .AddBar("Orders", new[] {
+            new ChartPoint(new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc), 18),
+            new ChartPoint(new DateTime(2026, 3, 30, 0, 0, 0, DateTimeKind.Utc), 27)
+        })
+        .ConfigureXAxis(axis => axis.WithTimeScale(TimeZoneInfo.Utc).WithTimeSpacing(variant == "ordinal"
+            ? ChartTimeSpacing.Ordinal : ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month))));
+}

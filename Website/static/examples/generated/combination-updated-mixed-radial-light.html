@@ -150,7 +150,7 @@ public static class SupportedCombinationRecipe {
                 .WithYAxis(&quot;Orders&quot;);
             chart.ConfigureYAxis(axis =&gt; { axis.Minimum = 0; axis.Maximum = 70; });
             if (!radial) {
-                reference.UseSecondaryYAxis();
+                reference.UseSecondaryValueAxis();
                 reference.ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
                 chart.WithSecondaryYAxis(&quot;On-time share&quot;, value =&gt; value.ToString(&quot;0%&quot;, CultureInfo.InvariantCulture));
                 chart.ConfigureSecondaryYAxis(axis =&gt; { axis.Minimum = 0; axis.Maximum = 1; });
@@ -241,7 +241,7 @@ public static class SupportedCombinationRecipe {
                 .WithYAxis(&quot;Orders&quot;);
             chart.ConfigureYAxis(axis =&gt; { axis.Minimum = 0; axis.Maximum = 70; });
             if (!radial) {
-                reference.UseSecondaryYAxis();
+                reference.UseSecondaryValueAxis();
                 reference.ConfigureMarkers(markers =&gt; markers.Shape = ChartMarkerShape.Diamond);
                 chart.WithSecondaryYAxis(&quot;On-time share&quot;, value =&gt; value.ToString(&quot;0%&quot;, CultureInfo.InvariantCulture));
                 chart.ConfigureSecondaryYAxis(axis =&gt; { axis.Minimum = 0; axis.Maximum = 1; });
