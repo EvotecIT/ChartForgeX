@@ -344,13 +344,6 @@
 .cfx-pscard__media { margin: 4px 0 0; overflow: hidden; border: 1px solid var(--cfx-line); border-radius: 12px; background: var(--cfx-card-alt); }
 .cfx-pscard__media img { display: block; width: 100%; height: auto; }
 
-/* PowerBGInfo: the sister module, its copy beside one of its wallpapers in the page theme. */
-.cfx-pspbg__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 4vw, 56px); align-items: center; }
-.cfx-pspbg h2 { font-size: clamp(1.75rem, 1.1rem + 1.9vw, 2.625rem); }
-.cfx-pspbg__copy > p { max-width: 56ch; margin-top: 14px; color: var(--cfx-ink-2); }
-.cfx-pspbg__media { display: block; margin: 0; }
-.cfx-pspbg__media:hover { border-color: var(--cfx-ink-3); }
-
 .cfx-pscmds__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
 .cfx-pscmds__family { min-width: 0; padding: 20px; border: 1px solid var(--cfx-line); border-radius: 14px; background: var(--cfx-card); }
 .cfx-pscmds__family h3 { display: flex; align-items: baseline; gap: 10px; font-size: 1.125rem; }
@@ -645,7 +638,7 @@
   .cfx-case--feature { grid-row: auto; grid-column: 1 / -1; }
   .cfx-case--feature .cfx-case__media { aspect-ratio: 16 / 9; }
   .cfx-ps__inner { grid-template-columns: minmax(0, 1fr); }
-  .cfx-psflag__grid, .cfx-pscard--wide, .cfx-pspbg__grid { grid-template-columns: minmax(0, 1fr); }
+  .cfx-psflag__grid, .cfx-pscard--wide { grid-template-columns: minmax(0, 1fr); }
   .cfx-psflag__side, .cfx-pscard--wide .cfx-pscard__lead { position: static; }
   .cfx-mermaid { grid-template-columns: 1fr; }
   .cfx-family__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }

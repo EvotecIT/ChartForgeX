@@ -1,6 +1,6 @@
 # ChartForgeX website
 
-This folder builds [chartforgex.com](https://chartforgex.com) with PowerForge.Web: the home page, gallery, Mermaid support, playground, PowerShell examples, PowerBGInfo wallpapers, docs, examples and API reference.
+This folder builds [chartforgex.com](https://chartforgex.com) with PowerForge.Web: the home page, gallery, Mermaid support, playground, PowerShell examples, docs, examples and API reference.
 
 ```powershell
 pwsh Website/build.ps1 -Serve
@@ -10,5 +10,7 @@ pwsh Website/build.ps1 -Serve
 - `content/project-docs/docs/` and `content/examples/` are shared with the hub through `WebsiteArtifacts/project-manifest.json`.
 - `data/gallery.json` and `static/examples/generated/` hold the generated gallery; refresh them with `build/Sync-GeneratedExamples.ps1`.
 - `tools/SiteVisuals` renders the hero, surface, navigation, Mermaid atlas, docs and example visuals with ChartForgeX.
+
+PowerBGInfo has its own site at [powerbginfo.com](https://powerbginfo.com/). Its former page and asset URLs redirect there; native ChartForgeX PowerShell examples and the generic endpoint-snapshot gallery example stay here.
 
 See [AGENTS.md](AGENTS.md) for the full workflow and validation steps.
