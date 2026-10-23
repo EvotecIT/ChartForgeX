@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml.Linq;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
+using ChartForgeX.Primitives;
 using ChartForgeX.Raster;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
@@ -122,6 +123,84 @@ public sealed class MermaidJourneyTimelineNativeTests {
             var strict = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject });
             Assert.False(strict.HasErrors);
             Save(source.StartsWith("journey", StringComparison.Ordinal) ? "journey" : source.StartsWith("timeline TD", StringComparison.Ordinal) ? "timeline-td" : "timeline-lr", dark, width, svg, png);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NativeJourneyTimelineKeepTransparentCanvasAndRoundedCardsWithoutAuthoredBackground(bool journey) {
+        var source = journey ? Journey : Timeline;
+        var opaqueHost = VisualTheme.Graphite().Configure(builder => builder.Dark.Background = ChartColor.FromHex("#010203"));
+        foreach (var dark in new[] { false, true }) {
+            var options = new MermaidRenderOptions {
+                Presentation = new MermaidPresentationOptions {
+                    ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, Theme = dark ? opaqueHost : null
+                }
+            };
+            var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics);
+            var artifact = Assert.IsType<VisualArtifact>(direct.Artifact);
+            var block = Assert.IsAssignableFrom<IVisualBlock>(artifact.Model);
+            var svg = artifact.ToSvg(); var png = artifact.ToPng();
+            Save(journey ? "journey-transparent-frame" : "timeline-transparent-frame", dark, 960, svg, png);
+            Assert.True(block.Options.TransparentBackground); Assert.True(block.Options.ShowCard);
+            var xml = XDocument.Parse(svg);
+            Assert.Empty(Roles(xml, "visual-background")); Assert.Single(Roles(xml, "visual-card"));
+            Assert.Equal(0, RasterImageDecoder.Decode(png).Pixels[3]);
+            var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```"); Assert.Empty(fence.Diagnostics);
+            var fenced = Assert.Single(fence.Artifacts); Assert.Equal(svg, fenced.ToSvg()); Assert.Equal(png, fenced.ToPng());
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AuthoredJourneyTimelineBackgroundKeepsResolvedAlphaAndSharedHostAndFamilyPrecedence(bool journey) {
+        var opaqueHost = VisualTheme.Graphite().Configure(builder => builder.Dark.Background = ChartColor.FromHex("#010203"));
+        var transparentHost = VisualTheme.Graphite().Configure(builder => builder.Dark.Background = ChartColor.FromHex("#01020300"));
+        var opaqueFamily = VisualTheme.Graphite().Configure(builder => builder.Dark.Background = ChartColor.FromHex("#040506"));
+        var transparentFamily = VisualTheme.Graphite().Configure(builder => builder.Dark.Background = ChartColor.FromHex("#04050600"));
+        AssertBackground("source-opaque", "#112233", "#112233", null);
+        AssertBackground("host-opaque", "#112233", "#010203", Options(opaqueHost));
+        AssertBackground("family-opaque", "#112233", "#040506", Options(opaqueHost, opaqueFamily));
+        AssertBackground("source-transparent", "#11223300", "#11223300", null);
+        AssertBackground("transparent-source-opaque-host", "#11223300", "#010203", Options(opaqueHost));
+        AssertBackground("opaque-source-transparent-host", "#112233", "#01020300", Options(transparentHost));
+        AssertBackground("opaque-host-transparent-family", "#112233", "#04050600", Options(opaqueHost, transparentFamily));
+        AssertBackground("transparent-host-opaque-family", "#11223300", "#040506", Options(transparentHost, opaqueFamily));
+        Assert.Equal(ChartColor.FromHex("#010203"), opaqueHost.Resolve(VisualThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#01020300"), transparentHost.Resolve(VisualThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#040506"), opaqueFamily.Resolve(VisualThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#04050600"), transparentFamily.Resolve(VisualThemeMode.Dark).Background);
+
+        MermaidRenderOptions Options(VisualTheme host, VisualTheme? family = null) {
+            var options = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { Theme = host } };
+            if (family == null) return options;
+            if (journey) options.Journey = new MermaidJourneyRenderOptions { Presentation = new MermaidPresentationOptions { Theme = family } };
+            else options.Timeline = new MermaidTimelineRenderOptions { Presentation = new MermaidPresentationOptions { Theme = family } };
+            return options;
+        }
+
+        void AssertBackground(string name, string sourceColor, string expected, MermaidRenderOptions? options) {
+            var source = "%%{init: {'theme':'dark','themeVariables':{'background':'" + sourceColor + "'}}}%%\n" + (journey ? Journey : Timeline);
+            var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics);
+            var artifact = Assert.IsType<VisualArtifact>(direct.Artifact);
+            var block = Assert.IsAssignableFrom<IVisualBlock>(artifact.Model); var color = ChartColor.FromHex(expected);
+            var svg = artifact.ToSvg(); var png = artifact.ToPng();
+            Save((journey ? "journey-" : "timeline-") + name, true, 960, svg, png);
+            Assert.Equal(color.A == 0, block.Options.TransparentBackground);
+            Assert.Equal(color, block.Options.Theme.Resolve(block.Options.ThemeMode).Background);
+            var xml = XDocument.Parse(svg); Assert.True(block.Options.ShowCard); Assert.Single(Roles(xml, "visual-card"));
+            var image = RasterImageDecoder.Decode(png);
+            if (color.A == 0) {
+                Assert.Empty(Roles(xml, "visual-background")); Assert.Equal(0, image.Pixels[3]);
+            } else {
+                Assert.Single(Roles(xml, "visual-background"));
+                Assert.Equal(new byte[] { color.R, color.G, color.B, color.A }, image.Pixels.Take(4));
+            }
+            Assert.Equal(255, image.Pixels[(image.Height / 2 * image.Width + image.Width / 2) * 4 + 3]);
+            var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```"); Assert.Empty(fence.Diagnostics);
+            var fenced = Assert.Single(fence.Artifacts); Assert.Equal(svg, fenced.ToSvg()); Assert.Equal(png, fenced.ToPng());
         }
     }
 

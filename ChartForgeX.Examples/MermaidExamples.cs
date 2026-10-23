@@ -158,7 +158,8 @@ internal static class MermaidExamples {
             }
             var result = MermaidRenderer.RenderParsed(parsed, options);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
-            if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block)
+            if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block
+                && block is not ChartForgeX.VisualBlocks.JourneyDiagramBlock && block is not ChartForgeX.VisualBlocks.TimelineDiagramBlock)
                 block.Options.ShowCard = false;
             if (item.Key == "mermaid-source-font-size-wardley-boundaries" && result.Artifact.Model is ChartForgeX.VisualBlocks.WardleyMapBlock wardley) {
                 wardley.WithSize(420, 320);

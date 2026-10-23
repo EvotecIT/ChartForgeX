@@ -56,6 +56,10 @@ internal static class MermaidPresentation {
             if (document.Theme != null) block.Options.ThemeMode = Mode(document.Theme);
             if (host?.ThemeMode != null) block.Options.ThemeMode = host.ThemeMode.Value;
             block.Options.Theme = Theme(block.Options.Theme, document.Configuration, host);
+            // Journey and timeline retain the transparent canvas of their previous chart adapters.
+            if (block is JourneyDiagramBlock || block is TimelineDiagramBlock)
+                block.Options.TransparentBackground = document.Configuration.ThemeColors?.HasBackground != true
+                    || block.Options.Theme.Resolve(block.Options.ThemeMode).Background.A == 0;
         }
         return model;
     }
