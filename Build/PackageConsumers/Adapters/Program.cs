@@ -183,15 +183,16 @@ internal static partial class Program {
             && nativeJourney.Sections.Single().Label == "Work" && nativeJourney.Tasks[0].SectionId == nativeJourney.Sections[0].Id
             && !fencedJourney.HasErrors && fencedJourney.Diagnostics.Count == 0 && fencedJourney.Artifacts.Count == 1,
             "Packed direct and Markdown Journey lost native score, actor or ordered section identity.");
-        var journeySvg = XDocument.Parse(journey.Artifact!.ToSvg());
+        var journeyArtifact = journey.Artifact ?? throw new InvalidOperationException("Packed Journey did not produce an artifact.");
+        var journeySvg = XDocument.Parse(journeyArtifact.ToSvg());
         PackageAssertions.Require(journeySvg.Descendants().Any(node => (string?)node.Attribute("data-cfx-role") == "journey-task"
                 && (string?)node.Attribute("data-score") == "4")
             && journeySvg.Descendants().Any(node => (string?)node.Attribute("data-cfx-role") == "journey-actor-membership"
                 && (string?)node.Attribute("data-actor") == "User"), "Packed Journey painted no scored task or actor membership.");
-        PackageAssertions.Require(journey.Artifact.ToSvg() == fencedJourney.Artifacts[0].ToSvg()
-            && journey.Artifact.ToPng().SequenceEqual(fencedJourney.Artifacts[0].ToPng()),
+        PackageAssertions.Require(journeyArtifact.ToSvg() == fencedJourney.Artifacts[0].ToSvg()
+            && journeyArtifact.ToPng().SequenceEqual(fencedJourney.Artifacts[0].ToPng()),
             "Packed Journey direct and Markdown exports disagree.");
-        PackageAssertions.Png(journey.Artifact.ToPng());
+        PackageAssertions.Png(journeyArtifact.ToPng());
     }
 
     private static void NativeViewportSection() {

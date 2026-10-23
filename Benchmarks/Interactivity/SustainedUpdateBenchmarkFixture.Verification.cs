@@ -29,7 +29,7 @@ public sealed partial class SustainedUpdateBenchmarkFixture {
                     || _series[series].Points[ordinal].X != expected.X || _series[series].Points[ordinal].Y != expected.Y)
                     throw new InvalidOperationException("A rolling keyed transaction lost, reordered or changed a source fact.");
             }
-            if (_series[series].PointColors[_count / 2 - _updates] != ChartColor.FromHex("#7c3aed"))
+            if (!_series[series].PointColors[_count / 2 - _updates].Equals(ChartColor.FromHex("#7c3aed")))
                 throw new InvalidOperationException("The surviving observation lost its authored paint during rolling updates.");
         }
         ValidateExport(_last.PreparedVisual.ToSvg(), _updates); ValidateExport(_last.NarrowPreparedVisual.ToSvg(), _updates);

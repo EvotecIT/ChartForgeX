@@ -13,7 +13,7 @@ internal static partial class Program {
                 new ChartHierarchyItem("other", "Other", "root", 10) };
             if (kind == ChartSeriesKind.Treemap) chart.AddTreemap("Work", items);
             else chart.AddSunburst("Work", items).ConfigureSunburst(options => { options.SectorGap = 6; options.MinimumLabelFontSize = 9; options.CornerRadius = 4; });
-            var context = VisualExportRequest.ForChart(chart).Context;
+            var context = DepthContext(chart, showLegend: false);
             var original = chart.Prepare(context); var view = chart.PrepareHierarchy(context, new ChartHierarchyView("team"));
             var xml = XDocument.Parse(view.ToSvg());
             PackageAssertions.Require(view.HierarchyView!.RootId == "team" && chart.Series[0].HierarchyItems.Count == 5

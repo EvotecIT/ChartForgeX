@@ -44,7 +44,8 @@ internal static partial class Program {
                 var last = axis.Project(dates[1].ToOADate());
                 PackageAssertions.Require(Math.Abs((middle - first) - (last - middle)) < 1e-7
                     && Math.Abs(axis.Unproject(first) - january.ToOADate()) < 1e-7
-                    && prepared.Regions.Any(region => region.Role == "axis-x-label" && region.Label == "2024-02"),
+                    && XDocument.Parse(prepared.ToSvg()).Descendants().Any(node => (string?)node.Attribute("data-cfx-role") == "axis-x-label"
+                        && node.Descendants().Any(text => text.Name.LocalName == "text" && text.Value == "2024-02")),
                     "Packed Unit spacing lost an empty calendar month or its canonical band-start inverse.");
             }
             var before = chart.Series[0].Points.Select(point => point.X).ToArray();

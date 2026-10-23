@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using System.Xml.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
+using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
 
