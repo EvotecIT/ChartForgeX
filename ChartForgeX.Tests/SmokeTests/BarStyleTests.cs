@@ -37,10 +37,10 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("fill=\"#FBBF24\"", StringComparison.Ordinal) && svg.Contains("fill=\"#8B5CF6\"", StringComparison.Ordinal), "Dashboard bar styles should compose with reusable palette tokens instead of one-off mark colors.");
         Assert(System.Xml.Linq.XDocument.Parse(svg).Descendants().Count(element => element.Name.LocalName == "path" && (string?)element.Attribute("data-cfx-role") == "annotation-line") == 2, "Focused x-axis categories should render reusable boundary guide lines.");
         Assert(CountOccurrences(svg, "data-cfx-role=\"bar\"") == 12, "Segmented capsule style should preserve bar metadata roles.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bar-cap-shadow-soft\"") == 12, "Segmented capsule bars should render a softer premium cap shadow layer.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bar-cap\"") == 12, "Segmented capsule bars should render one value-edge cap per segment.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bar-cap-highlight\"") == 12, "Segmented capsule bars should render cap highlight sheen.");
-        Assert(CountOccurrences(svg, "data-cfx-role=\"bar-cap-shadow\"") == 12, "Segmented capsule bars should render soft cap shadows.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"bar-cap-shadow-soft\"") == 3, "Each complete stack should render one softer premium cap shadow layer.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"bar-cap\"") == 3, "Each complete stack should render one outer value-edge cap.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"bar-cap-highlight\"") == 3, "Each complete stack should render its outer cap highlight sheen.");
+        Assert(CountOccurrences(svg, "data-cfx-role=\"bar-cap-shadow\"") == 3, "Each complete stack should render its outer soft cap shadow.");
         Assert(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneRectangle>().Count(node => node.Role == "bar" && node.Fill!.Value.A == (byte)Math.Round(.22 * 255)) == 12, "Segmented capsule bars should render translucent segment bodies from style tokens.");
         Assert(svg.Contains("stroke-dasharray=\"4 6\"", StringComparison.Ordinal), "Dashboard grid styles should render dashed guide lines.");
         Assert(ChartOptions.AxisValueEquals(2, 2 + 5e-10) && !ChartOptions.AxisValueEquals(1_000_000_000_000, 1_000_000_000_000 + 0.01), "X-axis label highlight tolerance should cover generated tick drift without bleeding across dense high-magnitude axes.");
@@ -103,8 +103,8 @@ internal static partial class SmokeTests {
             .AddHorizontalBar("Done", Points(32, 45), ChartColor.FromHex("#22C55E"))
             .AddHorizontalBar("Open", Points(18, 22), ChartColor.FromHex("#8B5CF6"))
             .ToSvg();
-        Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar-cap\"") == 4, "Segmented capsule style should also apply to horizontal bars.");
-        Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar-cap-highlight\"") == 4, "Segmented capsule style should apply premium cap highlights to horizontal bars.");
+        Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar-cap\"") == 2, "Segmented capsule style should cap only the outer end of each horizontal stack.");
+        Assert(CountOccurrences(horizontalSvg, "data-cfx-role=\"horizontal-bar-cap-highlight\"") == 2, "Segmented capsule style should highlight only the outer cap of each horizontal stack.");
         Assert(horizontalSvg.Contains("fill=\"#E11D48\"", StringComparison.Ordinal), "SVG horizontal-bar x-axis labels should honor highlighted x-axis label colors.");
         var horizontalPanelSvg = Chart.Create().WithTheme(VisualTheme.Report())
             .WithSize(640, 240)

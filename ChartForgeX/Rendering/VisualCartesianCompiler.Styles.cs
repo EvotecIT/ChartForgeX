@@ -28,11 +28,23 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawBarSurface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartSeries series,
-        int pointIndex, ChartRect bounds, ChartColor color, VisualThemeColors colors, string role = "bar", bool range = false, bool horizontal = false, double direction = 0, SvgColorRole? sourceRole = null) {
+        int pointIndex, ChartRect bounds, ChartColor color, VisualThemeColors colors, string role = "bar", bool range = false, bool horizontal = false, double direction = 0, SvgColorRole? sourceRole = null, ChartRect? stackBounds = null) {
         var style = chart.Options.ResolvePreparedBarVisualStyle();
         var resolvedRole = sourceRole ?? VisualChartPaint.SeriesRole(series, pointIndex);
         var sourcePaint = SvgPaint.Of(color, resolvedRole);
         var radius = Math.Min(chart.Options.HasPreparedBarCornerRadius ? style.CornerRadius : context.Theme.BarRadius, Math.Min(bounds.Width, bounds.Height) / 2);
+        if (stackBounds.HasValue) {
+            var envelope = VisibleSegmentBounds(chart, stackBounds.Value, direction, horizontal);
+            // A terminal nonzero capsule may paint beyond its mapped total to retain
+            // one pixel of ink. Its outer clip must include that painted extent.
+            var left = Math.Min(envelope.Left, bounds.Left); var top = Math.Min(envelope.Top, bounds.Top);
+            stackBounds = new ChartRect(left, top, Math.Max(envelope.Right, bounds.Right) - left, Math.Max(envelope.Bottom, bounds.Bottom) - top);
+        }
+        // Every signed stack has one rounded envelope. Segment bodies stay square at shared boundaries.
+        using var stackClip = stackBounds.HasValue ? builder.PushClip(RoundedRectanglePath(stackBounds.Value,
+            Math.Min(chart.Options.HasPreparedBarCornerRadius ? style.CornerRadius : context.Theme.BarRadius,
+                Math.Min(stackBounds.Value.Width, stackBounds.Value.Height) / 2))) : null;
+        if (stackBounds.HasValue) radius = 0;
         var pattern = pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
             ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern;
         if (style.Kind == ChartBarStyle.SegmentedCapsule) {
@@ -40,7 +52,10 @@ internal static partial class VisualCartesianCompiler {
                 paint: VisualChartPaint.Fill(sourcePaint.WithOpacity(ChartColorMath.WithOpacity(color, style.BodyOpacity), style.BodyOpacity)));
             DrawPattern(builder, RoundedRectanglePath(bounds, radius), pattern, ChartColorMath.WithOpacity(color, style.BodyOpacity), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), role + "-pattern");
             if (bounds.Width <= 0 || bounds.Height <= 0) return;
-            if (!range) {
+            var outerEnd = !stackBounds.HasValue || (horizontal
+                ? direction > 0 ? bounds.Right >= stackBounds.Value.Right - .001 : bounds.Left <= stackBounds.Value.Left + .001
+                : direction > 0 ? bounds.Top <= stackBounds.Value.Top + .001 : bounds.Bottom >= stackBounds.Value.Bottom - .001);
+            if (!range && outerEnd) {
                 var geometry = horizontal ? ChartSegmentedBarGeometry.Horizontal(style, bounds.Left, bounds.Top, bounds.Width, bounds.Height, direction)
                     : ChartSegmentedBarGeometry.Vertical(style, bounds.Left, bounds.Top, bounds.Width, bounds.Height, direction);
                 DrawSegmentedCap(builder, geometry, style, color, role, sourcePaint);

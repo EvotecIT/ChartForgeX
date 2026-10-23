@@ -65,6 +65,7 @@ internal static partial class VisualSceneSvgRenderer {
                     writer.Attribute("transform", transform.ToString());
                 }
                 writer.EndStartElement();
+                if (options?.PatternTiles == true && WritePatternTile(writer, scene, group, prefix, ref i, paintOptions)) continue;
                 if (group.Tooltip != null) writer.StartElement("title").Text(group.Tooltip).EndElement();
                 if (group.ImageResource != null) {
                     WriteImageResource(writer, group.ImageResource, prefix, i);

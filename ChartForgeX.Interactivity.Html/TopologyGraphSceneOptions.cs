@@ -4,6 +4,9 @@ namespace ChartForgeX.Interactivity.Html;
 /// Controls how a static <see cref="ChartForgeX.Topology.TopologyChart"/> is projected into a reusable graph exploration scene.
 /// </summary>
 public sealed class TopologyGraphSceneOptions {
+    /// <summary>Gets or sets the accent source. Status leaves node colors semantic so the explorer theme toggle can repaint them.</summary>
+    public ChartForgeX.Topology.TopologyAccentSource AccentSource { get; set; }
+
     /// <summary>Gets or sets the icon catalog used to resolve topology icon symbols, colors, shapes, and artwork.</summary>
     public ChartForgeX.Topology.TopologyIconCatalog? IconCatalog { get; set; }
 

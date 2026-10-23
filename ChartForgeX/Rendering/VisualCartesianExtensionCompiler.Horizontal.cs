@@ -22,7 +22,9 @@ internal static partial class VisualCartesianCompiler {
             var bounds = VisibleSegmentBounds(chart, new ChartRect(Math.Min(startX, endX), y - height / 2, Math.Abs(endX - startX), height), direction, horizontal: true);
             var label = ResolveObservationLabel(chart, context, series, item, colors, format => format("value", point.Y));
             using (ObservationGroup(builder, series, index, item, item, 1, bounds, label, stack, ("category", point.X), ("value", point.Y), ("base", stack.Base)))
-                DrawBarSurface(chart, context, builder, series, item, bounds, PointColor(series, index, item, colors), colors, "horizontal-bar", horizontal: true, direction: direction);
+                DrawBarSurface(chart, context, builder, series, item, bounds, PointColor(series, index, item, colors), colors, "horizontal-bar", horizontal: true, direction: direction,
+                    stackBounds: stack.IsStacked && stack.Total != 0 ? new ChartRect(Math.Min(map.XBaseline(), map.X(stack.Total)),
+                        y - height / 2, Math.Abs(map.XBaseline() - map.X(stack.Total)), height) : null);
             obstacles.Add(new LabelObstacle(PointId(index, item), bounds));
             AddHorizontalLabel(chart, context, series, index, item, new ChartPoint(endX, y), bounds, point.Y, direction, label, labels);
         }
@@ -32,7 +34,9 @@ internal static partial class VisualCartesianCompiler {
         var bars = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.HorizontalBar).ToArray();
         var slot = stacks.Slot(bars, index);
         var layout = ChartCategorySlotLayout.Create(stacks.HorizontalCategories.Select(map.Y),
-            plot.Height, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false, maximumThickness: 30);
+            plot.Height, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false,
+            maximumThickness: chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth,
+            minimumThickness: Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth));
         return (layout.Thickness, layout.Offset, layout.Pitch);
     }
 

@@ -19,6 +19,8 @@ param(
     [ValidateRange(1, 86400)]
     [int] $DotNetCommandTimeoutSeconds = 900,
 
+    [string] $TestDiagnosticsDirectory,
+
     [ValidateRange(1, 3600)]
     [int] $PackageConsumerTimeoutSeconds = 180
 )
@@ -672,7 +674,15 @@ try {
     Invoke-NodeCommand -FileName 'node' -Arguments @('Build/Test-GraphRuntime.js') -WorkingDirectory $root -Description 'Bundled graph runtime tests' -TimeoutSeconds $PackageConsumerTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('restore', '.\ChartForgeX.sln') -Description 'Solution restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('build', $solution, '-c', $Configuration, '--no-restore') -Description 'Solution build' -TimeoutSeconds $DotNetCommandTimeoutSeconds
-    Invoke-DotNetCommand -Arguments @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore') -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+    $testArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore')
+    if (-not [string]::IsNullOrWhiteSpace($TestDiagnosticsDirectory)) {
+        New-Item -ItemType Directory -Path $TestDiagnosticsDirectory -Force | Out-Null
+        $testArguments += @('--settings', (Join-Path $root 'Build/native-diagnostics.runsettings'),
+            '--logger', 'console;verbosity=detailed', '--logger', 'trx;LogFileName=native.trx',
+            '--results-directory', $TestDiagnosticsDirectory,
+            '--diag', (Join-Path $TestDiagnosticsDirectory 'native.vstest.log'))
+    }
+    Invoke-DotNetCommand -Arguments $testArguments -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds
 
     if (-not $SkipAot) {
         $nativeAotRid = Get-NativeAotRuntimeIdentifier

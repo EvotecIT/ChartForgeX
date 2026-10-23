@@ -31,6 +31,13 @@ public static class TopologyGraphExplorerExtensions {
         var iconCatalog = options.IconCatalog ?? TopologyIconCatalog.Default();
         var scene = GraphScene.Create(ids.ChartId, TopologySceneTitle(source));
         scene.Subtitle = source.Subtitle;
+        if (options.AccentSource == TopologyAccentSource.Status) {
+            foreach (ChartForgeX.Themes.VisualThemeMode mode in new[] { ChartForgeX.Themes.VisualThemeMode.Light, ChartForgeX.Themes.VisualThemeMode.Dark }) {
+                var paints = new TopologyPaint(source.Theme, mode);
+                foreach (var status in new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown, TopologyHealthStatus.Disabled })
+                    scene.Metadata["topology.statusAccent." + Token(status) + "." + mode.ToString().ToLowerInvariant()] = paints.StatusColor(status);
+            }
+        }
         if (options.UseSuperTopologyDefaults) scene.Options.UseSuperTopologyDefaults(options.EnableManipulation);
         if (seededLayout) scene.Options.Physics.Stabilization.Enabled = options.StabilizePreparedLayoutOnLoad;
         if (source.Nodes.Count <= 20) scene.Options.LevelOfDetail.DetailScaleThreshold = Math.Min(scene.Options.LevelOfDetail.DetailScaleThreshold, 0.72);
@@ -148,15 +155,22 @@ public static class TopologyGraphExplorerExtensions {
         }
 
         var theme = chart.ResolvedTheme;
-        var accentColor = FirstText(node.Color, icon?.Color, theme.StatusColor(node.Status))!;
+        var authoredAccent = TopologyNodeAccent.Authored(node, icon, options.AccentSource);
+        var palette = chart.Theme.Resolve(chart.ThemeMode).Palette;
+        var paletteAccent = TopologyNodeAccent.UsesPalette(node, options.AccentSource)
+            ? palette[node.PaletteIndex.GetValueOrDefault() % palette.Count].ToCss() : null;
+        var accentColor = FirstText(authoredAccent, paletteAccent, theme.StatusColor(node.Status))!;
         var card = shape == GraphNodeShape.Box && display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard or TopologyNodeDisplayMode.Pill;
-        graphNode.Style.BackgroundColor = card && string.IsNullOrWhiteSpace(node.BackgroundColor)
+        var themedBackground = string.IsNullOrWhiteSpace(node.BackgroundColor);
+        graphNode.Style.BackgroundColor = themedBackground
             ? null
             : TopologyRenderPrimitives.NodeFill(node, theme, accentColor, new TopologyRenderOptions());
-        graphNode.Style.BorderColor = accentColor;
+        graphNode.Style.BorderColor = options.AccentSource == TopologyAccentSource.Status
+            ? "var(--cfx-topology-status-accent, " + accentColor + ")" : accentColor;
+        if (options.AccentSource == TopologyAccentSource.Status) graphNode.Metadata["topology.accentSource"] = "status";
         graphNode.Style.LabelColor = display is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard
             ? null
-            : accentColor;
+            : options.AccentSource == TopologyAccentSource.Status ? null : accentColor;
         graphNode.Style.Shadow = node.DisplayMode is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.Artwork;
 
         AddMetadata(graphNode.Metadata, "topology.id", node.Id);
@@ -166,7 +180,10 @@ public static class TopologyGraphExplorerExtensions {
         AddMetadata(graphNode.Metadata, "topology.displayMode", node.DisplayMode?.ToString());
         if (card) graphNode.Metadata["topology.card"] = "true";
         // Retain the projected surface for script-free output without treating it as an authored fill.
-        if (card && string.IsNullOrWhiteSpace(node.BackgroundColor)) graphNode.Metadata["topology.cardBackgroundColor"] = theme.Card;
+        if (themedBackground) {
+            graphNode.Metadata["topology.backgroundSource"] = "theme";
+            graphNode.Metadata["topology.cardBackgroundColor"] = theme.Card;
+        }
         AddMetadata(graphNode.Metadata, "topology.iconId", node.IconId);
         AddMetadata(graphNode.Metadata, "topology.iconQualifiedId", icon?.QualifiedId);
         AddMetadata(graphNode.Metadata, "topology.iconCategory", icon?.Category);

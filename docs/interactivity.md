@@ -260,6 +260,54 @@ Synchronized host highlights and restored selection use the source chart's actua
 
 `resize()` refreshes browser hit geometry, navigation and active readout placement after host layout changes. The adapter also observes ordinary container resizing and hidden-host reveal. `Adaptive` layout switches between two native prepared drawings as described below. Other changes to the native design size use a fresh generated section passed to `update`; scaling a fixed SVG does not regenerate its ticks or typography.
 
+### Offline responsive drawings
+
+For a report that needs a drawing without interactive controls, use
+`new HtmlResponsiveChartRenderer().RenderFragment(chart, minimumWidth: 240, maximumWidth: 1600)`.
+Native preparation emits one portable `chartforgex/layout-1` specification with
+source series values, candidate axis captions, semantic paint, plot bounds and
+category-slot constraints. The browser measures captions in their actual token
+font, allocates bar slots and legend rows, and projects geometry into the panel's
+CSS-pixel plot bounds. A debounced ResizeObserver repeats that layout at arbitrary
+widths, including fractional widths. No C# callback or network request is needed.
+The payload contains no sampled width bands or coordinate derivatives.
+
+Text and strokes keep their token sizes. Height stays at the configured chart
+height, or the optional `height` argument. Tick captions thin at a measured regular
+stride, keeping both endpoints. Legends wrap before consuming plot space. An oversized caption truncates with its
+full name in an SVG tooltip; legend rows use at most 35% of the fixed height,
+with a named overflow summary when more entries remain. Regular
+bars use the native 68% category pitch and bounded group gaps, with the configured
+maximum bar width. Wider panels centre the drawing at the cap; panels below the
+minimum scroll within their host. Hidden fragments wait until visible before
+measuring text. The caller's chart size and axis policies are restored after
+serialization. Canonical bar slots and mapped source anchors are serialized, so
+sparse categories retain the same series slots. Every mounted fragment gets
+independent SVG definition IDs, even when two charts have identical content.
+
+Browser printing lays out at the actual print panel width, including below the
+screen scrolling minimum, and restores the screen minimum after printing. `printWidth` chooses
+the width of the script-free native fallback; a report host can supply its page's
+printable width. The fallback remains available without script. Static SVG and
+PNG rendering continue to use the native renderer.
+
+Responsive SVG uses native pattern tiles so hatched bars keep the same native brush
+without a different number of explicit hatch lines at every width. Static SVG and
+native PNG retain their default paint path; `VisualSvgOptions.WithPatternTiles()`
+also makes that SVG representation available to other hosts.
+`compressLayouts: true` compresses the layout payload and needs DecompressionStream.
+The host exposes `cfxResponsiveReady` and `cfxResponsive.dispose()` for asynchronous
+preparation and removal. Hosts inserting inert markup load `InitializationScript`
+once; `ChartForgeXResponsive.mount(scope)` and the shared insertion observer mount
+those drawings without executing scripts from templates. The interactive adapter's Fit and Adaptive modes retain
+their existing behavior.
+
+Regular stacked bars share one rounded envelope per signed stack, in SVG and native
+PNG. Segment joins stay square, including horizontal and negative stacks; an authored
+zero corner radius keeps the whole stack square. Segmented caps appear only at the
+outer end. `WithMaximumBarWidth` continues to cap the shared stack width and centre
+sparse category slots.
+
 `dispose()` releases chart listeners, observers, scheduled frames, pending readouts, exports and scenario playback immediately. It also clears the compare tray, brush rectangle, selection readouts and mute/isolation presentation while the section remains connected. It is safe to call more than once. Removing a chart also releases its work when the browser delivers the removal. Reinserted sections require a fresh `mount`; a disposed controller cannot update or resize them. Register shared assets once, and mount newly inserted sections explicitly instead of executing another copy of the runtime.
 
 ## Linking charts to other views

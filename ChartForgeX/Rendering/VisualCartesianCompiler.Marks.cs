@@ -126,7 +126,9 @@ internal static partial class VisualCartesianCompiler {
             var resolvedLabel = ((CartesianLabels)labels).PointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, chart.Options.Labels, stack)) {
                 if (series.IsHistogramDensity) DrawDensityHistogramSurface(chart, context, builder, series, index, pointIndex, bounds, colors);
-                else DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors, direction: direction);
+                else DrawBarSurface(chart, context, builder, series, pointIndex, bounds, PointColor(series, index, pointIndex, colors), colors, direction: direction,
+                    stackBounds: stack.IsStacked && stack.Total != 0 ? new ChartRect(left, Math.Min(map.YOrBaseline(0), map.Y(stack.Total)),
+                        barWidth, Math.Abs(map.YOrBaseline(0) - map.Y(stack.Total))) : null);
             }
             obstacles.Add(new LabelObstacle(PointId(index, pointIndex), bounds));
             AddLabel(chart, context, series, index, pointIndex, new ChartPoint(left + barWidth / 2, y), bounds, resolvedLabel, labels, barDirection: direction);
@@ -139,7 +141,9 @@ internal static partial class VisualCartesianCompiler {
         var slot = stacks.Slot(barIndices, index);
         var sampleSlots = chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0;
         var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].RenderPoints.Select((point, pointIndex) => map.X(coordinates.Resolve(i, pointIndex).Value))),
-            plot.Width, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false, minimumThickness: sampleSlots > 0 ? 0 : .1, sampleSlots: sampleSlots);
+            plot.Width, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false,
+            maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth,
+            minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth), sampleSlots: sampleSlots);
         return (layout.Thickness, layout.Offset);
     }
 

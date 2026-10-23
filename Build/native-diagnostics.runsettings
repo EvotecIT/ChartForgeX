@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <xUnit>
+    <DiagnosticMessages>true</DiagnosticMessages>
+    <!-- Reports active test names without changing scheduling, deadlines or outcomes. -->
+    <LongRunningTestSeconds>30</LongRunningTestSeconds>
+  </xUnit>
+</RunSettings>

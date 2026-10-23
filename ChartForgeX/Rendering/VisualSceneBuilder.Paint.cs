@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
@@ -120,7 +121,10 @@ internal sealed partial class VisualSceneBuilder {
         if (points.Length == 0) return;
         var left = points.Min(point => point.X); var top = points.Min(point => point.Y);
         var width = points.Max(point => point.X) - left; var height = points.Max(point => point.Y) - top;
-        using (PushClip(clip)) {
+        using (OpenGroup(new VisualSceneGroup(null, null, null, new Dictionary<string, string> {
+            ["data-cfx-pattern-kind"] = pattern.ToString(),
+            ["data-cfx-pattern-spacing"] = spacing.ToString("R", CultureInfo.InvariantCulture)
+        }, pathClip: shape))) {
             foreach (var line in ChartPatternLineGeometry.BuildUserSpace(pattern, left, top, width, height, 0, spacing, 0))
                 Line(line.X1, line.Y1, line.X2, line.Y2, color, strokeWidth, role,
                     paint: paint.HasValue ? new VisualScenePaintBinding(stroke: paint) : null);

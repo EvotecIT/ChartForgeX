@@ -57,6 +57,8 @@ chart.SaveHtml("orders.html");
 
 `ChartPoints.FromValues` places observations at X = 1 through N, matching `WithXLabels`. For numeric or time coordinates, use typed observations or map your own records with selectors.
 
+For count charts, use `WithYAxisIntegerTicks()` or `WithXAxisIntegerTicks()` for horizontal bars to keep generated linear tick positions whole. See [whole-number axis ticks](docs/integer-axis-ticks.md) for bounds, secondary axes and typed examples.
+
 ## Visual Tour
 
 Charts and diagrams share the same theme, typography and chart area. These 400 × 280 previews are generated from the current examples. Open an example to switch between light and dark, compare SVG with native PNG, or copy its C# source.
@@ -349,6 +351,8 @@ For the repository quality loop, run:
 ```
 
 The quality loop builds and tests the solution, checks the pinned Mermaid reference corpus, runs the AOT smoke, generates examples, checks visual-health baselines, and packs and inspects packages. `-QualifyPackages` additionally builds and runs isolated consumers of the packed packages.
+
+For slow native test runs, add `-TestDiagnosticsDirectory <output-directory>`. This records named test timings, warnings identifying tests still running after 30 seconds, a final TRX report, and incremental VSTest logs that remain available if the process times out. It preserves the existing 900-second command limit and test scheduling. CI retains these files in the `chartforgex-native-results-<OS>` artifacts, including after a failed run.
 
 The [website gallery](https://chartforgex.com/gallery/) is the public showcase. `ChartForgeX.Examples` supplies its executable recipes and also runs offline SVG/PNG comparisons and browser fixtures. `ChartForgeX.Examples.Snippets` compiles those recipes against the core library without referencing the examples executable. See [Contributing](CONTRIBUTING.md#examples-and-website) when changing a recipe or its presentation.
 

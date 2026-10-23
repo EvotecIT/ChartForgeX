@@ -57,7 +57,7 @@ public static partial class TopologyChartExtensions {
     public static TopologyChart AddIconNode(this TopologyChart chart, string id, string label, string iconId, double x, double y, TopologyHealthStatus status = TopologyHealthStatus.Unknown, string? groupId = null, string? subtitle = null, string? href = null, string? tooltip = null, double width = 120, double height = 64, string? cssClass = null, TopologyIconCatalog? catalog = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var icon = ResolveIcon(iconId, catalog);
-        chart.AddNode(id, label, x, y, icon.NodeKind, status, groupId, subtitle, href, tooltip, width, height, icon.Symbol, cssClass, icon.Color, icon.QualifiedId);
+        chart.AddNode(id, label, x, y, icon.NodeKind, status, groupId, subtitle, href, tooltip, width, height, icon.Symbol, cssClass, null, icon.QualifiedId);
         var node = chart.Nodes[chart.Nodes.Count - 1];
         if (icon.DisplayMode.HasValue) node.DisplayMode = icon.DisplayMode.Value;
         return chart;
@@ -97,7 +97,6 @@ public static partial class TopologyChartExtensions {
         node.IconId = icon.QualifiedId;
         if (updateKind) node.Kind = icon.NodeKind;
         if (string.IsNullOrWhiteSpace(node.Symbol)) node.Symbol = icon.Symbol;
-        if (string.IsNullOrWhiteSpace(node.Color)) node.Color = icon.Color;
         if (!node.DisplayMode.HasValue && icon.DisplayMode.HasValue) node.DisplayMode = icon.DisplayMode.Value;
     }
 }
