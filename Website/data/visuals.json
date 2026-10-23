@@ -676,13 +676,6 @@
         "h": 460,
         "kb": 10.4
       },
-      "powerbginfo": {
-        "base": "/site/nav/powerbginfo",
-        "ext": "png",
-        "w": 480,
-        "h": 300,
-        "kb": 38.5
-      },
       "powershell": {
         "base": "/site/nav/powershell",
         "ext": "png",

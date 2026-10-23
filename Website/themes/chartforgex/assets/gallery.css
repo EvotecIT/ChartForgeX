@@ -1,5 +1,4 @@
-/* Gallery: the category legend, the example grid and the viewer dialog. The PowerBGInfo page uses the same cards and
-   viewer for its scenario wallpapers. */
+/* Gallery: the category legend, the example grid and the viewer dialog. */
 
 .cfx-gallery-page {
   width: min(100% - 2 * var(--cfx-gutter), var(--cfx-max));

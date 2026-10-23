@@ -52,8 +52,7 @@ internal static class NavVisuals {
                   ChartGrid o-- Chart
                   Chart *-- ChartSeries
                 """, dark, new List<string>()), 1.6)),
-            ["examples"] = output.Pair("nav/examples", (mode, _) => SmallMultiples(mode).ToSvg("cfx-nav-examples")),
-            ["powerbginfo"] = output.PngPair("nav/powerbginfo", (_, dark) => Wallpaper(output.Website, dark))
+            ["examples"] = output.Pair("nav/examples", (mode, _) => SmallMultiples(mode).ToSvg("cfx-nav-examples"))
         };
 
         return new Dictionary<string, object> { ["thumbs"] = thumbs };
@@ -89,21 +88,6 @@ internal static class NavVisuals {
         }
 
         return grid;
-    }
-
-    // A crop of a published PowerBGInfo wallpaper (static/powerbginfo/, copied there by build/Sync-PowerBGInfo.ps1):
-    // the admin path topology and the charts under it. The render sits in an SVG whose viewBox is the crop, and the
-    // ChartForgeX rasterizer draws that at twice the thumbnail size. Nothing is drawn that the wallpaper does not have.
-    private static byte[] Wallpaper(string website, bool dark) {
-        const double cropX = 690, cropY = 345, cropWidth = 1176, cropHeight = cropWidth * Height / Width;
-        var render = File.ReadAllBytes(Path.Combine(website, "static", "powerbginfo", $"admin-workstation-{(dark ? "dark" : "light")}.png"));
-        // Width and height are the big-endian integers of the IHDR chunk.
-        static int Read(byte[] png, int offset) => (png[offset] << 24) | (png[offset + 1] << 16) | (png[offset + 2] << 8) | png[offset + 3];
-        var svg = string.Format(System.Globalization.CultureInfo.InvariantCulture,
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{0}\" height=\"{1}\" viewBox=\"{2} {3} {4} {5}\">"
-            + "<image width=\"{6}\" height=\"{7}\" href=\"data:image/png;base64,{8}\"/></svg>",
-            Width * 2, Height * 2, cropX, cropY, cropWidth, cropHeight, Read(render, 16), Read(render, 20), Convert.ToBase64String(render));
-        return ChartForgeX.SvgRaster.SvgRasterizer.ToPng(svg, Width * 2, Height * 2);
     }
 
     // The ImagePlayground lines of a published PowerShell example, typed into a console. No output is invented.

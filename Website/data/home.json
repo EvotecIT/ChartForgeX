@@ -197,6 +197,11 @@
   ],
   "family": [
     {
+      "name": "PowerBGInfo",
+      "url": "https://powerbginfo.com/",
+      "body": "Machine facts, health and charts on desktop and lock-screen wallpapers, rendered by ChartForgeX from PowerShell."
+    },
+    {
       "name": "OfficeIMO",
       "url": "https://officeimo.com/",
       "body": "Place ChartForgeX visuals in Office documents, or project them as editable Visio shapes, through the OfficeIMO.ChartForgeX adapter."
