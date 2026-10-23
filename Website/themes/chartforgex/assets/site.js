@@ -345,7 +345,7 @@
 
   // Viewer dialog for gallery cards (gallery-card.html). A card names its output in each theme, the full-size file,
   // a page link and its source file; gallery sources are standalone .csharp.txt programs. A card may also carry tabs,
-  // line ranges of that one source (PowerBGInfo shows a script's presentation and data blocks). A card without
+  // line ranges of that one source. A card without
   // data-image shows its own image for the page theme at the viewer's size, so the viewer uses whatever responsive
   // variants the build wrote for it.
 
